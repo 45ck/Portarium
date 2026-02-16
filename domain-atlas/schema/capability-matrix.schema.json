@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portarium://domain-atlas/capability-matrix.schema.json",
+  "title": "Adapter Capability Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "providerId",
+    "providerName",
+    "portFamily",
+    "capabilities",
+    "idempotency",
+    "diff"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "providerId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "providerName": { "type": "string", "minLength": 1 },
+    "portFamily": {
+      "type": "string",
+      "enum": [
+        "FinanceAccounting",
+        "PaymentsBilling",
+        "ProcurementSpend",
+        "HrisHcm",
+        "Payroll",
+        "CrmSales",
+        "CustomerSupport",
+        "ItsmItOps",
+        "IamDirectory",
+        "SecretsVaulting",
+        "MarketingAutomation",
+        "AdsPlatforms",
+        "CommsCollaboration",
+        "ProjectsWorkMgmt",
+        "DocumentsEsign",
+        "AnalyticsBi",
+        "MonitoringIncident",
+        "ComplianceGrc"
+      ]
+    },
+    "adapterVersion": {
+      "type": "string",
+      "description": "Adapter implementation version (not upstream provider API version)."
+    },
+    "auth": { "$ref": "#/$defs/auth" },
+    "limits": { "$ref": "#/$defs/limits" },
+    "events": { "$ref": "#/$defs/events" },
+    "idempotency": { "$ref": "#/$defs/idempotency" },
+    "diff": { "$ref": "#/$defs/diffSupport" },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/capabilityEntry" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "executionTier": {
+      "type": "string",
+      "enum": ["Auto", "Assisted", "HumanApprove", "ManualOnly"]
+    },
+    "capabilityString": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+:[a-z0-9-]+$"
+    },
+    "capabilityEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capability", "supported", "safety"],
+      "properties": {
+        "capability": { "$ref": "#/$defs/capabilityString" },
+        "supported": { "type": "boolean" },
+        "operations": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "safety": { "$ref": "#/$defs/safety" },
+        "constraints": { "$ref": "#/$defs/constraints" },
+        "notes": { "type": "string" }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["defaultTier", "requiresApproval", "idempotent"],
+      "properties": {
+        "defaultTier": { "$ref": "#/$defs/executionTier" },
+        "requiresApproval": { "type": "boolean" },
+        "idempotent": { "type": "boolean" },
+        "supportsDryRun": { "type": "boolean" },
+        "supportsRollback": { "type": "boolean" },
+        "supportsCompensation": { "type": "boolean" }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxBatchSize": { "type": "integer", "minimum": 1 },
+        "requiredScopes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["oauth2", "api_key", "basic", "session", "other"] }
+        },
+        "scopes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rateLimit": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "requestsPerMinute": { "type": "integer", "minimum": 1 },
+            "notes": { "type": "string" }
+          }
+        },
+        "concurrency": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxConcurrentRequests": { "type": "integer", "minimum": 1 },
+            "notes": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "events": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "supportsWebhooks": { "type": "boolean" },
+        "supportsPolling": { "type": "boolean" },
+        "supportsEventStream": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportsIdempotencyKey"],
+      "properties": {
+        "supportsIdempotencyKey": { "type": "boolean" },
+        "keyLocations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["header", "body", "query", "provider"] }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "diffSupport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportsPlan", "supportsVerifiedEffects"],
+      "properties": {
+        "supportsPlan": { "type": "boolean" },
+        "supportsPredictedEffects": { "type": "boolean" },
+        "supportsVerifiedEffects": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

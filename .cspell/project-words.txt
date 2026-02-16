@@ -28,9 +28,16 @@ knip
 tsconfig
 noEmit
 eslint
+vars
 prettierrc
 sonarjs
 unicorn
+SemVer
+lockfile
+lockfiles
+Backtracking
+backtracking
+uiTemplates
 
 # Branded IDs (existing)
 WorkspaceId
@@ -96,6 +103,11 @@ Mailchimp
 QuickBooks
 Xero
 Stripe
+killbill
+Killbill
+Sellable
+uncollectible
+Vendoring
 
 # Systems of Record (new — integration catalog)
 Intacct
@@ -477,3 +489,7 @@ CodeQL
 Husky
 Beads
 Speckit
+testdata
+Airbyte
+Rundeck
+immudb

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "vault",
+  "providerName": "HashiCorp Vault",
+  "portFamilies": ["SecretsVaulting"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/hashicorp/vault",
+    "version": "pinned-by-commit"
+  },
+  "license": {
+    "spdxId": "UNKNOWN",
+    "classification": "unknown",
+    "notes": "TBD: confirm current upstream license. Treat as study-only until confirmed."
+  },
+  "extraction": {
+    "modelSources": ["api/**", "vault/**", "website/**"],
+    "notes": "TBD: prefer API surface + audit device semantics + policy model."
+  }
+}

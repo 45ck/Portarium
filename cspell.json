@@ -10,5 +10,15 @@
     }
   ],
   "words": [],
-  "ignorePaths": ["dist/**", "coverage/**", ".beads/**", "reports/**", "package-lock.json", "node_modules/**"]
+  "ignorePaths": [
+    "dist/**",
+    "coverage/**",
+    ".beads/**",
+    "research/sources/**",
+    "domain-atlas/upstreams/**",
+    "vendor/**",
+    "reports/**",
+    "package-lock.json",
+    "node_modules/**"
+  ]
 }

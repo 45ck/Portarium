@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "odoo",
+  "providerName": "Odoo (Community Edition)",
+  "portFamilies": ["FinanceAccounting", "ProcurementSpend"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/odoo/odoo",
+    "version": "pinned-by-commit"
+  },
+  "license": {
+    "spdxId": "UNKNOWN",
+    "classification": "unknown",
+    "notes": "TBD: confirm community edition license and contribution terms. Treat as study-only until confirmed."
+  },
+  "extraction": {
+    "modelSources": ["addons/**/models/**/*.py", "odoo/**"],
+    "notes": "TBD: decide extraction source of truth (ORM models vs migrations vs DB schema)."
+  }
+}

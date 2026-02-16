@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portarium://domain-atlas/source-manifest.schema.json",
+  "title": "Domain Atlas Source Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "providerId",
+    "providerName",
+    "portFamilies",
+    "upstream",
+    "license"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Schema version for this manifest (not the upstream provider version).",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "providerId": {
+      "type": "string",
+      "description": "Stable, filesystem-safe identifier (lowercase, digits, hyphens).",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "providerName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "portFamilies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "FinanceAccounting",
+          "PaymentsBilling",
+          "ProcurementSpend",
+          "HrisHcm",
+          "Payroll",
+          "CrmSales",
+          "CustomerSupport",
+          "ItsmItOps",
+          "IamDirectory",
+          "SecretsVaulting",
+          "MarketingAutomation",
+          "AdsPlatforms",
+          "CommsCollaboration",
+          "ProjectsWorkMgmt",
+          "DocumentsEsign",
+          "AnalyticsBi",
+          "MonitoringIncident",
+          "ComplianceGrc"
+        ]
+      }
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repoUrl"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["git", "openapi", "graphql", "docs", "sdk", "other"]
+        },
+        "repoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "type": "string",
+          "description": "Git commit hash pinned for extraction reproducibility.",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "version": {
+          "type": "string",
+          "description": "Upstream version identifier (tag, release, API version) if available."
+        },
+        "retrievedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdxId", "classification"],
+      "properties": {
+        "spdxId": {
+          "type": "string",
+          "description": "SPDX identifier (e.g., MIT, Apache-2.0, GPL-3.0-only)."
+        },
+        "classification": {
+          "type": "string",
+          "enum": ["safe_to_reuse", "study_only", "unsafe_dependency", "unknown"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelSources"],
+      "properties": {
+        "modelSources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "command": {
+          "type": "string",
+          "description": "Optional command used to extract CIF."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

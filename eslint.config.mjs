@@ -19,7 +19,15 @@ export default tseslint.config(
       '**/coverage/**',
       '**/.tsbuildinfo/**',
       '**/reports/**',
+      '**/research/sources/**',
+      '**/domain-atlas/upstreams/**',
+      '**/_tmp_bd/**',
+      'package/**',
+      '**/scripts/**',
+      '**/vendor/**',
       '**/.specify/**/generated/**',
+      '.dependency-cruiser.cjs',
+      'eslint.config.mjs',
     ],
   },
 
@@ -36,8 +44,9 @@ export default tseslint.config(
       },
       parserOptions: {
         projectService: true,
+        // These config files are intentionally outside the TS project includes.
+        allowDefaultProject: ['.dependency-cruiser.cjs', 'eslint.config.mjs'],
         tsconfigRootDir: __dirname,
-        project: ['./tsconfig.eslint.json'],
       },
     },
     plugins: {
@@ -76,10 +85,37 @@ export default tseslint.config(
         { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
       ],
 
+      // Disallow inline suppression. If a rule is wrong, fix the code or change the rule with an ADR.
+      'no-warning-comments': [
+        'error',
+        { terms: ['eslint-disable', 'eslint-enable'], location: 'anywhere' },
+      ],
+
       // TypeScript typed linting
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+
+      // Maintainability: ban unsafe escape hatches
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-expect-error': 'allow-with-description',
+          'ts-ignore': 'allow-with-description',
+          'ts-nocheck': true,
+          'ts-check': false,
+          minimumDescriptionLength: 5,
+        },
+      ],
+    },
+  },
+
+  // Tests can be longer/more verbose; keep production caps strict.
+  {
+    files: ['**/*.test.ts'],
+    rules: {
+      'max-lines-per-function': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
     },
   },
 

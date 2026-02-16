@@ -1,8 +1,12 @@
 # Core domain requires senior review
 /src/domain/                @core-maintainers
 /docs/adr/                  @core-maintainers
-/.dependency-cruiser.js     @core-maintainers
+/.github/workflows/         @core-maintainers
+/.dependency-cruiser.cjs    @core-maintainers
 /eslint.config.mjs          @core-maintainers
 /tsconfig*.json             @core-maintainers
+/scripts/ci/                @core-maintainers
 /CLAUDE.md                  @core-maintainers
+/.gitattributes             @core-maintainers
 /.claude/                   @core-maintainers
+/.ci/                       @core-maintainers

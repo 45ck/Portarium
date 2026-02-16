@@ -1,0 +1,13 @@
+# Keep shell hooks runnable and make gate hashing stable across platforms.
+*.sh text eol=lf
+.husky/* text eol=lf
+
+# Normalize common text formats.
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf

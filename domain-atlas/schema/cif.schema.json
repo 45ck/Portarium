@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portarium://domain-atlas/cif.schema.json",
+  "title": "Canonical Integration Format (CIF)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "source", "extractedAt", "entities"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerId", "providerName", "upstream"],
+      "properties": {
+        "providerId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "providerName": { "type": "string", "minLength": 1 },
+        "upstream": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repoUrl"],
+          "properties": {
+            "repoUrl": { "type": "string", "format": "uri" },
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+            "version": { "type": "string" }
+          }
+        }
+      }
+    },
+    "extractedAt": { "type": "string", "format": "date-time" },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entity" }
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/relationship" }
+    },
+    "lifecycles": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/lifecycle" }
+    },
+    "actions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/action" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "extensionPoints": { "$ref": "#/$defs/extensionPoints" }
+  },
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "fields"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "primaryKeys": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "uniqueConstraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stringArray" }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "required"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "nullable": { "type": "boolean" },
+        "default": {},
+        "description": { "type": "string" },
+        "validation": { "type": "string" }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fromEntity", "toEntity", "kind"],
+      "properties": {
+        "fromEntity": { "type": "string", "minLength": 1 },
+        "toEntity": { "type": "string", "minLength": 1 },
+        "kind": {
+          "type": "string",
+          "enum": ["one_to_one", "one_to_many", "many_to_one", "many_to_many"]
+        },
+        "fromField": { "type": "string" },
+        "toField": { "type": "string" },
+        "cascade": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity", "statusField", "states"],
+      "properties": {
+        "entity": { "type": "string", "minLength": 1 },
+        "statusField": { "type": "string", "minLength": 1 },
+        "states": { "type": "array", "$ref": "#/$defs/stringArray", "minItems": 1 },
+        "transitions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transition" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "to": { "type": "string", "minLength": 1 },
+        "viaAction": { "type": "string" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["create", "update", "delete", "workflow", "other"] },
+        "entities": { "$ref": "#/$defs/stringArray" },
+        "idempotency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["supported"],
+          "properties": {
+            "supported": { "type": "boolean" },
+            "mechanism": { "type": "string" },
+            "notes": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "delivery"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "delivery": { "type": "string", "enum": ["webhook", "poll", "stream", "none"] },
+        "entities": { "$ref": "#/$defs/stringArray" },
+        "notes": { "type": "string" }
+      }
+    },
+    "extensionPoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "customFields": { "$ref": "#/$defs/extensionPoint" },
+        "tags": { "$ref": "#/$defs/extensionPoint" },
+        "attachments": { "$ref": "#/$defs/extensionPoint" },
+        "comments": { "$ref": "#/$defs/extensionPoint" },
+        "activities": { "$ref": "#/$defs/extensionPoint" }
+      }
+    },
+    "extensionPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supported"],
+      "properties": {
+        "supported": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

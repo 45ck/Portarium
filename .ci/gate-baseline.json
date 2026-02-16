@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-02-16T21:50:43.161Z",
+  "files": {
+    "scripts/ci/check-gate-baseline.mjs": "964176b0c070e48c9248416ce00483eac745ce96f22259b3060d85979d7098fa",
+    "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
+    "scripts/ci/gate-baseline.shared.mjs": "06a9ae97da046764de48d84c2646b0747ddadbc1f5b21403f0020bab8d57514d",
+    ".gitattributes": "50d2cf408dd88a8e5079a69574f2f45cdab1c6bcc68995e5bd2970816e51b641",
+    ".dependency-cruiser.cjs": "8b59eff5ef2835963da76522c9dbed5b47583f932750d6a83d5d0ff30e4ecba7",
+    "eslint.config.mjs": "2b9e76f811e87186ac0bcf3cdfe8a84fd2fed375e1cbb1a2953efffbfd25fe36",
+    "package.json": "c0a6b72e27fdfe86efdb49c426ce9fb7ef69699a26270783ded154cee97335ad",
+    "tsconfig.json": "bdee72b9533eff301354e9a5942724572a4c1ba4eed3a0065adef8907e37bb41",
+    "tsconfig.eslint.json": "4ac4958f8d613ddc46ffec41cb8c6f06452d72e1952f0113fce57d3a1fe57ac3",
+    "tsconfig.build.json": "ff9f797a051799dfd303017febbfa8d52186d3d3c7f61d139af7b02430c8828c",
+    "vitest.config.ts": "ebc57bcd7c3b62fabbb19438ebde0a602f353eeb807195f5db293f69b317f2fc",
+    "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
+    "knip.json": "092e4a41e64b7ef62507553e467133e693635bd8a6ed65b50d291d03e116bcf9",
+    "cspell.json": "c85ec65f9af3307d63563d0d7f415cceda83c4338f39b6b2ad892d7d18dca431",
+    ".prettierrc.json": "4327187804b79827a218473e09d1482078b7b9d91ac9e2b4a814284f8727062f",
+    ".github/workflows/ci.yml": "f9b9875f5c43035669dc55eabb935a9dc114dc00feea3d08960dab93877023dc",
+    ".github/workflows/nightly.yml": "58d0752235fdde08b08fe1772bd7b81cf8f1315db583f0439ddf9ac74c944af0",
+    ".github/CODEOWNERS": "93f20bcc8ed389b7430b819e4fcc90ab1969d28a7babb7c0d5606fbe8313650c",
+    ".husky/pre-commit": "e2b7c9733375d7182af2033bda9a7d2a05d0db5eef5be53d26eb7b5f3df8fbc3",
+    ".husky/pre-push": "5deba61f07b0dac80e4f3feb3eab86ccd58b917ab58410bd69c00113732b203d",
+    ".claude/settings.json": "ea5c04a69cc784599010bbd8decdb53a8bdc9ae018311d7bf896f5eb850ae958",
+    ".claude/hooks/pre-tool-use.sh": "3eaa0cdbe733a44dc66b7fa3367c9d47b5fa989042ff40e5caff6db2fd97b6c2"
+  }
+}

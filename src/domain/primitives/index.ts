@@ -72,6 +72,9 @@ export type ArtifactId = Branded<string, 'ArtifactId'>;
 /** Unique identifier for a machine (value-producing generator). */
 export type MachineId = Branded<string, 'MachineId'>;
 
+/** Unique identifier for a versioned vertical pack. */
+export type PackId = Branded<string, 'PackId'>;
+
 /** Unique identifier for a user. */
 export type UserId = Branded<string, 'UserId'>;
 
@@ -91,13 +94,14 @@ export const ApprovalId = (value: string): ApprovalId => brand<string, 'Approval
 export const EvidenceId = (value: string): EvidenceId => brand<string, 'EvidenceId'>(value);
 export const ArtifactId = (value: string): ArtifactId => brand<string, 'ArtifactId'>(value);
 export const MachineId = (value: string): MachineId => brand<string, 'MachineId'>(value);
+export const PackId = (value: string): PackId => brand<string, 'PackId'>(value);
 export const UserId = (value: string): UserId => brand<string, 'UserId'>(value);
 
 // ---------------------------------------------------------------------------
 // Execution tiers
 // ---------------------------------------------------------------------------
 
-export type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove';
+export type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 
 // ---------------------------------------------------------------------------
 // Approval status

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "erpnext",
+  "providerName": "ERPNext",
+  "portFamilies": ["FinanceAccounting", "ProcurementSpend"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/frappe/erpnext",
+    "version": "pinned-by-commit"
+  },
+  "license": {
+    "spdxId": "UNKNOWN",
+    "classification": "unknown",
+    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+  },
+  "extraction": {
+    "modelSources": ["erpnext/**", "frappe/**"],
+    "notes": "TBD: likely source of truth is DocTypes + server-side models."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "mautic",
+  "providerName": "Mautic",
+  "portFamilies": ["MarketingAutomation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/mautic/mautic",
+    "version": "pinned-by-commit",
+    "commit": "e3ac0d4d7e8d17034d56cb21bf5baab4f353a433",
+    "retrievedAt": "2026-02-16T21:02:44.251Z"
+  },
+  "license": {
+    "spdxId": "UNKNOWN",
+    "classification": "unknown",
+    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+  },
+  "extraction": {
+    "modelSources": ["app/**", "plugins/**"],
+    "notes": "TBD: likely source of truth is Doctrine entities + migrations + API docs."
+  }
+}

@@ -128,7 +128,7 @@ graph TB
 1. **At least one action** -- A Workflow must contain at least one Action.
 2. **Ordered actions** -- Actions have a strictly ordered sequence (no gaps, no duplicates in `order`).
 3. **Valid port targeting** -- Each Action must target a valid `PortFamily` and operation name.
-4. **Tier must be set** -- The Workflow must declare an `ExecutionTier` (Auto, Assisted, or HumanApprove). Individual actions can override the workflow-level tier but cannot escalate below it.
+4. **Tier must be set** -- The Workflow must declare an `ExecutionTier` (Auto, Assisted, HumanApprove, or ManualOnly). Individual actions can override the workflow-level tier but cannot escalate below it.
 5. **Version immutability** -- Once a Workflow version is published (active), its Actions are immutable. Changes create a new version.
 6. **Active uniqueness** -- Only one version of a Workflow (by name within a tenant) can be active at a time.
 

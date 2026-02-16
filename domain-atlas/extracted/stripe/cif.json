@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "stripe",
+    "providerName": "Stripe",
+    "upstream": {
+      "repoUrl": "https://github.com/stripe/openapi",
+      "commit": "2e9f84824b511eeb0d70b873e06f2f5f1ea94e98",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-16T00:00:00Z",
+  "entities": [
+    {
+      "name": "Customer",
+      "description": "Party-like entity representing a customer in Stripe.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "string", "required": true, "validation": "cust_..." },
+        { "name": "email", "type": "string", "required": false, "nullable": true },
+        { "name": "name", "type": "string", "required": false, "nullable": true },
+        { "name": "created", "type": "unix_timestamp", "required": true }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "description": "Invoice object for billing; may be draft/open/paid depending on state.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "string", "required": true, "validation": "in_..." },
+        {
+          "name": "customer",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "validation": "cust_..."
+        },
+        { "name": "status", "type": "enum", "required": false, "nullable": true },
+        { "name": "currency", "type": "string", "required": false, "nullable": true },
+        { "name": "total", "type": "integer_minor_units", "required": true }
+      ]
+    },
+    {
+      "name": "PaymentIntent",
+      "description": "Payment orchestration object representing an intent to collect funds.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "string", "required": true, "validation": "pi_..." },
+        { "name": "amount", "type": "integer_minor_units", "required": true },
+        { "name": "currency", "type": "string", "required": true },
+        { "name": "status", "type": "enum", "required": true },
+        {
+          "name": "customer",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "validation": "cust_..."
+        }
+      ]
+    },
+    {
+      "name": "Subscription",
+      "description": "Recurring subscription for a customer.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "string", "required": true, "validation": "sub_..." },
+        { "name": "customer", "type": "string", "required": true, "validation": "cust_..." },
+        { "name": "status", "type": "enum", "required": true }
+      ]
+    },
+    {
+      "name": "Product",
+      "description": "Sellable product/service entity.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "string", "required": true, "validation": "prod_..." },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "active", "type": "boolean", "required": true }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Invoice",
+      "toEntity": "Customer",
+      "kind": "many_to_one",
+      "fromField": "customer",
+      "toField": "id",
+      "notes": "Invoices reference customers."
+    },
+    {
+      "fromEntity": "PaymentIntent",
+      "toEntity": "Customer",
+      "kind": "many_to_one",
+      "fromField": "customer",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Subscription",
+      "toEntity": "Customer",
+      "kind": "many_to_one",
+      "fromField": "customer",
+      "toField": "id"
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "Invoice",
+      "statusField": "status",
+      "states": ["draft", "open", "paid", "void", "uncollectible"],
+      "notes": "State names are provider-native; mapping to canonical status happens in the adapter ACL."
+    },
+    {
+      "entity": "PaymentIntent",
+      "statusField": "status",
+      "states": [
+        "requires_payment_method",
+        "requires_confirmation",
+        "processing",
+        "succeeded",
+        "canceled"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "createPaymentIntent",
+      "kind": "create",
+      "entities": ["PaymentIntent"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Idempotency-Key header"
+      }
+    },
+    {
+      "name": "refundCharge",
+      "kind": "workflow",
+      "entities": ["PaymentIntent"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Idempotency-Key header"
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "invoice.created",
+      "delivery": "webhook",
+      "entities": ["Invoice"]
+    },
+    {
+      "name": "payment_intent.succeeded",
+      "delivery": "webhook",
+      "entities": ["PaymentIntent"]
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false,
+      "notes": "Stripe objects typically use metadata maps rather than admin-defined schema extensions."
+    },
+    "tags": { "supported": false },
+    "attachments": { "supported": false }
+  }
+}

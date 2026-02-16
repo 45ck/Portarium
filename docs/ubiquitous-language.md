@@ -30,3 +30,5 @@
 - **Contract Tests:** Tests that verify adapter behavior and schemas against each Port's required contract.
 - **Commands API / Queries API / Event Stream:** The three public surfaces—write operations, read views, and append-only events for realtime UIs/sinks.
 - **Strategy Selection (`selectProvider(tenant, port)`):** The runtime resolution that chooses which adapter/provider a tenant uses for a given port.
+- **Vertical Pack:** A versioned, declarative bundle (schemas/workflows/UI/mappings) enabled per tenant at pinned versions to add a specific vertical/domain.
+- **Pack Manifest / Pack Lockfile:** The pack’s required metadata contract (`pack.manifest.json`) and the tenant-scoped pinned set of enabled pack versions.

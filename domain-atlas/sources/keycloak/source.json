@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "keycloak",
+  "providerName": "Keycloak",
+  "portFamilies": ["IamDirectory"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/keycloak/keycloak",
+    "version": "pinned-by-commit",
+    "commit": "8258fceb33ef10840021cf4f472e8dac035ebe62",
+    "retrievedAt": "2026-02-16T21:02:32.603Z"
+  },
+  "license": {
+    "spdxId": "UNKNOWN",
+    "classification": "unknown",
+    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+  },
+  "extraction": {
+    "modelSources": ["docs/**", "services/**", "server-spi/**"],
+    "notes": "TBD: prefer published Admin REST/OpenAPI if available; otherwise derive from server model + endpoints."
+  }
+}

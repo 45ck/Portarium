@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "stripe",
+  "providerName": "Stripe",
+  "portFamily": "PaymentsBilling",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "oauth2"],
+    "notes": "Authentication varies by Stripe product; adapters must declare the concrete mode they implement."
+  },
+  "limits": {
+    "rateLimit": {
+      "requestsPerMinute": 60,
+      "notes": "Example placeholder; treat provider rate limits as variable and versioned."
+    }
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "notes": "Stripe supports webhooks; polling is possible but less desirable."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": true,
+    "keyLocations": ["header"],
+    "notes": "Stripe supports idempotency keys for many write operations via the Idempotency-Key header."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Plans are always supported (VAOP-side). Verified effects require post-write reads."
+  },
+  "capabilities": [
+    {
+      "capability": "charge:write",
+      "supported": true,
+      "operations": ["createCharge", "createPaymentIntent"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "constraints": {
+        "requiredScopes": ["payments:write"]
+      }
+    },
+    {
+      "capability": "charge:read",
+      "supported": true,
+      "operations": ["getCharge", "listCharges"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["payments:read"]
+      }
+    },
+    {
+      "capability": "refund:write",
+      "supported": true,
+      "operations": ["refundCharge"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsCompensation": false
+      },
+      "constraints": {
+        "requiredScopes": ["payments:write"]
+      }
+    },
+    {
+      "capability": "subscription:write",
+      "supported": true,
+      "operations": ["createSubscription", "cancelSubscription"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["subscriptions:write"]
+      }
+    },
+    {
+      "capability": "subscription:read",
+      "supported": true,
+      "operations": ["getSubscription", "listSubscriptions"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["subscriptions:read"]
+      }
+    },
+    {
+      "capability": "invoice:read",
+      "supported": true,
+      "operations": ["getInvoice", "listInvoices"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["invoices:read"]
+      }
+    },
+    {
+      "capability": "invoice:write",
+      "supported": true,
+      "operations": ["createInvoice"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["invoices:write"]
+      }
+    },
+    {
+      "capability": "payout:write",
+      "supported": true,
+      "operations": ["createPayout"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["payouts:write"]
+      }
+    },
+    {
+      "capability": "balance:read",
+      "supported": true,
+      "operations": ["getBalance"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["balance:read"]
+      }
+    }
+  ]
+}

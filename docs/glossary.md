@@ -249,6 +249,18 @@ A support ticket, service request, or incident. One of the 14 canonical objects.
 
 The internal architecture acronym describing the platform pattern: AI + workflows + governance to run non-core business ops using existing tools plus machines. The product name is **Portarium** (see ADR-036); VAOP is used in technical documentation and domain model references.
 
+### Vertical Pack
+
+A versioned, declarative bundle that extends Portarium through stable contracts (schemas, workflows/runbooks, UI templates, and connector mappings). Packs are enabled per tenant at pinned versions.
+
+### Pack Manifest
+
+The required JSON document (`pack.manifest.json`) that declares a pack’s identity, SemVer version, core compatibility range, dependencies, and referenced assets.
+
+### Pack Lockfile
+
+A tenant-scoped file that records enabled packs pinned to exact versions, produced/validated by the pack resolver.
+
 ## W
 
 ### Work Item

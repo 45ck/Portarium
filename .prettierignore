@@ -3,3 +3,8 @@ coverage
 reports
 .tsbuildinfo
 .beads
+research/sources
+domain-atlas/upstreams
+vendor
+_tmp_bd
+package

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portarium://domain-atlas/mapping.schema.json",
+  "title": "CIF to Canonical Mapping",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "providerId", "portFamily", "mappings"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "providerId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "portFamily": {
+      "type": "string",
+      "enum": [
+        "FinanceAccounting",
+        "PaymentsBilling",
+        "ProcurementSpend",
+        "HrisHcm",
+        "Payroll",
+        "CrmSales",
+        "CustomerSupport",
+        "ItsmItOps",
+        "IamDirectory",
+        "SecretsVaulting",
+        "MarketingAutomation",
+        "AdsPlatforms",
+        "CommsCollaboration",
+        "ProjectsWorkMgmt",
+        "DocumentsEsign",
+        "AnalyticsBi",
+        "MonitoringIncident",
+        "ComplianceGrc"
+      ]
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/mappingEntry" }
+    }
+  },
+  "$defs": {
+    "mappingEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonicalObject", "vendorEntity"],
+      "properties": {
+        "canonicalObject": {
+          "type": "string",
+          "enum": [
+            "Party",
+            "Ticket",
+            "Invoice",
+            "Payment",
+            "Task",
+            "Campaign",
+            "Asset",
+            "Document",
+            "Subscription",
+            "Opportunity",
+            "Product",
+            "Order",
+            "Account",
+            "ExternalObjectRef"
+          ]
+        },
+        "vendorEntity": { "type": "string", "minLength": 1 },
+        "fieldMappings": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

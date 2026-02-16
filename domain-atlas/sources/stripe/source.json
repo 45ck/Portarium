@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "stripe",
+  "providerName": "Stripe",
+  "portFamilies": ["PaymentsBilling"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/stripe/openapi",
+    "version": "pinned-by-commit",
+    "retrievedAt": "2026-02-16T20:59:38.815Z",
+    "commit": "2e9f84824b511eeb0d70b873e06f2f5f1ea94e98"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Source manifest is for research + schema extraction; do not vendor upstream source into core."
+  },
+  "extraction": {
+    "modelSources": ["openapi/spec3.*", "openapi/*.json", "openapi/*.yaml"],
+    "notes": "Use upstream OpenAPI as the domain model source of truth for Payments/Billing objects and events."
+  }
+}
