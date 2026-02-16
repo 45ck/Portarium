@@ -6,8 +6,12 @@ import {
   ApprovalId,
   ArtifactId,
   EvidenceId,
+  EffectId,
+  HashSha256,
   MachineId,
   PackId,
+  PORT_FAMILIES,
+  PlanId,
   PolicyId,
   PortId,
   RunId,
@@ -16,7 +20,9 @@ import {
   WorkspaceId,
   WorkflowId,
   brand,
+  isPortFamily,
   unbrand,
+  WorkItemId,
 } from './index.js';
 
 describe('domain primitives', () => {
@@ -40,8 +46,12 @@ describe('domain primitives', () => {
       ActionId,
       PolicyId,
       ApprovalId,
+      PlanId,
+      EffectId,
       EvidenceId,
+      WorkItemId,
       ArtifactId,
+      HashSha256,
       MachineId,
       PackId,
       UserId,
@@ -50,5 +60,12 @@ describe('domain primitives', () => {
     for (const factory of factories) {
       expect(factory('x')).toBe('x');
     }
+  });
+
+  it('isPortFamily accepts known families', () => {
+    for (const f of PORT_FAMILIES) {
+      expect(isPortFamily(f)).toBe(true);
+    }
+    expect(isPortFamily('NotARealPortFamily')).toBe(false);
   });
 });

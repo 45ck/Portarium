@@ -97,7 +97,7 @@ export function resolvePacksV1(params: {
       if (depResolved && !satisfiesSemVerRange(depResolved.version, depRange)) {
         throw new PackDependencyConflictError(
           PackId(depIdRaw),
-          `resolved to ${formatSemVer(depResolved.version)} but required ${formatSemVerRange(depRange)}`,
+          `resolved to ${formatSemVer(depResolved.version)} but required ${formatSemVerRange(depRange)} (required by ${String(manifest.id)}@${formatSemVer(manifest.version)})`,
         );
       }
 

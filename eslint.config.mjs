@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
 import sonarjs from 'eslint-plugin-sonarjs';
+import eslintComments from 'eslint-plugin-eslint-comments';
 import unicorn from 'eslint-plugin-unicorn';
 import unusedImports from 'eslint-plugin-unused-imports';
 import nPlugin from 'eslint-plugin-n';
@@ -23,18 +24,21 @@ export default tseslint.config(
       '**/domain-atlas/upstreams/**',
       '**/_tmp_bd/**',
       'package/**',
-      '**/scripts/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
-      '.dependency-cruiser.cjs',
-      'eslint.config.mjs',
     ],
   },
 
   js.configs.recommended,
 
-  ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  ...tseslint.configs.recommendedTypeChecked.map((c) => ({
+    ...c,
+    files: ['**/*.{ts,tsx,mts,cts}'],
+  })),
+  ...tseslint.configs.stylisticTypeChecked.map((c) => ({
+    ...c,
+    files: ['**/*.{ts,tsx,mts,cts}'],
+  })),
 
   {
     languageOptions: {
@@ -42,16 +46,11 @@ export default tseslint.config(
         ...globals.node,
         ...globals.es2022,
       },
-      parserOptions: {
-        projectService: true,
-        // These config files are intentionally outside the TS project includes.
-        allowDefaultProject: ['.dependency-cruiser.cjs', 'eslint.config.mjs'],
-        tsconfigRootDir: __dirname,
-      },
     },
     plugins: {
       import: importPlugin,
       sonarjs,
+      'eslint-comments': eslintComments,
       unicorn,
       'unused-imports': unusedImports,
       n: nPlugin,
@@ -86,12 +85,20 @@ export default tseslint.config(
       ],
 
       // Disallow inline suppression. If a rule is wrong, fix the code or change the rule with an ADR.
-      'no-warning-comments': [
-        'error',
-        { terms: ['eslint-disable', 'eslint-enable'], location: 'anywhere' },
-      ],
+      'eslint-comments/no-use': 'error',
+    },
+  },
 
-      // TypeScript typed linting
+  // TypeScript-only rules that require type information.
+  {
+    files: ['**/*.{ts,tsx,mts,cts}'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
+    },
+    rules: {
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
@@ -116,6 +123,19 @@ export default tseslint.config(
     files: ['**/*.test.ts'],
     rules: {
       'max-lines-per-function': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
+  // Scripts are production-critical, but allow more complexity and length than core code.
+  {
+    files: ['scripts/**/*.mjs'],
+    rules: {
+      complexity: 'off',
+      'max-depth': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'max-params': 'off',
+      'sonarjs/cognitive-complexity': 'off',
     },
   },
 

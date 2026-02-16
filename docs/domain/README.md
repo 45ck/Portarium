@@ -36,7 +36,7 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 
 3. **Canonical objects as cross-system bridges** -- Thirteen normalised entity types (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
 
-4. **ExternalObjectRef for everything else** -- Rather than bloating canonical objects with vendor-specific fields, we use typed deep links (`{ system, objectType, objectId, url?, displayLabel? }`) to reference any SoR entity. This keeps the canonical model minimal and avoids N x M field mapping.
+4. **ExternalObjectRef for everything else** -- Rather than bloating canonical objects with vendor-specific fields, we use typed deep links (`{ sorName, portFamily, externalId, externalType, deepLinkUrl?, displayLabel? }`) to reference any SoR entity. This keeps the canonical model minimal and avoids N x M field mapping.
 
 5. **Immutable evidence chain** -- Every Run produces an append-only evidence trail. Evidence entries are content-addressed (SHA-256 hashed), timestamped, and governed by retention schedules. This supports WORM compliance and tamper-evident logging.
 

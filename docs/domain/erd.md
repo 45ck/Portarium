@@ -305,10 +305,11 @@ erDiagram
     }
 
     ExternalObjectRef {
-        string system
-        string objectType
-        string objectId
-        string url
+        string sorName
+        PortFamily portFamily
+        string externalId
+        string externalType
+        string deepLinkUrl
         string displayLabel
     }
 

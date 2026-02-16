@@ -63,6 +63,8 @@ describe('semver', () => {
     expect(() => parseSemVer('1.2')).toThrow(/Invalid SemVer/);
     expect(() => parseSemVer('1.2.3.4')).toThrow(/Invalid SemVer/);
     expect(() => parseSemVer('01.2.3')).toThrow(/Invalid SemVer/);
+    expect(() => parseSemVer('1.0.0-01')).toThrow(/leading zeros/i);
+    expect(() => parseSemVer('1.0.0-9007199254740993')).toThrow(/safe integer/i);
     expect(() => parseSemVer('9007199254740993.0.0')).toThrow(/Invalid SemVer/);
   });
 });

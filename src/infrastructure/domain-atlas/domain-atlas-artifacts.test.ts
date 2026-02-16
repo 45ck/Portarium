@@ -81,6 +81,18 @@ describe('Domain Atlas artefacts', () => {
     expect(mappingProviders).toContain('stripe');
     expect(capabilityProviders).toContain('stripe');
 
+    for (const providerId of extractedProviders) {
+      expect(sourceProviders).toContain(providerId);
+    }
+
+    for (const providerId of mappingProviders) {
+      expect(sourceProviders).toContain(providerId);
+    }
+
+    for (const providerId of capabilityProviders) {
+      expect(sourceProviders).toContain(providerId);
+    }
+
     for (const providerId of sourceProviders) {
       const sourceManifest = await readJson(path.join(sourcesRoot, providerId, 'source.json'));
       expect(() => validateOrThrow(validators.sourceManifest, sourceManifest)).not.toThrow();

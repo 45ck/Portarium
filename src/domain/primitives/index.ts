@@ -63,11 +63,23 @@ export type PolicyId = Branded<string, 'PolicyId'>;
 /** Unique identifier for an approval request. */
 export type ApprovalId = Branded<string, 'ApprovalId'>;
 
+/** Unique identifier for a plan object. */
+export type PlanId = Branded<string, 'PlanId'>;
+
+/** Unique identifier for an individual effect (planned/predicted/verified). */
+export type EffectId = Branded<string, 'EffectId'>;
+
 /** Unique identifier for an evidence log entry. */
 export type EvidenceId = Branded<string, 'EvidenceId'>;
 
+/** Unique identifier for a Work Item (cross-system binding object). */
+export type WorkItemId = Branded<string, 'WorkItemId'>;
+
 /** Unique identifier for an immutable artifact. */
 export type ArtifactId = Branded<string, 'ArtifactId'>;
+
+/** SHA-256 hex digest (lowercase). */
+export type HashSha256 = Branded<string, 'HashSha256'>;
 
 /** Unique identifier for a machine (value-producing generator). */
 export type MachineId = Branded<string, 'MachineId'>;
@@ -91,11 +103,46 @@ export const PortId = (value: string): PortId => brand<string, 'PortId'>(value);
 export const ActionId = (value: string): ActionId => brand<string, 'ActionId'>(value);
 export const PolicyId = (value: string): PolicyId => brand<string, 'PolicyId'>(value);
 export const ApprovalId = (value: string): ApprovalId => brand<string, 'ApprovalId'>(value);
+export const PlanId = (value: string): PlanId => brand<string, 'PlanId'>(value);
+export const EffectId = (value: string): EffectId => brand<string, 'EffectId'>(value);
 export const EvidenceId = (value: string): EvidenceId => brand<string, 'EvidenceId'>(value);
+export const WorkItemId = (value: string): WorkItemId => brand<string, 'WorkItemId'>(value);
 export const ArtifactId = (value: string): ArtifactId => brand<string, 'ArtifactId'>(value);
+export const HashSha256 = (value: string): HashSha256 => brand<string, 'HashSha256'>(value);
 export const MachineId = (value: string): MachineId => brand<string, 'MachineId'>(value);
 export const PackId = (value: string): PackId => brand<string, 'PackId'>(value);
 export const UserId = (value: string): UserId => brand<string, 'UserId'>(value);
+
+// ---------------------------------------------------------------------------
+// Port families
+// ---------------------------------------------------------------------------
+
+export const PORT_FAMILIES = [
+  'FinanceAccounting',
+  'PaymentsBilling',
+  'ProcurementSpend',
+  'HrisHcm',
+  'Payroll',
+  'CrmSales',
+  'CustomerSupport',
+  'ItsmItOps',
+  'IamDirectory',
+  'SecretsVaulting',
+  'MarketingAutomation',
+  'AdsPlatforms',
+  'CommsCollaboration',
+  'ProjectsWorkMgmt',
+  'DocumentsEsign',
+  'AnalyticsBi',
+  'MonitoringIncident',
+  'ComplianceGrc',
+] as const;
+
+export type PortFamily = (typeof PORT_FAMILIES)[number];
+
+export function isPortFamily(value: string): value is PortFamily {
+  return (PORT_FAMILIES as readonly string[]).includes(value);
+}
 
 // ---------------------------------------------------------------------------
 // Execution tiers

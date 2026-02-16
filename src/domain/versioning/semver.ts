@@ -36,17 +36,31 @@ export function parseSemVer(input: string): SemVer {
     throw new SemVerParseError(`Invalid SemVer: "${input}"`);
   }
 
-  const preRelease = parsePreRelease(match.groups['pre']);
+  const preRelease = parsePreRelease(match.groups['pre'], input);
   const build = match.groups['build'] ?? null;
 
   return { major, minor, patch, preRelease, build };
 }
 
-function parsePreRelease(pre: string | undefined): readonly (number | string)[] {
+function parsePreRelease(pre: string | undefined, fullInput: string): readonly (number | string)[] {
   if (!pre) return [];
   return pre.split('.').map((id) => {
-    // Per SemVer, numeric identifiers must not include leading zeros.
-    if (/^(0|[1-9]\d*)$/.test(id)) return parseInt(id, 10);
+    if (/^\d+$/.test(id)) {
+      // Per SemVer, numeric identifiers must not include leading zeros.
+      if (!/^(0|[1-9]\d*)$/.test(id)) {
+        throw new SemVerParseError(
+          `Invalid SemVer: "${fullInput}". Invalid numeric pre-release identifier "${id}" (leading zeros are not allowed).`,
+        );
+      }
+
+      const n = parseInt(id, 10);
+      if (!Number.isSafeInteger(n)) {
+        throw new SemVerParseError(
+          `Invalid SemVer: "${fullInput}". Numeric pre-release identifier "${id}" exceeds JS safe integer range.`,
+        );
+      }
+      return n;
+    }
     return id;
   });
 }

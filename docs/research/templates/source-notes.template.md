@@ -2,7 +2,7 @@
 
 - ID: `{{id}}`
 - Repo: `{{repo}}`
-- Pinned: `{{pinned}}` (see `research/pins.json`)
+- Pinned: `{{pinned}}` (from `domain-atlas/sources/{{id}}/source.json`)
 
 ## Scope
 

@@ -7,7 +7,7 @@ Speckit agents must consult this before generating or validating specs.
 
 1. **VAOP is a control plane, not a System of Record.** It coordinates; SoRs own truth.
 2. **Approvals are native and non-negotiable.** Never delegate approval governance to an external system.
-3. **Evidence is append-only and immutable.** Evidence logs and artifacts are never mutated or deleted.
+3. **Evidence is append-only and tamper-evident.** Immutable metadata is never mutated or deleted; payloads/artifacts are retention-managed and may be destroyed or de-identified under policy/legal-hold rules while preserving the metadata chain.
 4. **Tenant isolation is first-class.** No cross-tenant data leakage under any circumstance.
 5. **Every action has an execution tier.** Auto, Assisted, Human-approve, or Manual-only — no unclassified actions.
 6. **Adapters must pass contract tests and declare a capability matrix** before registration.

@@ -2,13 +2,14 @@
 
 This folder is the committed documentation for ongoing upstream research (Domain Atlas / ADR-0035).
 
-- Upstream clones (not committed): `research/sources/`
-- Source manifest (committed): `research/manifest.json`
-- Commit pins (committed): `research/pins.json`
+Single source of truth for upstream intake metadata: `domain-atlas/sources/*/source.json`.
+
+- Upstream clones (gitignored): `domain-atlas/upstreams/`
+- Source intake manifests (committed): `domain-atlas/sources/`
+- Provider decision notes (committed): `domain-atlas/decisions/providers/`
 - Index (generated): `docs/research/index.md`
-- Per-source notes: `docs/research/sources/*.md`
 
 Commands:
 
-- `npm run research:sync` clone missing sources and refresh pins
-- `npm run research:index` regenerate index from manifest + pins
+- `npm run domain-atlas:vendor` clone missing upstreams and pin missing commits in source manifests
+- `npm run domain-atlas:index` regenerate `docs/research/index.md` from Domain Atlas sources

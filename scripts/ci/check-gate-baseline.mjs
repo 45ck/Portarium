@@ -9,7 +9,6 @@ import {
 } from './gate-baseline.shared.mjs';
 
 function fail(message) {
-  // eslint-disable-next-line no-console
   console.error(message);
   process.exit(1);
 }

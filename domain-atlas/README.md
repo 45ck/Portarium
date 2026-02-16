@@ -39,6 +39,25 @@ To clone upstream repos referenced in `sources/*/source.json` into `domain-atlas
 
 - `npm run domain-atlas:vendor`
 
+Options:
+
+- `npm run domain-atlas:vendor -- --list` list provider IDs under `domain-atlas/sources/`
+- `npm run domain-atlas:vendor -- --only stripe,keycloak` vendor a subset (recommended for large repos)
+- `npm run domain-atlas:vendor -- --no-clone` do not clone missing upstreams
+- `npm run domain-atlas:vendor -- --no-write` do not modify `domain-atlas/sources/*/source.json`
+- `npm run domain-atlas:vendor -- --refresh-retrieved-at` also refresh `upstream.retrievedAt` even if pins are unchanged
+
+Pinned commit behaviour:
+
+- If `upstream.commit` exists in a `source.json`, the upstream clone is checked out to that commit.
+- If `upstream.commit` is missing, the current `HEAD` is pinned into `source.json` (one-time, unless you remove it).
+
+## Research Index (generated)
+
+To regenerate `docs/research/index.md` from `domain-atlas/sources/*/source.json`:
+
+- `npm run domain-atlas:index`
+
 ## Validation
 
 Artefacts are validated in CI by `src/infrastructure/domain-atlas/domain-atlas-artifacts.test.ts`, which:

@@ -104,7 +104,7 @@ Immutability and append-only evidence references:
 
 - immudb: immutable log/data model patterns (append-only, tamper-evident posture).
 
-Track chosen upstream repos/specs in `research/manifest.json` and pin commits in `research/pins.json`. Provider-specific artefacts live under `domain-atlas/`.
+Track chosen upstream repos/specs in `domain-atlas/sources/*/source.json` and pin commits under `upstream.commit`. Provider-specific artefacts live under `domain-atlas/`.
 
 ## Canonical Model and Capability Matrix Synthesis Strategy
 

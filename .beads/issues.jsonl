@@ -1,2 +1,4 @@
-{"id":"bead-0001","title":"Versioned vertical packs: manifest + registry + resolver (v1)","status":"open","createdAt":"2026-02-16T00:00:00.000Z","updatedAt":"2026-02-16T00:00:00.000Z"}
-{"id":"bead-0002","title":"Domain Atlas: CIF + capability matrix schemas + CI validation","status":"open","createdAt":"2026-02-16T21:24:33.798Z","updatedAt":"2026-02-16T21:24:33.798Z"}
+{"id":"bead-0001","title":"Versioned vertical packs: manifest + registry + resolver (v1)","status":"closed","createdAt":"2026-02-16T00:00:00.000Z","updatedAt":"2026-02-16T22:31:32.188Z"}
+{"id":"bead-0002","title":"Domain Atlas: CIF + capability matrix schemas + CI validation","status":"closed","createdAt":"2026-02-16T21:24:33.798Z","updatedAt":"2026-02-16T22:31:34.657Z"}
+{"id":"bead-0003","title":"Plan + Evidence v1: structured plans + hash-chained evidence log","status":"closed","createdAt":"2026-02-16T22:04:27.212Z","updatedAt":"2026-02-16T22:19:10.274Z"}
+{"id":"bead-0004","title":"Domain Atlas: single source-of-truth upstream registry","status":"closed","createdAt":"2026-02-16T22:05:19.802Z","updatedAt":"2026-02-16T22:05:25.633Z"}

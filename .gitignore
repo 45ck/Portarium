@@ -41,10 +41,6 @@ reports/mutation/*
 _tmp_bd/
 package/
 
-# Research sources (local clones; commit manifest + notes, not upstream code)
-research/sources/*
-!research/sources/.gitkeep
-
 # Domain Atlas upstream clones (local-only; do not commit upstream code)
 domain-atlas/upstreams/*
 !domain-atlas/upstreams/.gitkeep

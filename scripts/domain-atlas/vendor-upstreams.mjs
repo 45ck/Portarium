@@ -14,6 +14,7 @@ const argv = process.argv.slice(2);
 const noClone = argv.includes('--no-clone');
 const noWrite = argv.includes('--no-write');
 const listOnly = argv.includes('--list');
+const refreshRetrievedAt = argv.includes('--refresh-retrieved-at');
 
 function parseOnlyProviders(args) {
   const only = new Set();
@@ -69,6 +70,36 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function readHeadCommit(repoDir) {
+  return runGit(['-C', repoDir, 'rev-parse', 'HEAD'], repoRoot);
+}
+
+function ensureCheckedOutCommit(repoDir, commit) {
+  const current = readHeadCommit(repoDir);
+  if (current === commit) return { changed: false };
+
+  // Try checkout first (fast if the commit is already present).
+  const checkoutAttempt = spawnSync('git', ['-C', repoDir, 'checkout', '--detach', commit], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  if (checkoutAttempt.status === 0) {
+    return { changed: true };
+  }
+
+  // If shallow clone doesn't contain the commit, fetch the commit by hash (best-effort).
+  // GitHub supports this; if another remote blocks it, this will surface as an error.
+  runGit(['-C', repoDir, 'fetch', '--depth', '1', 'origin', commit], repoRoot);
+  runGit(['-C', repoDir, 'checkout', '--detach', commit], repoRoot);
+
+  const after = readHeadCommit(repoDir);
+  if (after !== commit) {
+    throw new Error(`Failed to checkout pinned commit ${commit} for repo ${repoDir}.`);
+  }
+
+  return { changed: true };
+}
+
 function main() {
   if (!fs.existsSync(atlasRoot)) {
     throw new Error(`Missing folder: ${path.relative(repoRoot, atlasRoot)}`);
@@ -94,6 +125,7 @@ function main() {
 
   const summary = {
     cloned: [],
+    checkedOut: [],
     pinned: [],
     skipped: [],
     updatedManifests: [],
@@ -126,6 +158,9 @@ function main() {
     }
 
     const destDir = path.join(upstreamsRoot, providerId);
+    const desiredCommit = isNonEmptyString(manifest?.upstream?.commit)
+      ? String(manifest.upstream.commit).trim()
+      : null;
 
     if (!fs.existsSync(destDir)) {
       if (noClone) {
@@ -144,7 +179,14 @@ function main() {
       continue;
     }
 
-    const commit = runGit(['-C', destDir, 'rev-parse', 'HEAD'], repoRoot);
+    let checkoutChanged = false;
+    if (desiredCommit) {
+      const res = ensureCheckedOutCommit(destDir, desiredCommit);
+      checkoutChanged = res.changed;
+      if (checkoutChanged) summary.checkedOut.push(providerId);
+    }
+
+    const commit = readHeadCommit(destDir);
     const commitDate = runGit(['-C', destDir, 'show', '-s', '--format=%cI', 'HEAD'], repoRoot);
     summary.pinned.push({ providerId, commit, commitDate });
 
@@ -155,8 +197,11 @@ function main() {
         summary.updatedManifests.push(providerId);
       }
 
-      // Always refresh retrievedAt when we touch an upstream clone.
-      manifest.upstream = { ...manifest.upstream, retrievedAt: nowIsoUtc() };
+      const shouldRefreshRetrievedAt =
+        refreshRetrievedAt || checkoutChanged || (!hadCommit && isNonEmptyString(commit));
+      if (shouldRefreshRetrievedAt) {
+        manifest.upstream = { ...manifest.upstream, retrievedAt: nowIsoUtc() };
+      }
 
       writeJson(manifestPath, manifest);
     }
