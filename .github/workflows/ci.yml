@@ -1,0 +1,43 @@
+name: CI (PR)
+
+on:
+  pull_request:
+  merge_group:
+
+concurrency:
+  group: ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run PR gates
+        run: npm run ci:pr
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/

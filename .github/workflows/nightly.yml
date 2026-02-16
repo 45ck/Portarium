@@ -1,0 +1,66 @@
+name: CI (Nightly Deep Checks)
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-nightly
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    strategy:
+      matrix:
+        node: [22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Nightly deep checks
+        run: npm run ci:nightly
+
+      - name: Semgrep scan
+        if: matrix.node == 24
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: CodeQL init
+        if: matrix.node == 24
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: CodeQL analyze
+        if: matrix.node == 24
+        uses: github/codeql-action/analyze@v3
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report-node-${{ matrix.node }}
+          path: reports/mutation/
+
+      - name: Upload all reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-reports-node-${{ matrix.node }}
+          path: reports/

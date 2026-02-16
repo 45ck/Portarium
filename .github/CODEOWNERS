@@ -1,0 +1,8 @@
+# Core domain requires senior review
+/src/domain/                @core-maintainers
+/docs/adr/                  @core-maintainers
+/.dependency-cruiser.js     @core-maintainers
+/eslint.config.mjs          @core-maintainers
+/tsconfig*.json             @core-maintainers
+/CLAUDE.md                  @core-maintainers
+/.claude/                   @core-maintainers

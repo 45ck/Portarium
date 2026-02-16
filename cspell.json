@@ -1,0 +1,14 @@
+{
+  "version": "0.2",
+  "language": "en-gb",
+  "dictionaries": ["en-gb", "typescript", "node", "npm", "project-words"],
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "./.cspell/project-words.txt",
+      "addWords": true
+    }
+  ],
+  "words": [],
+  "ignorePaths": ["dist/**", "coverage/**", ".beads/**", "reports/**", "package-lock.json", "node_modules/**"]
+}
