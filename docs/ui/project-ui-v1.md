@@ -15,6 +15,13 @@ This document describes the initial UX and UI structure for the **Project (Conta
 - Optimize for control-plane tasks:
   - Start workflows/runbooks, monitor Runs, handle Approval Gates, and review Evidence.
 
+## Prototype (low-fi)
+
+A clickable low-fidelity prototype is available in `docs/ui/lofi/`.
+
+- Entry: `docs/ui/lofi/index.html`
+- Usage: use the top controls to simulate persona defaults, Workspace type (solo/team), and system states.
+
 ## Default Landing + Navigation Rules (v1)
 
 - Default landing is the **Workspace Inbox**, not a Project.
