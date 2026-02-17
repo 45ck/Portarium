@@ -122,7 +122,7 @@ describe('parsePortV1: validation', () => {
           supportedOperations: ['account:read'],
         }),
       }),
-    ).toThrow(/supported values are/);
+    ).toThrow(/not supported for port family|supported values are/);
   });
 
   it('rejects malformed capability format', () => {
