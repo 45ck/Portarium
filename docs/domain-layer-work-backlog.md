@@ -154,6 +154,23 @@ Goal: safe domain schema evolution with migration support.
   - Domain API compatibility and migration plan (schema-versioned operation names, deprecated fields, rollout/rollback).
   - AC: migration path documented; rollback preserves existing payloads.
 
+### EPIC-D08b — Domain contract specs (research-derived)
+
+Goal: lock down ambiguous specifications surfaced in the domain model audit.
+
+- STORY-D08b.1 — bead-0448
+  - Policy evaluation rule language: decide grammar for `PolicyInlineRuleV1.condition` (CEL / OPA/Rego / constrained DSL) and implement evaluator.
+  - AC: rule language selected and documented; condition parsed and evaluated; security boundary (no arbitrary code execution) enforced; unit tests cover allow/deny/error cases.
+- STORY-D08b.2 — bead-0449
+  - Workflow action execution semantics: document sequential vs parallel branching, per-action retry and timeout policy, manual-only completion signals, compensation hook interface.
+  - AC: specification written; EPIC-D08 state machine (bead-0337) and Temporal worker loop (bead-0425) implement against this spec; no ambiguity on branching or retry.
+- STORY-D08b.3 — bead-0450
+  - Evidence hash canonicalization: align `EvidenceEntry` hash input serialization to RFC 8785 JCS for deterministic cross-language chain verification.
+  - AC: canonicalization aligned to JCS; evidence chain tests pass for non-TypeScript verification scenario; hash break detectable.
+- STORY-D08b.4 — bead-0451
+  - Saga compensation interface: define `compensationOperation` and `compensationInputSchema` fields in the capability matrix; define per-port-family compensation contract.
+  - AC: compensation metadata parseable; domain model maps `PlanV1.plannedEffects` to saga model with explicit compensation steps.
+
 ### EPIC-D08 — State machines
 
 Goal: formal lifecycle state machines with machine-checkable transitions.
@@ -178,6 +195,10 @@ Goal: domain layer completion evidence.
 | bead-0420 | Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail) |
 | bead-0430 | Domain: MachineRegistration aggregate and Agent configuration entity (machine runtime registry domain model with capability allowlist and auth config) |
 | bead-0431 | Domain: CloudEvents type catalogue for agent lifecycle (ActionDispatched/Completed/Failed with tenantId/correlationId/runId propagation) |
+| bead-0448 | Spec: Policy evaluation rule language — CEL/OPA/Rego/DSL decision and evaluator implementation for PolicyInlineRuleV1.condition |
+| bead-0449 | Spec: Workflow action execution semantics — sequential vs parallel, retry/timeout, manual-only signals, compensation hooks |
+| bead-0450 | Spec: Evidence hash canonicalization — align EvidenceEntry to RFC 8785 JCS for cross-language chain verification |
+| bead-0451 | Spec: Saga compensation interface — compensationOperation and compensationInputSchema in capability matrix; per-family compensation contract |
 
 ## Pre-existing beads (cross-reference)
 

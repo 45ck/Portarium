@@ -185,6 +185,14 @@ Architecture: Portarium remains the governance/control-plane system of record. E
   - Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring port adapter families).
   - AC: spike report covers architecture fit, pack ecosystem, audit trail, licence risk; recommendation documented.
 
+### EPIC-I11b — OpenAPI contract alignment (prerequisite for EPIC-I11)
+
+Goal: fix OpenAPI spec drift before implementing HTTP handlers against it.
+
+- STORY-I11b.1 — bead-0447
+  - Align `portarium-control-plane.v1.yaml`: add `capabilityMatrix` and `machineRegistrations` to `AdapterRegistrationV1`; reconcile `WorkItem`, `CredentialGrant`, and `Policy` schemas against domain parsers.
+  - AC: OpenAPI spec and domain types are in sync for all four resource types; `capabilityMatrix` is a required field; CI breaking-change gate added; bead-0415 unblocked.
+
 ### EPIC-I11 — Control plane implementation and reference adapters
 
 Goal: bridge the gap between OpenAPI contract and working server; deliver one reference adapter per operational domain.
@@ -303,6 +311,7 @@ Goal: infrastructure layer completion evidence.
 | bead-0397 | Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification) |
 | bead-0398 | Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy) |
 | bead-0399 | Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume) |
+| bead-0447 | Spec: OpenAPI contract alignment — add AdapterRegistration capability matrix and machineRegistrations to portarium-control-plane.v1.yaml; reconcile WorkItem, CredentialGrant, Policy schemas against domain parsers |
 
 ## Delivery notes
 

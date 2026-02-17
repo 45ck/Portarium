@@ -264,6 +264,7 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 | bead-0443 | Governance: E2E approval-gated agent task run (HumanApprove gate, approval decision, evidence chain) |
 | bead-0444 | Governance: OpenClaw tool blast-radius policy (tool-to-capability-tier mapping, dangerous tools default HumanApprove) |
 | bead-0445 | Governance: OpenClaw multi-tenant isolation strategy (per-workspace Gateway model, credential scoping, ADR) |
+| bead-0452 | ADR: hybrid orchestration/choreography architecture — Temporal for run-lifecycle orchestration + CloudEvents stream for projection/integration choreography |
 
 ## Bead summary
 
@@ -278,7 +279,8 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 | Testing and evidence gates | 8 |
 | CI gates | 3 |
 | Operational readiness | 4 |
-| **Total** | **77** |
+| Architecture decisions (research-derived) | 1 |
+| **Total** | **78** |
 
 ## Delivery notes
 
