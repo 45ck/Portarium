@@ -814,6 +814,153 @@
             </table>
           </div>
         </section>
+
+        <!-- SCREEN: APPROVALS -->
+        <section
+          id="screen-approvals"
+          class="screen"
+          data-screen="approvals"
+          aria-labelledby="h-approvals"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-approvals" class="h1">Approvals</h1>
+              <div class="subtle">Queue of pending and resolved Approval Gates</div>
+            </div>
+            <div class="screen__actions">
+              <a class="btn btn--primary" href="#inbox">Back to Inbox</a>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="chip chip--active">Assigned to me</span>
+            <span class="chip">All pending</span>
+            <span class="chip">Resolved</span>
+            <span class="chip">Project: Billing Governance</span>
+          </div>
+
+          <div class="list">
+            <a class="row" href="#run">
+              <div class="row__main">
+                <div class="row__title">Approve Plan: Create Invoice in NetSuite</div>
+                <div class="row__subtle">
+                  Work Item: WI-1099 | Run: R-8920 | Tier: Human-approve
+                </div>
+              </div>
+              <div class="row__right"><span class="status status--warn">Pending</span></div>
+            </a>
+            <a class="row" href="#run">
+              <div class="row__main">
+                <div class="row__title">Approve Plan: Update Ticket priority in Zendesk</div>
+                <div class="row__subtle">Work Item: WI-1042 | Run: R-8892 | Tier: Assisted</div>
+              </div>
+              <div class="row__right"><span class="status status--warn">Pending</span></div>
+            </a>
+            <div class="row row--static">
+              <div class="row__main">
+                <div class="row__title">Resolved: Receipt export approved</div>
+                <div class="row__subtle">Work Item: WI-1013 | Rationale captured in Evidence</div>
+              </div>
+              <div class="row__right"><span class="status status--ok">Approved</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCREEN: EVIDENCE -->
+        <section
+          id="screen-evidence"
+          class="screen"
+          data-screen="evidence"
+          aria-labelledby="h-evidence"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-evidence" class="h1">Evidence</h1>
+              <div class="subtle">
+                Append-only timeline of plans, approvals, actions, and system events
+              </div>
+            </div>
+            <div class="screen__actions">
+              <a class="btn" href="#work-item">Open Work Item hub</a>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="chip chip--active">Category: All</span>
+            <span class="chip">Plan</span>
+            <span class="chip">Approval</span>
+            <span class="chip">Action</span>
+            <span class="chip">System</span>
+            <span class="chip">Actor: User</span>
+          </div>
+
+          <div class="callout">
+            Tamper-evident chain: contiguous segment verified (stub). Export verification bundle
+            (v1: later).
+          </div>
+
+          <div class="list">
+            <div class="row row--static">
+              <div class="row__main">
+                <div class="row__title">Plan generated</div>
+                <div class="row__subtle">Work Item: WI-1099 | Run: R-8920 | Actor: System</div>
+              </div>
+              <div class="row__right"><span class="status status--info">Plan</span></div>
+            </div>
+            <div class="row row--static">
+              <div class="row__main">
+                <div class="row__title">Approval Gate opened</div>
+                <div class="row__subtle">Waiting on decision | SoD evaluated</div>
+              </div>
+              <div class="row__right"><span class="status status--warn">Approval</span></div>
+            </div>
+            <div class="row row--static">
+              <div class="row__main">
+                <div class="row__title">Verified effect recorded</div>
+                <div class="row__subtle">Observed change after execution (metadata only)</div>
+              </div>
+              <div class="row__right"><span class="status status--ok">Action</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCREEN: SETTINGS (STUB) -->
+        <section
+          id="screen-settings"
+          class="screen"
+          data-screen="settings"
+          aria-labelledby="h-settings"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-settings" class="h1">Workspace Settings (stub)</h1>
+              <div class="subtle">
+                RBAC, credentials, adapters/providers, and policies live here
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid--2">
+            <article class="card">
+              <div class="card__title">RBAC</div>
+              <div class="subtle">
+                Manage Workspace Users and roles (admin/operator/approver/auditor)
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__title">Credentials</div>
+              <div class="subtle">Vaulting, rotation, and scoped issuance per provider</div>
+            </article>
+            <article class="card">
+              <div class="card__title">Providers</div>
+              <div class="subtle">Select and configure adapters for each Port Family</div>
+            </article>
+            <article class="card">
+              <div class="card__title">Policies</div>
+              <div class="subtle">Execution tiers, approvals, and SoD constraints</div>
+            </article>
+          </div>
+        </section>
       </main>
     </div>
 
