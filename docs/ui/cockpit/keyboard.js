@@ -171,6 +171,39 @@ const Keyboard = (function () {
         goto('settings');
       },
     },
+    {
+      id: 'nav-objects',
+      label: 'Go to Objects',
+      category: 'Navigate',
+      keywords: 'objects canonical records external browse',
+      shortcut: 'g o',
+      icon: '\u25A1',
+      action: function () {
+        goto('objects');
+      },
+    },
+    {
+      id: 'nav-events',
+      label: 'Go to Events',
+      category: 'Navigate',
+      keywords: 'events stream cloudevents domain live',
+      shortcut: 'g v',
+      icon: '\u21C4',
+      action: function () {
+        goto('events');
+      },
+    },
+    {
+      id: 'nav-onboarding',
+      label: 'Go to Setup Wizard',
+      category: 'Navigate',
+      keywords: 'onboarding setup wizard getting started',
+      shortcut: 'g t',
+      icon: '\u2605',
+      action: function () {
+        goto('onboarding');
+      },
+    },
 
     // Actions
     {
@@ -180,7 +213,8 @@ const Keyboard = (function () {
       keywords: 'new create work item',
       shortcut: 'n',
       action: function () {
-        goto('work-item');
+        var dlg = document.getElementById('dlgCreateWorkItem');
+        if (dlg && dlg.showModal) dlg.showModal();
       },
     },
     {
@@ -189,7 +223,8 @@ const Keyboard = (function () {
       category: 'Action',
       keywords: 'start run workflow execute',
       action: function () {
-        goto('work-item');
+        var dlg = document.getElementById('dlgStartWorkflow');
+        if (dlg && dlg.showModal) dlg.showModal();
       },
     },
     {
@@ -536,6 +571,7 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate rows</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open work item</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>x</kbd> <span>Toggle select</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create new work item</span></div>' +
         '</div>',
       runs:
@@ -547,11 +583,52 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate entries</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>View evidence detail</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>x</kbd> <span>Toggle select</span></div>' +
         '</div>',
       inbox:
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate items</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open item</span></div>' +
+        '</div>',
+      project:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>c</kbd> <span>Open context drawer</span></div>' +
+        '</div>',
+      'work-item':
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Backspace</kbd> <span>Back to Work Items</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>c</kbd> <span>Open context drawer</span></div>' +
+        '</div>',
+      run:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Backspace</kbd> <span>Back to Runs</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>c</kbd> <span>Open context drawer</span></div>' +
+        '</div>',
+      'workflow-builder':
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>New workflow</span></div>' +
+        '</div>',
+      agents:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate agents</span></div>' +
+        '</div>',
+      settings:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Tab</kbd> <span>Navigate tabs</span></div>' +
+        '</div>',
+      objects:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate objects</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>View object detail</span></div>' +
+        '</div>',
+      events:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate events</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>View event detail</span></div>' +
+        '</div>',
+      onboarding:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate steps</span></div>' +
         '</div>',
     };
     return map[screen] || null;
@@ -597,6 +674,18 @@ const Keyboard = (function () {
     items[kbdSelectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  function toggleSelectKbdItem() {
+    var items = getNavigableItems();
+    if (kbdSelectedIndex < 0 || kbdSelectedIndex >= items.length) return;
+    var el = items[kbdSelectedIndex];
+    var cb = el.querySelector('input[type="checkbox"]');
+    if (cb) {
+      cb.checked = !cb.checked;
+      cb.dispatchEvent(new Event('change', { bubbles: true }));
+      showToast(cb.checked ? 'Selected' : 'Deselected');
+    }
+  }
+
   function activateKbdItem() {
     var items = getNavigableItems();
     if (kbdSelectedIndex < 0 || kbdSelectedIndex >= items.length) return;
@@ -620,6 +709,9 @@ const Keyboard = (function () {
     e: 'evidence',
     n: 'agents',
     s: 'settings',
+    o: 'objects',
+    v: 'events',
+    t: 'onboarding',
   };
 
   function startChord(key) {
@@ -758,9 +850,10 @@ const Keyboard = (function () {
       return;
     }
 
-    // n -- new (context-sensitive)
+    // n -- new (context-sensitive: open Create Work Item dialog)
     if (key === 'n') {
-      goto('work-item');
+      var dlg = document.getElementById('dlgCreateWorkItem');
+      if (dlg && dlg.showModal) dlg.showModal();
       showToast('Create Work Item');
       e.preventDefault();
       return;
@@ -792,6 +885,13 @@ const Keyboard = (function () {
     }
     if (key === 'k') {
       selectKbdItem('up');
+      e.preventDefault();
+      return;
+    }
+
+    // x -- toggle select (bulk checkbox on current item)
+    if (key === 'x') {
+      toggleSelectKbdItem();
       e.preventDefault();
       return;
     }

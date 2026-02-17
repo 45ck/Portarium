@@ -49,7 +49,7 @@ const DRAWER_CONTENT = {
           <a class="row" href="#run" style="text-decoration:none">
             <div class="row__main">
               <div class="row__title">R-8920 Invoice correction</div>
-              <div class="row__subtle">Run (paused at gate)</div>
+              <div class="row__subtle">Run (waiting for approval)</div>
             </div>
           </a>
           <a class="row" href="#approvals" style="text-decoration:none">
@@ -61,7 +61,7 @@ const DRAWER_CONTENT = {
           <a class="row" href="#evidence" style="text-decoration:none">
             <div class="row__main">
               <div class="row__title">12 Evidence entries</div>
-              <div class="row__subtle">Chain verified</div>
+              <div class="row__subtle">Audit log: OK</div>
             </div>
           </a>
         </div>
@@ -80,7 +80,7 @@ const DRAWER_CONTENT = {
           Tier: <strong>Human-approve</strong><br>
           Rule: Invoice writes &gt; $10,000<br>
           Required approvers: 2<br>
-          SoD: maker-checker
+          Approval rule: different-approver required
         </div>
       </div>
       <div>
@@ -112,7 +112,7 @@ const DRAWER_CONTENT = {
           <a class="row" href="#run" style="text-decoration:none">
             <div class="row__main">
               <div class="row__title">R-8920 Invoice correction</div>
-              <div class="row__subtle">Run | Paused at Approval Gate</div>
+              <div class="row__subtle">Run | Waiting for Approval</div>
             </div>
           </a>
           <a class="row" href="#approvals" style="text-decoration:none">
@@ -124,7 +124,7 @@ const DRAWER_CONTENT = {
           <a class="row" href="#evidence" style="text-decoration:none">
             <div class="row__main">
               <div class="row__title">12 Evidence entries</div>
-              <div class="row__subtle">Chain: verified (120-146)</div>
+              <div class="row__subtle">Audit log: OK (entries 120-146)</div>
             </div>
           </a>
         </div>
@@ -141,7 +141,7 @@ const DRAWER_CONTENT = {
         <div class="drawer-section__title">Policy Evaluation</div>
         <div class="callout callout--policy">
           Tier: <strong>Human-approve</strong> | Rule: Invoice writes &gt; $10,000<br>
-          Required approvers: 2 | SoD: maker-checker<br>
+          Required approvers: 2 | Approval rule: different-approver required<br>
           <em>Why this tier:</em> Invoice total ($12,500) exceeds $10,000 threshold.
         </div>
       </div>
@@ -174,7 +174,7 @@ const DRAWER_CONTENT = {
           <a class="row" href="#run" style="text-decoration:none">
             <div class="row__main">
               <div class="row__title">R-8920 Invoice correction</div>
-              <div class="row__subtle">Run (paused)</div>
+              <div class="row__subtle">Run (waiting for approval)</div>
             </div>
           </a>
         </div>
@@ -190,7 +190,7 @@ const DRAWER_CONTENT = {
         <div class="drawer-section__title">Policy Evaluation</div>
         <div class="callout callout--policy">
           Tier: <strong>Human-approve</strong><br>
-          SoD: maker-checker (initiator cannot self-approve)<br>
+          Approval rule: different-approver required (initiator cannot self-approve)<br>
           Required approvers: 2
         </div>
       </div>
@@ -253,7 +253,7 @@ const DRAWER_CONTENT = {
           <div class="row row--static">
             <div class="row__main">
               <div class="row__title">R-8920 Invoice correction</div>
-              <div class="row__subtle">Run | Paused at Approval Gate</div>
+              <div class="row__subtle">Run | Waiting for Approval</div>
             </div>
           </div>
           <a class="row" href="#approvals" style="text-decoration:none">
@@ -283,7 +283,7 @@ const DRAWER_CONTENT = {
         <div class="callout callout--policy">
           Tier: <strong>Human-approve</strong><br>
           Rule: Invoice writes &gt; $10,000<br>
-          SoD: maker-checker
+          Approval rule: different-approver required
         </div>
       </div>
       <div>
@@ -381,6 +381,9 @@ const SCREENS = [
   'evidence',
   'agents',
   'settings',
+  'onboarding',
+  'objects',
+  'events',
 ];
 
 function getScreenFromHash() {
@@ -619,7 +622,7 @@ function setStatusBar(systemState) {
   if (runsDot) runsDot.className = 'statusbar__dot statusbar__dot--ok js-status-runs';
   if (runsText) runsText.textContent = 'Runs: 1 active';
   if (chainDot) chainDot.className = 'statusbar__dot statusbar__dot--ok js-status-chain';
-  if (chainText) chainText.textContent = 'Chain: verified';
+  if (chainText) chainText.textContent = 'Audit log: OK';
   if (eventsDot) eventsDot.className = 'statusbar__dot statusbar__dot--ok js-status-events';
   if (eventsText) eventsText.textContent = 'Events: connected';
 
@@ -1216,7 +1219,7 @@ const ApprovalValidation = (function () {
         var decisionEl = document.getElementById('approvalDecision');
         var decisionText = decisionEl ? decisionEl.options[decisionEl.selectedIndex].text : 'this decision';
         ConfirmModal.show({
-          icon: decisionText.toLowerCase().includes('reject') ? '✕' : '✓',
+          icon: decisionText.toLowerCase() === 'approve' ? '✓' : '✕',
           title: 'Submit approval decision?',
           body: 'You are about to submit "' + decisionText + '". This action cannot be undone.',
           okText: 'Submit decision',
@@ -1321,6 +1324,30 @@ function initActionConfirmations() {
         okText: 'Retry ' + count + ' runs',
         onConfirm: function () { withLoadingState(retryBtn, 2000); },
       });
+      return;
+    }
+
+    /* data-confirm attribute wiring */
+    var confirmKey = retryBtn.getAttribute('data-confirm');
+    if (confirmKey) {
+      e.preventDefault();
+      var CONFIRM_MAP = {
+        'cancel-run': { icon: '⊘', title: 'Cancel this run?', body: 'The run will be terminated. Any in-progress actions will be rolled back if possible. This cannot be undone.', okText: 'Cancel run' },
+        'revoke-credential': { icon: '🔒', title: 'Revoke this credential?', body: 'Adapters using this credential will lose access immediately. Running workflows may fail at their next action step.', okText: 'Revoke credential' },
+        'deactivate-workflow': { icon: '⚠', title: 'Deactivate this workflow?', body: 'No new runs can be started. Existing runs will complete but no new triggers will fire.', okText: 'Deactivate' },
+        'delete-workflow': { icon: '🗑', title: 'Delete this workflow?', body: 'This permanently removes the workflow definition and all draft versions. Active runs will not be affected. This cannot be undone.', okText: 'Delete workflow' },
+        'deregister-agent': { icon: '⚠', title: 'Deregister this agent?', body: 'The agent will be removed from all workflow steps that reference it. Running workflows will fail at the agent step.', okText: 'Deregister' },
+      };
+      var cfg = CONFIRM_MAP[confirmKey];
+      if (cfg) {
+        ConfirmModal.show({
+          icon: cfg.icon,
+          title: cfg.title,
+          body: cfg.body,
+          okText: cfg.okText,
+          onConfirm: function () { withLoadingState(retryBtn, 1500); },
+        });
+      }
     }
   });
 }
@@ -1543,6 +1570,46 @@ function main() {
         setTimeout(function () { btn.textContent = btn.getAttribute('data-original') || btn.textContent.replace('Downloaded ✓', 'Export'); }, 2500);
       });
     }
+  });
+
+  /* ---- CorrelationId copy-to-clipboard ---- */
+  qsa('.correlation-id').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var text = el.textContent.replace('Correlation: ', '');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+      var orig = el.textContent;
+      el.textContent = 'Copied!';
+      setTimeout(function () { el.textContent = orig; }, 1200);
+    });
+  });
+
+  /* ---- Bulk checkbox wiring ---- */
+  qsa('.bulk-checkbox-all').forEach(function (allCb) {
+    allCb.addEventListener('change', function () {
+      var table = allCb.closest('table');
+      if (!table) return;
+      qsa('.bulk-checkbox', table).forEach(function (cb) { cb.checked = allCb.checked; });
+      var bar = allCb.closest('.table-wrap').previousElementSibling;
+      if (bar && bar.classList.contains('bulk-bar')) {
+        var count = qsa('.bulk-checkbox:checked', table).length;
+        bar.hidden = count === 0;
+        var span = bar.querySelector('.bulk-bar__count');
+        if (span) span.textContent = count + ' selected';
+      }
+    });
+  });
+
+  /* ---- Payload link mock ---- */
+  qsa('.payload-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      var name = link.textContent;
+      link.textContent = 'Loading...';
+      setTimeout(function () { link.textContent = name + ' (preview)'; }, 600);
+      setTimeout(function () { link.textContent = name; }, 2000);
+    });
   });
 
   /* Initial render */
