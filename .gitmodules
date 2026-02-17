@@ -16,3 +16,6 @@
 [submodule "domain-atlas/upstreams/vault"]
 	path = domain-atlas/upstreams/vault
 	url = https://github.com/hashicorp/vault
+[submodule "domain-atlas/upstreams/zammad"]
+	path = domain-atlas/upstreams/zammad
+	url = https://github.com/zammad/zammad
