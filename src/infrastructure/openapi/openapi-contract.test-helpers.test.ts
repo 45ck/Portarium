@@ -61,7 +61,7 @@ describe('openapi test helpers', () => {
   });
 
   it('validateOrThrow reports validator errors', () => {
-    const validator = (() => false) as (data: unknown) => boolean;
+    const validator = (() => false) as (_data: unknown) => boolean;
     Object.assign(validator, { errors: [{ keyword: 'type' }] });
 
     expect(() => validateOrThrow(validator, { data: 'x' })).toThrow(/"keyword": "type"/);
