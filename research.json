@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-02-17T00:08:27.000Z",
+  "updatedAt": "2026-02-17T00:52:22.566Z",
   "domainAtlas": {
     "erpnext": {
       "status": "ACTIVE",
@@ -18,9 +18,9 @@
       "notes": "CIF/mappings/capabilities added; upstream vendored as a git submodule; CIF extraction script available at scripts/domain-atlas/extract-killbill-cif.mjs."
     },
     "mautic": {
-      "status": "ACTIVE",
+      "status": "DONE",
       "workItem": "bead-0023",
-      "notes": "Vendored upstream as a git submodule; extracting CIF/mappings/capabilities from Doctrine Entity::loadMetadata (ClassMetadataBuilder)."
+      "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule; extraction script: scripts/domain-atlas/extract-mautic-cif.mjs."
     },
     "odoo": {
       "status": "ACTIVE",
@@ -33,8 +33,9 @@
       "notes": "Example provider validates schemas; upstream pinned; CIF/mappings/capabilities present."
     },
     "vault": {
-      "status": "TODO",
-      "notes": "Upstream intake manifest exists; commit pin + CIF/mappings/capabilities pending."
+      "status": "DONE",
+      "workItem": "bead-0025",
+      "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (BUSL-1.1); extraction script: scripts/domain-atlas/extract-vault-cif.mjs."
     }
   }
 }

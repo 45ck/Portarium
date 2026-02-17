@@ -1,20 +1,24 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "DONE",
   "providerId": "vault",
   "providerName": "HashiCorp Vault",
   "portFamilies": ["SecretsVaulting"],
   "upstream": {
     "kind": "git",
     "repoUrl": "https://github.com/hashicorp/vault",
-    "version": "pinned-by-commit"
+    "version": "pinned-by-commit",
+    "commit": "bc33fac9b157fcb7c45b0b68ca2539b6be82f612",
+    "retrievedAt": "2026-02-17T00:49:24.001Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm current upstream license. Treat as study-only until confirmed."
+    "spdxId": "BUSL-1.1",
+    "classification": "unsafe_dependency",
+    "notes": "Upstream LICENSE is Business Source License 1.1 (HashiCorp). Use for study/pattern extraction and integration only; do not depend on upstream Vault source in Portarium core."
   },
   "extraction": {
-    "modelSources": ["api/**", "vault/**", "website/**"],
-    "notes": "TBD: prefer API surface + audit device semantics + policy model."
+    "modelSources": ["api/**", "website/**"],
+    "command": "node scripts/domain-atlas/extract-vault-cif.mjs",
+    "notes": "Initial extraction uses the Go API client structs under api/ as a stable, integration-relevant schema source (secrets, mounts, audit devices, tokens)."
   }
 }

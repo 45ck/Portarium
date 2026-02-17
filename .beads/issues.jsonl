@@ -21,3 +21,5 @@
 {"id":"bead-0021","title":"ADR-0030: Quota semantics v1 (domain + tests)","status":"closed","createdAt":"2026-02-17T00:06:08.567Z","updatedAt":"2026-02-17T00:31:07.673Z"}
 {"id":"bead-0022","title":"ADR-0032: Event stream CloudEvents v1 (domain + tests)","status":"closed","createdAt":"2026-02-17T00:06:12.917Z","updatedAt":"2026-02-17T00:31:07.968Z"}
 {"id":"bead-0023","title":"Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:07:16.654Z","updatedAt":"2026-02-17T00:31:08.260Z"}
+{"id":"bead-0024","title":"Run v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-17T00:49:00.423Z","updatedAt":"2026-02-17T00:50:50.079Z"}
+{"id":"bead-0025","title":"Domain Atlas: Vault initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:49:51.528Z","updatedAt":"2026-02-17T00:53:08.098Z"}

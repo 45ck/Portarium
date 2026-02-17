@@ -243,6 +243,8 @@ nullability
 worktree
 invoiceitem
 idemp
+mapstructure
+omitempty
 HashiCorp
 Infisical
 Doppler

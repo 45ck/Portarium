@@ -1,0 +1,874 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "vault",
+    "providerName": "HashiCorp Vault",
+    "upstream": {
+      "repoUrl": "https://github.com/hashicorp/vault",
+      "commit": "bc33fac9b157fcb7c45b0b68ca2539b6be82f612",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-17T00:53:11.223Z",
+  "entities": [
+    {
+      "name": "Audit",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_audit.go (type Audit).",
+      "fields": [
+        {
+          "name": "description",
+          "type": "string",
+          "required": true,
+          "description": "json:description mapstructure:description"
+        },
+        {
+          "name": "local",
+          "type": "bool",
+          "required": true,
+          "description": "json:local mapstructure:local"
+        },
+        {
+          "name": "options",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:options mapstructure:options"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "required": true,
+          "description": "json:path mapstructure:path"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "json:type mapstructure:type"
+        }
+      ]
+    },
+    {
+      "name": "EnableAuditOptions",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_audit.go (type EnableAuditOptions).",
+      "fields": [
+        {
+          "name": "description",
+          "type": "string",
+          "required": true,
+          "description": "json:description mapstructure:description"
+        },
+        {
+          "name": "local",
+          "type": "bool",
+          "required": true,
+          "description": "json:local mapstructure:local"
+        },
+        {
+          "name": "options",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:options mapstructure:options"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "json:type mapstructure:type"
+        }
+      ]
+    },
+    {
+      "name": "KVMetadata",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/kv_v2.go (type KVMetadata).",
+      "fields": [
+        {
+          "name": "cas_required",
+          "type": "bool",
+          "required": true,
+          "description": "mapstructure:cas_required"
+        },
+        {
+          "name": "created_time",
+          "type": "time.Time",
+          "required": true,
+          "description": "mapstructure:created_time"
+        },
+        {
+          "name": "current_version",
+          "type": "int",
+          "required": true,
+          "description": "mapstructure:current_version"
+        },
+        {
+          "name": "custom_metadata",
+          "type": "map[string]interface{}",
+          "required": false,
+          "description": "mapstructure:custom_metadata"
+        },
+        {
+          "name": "delete_version_after",
+          "type": "time.Duration",
+          "required": true,
+          "description": "mapstructure:delete_version_after"
+        },
+        {
+          "name": "max_versions",
+          "type": "int",
+          "required": true,
+          "description": "mapstructure:max_versions"
+        },
+        {
+          "name": "oldest_version",
+          "type": "int",
+          "required": true,
+          "description": "mapstructure:oldest_version"
+        },
+        {
+          "name": "Raw",
+          "type": "*Secret",
+          "required": false,
+          "nullable": true,
+          "description": "no tags"
+        },
+        {
+          "name": "updated_time",
+          "type": "time.Time",
+          "required": true,
+          "description": "mapstructure:updated_time"
+        },
+        {
+          "name": "versions",
+          "type": "map[string]KVVersionMetadata",
+          "required": false,
+          "description": "mapstructure:versions"
+        }
+      ]
+    },
+    {
+      "name": "KVMetadataPatchInput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/kv_v2.go (type KVMetadataPatchInput).",
+      "fields": [
+        {
+          "name": "CASRequired",
+          "type": "*bool",
+          "required": false,
+          "nullable": true,
+          "description": "no tags"
+        },
+        {
+          "name": "CustomMetadata",
+          "type": "map[string]interface{}",
+          "required": false,
+          "description": "no tags"
+        },
+        {
+          "name": "DeleteVersionAfter",
+          "type": "*time.Duration",
+          "required": false,
+          "nullable": true,
+          "description": "no tags"
+        },
+        {
+          "name": "MaxVersions",
+          "type": "*int",
+          "required": false,
+          "nullable": true,
+          "description": "no tags"
+        }
+      ]
+    },
+    {
+      "name": "KVMetadataPutInput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/kv_v2.go (type KVMetadataPutInput).",
+      "fields": [
+        {
+          "name": "CASRequired",
+          "type": "bool",
+          "required": false,
+          "description": "no tags"
+        },
+        {
+          "name": "CustomMetadata",
+          "type": "map[string]interface{}",
+          "required": false,
+          "description": "no tags"
+        },
+        {
+          "name": "DeleteVersionAfter",
+          "type": "time.Duration",
+          "required": false,
+          "description": "no tags"
+        },
+        {
+          "name": "MaxVersions",
+          "type": "int",
+          "required": false,
+          "description": "no tags"
+        }
+      ]
+    },
+    {
+      "name": "KVVersionMetadata",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/kv_v2.go (type KVVersionMetadata).",
+      "fields": [
+        {
+          "name": "created_time",
+          "type": "time.Time",
+          "required": true,
+          "description": "mapstructure:created_time"
+        },
+        {
+          "name": "deletion_time",
+          "type": "time.Time",
+          "required": true,
+          "description": "mapstructure:deletion_time"
+        },
+        {
+          "name": "destroyed",
+          "type": "bool",
+          "required": true,
+          "description": "mapstructure:destroyed"
+        },
+        {
+          "name": "version",
+          "type": "int",
+          "required": true,
+          "description": "mapstructure:version"
+        }
+      ]
+    },
+    {
+      "name": "MountConfigInput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_mounts.go (type MountConfigInput).",
+      "fields": [
+        {
+          "name": "allowed_managed_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:allowed_managed_keys,omitempty mapstructure:allowed_managed_keys"
+        },
+        {
+          "name": "allowed_response_headers",
+          "type": "[]string",
+          "required": false,
+          "description": "json:allowed_response_headers,omitempty mapstructure:allowed_response_headers"
+        },
+        {
+          "name": "audit_non_hmac_request_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:audit_non_hmac_request_keys,omitempty mapstructure:audit_non_hmac_request_keys"
+        },
+        {
+          "name": "audit_non_hmac_response_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:audit_non_hmac_response_keys,omitempty mapstructure:audit_non_hmac_response_keys"
+        },
+        {
+          "name": "default_lease_ttl",
+          "type": "string",
+          "required": true,
+          "description": "json:default_lease_ttl mapstructure:default_lease_ttl"
+        },
+        {
+          "name": "delegated_auth_accessors",
+          "type": "[]string",
+          "required": false,
+          "description": "json:delegated_auth_accessors,omitempty mapstructure:delegated_auth_accessors"
+        },
+        {
+          "name": "description",
+          "type": "*string",
+          "required": false,
+          "nullable": true,
+          "description": "json:description,omitempty mapstructure:description"
+        },
+        {
+          "name": "force_no_cache",
+          "type": "bool",
+          "required": true,
+          "description": "json:force_no_cache mapstructure:force_no_cache"
+        },
+        {
+          "name": "identity_token_key",
+          "type": "string",
+          "required": false,
+          "description": "json:identity_token_key,omitempty mapstructure:identity_token_key"
+        },
+        {
+          "name": "listing_visibility",
+          "type": "string",
+          "required": false,
+          "description": "json:listing_visibility,omitempty mapstructure:listing_visibility"
+        },
+        {
+          "name": "max_lease_ttl",
+          "type": "string",
+          "required": true,
+          "description": "json:max_lease_ttl mapstructure:max_lease_ttl"
+        },
+        {
+          "name": "options",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:options mapstructure:options"
+        },
+        {
+          "name": "override_pinned_version",
+          "type": "*bool",
+          "required": false,
+          "nullable": true,
+          "description": "json:override_pinned_version,omitempty mapstructure:override_pinned_version"
+        },
+        {
+          "name": "passthrough_request_headers",
+          "type": "[]string",
+          "required": false,
+          "description": "json:passthrough_request_headers,omitempty mapstructure:passthrough_request_headers"
+        },
+        {
+          "name": "plugin_name",
+          "type": "string",
+          "required": false,
+          "description": "json:plugin_name,omitempty mapstructure:plugin_name"
+        },
+        {
+          "name": "plugin_version",
+          "type": "string",
+          "required": false,
+          "description": "json:plugin_version,omitempty"
+        },
+        {
+          "name": "token_type",
+          "type": "string",
+          "required": false,
+          "description": "json:token_type,omitempty mapstructure:token_type"
+        },
+        {
+          "name": "trim_request_trailing_slashes",
+          "type": "*bool",
+          "required": false,
+          "nullable": true,
+          "description": "json:trim_request_trailing_slashes,omitempty mapstructure:trim_request_trailing_slashes"
+        },
+        {
+          "name": "user_lockout_config",
+          "type": "*UserLockoutConfigInput",
+          "required": false,
+          "nullable": true,
+          "description": "json:user_lockout_config,omitempty"
+        }
+      ]
+    },
+    {
+      "name": "MountConfigOutput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_mounts.go (type MountConfigOutput).",
+      "fields": [
+        {
+          "name": "allowed_managed_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:allowed_managed_keys,omitempty mapstructure:allowed_managed_keys"
+        },
+        {
+          "name": "allowed_response_headers",
+          "type": "[]string",
+          "required": false,
+          "description": "json:allowed_response_headers,omitempty mapstructure:allowed_response_headers"
+        },
+        {
+          "name": "audit_non_hmac_request_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:audit_non_hmac_request_keys,omitempty mapstructure:audit_non_hmac_request_keys"
+        },
+        {
+          "name": "audit_non_hmac_response_keys",
+          "type": "[]string",
+          "required": false,
+          "description": "json:audit_non_hmac_response_keys,omitempty mapstructure:audit_non_hmac_response_keys"
+        },
+        {
+          "name": "default_lease_ttl",
+          "type": "int",
+          "required": true,
+          "description": "json:default_lease_ttl mapstructure:default_lease_ttl"
+        },
+        {
+          "name": "delegated_auth_accessors",
+          "type": "[]string",
+          "required": false,
+          "description": "json:delegated_auth_accessors,omitempty mapstructure:delegated_auth_accessors"
+        },
+        {
+          "name": "force_no_cache",
+          "type": "bool",
+          "required": true,
+          "description": "json:force_no_cache mapstructure:force_no_cache"
+        },
+        {
+          "name": "identity_token_key",
+          "type": "string",
+          "required": false,
+          "description": "json:identity_token_key,omitempty mapstructure:identity_token_key"
+        },
+        {
+          "name": "listing_visibility",
+          "type": "string",
+          "required": false,
+          "description": "json:listing_visibility,omitempty mapstructure:listing_visibility"
+        },
+        {
+          "name": "max_lease_ttl",
+          "type": "int",
+          "required": true,
+          "description": "json:max_lease_ttl mapstructure:max_lease_ttl"
+        },
+        {
+          "name": "override_pinned_version",
+          "type": "bool",
+          "required": false,
+          "description": "json:override_pinned_version,omitempty mapstructure:override_pinned_version"
+        },
+        {
+          "name": "passthrough_request_headers",
+          "type": "[]string",
+          "required": false,
+          "description": "json:passthrough_request_headers,omitempty mapstructure:passthrough_request_headers"
+        },
+        {
+          "name": "plugin_name",
+          "type": "string",
+          "required": false,
+          "description": "json:plugin_name,omitempty mapstructure:plugin_name"
+        },
+        {
+          "name": "token_type",
+          "type": "string",
+          "required": false,
+          "description": "json:token_type,omitempty mapstructure:token_type"
+        },
+        {
+          "name": "trim_request_trailing_slashes",
+          "type": "bool",
+          "required": false,
+          "description": "json:trim_request_trailing_slashes,omitempty mapstructure:trim_request_trailing_slashes"
+        },
+        {
+          "name": "user_lockout_config",
+          "type": "*UserLockoutConfigOutput",
+          "required": false,
+          "nullable": true,
+          "description": "json:user_lockout_config,omitempty"
+        }
+      ]
+    },
+    {
+      "name": "MountInput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_mounts.go (type MountInput).",
+      "fields": [
+        {
+          "name": "config",
+          "type": "MountConfigInput",
+          "required": true,
+          "description": "json:config"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": true,
+          "description": "json:description"
+        },
+        {
+          "name": "external_entropy_access",
+          "type": "bool",
+          "required": true,
+          "description": "json:external_entropy_access mapstructure:external_entropy_access"
+        },
+        {
+          "name": "local",
+          "type": "bool",
+          "required": true,
+          "description": "json:local"
+        },
+        {
+          "name": "options",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:options"
+        },
+        {
+          "name": "plugin_name",
+          "type": "string",
+          "required": false,
+          "description": "json:plugin_name,omitempty"
+        },
+        {
+          "name": "seal_wrap",
+          "type": "bool",
+          "required": true,
+          "description": "json:seal_wrap mapstructure:seal_wrap"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "json:type"
+        }
+      ]
+    },
+    {
+      "name": "MountOutput",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/sys_mounts.go (type MountOutput).",
+      "fields": [
+        {
+          "name": "accessor",
+          "type": "string",
+          "required": true,
+          "description": "json:accessor"
+        },
+        {
+          "name": "config",
+          "type": "MountConfigOutput",
+          "required": true,
+          "description": "json:config"
+        },
+        {
+          "name": "deprecation_status",
+          "type": "string",
+          "required": true,
+          "description": "json:deprecation_status mapstructure:deprecation_status"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": true,
+          "description": "json:description"
+        },
+        {
+          "name": "external_entropy_access",
+          "type": "bool",
+          "required": true,
+          "description": "json:external_entropy_access mapstructure:external_entropy_access"
+        },
+        {
+          "name": "local",
+          "type": "bool",
+          "required": true,
+          "description": "json:local"
+        },
+        {
+          "name": "options",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:options"
+        },
+        {
+          "name": "plugin_version",
+          "type": "string",
+          "required": true,
+          "description": "json:plugin_version mapstructure:plugin_version"
+        },
+        {
+          "name": "running_plugin_version",
+          "type": "string",
+          "required": true,
+          "description": "json:running_plugin_version mapstructure:running_plugin_version"
+        },
+        {
+          "name": "running_sha256",
+          "type": "string",
+          "required": true,
+          "description": "json:running_sha256 mapstructure:running_sha256"
+        },
+        {
+          "name": "seal_wrap",
+          "type": "bool",
+          "required": true,
+          "description": "json:seal_wrap mapstructure:seal_wrap"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "json:type"
+        },
+        {
+          "name": "uuid",
+          "type": "string",
+          "required": true,
+          "description": "json:uuid"
+        }
+      ]
+    },
+    {
+      "name": "Secret",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/secret.go (type Secret).",
+      "fields": [
+        {
+          "name": "auth",
+          "type": "*SecretAuth",
+          "required": false,
+          "nullable": true,
+          "description": "json:auth,omitempty"
+        },
+        {
+          "name": "data",
+          "type": "map[string]interface{}",
+          "required": false,
+          "description": "json:data"
+        },
+        {
+          "name": "lease_duration",
+          "type": "int",
+          "required": true,
+          "description": "json:lease_duration"
+        },
+        {
+          "name": "lease_id",
+          "type": "string",
+          "required": true,
+          "description": "json:lease_id"
+        },
+        {
+          "name": "mount_type",
+          "type": "string",
+          "required": false,
+          "description": "json:mount_type,omitempty"
+        },
+        {
+          "name": "renewable",
+          "type": "bool",
+          "required": true,
+          "description": "json:renewable"
+        },
+        {
+          "name": "request_id",
+          "type": "string",
+          "required": true,
+          "description": "json:request_id"
+        },
+        {
+          "name": "warnings",
+          "type": "[]string",
+          "required": false,
+          "description": "json:warnings"
+        },
+        {
+          "name": "wrap_info",
+          "type": "*SecretWrapInfo",
+          "required": false,
+          "nullable": true,
+          "description": "json:wrap_info,omitempty"
+        }
+      ]
+    },
+    {
+      "name": "SecretAuth",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/secret.go (type SecretAuth).",
+      "fields": [
+        {
+          "name": "accessor",
+          "type": "string",
+          "required": true,
+          "description": "json:accessor"
+        },
+        {
+          "name": "client_token",
+          "type": "string",
+          "required": true,
+          "description": "json:client_token"
+        },
+        {
+          "name": "entity_id",
+          "type": "string",
+          "required": true,
+          "description": "json:entity_id"
+        },
+        {
+          "name": "identity_policies",
+          "type": "[]string",
+          "required": false,
+          "description": "json:identity_policies"
+        },
+        {
+          "name": "lease_duration",
+          "type": "int",
+          "required": true,
+          "description": "json:lease_duration"
+        },
+        {
+          "name": "metadata",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:metadata"
+        },
+        {
+          "name": "mfa_requirement",
+          "type": "*MFARequirement",
+          "required": false,
+          "nullable": true,
+          "description": "json:mfa_requirement"
+        },
+        {
+          "name": "orphan",
+          "type": "bool",
+          "required": true,
+          "description": "json:orphan"
+        },
+        {
+          "name": "policies",
+          "type": "[]string",
+          "required": false,
+          "description": "json:policies"
+        },
+        {
+          "name": "renewable",
+          "type": "bool",
+          "required": true,
+          "description": "json:renewable"
+        },
+        {
+          "name": "token_policies",
+          "type": "[]string",
+          "required": false,
+          "description": "json:token_policies"
+        }
+      ]
+    },
+    {
+      "name": "SecretWrapInfo",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/secret.go (type SecretWrapInfo).",
+      "fields": [
+        {
+          "name": "accessor",
+          "type": "string",
+          "required": true,
+          "description": "json:accessor"
+        },
+        {
+          "name": "creation_path",
+          "type": "string",
+          "required": true,
+          "description": "json:creation_path"
+        },
+        {
+          "name": "creation_time",
+          "type": "time.Time",
+          "required": true,
+          "description": "json:creation_time"
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "required": true,
+          "description": "json:token"
+        },
+        {
+          "name": "ttl",
+          "type": "int",
+          "required": true,
+          "description": "json:ttl"
+        },
+        {
+          "name": "wrapped_accessor",
+          "type": "string",
+          "required": true,
+          "description": "json:wrapped_accessor"
+        }
+      ]
+    },
+    {
+      "name": "TokenCreateRequest",
+      "description": "Extracted from domain-atlas/upstreams/vault/api/auth_token.go (type TokenCreateRequest).",
+      "fields": [
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": true,
+          "description": "json:display_name"
+        },
+        {
+          "name": "entity_alias",
+          "type": "string",
+          "required": true,
+          "description": "json:entity_alias"
+        },
+        {
+          "name": "explicit_max_ttl",
+          "type": "string",
+          "required": false,
+          "description": "json:explicit_max_ttl,omitempty"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "json:id,omitempty"
+        },
+        {
+          "name": "lease",
+          "type": "string",
+          "required": false,
+          "description": "json:lease,omitempty"
+        },
+        {
+          "name": "meta",
+          "type": "map[string]string",
+          "required": false,
+          "description": "json:meta,omitempty"
+        },
+        {
+          "name": "no_default_policy",
+          "type": "bool",
+          "required": false,
+          "description": "json:no_default_policy,omitempty"
+        },
+        {
+          "name": "no_parent",
+          "type": "bool",
+          "required": false,
+          "description": "json:no_parent,omitempty"
+        },
+        {
+          "name": "num_uses",
+          "type": "int",
+          "required": true,
+          "description": "json:num_uses"
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "required": false,
+          "description": "json:period,omitempty"
+        },
+        {
+          "name": "policies",
+          "type": "[]string",
+          "required": false,
+          "description": "json:policies,omitempty"
+        },
+        {
+          "name": "renewable",
+          "type": "*bool",
+          "required": false,
+          "nullable": true,
+          "description": "json:renewable,omitempty"
+        },
+        {
+          "name": "ttl",
+          "type": "string",
+          "required": false,
+          "description": "json:ttl,omitempty"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "json:type"
+        }
+      ]
+    }
+  ]
+}

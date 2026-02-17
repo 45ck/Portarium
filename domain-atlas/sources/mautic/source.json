@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "ACTIVE",
+  "status": "DONE",
   "providerId": "mautic",
   "providerName": "Mautic",
   "portFamilies": ["MarketingAutomation"],
