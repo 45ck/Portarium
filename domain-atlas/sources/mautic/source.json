@@ -1,5 +1,6 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "ACTIVE",
   "providerId": "mautic",
   "providerName": "Mautic",
   "portFamilies": ["MarketingAutomation"],
@@ -11,12 +12,13 @@
     "retrievedAt": "2026-02-16T21:02:44.251Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+    "spdxId": "GPL-3.0-or-later",
+    "classification": "study_only",
+    "notes": "Upstream LICENSE.txt is GPLv3 (or later). Use for pattern extraction + SoR integration; do not vendor upstream code into Portarium core."
   },
   "extraction": {
-    "modelSources": ["app/**", "plugins/**"],
-    "notes": "TBD: likely source of truth is Doctrine entities + migrations + API docs."
+    "modelSources": ["app/bundles/**/Entity/*.php", "app/migrations/**", "plugins/**"],
+    "command": "node scripts/domain-atlas/extract-mautic-cif.mjs",
+    "notes": "Initial extraction uses Doctrine mapping from Entity::loadMetadata (ClassMetadataBuilder) as the most honest field list; API Platform ApiResource metadata can be layered later to refine action surfaces."
   }
 }

@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "mautic",
+  "providerName": "Mautic",
+  "portFamily": "MarketingAutomation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["oauth2", "basic"],
+    "notes": "Mautic supports OAuth2 for API clients; HTTP basic auth can be enabled/disabled in API settings depending on deployment."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "WebhookBundle can emit webhooks for configured events; polling the REST/API Platform resources is the portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No standard idempotency key support. Adapters should use read-before-write, stable natural keys where policy allows, and evidence-based verified effects."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via post-write reads. Predicted effects require adapter-side simulation; provider does not expose a generic dry-run mechanism."
+  },
+  "capabilities": [
+    {
+      "capability": "contact:read",
+      "supported": true,
+      "operations": ["getContact", "listContacts"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "API resource: /contacts (GET collection) and /contacts/{id} (GET)."
+    },
+    {
+      "capability": "contact:write",
+      "supported": true,
+      "operations": ["createContact", "updateContact", "deleteContact"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "API resource: /contacts (POST), /contacts/{id} (PUT/PATCH/DELETE). Compensation is best-effort (e.g., restore previous field values)."
+    },
+    {
+      "capability": "company:read",
+      "supported": true,
+      "operations": ["getCompany", "listCompanies"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "company:write",
+      "supported": true,
+      "operations": ["createCompany", "updateCompany", "deleteCompany"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      }
+    },
+    {
+      "capability": "campaign:read",
+      "supported": true,
+      "operations": ["getCampaign", "listCampaigns"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "campaign:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      },
+      "notes": "Conservatively disabled for MVP until action semantics and side effects (membership, scheduling, emails) are fully modelled and diffed."
+    },
+    {
+      "capability": "segment:read",
+      "supported": true,
+      "operations": ["getSegment", "listSegments"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Segments are LeadList entities."
+    },
+    {
+      "capability": "segment:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      }
+    },
+    {
+      "capability": "email:read",
+      "supported": true,
+      "operations": ["getEmail", "listEmails"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "email:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      }
+    },
+    {
+      "capability": "asset:read",
+      "supported": true,
+      "operations": ["getAsset", "listAssets"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "asset:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      }
+    }
+  ]
+}

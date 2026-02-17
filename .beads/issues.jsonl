@@ -10,14 +10,14 @@
 {"id":"bead-0010","title":"Domain Atlas: ERPNext upstream intake + initial CIF/mapping/capabilities","status":"open","createdAt":"2026-02-16T23:05:05.875Z","updatedAt":"2026-02-16T23:05:05.875Z"}
 {"id":"bead-0011","title":"Work Item v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-16T23:05:20.802Z","updatedAt":"2026-02-16T23:14:30.551Z"}
 {"id":"bead-0012","title":"Scaffold Work Item v1 domain model (ADR-0038)","status":"open","createdAt":"2026-02-16T23:06:01.581Z","updatedAt":"2026-02-16T23:06:01.581Z"}
-{"id":"bead-0013","title":"Domain Atlas: Stripe (OpenAPI) extract CIF + mapping hardening","status":"open","createdAt":"2026-02-16T23:06:14.039Z","updatedAt":"2026-02-16T23:06:14.039Z"}
+{"id":"bead-0013","title":"Domain Atlas: Stripe (OpenAPI) extract CIF + mapping hardening","status":"closed","createdAt":"2026-02-16T23:06:14.039Z","updatedAt":"2026-02-17T00:12:17.665Z"}
 {"id":"bead-0014","title":"OpenAPI contract gate: validate OpenAPI + add boundary tests","status":"closed","createdAt":"2026-02-16T23:12:00.853Z","updatedAt":"2026-02-16T23:55:32.605Z"}
 {"id":"bead-0015","title":"Control plane API v1 contract: OpenAPI + specs for workspaces/users + Plan/Evidence","status":"closed","createdAt":"2026-02-16T23:12:00.868Z","updatedAt":"2026-02-16T23:12:11.938Z"}
 {"id":"bead-0016","title":"IAM MVP: workspace users + RBAC roles + auth integration","status":"open","createdAt":"2026-02-16T23:12:00.906Z","updatedAt":"2026-02-16T23:12:00.906Z"}
 {"id":"bead-0017","title":"Domain Atlas: Kill Bill initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-16T23:16:07.976Z","updatedAt":"2026-02-16T23:44:04.088Z"}
 {"id":"bead-0018","title":"Policy v1: SoD constraints primitives + parser + tests","status":"closed","createdAt":"2026-02-16T23:25:25.173Z","updatedAt":"2026-02-16T23:39:39.682Z"}
-{"id":"bead-0019","title":"Control Plane API v1: domain schemas for Workspace + User (RBAC)","status":"open","createdAt":"2026-02-16T23:30:05.095Z","updatedAt":"2026-02-16T23:30:05.095Z"}
-{"id":"bead-0020","title":"Domain Atlas: Keycloak initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-16T23:44:04.179Z","updatedAt":"2026-02-16T23:44:04.179Z"}
-{"id":"bead-0021","title":"ADR-0030: Quota semantics v1 (domain + tests)","status":"open","createdAt":"2026-02-17T00:06:08.567Z","updatedAt":"2026-02-17T00:06:08.567Z"}
-{"id":"bead-0022","title":"ADR-0032: Event stream CloudEvents v1 (domain + tests)","status":"open","createdAt":"2026-02-17T00:06:12.917Z","updatedAt":"2026-02-17T00:06:12.917Z"}
-{"id":"bead-0023","title":"Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-17T00:07:16.654Z","updatedAt":"2026-02-17T00:07:16.654Z"}
+{"id":"bead-0019","title":"Control Plane API v1: domain schemas for Workspace + User (RBAC)","status":"closed","createdAt":"2026-02-16T23:30:05.095Z","updatedAt":"2026-02-17T00:31:08.537Z"}
+{"id":"bead-0020","title":"Domain Atlas: Keycloak initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-16T23:44:04.179Z","updatedAt":"2026-02-17T00:12:09.133Z"}
+{"id":"bead-0021","title":"ADR-0030: Quota semantics v1 (domain + tests)","status":"closed","createdAt":"2026-02-17T00:06:08.567Z","updatedAt":"2026-02-17T00:31:07.673Z"}
+{"id":"bead-0022","title":"ADR-0032: Event stream CloudEvents v1 (domain + tests)","status":"closed","createdAt":"2026-02-17T00:06:12.917Z","updatedAt":"2026-02-17T00:31:07.968Z"}
+{"id":"bead-0023","title":"Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:07:16.654Z","updatedAt":"2026-02-17T00:31:08.260Z"}

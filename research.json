@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-02-16T23:49:51.961Z",
+  "updatedAt": "2026-02-17T00:08:27.000Z",
   "domainAtlas": {
     "erpnext": {
-      "status": "TODO",
+      "status": "ACTIVE",
       "workItem": "bead-0010",
-      "notes": "Upstream intake manifest exists; commit pin + CIF/mappings/capabilities pending."
+      "notes": "Upstream vendored as a git submodule; initial extraction targets DocType JSON as the honest schema source."
     },
     "keycloak": {
-      "status": "ACTIVE",
+      "status": "DONE",
       "workItem": "bead-0020",
       "notes": "Vendored upstream as a git submodule; generating CIF/mappings/capabilities from Admin REST representations under core/src/main/java/org/keycloak/representations/idm."
     },
@@ -18,8 +18,9 @@
       "notes": "CIF/mappings/capabilities added; upstream vendored as a git submodule; CIF extraction script available at scripts/domain-atlas/extract-killbill-cif.mjs."
     },
     "mautic": {
-      "status": "TODO",
-      "notes": "Upstream commit pinned; CIF/mappings/capabilities pending."
+      "status": "ACTIVE",
+      "workItem": "bead-0023",
+      "notes": "Vendored upstream as a git submodule; extracting CIF/mappings/capabilities from Doctrine Entity::loadMetadata (ClassMetadataBuilder)."
     },
     "odoo": {
       "status": "ACTIVE",
@@ -28,7 +29,7 @@
     },
     "stripe": {
       "status": "DONE",
-      "workItem": "bead-0002",
+      "workItem": "bead-0013",
       "notes": "Example provider validates schemas; upstream pinned; CIF/mappings/capabilities present."
     },
     "vault": {

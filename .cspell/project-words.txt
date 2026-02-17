@@ -226,6 +226,14 @@ noncompliant
 jaxrs
 JAXRS
 
+# Mautic / MarketingAutomation extraction
+firstname
+lastname
+utmtags
+preheader
+Brack
+nullability
+
 # Git / OpenAPI jargon
 worktree
 invoiceitem

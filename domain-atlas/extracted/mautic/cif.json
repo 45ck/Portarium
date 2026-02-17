@@ -1,0 +1,1197 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "mautic",
+    "providerName": "Mautic",
+    "upstream": {
+      "repoUrl": "https://github.com/mautic/mautic",
+      "commit": "e3ac0d4d7e8d17034d56cb21bf5baab4f353a433",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-17T00:22:53.227Z",
+  "entities": [
+    {
+      "name": "Lead",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/LeadBundle/Entity/Lead.php (loadMetadata, table=leads).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "address1",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "address2",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "company",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "companyChangeLog",
+          "type": "array<CompanyChangeLog>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "dateIdentified",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: date_identified"
+        },
+        {
+          "name": "doNotContact",
+          "type": "array<DoNotContact>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "eventLog",
+          "type": "array<LeadEventLog>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "firstname",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "frequencyRules",
+          "type": "array<FrequencyRule>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "groupScores",
+          "type": "array<GroupContactScore>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "internal",
+          "type": "array",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "ipAddresses",
+          "type": "array<IpAddress>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "lastActive",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: last_active"
+        },
+        {
+          "name": "lastname",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "mobile",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "notes",
+          "type": "array<LeadNote>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "owner",
+          "type": "User",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "points",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "pointsChangeLog",
+          "type": "array<PointsChangeLog>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "preferredProfileImage",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: preferred_profile_image"
+        },
+        {
+          "name": "pushIds",
+          "type": "array<PushID>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "socialCache",
+          "type": "array",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: social_cache"
+        },
+        {
+          "name": "stage",
+          "type": "Stage",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "stageChangeLog",
+          "type": "array<StagesChangeLog>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "tags",
+          "type": "array<Tag>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "timezone",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "utmtags",
+          "type": "array<UtmTag>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "zipcode",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/LeadBundle/Entity/Company.php (loadMetadata, table=companies).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "address1",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "address2",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "industry",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "owner",
+          "type": "User",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "score",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "socialCache",
+          "type": "array",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: social_cache"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "website",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        },
+        {
+          "name": "zipcode",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "fixed field via loadFixedFieldMetadata"
+        }
+      ]
+    },
+    {
+      "name": "LeadList",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/LeadBundle/Entity/LeadList.php (loadMetadata, table=lead_lists).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "alias",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "Category",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "deleted",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "filters",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "isGlobal",
+          "type": "boolean",
+          "required": true,
+          "description": "columnName: is_global"
+        },
+        {
+          "name": "isPreferenceCenter",
+          "type": "boolean",
+          "required": true,
+          "description": "columnName: is_preference_center"
+        },
+        {
+          "name": "lastBuiltDate",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: last_built_date"
+        },
+        {
+          "name": "lastBuiltTime",
+          "type": "float",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: last_built_time"
+        },
+        {
+          "name": "leads",
+          "type": "array<ListLead>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "publicName",
+          "type": "string",
+          "required": true,
+          "description": "columnName: public_name"
+        }
+      ]
+    },
+    {
+      "name": "Campaign",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/CampaignBundle/Entity/Campaign.php (loadMetadata, table=campaigns).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "allowRestart",
+          "type": "boolean",
+          "required": true,
+          "description": "columnName: allow_restart"
+        },
+        {
+          "name": "canvasSettings",
+          "type": "array",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: canvas_settings"
+        },
+        {
+          "name": "category",
+          "type": "Category",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "deleted",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "events",
+          "type": "array<Event>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "forms",
+          "type": "array<Form>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "leads",
+          "type": "array<Lead>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "lists",
+          "type": "array<LeadList>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "publishDown",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "publishUp",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "republishBehavior",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: republish_behavior"
+        }
+      ]
+    },
+    {
+      "name": "Email",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/EmailBundle/Entity/Email.php (loadMetadata, table=emails).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "assetAttachments",
+          "type": "array<Asset>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "bccAddress",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: bcc_address"
+        },
+        {
+          "name": "category",
+          "type": "Category",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "content",
+          "type": "array",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "continueSending",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "customHtml",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: custom_html"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "draft",
+          "type": "EmailDraft",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "emailType",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: email_type"
+        },
+        {
+          "name": "excludedLists",
+          "type": "array<LeadList>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "fromAddress",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: from_address"
+        },
+        {
+          "name": "fromName",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: from_name"
+        },
+        {
+          "name": "headers",
+          "type": "json",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "lists",
+          "type": "array<LeadList>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "plainText",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: plain_text"
+        },
+        {
+          "name": "preferenceCenter",
+          "type": "Page",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "preheaderText",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: preheader_text"
+        },
+        {
+          "name": "publicPreview",
+          "type": "boolean",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: public_preview"
+        },
+        {
+          "name": "publishDown",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "publishUp",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "readCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: read_count"
+        },
+        {
+          "name": "replyToAddress",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: reply_to_address"
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "sentCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: sent_count"
+        },
+        {
+          "name": "stats",
+          "type": "array<Stat>",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "template",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "unsubscribeForm",
+          "type": "Form",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "useOwnerAsMailer",
+          "type": "boolean",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: use_owner_as_mailer"
+        },
+        {
+          "name": "utmTags",
+          "type": "array",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: utm_tags"
+        },
+        {
+          "name": "variantReadCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: variant_read_count"
+        },
+        {
+          "name": "variantSentCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: variant_sent_count"
+        }
+      ]
+    },
+    {
+      "name": "Asset",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/AssetBundle/Entity/Asset.php (loadMetadata, table=assets).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "alias",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "Category",
+          "required": false,
+          "nullable": true,
+          "description": "relationship"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "disallow",
+          "type": "boolean",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "downloadCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: download_count"
+        },
+        {
+          "name": "extension",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "required": true,
+          "description": "columnName: lang"
+        },
+        {
+          "name": "mime",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "originalFileName",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: original_file_name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "publishDown",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "publishUp",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "remotePath",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: remote_path"
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "storageLocation",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: storage_location"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "uniqueDownloadCount",
+          "type": "integer",
+          "required": true,
+          "description": "columnName: unique_download_count"
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "description": "Extracted from domain-atlas/upstreams/mautic/app/bundles/LeadBundle/Entity/Tag.php (loadMetadata, table=lead_tags).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "nullable": true,
+          "description": "columnName: description"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Lead",
+      "toEntity": "User",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "Stage",
+      "kind": "many_to_one",
+      "fromField": "stage",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "PointsChangeLog",
+      "kind": "one_to_many",
+      "fromField": "pointsChangeLog",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "CompanyChangeLog",
+      "kind": "one_to_many",
+      "fromField": "companyChangeLog",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "DoNotContact",
+      "kind": "one_to_many",
+      "fromField": "doNotContact",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "PushID",
+      "kind": "one_to_many",
+      "fromField": "pushIds",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "LeadEventLog",
+      "kind": "one_to_many",
+      "fromField": "eventLog",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "LeadNote",
+      "kind": "one_to_many",
+      "fromField": "notes",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "StagesChangeLog",
+      "kind": "one_to_many",
+      "fromField": "stageChangeLog",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "UtmTag",
+      "kind": "one_to_many",
+      "fromField": "utmtags",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "FrequencyRule",
+      "kind": "one_to_many",
+      "fromField": "frequencyRules",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "GroupContactScore",
+      "kind": "one_to_many",
+      "fromField": "groupScores",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "IpAddress",
+      "kind": "many_to_many",
+      "fromField": "ipAddresses",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Lead",
+      "toEntity": "Tag",
+      "kind": "many_to_many",
+      "fromField": "tags",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Company",
+      "toEntity": "User",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "LeadList",
+      "toEntity": "Category",
+      "kind": "many_to_one",
+      "fromField": "category",
+      "toField": "id",
+      "notes": "added via ClassMetadataBuilder::addCategory()"
+    },
+    {
+      "fromEntity": "LeadList",
+      "toEntity": "ListLead",
+      "kind": "one_to_many",
+      "fromField": "leads",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Campaign",
+      "toEntity": "Category",
+      "kind": "many_to_one",
+      "fromField": "category",
+      "toField": "id",
+      "notes": "added via ClassMetadataBuilder::addCategory()"
+    },
+    {
+      "fromEntity": "Campaign",
+      "toEntity": "Event",
+      "kind": "one_to_many",
+      "fromField": "events",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Campaign",
+      "toEntity": "Lead",
+      "kind": "one_to_many",
+      "fromField": "leads",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Campaign",
+      "toEntity": "LeadList",
+      "kind": "many_to_many",
+      "fromField": "lists",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Campaign",
+      "toEntity": "Form",
+      "kind": "many_to_many",
+      "fromField": "forms",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "Category",
+      "kind": "many_to_one",
+      "fromField": "category",
+      "toField": "id",
+      "notes": "added via ClassMetadataBuilder::addCategory()"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "Form",
+      "kind": "many_to_one",
+      "fromField": "unsubscribeForm",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "Page",
+      "kind": "many_to_one",
+      "fromField": "preferenceCenter",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "Stat",
+      "kind": "one_to_many",
+      "fromField": "stats",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "LeadList",
+      "kind": "many_to_many",
+      "fromField": "lists",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "LeadList",
+      "kind": "many_to_many",
+      "fromField": "excludedLists",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "Asset",
+      "kind": "many_to_many",
+      "fromField": "assetAttachments",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Email",
+      "toEntity": "EmailDraft",
+      "kind": "one_to_one",
+      "fromField": "draft",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Asset",
+      "toEntity": "Category",
+      "kind": "many_to_one",
+      "fromField": "category",
+      "toField": "id",
+      "notes": "added via ClassMetadataBuilder::addCategory()"
+    }
+  ],
+  "actions": [
+    {
+      "name": "createContact",
+      "kind": "create",
+      "entities": ["Lead"],
+      "idempotency": {
+        "supported": false
+      },
+      "notes": "API supports POST /contacts; no provider idempotency keys are exposed."
+    },
+    {
+      "name": "updateContact",
+      "kind": "update",
+      "entities": ["Lead"],
+      "idempotency": {
+        "supported": false
+      },
+      "notes": "API supports PUT/PATCH /contacts/{id}; adapters should prefer read-before-write diffs."
+    },
+    {
+      "name": "deleteContact",
+      "kind": "delete",
+      "entities": ["Lead"],
+      "idempotency": {
+        "supported": false
+      },
+      "notes": "API supports DELETE /contacts/{id}; deletions are typically irreversible."
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": true,
+      "notes": "Contacts and companies support custom fields; adapter should surface these in an extension container to avoid canonical bloat."
+    },
+    "tags": {
+      "supported": true,
+      "notes": "Contacts support tags; treat as a first-class extension point."
+    },
+    "attachments": {
+      "supported": true,
+      "notes": "Assets can be attached to emails; evidence/logging may store raw payload snapshots separately."
+    }
+  }
+}

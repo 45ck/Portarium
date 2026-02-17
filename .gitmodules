@@ -10,3 +10,6 @@
 [submodule "domain-atlas/upstreams/erpnext"]
 	path = domain-atlas/upstreams/erpnext
 	url = https://github.com/frappe/erpnext
+[submodule "domain-atlas/upstreams/mautic"]
+	path = domain-atlas/upstreams/mautic
+	url = https://github.com/mautic/mautic

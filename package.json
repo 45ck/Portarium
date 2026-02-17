@@ -24,6 +24,7 @@
     "domain-atlas:index": "node scripts/domain-atlas/gen-research-index.mjs",
     "domain-atlas:extract:erpnext": "node scripts/domain-atlas/extract-erpnext-cif.mjs",
     "domain-atlas:extract:killbill": "node scripts/domain-atlas/extract-killbill-cif.mjs",
+    "domain-atlas:extract:mautic": "node scripts/domain-atlas/extract-mautic-cif.mjs",
     "domain-atlas:extract:odoo": "node scripts/domain-atlas/extract-odoo.mjs",
     "domain-atlas:extract:stripe": "node scripts/domain-atlas/extract-stripe-cif.mjs",
     "bd": "node scripts/beads/bd.mjs",

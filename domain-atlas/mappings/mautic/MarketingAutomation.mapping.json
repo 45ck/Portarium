@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "mautic",
+  "portFamily": "MarketingAutomation",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Lead",
+      "fieldMappings": {
+        "externalId": "id",
+        "email": "email",
+        "displayName": "firstname"
+      },
+      "notes": "Mautic models Contacts as Lead entities (API shortName: Contacts). Map to Party with role tags applied by the adapter (lead/contact). Custom fields must be placed into an explicit extension container."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Company",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "name",
+        "email": "email",
+        "website": "website"
+      },
+      "notes": "Mautic companies are distinct from contacts but still represent parties. Map to Party with role tag org/vendor/customer as policy dictates."
+    },
+    {
+      "canonicalObject": "Campaign",
+      "vendorEntity": "Campaign",
+      "fieldMappings": {
+        "externalId": "id",
+        "name": "name",
+        "description": "description"
+      },
+      "notes": "Mautic campaigns map cleanly to canonical Campaign for MVP; publishUp/publishDown and category remain provider extensions."
+    },
+    {
+      "canonicalObject": "Document",
+      "vendorEntity": "Asset",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayLabel": "title",
+        "mimeType": "mime",
+        "fileName": "originalFileName"
+      },
+      "notes": "Mautic assets are downloadable files. Map them to canonical Document (not canonical Asset)."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "LeadList",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Segment",
+        "displayLabel": "name"
+      },
+      "notes": "Segments are selection rules and membership snapshots; keep as ExternalObjectRef to avoid canonical bloat."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Email",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Email",
+        "displayLabel": "name"
+      },
+      "notes": "Email templates and delivery semantics are vendor-specific; keep as ExternalObjectRef for MVP."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Tag",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Tag",
+        "displayLabel": "tag"
+      }
+    }
+  ]
+}
