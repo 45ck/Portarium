@@ -25,8 +25,6 @@ Entities extracted from Paperless-ngx's Django migrations (initial models + earl
 
 - `domain-atlas/upstreams/paperless-ngx/src/documents/migrations/0001_initial.py`
 - `domain-atlas/upstreams/paperless-ngx/src/documents/migrations/0002_initial.py`
-- `domain-atlas/upstreams/paperless-ngx/src/paperless_mail/migrations/0001_initial.py`
-- `domain-atlas/upstreams/paperless-ngx/src/paperless/migrations/0001_initial.py`
 
 - `Document`
 - `Tag`
