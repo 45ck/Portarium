@@ -908,30 +908,45 @@ function showVariant(screenEl, variantLetter) {
   });
 }
 
-ABToggle.register('inbox', ['A', 'B'], {
-  A: function (el) {
-    showVariant(el, 'A');
+ABToggle.register(
+  'inbox',
+  ['A', 'B'],
+  {
+    A: function (el) {
+      showVariant(el, 'A');
+    },
+    B: function (el) {
+      showVariant(el, 'B');
+    },
   },
-  B: function (el) {
-    showVariant(el, 'B');
+  { A: 'Cards', B: 'Matrix' },
+);
+ABToggle.register(
+  'work-items',
+  ['A', 'B'],
+  {
+    A: function (el) {
+      showVariant(el, 'A');
+    },
+    B: function (el) {
+      showVariant(el, 'B');
+    },
   },
-}, { A: 'Cards', B: 'Matrix' });
-ABToggle.register('work-items', ['A', 'B'], {
-  A: function (el) {
-    showVariant(el, 'A');
+  { A: 'Table', B: 'Kanban' },
+);
+ABToggle.register(
+  'project',
+  ['A', 'B'],
+  {
+    A: function (el) {
+      showVariant(el, 'A');
+    },
+    B: function (el) {
+      showVariant(el, 'B');
+    },
   },
-  B: function (el) {
-    showVariant(el, 'B');
-  },
-}, { A: 'Table', B: 'Kanban' });
-ABToggle.register('project', ['A', 'B'], {
-  A: function (el) {
-    showVariant(el, 'A');
-  },
-  B: function (el) {
-    showVariant(el, 'B');
-  },
-}, { A: 'Summary', B: 'Dashboard' });
+  { A: 'Summary', B: 'Dashboard' },
+);
 
 /* ============================================================
    APPROVAL TRIAGE
@@ -974,7 +989,7 @@ function triageAction(action) {
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
     var currentSpan = document.querySelector('.triage__current');
-    if (progressFill) progressFill.style.width = ((triageIndex / 2) * 100) + '%';
+    if (progressFill) progressFill.style.width = (triageIndex / 2) * 100 + '%';
     if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 2);
     if (triageIndex >= 2) {
       var triageEl = document.getElementById('triage');
