@@ -70,20 +70,19 @@
            SIDEBAR
            ============================================================ -->
       <aside class="sidebar" aria-label="Primary navigation">
-        <nav class="nav">
+        <nav class="nav" aria-label="Main navigation">
           <a class="nav__item" href="#inbox">Inbox</a>
           <a class="nav__item" href="#project">Project Overview</a>
           <a class="nav__item" href="#work-items">Work Items</a>
-          <a class="nav__item" href="#work-item">Work Item Detail</a>
-          <a class="nav__item" href="#run">Run Detail</a>
+          <a class="nav__item" href="#runs">Runs</a>
           <a class="nav__item" href="#approvals">Approvals</a>
           <a class="nav__item" href="#evidence">Evidence</a>
           <a class="nav__item" href="#settings">Settings</a>
         </nav>
 
         <div class="sidebar__section-title">Quick Actions</div>
-        <nav class="nav">
-          <a class="nav__item js-persona-action-1" href="#work-item">Start workflow</a>
+        <nav class="nav" aria-label="Quick actions">
+          <a class="nav__item js-persona-action-1" href="#work-items">Start workflow</a>
           <a class="nav__item js-persona-action-2" href="#approvals">Review approvals</a>
         </nav>
 
@@ -94,6 +93,13 @@
             runs.
           </div>
         </div>
+
+        <div class="sidebar__section-title">Support</div>
+        <nav class="nav" aria-label="Help">
+          <a class="nav__item" href="#" onclick="return false;" style="font-size: 12px"
+            >Help &amp; Documentation</a
+          >
+        </nav>
       </aside>
 
       <!-- ============================================================
@@ -122,7 +128,7 @@
           <div class="screen__header">
             <div>
               <h1 id="h-inbox" class="h1">Inbox</h1>
-              <div class="subtle">Persona-adaptive triage surface (default landing).</div>
+              <div class="subtle">Items that need your attention</div>
             </div>
             <div class="screen__actions">
               <a class="btn btn--primary js-inbox-cta" href="#work-item">Start workflow</a>
@@ -524,6 +530,93 @@
         </section>
 
         <!-- ============================================================
+             SCREEN: RUNS LIST
+             ============================================================ -->
+        <section id="screen-runs" class="screen" data-screen="runs" aria-labelledby="h-runs">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-runs" class="h1">Runs</h1>
+              <div class="subtle">Project: Billing Governance</div>
+            </div>
+            <div class="screen__actions">
+              <a class="btn btn--primary" href="#work-items">Start workflow</a>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="chip chip--active">All statuses</span>
+            <span class="chip">Workflow: Invoice correction</span>
+            <span class="chip">Last 24h</span>
+            <span class="chip">Has pending approvals</span>
+          </div>
+
+          <div class="empty js-empty-runs" hidden>
+            <div class="empty__title">No Runs yet</div>
+            <div class="empty__body">
+              Runs are created when a workflow or runbook is started from a Work Item. Each Run
+              executes a Plan and records Evidence.
+            </div>
+            <div class="empty__actions">
+              <a class="btn btn--primary" href="#work-items">Go to Work Items</a>
+            </div>
+          </div>
+
+          <div class="table-wrap js-nonempty-runs">
+            <table class="table" aria-label="Runs table">
+              <thead>
+                <tr>
+                  <th>Run</th>
+                  <th>Status</th>
+                  <th>Workflow</th>
+                  <th>Work Item</th>
+                  <th>Approvals</th>
+                  <th>Initiator</th>
+                  <th>Started</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="#run">R-8920</a></td>
+                  <td><span class="status status--warn">Paused</span></td>
+                  <td>Invoice correction</td>
+                  <td><a href="#work-item">WI-1099</a></td>
+                  <td><span class="status status--warn">1 pending</span></td>
+                  <td>Me</td>
+                  <td>12m ago</td>
+                </tr>
+                <tr>
+                  <td><a href="#run">R-8892</a></td>
+                  <td><span class="status status--info">Running</span></td>
+                  <td>Ticket priority update</td>
+                  <td><a href="#work-item">WI-1042</a></td>
+                  <td></td>
+                  <td>Me</td>
+                  <td>1h ago</td>
+                </tr>
+                <tr>
+                  <td><a href="#run">R-8850</a></td>
+                  <td><span class="status status--danger">Failed</span></td>
+                  <td>CRM sync</td>
+                  <td><a href="#work-item">WI-1021</a></td>
+                  <td></td>
+                  <td>Me</td>
+                  <td>3h ago</td>
+                </tr>
+                <tr>
+                  <td><a href="#run">R-8801</a></td>
+                  <td><span class="status status--ok">Succeeded</span></td>
+                  <td>Collect payment receipts</td>
+                  <td><a href="#work-item">WI-1105</a></td>
+                  <td></td>
+                  <td>Me</td>
+                  <td>1d ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================================
              SCREEN: WORK ITEM DETAIL (work_item_binder hub)
              ============================================================ -->
         <section
@@ -563,7 +656,7 @@
 
           <!-- SoR Ref Cluster (sor_ref_cluster) with port_family_icon -->
           <div class="card" style="margin-top: 12px">
-            <div class="card__title">ExternalObjectRefs (SoR Ref Cluster)</div>
+            <div class="card__title">Linked External Records</div>
             <div class="chips">
               <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
                 <span class="port-icon">FA</span> NetSuite | Invoice | INV-22318
@@ -666,7 +759,7 @@
 
           <!-- Effects diff section -->
           <article class="card" style="margin-top: 12px">
-            <div class="card__title">Effects (Planned vs Verified)</div>
+            <div class="card__title">Effects</div>
             <div class="effects">
               <div class="effects__section">
                 <div class="effects__title">Planned Effects</div>
@@ -714,7 +807,8 @@
           <div class="screen__header">
             <div>
               <div class="crumbs subtle">
-                <a href="#inbox">Inbox</a> / <a href="#work-item">WI-1099</a> /
+                <a href="#work-items">Work Items</a> / <a href="#work-item">WI-1099</a> /
+                <a href="#runs">Runs</a> /
               </div>
               <h1 id="h-run" class="h1">
                 Run R-8920 (Paused at Approval Gate)
@@ -745,8 +839,8 @@
           <div class="grid grid--2">
             <!-- Plan Review Block (plan_review_block) with Effects Diff (effects_diff) -->
             <article class="card">
-              <div class="card__title">Plan + Effects (Plan Review Block)</div>
-              <div class="card__meta subtle">Always separate Planned vs Predicted vs Verified</div>
+              <div class="card__title">Plan + Effects</div>
+              <div class="card__meta subtle">Review intended, predicted, and observed changes</div>
               <div class="effects">
                 <div class="effects__section">
                   <div class="effects__title">Planned Effects</div>
@@ -771,9 +865,9 @@
                   </div>
                 </div>
                 <div class="effects__section">
-                  <div class="effects__title">Predicted Effects (optional)</div>
+                  <div class="effects__title">Predicted Effects</div>
                   <div class="effects__hint subtle">
-                    The provider preview suggests... (never "will")
+                    The provider preview suggests these changes may occur
                   </div>
                   <div class="effects__list">
                     <div class="effect">
@@ -807,9 +901,9 @@
 
             <!-- Approval Gate Panel (approval_gate_panel) -->
             <article class="card">
-              <div class="card__title">Approval Gate (approval_gate_panel)</div>
+              <div class="card__title">Approval Gate</div>
               <div class="card__meta subtle">
-                Decision required due to tier/scopes/SoD constraints.
+                A decision is required before this Run can continue.
               </div>
 
               <!-- Policy Evaluation Card (policy_eval_card) -->
@@ -824,8 +918,8 @@
 
               <!-- Rationale Thread (rationale_thread) -->
               <div style="margin-bottom: 10px">
-                <div style="font-weight: 900; font-size: 13px; margin-bottom: 6px">
-                  Prior Decisions (Rationale Thread)
+                <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">
+                  Prior Decisions
                 </div>
                 <div class="subtle">
                   No prior decisions yet. This is the first approver in the sequence.
@@ -862,9 +956,9 @@
           </div>
 
           <article class="card" style="margin-top: 12px">
-            <div class="card__title">Evidence (Run-scoped)</div>
+            <div class="card__title">Evidence</div>
             <div class="card__meta subtle">
-              Append-only events with links to retention-managed payloads
+              Events recorded during this Run, with links to stored payloads
             </div>
             <div class="list">
               <div class="row row--static">
@@ -958,8 +1052,8 @@
 
           <!-- Inline Plan Review Block for focused review mode -->
           <article class="card" style="margin-top: 12px">
-            <div class="card__title">Focused Review: WI-1099 / R-8920 (Plan Review Block)</div>
-            <div class="card__meta subtle">Inline plan review for approver flow</div>
+            <div class="card__title">Focused Review: WI-1099 / R-8920</div>
+            <div class="card__meta subtle">Review the Plan before deciding</div>
             <div class="effects">
               <div class="effects__section">
                 <div class="effects__title">Planned Effects</div>
@@ -1001,9 +1095,7 @@
           <div class="screen__header">
             <div>
               <h1 id="h-evidence" class="h1">Evidence</h1>
-              <div class="subtle">
-                Explore and verify hash-chained evidence entries (Evidence Chain Viewer)
-              </div>
+              <div class="subtle">Explore and verify hash-chained evidence entries</div>
             </div>
             <div class="screen__actions">
               <button class="btn" type="button">Export verification report</button>
@@ -1098,10 +1190,8 @@
 
           <!-- Canonical Object Card (canonical_object_card) -->
           <article class="card" style="margin-top: 12px">
-            <div class="card__title">Linked Objects (Canonical Object Cards)</div>
-            <div class="card__meta subtle">
-              Affected SoR entities referenced in evidence entries
-            </div>
+            <div class="card__title">Linked Objects</div>
+            <div class="card__meta subtle">External system records referenced in these entries</div>
             <div class="grid grid--3">
               <div class="card">
                 <div class="card__title"><span class="port-icon">FA</span> Invoice</div>
@@ -1246,7 +1336,7 @@
 
               <!-- Capability Matrix Grid -->
               <div style="margin-top: 12px">
-                <div style="font-weight: 900; font-size: 13px; margin-bottom: 8px">
+                <div style="font-weight: 700; font-size: 13px; margin-bottom: 8px">
                   Capability Matrix (Stripe)
                 </div>
                 <div class="table-wrap">

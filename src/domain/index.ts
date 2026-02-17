@@ -17,3 +17,4 @@ export * from './work-items/index.js';
 export * from './ports/index.js';
 export * from './credentials/index.js';
 export * from './adapters/index.js';
+export * from './services/index.js';
