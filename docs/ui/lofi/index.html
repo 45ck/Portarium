@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portarium Low-Fi Prototype (v1)</title>
+    <link rel="stylesheet" href="./wireframe.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="app">
+      <header class="topbar" role="banner">
+        <div class="brand">
+          <div class="brand__mark" aria-hidden="true">P</div>
+          <div class="brand__text">
+            <div class="brand__title">Portarium</div>
+            <div class="brand__subtitle">Low-Fi Prototype (v1)</div>
+          </div>
+        </div>
+
+        <div class="controls" aria-label="Prototype controls">
+          <label class="control">
+            <span class="control__label">Persona</span>
+            <select id="persona" class="control__select">
+              <option value="operator">Operator</option>
+              <option value="approver">Approver</option>
+              <option value="auditor">Auditor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">Workspace</span>
+            <select id="workspaceType" class="control__select">
+              <option value="solo">Solo</option>
+              <option value="team">Team</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">State</span>
+            <select id="systemState" class="control__select">
+              <option value="normal">Normal</option>
+              <option value="empty">Empty</option>
+              <option value="misconfigured">Misconfigured</option>
+              <option value="policy-blocked">Policy blocked</option>
+              <option value="rbac-limited">RBAC limited</option>
+              <option value="degraded">Degraded realtime</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <aside class="sidebar" aria-label="Primary navigation">
+        <nav class="nav">
+          <a class="nav__item" href="#inbox">Workspace Inbox</a>
+          <a class="nav__item" href="#project">Project Overview</a>
+          <a class="nav__item" href="#work-items">Work Items</a>
+          <a class="nav__item" href="#work-item">Work Item Detail</a>
+          <a class="nav__item" href="#run">Run Detail</a>
+          <a class="nav__item" href="#approvals">Approvals</a>
+          <a class="nav__item" href="#evidence">Evidence</a>
+          <a class="nav__item" href="#settings">Settings (stub)</a>
+        </nav>
+
+        <div class="sidebar__hint">
+          <div class="hint-title">Navigation rules (v1)</div>
+          <div class="hint-body">
+            Default landing is the Workspace Inbox. Projects are scope and grouping; deep links preserve
+            context and allow returning to Inbox.
+          </div>
+        </div>
+      </aside>
+
+      <main id="main" class="main" tabindex="-1">
+        <div class="banner banner--warning js-banner-degraded" hidden>
+          Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
+        </div>
+
+        <div class="banner banner--danger js-banner-misconfigured" hidden>
+          Setup required: no provider configured for this Port Family (missing credentials/scopes).
+          <a href="#settings">Go to Workspace settings</a>.
+        </div>
+
+        <div class="banner banner--danger js-banner-policy" hidden>
+          Policy blocked: this action is Manual-only or requires additional approvals. Review the policy
+          rationale and remediation steps before continuing.
+        </div>
+
+        <div class="banner banner--danger js-banner-rbac" hidden>
+          You can view this, but cannot act (RBAC). Ask a Workspace Admin for access.
+        </div>
+
+        <section id="screen-inbox" class="screen" data-screen="inbox" aria-labelledby="h-inbox">
+          <div class="card">
+            <div class="card__title">Workspace Inbox</div>
+            <div class="card__meta subtle">
+              Placeholder. This file is built in chunks to avoid Windows command-length limits.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./wireframe.js" type="module"></script>
+  </body>
+</html>
+

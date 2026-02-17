@@ -13,3 +13,6 @@
 [submodule "domain-atlas/upstreams/mautic"]
 	path = domain-atlas/upstreams/mautic
 	url = https://github.com/mautic/mautic
+[submodule "domain-atlas/upstreams/vault"]
+	path = domain-atlas/upstreams/vault
+	url = https://github.com/hashicorp/vault
