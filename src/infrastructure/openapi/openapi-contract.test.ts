@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { appendEvidenceEntryV1 } from '../../domain/evidence/evidence-chain-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
+import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
 import {
   EvidenceId,
   HashSha256,
@@ -152,6 +153,8 @@ describe('OpenAPI contract', () => {
       '/v1/workspaces/{workspaceId}',
       '/v1/workspaces/{workspaceId}/users',
       '/v1/workspaces/{workspaceId}/users/{userId}',
+      '/v1/workspaces/{workspaceId}/work-items',
+      '/v1/workspaces/{workspaceId}/work-items/{workItemId}',
       '/v1/workspaces/{workspaceId}/plans/{planId}',
       '/v1/workspaces/{workspaceId}/evidence',
     ];
@@ -188,7 +191,7 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
-  it('PlanV1 and EvidenceEntryV1 schemas validate representative payloads', async () => {
+  it('PlanV1, EvidenceEntryV1, and WorkItemV1 schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
@@ -265,5 +268,45 @@ describe('OpenAPI contract', () => {
 
     const invalidEvidence = { ...evidence, hashSha256: HashSha256('not-a-sha') };
     expect(validateEvidence(invalidEvidence)).toBe(false);
+
+    const workItemSchema = buildJsonSchemaFromComponents({
+      rootName: 'WorkItemV1',
+      componentsSchemas: schemas,
+    });
+    const validateWorkItem = ajv.compile(workItemSchema);
+
+    const workItem = {
+      schemaVersion: 1,
+      workItemId: 'wi-1',
+      workspaceId: 'ws-1',
+      createdAtIso: '2026-02-16T00:00:00.000Z',
+      createdByUserId: 'user-1',
+      title: 'Investigate PROJ-123',
+      status: 'Open',
+      ownerUserId: 'user-2',
+      sla: { dueAtIso: '2026-02-20T00:00:00.000Z' },
+      links: {
+        externalRefs: [
+          {
+            sorName: 'jira',
+            portFamily: 'ProjectsWorkMgmt',
+            externalId: 'PROJ-123',
+            externalType: 'Issue',
+            displayLabel: 'PROJ-123',
+            deepLinkUrl: 'https://jira.example.com/browse/PROJ-123',
+          },
+        ],
+        runIds: ['run-1'],
+        approvalIds: ['approval-1'],
+        evidenceIds: ['evi-1'],
+      },
+    };
+
+    expect(() => parseWorkItemV1(workItem)).not.toThrow();
+    expect(() => validateOrThrow(validateWorkItem, workItem)).not.toThrow();
+
+    const invalidWorkItem = { ...workItem, status: 'Unknown' };
+    expect(() => parseWorkItemV1(invalidWorkItem)).toThrow(/status/i);
+    expect(validateWorkItem(invalidWorkItem)).toBe(false);
   });
 });

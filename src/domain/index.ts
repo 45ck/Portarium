@@ -7,4 +7,6 @@ export * from './plan/index.js';
 export * from './evidence/index.js';
 export * from './versioning/index.js';
 export * from './packs/index.js';
+export * from './quota/index.js';
+export * from './event-stream/index.js';
 export * from './work-items/index.js';

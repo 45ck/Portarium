@@ -15,6 +15,17 @@ This document describes the initial UX and UI structure for the **Project (Conta
 - Optimize for control-plane tasks:
   - Start workflows/runbooks, monitor Runs, handle Approval Gates, and review Evidence.
 
+## Default Landing + Navigation Rules (v1)
+
+- Default landing is the **Workspace Inbox**, not a Project.
+  - Rationale: operators and approvers start from "what needs attention" (Approval Gates, failures, violations).
+- A **Project** is a scope and grouping tool:
+  - You can do everything from Workspace surfaces, then filter/scope to a Project when helpful.
+- Deep links must preserve context:
+  - Entering from Inbox (e.g., Approval Gate) should link into the relevant Run/Work Item and allow returning to Inbox.
+- Collaboration is optional, not required:
+  - If ownership/assignment is not used, the UI still functions with "created by" and "recent activity."
+
 ## Non-goals (v1)
 
 - Full visual design system specification (tokens, typography, full component library).
@@ -44,13 +55,34 @@ The UI does not have "team mode" vs "personal mode". It has:
   - Show assignment/mentions/roles in the UI, but do not require them to create value.
   - Approval Gate UI must handle 1-approver (solo) and N-approver / SoD constraints (teams).
 
+### Solo vs Team UX Rules (v1)
+
+- Solo Workspaces:
+  - Default owner on new Work Items is the current user.
+  - Approval Gates are still shown, but if maker-checker / SoD requires a distinct approver, the UI must clearly say "cannot self-approve" and what to do next.
+- Team Workspaces:
+  - Surface "unassigned" and queue health prominently (especially Approvals and Work Items).
+  - Always show the actor identity on Evidence entries (User/Machine/Adapter/System) to support accountability.
+
+## Role Defaults (v1)
+
+The UI should feel coherent because defaults differ by persona. This is not separate "modes"; it is default filters, navigation order, and copy.
+
+| Persona  | Primary surface defaults                                        | Primary actions                                            | Notes                                                    |
+| -------- | --------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
+| Operator | Inbox: run failures, blocked Runs, Work Items needing attention | Start workflow/runbook, retry run, link ExternalObjectRefs | Optimize for throughput and clarity on "what to do next" |
+| Approver | Inbox: pending Approval Gates (assigned to me)                  | Approve/deny/request changes with rationale                | Must see Plan + policy context first, payloads second    |
+| Auditor  | Evidence (Project/Workspace) with verification affordances      | Filter, export verification bundle/report                  | Read-first; commands likely restricted                   |
+| Admin    | Workspace settings entry points                                 | Manage RBAC, policies, credentials, adapters/providers     | Needs strong "impact and blast radius" explanations      |
+
 ## Information Architecture
 
 ### Global (Workspace-level) surfaces
 
 - Workspace switcher (top left).
+- Inbox (default landing; approvals, failures, violations, mentions/assignments).
 - Global search (Work Items, Runs, Evidence, ExternalObjectRefs).
-- Notifications/inbox (Approval Gates, run failures, policy violations).
+- Notifications (secondary; mirrors Inbox items for quick access).
 - Workspace settings (RBAC, credential vaulting, adapters/providers, policies).
 
 ### Project-level navigation (primary experience)
@@ -98,6 +130,13 @@ These journeys are intentionally identical for teams and individuals; collaborat
 2. Filter by Work Item and category (Plan/Approval/Action/System).
 3. Verify a contiguous hash chain segment and spot-check key entries.
 4. Export a verification report or evidence bundle (v1: minimal; expand later).
+
+## Center Of Gravity: Work Item Detail (v1)
+
+To avoid duplicate "detail pages that all feel like dashboards," v1 should treat **Work Item Detail** as the primary hub.
+
+- Work Item Detail contains the unified story: ExternalObjectRefs + Runs + Approval Gates + Evidence.
+- Run Detail exists as a focused view for execution debugging and deep evidence, and always links back to its Work Item.
 
 ### 1) Project Overview
 
@@ -151,6 +190,10 @@ This is the default "single pane" where operators and auditors converge.
   - Start workflow/runbook (context-aware)
   - Request approval (if manual plan creation exists)
   - Attach ExternalObjectRef
+- Tabs/panels (v1):
+  - Runs (list + link to Run Detail)
+  - Approvals (pending + resolved, scoped to this Work Item)
+  - Evidence (scoped to this Work Item; with filters)
 
 ### 4) Runs List + Run Detail
 
@@ -165,8 +208,9 @@ Run detail:
 
 - Status + timeline (queued -> running -> paused at Approval Gate -> succeeded/failed)
 - Plan panel:
-  - Planned Effects list (Create/Update/Delete/Upsert), each with ExternalObjectRef target + one-line summary
-  - Predicted Effects shown only if present, with confidence
+  - Planned Effects (always)
+  - Predicted Effects (only if present; never shown as "will happen")
+  - Verified Effects (when available post-run; drawn from evidence)
 - Approval Gate panel (when paused):
   - What decision is needed and why (policy, tier, scopes)
   - Approve / deny / request changes (with rationale text)
@@ -202,6 +246,21 @@ Evidence is the audit backbone. The UI should make it explorable and verifiable.
   - Show "chain verified" badge for a contiguous range
   - Allow exporting a verification report (v1: UI stub + JSON download later)
 
+## System States (v1)
+
+Every primary surface needs explicit handling for these states, with a clear "next action" and a return path:
+
+- Empty:
+  - No Work Items in Project, no Runs yet.
+- Misconfigured:
+  - No adapter/provider selected for a port; missing credentials; missing scopes.
+- Policy blocked:
+  - Execution Tier is Manual-only or requires additional approvals; show the rule and remediation.
+- Permission limited (RBAC):
+  - User can view but cannot act; show why and who can grant access.
+- Degraded realtime:
+  - Event stream unavailable; UI falls back to polling and communicates staleness.
+
 ## Key Interaction Patterns
 
 - Progressive disclosure:
@@ -212,6 +271,24 @@ Evidence is the audit backbone. The UI should make it explorable and verifiable.
   - ExternalObjectRefs should always provide a safe deep link to the SoR entity when available.
 - Permission clarity:
   - If an action is unavailable, show the reason (RBAC, policy tier, missing provider capability).
+
+## Effects Presentation Rules (v1)
+
+Effects are the core trust UI. Use one consistent component everywhere (Run Detail, Approval detail, Work Item hub).
+
+- Always render sections in this order:
+  - Planned Effects
+  - Predicted Effects (optional)
+  - Verified Effects (post-run)
+- Copy rules:
+  - Planned: "Portarium intends to..."
+  - Predicted: "The provider preview suggests..." (never "will")
+  - Verified: "Observed change"
+- Each effect row shows:
+  - operation (Create/Update/Delete/Upsert)
+  - target (ExternalObjectRef)
+  - one-line summary
+  - idempotency context when available (idempotency key or "retry-safe" cue)
 
 ## Content and Naming
 

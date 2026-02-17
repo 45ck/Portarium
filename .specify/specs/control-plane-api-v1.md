@@ -1,4 +1,4 @@
-# Control Plane API v1 (Workspaces + Users)
+# Control Plane API v1 (Workspaces + Users + Work Items)
 
 ## Purpose
 
@@ -34,6 +34,17 @@ User is a Workspace-scoped entity (see `docs/domain/aggregates.md` invariants):
 - `roles`: non-empty array of roles
 - `active`: boolean
 - `createdAtIso`: RFC3339 timestamp
+
+## Work Items
+
+Work Items are the universal binding object (ADR-0038). Schema: see `work-item-v1.md`.
+
+Endpoints (v1):
+
+- `GET /v1/workspaces/{workspaceId}/work-items`
+- `POST /v1/workspaces/{workspaceId}/work-items`
+- `GET /v1/workspaces/{workspaceId}/work-items/{workItemId}`
+- `PATCH /v1/workspaces/{workspaceId}/work-items/{workItemId}`
 
 ## Plan / Evidence Schemas
 

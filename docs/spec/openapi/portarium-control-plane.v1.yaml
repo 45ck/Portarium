@@ -14,6 +14,7 @@ servers:
 tags:
   - name: Workspaces
   - name: Users
+  - name: WorkItems
   - name: Plans
   - name: Evidence
 paths:
@@ -154,6 +155,94 @@ paths:
           description: No Content
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/work-items:
+    get:
+      tags: [WorkItems]
+      summary: List work items in a workspace
+      operationId: listWorkItems
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemStatusQuery'
+        - $ref: '#/components/parameters/WorkItemOwnerUserIdQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [WorkItems]
+      summary: Create a work item
+      operationId: createWorkItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkItemRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/work-items/{workItemId}:
+    get:
+      tags: [WorkItems]
+      summary: Get a work item
+      operationId: getWorkItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [WorkItems]
+      summary: Update a work item
+      operationId: updateWorkItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkItemRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV1'
+        default:
+          $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/plans/{planId}:
     get:
       tags: [Plans]
@@ -222,6 +311,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/PlanId'
+    WorkItemIdPath:
+      name: workItemId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/WorkItemId'
     LimitQuery:
       name: limit
       in: query
@@ -238,6 +333,18 @@ components:
       schema:
         type: string
         minLength: 1
+    WorkItemStatusQuery:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkItemStatus'
+    WorkItemOwnerUserIdQuery:
+      name: ownerUserId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/UserId'
     EvidenceRunIdQuery:
       name: runId
       in: query
@@ -319,6 +426,10 @@ components:
       type: string
       minLength: 1
       description: Opaque work item identifier
+    ApprovalId:
+      type: string
+      minLength: 1
+      description: Opaque approval identifier
     EvidenceId:
       type: string
       minLength: 1
@@ -478,6 +589,115 @@ components:
           type: string
           format: uri
       required: [sorName, portFamily, externalId, externalType]
+    WorkItemStatus:
+      type: string
+      enum: [Open, Closed]
+    WorkItemSlaV1:
+      type: object
+      additionalProperties: false
+      properties:
+        dueAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+    WorkItemLinksV1:
+      type: object
+      additionalProperties: false
+      properties:
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
+        runIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunId'
+        approvalIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalId'
+        evidenceIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceId'
+    WorkItemV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        createdByUserId:
+          $ref: '#/components/schemas/UserId'
+        title:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/WorkItemStatus'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        links:
+          $ref: '#/components/schemas/WorkItemLinksV1'
+      required:
+        - schemaVersion
+        - workItemId
+        - workspaceId
+        - createdAtIso
+        - createdByUserId
+        - title
+        - status
+    WorkItemListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkItemV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateWorkItemRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
+      required: [title]
+    UpdateWorkItemRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/WorkItemStatus'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
     EffectOperation:
       type: string
       enum: [Create, Update, Delete, Upsert]

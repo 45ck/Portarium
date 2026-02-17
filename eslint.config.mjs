@@ -139,5 +139,15 @@ export default tseslint.config(
     },
   },
 
+  // UI wireframes/prototypes live in docs and legitimately use browser globals.
+  {
+    files: ['docs/ui/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+
   eslintConfigPrettier,
 );

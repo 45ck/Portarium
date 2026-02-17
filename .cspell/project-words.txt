@@ -39,6 +39,11 @@ lockfiles
 Backtracking
 backtracking
 uiTemplates
+lofi
+topbar
+tabpane
+tabpanes
+workitems
 
 # Branded IDs (existing)
 WorkspaceId
@@ -535,3 +540,10 @@ testdata
 Airbyte
 Rundeck
 immudb
+
+# UI / wireframe terms
+lofi
+tabpane
+tabpanes
+topbar
+workitems
