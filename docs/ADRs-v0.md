@@ -43,6 +43,22 @@
 - **ADR-037** Deployment & collaboration model: server-first, local-first _(new)_
 - **ADR-038** Work Items as the universal binding object (thin PM layer) _(new)_
 - **ADR-039** Software change management as a reference vertical _(new)_
+- **ADR-040** Versioned vertical packs: manifest + registry + resolver _(new)_
+- **ADR-041** Gate integrity baseline _(new)_
+- **ADR-042** Dependency vulnerability gate (npm audit) _(new)_
+- **ADR-043** Control plane API contract (OpenAPI) _(proposed)_
+- **ADR-044** Vertical pack layering model: microkernel core + governed packs _(new)_
+- **ADR-045** Vertical pack format and versioning _(new)_
+- **ADR-046** Vertical pack schema extension mechanism _(new)_
+- **ADR-047** Vertical pack workflow extension and composition _(new)_
+- **ADR-048** Vertical pack UI templating and theming _(new)_
+- **ADR-049** Vertical pack data storage and tenancy isolation _(new)_
+- **ADR-050** Vertical pack connector mapping to systems of record _(new)_
+- **ADR-051** Vertical pack testing and CI/CD _(new)_
+- **ADR-052** Vertical pack support and lifecycle policy _(new)_
+- **ADR-053** Vertical pack security, privacy, and compliance _(new)_
+- **ADR-054** Vertical pack observability and telemetry _(new)_
+- **ADR-055** Vertical pack rollout and migration strategy _(new)_
 
 ---
 

@@ -99,6 +99,45 @@ export type ProjectId = Branded<string, 'ProjectId'>;
 /** Unique identifier for a credential grant. */
 export type CredentialGrantId = Branded<string, 'CredentialGrantId'>;
 
+/** Unique identifier for a party (person, org, etc.). */
+export type PartyId = Branded<string, 'PartyId'>;
+
+/** Unique identifier for a support ticket. */
+export type TicketId = Branded<string, 'TicketId'>;
+
+/** Unique identifier for an invoice. */
+export type InvoiceId = Branded<string, 'InvoiceId'>;
+
+/** Unique identifier for a payment. */
+export type PaymentId = Branded<string, 'PaymentId'>;
+
+/** Unique identifier for a canonical task (avoids DOM Task collision). */
+export type CanonicalTaskId = Branded<string, 'CanonicalTaskId'>;
+
+/** Unique identifier for a marketing campaign. */
+export type CampaignId = Branded<string, 'CampaignId'>;
+
+/** Unique identifier for an asset. */
+export type AssetId = Branded<string, 'AssetId'>;
+
+/** Unique identifier for a document. */
+export type DocumentId = Branded<string, 'DocumentId'>;
+
+/** Unique identifier for a subscription. */
+export type SubscriptionId = Branded<string, 'SubscriptionId'>;
+
+/** Unique identifier for a sales opportunity. */
+export type OpportunityId = Branded<string, 'OpportunityId'>;
+
+/** Unique identifier for a product. */
+export type ProductId = Branded<string, 'ProductId'>;
+
+/** Unique identifier for an order. */
+export type OrderId = Branded<string, 'OrderId'>;
+
+/** Unique identifier for a financial account. */
+export type FinancialAccountId = Branded<string, 'FinancialAccountId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -126,6 +165,23 @@ export const UserId = (value: string): UserId => brand<string, 'UserId'>(value);
 export const ProjectId = (value: string): ProjectId => brand<string, 'ProjectId'>(value);
 export const CredentialGrantId = (value: string): CredentialGrantId =>
   brand<string, 'CredentialGrantId'>(value);
+export const PartyId = (value: string): PartyId => brand<string, 'PartyId'>(value);
+export const TicketId = (value: string): TicketId => brand<string, 'TicketId'>(value);
+export const InvoiceId = (value: string): InvoiceId => brand<string, 'InvoiceId'>(value);
+export const PaymentId = (value: string): PaymentId => brand<string, 'PaymentId'>(value);
+export const CanonicalTaskId = (value: string): CanonicalTaskId =>
+  brand<string, 'CanonicalTaskId'>(value);
+export const CampaignId = (value: string): CampaignId => brand<string, 'CampaignId'>(value);
+export const AssetId = (value: string): AssetId => brand<string, 'AssetId'>(value);
+export const DocumentId = (value: string): DocumentId => brand<string, 'DocumentId'>(value);
+export const SubscriptionId = (value: string): SubscriptionId =>
+  brand<string, 'SubscriptionId'>(value);
+export const OpportunityId = (value: string): OpportunityId =>
+  brand<string, 'OpportunityId'>(value);
+export const ProductId = (value: string): ProductId => brand<string, 'ProductId'>(value);
+export const OrderId = (value: string): OrderId => brand<string, 'OrderId'>(value);
+export const FinancialAccountId = (value: string): FinancialAccountId =>
+  brand<string, 'FinancialAccountId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

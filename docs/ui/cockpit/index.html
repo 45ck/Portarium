@@ -23,9 +23,15 @@
         </div>
 
         <div class="topbar__center">
-          <input class="topbar__search" type="search" placeholder="Search Work Items, Runs, Evidence, SoR refs..." aria-label="Global search" />
+          <input
+            class="topbar__search"
+            type="search"
+            placeholder="Search Work Items, Runs, Evidence, SoR refs..."
+            aria-label="Global search"
+          />
           <button class="topbar__notifications" type="button" aria-label="Notifications">
-            Notifications <span class="status status--warn" style="padding:2px 6px;font-size:10px">3</span>
+            Notifications
+            <span class="status status--warn" style="padding: 2px 6px; font-size: 10px">3</span>
           </button>
         </div>
 
@@ -84,7 +90,8 @@
         <div class="sidebar__hint">
           <div class="hint-title js-persona-hint-title">Operator mode</div>
           <div class="hint-body js-persona-hint-body">
-            Failures and blocks surfaced first. Use quick actions to start workflows or retry failed runs.
+            Failures and blocks surfaced first. Use quick actions to start workflows or retry failed
+            runs.
           </div>
         </div>
       </aside>
@@ -119,12 +126,16 @@
             </div>
             <div class="screen__actions">
               <a class="btn btn--primary js-inbox-cta" href="#work-item">Start workflow</a>
-              <button class="btn js-drawer-trigger" type="button" data-drawer="context">Context</button>
+              <button class="btn js-drawer-trigger" type="button" data-drawer="context">
+                Context
+              </button>
             </div>
           </div>
 
           <div class="filters">
-            <span class="chip chip--active js-filter-persona">Default filters: failures + blocks</span>
+            <span class="chip chip--active js-filter-persona"
+              >Default filters: failures + blocks</span
+            >
             <span class="chip">Assigned to me</span>
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Pending approvals</span>
@@ -134,22 +145,29 @@
           <!-- Next action prompt (domain primitive) -->
           <div class="next-action js-nonempty-inbox">
             <div>
-              <div class="next-action__text js-next-action-text">Run R-8850 failed: CRM sync hit rate limit. Retry available.</div>
-              <div class="next-action__subtle">Recommended: retry after rate limit window expires</div>
+              <div class="next-action__text js-next-action-text">
+                Run R-8850 failed: CRM sync hit rate limit. Retry available.
+              </div>
+              <div class="next-action__subtle">
+                Recommended: retry after rate limit window expires
+              </div>
             </div>
             <a class="btn btn--primary btn--small" href="#run">Retry run</a>
           </div>
 
           <div class="empty js-empty-inbox" hidden>
             <div class="empty__title">Inbox is empty</div>
-            <div class="empty__body">No pending approvals, failures, or policy violations. When items need attention, they will appear here.</div>
+            <div class="empty__body">
+              No pending approvals, failures, or policy violations. When items need attention, they
+              will appear here.
+            </div>
             <div class="empty__actions">
               <a class="btn btn--primary" href="#work-item">Create Work Item</a>
             </div>
           </div>
 
-          <div class="grid grid--2 js-nonempty-inbox">
-            <article class="card">
+          <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
+            <article class="card" data-inbox-section="approvals">
               <div class="card__title">Pending Approval Gates</div>
               <div class="card__meta subtle">Approver default: items assigned to me</div>
               <div class="list">
@@ -172,16 +190,14 @@
                       Approve Plan: Update Ticket priority in Zendesk
                       <span class="tier-badge tier-badge--human">Human-approve</span>
                     </div>
-                    <div class="row__subtle">
-                      Project: Customer Support Ops | WI-1042 | R-8892
-                    </div>
+                    <div class="row__subtle">Project: Customer Support Ops | WI-1042 | R-8892</div>
                   </div>
                   <div class="row__right"><span class="status status--warn">Pending</span></div>
                 </a>
               </div>
             </article>
 
-            <article class="card">
+            <article class="card" data-inbox-section="failures">
               <div class="card__title">Run Failures</div>
               <div class="card__meta subtle">Operator default: failures first</div>
               <div class="list">
@@ -206,30 +222,87 @@
             </article>
           </div>
 
-          <div class="grid grid--2 js-nonempty-inbox">
-            <article class="card">
+          <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
+            <article class="card" data-inbox-section="violations">
               <div class="card__title">Policy Violations</div>
               <div class="card__meta subtle">Visible to Operators and Admins (RBAC)</div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">SoD constraint: maker-checker required</div>
-                    <div class="row__subtle">Initiator cannot approve. Assign an approver or update policy.</div>
+                    <div class="row__subtle">
+                      Initiator cannot approve. Assign an approver or update policy.
+                    </div>
+                    <div class="row__actions" style="margin-top: 6px; display: flex; gap: 6px">
+                      <a class="btn btn--small btn--primary" href="#work-item">Assign approver</a>
+                      <a class="btn btn--small" href="#settings">Edit policy</a>
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--warn">Needs action</span></div>
+                  <div class="row__right">
+                    <span class="status status--warn">Needs action</span>
+                  </div>
                 </div>
               </div>
             </article>
-            <article class="card">
-              <div class="card__title">Quick Search</div>
-              <div class="card__meta subtle">Search Work Items, Runs, Evidence, ExternalObjectRefs</div>
-              <div class="form">
-                <label class="field">
-                  <span class="field__label">Search</span>
-                  <input class="field__input" placeholder="e.g., WI-1042, R-8892, Zendesk ticket 4831" />
-                </label>
-                <div class="form__actions">
-                  <button class="btn btn--primary" type="button">Search</button>
+            <!-- Quick Search removed (Fix 2): duplicates topbar search bar -->
+
+            <article class="card" data-inbox-section="evidence" hidden>
+              <div class="card__title">Recent Evidence</div>
+              <div class="card__meta subtle">
+                Auditor default: latest evidence entries and chain status
+              </div>
+              <div class="list">
+                <a class="row" href="#evidence" style="text-decoration: none">
+                  <div class="row__main">
+                    <div class="row__title">12 new evidence entries (last 24h)</div>
+                    <div class="row__subtle">
+                      Chain integrity: verified (120-146). No gaps detected.
+                    </div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok">Verified</span></div>
+                </a>
+                <a class="row" href="#evidence" style="text-decoration: none">
+                  <div class="row__main">
+                    <div class="row__title">2 entries approaching retention expiry</div>
+                    <div class="row__subtle">Category: Approval | 30 days remaining</div>
+                  </div>
+                  <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                </a>
+              </div>
+            </article>
+
+            <article class="card" data-inbox-section="health" hidden>
+              <div class="card__title">Workspace Health</div>
+              <div class="card__meta subtle">
+                Admin default: configuration status and diagnostics
+              </div>
+              <div class="list">
+                <a class="row" href="#settings" style="text-decoration: none">
+                  <div class="row__main">
+                    <div class="row__title">CrmSales: no adapter configured</div>
+                    <div class="row__subtle">
+                      Port family missing provider. Work Items using CRM refs will be blocked.
+                    </div>
+                  </div>
+                  <div class="row__right"><span class="status status--danger">Missing</span></div>
+                </a>
+                <a class="row" href="#settings" style="text-decoration: none">
+                  <div class="row__main">
+                    <div class="row__title">NetSuite OAuth credential expiring</div>
+                    <div class="row__subtle">
+                      Expires 2026-03-15. Rotate or renew to avoid disruption.
+                    </div>
+                  </div>
+                  <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                </a>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">3 of 4 port families configured</div>
+                    <div class="row__subtle">
+                      PaymentsBilling, FinanceAccounting, CustomerSupport: OK
+                    </div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok">Healthy</span></div>
                 </div>
               </div>
             </article>
@@ -239,7 +312,12 @@
         <!-- ============================================================
              SCREEN: PROJECT OVERVIEW
              ============================================================ -->
-        <section id="screen-project" class="screen" data-screen="project" aria-labelledby="h-project">
+        <section
+          id="screen-project"
+          class="screen"
+          data-screen="project"
+          aria-labelledby="h-project"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-project" class="h1">Project Overview</h1>
@@ -248,7 +326,9 @@
             <div class="screen__actions">
               <a class="btn btn--primary" href="#work-item">Create Work Item</a>
               <a class="btn" href="#work-items">View Work Items</a>
-              <button class="btn js-drawer-trigger" type="button" data-drawer="context">Context</button>
+              <button class="btn js-drawer-trigger" type="button" data-drawer="context">
+                Context
+              </button>
             </div>
           </div>
 
@@ -273,20 +353,28 @@
               <div class="card__meta subtle">Execution tier distribution (effective)</div>
               <div class="bars">
                 <div class="bar">
-                  <span class="bar__label"><span class="tier-badge tier-badge--auto">Auto</span></span>
-                  <span class="bar__fill" style="width:45%"></span>
+                  <span class="bar__label"
+                    ><span class="tier-badge tier-badge--auto">Auto</span></span
+                  >
+                  <span class="bar__fill" style="width: 45%"></span>
                 </div>
                 <div class="bar">
-                  <span class="bar__label"><span class="tier-badge tier-badge--assisted">Assisted</span></span>
-                  <span class="bar__fill" style="width:30%"></span>
+                  <span class="bar__label"
+                    ><span class="tier-badge tier-badge--assisted">Assisted</span></span
+                  >
+                  <span class="bar__fill" style="width: 30%"></span>
                 </div>
                 <div class="bar">
-                  <span class="bar__label"><span class="tier-badge tier-badge--human">Human</span></span>
-                  <span class="bar__fill" style="width:20%"></span>
+                  <span class="bar__label"
+                    ><span class="tier-badge tier-badge--human">Human</span></span
+                  >
+                  <span class="bar__fill" style="width: 20%"></span>
                 </div>
                 <div class="bar">
-                  <span class="bar__label"><span class="tier-badge tier-badge--manual">Manual</span></span>
-                  <span class="bar__fill" style="width:5%"></span>
+                  <span class="bar__label"
+                    ><span class="tier-badge tier-badge--manual">Manual</span></span
+                  >
+                  <span class="bar__fill" style="width: 5%"></span>
                 </div>
               </div>
               <div class="callout">
@@ -301,14 +389,19 @@
                 <a class="row" href="#work-item">
                   <div class="row__main">
                     <div class="row__title">Start runbook: Invoice correction</div>
-                    <div class="row__subtle"><span class="tier-badge tier-badge--assisted">Assisted</span> Approval Gate likely</div>
+                    <div class="row__subtle">
+                      <span class="tier-badge tier-badge--assisted">Assisted</span> Approval Gate
+                      likely
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--info">Runbook</span></div>
                 </a>
                 <a class="row" href="#work-item">
                   <div class="row__main">
                     <div class="row__title">Start workflow: Collect payment receipts</div>
-                    <div class="row__subtle"><span class="tier-badge tier-badge--auto">Auto</span> evidence payloads stored</div>
+                    <div class="row__subtle">
+                      <span class="tier-badge tier-badge--auto">Auto</span> evidence payloads stored
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--info">Workflow</span></div>
                 </a>
@@ -320,7 +413,12 @@
         <!-- ============================================================
              SCREEN: WORK ITEMS
              ============================================================ -->
-        <section id="screen-work-items" class="screen" data-screen="work-items" aria-labelledby="h-work-items">
+        <section
+          id="screen-work-items"
+          class="screen"
+          data-screen="work-items"
+          aria-labelledby="h-work-items"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-work-items" class="h1">Work Items</h1>
@@ -341,7 +439,10 @@
 
           <div class="empty js-empty-workitems" hidden>
             <div class="empty__title">No Work Items yet</div>
-            <div class="empty__body">A Work Item binds ExternalObjectRefs, Runs, Approvals, and Evidence. Create one to start governed work.</div>
+            <div class="empty__body">
+              A Work Item binds ExternalObjectRefs, Runs, Approvals, and Evidence. Create one to
+              start governed work.
+            </div>
             <div class="empty__actions">
               <a class="btn btn--primary" href="#work-item">Create Work Item</a>
               <a class="btn" href="#settings">Configure integrations</a>
@@ -364,7 +465,11 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099">WI-1099 Invoice correction for ACME</a></td>
+                  <td>
+                    <a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099"
+                      >WI-1099 Invoice correction for ACME</a
+                    >
+                  </td>
                   <td><span class="status status--warn">Needs approval</span></td>
                   <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
                   <td>Me</td>
@@ -381,7 +486,9 @@
                   <td><span class="status status--info">In progress</span></td>
                   <td><span class="tier-badge tier-badge--assisted">Assisted</span></td>
                   <td class="js-owner-unassigned">Unassigned</td>
-                  <td><span class="chip"><span class="port-icon">PB</span> Stripe</span></td>
+                  <td>
+                    <span class="chip"><span class="port-icon">PB</span> Stripe</span>
+                  </td>
                   <td><span class="status status--info">Running</span></td>
                   <td></td>
                   <td>18m</td>
@@ -404,7 +511,9 @@
                   <td><span class="status status--ok">Completed</span></td>
                   <td><span class="tier-badge tier-badge--auto">Auto</span></td>
                   <td>Me</td>
-                  <td><span class="chip"><span class="port-icon">CS</span> Salesforce</span></td>
+                  <td>
+                    <span class="chip"><span class="port-icon">CS</span> Salesforce</span>
+                  </td>
                   <td><span class="status status--ok">Succeeded</span></td>
                   <td><span class="drift-badge">drift</span></td>
                   <td>1d</td>
@@ -417,7 +526,12 @@
         <!-- ============================================================
              SCREEN: WORK ITEM DETAIL (work_item_binder hub)
              ============================================================ -->
-        <section id="screen-work-item" class="screen" data-screen="work-item" aria-labelledby="h-work-item">
+        <section
+          id="screen-work-item"
+          class="screen"
+          data-screen="work-item"
+          aria-labelledby="h-work-item"
+        >
           <div class="screen__header">
             <div>
               <div class="crumbs subtle">
@@ -429,31 +543,35 @@
                 <span class="sod-badge">SoD: maker-checker</span>
               </h1>
               <div class="subtle">
-                Owner: <strong>Me</strong> | Status: <span class="status status--warn">Needs approval</span>
+                Owner: <strong>Me</strong> | Status:
+                <span class="status status--warn">Needs approval</span>
               </div>
             </div>
             <div class="screen__actions">
               <a class="btn btn--primary" href="#run">Start workflow/runbook</a>
               <button class="btn" type="button">Attach ExternalObjectRef</button>
-              <button class="btn js-drawer-trigger" type="button" data-drawer="wi-1099">Context</button>
+              <button class="btn js-drawer-trigger" type="button" data-drawer="wi-1099">
+                Context
+              </button>
             </div>
           </div>
 
           <div class="callout callout--policy">
-            Effective policy: Execution Tier <strong>Human-approve</strong>. SoD constraint: maker-checker may require a distinct approver.
+            Effective policy: Execution Tier <strong>Human-approve</strong>. SoD constraint:
+            maker-checker may require a distinct approver.
           </div>
 
           <!-- SoR Ref Cluster (sor_ref_cluster) with port_family_icon -->
-          <div class="card" style="margin-top:12px">
+          <div class="card" style="margin-top: 12px">
             <div class="card__title">ExternalObjectRefs (SoR Ref Cluster)</div>
             <div class="chips">
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor:pointer">
+              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
                 <span class="port-icon">FA</span> NetSuite | Invoice | INV-22318
               </span>
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor:pointer">
+              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
                 <span class="port-icon">PB</span> Stripe | Charge | ch_9d2a
               </span>
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor:pointer">
+              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
                 <span class="port-icon">CS</span> Zendesk | Ticket | 4831
               </span>
             </div>
@@ -468,19 +586,32 @@
           </div>
 
           <div class="tabpanes">
-            <div class="tabpane tabpane--active" data-pane="timeline" role="region" aria-label="Timeline pane">
+            <div
+              class="tabpane tabpane--active"
+              data-pane="timeline"
+              role="region"
+              aria-label="Timeline pane"
+            >
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
-                    <div class="row__title">Plan created <span class="idem-badge idem-badge--safe">retry-safe</span></div>
-                    <div class="row__subtle">Actor: User | Portarium intends to update invoice fields.</div>
+                    <div class="row__title">
+                      Plan created <span class="idem-badge idem-badge--safe">retry-safe</span>
+                    </div>
+                    <div class="row__subtle">
+                      Actor: User | Portarium intends to update invoice fields.
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--info">Plan</span></div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
-                    <div class="row__title">Approval Gate opened <span class="idem-badge">at-most-once</span></div>
-                    <div class="row__subtle">Actor: System | Waiting on decision with rationale</div>
+                    <div class="row__title">
+                      Approval Gate opened <span class="idem-badge">at-most-once</span>
+                    </div>
+                    <div class="row__subtle">
+                      Actor: System | Waiting on decision with rationale
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--warn">Approval</span></div>
                 </div>
@@ -511,7 +642,9 @@
                 <a class="row" href="#approvals">
                   <div class="row__main">
                     <div class="row__title">Approval Gate: Approve Plan (1 pending)</div>
-                    <div class="row__subtle">Requires rationale | <span class="sod-badge">SoD: maker-checker</span></div>
+                    <div class="row__subtle">
+                      Requires rationale | <span class="sod-badge">SoD: maker-checker</span>
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--warn">Pending</span></div>
                 </a>
@@ -532,7 +665,7 @@
           </div>
 
           <!-- Effects diff section -->
-          <article class="card" style="margin-top:12px">
+          <article class="card" style="margin-top: 12px">
             <div class="card__title">Effects (Planned vs Verified)</div>
             <div class="effects">
               <div class="effects__section">
@@ -592,7 +725,12 @@
             <div class="screen__actions">
               <button class="btn" type="button">Retry</button>
               <button class="btn" type="button">Export run summary</button>
-              <button class="btn js-drawer-trigger" type="button" data-drawer="run-8920">Context</button>
+              <button class="btn js-drawer-trigger" type="button" data-drawer="run-8920">
+                Context
+              </button>
+            </div>
+            <div class="outcome-preview" style="margin-top: 8px">
+              Retry will re-queue the Run. Idempotency key ensures no duplicate side effects.
             </div>
           </div>
 
@@ -634,7 +772,9 @@
                 </div>
                 <div class="effects__section">
                   <div class="effects__title">Predicted Effects (optional)</div>
-                  <div class="effects__hint subtle">The provider preview suggests... (never "will")</div>
+                  <div class="effects__hint subtle">
+                    The provider preview suggests... (never "will")
+                  </div>
                   <div class="effects__list">
                     <div class="effect">
                       <div class="effect__main">
@@ -654,9 +794,11 @@
                       <div class="effect__main">
                         <span class="pill">-</span>
                         <span class="effect__target">Not available yet</span>
-                        <span class="drift-badge" style="visibility:hidden">drift</span>
+                        <span class="drift-badge" style="visibility: hidden">drift</span>
                       </div>
-                      <div class="effect__subtle">Run must complete to record verified evidence.</div>
+                      <div class="effect__subtle">
+                        Run must complete to record verified evidence.
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -666,21 +808,28 @@
             <!-- Approval Gate Panel (approval_gate_panel) -->
             <article class="card">
               <div class="card__title">Approval Gate (approval_gate_panel)</div>
-              <div class="card__meta subtle">Decision required due to tier/scopes/SoD constraints.</div>
-
-              <!-- Policy Evaluation Card (policy_eval_card) -->
-              <div class="callout callout--policy" style="margin-bottom:10px">
-                <strong>Policy Evaluation:</strong> Tier = Human-approve | Rule: Invoice writes &gt; $10,000 | Required approvers: 2 | SoD: maker-checker
+              <div class="card__meta subtle">
+                Decision required due to tier/scopes/SoD constraints.
               </div>
 
-              <div class="callout callout--danger js-callout-sod" style="margin-bottom:10px">
+              <!-- Policy Evaluation Card (policy_eval_card) -->
+              <div class="callout callout--policy" style="margin-bottom: 10px">
+                <strong>Policy Evaluation:</strong> Tier = Human-approve | Rule: Invoice writes &gt;
+                $10,000 | Required approvers: 2 | SoD: maker-checker
+              </div>
+
+              <div class="callout callout--danger js-callout-sod" style="margin-bottom: 10px">
                 SoD constraint: the initiator cannot self-approve (maker-checker).
               </div>
 
               <!-- Rationale Thread (rationale_thread) -->
-              <div style="margin-bottom:10px">
-                <div style="font-weight:900;font-size:13px;margin-bottom:6px">Prior Decisions (Rationale Thread)</div>
-                <div class="subtle">No prior decisions yet. This is the first approver in the sequence.</div>
+              <div style="margin-bottom: 10px">
+                <div style="font-weight: 900; font-size: 13px; margin-bottom: 6px">
+                  Prior Decisions (Rationale Thread)
+                </div>
+                <div class="subtle">
+                  No prior decisions yet. This is the first approver in the sequence.
+                </div>
               </div>
 
               <div class="form">
@@ -694,31 +843,47 @@
                 </label>
                 <label class="field">
                   <span class="field__label">Rationale (required)</span>
-                  <textarea class="field__input" rows="4" placeholder="Explain why this Plan is acceptable or not."></textarea>
+                  <textarea
+                    class="field__input"
+                    rows="4"
+                    placeholder="Explain why this Plan is acceptable or not."
+                  ></textarea>
                 </label>
                 <div class="form__actions">
                   <button class="btn btn--primary" type="button">Submit decision</button>
                   <a class="btn" href="#work-item">Back to Work Item</a>
                 </div>
+                <div class="outcome-preview">
+                  After approval: Run will resume automatically. 1 more approver needed (SoD:
+                  maker-checker).
+                </div>
               </div>
             </article>
           </div>
 
-          <article class="card" style="margin-top:12px">
+          <article class="card" style="margin-top: 12px">
             <div class="card__title">Evidence (Run-scoped)</div>
-            <div class="card__meta subtle">Append-only events with links to retention-managed payloads</div>
+            <div class="card__meta subtle">
+              Append-only events with links to retention-managed payloads
+            </div>
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">Evidence: Plan recorded (hash chained)</div>
-                  <div class="row__subtle">Category: Plan | Actor: User | Linked: Plan P-551 <span class="retention-tag">active 365d</span></div>
+                  <div class="row__subtle">
+                    Category: Plan | Actor: User | Linked: Plan P-551
+                    <span class="retention-tag">active 365d</span>
+                  </div>
                 </div>
                 <div class="row__right"><span class="status status--info">Evidence</span></div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">Evidence: Approval Gate opened</div>
-                  <div class="row__subtle">Category: Approval | Actor: System | Linked: Run R-8920 <span class="retention-tag">active 365d</span></div>
+                  <div class="row__subtle">
+                    Category: Approval | Actor: System | Linked: Run R-8920
+                    <span class="retention-tag">active 365d</span>
+                  </div>
                 </div>
                 <div class="row__right"><span class="status status--warn">Evidence</span></div>
               </div>
@@ -729,7 +894,12 @@
         <!-- ============================================================
              SCREEN: APPROVALS
              ============================================================ -->
-        <section id="screen-approvals" class="screen" data-screen="approvals" aria-labelledby="h-approvals">
+        <section
+          id="screen-approvals"
+          class="screen"
+          data-screen="approvals"
+          aria-labelledby="h-approvals"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-approvals" class="h1">Approvals</h1>
@@ -782,8 +952,12 @@
             </table>
           </div>
 
+          <div class="outcome-preview" style="margin-top: 12px">
+            After deciding, the queue advances to the next pending gate.
+          </div>
+
           <!-- Inline Plan Review Block for focused review mode -->
-          <article class="card" style="margin-top:12px">
+          <article class="card" style="margin-top: 12px">
             <div class="card__title">Focused Review: WI-1099 / R-8920 (Plan Review Block)</div>
             <div class="card__meta subtle">Inline plan review for approver flow</div>
             <div class="effects">
@@ -807,9 +981,9 @@
                 </div>
               </div>
             </div>
-            <div class="callout callout--policy" style="margin-top:10px">
+            <div class="callout callout--policy" style="margin-top: 10px">
               <span class="tier-badge tier-badge--human">Human-approve</span>
-              <span class="sod-badge" style="margin-left:6px">SoD: maker-checker</span>
+              <span class="sod-badge" style="margin-left: 6px">SoD: maker-checker</span>
               Required approvers: 2 | Scopes: netsuite.write, drive.write
             </div>
           </article>
@@ -818,16 +992,25 @@
         <!-- ============================================================
              SCREEN: EVIDENCE (evidence_chain_viewer)
              ============================================================ -->
-        <section id="screen-evidence" class="screen" data-screen="evidence" aria-labelledby="h-evidence">
+        <section
+          id="screen-evidence"
+          class="screen"
+          data-screen="evidence"
+          aria-labelledby="h-evidence"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-evidence" class="h1">Evidence</h1>
-              <div class="subtle">Explore and verify hash-chained evidence entries (Evidence Chain Viewer)</div>
+              <div class="subtle">
+                Explore and verify hash-chained evidence entries (Evidence Chain Viewer)
+              </div>
             </div>
             <div class="screen__actions">
               <button class="btn" type="button">Export verification report</button>
               <button class="btn" type="button">Export evidence bundle</button>
-              <button class="btn js-drawer-trigger" type="button" data-drawer="context">Context</button>
+              <button class="btn js-drawer-trigger" type="button" data-drawer="context">
+                Context
+              </button>
             </div>
           </div>
 
@@ -839,17 +1022,25 @@
           </div>
 
           <!-- Chain Integrity Banner (chain_integrity_banner) -->
-          <div class="integrity-banner integrity-banner--ok" style="margin-bottom:12px">
-            Chain integrity: verified for entries 120 to 146 (contiguous). No gaps or tamper alerts detected.
+          <div class="integrity-banner integrity-banner--ok" style="margin-bottom: 12px">
+            Chain integrity: verified for entries 120 to 146 (contiguous). No gaps or tamper alerts
+            detected.
           </div>
 
           <div class="empty js-empty-evidence" hidden>
             <div class="empty__title">No evidence entries yet</div>
-            <div class="empty__body">Evidence entries are created automatically as Runs execute, Approvals are decided, and Actions write to external systems.</div>
+            <div class="empty__body">
+              Evidence entries are created automatically as Runs execute, Approvals are decided, and
+              Actions write to external systems.
+            </div>
           </div>
 
           <div class="list js-nonempty-evidence">
-            <div class="row row--static js-drawer-trigger" data-drawer="evidence-1" style="cursor:pointer">
+            <div
+              class="row row--static js-drawer-trigger"
+              data-drawer="evidence-1"
+              style="cursor: pointer"
+            >
               <div class="row__main">
                 <div class="row__title">EvidenceEntry: Approval decision submitted</div>
                 <div class="row__subtle">
@@ -859,7 +1050,11 @@
               </div>
               <div class="row__right"><span class="status status--info">Verified</span></div>
             </div>
-            <div class="row row--static js-drawer-trigger" data-drawer="evidence-2" style="cursor:pointer">
+            <div
+              class="row row--static js-drawer-trigger"
+              data-drawer="evidence-2"
+              style="cursor: pointer"
+            >
               <div class="row__main">
                 <div class="row__title">EvidenceEntry: Action executed (adapter write)</div>
                 <div class="row__subtle">
@@ -902,24 +1097,28 @@
           </div>
 
           <!-- Canonical Object Card (canonical_object_card) -->
-          <article class="card" style="margin-top:12px">
+          <article class="card" style="margin-top: 12px">
             <div class="card__title">Linked Objects (Canonical Object Cards)</div>
-            <div class="card__meta subtle">Affected SoR entities referenced in evidence entries</div>
+            <div class="card__meta subtle">
+              Affected SoR entities referenced in evidence entries
+            </div>
             <div class="grid grid--3">
               <div class="card">
                 <div class="card__title"><span class="port-icon">FA</span> Invoice</div>
                 <div class="subtle">NetSuite | INV-22318 | SoR: FinanceAccounting</div>
-                <div class="subtle" style="margin-top:4px">Total: $12,500 | Status: Open</div>
+                <div class="subtle" style="margin-top: 4px">Total: $12,500 | Status: Open</div>
               </div>
               <div class="card">
                 <div class="card__title"><span class="port-icon">PB</span> Charge</div>
                 <div class="subtle">Stripe | ch_9d2a | SoR: PaymentsBilling</div>
-                <div class="subtle" style="margin-top:4px">Amount: $12,500 | Status: Succeeded</div>
+                <div class="subtle" style="margin-top: 4px">
+                  Amount: $12,500 | Status: Succeeded
+                </div>
               </div>
               <div class="card">
                 <div class="card__title"><span class="port-icon">CS</span> Ticket</div>
                 <div class="subtle">Zendesk | 4831 | SoR: CustomerSupport</div>
-                <div class="subtle" style="margin-top:4px">Priority: High | Status: Open</div>
+                <div class="subtle" style="margin-top: 4px">Priority: High | Status: Open</div>
               </div>
             </div>
           </article>
@@ -928,7 +1127,12 @@
         <!-- ============================================================
              SCREEN: SETTINGS
              ============================================================ -->
-        <section id="screen-settings" class="screen" data-screen="settings" aria-labelledby="h-settings">
+        <section
+          id="screen-settings"
+          class="screen"
+          data-screen="settings"
+          aria-labelledby="h-settings"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-settings" class="h1">Workspace Settings</h1>
@@ -940,6 +1144,9 @@
             <article class="card">
               <div class="card__title">RBAC</div>
               <div class="card__meta subtle">Workspace users and roles</div>
+              <div style="margin-bottom: 10px">
+                <button class="btn btn--primary btn--small" type="button">Add user</button>
+              </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
@@ -968,18 +1175,26 @@
             <article class="card">
               <div class="card__title">Credentials</div>
               <div class="card__meta subtle">Vaulting, rotation, scoped issuance</div>
+              <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                <button class="btn btn--primary btn--small" type="button">Add credential</button>
+                <button class="btn btn--small" type="button">Rotate</button>
+              </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">Stripe API Key</div>
-                    <div class="row__subtle">Scopes: charges.read, charges.write | Expires: 2026-06-01</div>
+                    <div class="row__subtle">
+                      Scopes: charges.read, charges.write | Expires: 2026-06-01
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--ok">Valid</span></div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">NetSuite OAuth</div>
-                    <div class="row__subtle">Scopes: invoice.read, invoice.write | Expires: 2026-03-15</div>
+                    <div class="row__subtle">
+                      Scopes: invoice.read, invoice.write | Expires: 2026-03-15
+                    </div>
                   </div>
                   <div class="row__right"><span class="status status--warn">Expiring</span></div>
                 </div>
@@ -989,7 +1204,13 @@
             <!-- Adapters with Capability Matrix Grid (capability_matrix_grid) -->
             <article class="card">
               <div class="card__title">Adapters / Providers</div>
-              <div class="card__meta subtle">Select provider per port family, connect credentials, validate scopes</div>
+              <div class="card__meta subtle">
+                Select provider per port family, connect credentials, validate scopes
+              </div>
+              <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                <button class="btn btn--primary btn--small" type="button">Select provider</button>
+                <button class="btn btn--small" type="button">Register adapter</button>
+              </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
@@ -1000,7 +1221,9 @@
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
-                    <div class="row__title"><span class="port-icon">FA</span> FinanceAccounting</div>
+                    <div class="row__title">
+                      <span class="port-icon">FA</span> FinanceAccounting
+                    </div>
                     <div class="row__subtle">Provider: NetSuite | Capability Matrix: loaded</div>
                   </div>
                   <div class="row__right"><span class="status status--ok">Configured</span></div>
@@ -1022,8 +1245,10 @@
               </div>
 
               <!-- Capability Matrix Grid -->
-              <div style="margin-top:12px">
-                <div style="font-weight:900;font-size:13px;margin-bottom:8px">Capability Matrix (Stripe)</div>
+              <div style="margin-top: 12px">
+                <div style="font-weight: 900; font-size: 13px; margin-bottom: 8px">
+                  Capability Matrix (Stripe)
+                </div>
                 <div class="table-wrap">
                   <table class="cap-grid">
                     <thead>
@@ -1084,6 +1309,9 @@
             <article class="card">
               <div class="card__title">Policies</div>
               <div class="card__meta subtle">Execution tiers, SoD constraints, approvals</div>
+              <div style="margin-bottom: 10px">
+                <button class="btn btn--primary btn--small" type="button">Create rule</button>
+              </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
@@ -1144,7 +1372,9 @@
       <aside class="drawer" id="drawer" role="complementary" aria-label="Correlation drawer">
         <div class="drawer__header">
           <div class="drawer__title" id="drawerTitle">Context</div>
-          <button class="drawer__close" id="drawerClose" aria-label="Close drawer" type="button">&times;</button>
+          <button class="drawer__close" id="drawerClose" aria-label="Close drawer" type="button">
+            &times;
+          </button>
         </div>
         <div class="drawer__body" id="drawerBody">
           <!-- Populated by JS -->
@@ -1157,11 +1387,11 @@
       <footer class="statusbar" role="contentinfo">
         <span class="statusbar__item">
           <span class="statusbar__dot statusbar__dot--ok js-status-runs"></span>
-          Runs: 1 active
+          <span class="js-status-runs-text">Runs: 1 active</span>
         </span>
         <span class="statusbar__item">
           <span class="statusbar__dot statusbar__dot--ok js-status-chain"></span>
-          Chain: verified
+          <span class="js-status-chain-text">Chain: verified</span>
         </span>
         <span class="statusbar__item">
           <span class="statusbar__dot statusbar__dot--ok js-status-events"></span>

@@ -488,6 +488,52 @@ function setPersona(persona) {
     sodCallout.style.display = persona === 'approver' ? 'block' : 'none';
   }
 
+  /* ---- Inbox card reordering + featured + show/hide (Fix 1) ---- */
+  const inboxLayout = {
+    operator: {
+      primary: 'failures',
+      secondary: ['approvals', 'violations'],
+      hidden: ['evidence', 'health'],
+    },
+    approver: {
+      primary: 'approvals',
+      secondary: ['violations'],
+      hidden: ['failures', 'evidence', 'health'],
+    },
+    auditor: {
+      primary: 'evidence',
+      secondary: ['violations'],
+      hidden: ['failures', 'approvals', 'health'],
+    },
+    admin: {
+      primary: 'health',
+      secondary: ['violations', 'failures'],
+      hidden: ['approvals', 'evidence'],
+    },
+  }[persona];
+
+  if (inboxLayout) {
+    const allInboxCards = qsa('[data-inbox-section]');
+    const visible = [inboxLayout.primary, ...inboxLayout.secondary];
+    for (const card of allInboxCards) {
+      const section = card.dataset.inboxSection;
+      if (inboxLayout.hidden.includes(section)) {
+        card.hidden = true;
+        card.classList.remove('card--featured');
+        card.style.order = '';
+      } else {
+        card.hidden = false;
+        if (section === inboxLayout.primary) {
+          card.classList.add('card--featured');
+          card.style.order = '0';
+        } else {
+          card.classList.remove('card--featured');
+          card.style.order = String(visible.indexOf(section) + 1);
+        }
+      }
+    }
+  }
+
   /* Sidebar quick actions */
   const action1 = document.querySelector('.js-persona-action-1');
   const action2 = document.querySelector('.js-persona-action-2');
@@ -551,24 +597,37 @@ function setPersona(persona) {
    STATUS BAR
    ============================================================ */
 function setStatusBar(systemState) {
+  const runsDot = document.querySelector('.js-status-runs');
+  const runsText = document.querySelector('.js-status-runs-text');
+  const chainDot = document.querySelector('.js-status-chain');
+  const chainText = document.querySelector('.js-status-chain-text');
   const eventsDot = document.querySelector('.js-status-events');
   const eventsText = document.querySelector('.js-status-events-text');
-  const chainDot = document.querySelector('.js-status-chain');
 
+  /* Reset to defaults */
+  if (runsDot) runsDot.className = 'statusbar__dot statusbar__dot--ok js-status-runs';
+  if (runsText) runsText.textContent = 'Runs: 1 active';
+  if (chainDot) chainDot.className = 'statusbar__dot statusbar__dot--ok js-status-chain';
+  if (chainText) chainText.textContent = 'Chain: verified';
+  if (eventsDot) eventsDot.className = 'statusbar__dot statusbar__dot--ok js-status-events';
+  if (eventsText) eventsText.textContent = 'Events: connected';
+
+  /* Degraded: events amber */
   if (systemState === 'degraded') {
-    if (eventsDot) {
-      eventsDot.className = 'statusbar__dot statusbar__dot--warn js-status-events';
-    }
+    if (eventsDot) eventsDot.className = 'statusbar__dot statusbar__dot--warn js-status-events';
     if (eventsText) eventsText.textContent = 'Events: degraded';
-  } else {
-    if (eventsDot) {
-      eventsDot.className = 'statusbar__dot statusbar__dot--ok js-status-events';
-    }
-    if (eventsText) eventsText.textContent = 'Events: connected';
   }
 
-  if (chainDot) {
-    chainDot.className = 'statusbar__dot statusbar__dot--ok js-status-chain';
+  /* Misconfigured: runs amber (Fix 8) */
+  if (systemState === 'misconfigured') {
+    if (runsDot) runsDot.className = 'statusbar__dot statusbar__dot--warn js-status-runs';
+    if (runsText) runsText.textContent = 'Runs: config warning';
+  }
+
+  /* Policy blocked: chain amber (Fix 8) */
+  if (systemState === 'policy-blocked') {
+    if (chainDot) chainDot.className = 'statusbar__dot statusbar__dot--warn js-status-chain';
+    if (chainText) chainText.textContent = 'Chain: policy hold';
   }
 }
 
@@ -581,11 +640,13 @@ function openDrawer(contentId) {
   qs('#drawerTitle').textContent = content.title;
   qs('#drawerBody').innerHTML = content.body;
   drawer.classList.add('is-open');
+  qs('.app').classList.add('app--drawer-open');
   qs('#drawerClose').focus();
 }
 
 function closeDrawer() {
   qs('#drawer').classList.remove('is-open');
+  qs('.app').classList.remove('app--drawer-open');
 }
 
 /* ============================================================

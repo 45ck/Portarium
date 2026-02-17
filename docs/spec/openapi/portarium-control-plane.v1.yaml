@@ -17,6 +17,11 @@ tags:
   - name: WorkItems
   - name: Plans
   - name: Evidence
+  - name: Approvals
+  - name: Workflows
+  - name: Runs
+  - name: CredentialGrants
+  - name: AdapterRegistrations
 paths:
   /v1/workspaces:
     get:
@@ -286,6 +291,510 @@ paths:
                 $ref: '#/components/schemas/EvidenceEntryListResponse'
         default:
           $ref: '#/components/responses/Problem'
+  # ---- Approvals ----
+  /v1/workspaces/{workspaceId}/approvals:
+    get:
+      tags: [Approvals]
+      summary: List approvals in a workspace
+      operationId: listApprovals
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Approvals]
+      summary: Create an approval request
+      operationId: createApproval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApprovalRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/approvals/{approvalId}:
+    get:
+      tags: [Approvals]
+      summary: Get an approval
+      operationId: getApproval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/ApprovalIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/approvals/{approvalId}/decide:
+    post:
+      tags: [Approvals]
+      summary: Decide on an approval (approve, deny, or request changes)
+      operationId: decideApproval
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/ApprovalIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideApprovalRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  # ---- Workflows ----
+  /v1/workspaces/{workspaceId}/workflows:
+    get:
+      tags: [Workflows]
+      summary: List workflows in a workspace
+      operationId: listWorkflows
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Workflows]
+      summary: Create a workflow
+      operationId: createWorkflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkflowRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/workflows/{workflowId}:
+    get:
+      tags: [Workflows]
+      summary: Get a workflow
+      operationId: getWorkflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkflowIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Workflows]
+      summary: Update a workflow
+      operationId: updateWorkflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkflowIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkflowRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Workflows]
+      summary: Archive a workflow
+      operationId: archiveWorkflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkflowIdPath'
+      responses:
+        '204':
+          description: No Content
+        default:
+          $ref: '#/components/responses/Problem'
+  # ---- Runs ----
+  /v1/workspaces/{workspaceId}/runs:
+    get:
+      tags: [Runs]
+      summary: List runs in a workspace
+      operationId: listRuns
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Runs]
+      summary: Start a new run
+      operationId: startRun
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRunRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/runs/{runId}:
+    get:
+      tags: [Runs]
+      summary: Get a run
+      operationId: getRun
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/RunIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/runs/{runId}/cancel:
+    post:
+      tags: [Runs]
+      summary: Cancel a run
+      operationId: cancelRun
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/RunIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/runs/{runId}/evidence:
+    get:
+      tags: [Runs]
+      summary: List evidence entries for a run
+      operationId: listRunEvidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/RunIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceEntryListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  # ---- Credential Grants ----
+  /v1/workspaces/{workspaceId}/credential-grants:
+    get:
+      tags: [CredentialGrants]
+      summary: List credential grants in a workspace
+      operationId: listCredentialGrants
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [CredentialGrants]
+      summary: Create a credential grant
+      operationId: createCredentialGrant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCredentialGrantRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/credential-grants/{credentialGrantId}:
+    get:
+      tags: [CredentialGrants]
+      summary: Get a credential grant
+      operationId: getCredentialGrant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/CredentialGrantIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [CredentialGrants]
+      summary: Update a credential grant
+      operationId: updateCredentialGrant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/CredentialGrantIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCredentialGrantRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/credential-grants/{credentialGrantId}/rotate:
+    post:
+      tags: [CredentialGrants]
+      summary: Rotate a credential grant
+      operationId: rotateCredentialGrant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/CredentialGrantIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/credential-grants/{credentialGrantId}/revoke:
+    post:
+      tags: [CredentialGrants]
+      summary: Revoke a credential grant
+      operationId: revokeCredentialGrant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/CredentialGrantIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialGrantV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  # ---- Adapter Registrations ----
+  /v1/workspaces/{workspaceId}/adapter-registrations:
+    get:
+      tags: [AdapterRegistrations]
+      summary: List adapter registrations in a workspace
+      operationId: listAdapterRegistrations
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdapterRegistrationListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [AdapterRegistrations]
+      summary: Create an adapter registration
+      operationId: createAdapterRegistration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdapterRegistrationRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdapterRegistrationV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/adapter-registrations/{adapterId}:
+    get:
+      tags: [AdapterRegistrations]
+      summary: Get an adapter registration
+      operationId: getAdapterRegistration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/AdapterIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdapterRegistrationV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [AdapterRegistrations]
+      summary: Update an adapter registration
+      operationId: updateAdapterRegistration
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/AdapterIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdapterRegistrationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdapterRegistrationV1'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -317,6 +826,36 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/WorkItemId'
+    ApprovalIdPath:
+      name: approvalId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ApprovalId'
+    WorkflowIdPath:
+      name: workflowId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/WorkflowId'
+    RunIdPath:
+      name: runId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/RunId'
+    CredentialGrantIdPath:
+      name: credentialGrantId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/CredentialGrantId'
+    AdapterIdPath:
+      name: adapterId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/AdapterId'
     LimitQuery:
       name: limit
       in: query
@@ -442,6 +981,22 @@ components:
       type: string
       minLength: 1
       description: Opaque machine identifier
+    WorkflowId:
+      type: string
+      minLength: 1
+      description: Opaque workflow identifier
+    CorrelationId:
+      type: string
+      minLength: 1
+      description: Opaque correlation identifier for traceability
+    ActionId:
+      type: string
+      minLength: 1
+      description: Opaque action identifier within a workflow
+    CredentialGrantId:
+      type: string
+      minLength: 1
+      description: Opaque credential grant identifier
     HashSha256:
       type: string
       pattern: '^[a-f0-9]{64}$'
@@ -891,3 +1446,415 @@ components:
           type: string
           minLength: 1
       required: [items]
+    # ---- Approval schemas ----
+    ApprovalStatus:
+      type: string
+      enum: [Pending, Approved, Denied, RequestChanges]
+    ApprovalV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        approvalId:
+          $ref: '#/components/schemas/ApprovalId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        runId:
+          $ref: '#/components/schemas/RunId'
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        prompt:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/ApprovalStatus'
+        requestedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        requestedByUserId:
+          $ref: '#/components/schemas/UserId'
+        assigneeUserId:
+          $ref: '#/components/schemas/UserId'
+        dueAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        decidedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        decidedByUserId:
+          $ref: '#/components/schemas/UserId'
+        rationale:
+          type: string
+          minLength: 1
+      required:
+        - schemaVersion
+        - approvalId
+        - workspaceId
+        - runId
+        - planId
+        - prompt
+        - status
+        - requestedAtIso
+        - requestedByUserId
+    ApprovalListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateApprovalRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        runId:
+          $ref: '#/components/schemas/RunId'
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        prompt:
+          type: string
+          minLength: 1
+        assigneeUserId:
+          $ref: '#/components/schemas/UserId'
+        dueAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [runId, planId, prompt]
+    DecideApprovalRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          type: string
+          enum: [Approved, Denied, RequestChanges]
+        rationale:
+          type: string
+          minLength: 1
+      required: [decision, rationale]
+    # ---- Workflow schemas ----
+    ExecutionTier:
+      type: string
+      enum: [Auto, Assisted, HumanApprove, ManualOnly]
+    WorkflowActionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        actionId:
+          $ref: '#/components/schemas/ActionId'
+        order:
+          type: integer
+          minimum: 1
+        portFamily:
+          $ref: '#/components/schemas/PortFamily'
+        operation:
+          type: string
+          minLength: 1
+        executionTierOverride:
+          $ref: '#/components/schemas/ExecutionTier'
+      required: [actionId, order, portFamily, operation]
+    WorkflowV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        active:
+          type: boolean
+        executionTier:
+          $ref: '#/components/schemas/ExecutionTier'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowActionV1'
+          minItems: 1
+      required:
+        - schemaVersion
+        - workflowId
+        - workspaceId
+        - name
+        - version
+        - active
+        - executionTier
+        - actions
+    WorkflowListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateWorkflowRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        executionTier:
+          $ref: '#/components/schemas/ExecutionTier'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowActionV1'
+          minItems: 1
+      required: [name, executionTier, actions]
+    UpdateWorkflowRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        executionTier:
+          $ref: '#/components/schemas/ExecutionTier'
+        active:
+          type: boolean
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowActionV1'
+          minItems: 1
+    # ---- Run schemas ----
+    RunStatus:
+      type: string
+      enum: [Pending, Running, WaitingForApproval, Paused, Succeeded, Failed, Cancelled]
+    RunV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        runId:
+          $ref: '#/components/schemas/RunId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        executionTier:
+          $ref: '#/components/schemas/ExecutionTier'
+        initiatedByUserId:
+          $ref: '#/components/schemas/UserId'
+        status:
+          $ref: '#/components/schemas/RunStatus'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        startedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        endedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - runId
+        - workspaceId
+        - workflowId
+        - correlationId
+        - executionTier
+        - initiatedByUserId
+        - status
+        - createdAtIso
+    RunListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    StartRunRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        workflowId:
+          $ref: '#/components/schemas/WorkflowId'
+        parameters:
+          type: object
+      required: [workflowId]
+    # ---- Credential Grant schemas ----
+    CredentialGrantV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        credentialGrantId:
+          $ref: '#/components/schemas/CredentialGrantId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        adapterId:
+          $ref: '#/components/schemas/AdapterId'
+        credentialsRef:
+          type: string
+          minLength: 1
+        scope:
+          type: string
+          minLength: 1
+        issuedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        lastRotatedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        revokedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - credentialGrantId
+        - workspaceId
+        - adapterId
+        - credentialsRef
+        - scope
+        - issuedAtIso
+    CredentialGrantListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CredentialGrantV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateCredentialGrantRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        adapterId:
+          $ref: '#/components/schemas/AdapterId'
+        credentialsRef:
+          type: string
+          minLength: 1
+        scope:
+          type: string
+          minLength: 1
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [adapterId, credentialsRef, scope]
+    UpdateCredentialGrantRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        scope:
+          type: string
+          minLength: 1
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+    # ---- Adapter Registration schemas ----
+    AdapterRegistrationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        adapterId:
+          $ref: '#/components/schemas/AdapterId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        name:
+          type: string
+          minLength: 1
+        portFamily:
+          $ref: '#/components/schemas/PortFamily'
+        baseUrl:
+          type: string
+          format: uri
+        active:
+          type: boolean
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        updatedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - adapterId
+        - workspaceId
+        - name
+        - portFamily
+        - baseUrl
+        - active
+        - createdAtIso
+    AdapterRegistrationListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdapterRegistrationV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateAdapterRegistrationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+        portFamily:
+          $ref: '#/components/schemas/PortFamily'
+        baseUrl:
+          type: string
+          format: uri
+        active:
+          type: boolean
+          default: true
+      required: [name, portFamily, baseUrl]
+    UpdateAdapterRegistrationRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        baseUrl:
+          type: string
+          format: uri
+        active:
+          type: boolean
