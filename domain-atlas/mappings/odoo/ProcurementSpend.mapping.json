@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "odoo",
+  "portFamily": "ProcurementSpend",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "res.partner",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "name",
+        "email": "email",
+        "phone": "phone",
+        "taxId": "vat",
+        "isCompany": "is_company",
+        "companyType": "company_type",
+        "commercialPartyExternalId": "commercial_partner_id",
+        "supplierRank": "supplier_rank"
+      },
+      "notes": "res.partner represents vendors/suppliers as well as people/companies. Adapter assigns vendor semantics using supplier_rank and procurement flows."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "res.partner.category",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "res.partner.category",
+        "displayLabel": "name"
+      },
+      "notes": "Partner tags/segments used for procurement segmentation and vendor grouping. Keep provider-native until canonical tagging is defined."
+    }
+  ]
+}

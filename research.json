@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-02-17T01:21:12.318Z",
+  "updatedAt": "2026-02-17T01:39:16.346Z",
   "domainAtlas": {
     "erpnext": {
       "status": "ACTIVE",
@@ -23,9 +23,9 @@
       "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule; extraction script: scripts/domain-atlas/extract-mautic-cif.mjs."
     },
     "odoo": {
-      "status": "ACTIVE",
+      "status": "DONE",
       "workItem": "bead-0006",
-      "notes": "Upstream pinned; seeded CIF extraction (res.partner + res.partner.category subset) via scripts/domain-atlas/extract-odoo.mjs."
+      "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule; extraction script: scripts/domain-atlas/extract-odoo.mjs."
     },
     "stripe": {
       "status": "DONE",
@@ -41,6 +41,11 @@
       "status": "DONE",
       "workItem": "bead-0027",
       "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (AGPL-3.0-only); extraction script: scripts/domain-atlas/extract-zammad-cif.mjs."
+    },
+    "paperless-ngx": {
+      "status": "ACTIVE",
+      "workItem": "bead-0030",
+      "notes": "Vendoring upstream as a git submodule; initial extraction targets Django migrations (CreateModel blocks) as the honest schema source for core document entities."
     }
   }
 }

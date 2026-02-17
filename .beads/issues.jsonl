@@ -3,7 +3,7 @@
 {"id":"bead-0003","title":"Plan + Evidence v1: structured plans + hash-chained evidence log","status":"closed","createdAt":"2026-02-16T22:04:27.212Z","updatedAt":"2026-02-16T22:19:10.274Z"}
 {"id":"bead-0004","title":"Domain Atlas: single source-of-truth upstream registry","status":"closed","createdAt":"2026-02-16T22:05:19.802Z","updatedAt":"2026-02-16T22:05:25.633Z"}
 {"id":"bead-0005","title":"ADR-0042: dependency vulnerability gate (npm audit)","status":"closed","createdAt":"2026-02-16T22:36:11.957Z","updatedAt":"2026-02-16T22:36:17.339Z"}
-{"id":"bead-0006","title":"Domain Atlas: Odoo intake (vendor + res.partner CIF)","status":"open","createdAt":"2026-02-16T23:02:50.733Z","updatedAt":"2026-02-16T23:02:50.733Z"}
+{"id":"bead-0006","title":"Domain Atlas: Odoo intake (vendor + res.partner CIF)","status":"closed","createdAt":"2026-02-16T23:02:50.733Z","updatedAt":"2026-02-17T01:37:58.295Z"}
 {"id":"bead-0007","title":"Scaffold domain model structure (aggregates, ports, events, canonical objects)","status":"open","createdAt":"2026-02-16T23:04:06.896Z","updatedAt":"2026-02-16T23:04:06.896Z"}
 {"id":"bead-0008","title":"Draft default Project UI/UX plan (shared for teams and individuals)","status":"closed","createdAt":"2026-02-16T23:04:41.814Z","updatedAt":"2026-02-17T01:09:27.631Z"}
 {"id":"bead-0009","title":"DUPLICATE: Domain Atlas Odoo intake (use bead-0006)","status":"closed","createdAt":"2026-02-16T23:05:05.271Z","updatedAt":"2026-02-16T23:05:34.575Z"}
@@ -27,3 +27,4 @@
 {"id":"bead-0027","title":"Domain Atlas: Zammad initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T01:02:39.202Z","updatedAt":"2026-02-17T01:31:14.938Z"}
 {"id":"bead-0028","title":"Approval v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-17T01:03:28.012Z","updatedAt":"2026-02-17T01:35:15.305Z"}
 {"id":"bead-0029","title":"Workflow v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-17T01:03:44.608Z","updatedAt":"2026-02-17T01:35:15.332Z"}
+{"id":"bead-0030","title":"Domain Atlas: Paperless-ngx initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-17T01:37:24.943Z","updatedAt":"2026-02-17T01:37:24.943Z"}

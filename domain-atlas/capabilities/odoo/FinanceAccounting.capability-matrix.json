@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "odoo",
+  "providerName": "Odoo (Community Edition)",
+  "portFamily": "FinanceAccounting",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "session"],
+    "notes": "Odoo JSON-RPC/XML-RPC auth is typically via user credentials and a database name. Many deployments use user API keys (treat as api_key) or a session cookie."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "No standard outbound webhooks in core. Polling is the portable baseline unless a deployment provides an event bridge."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No generic idempotency key. Use adapter-side dedupe via read-before-write and stable external keys (custom fields or unique constraints)."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via post-write reads. Predicted effects require adapter-side simulation (no provider dry-run surface)."
+  },
+  "capabilities": [
+    {
+      "capability": "party:read",
+      "supported": true,
+      "operations": ["getPartner", "searchPartners"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "party:write",
+      "supported": true,
+      "operations": ["createPartner", "updatePartner"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Partner writes affect customer/vendor master data and can have downstream billing/accounting effects. Default to HumanApprove."
+    }
+  ],
+  "notes": "Initial matrix derived from Odoo ORM model semantics (res.partner + extensions). Expand once accounting moves/invoices/payments are extracted and verified."
+}

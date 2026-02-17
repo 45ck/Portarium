@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "odoo",
+  "portFamily": "FinanceAccounting",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "res.partner",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "name",
+        "email": "email",
+        "phone": "phone",
+        "taxId": "vat",
+        "isCompany": "is_company",
+        "companyType": "company_type",
+        "commercialPartyExternalId": "commercial_partner_id",
+        "customerRank": "customer_rank",
+        "supplierRank": "supplier_rank"
+      },
+      "notes": "res.partner represents people, companies, and contact-address records. Adapter assigns Party roles based on rank fields and usage context."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "res.partner.category",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "res.partner.category",
+        "displayLabel": "name"
+      },
+      "notes": "Partner tags/segments. Canonical tag semantics TBD; keep provider-native and attach via adapter extensions."
+    }
+  ]
+}
