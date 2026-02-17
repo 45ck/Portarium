@@ -725,7 +725,10 @@ const ABToggle = (function () {
     sessionStorage.setItem(AB_STORAGE_KEY, JSON.stringify(state));
   }
   function getVariant(screenId) {
-    return loadState()[screenId] || 'A';
+    var stored = loadState()[screenId];
+    if (stored) return stored;
+    var config = registry[screenId];
+    return (config && config.defaultVariant) || 'A';
   }
   function setVariant(screenId, variant) {
     const s = loadState();
@@ -733,8 +736,8 @@ const ABToggle = (function () {
     saveState(s);
   }
 
-  function register(screenId, variants, renderers, labelMap) {
-    registry[screenId] = { variants, renderers, labelMap: labelMap || {} };
+  function register(screenId, variants, renderers, labelMap, defaultVariant) {
+    registry[screenId] = { variants, renderers, labelMap: labelMap || {}, defaultVariant: defaultVariant || 'A' };
   }
 
   function injectToggles() {
@@ -826,13 +829,14 @@ const AISummaryToggle = (function () {
   'use strict';
 
   const STORAGE_KEY = 'portarium_ai_summary';
-  let enabled = false;
+  let enabled = true;
 
   function loadState() {
     try {
-      return sessionStorage.getItem(STORAGE_KEY) === 'true';
+      var val = sessionStorage.getItem(STORAGE_KEY);
+      return val === null ? true : val === 'true';
     } catch {
-      return false;
+      return true;
     }
   }
 
@@ -933,6 +937,7 @@ ABToggle.register(
     },
   },
   { A: 'Table', B: 'Kanban' },
+  'B',
 );
 ABToggle.register(
   'project',
