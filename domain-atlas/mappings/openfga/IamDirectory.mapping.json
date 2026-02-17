@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "openfga",
+  "portFamily": "IamDirectory",
+  "mappings": [
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Store",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Store",
+        "displayLabel": "name"
+      },
+      "notes": "OpenFGA stores are provider tenancy boundaries. Portarium tenancy remains Workspace, so keep Store as ExternalObjectRef."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "AuthorizationModel",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "AuthorizationModel",
+        "displayLabel": "id"
+      },
+      "notes": "Authorization models are versioned policy artifacts; treat as provider-native ExternalObjectRef."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "TupleKey",
+      "notes": "Relationship tuples are evidence-relevant facts. Adapters should compute a stable composite key from (object, relation, user) for externalId."
+    }
+  ]
+}

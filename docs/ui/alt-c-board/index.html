@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portarium Alt-C: Spatial / Board-First Prototype</title>
+    <link rel="stylesheet" href="./wireframe.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="app">
+      <!-- ============================================================
+           TOPBAR
+           ============================================================ -->
+      <header class="topbar" role="banner">
+        <div class="brand">
+          <div class="brand__mark" aria-hidden="true">P</div>
+          <div>
+            <div class="brand__title">Portarium</div>
+            <div class="brand__subtitle">Alt-C: Board-First</div>
+          </div>
+        </div>
+
+        <div class="topbar__center">
+          <nav class="board-selector" aria-label="Board selector">
+            <a class="board-selector__btn" href="#triage" data-board="triage">Triage</a>
+            <a class="board-selector__btn" href="#work-items" data-board="work-items">Work Items</a>
+            <a class="board-selector__btn" href="#runs" data-board="runs">Runs</a>
+            <a class="board-selector__btn" href="#approvals" data-board="approvals">Approvals</a>
+            <a class="board-selector__btn" href="#evidence" data-board="evidence">Evidence</a>
+            <a class="board-selector__btn" href="#settings" data-board="settings">Settings</a>
+          </nav>
+
+          <label class="control">
+            <span class="control__label">Grouping</span>
+            <select id="grouping" class="control__select">
+              <option value="none">None</option>
+              <option value="owner">By owner</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="topbar__right" aria-label="Prototype controls">
+          <label class="control">
+            <span class="control__label">Persona</span>
+            <select id="persona" class="control__select">
+              <option value="operator">Operator</option>
+              <option value="approver">Approver</option>
+              <option value="auditor">Auditor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">Workspace</span>
+            <select id="workspaceType" class="control__select">
+              <option value="solo">Solo</option>
+              <option value="team">Team</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">State</span>
+            <select id="systemState" class="control__select">
+              <option value="normal">Normal</option>
+              <option value="empty">Empty</option>
+              <option value="misconfigured">Misconfigured</option>
+              <option value="policy-blocked">Policy blocked</option>
+              <option value="rbac-limited">RBAC limited</option>
+              <option value="degraded">Degraded realtime</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           MAIN AREA
+           ============================================================ -->
+      <div id="main" class="main-area" tabindex="-1">
+        <!-- Banners -->
+        <div class="banner banner--warning js-banner-degraded" hidden>
+          Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
+        </div>
+        <div class="banner banner--danger js-banner-misconfigured" hidden>
+          Setup required: no provider configured for this Port Family (missing credentials/scopes).
+          <a href="#settings">Go to Workspace settings</a>.
+        </div>
+        <div class="banner banner--danger js-banner-policy" hidden>
+          Policy blocked: this action is Manual-only or requires additional approvals. Review the
+          policy rationale and remediation steps before continuing.
+        </div>
+        <div class="banner banner--danger js-banner-rbac" hidden>
+          You can view this, but cannot act (RBAC). Ask a Workspace Admin for access.
+        </div>
+
+        <!-- Board wrapper (contains boards + detail panel) -->
+        <div class="board-wrapper" id="boardWrapper">
+          <!-- ========================================================
+               BOARD: TRIAGE
+               ======================================================== -->
+          <div class="board" id="board-triage" data-board="triage" aria-label="Triage Board">
+            <!-- Column: Needs Approval -->
+            <div class="column" data-column="needs-approval">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Needs Approval, 2 items"
+              >
+                <span class="column__title">Needs Approval</span>
+                <span class="column__count js-col-count">2</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Needs Approval cards">
+                <div class="column__empty js-empty-col" hidden>
+                  No items needing approval right now.
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="ag-wi1099"
+                  data-detail="ag-wi1099"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--ag">AG</span>
+                    <span class="entity-card__id">Approve Plan</span>
+                  </div>
+                  <div class="entity-card__title">Create Invoice in NetSuite</div>
+                  <div class="entity-card__refs">WI-1099 / R-8920</div>
+                  <div class="entity-card__tier">Tier: Human-approve</div>
+                  <div class="entity-card__constraint">SoD: maker-checker</div>
+                  <div class="entity-card__meta">Requested 12m ago</div>
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="ag-wi1042"
+                  data-detail="ag-wi1042"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--ag">AG</span>
+                    <span class="entity-card__id">Approve Plan</span>
+                  </div>
+                  <div class="entity-card__title">Update Ticket priority in Zendesk</div>
+                  <div class="entity-card__refs">WI-1042 / R-8892</div>
+                  <div class="entity-card__tier">Tier: Human-approve</div>
+                  <div class="entity-card__meta">Requested 1h ago</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Failed / Blocked -->
+            <div class="column" data-column="failed-blocked">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Failed or Blocked, 2 items"
+              >
+                <span class="column__title">Failed / Blocked</span>
+                <span class="column__count js-col-count">2</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Failed / Blocked cards">
+                <div class="column__empty js-empty-col" hidden>
+                  No failures or blocks. Runs that fail or block will appear here.
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="run-wi1021"
+                  data-detail="run-wi1021"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--run">Run</span>
+                    <span class="entity-card__id">CRM sync</span>
+                  </div>
+                  <div class="entity-card__title">Run failed: CRM sync hit rate limit</div>
+                  <div class="entity-card__refs">WI-1021</div>
+                  <div class="entity-card__status entity-card__status--danger">Failed</div>
+                  <div class="entity-card__meta">Workflow: Update Opportunity</div>
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="run-wi1103"
+                  data-detail="run-wi1103"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--run">Run</span>
+                    <span class="entity-card__id">Send Email</span>
+                  </div>
+                  <div class="entity-card__title">Run blocked: missing provider scope</div>
+                  <div class="entity-card__refs">WI-1103</div>
+                  <div class="entity-card__status entity-card__status--danger">Blocked</div>
+                  <div class="entity-card__meta">Workflow: Send Email</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Policy Violations -->
+            <div class="column" data-column="policy-violations">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Policy Violations, 1 item"
+              >
+                <span class="column__title">Policy Violations</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Policy Violations cards">
+                <div class="column__empty js-empty-col" hidden>
+                  No policy violations. Policy blocks and violations will appear here.
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="policy-sod"
+                  data-detail="policy-sod"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--policy">Policy</span>
+                    <span class="entity-card__id">SoD constraint</span>
+                  </div>
+                  <div class="entity-card__title">SoD constraint: maker-checker required</div>
+                  <div class="entity-card__status entity-card__status--warn">Needs action</div>
+                  <div class="entity-card__meta">
+                    The initiator cannot approve this Plan. Assign an approver or update policy.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Resolved -->
+            <div class="column" data-column="resolved">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Resolved, 1 item"
+              >
+                <span class="column__title">Resolved</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Resolved cards">
+                <div class="column__empty js-empty-col" hidden>No resolved items yet.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="resolved-1"
+                  data-detail="resolved-1"
+                >
+                  <div style="display: flex; gap: 6px; align-items: center">
+                    <span class="type-badge type-badge--run">Run</span>
+                    <span class="entity-card__id">R-8801</span>
+                  </div>
+                  <div class="entity-card__title">Receipt export completed</div>
+                  <div class="entity-card__refs">WI-1013</div>
+                  <div class="entity-card__status entity-card__status--ok">Resolved</div>
+                  <div class="entity-card__meta">Completed 3h ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================
+               BOARD: WORK ITEMS
+               ======================================================== -->
+          <div
+            class="board"
+            id="board-work-items"
+            data-board="work-items"
+            aria-label="Work Items Board"
+          >
+            <!-- Column: Open -->
+            <div class="column" data-column="open">
+              <div class="column__header" role="heading" aria-level="2" aria-label="Open, 1 item">
+                <span class="column__title">Open</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Open cards">
+                <div class="column__empty js-empty-col" hidden>No open Work Items.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="wi-1013"
+                  data-detail="wi-1013"
+                >
+                  <div class="entity-card__id">WI-1013</div>
+                  <div class="entity-card__title">Receipt export for audit period</div>
+                  <div class="entity-card__chips">
+                    <span class="chip">Stripe</span>
+                    <span class="chip">Drive</span>
+                  </div>
+                  <div class="entity-card__meta">Me / 2d ago</div>
+                  <div class="entity-card__approvals" style="color: var(--muted); font-weight: 400">
+                    No runs yet
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: In Progress -->
+            <div class="column" data-column="in-progress">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="In Progress, 1 item"
+              >
+                <span class="column__title">In Progress</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="In Progress cards">
+                <div class="column__empty js-empty-col" hidden>No Work Items in progress.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="wi-1042"
+                  data-detail="wi-1042"
+                >
+                  <div class="entity-card__id">WI-1042</div>
+                  <div class="entity-card__title">Dispute: investigate payment failure</div>
+                  <div class="entity-card__chips">
+                    <span class="chip">Stripe</span>
+                  </div>
+                  <div class="entity-card__status entity-card__status--info">Running</div>
+                  <div class="entity-card__meta">
+                    <span class="js-owner-text">Unassigned</span> / 18m ago
+                  </div>
+                  <div class="entity-card__approvals" style="color: var(--muted); font-weight: 400">
+                    0 approvals
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Needs Approval -->
+            <div class="column" data-column="needs-approval">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Needs Approval, 1 item"
+              >
+                <span class="column__title">Needs Approval</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Needs Approval cards">
+                <div class="column__empty js-empty-col" hidden>
+                  No Work Items awaiting approval.
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="wi-1099"
+                  data-detail="wi-1099"
+                >
+                  <div class="entity-card__id">WI-1099</div>
+                  <div class="entity-card__title">Invoice correction for ACME</div>
+                  <div class="entity-card__chips">
+                    <span class="chip">NS</span>
+                    <span class="chip">ST</span>
+                    <span class="chip">ZD</span>
+                  </div>
+                  <div class="entity-card__tier">Human-approve</div>
+                  <div class="entity-card__meta">Me / 5m ago</div>
+                  <div class="entity-card__approvals">1 pending approval</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Closed -->
+            <div class="column" data-column="closed">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Closed, 0 items"
+              >
+                <span class="column__title">Closed</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Closed cards">
+                <div class="column__empty">No closed Work Items yet.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================
+               BOARD: RUNS
+               ======================================================== -->
+          <div class="board" id="board-runs" data-board="runs" aria-label="Runs Board">
+            <!-- Column: Queued -->
+            <div class="column" data-column="queued">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Queued, 0 items"
+              >
+                <span class="column__title">Queued</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Queued cards">
+                <div class="column__empty">No queued runs.</div>
+              </div>
+            </div>
+
+            <!-- Column: Running -->
+            <div class="column" data-column="running">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Running, 1 item"
+              >
+                <span class="column__title">Running</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Running cards">
+                <div class="column__empty js-empty-col" hidden>No runs in progress.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="r-8892"
+                  data-detail="r-8892"
+                >
+                  <div class="entity-card__id">R-8892</div>
+                  <div class="entity-card__title">Update Ticket priority</div>
+                  <div class="progress-mini">
+                    <span class="progress-mini__block progress-mini__block--filled"></span>
+                    <span class="progress-mini__block"></span>
+                    <span class="progress-mini__block"></span>
+                    <span class="progress-mini__label">Step 1/3</span>
+                  </div>
+                  <div class="entity-card__status entity-card__status--info">Running</div>
+                  <div class="entity-card__meta">Me / 1h ago</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Awaiting Approval -->
+            <div class="column" data-column="awaiting-approval">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Awaiting Approval, 1 item"
+              >
+                <span class="column__title">Awaiting Approval</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Awaiting Approval cards">
+                <div class="column__empty js-empty-col" hidden>No runs awaiting approval.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="r-8920"
+                  data-detail="r-8920"
+                >
+                  <div class="entity-card__id">R-8920</div>
+                  <div class="entity-card__title">Invoice correction</div>
+                  <div class="progress-mini">
+                    <span class="progress-mini__block progress-mini__block--filled"></span>
+                    <span class="progress-mini__block progress-mini__block--filled"></span>
+                    <span class="progress-mini__block"></span>
+                    <span class="progress-mini__block"></span>
+                    <span class="progress-mini__label">Step 2/4</span>
+                  </div>
+                  <div class="entity-card__status entity-card__status--warn">
+                    Paused at Approval
+                  </div>
+                  <div class="entity-card__meta">Me / 12m ago</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Succeeded -->
+            <div class="column" data-column="succeeded">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Succeeded, 0 items"
+              >
+                <span class="column__title">Succeeded</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Succeeded cards">
+                <div class="column__empty">No completed runs.</div>
+              </div>
+            </div>
+
+            <!-- Column: Failed -->
+            <div class="column" data-column="failed">
+              <div class="column__header" role="heading" aria-level="2" aria-label="Failed, 1 item">
+                <span class="column__title">Failed</span>
+                <span class="column__count js-col-count">1</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Failed cards">
+                <div class="column__empty js-empty-col" hidden>No failed runs.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="r-crm"
+                  data-detail="run-wi1021"
+                >
+                  <div class="entity-card__id">R-8850</div>
+                  <div class="entity-card__title">CRM sync</div>
+                  <div class="progress-mini">
+                    <span class="progress-mini__block progress-mini__block--filled"></span>
+                    <span class="progress-mini__block progress-mini__block--filled"></span>
+                    <span class="progress-mini__block"></span>
+                    <span class="progress-mini__label">Step 2/3 (failed)</span>
+                  </div>
+                  <div class="entity-card__status entity-card__status--danger">Failed</div>
+                  <div class="entity-card__meta">Me / 45m ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================
+               BOARD: APPROVALS
+               ======================================================== -->
+          <div
+            class="board"
+            id="board-approvals"
+            data-board="approvals"
+            aria-label="Approvals Board"
+          >
+            <!-- Column: Pending -->
+            <div class="column" data-column="pending">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Pending, 2 items"
+              >
+                <span class="column__title">Pending</span>
+                <span class="column__count js-col-count">2</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Pending cards">
+                <div class="column__empty js-empty-col" hidden>No pending approvals.</div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="ap-wi1099"
+                  data-detail="ag-wi1099"
+                >
+                  <div class="entity-card__id">Approve Plan</div>
+                  <div class="entity-card__title">Create Invoice in NetSuite</div>
+                  <div class="entity-card__refs">WI-1099 / R-8920</div>
+                  <div class="entity-card__tier">Tier: Human-approve</div>
+                  <div class="entity-card__constraint">SoD: maker-checker</div>
+                  <div class="entity-card__meta">Requested 12m ago</div>
+                  <button class="entity-card__cta" type="button">Review + decide</button>
+                </div>
+                <div
+                  class="entity-card js-card js-nonempty-col"
+                  role="listitem"
+                  tabindex="0"
+                  data-card-id="ap-wi1042"
+                  data-detail="ag-wi1042"
+                >
+                  <div class="entity-card__id">Approve Plan</div>
+                  <div class="entity-card__title">Update Ticket priority in Zendesk</div>
+                  <div class="entity-card__refs">WI-1042 / R-8892</div>
+                  <div class="entity-card__tier">Tier: Human-approve</div>
+                  <div class="entity-card__meta">Requested 1h ago</div>
+                  <button class="entity-card__cta" type="button">Review + decide</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Approved -->
+            <div class="column" data-column="approved">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Approved, 0 items"
+              >
+                <span class="column__title">Approved</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Approved cards">
+                <div class="column__empty">No approved gates yet.</div>
+              </div>
+            </div>
+
+            <!-- Column: Denied -->
+            <div class="column" data-column="denied">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Denied, 0 items"
+              >
+                <span class="column__title">Denied</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Denied cards">
+                <div class="column__empty">No denied gates.</div>
+              </div>
+            </div>
+
+            <!-- Column: Changes Requested -->
+            <div class="column" data-column="changes-requested">
+              <div
+                class="column__header"
+                role="heading"
+                aria-level="2"
+                aria-label="Changes Requested, 0 items"
+              >
+                <span class="column__title">Changes Requested</span>
+                <span class="column__count js-col-count">0</span>
+              </div>
+              <div class="column__cards" role="list" aria-label="Changes Requested cards">
+                <div class="column__empty">No gates with changes requested.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========================================================
+               DETAIL PANEL (slide-in from right)
+               ======================================================== -->
+          <aside
+            class="detail-panel"
+            id="detailPanel"
+            role="complementary"
+            aria-label="Entity detail panel"
+          >
+            <div class="detail-panel__header">
+              <div class="detail-panel__header-left">
+                <span class="detail-panel__type" id="panelType"></span>
+                <span class="detail-panel__id" id="panelId"></span>
+                <span id="panelStatus"></span>
+              </div>
+              <button
+                class="detail-panel__close"
+                id="panelClose"
+                aria-label="Close detail panel"
+                type="button"
+              >
+                &times;
+              </button>
+            </div>
+            <div class="detail-panel__body" id="panelBody">
+              <!-- Populated by JS -->
+            </div>
+            <div class="detail-panel__footer" id="panelFooter">
+              <!-- Populated by JS -->
+            </div>
+          </aside>
+        </div>
+        <!-- / board-wrapper -->
+
+        <!-- ============================================================
+             SCREEN: EVIDENCE (not a board -- a list/log)
+             ============================================================ -->
+        <section
+          class="screen"
+          id="screen-evidence"
+          data-screen="evidence"
+          aria-labelledby="h-evidence"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-evidence" class="h1">Evidence</h1>
+              <div class="subtle">Explore and verify hash-chained evidence entries</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn" type="button">Export verification report (stub)</button>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="chip chip--active">Category: Approval</span>
+            <span class="chip">Actor: User</span>
+            <span class="chip">Linked: Run R-8920</span>
+            <span class="chip">Project: Billing Governance</span>
+          </div>
+
+          <div class="callout callout--ok" style="margin-bottom: 12px">
+            Hash chain: verified for entries 120 to 146 (contiguous).
+          </div>
+
+          <div class="empty-state js-empty-evidence" hidden>
+            <div class="empty-state__title">No evidence entries yet</div>
+            <div class="empty-state__body">
+              Evidence entries are created automatically as Runs execute, Approvals are decided, and
+              Actions write to external systems.
+            </div>
+          </div>
+
+          <div class="list js-nonempty-evidence">
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Approval decision submitted</div>
+                <div class="row__subtle">
+                  Category: Approval | Actor: User | occurredAt: 2026-02-17T00:20Z
+                </div>
+              </div>
+              <div class="row__right"><span class="status status--info">Verified</span></div>
+            </div>
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Action executed (adapter write)</div>
+                <div class="row__subtle">
+                  Category: Action | Actor: Adapter | payloadRefs: Diff, Log
+                </div>
+              </div>
+              <div class="row__right"><span class="status status--info">Verified</span></div>
+            </div>
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Plan recorded (hash chained)</div>
+                <div class="row__subtle">Category: Plan | Actor: User | Linked: Plan P-551</div>
+              </div>
+              <div class="row__right"><span class="status status--info">Verified</span></div>
+            </div>
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Approval Gate opened</div>
+                <div class="row__subtle">
+                  Category: Approval | Actor: System | Linked: Run R-8920
+                </div>
+              </div>
+              <div class="row__right"><span class="status status--warn">Verified</span></div>
+            </div>
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Run initiated</div>
+                <div class="row__subtle">
+                  Category: Run | Actor: User | Linked: Run R-8920, WI-1099
+                </div>
+              </div>
+              <div class="row__right"><span class="status status--info">Verified</span></div>
+            </div>
+            <div class="row">
+              <div class="row__main">
+                <div class="row__title">EvidenceEntry: Work Item created</div>
+                <div class="row__subtle">Category: WorkItem | Actor: User | Linked: WI-1099</div>
+              </div>
+              <div class="row__right"><span class="status status--info">Verified</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: SETTINGS (stub)
+             ============================================================ -->
+        <section
+          class="screen"
+          id="screen-settings"
+          data-screen="settings"
+          aria-labelledby="h-settings"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-settings" class="h1">Workspace Settings (stub)</h1>
+              <div class="subtle">RBAC, credential vaulting, adapters/providers, and policies</div>
+            </div>
+          </div>
+
+          <div class="grid grid--2">
+            <div class="card">
+              <div class="card__title">RBAC</div>
+              <div class="card__meta">Workspace users and roles</div>
+              <div class="subtle">Roles: admin, operator, approver, auditor</div>
+            </div>
+            <div class="card">
+              <div class="card__title">Credentials</div>
+              <div class="card__meta">Vaulting, rotation, scoped issuance</div>
+              <div class="subtle">Per provider; least-privilege; auditable</div>
+            </div>
+            <div class="card">
+              <div class="card__title">Adapters / Providers</div>
+              <div class="card__meta">
+                Select provider per port family, connect credentials, validate scopes
+              </div>
+              <div class="list">
+                <div class="row">
+                  <div class="row__main">
+                    <div class="row__title">PaymentsBilling</div>
+                    <div class="row__subtle">Provider: Stripe | Capability Matrix: loaded</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok">Configured</span></div>
+                </div>
+                <div class="row">
+                  <div class="row__main">
+                    <div class="row__title">FinanceAccounting</div>
+                    <div class="row__subtle">Provider: not selected</div>
+                  </div>
+                  <div class="row__right"><span class="status status--danger">Missing</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card__title">Policies</div>
+              <div class="card__meta">Execution tiers, SoD constraints, approvals</div>
+              <div class="list">
+                <div class="row">
+                  <div class="row__main">
+                    <div class="row__title">Invoice writes > $10,000</div>
+                    <div class="row__subtle">Tier: Human-approve | N-approvers: 2</div>
+                  </div>
+                  <div class="row__right"><span class="status status--info">Active</span></div>
+                </div>
+                <div class="row">
+                  <div class="row__main">
+                    <div class="row__title">Maker-checker (SoD)</div>
+                    <div class="row__subtle">Initiator cannot approve the same Run</div>
+                  </div>
+                  <div class="row__right"><span class="status status--info">Active</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- / main-area -->
+    </div>
+    <!-- / app -->
+
+    <script src="./wireframe.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,377 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "openfga",
+    "providerName": "OpenFGA",
+    "upstream": {
+      "repoUrl": "https://github.com/openfga/api",
+      "commit": "618e7e0a48786535e65c100f590a3d5b048c44c5",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-17T02:47:13.375Z",
+  "entities": [
+    {
+      "name": "AuthorizationModel",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/authzmodel.proto.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "conditions",
+          "type": "map<string,Condition>",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "schema_version",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "type_definitions",
+          "type": "array<TypeDefinition>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Metadata",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/authzmodel.proto.",
+      "fields": [
+        {
+          "name": "module",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "relations",
+          "type": "map<string,RelationMetadata>",
+          "required": false
+        },
+        {
+          "name": "source_info",
+          "type": "SourceInfo",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RelationReference",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/authzmodel.proto.",
+      "fields": [
+        {
+          "name": "condition",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "relation",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "wildcard",
+          "type": "Wildcard",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "RelationshipCondition",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/openfga.proto.",
+      "fields": [
+        {
+          "name": "context",
+          "type": "struct",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Store",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/openfga.proto.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "required": true
+        },
+        {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Tuple",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/openfga.proto.",
+      "fields": [
+        {
+          "name": "key",
+          "type": "TupleKey",
+          "required": true
+        },
+        {
+          "name": "timestamp",
+          "type": "timestamp",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TupleKey",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/openfga.proto.",
+      "primaryKeys": ["object", "relation", "user"],
+      "fields": [
+        {
+          "name": "condition",
+          "type": "RelationshipCondition",
+          "required": false
+        },
+        {
+          "name": "object",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "relation",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TupleKeyWithoutCondition",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/openfga.proto.",
+      "primaryKeys": ["object", "relation", "user"],
+      "fields": [
+        {
+          "name": "object",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "relation",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TypeDefinition",
+      "description": "Extracted from domain-atlas/upstreams/openfga/openfga/v1/authzmodel.proto.",
+      "primaryKeys": ["type"],
+      "fields": [
+        {
+          "name": "metadata",
+          "type": "Metadata",
+          "required": false
+        },
+        {
+          "name": "relations",
+          "type": "map<string,Userset>",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "read",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "write",
+      "kind": "update",
+      "idempotency": {
+        "supported": true,
+        "notes": "Not idempotent by default; callers can opt into idempotent behavior via on_duplicate: ignore and on_missing: ignore."
+      }
+    },
+    {
+      "name": "check",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "batchCheck",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "expand",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "readAuthorizationModels",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "readAuthorizationModel",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "writeAuthorizationModel",
+      "kind": "create",
+      "idempotency": {
+        "supported": false
+      }
+    },
+    {
+      "name": "writeAssertions",
+      "kind": "update",
+      "idempotency": {
+        "supported": false
+      }
+    },
+    {
+      "name": "readAssertions",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "readChanges",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "createStore",
+      "kind": "create",
+      "idempotency": {
+        "supported": false
+      }
+    },
+    {
+      "name": "updateStore",
+      "kind": "other",
+      "idempotency": {
+        "supported": false
+      }
+    },
+    {
+      "name": "deleteStore",
+      "kind": "delete",
+      "idempotency": {
+        "supported": false
+      }
+    },
+    {
+      "name": "getStore",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "listStores",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "streamedListObjects",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "listObjects",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    },
+    {
+      "name": "listUsers",
+      "kind": "other",
+      "idempotency": {
+        "supported": true
+      }
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false
+    },
+    "tags": {
+      "supported": false
+    },
+    "attachments": {
+      "supported": false
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

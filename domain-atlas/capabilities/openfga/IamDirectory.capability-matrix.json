@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "openfga",
+  "providerName": "OpenFGA",
+  "portFamily": "IamDirectory",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "oauth2", "other"],
+    "notes": "OpenFGA supports preshared keys and (deployment-dependent) OAuth2/OIDC in front of the API. Treat auth as environment-specific."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "No native webhooks. Tuple changes can be polled via ReadChanges when enabled."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No generic idempotency key. Tuple writes are not idempotent by default, but can be made idempotent via on_duplicate: ignore and on_missing: ignore."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Plan via tuple/model diffs; verified effects via post-write reads (Read/ReadAuthorizationModel)."
+  },
+  "capabilities": [
+    {
+      "capability": "store:write",
+      "supported": true,
+      "operations": ["createStore", "deleteStore"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false
+      },
+      "notes": "Stores are foundational authz boundaries; treat as high-risk by default."
+    },
+    {
+      "capability": "authorization-model:write",
+      "supported": true,
+      "operations": ["writeAuthorizationModel", "writeAssertions"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Authorization model writes create new model versions. Compensation is best-effort (e.g., reapply prior model)."
+    },
+    {
+      "capability": "tuple:write",
+      "supported": true,
+      "operations": ["write"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Tuple writes can be compensatable via inverse writes/deletes; treat as externally-effectful and policy-governed."
+    },
+    {
+      "capability": "tuple:check",
+      "supported": true,
+      "operations": ["check", "batchCheck", "expand"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Read-only authz queries; responses can still be sensitive and should be handled as evidence carefully."
+    },
+    {
+      "capability": "relationship-query:list-objects",
+      "supported": true,
+      "operations": ["listObjects", "streamedListObjects"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "relationship-query:list-users",
+      "supported": true,
+      "operations": ["listUsers"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    }
+  ],
+  "notes": "Initial matrix derived from OpenFGA protobuf API surfaces. Tighten per tenant policy (RBAC, evidence retention, tuple write approvals)."
+}

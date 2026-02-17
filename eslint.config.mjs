@@ -140,12 +140,21 @@ export default tseslint.config(
   },
 
   // UI wireframes/prototypes live in docs and legitimately use browser globals.
+  // Relax complexity/size caps — these are standalone lo-fi prototypes, not production code.
   {
     files: ['docs/ui/**/*.js'],
     languageOptions: {
       globals: {
         ...globals.browser,
       },
+    },
+    rules: {
+      complexity: 'off',
+      'max-depth': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'max-params': 'off',
+      'sonarjs/cognitive-complexity': 'off',
     },
   },
 

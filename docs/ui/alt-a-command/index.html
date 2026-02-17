@@ -1,0 +1,1549 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portarium Alt A: Command-Palette / Keyboard-First</title>
+    <link rel="stylesheet" href="./wireframe.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#cmd-bar-input">Skip to command bar</a>
+    <a class="skip-link" href="#main" style="left: -9999px">Skip to content</a>
+
+    <div class="app">
+      <!-- ============================================================
+           TOPBAR
+           ============================================================ -->
+      <header class="topbar" role="banner">
+        <div class="brand">
+          <div class="brand__mark" aria-hidden="true">P</div>
+          <div>
+            <div class="brand__title">Portarium</div>
+            <div class="brand__subtitle">Alt A: Keyboard-First</div>
+          </div>
+        </div>
+
+        <div class="cmd-bar" role="search" aria-label="Command bar">
+          <span class="cmd-bar__icon" aria-hidden="true">/</span>
+          <input
+            id="cmd-bar-input"
+            class="cmd-bar__input"
+            type="text"
+            placeholder="Search or jump to... (Ctrl+K)"
+            aria-label="Search or command"
+            aria-keyshortcuts="Control+k"
+            autocomplete="off"
+          />
+          <span class="cmd-bar__hint"><span class="kbd">Ctrl K</span></span>
+        </div>
+
+        <div class="controls" aria-label="Prototype controls">
+          <label class="control">
+            <span class="control__label">Persona</span>
+            <select id="persona" class="control__select">
+              <option value="operator">Operator</option>
+              <option value="approver">Approver</option>
+              <option value="auditor">Auditor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">Workspace</span>
+            <select id="workspaceType" class="control__select">
+              <option value="solo">Solo</option>
+              <option value="team">Team</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span class="control__label">State</span>
+            <select id="systemState" class="control__select">
+              <option value="normal">Normal</option>
+              <option value="empty">Empty</option>
+              <option value="misconfigured">Misconfigured</option>
+              <option value="policy-blocked">Policy blocked</option>
+              <option value="rbac-limited">RBAC limited</option>
+              <option value="degraded">Degraded</option>
+            </select>
+          </label>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           BREADCRUMBS
+           ============================================================ -->
+      <nav class="breadcrumbs" aria-label="Breadcrumb" id="breadcrumbs">
+        <a href="#inbox">Workspace</a>
+        <span class="breadcrumbs__sep" aria-hidden="true">/</span>
+        <span class="breadcrumbs__current" id="breadcrumb-current">Inbox</span>
+      </nav>
+
+      <!-- ============================================================
+           MAIN CONTENT
+           ============================================================ -->
+      <main id="main" class="main" tabindex="-1">
+        <!-- Banners -->
+        <div class="banner banner--warning js-banner-degraded" hidden>
+          Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
+        </div>
+        <div class="banner banner--danger js-banner-misconfigured" hidden>
+          Setup required: no provider configured for this Port Family (missing credentials/scopes).
+          <a href="#settings">Go to Workspace settings</a>.
+        </div>
+        <div class="banner banner--danger js-banner-policy" hidden>
+          Policy blocked: this action is Manual-only or requires additional approvals. Review the
+          policy rationale and remediation steps before continuing.
+        </div>
+        <div class="banner banner--danger js-banner-rbac" hidden>
+          You can view this, but cannot act (RBAC). Ask a Workspace Admin for access.
+          <span class="status status--danger" style="margin-left: 8px">Read-only</span>
+        </div>
+
+        <!-- ============================================================
+             SCREEN: INBOX (Dense triage list)
+             ============================================================ -->
+        <section id="screen-inbox" class="screen" data-screen="inbox" aria-labelledby="h-inbox">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-inbox" class="h1">Inbox</h1>
+              <div class="subtle">
+                All actionable items: approvals, failures, violations in one prioritized feed.
+              </div>
+            </div>
+            <div class="screen__actions">
+              <button
+                class="btn btn--primary"
+                type="button"
+                aria-keyshortcuts="c"
+                onclick="location.hash = '#work-items'"
+              >
+                Create Work Item <span class="kbd">C</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="filters" id="inbox-filters">
+            <span class="chip chip--active js-filter-persona"
+              >Default filters: failures + blocks</span
+            >
+            <span class="chip js-chip-toggle" data-filter="assigned">Assigned to me</span>
+            <span class="chip js-chip-unassigned js-chip-toggle" data-filter="unassigned"
+              >Unassigned</span
+            >
+            <span class="chip js-chip-toggle" data-filter="approvals">Pending approvals</span>
+            <span class="chip js-chip-toggle" data-filter="failures">Failed runs</span>
+            <span class="chip js-chip-toggle" data-filter="violations">Policy violations</span>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-inbox" hidden>
+            <div class="empty__title">Inbox is empty</div>
+            <div class="empty__body">
+              When approval gates, run failures, or policy violations occur, they will appear here.
+              Use <span class="kbd">C</span> to create a Work Item, or
+              <span class="kbd">Ctrl K</span> to search.
+            </div>
+          </div>
+
+          <!-- Non-empty state: Dense triage list -->
+          <div class="js-nonempty-inbox">
+            <div class="triage-list" id="inbox-list" role="listbox" aria-label="Inbox items">
+              <a
+                class="triage-row"
+                href="#approvals"
+                role="option"
+                data-type="approval"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--warn">Approval</span></span
+                >
+                <span class="triage-row__title">Approve Plan: Create Invoice in NetSuite</span>
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1099</span>
+                  <span class="chip">R-8920</span>
+                </span>
+                <span class="triage-row__time">12m</span>
+                <span class="triage-row__key"><span class="kbd">1</span></span>
+              </a>
+
+              <a
+                class="triage-row"
+                href="#approvals"
+                role="option"
+                data-type="approval"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--warn">Approval</span></span
+                >
+                <span class="triage-row__title"
+                  >Approve Plan: Update Ticket priority in Zendesk</span
+                >
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1042</span>
+                  <span class="chip">R-8892</span>
+                </span>
+                <span class="triage-row__time">1h</span>
+                <span class="triage-row__key"><span class="kbd">2</span></span>
+              </a>
+
+              <a
+                class="triage-row"
+                href="#run"
+                role="option"
+                data-type="failure"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--danger">Failure</span></span
+                >
+                <span class="triage-row__title">Run failed: CRM sync hit rate limit</span>
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1021</span>
+                </span>
+                <span class="triage-row__time">30m</span>
+                <span class="triage-row__key"><span class="kbd">3</span></span>
+              </a>
+
+              <a
+                class="triage-row"
+                href="#run"
+                role="option"
+                data-type="failure"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--danger">Blocked</span></span
+                >
+                <span class="triage-row__title">Run blocked: missing provider scope</span>
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1103</span>
+                </span>
+                <span class="triage-row__time">2h</span>
+                <span class="triage-row__key"><span class="kbd">4</span></span>
+              </a>
+
+              <a
+                class="triage-row"
+                href="#work-item"
+                role="option"
+                data-type="violation"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--warn">Violation</span></span
+                >
+                <span class="triage-row__title"
+                  >SoD constraint: maker-checker required for WI-1099</span
+                >
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1099</span>
+                </span>
+                <span class="triage-row__time">12m</span>
+                <span class="triage-row__key"><span class="kbd">5</span></span>
+              </a>
+
+              <a
+                class="triage-row"
+                href="#work-item"
+                role="option"
+                data-type="update"
+                aria-keyshortcuts="Enter"
+              >
+                <span class="triage-row__badge"
+                  ><span class="status status--info">Update</span></span
+                >
+                <span class="triage-row__title"
+                  >Run R-8892 is executing: Update Ticket priority</span
+                >
+                <span class="triage-row__refs">
+                  <span class="chip">WI-1042</span>
+                </span>
+                <span class="triage-row__time">5m</span>
+                <span class="triage-row__key"><span class="kbd">6</span></span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: PROJECT OVERVIEW (Metric strip + quick-action palette)
+             ============================================================ -->
+        <section
+          id="screen-project"
+          class="screen"
+          data-screen="project"
+          aria-labelledby="h-project"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-project" class="h1">Billing Governance</h1>
+              <div class="subtle">Project overview: metrics, health, and quick actions.</div>
+            </div>
+            <div class="screen__actions">
+              <a class="btn btn--primary" href="#work-items"
+                >View Work Items <span class="kbd">W</span></a
+              >
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-project" hidden>
+            <div class="empty__title">No project data</div>
+            <div class="empty__body">
+              Configure adapters and create Work Items to see project metrics. Use
+              <span class="kbd">Ctrl K</span> to navigate.
+            </div>
+          </div>
+
+          <!-- Non-empty state -->
+          <div class="js-nonempty-project">
+            <div class="metric-strip">
+              <div class="metric-strip__item">
+                <div class="metric-strip__label">Work Items</div>
+                <div class="metric-strip__value">7</div>
+              </div>
+              <div class="metric-strip__item">
+                <div class="metric-strip__label">Runs (24h)</div>
+                <div class="metric-strip__value">3 / 2</div>
+              </div>
+              <div class="metric-strip__item">
+                <div class="metric-strip__label">Pending Approvals</div>
+                <div class="metric-strip__value">4</div>
+              </div>
+              <div class="metric-strip__item">
+                <div class="metric-strip__label">Evidence Entries</div>
+                <div class="metric-strip__value">146</div>
+              </div>
+              <div class="metric-strip__item">
+                <div class="metric-strip__label">Policy Violations</div>
+                <div class="metric-strip__value">1</div>
+              </div>
+            </div>
+
+            <div class="grid grid--2">
+              <div class="card">
+                <div class="card__title">Health and Risk</div>
+                <div class="card__meta subtle">Execution tiers (effective)</div>
+                <div class="bars">
+                  <div class="bar">
+                    <span class="bar__label">Auto</span>
+                    <span class="bar__fill" style="width: 45%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label">Assisted</span>
+                    <span class="bar__fill" style="width: 30%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label">Human-approve</span>
+                    <span class="bar__fill" style="width: 20%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label">Manual-only</span>
+                    <span class="bar__fill" style="width: 5%"></span>
+                  </div>
+                </div>
+                <div class="callout">
+                  Top policy issue: Invoices above $10,000 require N-approvers (2).
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card__title">Quick Actions</div>
+                <div class="card__meta subtle">Start common workflows or navigate directly</div>
+                <div class="quick-actions">
+                  <a class="quick-action" href="#work-item">
+                    <span class="quick-action__icon">R</span>
+                    <span class="quick-action__label">Start runbook: Invoice correction</span>
+                    <span class="quick-action__hint"><span class="kbd">1</span></span>
+                  </a>
+                  <a class="quick-action" href="#work-item">
+                    <span class="quick-action__icon">W</span>
+                    <span class="quick-action__label"
+                      >Start workflow: Collect payment receipts</span
+                    >
+                    <span class="quick-action__hint"><span class="kbd">2</span></span>
+                  </a>
+                  <a class="quick-action" href="#work-items">
+                    <span class="quick-action__icon">L</span>
+                    <span class="quick-action__label">View all Work Items</span>
+                    <span class="quick-action__hint"><span class="kbd">3</span></span>
+                  </a>
+                  <a class="quick-action" href="#approvals">
+                    <span class="quick-action__icon">A</span>
+                    <span class="quick-action__label">Review pending approvals</span>
+                    <span class="quick-action__hint"><span class="kbd">4</span></span>
+                  </a>
+                  <a class="quick-action" href="#evidence">
+                    <span class="quick-action__icon">E</span>
+                    <span class="quick-action__label">Browse evidence log</span>
+                    <span class="quick-action__hint"><span class="kbd">5</span></span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: WORK ITEMS (Compact table with inline preview)
+             ============================================================ -->
+        <section
+          id="screen-work-items"
+          class="screen"
+          data-screen="work-items"
+          aria-labelledby="h-work-items"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-work-items" class="h1">Work Items</h1>
+              <div class="subtle">Project: Billing Governance</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary js-create-wi-btn" type="button" aria-keyshortcuts="c">
+                Create Work Item <span class="kbd">C</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="chip chip--active">Assigned to me</span>
+            <span class="chip js-chip-unassigned">Unassigned</span>
+            <span class="chip">Has pending approvals</span>
+            <span class="chip">Has failed runs</span>
+          </div>
+
+          <!-- Inline create form -->
+          <div class="inline-create" id="inline-create-form">
+            <div class="form">
+              <label class="field">
+                <span class="field__label">Title</span>
+                <input
+                  class="field__input"
+                  type="text"
+                  placeholder="e.g., Invoice correction for ACME"
+                />
+              </label>
+              <label class="field">
+                <span class="field__label">External Object Refs</span>
+                <input
+                  class="field__input"
+                  type="text"
+                  placeholder="e.g., NetSuite | Invoice | INV-22318"
+                />
+              </label>
+              <div class="form__actions">
+                <button class="btn btn--primary" type="button">
+                  Create <span class="kbd">Ctrl Enter</span>
+                </button>
+                <button class="btn js-close-create" type="button">
+                  Cancel <span class="kbd">Esc</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-workitems" hidden>
+            <div class="empty__title">No Work Items yet</div>
+            <div class="empty__body">
+              A Work Item binds ExternalObjectRefs, Runs, Approvals, and Evidence. Press
+              <span class="kbd">C</span> to create one.
+            </div>
+            <div class="empty__actions">
+              <button class="btn btn--primary js-create-wi-btn" type="button">
+                Create Work Item
+              </button>
+              <a class="btn" href="#settings">Configure integrations</a>
+            </div>
+          </div>
+
+          <!-- Non-empty state: dense table -->
+          <div class="table-wrap js-nonempty-workitems">
+            <table class="table" aria-label="Work Items table" id="work-items-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Owner</th>
+                  <th>SoRs</th>
+                  <th>Latest Run</th>
+                  <th>Approvals</th>
+                  <th>Updated</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="js-wi-row" data-wi="WI-1099" data-href="#work-item">
+                  <td><strong>WI-1099</strong> Invoice correction for ACME</td>
+                  <td><span class="status status--warn">Needs approval</span></td>
+                  <td>Me</td>
+                  <td>
+                    <span class="chip">NetSuite</span> <span class="chip">Stripe</span>
+                    <span class="chip">Zendesk</span>
+                  </td>
+                  <td><span class="status status--warn">Paused</span></td>
+                  <td>1 pending</td>
+                  <td>5m</td>
+                  <td><span class="kbd">Enter</span></td>
+                </tr>
+                <tr class="accordion-row" data-accordion="WI-1099">
+                  <td colspan="8">
+                    <div class="accordion-content">
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">Latest Run</div>
+                        <div class="accordion-section__body">
+                          <strong>R-8920</strong> Invoice correction -- paused at Approval Gate (12m
+                          ago). <br />Waiting on decision: Create Invoice in NetSuite. <br /><a
+                            href="#run"
+                            >Open Run Detail</a
+                          >
+                        </div>
+                      </div>
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">External Object Refs</div>
+                        <div class="accordion-section__body">
+                          <div class="chips">
+                            <span class="chip">NetSuite | Invoice | INV-22318</span>
+                            <span class="chip">Stripe | Charge | ch_9d2a</span>
+                            <span class="chip">Zendesk | Ticket | 4831</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="margin-top: 10px">
+                      <a class="btn btn--small btn--primary" href="#work-item">Open full detail</a>
+                      <a class="btn btn--small" href="#approvals" style="margin-left: 6px"
+                        >Review approval</a
+                      >
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="js-wi-row" data-wi="WI-1042" data-href="#work-item">
+                  <td><strong>WI-1042</strong> Dispute: investigate payment failure</td>
+                  <td><span class="status status--info">In progress</span></td>
+                  <td class="js-owner-unassigned">Unassigned</td>
+                  <td><span class="chip">Stripe</span></td>
+                  <td><span class="status status--info">Running</span></td>
+                  <td>0</td>
+                  <td>18m</td>
+                  <td><span class="kbd">Enter</span></td>
+                </tr>
+                <tr class="accordion-row" data-accordion="WI-1042">
+                  <td colspan="8">
+                    <div class="accordion-content">
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">Latest Run</div>
+                        <div class="accordion-section__body">
+                          <strong>R-8892</strong> Update Ticket priority -- currently running.
+                          <br /><a href="#run">Open Run Detail</a>
+                        </div>
+                      </div>
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">External Object Refs</div>
+                        <div class="accordion-section__body">
+                          <div class="chips">
+                            <span class="chip">Stripe | Charge | ch_f3b1</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="margin-top: 10px">
+                      <a class="btn btn--small btn--primary" href="#work-item">Open full detail</a>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="js-wi-row" data-wi="WI-1013" data-href="#work-item">
+                  <td><strong>WI-1013</strong> Receipt export for audit period</td>
+                  <td><span class="status">Open</span></td>
+                  <td>Me</td>
+                  <td><span class="chip">Stripe</span> <span class="chip">Drive</span></td>
+                  <td><span class="status">None</span></td>
+                  <td>0</td>
+                  <td>2d</td>
+                  <td><span class="kbd">Enter</span></td>
+                </tr>
+                <tr class="accordion-row" data-accordion="WI-1013">
+                  <td colspan="8">
+                    <div class="accordion-content">
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">Latest Run</div>
+                        <div class="accordion-section__body">
+                          No runs started yet. Use <span class="kbd">S</span> in the detail view to
+                          start a workflow.
+                        </div>
+                      </div>
+                      <div class="accordion-section">
+                        <div class="accordion-section__title">External Object Refs</div>
+                        <div class="accordion-section__body">
+                          <div class="chips">
+                            <span class="chip">Stripe | Customer | cus_a291</span>
+                            <span class="chip">Drive | Folder | audit-2026-Q1</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="margin-top: 10px">
+                      <a class="btn btn--small btn--primary" href="#work-item">Open full detail</a>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: WORK ITEM DETAIL (Focused single-pane, collapsible sections)
+             ============================================================ -->
+        <section
+          id="screen-work-item"
+          class="screen"
+          data-screen="work-item"
+          aria-labelledby="h-work-item"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-work-item" class="h1">WI-1099 Invoice correction for ACME</h1>
+              <div class="subtle">
+                Jump to section: <span class="kbd">1</span> Refs <span class="kbd">2</span> Timeline
+                <span class="kbd">3</span> Runs <span class="kbd">4</span> Approvals
+                <span class="kbd">5</span> Evidence
+              </div>
+            </div>
+            <div class="screen__actions">
+              <a class="btn btn--primary" href="#run" aria-keyshortcuts="s">
+                Start workflow <span class="kbd">S</span>
+              </a>
+              <a class="btn" href="#evidence" aria-keyshortcuts="e">
+                Evidence <span class="kbd">E</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="callout callout--policy">
+            Effective policy: Execution Tier <strong>Human-approve</strong>. SoD constraint:
+            maker-checker may require a distinct approver.
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-workitem" hidden>
+            <div class="empty__title">No Work Item data</div>
+            <div class="empty__body">
+              This Work Item does not exist in the empty state. Create one from the Work Items list.
+            </div>
+          </div>
+
+          <!-- Non-empty -->
+          <div class="js-nonempty-workitem">
+            <div class="detail-layout" style="margin-top: 14px">
+              <div class="detail-main">
+                <!-- Section 1: ExternalObjectRefs -->
+                <div class="section-collapse" id="section-refs" data-section="1">
+                  <button class="section-collapse__header" type="button" aria-expanded="true">
+                    <span class="section-collapse__toggle" aria-hidden="true">&#9660;</span>
+                    <span>ExternalObjectRefs</span>
+                    <span class="kbd" style="margin-left: auto">1</span>
+                  </button>
+                  <div class="section-collapse__body">
+                    <div class="chips">
+                      <span class="chip">NetSuite | Invoice | INV-22318</span>
+                      <span class="chip">Stripe | Charge | ch_9d2a</span>
+                      <span class="chip">Zendesk | Ticket | 4831</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 2: Timeline -->
+                <div class="section-collapse" id="section-timeline" data-section="2">
+                  <button class="section-collapse__header" type="button" aria-expanded="true">
+                    <span class="section-collapse__toggle" aria-hidden="true">&#9660;</span>
+                    <span>Timeline</span>
+                    <span class="kbd" style="margin-left: auto">2</span>
+                  </button>
+                  <div class="section-collapse__body">
+                    <div class="list">
+                      <div class="row row--static">
+                        <div>
+                          <div class="row__title">Plan created</div>
+                          <div class="row__subtle">
+                            Actor: User | Summary: Portarium intends to update invoice fields.
+                          </div>
+                        </div>
+                        <div class="row__right"><span class="status status--info">Plan</span></div>
+                      </div>
+                      <div class="row row--static">
+                        <div>
+                          <div class="row__title">Approval Gate opened</div>
+                          <div class="row__subtle">
+                            Actor: System | Waiting on decision with rationale
+                          </div>
+                        </div>
+                        <div class="row__right">
+                          <span class="status status--warn">Approval</span>
+                        </div>
+                      </div>
+                      <div class="row row--static">
+                        <div>
+                          <div class="row__title">Run paused</div>
+                          <div class="row__subtle">Run: R-8920 | Workflow: Invoice correction</div>
+                        </div>
+                        <div class="row__right"><span class="status status--warn">Run</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 3: Runs -->
+                <div class="section-collapse" id="section-runs" data-section="3">
+                  <button class="section-collapse__header" type="button" aria-expanded="true">
+                    <span class="section-collapse__toggle" aria-hidden="true">&#9660;</span>
+                    <span>Runs</span>
+                    <span class="kbd" style="margin-left: auto">3</span>
+                  </button>
+                  <div class="section-collapse__body">
+                    <div class="list">
+                      <a class="row" href="#run">
+                        <div>
+                          <div class="row__title">R-8920 Invoice correction (paused)</div>
+                          <div class="row__subtle">Started 12m ago | Waiting on Approval Gate</div>
+                        </div>
+                        <div class="row__right">
+                          <span class="status status--warn">Paused</span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 4: Approvals -->
+                <div class="section-collapse" id="section-approvals" data-section="4">
+                  <button class="section-collapse__header" type="button" aria-expanded="true">
+                    <span class="section-collapse__toggle" aria-hidden="true">&#9660;</span>
+                    <span>Approvals</span>
+                    <span class="kbd" style="margin-left: auto">4</span>
+                  </button>
+                  <div class="section-collapse__body">
+                    <div class="list">
+                      <a class="row" href="#approvals">
+                        <div>
+                          <div class="row__title">Approval Gate: Approve Plan (1 pending)</div>
+                          <div class="row__subtle">Requires rationale | SoD: maker-checker</div>
+                        </div>
+                        <div class="row__right">
+                          <span class="status status--warn">Pending</span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 5: Evidence -->
+                <div class="section-collapse" id="section-evidence" data-section="5">
+                  <button class="section-collapse__header" type="button" aria-expanded="true">
+                    <span class="section-collapse__toggle" aria-hidden="true">&#9660;</span>
+                    <span>Evidence</span>
+                    <span class="kbd" style="margin-left: auto">5</span>
+                  </button>
+                  <div class="section-collapse__body">
+                    <div class="list">
+                      <a class="row" href="#evidence">
+                        <div>
+                          <div class="row__title">Evidence entries (12)</div>
+                          <div class="row__subtle">Plan | Approval | Action | System</div>
+                        </div>
+                        <div class="row__right"><span class="status status--info">View</span></div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right sidebar: metadata -->
+              <div class="detail-sidebar">
+                <div class="detail-meta">
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">Owner</span>
+                    <span><strong>Me</strong></span>
+                  </div>
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">Status</span>
+                    <span class="status status--warn">Needs approval</span>
+                  </div>
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">Policy Tier</span>
+                    <span>Human-approve</span>
+                  </div>
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">SoD</span>
+                    <span>Maker-checker</span>
+                  </div>
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">Project</span>
+                    <span>Billing Governance</span>
+                  </div>
+                  <div class="detail-meta__row">
+                    <span class="detail-meta__label">Created</span>
+                    <span>2026-02-17</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: RUN DETAIL (Step-focused, two-panel)
+             ============================================================ -->
+        <section id="screen-run" class="screen" data-screen="run" aria-labelledby="h-run">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-run" class="h1">
+                Run R-8920 <span class="subtle">(Paused at Approval Gate)</span>
+              </h1>
+              <div class="subtle">
+                Workflow: Invoice correction | Initiator: Me | Work Item:
+                <a href="#work-item">WI-1099</a>
+              </div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn" type="button" aria-keyshortcuts="r">
+                Retry <span class="kbd">R</span>
+              </button>
+              <button class="btn" type="button">Export run summary</button>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-run" hidden>
+            <div class="empty__title">No run data</div>
+            <div class="empty__body">
+              No runs in the empty state. Start a workflow from a Work Item.
+            </div>
+          </div>
+
+          <!-- Non-empty -->
+          <div class="js-nonempty-run">
+            <div class="steps" aria-label="Run status timeline">
+              <div class="step step--done">Queued</div>
+              <div class="step step--done">Running</div>
+              <div class="step step--active">Approval Gate</div>
+              <div class="step">Complete</div>
+            </div>
+
+            <div class="run-panels">
+              <!-- Left: Effects -->
+              <div class="card">
+                <div class="card__title">Plan + Effects</div>
+                <div class="card__meta subtle">Separate planned vs predicted vs verified</div>
+
+                <div class="effects">
+                  <div>
+                    <div class="effects__title">Planned Effects</div>
+                    <div class="effects__hint subtle">Portarium intends to...</div>
+                    <div class="effects__list">
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Update</span>
+                          <span class="effect__target">NetSuite | Invoice | INV-22318</span>
+                        </div>
+                        <div class="effect__subtle">Update memo and line item classification.</div>
+                      </div>
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Create</span>
+                          <span class="effect__target">Drive | Document | Receipt bundle</span>
+                        </div>
+                        <div class="effect__subtle">Create evidence artifact for audit trail.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="effects__title">Predicted Effects</div>
+                    <div class="effects__hint subtle">The provider preview suggests...</div>
+                    <div class="effects__list">
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Update</span>
+                          <span class="effect__target">NetSuite | Invoice | INV-22318</span>
+                          <span class="confidence">Confidence: 0.82</span>
+                        </div>
+                        <div class="effect__subtle">Total remains unchanged.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="effects__title">Verified Effects</div>
+                    <div class="effects__hint subtle">Observed change (available post-run)</div>
+                    <div class="effects__list">
+                      <div class="effect effect--muted">
+                        <div class="effect__main">
+                          <span class="pill">-</span>
+                          <span class="effect__target">Not available yet</span>
+                        </div>
+                        <div class="effect__subtle">
+                          Run must complete to record verified evidence.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Approval form -->
+              <div class="card">
+                <div class="card__title">Approval Gate</div>
+                <div class="card__meta subtle">
+                  Decision required due to tier/scopes/SoD constraints.
+                </div>
+
+                <div class="callout callout--danger js-callout-sod">
+                  SoD constraint: the initiator cannot self-approve (maker-checker).
+                </div>
+
+                <div class="form" style="margin-top: 12px">
+                  <label class="field">
+                    <span class="field__label">Decision</span>
+                    <select class="field__input">
+                      <option>Approve</option>
+                      <option>Deny</option>
+                      <option>Request changes</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span class="field__label">Rationale (required)</span>
+                    <textarea
+                      class="field__input"
+                      rows="4"
+                      placeholder="Explain why this Plan is acceptable or not."
+                    ></textarea>
+                  </label>
+                  <div class="form__actions">
+                    <button
+                      class="btn btn--primary"
+                      type="button"
+                      aria-keyshortcuts="Control+Enter"
+                    >
+                      Submit decision <span class="kbd">Ctrl Enter</span>
+                    </button>
+                    <a class="btn" href="#work-item">Back to Work Item</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top: 14px">
+              <div class="card__title">Evidence (Run-scoped)</div>
+              <div class="card__meta subtle">
+                Append-only events with links to retention-managed payloads
+              </div>
+              <div class="list">
+                <div class="row row--static">
+                  <div>
+                    <div class="row__title">Evidence: Plan recorded (hash chained)</div>
+                    <div class="row__subtle">Category: Plan | Actor: User | Linked: Plan P-551</div>
+                  </div>
+                  <div class="row__right"><span class="status status--info">Evidence</span></div>
+                </div>
+                <div class="row row--static">
+                  <div>
+                    <div class="row__title">Evidence: Approval Gate opened</div>
+                    <div class="row__subtle">
+                      Category: Approval | Actor: System | Linked: Run R-8920
+                    </div>
+                  </div>
+                  <div class="row__right"><span class="status status--warn">Evidence</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: APPROVALS (Stacked review queue, one-at-a-time focus)
+             ============================================================ -->
+        <section
+          id="screen-approvals"
+          class="screen"
+          data-screen="approvals"
+          aria-labelledby="h-approvals"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-approvals" class="h1">Approvals</h1>
+              <div class="subtle">
+                Stacked review queue. Navigate: <span class="kbd">N</span> next,
+                <span class="kbd">P</span> previous.
+              </div>
+            </div>
+            <div class="screen__actions">
+              <span class="focus-counter" id="approval-counter">
+                <span class="focus-counter__current" id="approval-current">1</span>
+                of
+                <span id="approval-total">2</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-approvals" hidden>
+            <div class="empty__title">No pending approvals</div>
+            <div class="empty__body">
+              When a Run pauses at an Approval Gate, it will appear here. Use
+              <span class="kbd">Ctrl K</span> to navigate elsewhere.
+            </div>
+          </div>
+
+          <!-- Non-empty: approval cards -->
+          <div class="js-nonempty-approvals">
+            <div class="approval-focus" id="approval-queue">
+              <!-- Approval 1 -->
+              <div
+                class="approval-focus__card js-approval-card"
+                data-approval="1"
+                style="display: block"
+              >
+                <div style="margin-bottom: 12px">
+                  <div style="font-weight: 900; font-size: 15px">
+                    Approve Plan: Create Invoice in NetSuite
+                  </div>
+                  <div class="subtle">
+                    Work Item: <a href="#work-item">WI-1099</a> | Run: <a href="#run">R-8920</a> |
+                    Tier: Human-approve | Requested: 12m ago | SoD: maker-checker
+                  </div>
+                </div>
+
+                <div class="effects" style="margin-bottom: 14px">
+                  <div>
+                    <div class="effects__title">Planned Effects</div>
+                    <div class="effects__list">
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Update</span>
+                          <span class="effect__target">NetSuite | Invoice | INV-22318</span>
+                        </div>
+                        <div class="effect__subtle">Update memo and line item classification.</div>
+                      </div>
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Create</span>
+                          <span class="effect__target">Drive | Document | Receipt bundle</span>
+                        </div>
+                        <div class="effect__subtle">Create evidence artifact for audit trail.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form">
+                  <label class="field">
+                    <span class="field__label">Decision</span>
+                    <select class="field__input">
+                      <option>Approve</option>
+                      <option>Deny</option>
+                      <option>Request changes</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span class="field__label">Rationale (required)</span>
+                    <textarea
+                      class="field__input"
+                      rows="3"
+                      placeholder="Explain why this Plan is acceptable or not."
+                    ></textarea>
+                  </label>
+                  <div class="form__actions">
+                    <button
+                      class="btn btn--primary"
+                      type="button"
+                      aria-keyshortcuts="Control+Enter"
+                    >
+                      Submit decision <span class="kbd">Ctrl Enter</span>
+                    </button>
+                    <a class="btn" href="#run">View run detail</a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Approval 2 -->
+              <div
+                class="approval-focus__card js-approval-card"
+                data-approval="2"
+                style="display: none"
+              >
+                <div style="margin-bottom: 12px">
+                  <div style="font-weight: 900; font-size: 15px">
+                    Approve Plan: Update Ticket priority in Zendesk
+                  </div>
+                  <div class="subtle">
+                    Work Item: <a href="#work-item">WI-1042</a> | Run: <a href="#run">R-8892</a> |
+                    Tier: Human-approve | Requested: 1h ago
+                  </div>
+                </div>
+
+                <div class="effects" style="margin-bottom: 14px">
+                  <div>
+                    <div class="effects__title">Planned Effects</div>
+                    <div class="effects__list">
+                      <div class="effect">
+                        <div class="effect__main">
+                          <span class="pill">Update</span>
+                          <span class="effect__target">Zendesk | Ticket | 4831</span>
+                        </div>
+                        <div class="effect__subtle">Set priority from Normal to High.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form">
+                  <label class="field">
+                    <span class="field__label">Decision</span>
+                    <select class="field__input">
+                      <option>Approve</option>
+                      <option>Deny</option>
+                      <option>Request changes</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span class="field__label">Rationale (required)</span>
+                    <textarea
+                      class="field__input"
+                      rows="3"
+                      placeholder="Explain why this Plan is acceptable or not."
+                    ></textarea>
+                  </label>
+                  <div class="form__actions">
+                    <button
+                      class="btn btn--primary"
+                      type="button"
+                      aria-keyshortcuts="Control+Enter"
+                    >
+                      Submit decision <span class="kbd">Ctrl Enter</span>
+                    </button>
+                    <a class="btn" href="#run">View run detail</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="approval-nav">
+              <button class="btn js-approval-prev" type="button" aria-keyshortcuts="p">
+                <span class="kbd">P</span> Previous
+              </button>
+              <button class="btn js-approval-next" type="button" aria-keyshortcuts="n">
+                Next <span class="kbd">N</span>
+              </button>
+              <a class="btn" href="#inbox" style="margin-left: auto">Back to Inbox</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: EVIDENCE (Searchable log, monospace)
+             ============================================================ -->
+        <section
+          id="screen-evidence"
+          class="screen"
+          data-screen="evidence"
+          aria-labelledby="h-evidence"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-evidence" class="h1">Evidence</h1>
+              <div class="subtle">
+                Hash-chained evidence log. <span class="kbd">/</span> to search,
+                <span class="kbd">F</span> to filter.
+              </div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn" type="button">Export verification report</button>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-evidence" hidden>
+            <div class="empty__title">No evidence entries</div>
+            <div class="empty__body">
+              Evidence is recorded automatically as Runs execute. Start a workflow to begin
+              generating entries.
+            </div>
+          </div>
+
+          <!-- Non-empty -->
+          <div class="js-nonempty-evidence">
+            <div class="hash-banner hash-banner--ok">
+              Hash chain verified: entries 120 to 146 (contiguous, no gaps).
+            </div>
+
+            <div class="evidence-search">
+              <span class="evidence-search__icon" aria-hidden="true">/</span>
+              <input
+                class="evidence-search__input"
+                id="evidence-search-input"
+                type="text"
+                placeholder="Search evidence entries..."
+                aria-label="Search evidence"
+                aria-keyshortcuts="/"
+              />
+            </div>
+
+            <div class="filters" id="evidence-filters">
+              <span class="chip chip--active">Category: All</span>
+              <span class="chip">Plan</span>
+              <span class="chip">Approval</span>
+              <span class="chip">Action</span>
+              <span class="chip">System</span>
+              <span class="chip">Linked: R-8920</span>
+            </div>
+
+            <div id="evidence-log">
+              <div class="log-entry" data-cat="plan">
+                <span class="log-entry__time">2026-02-17T00:12:04Z</span>
+                <span class="log-entry__cat log-entry__cat--plan">Plan</span>
+                <span class="log-entry__msg"
+                  >Plan recorded: Portarium intends to update invoice fields in NetSuite for
+                  WI-1099.</span
+                >
+                <span class="log-entry__hash">sha256:a1b2c3...f4e5</span>
+              </div>
+              <div class="log-entry" data-cat="approval">
+                <span class="log-entry__time">2026-02-17T00:12:05Z</span>
+                <span class="log-entry__cat log-entry__cat--approval">Approval</span>
+                <span class="log-entry__msg"
+                  >Approval Gate opened for Run R-8920. Awaiting human decision.</span
+                >
+                <span class="log-entry__hash">sha256:d6e7f8...a9b0</span>
+              </div>
+              <div class="log-entry" data-cat="system">
+                <span class="log-entry__time">2026-02-17T00:12:05Z</span>
+                <span class="log-entry__cat log-entry__cat--system">System</span>
+                <span class="log-entry__msg"
+                  >Run R-8920 paused at step 3 of 4 (Approval Gate).</span
+                >
+                <span class="log-entry__hash">sha256:c1d2e3...b4a5</span>
+              </div>
+              <div class="log-entry" data-cat="approval">
+                <span class="log-entry__time">2026-02-17T00:20:12Z</span>
+                <span class="log-entry__cat log-entry__cat--approval">Approval</span>
+                <span class="log-entry__msg"
+                  >Approval decision submitted: Approve with rationale "Invoice amounts verified
+                  against Stripe charges."</span
+                >
+                <span class="log-entry__hash">sha256:f6a7b8...c9d0</span>
+              </div>
+              <div class="log-entry" data-cat="action">
+                <span class="log-entry__time">2026-02-17T00:20:14Z</span>
+                <span class="log-entry__cat log-entry__cat--action">Action</span>
+                <span class="log-entry__msg"
+                  >Action executed: adapter write to NetSuite | Invoice | INV-22318. payloadRefs:
+                  Diff, Log.</span
+                >
+                <span class="log-entry__hash">sha256:e1f2a3...d4c5</span>
+              </div>
+              <div class="log-entry" data-cat="action">
+                <span class="log-entry__time">2026-02-17T00:20:16Z</span>
+                <span class="log-entry__cat log-entry__cat--action">Action</span>
+                <span class="log-entry__msg"
+                  >Action executed: adapter write to Drive | Document | Receipt bundle. payloadRefs:
+                  Blob, Log.</span
+                >
+                <span class="log-entry__hash">sha256:b6c7d8...e9f0</span>
+              </div>
+              <div class="log-entry" data-cat="system">
+                <span class="log-entry__time">2026-02-17T00:20:17Z</span>
+                <span class="log-entry__cat log-entry__cat--system">System</span>
+                <span class="log-entry__msg"
+                  >Run R-8920 completed. All steps executed. Verified effects pending
+                  reconciliation.</span
+                >
+                <span class="log-entry__hash">sha256:a9b0c1...d2e3</span>
+              </div>
+              <div class="log-entry" data-cat="plan">
+                <span class="log-entry__time">2026-02-17T01:05:00Z</span>
+                <span class="log-entry__cat log-entry__cat--plan">Plan</span>
+                <span class="log-entry__msg"
+                  >Plan recorded: Update Ticket priority in Zendesk for WI-1042.</span
+                >
+                <span class="log-entry__hash">sha256:f4e5d6...c7b8</span>
+              </div>
+              <div class="log-entry" data-cat="approval">
+                <span class="log-entry__time">2026-02-17T01:05:01Z</span>
+                <span class="log-entry__cat log-entry__cat--approval">Approval</span>
+                <span class="log-entry__msg"
+                  >Approval Gate opened for Run R-8892. Awaiting human decision.</span
+                >
+                <span class="log-entry__hash">sha256:a1b2c3...09fa</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: SETTINGS (Form-based, collapsible sections)
+             ============================================================ -->
+        <section
+          id="screen-settings"
+          class="screen"
+          data-screen="settings"
+          aria-labelledby="h-settings"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-settings" class="h1">Workspace Settings</h1>
+              <div class="subtle">
+                RBAC, credential vaulting, adapters/providers, and policies. Navigate sections with
+                <span class="kbd">Tab</span>.
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty js-empty-settings" hidden>
+            <div class="empty__title">No settings available</div>
+            <div class="empty__body">
+              Settings will be available once the workspace is configured.
+            </div>
+          </div>
+
+          <!-- Non-empty -->
+          <div class="js-nonempty-settings">
+            <!-- RBAC -->
+            <div class="settings-section" id="settings-rbac">
+              <button class="settings-section__header" type="button" aria-expanded="true">
+                <span class="settings-section__toggle" aria-hidden="true">&#9660;</span>
+                RBAC
+              </button>
+              <div class="settings-section__body">
+                <div class="subtle" style="margin-bottom: 10px">
+                  Workspace users and roles: admin, operator, approver, auditor.
+                </div>
+                <div class="table-wrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>alice@acme.co (Me)</td>
+                        <td>Operator, Approver</td>
+                        <td><span class="status status--ok">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>bob@acme.co</td>
+                        <td>Approver</td>
+                        <td><span class="status status--ok">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>carol@acme.co</td>
+                        <td>Admin</td>
+                        <td><span class="status status--ok">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>dan@acme.co</td>
+                        <td>Auditor</td>
+                        <td><span class="status status--ok">Active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Credentials -->
+            <div class="settings-section" id="settings-credentials">
+              <button class="settings-section__header" type="button" aria-expanded="true">
+                <span class="settings-section__toggle" aria-hidden="true">&#9660;</span>
+                Credentials
+              </button>
+              <div class="settings-section__body">
+                <div class="subtle" style="margin-bottom: 10px">
+                  Per-provider vaulting, rotation, scoped issuance. Least-privilege, auditable.
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Stripe API Key</div>
+                      <div class="row__subtle">
+                        Scope: read_write | Rotated: 2026-02-10 | Vault: encrypted
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">NetSuite OAuth Token</div>
+                      <div class="row__subtle">
+                        Scope: rest_api_invoke | Rotated: 2026-02-01 | Vault: encrypted
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Zendesk API Token</div>
+                      <div class="row__subtle">
+                        Scope: tickets:write | Rotated: 2026-01-28 | Vault: encrypted
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Google Drive Service Account</div>
+                      <div class="row__subtle">
+                        Scope: drive.file | Rotated: never | Vault: encrypted
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--warn">Needs rotation</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Adapters / Providers -->
+            <div class="settings-section" id="settings-adapters">
+              <button class="settings-section__header" type="button" aria-expanded="true">
+                <span class="settings-section__toggle" aria-hidden="true">&#9660;</span>
+                Adapters / Providers
+              </button>
+              <div class="settings-section__body">
+                <div class="subtle" style="margin-bottom: 10px">
+                  Select provider per port family, connect credentials, validate scopes.
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">PaymentsBilling</div>
+                      <div class="row__subtle">Provider: Stripe | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">FinanceAccounting</div>
+                      <div class="row__subtle">Provider: NetSuite | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">CustomerSupport</div>
+                      <div class="row__subtle">Provider: Zendesk | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">DocumentStorage</div>
+                      <div class="row__subtle">Provider: not selected</div>
+                    </div>
+                    <div class="row__right"><span class="status status--danger">Missing</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Policies -->
+            <div class="settings-section" id="settings-policies">
+              <button class="settings-section__header" type="button" aria-expanded="true">
+                <span class="settings-section__toggle" aria-hidden="true">&#9660;</span>
+                Policies
+              </button>
+              <div class="settings-section__body">
+                <div class="subtle" style="margin-bottom: 10px">
+                  Execution tiers, SoD constraints, approval requirements.
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Invoice writes > $10,000</div>
+                      <div class="row__subtle">Tier: Human-approve | N-approvers: 2</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Maker-checker (SoD)</div>
+                      <div class="row__subtle">Initiator cannot approve the same Run</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Ticket priority changes</div>
+                      <div class="row__subtle">Tier: Human-approve | N-approvers: 1</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div>
+                      <div class="row__title">Receipt exports</div>
+                      <div class="row__subtle">Tier: Auto | Evidence: always recorded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ============================================================
+           SHORTCUT FOOTER
+           ============================================================ -->
+      <footer class="shortcut-footer" id="shortcut-footer" aria-label="Keyboard shortcuts">
+        <span class="shortcut-footer__item"><span class="kbd">Ctrl K</span> Command palette</span>
+        <span class="shortcut-footer__item"
+          ><span class="kbd">J</span><span class="kbd">K</span> Navigate</span
+        >
+        <span class="shortcut-footer__item"><span class="kbd">Enter</span> Open</span>
+        <span class="shortcut-footer__item"><span class="kbd">G I</span> Inbox</span>
+        <span class="shortcut-footer__item"><span class="kbd">G W</span> Work Items</span>
+        <span class="shortcut-footer__item"><span class="kbd">G A</span> Approvals</span>
+      </footer>
+    </div>
+
+    <!-- ============================================================
+         COMMAND PALETTE OVERLAY
+         ============================================================ -->
+    <div
+      class="cmd-palette-backdrop"
+      id="cmd-palette-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+    >
+      <div class="cmd-palette">
+        <div class="cmd-palette__input-wrap">
+          <input
+            class="cmd-palette__input"
+            id="cmd-palette-input"
+            type="text"
+            placeholder="Type a command or search..."
+            aria-label="Command palette search"
+            autocomplete="off"
+          />
+        </div>
+        <div class="cmd-palette__results" id="cmd-palette-results" role="listbox">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <script src="./wireframe.js" defer></script>
+  </body>
+</html>

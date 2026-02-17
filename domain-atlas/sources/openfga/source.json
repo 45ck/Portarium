@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0032",
+    "notes": "Extracted core authz domain surfaces (stores, tuples, authorization models) from protobuf API definitions."
+  },
+  "providerId": "openfga",
+  "providerName": "OpenFGA",
+  "portFamilies": ["IamDirectory"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/openfga/api",
+    "version": "pinned-by-commit",
+    "commit": "618e7e0a48786535e65c100f590a3d5b048c44c5",
+    "retrievedAt": "2026-02-17T02:33:10.000Z"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Upstream LICENSE is Apache 2.0. This manifest is for research + schema extraction; do not vendor upstream source into Portarium core."
+  },
+  "extraction": {
+    "modelSources": [
+      "openfga/v1/openfga.proto",
+      "openfga/v1/authzmodel.proto",
+      "openfga/v1/openfga_service.proto",
+      "openfga/v1/openfga_service_consistency.proto"
+    ],
+    "command": "node scripts/domain-atlas/extract-openfga-cif.mjs",
+    "notes": "Initial extraction parses OpenFGA protobuf definitions (messages + service RPCs) as the most honest integration boundary for types and operations."
+  }
+}

@@ -25,3 +25,6 @@
 [submodule "domain-atlas/upstreams/paperless-ngx"]
 	path = domain-atlas/upstreams/paperless-ngx
 	url = https://github.com/paperless-ngx/paperless-ngx
+[submodule "domain-atlas/upstreams/openfga"]
+	path = domain-atlas/upstreams/openfga
+	url = https://github.com/openfga/api

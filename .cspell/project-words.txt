@@ -207,6 +207,7 @@ FreeIPA
 Authentik
 Zitadel
 FusionAuth
+OpenFGA
 
 # ERPNext / Frappe schema words
 docstatus
@@ -221,6 +222,7 @@ aaguids
 disableable
 frontchannel
 passwordless
+preshared
 
 # Stripe / PaymentsBilling schema words
 prorations
@@ -549,9 +551,17 @@ compensatable
 multiselectfield
 serialisers
 
+# IAM / authz terms
+authzmodel
+Userset
+
+# Protobuf terms
+sfixed
+
 # UI / wireframe terms
 lofi
 tabpane
 tabpanes
 topbar
+workitem
 workitems

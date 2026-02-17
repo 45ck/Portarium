@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portarium Alt-B: Activity-Stream Prototype</title>
+    <link rel="stylesheet" href="./wireframe.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="app app--with-rail" id="app">
+      <!-- ========== TOPBAR ========== -->
+      <header class="topbar" role="banner">
+        <div class="topbar__left">
+          <div class="brand">
+            <div class="brand__mark" aria-hidden="true">P</div>
+            <div>
+              <div class="brand__title">Portarium</div>
+              <div class="brand__subtitle">Alt-B: Stream</div>
+            </div>
+          </div>
+
+          <nav class="view-tabs" aria-label="View tabs">
+            <a
+              class="view-tab view-tab--active"
+              href="#stream"
+              data-view="stream"
+              role="tab"
+              aria-selected="true"
+              >Stream</a
+            >
+            <a class="view-tab" href="#entity" data-view="entity" role="tab" aria-selected="false"
+              >Entity</a
+            >
+            <a
+              class="view-tab"
+              href="#evidence"
+              data-view="evidence"
+              role="tab"
+              aria-selected="false"
+              >Evidence</a
+            >
+            <a
+              class="view-tab"
+              href="#settings"
+              data-view="settings"
+              role="tab"
+              aria-selected="false"
+              >Settings</a
+            >
+          </nav>
+        </div>
+
+        <div class="topbar__right">
+          <div class="controls" aria-label="Prototype controls">
+            <label class="control">
+              <span class="control__label">Persona</span>
+              <select id="persona" class="control__select">
+                <option value="operator">Operator</option>
+                <option value="approver">Approver</option>
+                <option value="auditor">Auditor</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">Workspace</span>
+              <select id="workspaceType" class="control__select">
+                <option value="solo">Solo</option>
+                <option value="team">Team</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">State</span>
+              <select id="systemState" class="control__select">
+                <option value="normal">Normal</option>
+                <option value="empty">Empty</option>
+                <option value="misconfigured">Misconfigured</option>
+                <option value="policy-blocked">Policy blocked</option>
+                <option value="rbac-limited">RBAC limited</option>
+                <option value="degraded">Degraded</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== FILTER RAIL (visible on Stream view only) ========== -->
+      <aside class="filter-rail" id="filterRail" aria-label="Stream filters">
+        <div class="filter-rail__title">Filters</div>
+
+        <div class="filter-group">
+          <div class="filter-group__label">Scope</div>
+          <select class="filter-scope" id="filterScope" aria-label="Scope filter">
+            <option value="all">All events</option>
+            <option value="billing-governance">Project: Billing Governance</option>
+            <option value="customer-support">Project: Customer Support Ops</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group__label">Category</div>
+          <div class="filter-group__items">
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-cat="runs" />
+              <span>Runs</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-cat="approvals" />
+              <span>Approvals</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-cat="evidence" />
+              <span>Evidence</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-cat="system" />
+              <span>System</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-cat="work-items" />
+              <span>Work Items</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group__label">Actor</div>
+          <div class="filter-group__items">
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-actor="me" />
+              <span>Me</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-actor="system" />
+              <span>System</span>
+            </label>
+            <label class="filter-item">
+              <input type="checkbox" checked data-filter-actor="machine" />
+              <span>Machine</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-persona-chip js-persona-chip">Default: all events</div>
+      </aside>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main id="main" class="main" tabindex="-1">
+        <!-- Banners (all system states) -->
+        <div class="banner banner--warning js-banner-degraded" hidden>
+          Realtime updates are unavailable. Event stream may be stale; last refreshed 2 minutes ago.
+        </div>
+        <div class="banner banner--danger js-banner-misconfigured" hidden>
+          Setup required: no provider configured for this Port Family (missing credentials/scopes).
+          <a href="#settings">Go to Workspace settings</a>.
+        </div>
+        <div class="banner banner--danger js-banner-policy" hidden>
+          Policy blocked: this action is Manual-only or requires additional approvals. Review the
+          policy rationale and remediation steps before continuing.
+        </div>
+        <div class="banner banner--danger js-banner-rbac" hidden>
+          You can view this, but cannot act (RBAC). Ask a Workspace Admin for access.
+        </div>
+
+        <!-- ==========================================
+             VIEW: STREAM (default)
+             ========================================== -->
+        <div class="view" id="view-stream" data-view="stream">
+          <div class="main__inner">
+            <!-- Summary strip (shown when project scoped) -->
+            <div class="summary-strip" id="summaryStrip" hidden>
+              <div class="summary-strip__metric">
+                <div class="summary-strip__label">WIs needing attention</div>
+                <div class="summary-strip__value">7</div>
+              </div>
+              <div class="summary-strip__metric">
+                <div class="summary-strip__label">Active runs</div>
+                <div class="summary-strip__value">3</div>
+              </div>
+              <div class="summary-strip__metric">
+                <div class="summary-strip__label">Pending approvals</div>
+                <div class="summary-strip__value">4</div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div class="empty js-empty-stream" hidden>
+              <div class="empty__title">No events yet</div>
+              <div class="empty__body">
+                When you create Work Items, start Runs, or submit Approvals, events will appear here
+                in a chronological stream. Configure your integrations to get started.
+              </div>
+              <div class="empty__actions">
+                <a class="btn btn--primary" href="#entity">Create Work Item</a>
+                <a class="btn" href="#settings">Configure integrations</a>
+              </div>
+            </div>
+
+            <!-- Stream content (non-empty) -->
+            <div
+              class="js-stream-content"
+              role="feed"
+              aria-label="Activity stream"
+              aria-live="polite"
+            >
+              <!-- ---- Today ---- -->
+              <div class="time-marker" role="separator">
+                <div class="time-marker__line"></div>
+                <div class="time-marker__label">Today</div>
+                <div class="time-marker__line"></div>
+              </div>
+
+              <!-- Event 1: Approval Gate opened (actionable) -->
+              <div
+                class="event-card event-card--actionable"
+                role="article"
+                data-category="approvals"
+                data-actor="system"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--approval" aria-hidden="true">
+                      A
+                    </div>
+                    <div class="event-card__title">Approval Gate opened for Run R-8920</div>
+                  </div>
+                  <div class="event-card__time">12m ago</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1099 Invoice correction for ACME | Billing Governance
+                </div>
+                <button
+                  class="event-card__expand"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="thread-inline-1"
+                >
+                  <span aria-hidden="true">&#9656;</span> Expand thread (3 related)
+                </button>
+                <div class="event-card__actions">
+                  <a class="btn btn--small btn--primary" href="#thread-wi-1099">Review + Decide</a>
+                  <a class="btn btn--small" href="#thread-r-8920">View Run</a>
+                </div>
+
+                <!-- Inline thread (collapsed by default) -->
+                <div
+                  id="thread-inline-1"
+                  class="thread"
+                  hidden
+                  style="margin-top: 8px; border: none; box-shadow: none"
+                >
+                  <div class="thread__branch">
+                    <div class="thread__node">
+                      <div class="thread__node-title">WI-1099 created</div>
+                      <div class="thread__node-meta">30m ago | Invoice correction for ACME</div>
+                    </div>
+                    <div class="thread__node">
+                      <div class="thread__node-title">Run R-8920 started</div>
+                      <div class="thread__node-meta">15m ago | Invoice correction workflow</div>
+                    </div>
+                    <div class="thread__node">
+                      <div class="thread__node-title">Plan created (2 effects)</div>
+                      <div class="thread__node-meta">
+                        12m ago | Update memo, create receipt bundle
+                      </div>
+                    </div>
+                    <div class="thread__node thread__node--active">
+                      <div class="thread__node-title">Approval Gate opened</div>
+                      <div class="thread__node-meta">
+                        12m ago | Waiting on decision with rationale
+                      </div>
+                      <div class="thread__node-actions">
+                        <a class="btn btn--small btn--primary" href="#thread-wi-1099"
+                          >Open decision form</a
+                        >
+                      </div>
+                    </div>
+                    <div class="thread__node thread__node--waiting">
+                      <div class="thread__node-title">Waiting for decision...</div>
+                      <div class="thread__node-meta">Run is paused at Approval Gate</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Event 2: Plan created -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="runs"
+                data-actor="system"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--run" aria-hidden="true">P</div>
+                    <div class="event-card__title">Plan created for Invoice correction</div>
+                  </div>
+                  <div class="event-card__time">12m ago</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1099 | R-8920 | 2 planned effects: Update INV-22318, Create receipt bundle
+                </div>
+              </div>
+
+              <!-- Event 3: Run started -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="runs"
+                data-actor="me"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--run" aria-hidden="true">R</div>
+                    <div class="event-card__title">Run R-8920 started</div>
+                  </div>
+                  <div class="event-card__time">15m ago</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1099 | Invoice correction workflow | Initiator: Me
+                </div>
+              </div>
+
+              <!-- Event 4: Another run started -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="runs"
+                data-actor="me"
+                data-project="customer-support"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--run" aria-hidden="true">R</div>
+                    <div class="event-card__title">Run R-8892 started</div>
+                  </div>
+                  <div class="event-card__time">25m ago</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1042 | Update Ticket priority in Zendesk | Initiator: Me
+                </div>
+              </div>
+
+              <!-- Event 5: Work Item created -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="work-items"
+                data-actor="me"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--wi" aria-hidden="true">W</div>
+                    <div class="event-card__title">Work Item WI-1099 created</div>
+                  </div>
+                  <div class="event-card__time">30m ago</div>
+                </div>
+                <div class="event-card__context">
+                  Invoice correction for ACME | SoRs: NetSuite, Stripe, Zendesk
+                </div>
+              </div>
+
+              <!-- ---- Yesterday ---- -->
+              <div class="time-marker" role="separator">
+                <div class="time-marker__line"></div>
+                <div class="time-marker__label">Yesterday</div>
+                <div class="time-marker__line"></div>
+              </div>
+
+              <!-- Event 6: Run failed (actionable) -->
+              <div
+                class="event-card event-card--danger"
+                role="article"
+                data-category="runs"
+                data-actor="machine"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--danger" aria-hidden="true">
+                      !
+                    </div>
+                    <div class="event-card__title">Run failed: CRM sync hit rate limit</div>
+                  </div>
+                  <div class="event-card__time">Yesterday</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1021 | Workflow: Update Opportunity | Error: rate_limit_exceeded
+                </div>
+                <div class="event-card__actions">
+                  <button class="btn btn--small btn--primary js-action-btn" type="button">
+                    Retry
+                  </button>
+                  <button class="btn btn--small" type="button">View details</button>
+                </div>
+              </div>
+
+              <!-- Event 7: Evidence recorded -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="evidence"
+                data-actor="machine"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--evidence" aria-hidden="true">
+                      E
+                    </div>
+                    <div class="event-card__title">Evidence: Action executed (adapter write)</div>
+                  </div>
+                  <div class="event-card__time">Yesterday</div>
+                </div>
+                <div class="event-card__context">
+                  Category: Action | Actor: Adapter | payloadRefs: Diff, Log
+                </div>
+              </div>
+
+              <!-- Event 8: SoD warning (system) -->
+              <div
+                class="event-card event-card--system"
+                role="article"
+                data-category="system"
+                data-actor="system"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--system" aria-hidden="true">
+                      S
+                    </div>
+                    <div class="event-card__title">SoD constraint: maker-checker required</div>
+                  </div>
+                  <div class="event-card__time">Yesterday</div>
+                </div>
+                <div class="event-card__context">
+                  The initiator cannot approve this Plan. Assign an approver or update policy.
+                </div>
+              </div>
+
+              <!-- Event 9: Run blocked -->
+              <div
+                class="event-card event-card--danger"
+                role="article"
+                data-category="runs"
+                data-actor="system"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--danger" aria-hidden="true">
+                      !
+                    </div>
+                    <div class="event-card__title">Run blocked: missing provider scope</div>
+                  </div>
+                  <div class="event-card__time">Yesterday</div>
+                </div>
+                <div class="event-card__context">
+                  WI-1103 | Workflow: Send Email | Missing: email.send scope
+                </div>
+              </div>
+
+              <!-- ---- 2 days ago ---- -->
+              <div class="time-marker" role="separator">
+                <div class="time-marker__line"></div>
+                <div class="time-marker__label">2 days ago</div>
+                <div class="time-marker__line"></div>
+              </div>
+
+              <!-- Event 10: Work Item created -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="work-items"
+                data-actor="me"
+                data-project="customer-support"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--wi" aria-hidden="true">W</div>
+                    <div class="event-card__title">Work Item WI-1042 created</div>
+                  </div>
+                  <div class="event-card__time">2 days ago</div>
+                </div>
+                <div class="event-card__context">
+                  Dispute: investigate payment failure | SoRs: Stripe
+                </div>
+              </div>
+
+              <!-- Event 11: Work Item created -->
+              <div
+                class="event-card"
+                role="article"
+                data-category="work-items"
+                data-actor="me"
+                data-project="billing-governance"
+              >
+                <div class="event-card__header">
+                  <div class="event-card__title-row">
+                    <div class="event-card__icon event-card__icon--wi" aria-hidden="true">W</div>
+                    <div class="event-card__title">Work Item WI-1013 created</div>
+                  </div>
+                  <div class="event-card__time">2 days ago</div>
+                </div>
+                <div class="event-card__context">
+                  Receipt export for audit period | SoRs: Stripe, Drive
+                </div>
+              </div>
+
+              <!-- Load older -->
+              <div class="pagination">
+                <button class="btn" type="button">Load older events</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW: THREAD WI-1099 (expanded)
+             ========================================== -->
+        <div class="view" id="view-thread-wi-1099" data-view="thread-wi-1099">
+          <div class="main__inner">
+            <div class="thread">
+              <div class="thread__header">
+                <div class="thread__header-title">WI-1099 Invoice correction for ACME</div>
+                <div class="thread__header-meta">
+                  Owner: <strong>Me</strong> | Status:
+                  <span class="status status--warn">Needs approval</span>
+                  | SoRs: NetSuite, Stripe, Zendesk
+                </div>
+                <div class="thread__header-actions">
+                  <button class="btn btn--small btn--primary js-action-btn" type="button">
+                    Start workflow/runbook
+                  </button>
+                  <button class="btn btn--small js-action-btn" type="button">
+                    Attach ExternalObjectRef
+                  </button>
+                  <a class="btn btn--small btn--ghost" href="#stream">Back to stream</a>
+                </div>
+              </div>
+              <div class="thread__body">
+                <div class="callout callout--policy" style="margin-top: 8px; margin-bottom: 4px">
+                  Effective policy: Execution Tier <strong>Human-approve</strong>. SoD constraint:
+                  maker-checker may require a distinct approver.
+                </div>
+
+                <div class="thread__branch">
+                  <div class="thread__node">
+                    <div class="thread__node-title">WI-1099 created</div>
+                    <div class="thread__node-meta">
+                      30m ago | Invoice correction for ACME | Actor: Me
+                    </div>
+                    <div class="thread__node-meta">
+                      ExternalObjectRefs: NetSuite INV-22318, Stripe ch_9d2a, Zendesk 4831
+                    </div>
+                  </div>
+
+                  <div class="thread__node">
+                    <div class="thread__node-title">Run R-8920 started</div>
+                    <div class="thread__node-meta">
+                      15m ago | Invoice correction workflow | Initiator: Me
+                    </div>
+                    <div class="thread__node-actions">
+                      <a class="btn btn--small btn--ghost" href="#thread-r-8920">View Run detail</a>
+                    </div>
+                  </div>
+
+                  <div class="thread__node">
+                    <div class="thread__node-title">Plan created (2 planned effects)</div>
+                    <div class="thread__node-meta">
+                      12m ago | Update INV-22318 memo + line item classification, Create receipt
+                      bundle
+                    </div>
+                  </div>
+
+                  <div class="thread__node thread__node--active">
+                    <div class="thread__node-title">Approval Gate opened</div>
+                    <div class="thread__node-meta">
+                      12m ago | Waiting on decision with rationale | SoD: maker-checker
+                    </div>
+
+                    <!-- Inline decision form -->
+                    <div class="inline-form" id="inlineApprovalForm">
+                      <div class="inline-form__title">Submit approval decision</div>
+                      <div
+                        class="callout callout--danger"
+                        style="margin-top: 0; margin-bottom: 8px"
+                      >
+                        SoD constraint: the initiator cannot self-approve (maker-checker).
+                      </div>
+                      <div class="form">
+                        <label class="field">
+                          <span class="field__label">Decision</span>
+                          <select class="field__input js-action-field">
+                            <option>Approve</option>
+                            <option>Deny</option>
+                            <option>Request changes</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span class="field__label">Rationale (required)</span>
+                          <textarea
+                            class="field__input js-action-field"
+                            rows="3"
+                            placeholder="Explain why this Plan is acceptable or not."
+                          ></textarea>
+                        </label>
+                        <div class="form__actions">
+                          <button class="btn btn--primary btn--small js-action-btn" type="button">
+                            Submit decision
+                          </button>
+                          <a class="btn btn--small btn--ghost" href="#stream">Back to stream</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="thread__node thread__node--waiting">
+                    <div class="thread__node-title">Waiting for decision...</div>
+                    <div class="thread__node-meta">Run R-8920 is paused at Approval Gate</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW: THREAD R-8920 (Run detail)
+             ========================================== -->
+        <div class="view" id="view-thread-r-8920" data-view="thread-r-8920">
+          <div class="main__inner">
+            <div class="screen__header">
+              <div>
+                <div class="subtle">
+                  <a href="#stream">Stream</a> / <a href="#thread-wi-1099">WI-1099</a> /
+                </div>
+                <h1 class="h1">Run R-8920 (Paused at Approval Gate)</h1>
+                <div class="subtle">Workflow: Invoice correction | Initiator: Me</div>
+              </div>
+              <div class="screen__actions">
+                <button class="btn btn--small js-action-btn" type="button">Retry</button>
+                <button class="btn btn--small js-action-btn" type="button">
+                  Export run summary
+                </button>
+                <a class="btn btn--small btn--ghost" href="#stream">Back to stream</a>
+              </div>
+            </div>
+
+            <div class="steps" aria-label="Run status timeline">
+              <div class="step step--done">Queued</div>
+              <div class="step step--done">Running</div>
+              <div class="step step--active">Approval Gate</div>
+              <div class="step">Complete</div>
+            </div>
+
+            <div class="thread">
+              <div class="thread__header">
+                <div class="thread__header-title">Run timeline</div>
+                <div class="thread__header-meta">Reverse chronological events for this Run</div>
+              </div>
+              <div class="thread__body">
+                <div class="thread__branch">
+                  <div class="thread__node">
+                    <div class="thread__node-title">Run R-8920 queued</div>
+                    <div class="thread__node-meta">15m ago | Workflow: Invoice correction</div>
+                  </div>
+
+                  <div class="thread__node">
+                    <div class="thread__node-title">Step 1: Read INV-22318 from NetSuite</div>
+                    <div class="thread__node-meta">
+                      15m ago | Completed | Read-only adapter call
+                    </div>
+                  </div>
+
+                  <div class="thread__node">
+                    <div class="thread__node-title">Step 2: Plan generated</div>
+                    <div class="thread__node-meta">
+                      12m ago | 2 effects: Update memo, Create receipt
+                    </div>
+                  </div>
+
+                  <div class="thread__node thread__node--active">
+                    <div class="thread__node-title">Step 3: Approval Gate</div>
+                    <div class="thread__node-meta">12m ago | Paused, waiting on human decision</div>
+                    <div class="thread__node-actions">
+                      <a class="btn btn--small btn--primary" href="#thread-wi-1099"
+                        >Go to decision form</a
+                      >
+                    </div>
+                  </div>
+
+                  <div class="thread__node thread__node--waiting">
+                    <div class="thread__node-title">Step 4: Execute planned effects</div>
+                    <div class="thread__node-meta">Pending approval decision</div>
+                  </div>
+
+                  <div class="thread__node thread__node--waiting">
+                    <div class="thread__node-title">Step 5: Verify + record evidence</div>
+                    <div class="thread__node-meta">Pending</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid--2" style="margin-top: 14px">
+              <div class="card">
+                <div class="card__title">Plan + Effects</div>
+                <div class="card__meta subtle">Planned changes this Run intends to make</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="status status--info" style="margin-right: 6px">Update</span>
+                        NetSuite | Invoice | INV-22318
+                      </div>
+                      <div class="row__subtle">Update memo and line item classification.</div>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="status status--info" style="margin-right: 6px">Create</span>
+                        Drive | Document | Receipt bundle
+                      </div>
+                      <div class="row__subtle">Create evidence artifact for audit trail.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card__title">Evidence (Run-scoped)</div>
+                <div class="card__meta subtle">Append-only events for this Run</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Plan recorded (hash chained)</div>
+                      <div class="row__subtle">
+                        Category: Plan | Actor: User | Linked: Plan P-551
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Verified</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Approval Gate opened</div>
+                      <div class="row__subtle">
+                        Category: Approval | Actor: System | Linked: Run R-8920
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--warn">Pending</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW: ENTITY (traditional list/table)
+             ========================================== -->
+        <div class="view" id="view-entity" data-view="entity">
+          <div class="main__inner">
+            <div class="screen__header">
+              <div>
+                <h1 class="h1">Work Items</h1>
+                <div class="subtle">Traditional entity list view | Project: Billing Governance</div>
+              </div>
+              <div class="screen__actions">
+                <button class="btn btn--primary js-action-btn" type="button">
+                  Create Work Item
+                </button>
+              </div>
+            </div>
+
+            <div class="filters">
+              <span class="chip chip--active">Assigned to me</span>
+              <span class="chip js-chip-unassigned">Unassigned</span>
+              <span class="chip">Has pending approvals</span>
+              <span class="chip">Has failed runs</span>
+              <span class="chip">Port Family: PaymentsBilling</span>
+            </div>
+
+            <!-- Empty state for entity view -->
+            <div class="empty js-empty-entity" hidden>
+              <div class="empty__title">No Work Items yet</div>
+              <div class="empty__body">
+                A Work Item binds ExternalObjectRefs, Runs, Approvals, and Evidence. Create one to
+                start governed work.
+              </div>
+              <div class="empty__actions">
+                <button class="btn btn--primary js-action-btn" type="button">
+                  Create Work Item
+                </button>
+                <a class="btn" href="#settings">Configure integrations</a>
+              </div>
+            </div>
+
+            <div class="table-wrap js-entity-content">
+              <table class="table" aria-label="Work Items table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Linked SoRs</th>
+                    <th>Latest Run</th>
+                    <th>Approvals</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><a href="#thread-wi-1099">WI-1099 Invoice correction for ACME</a></td>
+                    <td><span class="status status--warn">Needs approval</span></td>
+                    <td>Me</td>
+                    <td>
+                      <span class="chip">NetSuite</span>
+                      <span class="chip">Stripe</span>
+                      <span class="chip">Zendesk</span>
+                    </td>
+                    <td><span class="status status--warn">Paused</span></td>
+                    <td>1 pending</td>
+                    <td>12m</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <a href="#thread-wi-1099">WI-1042 Dispute: investigate payment failure</a>
+                    </td>
+                    <td><span class="status status--info">In progress</span></td>
+                    <td class="js-owner-unassigned">Unassigned</td>
+                    <td><span class="chip">Stripe</span></td>
+                    <td><span class="status status--info">Running</span></td>
+                    <td>0</td>
+                    <td>25m</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#thread-wi-1099">WI-1013 Receipt export for audit period</a></td>
+                    <td><span class="status">Open</span></td>
+                    <td>Me</td>
+                    <td>
+                      <span class="chip">Stripe</span>
+                      <span class="chip">Drive</span>
+                    </td>
+                    <td><span class="status">None</span></td>
+                    <td>0</td>
+                    <td>2d</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW: EVIDENCE (timeline scrub)
+             ========================================== -->
+        <div class="view" id="view-evidence" data-view="evidence">
+          <div class="main__inner">
+            <div class="screen__header">
+              <div>
+                <h1 class="h1">Evidence</h1>
+                <div class="subtle">Audit timeline with hash chain verification</div>
+              </div>
+              <div class="screen__actions">
+                <button class="btn js-action-btn" type="button">Export verification report</button>
+              </div>
+            </div>
+
+            <div class="evidence-filters">
+              <span class="chip chip--active">Category: All</span>
+              <span class="chip">Actor: User</span>
+              <span class="chip">Linked: Run R-8920</span>
+              <span class="chip">Project: Billing Governance</span>
+            </div>
+
+            <div class="callout callout--ok" style="margin-bottom: 14px">
+              Hash chain: <strong>verified</strong> for entries 120 to 146 (contiguous). All
+              evidence entries in this range have valid hash linkage.
+            </div>
+
+            <!-- Empty evidence state -->
+            <div class="empty js-empty-evidence" hidden>
+              <div class="empty__title">No evidence entries yet</div>
+              <div class="empty__body">
+                Evidence entries are created automatically when Runs execute, Approvals are
+                submitted, and Actions are performed. They form a hash-chained audit trail.
+              </div>
+            </div>
+
+            <!-- Evidence timeline scrub -->
+            <div class="timeline-scrub js-evidence-content">
+              <div class="chain-line" style="top: 0; height: 100%"></div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Approval decision submitted</div>
+                <div class="timeline-scrub__meta">
+                  Category: Approval | Actor: User | occurredAt: 2026-02-17T00:20Z
+                </div>
+                <div class="timeline-scrub__meta">Hash: 7f3a...c921 | Previous: a4d1...8ef2</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Action executed (adapter write)</div>
+                <div class="timeline-scrub__meta">
+                  Category: Action | Actor: Adapter | payloadRefs: Diff, Log
+                </div>
+                <div class="timeline-scrub__meta">Hash: a4d1...8ef2 | Previous: 3b7c...d4a9</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Approval Gate opened</div>
+                <div class="timeline-scrub__meta">
+                  Category: Approval | Actor: System | Linked: Run R-8920
+                </div>
+                <div class="timeline-scrub__meta">Hash: 3b7c...d4a9 | Previous: e12f...5678</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Plan recorded (hash chained)</div>
+                <div class="timeline-scrub__meta">
+                  Category: Plan | Actor: User | Linked: Plan P-551
+                </div>
+                <div class="timeline-scrub__meta">Hash: e12f...5678 | Previous: 9c0d...ab34</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Run R-8920 initiated</div>
+                <div class="timeline-scrub__meta">
+                  Category: Run | Actor: User | Linked: Run R-8920, WI-1099
+                </div>
+                <div class="timeline-scrub__meta">Hash: 9c0d...ab34 | Previous: 5e6f...7890</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+
+              <div class="timeline-scrub__node">
+                <div class="timeline-scrub__title">Work Item WI-1099 created</div>
+                <div class="timeline-scrub__meta">
+                  Category: WorkItem | Actor: User | Linked: WI-1099
+                </div>
+                <div class="timeline-scrub__meta">Hash: 5e6f...7890 | Previous: 1a2b...cd01</div>
+                <div class="timeline-scrub__status">
+                  <span class="status status--ok">Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pagination">
+              <button class="btn" type="button">Load older evidence</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW: SETTINGS
+             ========================================== -->
+        <div class="view" id="view-settings" data-view="settings">
+          <div class="main__inner">
+            <div class="screen__header">
+              <div>
+                <h1 class="h1">Workspace Settings</h1>
+                <div class="subtle">
+                  RBAC, credential vaulting, adapters/providers, and policies
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid--2">
+              <article class="card">
+                <div class="card__title">RBAC</div>
+                <div class="card__meta subtle">Workspace users and roles</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Current user</div>
+                      <div class="row__subtle">
+                        Role: <span class="js-settings-role">operator</span> | Workspace: default
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Roles defined</div>
+                      <div class="row__subtle">admin, operator, approver, auditor</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="card__title">Credentials</div>
+                <div class="card__meta subtle">Vaulting, rotation, scoped issuance</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Stripe API key</div>
+                      <div class="row__subtle">
+                        Scoped: payments.read, payments.write | Rotated: 3d ago
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">NetSuite OAuth2</div>
+                      <div class="row__subtle">Scoped: transactions.read, transactions.write</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Zendesk API token</div>
+                      <div class="row__subtle">Scoped: tickets.read, tickets.update</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Valid</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="card__title">Adapters / Providers</div>
+                <div class="card__meta subtle">
+                  Select provider per port family, connect credentials, validate scopes
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">PaymentsBilling</div>
+                      <div class="row__subtle">Provider: Stripe | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">FinanceAccounting</div>
+                      <div class="row__subtle">Provider: NetSuite | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">CustomerSupport</div>
+                      <div class="row__subtle">Provider: Zendesk | Capability Matrix: loaded</div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Configured</span></div>
+                  </div>
+                  <div class="row row--static js-misconfigured-provider" hidden>
+                    <div class="row__main">
+                      <div class="row__title">DocumentStorage</div>
+                      <div class="row__subtle">Provider: not selected</div>
+                    </div>
+                    <div class="row__right"><span class="status status--danger">Missing</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="card__title">Policies</div>
+                <div class="card__meta subtle">Execution tiers, SoD constraints, approvals</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Invoice writes > $10,000</div>
+                      <div class="row__subtle">Tier: Human-approve | N-approvers: 2</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Maker-checker (SoD)</div>
+                      <div class="row__subtle">Initiator cannot approve the same Run</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Evidence retention</div>
+                      <div class="row__subtle">Minimum 7 years | Immutable after creation</div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Active</span></div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="./wireframe.js" defer></script>
+  </body>
+</html>
