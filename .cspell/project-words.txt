@@ -109,6 +109,8 @@ Killbill
 Sellable
 uncollectible
 Vendoring
+vendored
+Vendored
 
 # Systems of Record (new — integration catalog)
 Intacct
@@ -199,6 +201,20 @@ FreeIPA
 Authentik
 Zitadel
 FusionAuth
+
+# ERPNext / Frappe schema words
+docstatus
+parenttype
+parentfield
+submittable
+fieldtype
+reqd
+
+# Keycloak / IAM schema words
+aaguids
+disableable
+frontchannel
+passwordless
 
 # Stripe / PaymentsBilling schema words
 prorations
@@ -396,6 +412,8 @@ Combodo
 alertable
 correlationid
 datacontenttype
+dataschema
+specversion
 workpapers
 Workpaper
 Scrut

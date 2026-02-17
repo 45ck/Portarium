@@ -48,6 +48,9 @@ export type WorkflowId = Branded<string, 'WorkflowId'>;
 /** Unique identifier for a single workflow execution. */
 export type RunId = Branded<string, 'RunId'>;
 
+/** Unique identifier linking events/evidence across aggregates for traceability. */
+export type CorrelationId = Branded<string, 'CorrelationId'>;
+
 /** Unique identifier for an adapter implementation. */
 export type AdapterId = Branded<string, 'AdapterId'>;
 
@@ -98,6 +101,8 @@ export const TenantId = (value: string): TenantId => brand<string, 'TenantId'>(v
 export const WorkspaceId = (value: string): WorkspaceId => brand<string, 'WorkspaceId'>(value);
 export const WorkflowId = (value: string): WorkflowId => brand<string, 'WorkflowId'>(value);
 export const RunId = (value: string): RunId => brand<string, 'RunId'>(value);
+export const CorrelationId = (value: string): CorrelationId =>
+  brand<string, 'CorrelationId'>(value);
 export const AdapterId = (value: string): AdapterId => brand<string, 'AdapterId'>(value);
 export const PortId = (value: string): PortId => brand<string, 'PortId'>(value);
 export const ActionId = (value: string): ActionId => brand<string, 'ActionId'>(value);

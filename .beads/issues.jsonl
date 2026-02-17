@@ -18,3 +18,6 @@
 {"id":"bead-0018","title":"Policy v1: SoD constraints primitives + parser + tests","status":"closed","createdAt":"2026-02-16T23:25:25.173Z","updatedAt":"2026-02-16T23:39:39.682Z"}
 {"id":"bead-0019","title":"Control Plane API v1: domain schemas for Workspace + User (RBAC)","status":"open","createdAt":"2026-02-16T23:30:05.095Z","updatedAt":"2026-02-16T23:30:05.095Z"}
 {"id":"bead-0020","title":"Domain Atlas: Keycloak initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-16T23:44:04.179Z","updatedAt":"2026-02-16T23:44:04.179Z"}
+{"id":"bead-0021","title":"ADR-0030: Quota semantics v1 (domain + tests)","status":"open","createdAt":"2026-02-17T00:06:08.567Z","updatedAt":"2026-02-17T00:06:08.567Z"}
+{"id":"bead-0022","title":"ADR-0032: Event stream CloudEvents v1 (domain + tests)","status":"open","createdAt":"2026-02-17T00:06:12.917Z","updatedAt":"2026-02-17T00:06:12.917Z"}
+{"id":"bead-0023","title":"Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-17T00:07:16.654Z","updatedAt":"2026-02-17T00:07:16.654Z"}
