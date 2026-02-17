@@ -141,7 +141,8 @@
           Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
         </div>
         <div class="banner banner--danger js-banner-misconfigured" hidden>
-          Setup required: no provider configured for this Port Family (missing credentials/scopes).
+          Setup required: no provider configured for this integration category (missing
+          credentials/scopes).
           <a href="#settings">Go to Workspace settings</a>.
         </div>
         <div class="banner banner--danger js-banner-policy" hidden>
@@ -223,7 +224,7 @@
                       </div>
                       <div class="row__subtle">
                         Project: Billing Governance | WI-1099 | R-8920
-                        <span class="sod-badge">SoD: maker-checker</span>
+                        <span class="sod-badge">Requires different approver</span>
                       </div>
                     </div>
                     <div class="row__right"><span class="status status--warn">Pending</span></div>
@@ -275,7 +276,7 @@
                 <div class="list">
                   <div class="row row--static">
                     <div class="row__main">
-                      <div class="row__title">SoD constraint: maker-checker required</div>
+                      <div class="row__title">Policy: a different person must approve</div>
                       <div class="row__subtle">
                         Initiator cannot approve. Assign an approver or update policy.
                       </div>
@@ -327,7 +328,8 @@
                     <div class="row__main">
                       <div class="row__title">CrmSales: no adapter configured</div>
                       <div class="row__subtle">
-                        Port family missing provider. Work Items using CRM refs will be blocked.
+                        Integration category missing provider. Work Items using CRM refs will be
+                        blocked.
                       </div>
                     </div>
                     <div class="row__right"><span class="status status--danger">Missing</span></div>
@@ -343,7 +345,7 @@
                   </a>
                   <div class="row row--static">
                     <div class="row__main">
-                      <div class="row__title">3 of 4 port families configured</div>
+                      <div class="row__title">3 of 4 integration categories configured</div>
                       <div class="row__subtle">
                         PaymentsBilling, FinanceAccounting, CustomerSupport: OK
                       </div>
@@ -653,8 +655,8 @@
           <div class="empty js-empty-workitems" hidden>
             <div class="empty__title">No Work Items yet</div>
             <div class="empty__body">
-              A Work Item binds ExternalObjectRefs, Runs, Approvals, and Evidence. Create one to
-              start governed work.
+              A Work Item binds linked records, Runs, Approvals, and Evidence. Create one to start
+              governed work.
             </div>
             <div class="empty__actions">
               <a class="btn btn--primary" href="#work-item">Create Work Item</a>
@@ -820,6 +822,13 @@
             </div>
           </div>
 
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Track execution history. Filter by status or time period to find specific runs.
+            </div>
+            <a class="btn btn--primary" href="#work-items">View work items</a>
+          </div>
+
           <div class="filters">
             <span class="chip chip--active">All statuses</span>
             <span class="chip">Workflow: Invoice correction</span>
@@ -910,7 +919,7 @@
               <h1 id="h-work-item" class="h1">
                 WI-1099 Invoice correction for ACME
                 <span class="tier-badge tier-badge--human">Human-approve</span>
-                <span class="sod-badge">SoD: maker-checker</span>
+                <span class="sod-badge">Requires different approver</span>
               </h1>
               <div class="subtle">
                 Owner: <strong>Me</strong> | Status:
@@ -926,9 +935,17 @@
             </div>
           </div>
 
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              This work item coordinates runs, approvals, and evidence. Use the tabs below to
+              explore.
+            </div>
+            <a class="btn btn--primary" href="#run">View latest run</a>
+          </div>
+
           <div class="callout callout--policy">
-            Effective policy: Execution Tier <strong>Human-approve</strong>. SoD constraint:
-            maker-checker may require a distinct approver.
+            Effective policy: Automation level <strong>Human-approve</strong>. A different person
+            must approve.
           </div>
 
           <!-- SoR Ref Cluster (sor_ref_cluster) with port_family_icon -->
@@ -969,7 +986,7 @@
                       Plan created <span class="idem-badge idem-badge--safe">retry-safe</span>
                     </div>
                     <div class="row__subtle">
-                      Actor: User | Portarium intends to update invoice fields.
+                      Actor: User | This workflow will update invoice fields.
                     </div>
                   </div>
                   <div class="row__right"><span class="status status--info">Plan</span></div>
@@ -1013,7 +1030,8 @@
                   <div class="row__main">
                     <div class="row__title">Approval Gate: Approve Plan (1 pending)</div>
                     <div class="row__subtle">
-                      Requires rationale | <span class="sod-badge">SoD: maker-checker</span>
+                      Requires rationale |
+                      <span class="sod-badge">Requires different approver</span>
                     </div>
                   </div>
                   <div class="row__right"><span class="status status--warn">Pending</span></div>
@@ -1040,7 +1058,7 @@
             <div class="effects">
               <div class="effects__section">
                 <div class="effects__title">Planned Effects</div>
-                <div class="effects__hint subtle">Portarium intends to...</div>
+                <div class="effects__hint subtle">This workflow will...</div>
                 <div class="effects__list">
                   <div class="effect">
                     <div class="effect__main">
@@ -1101,8 +1119,16 @@
               </button>
             </div>
             <div class="outcome-preview" style="margin-top: 8px">
-              Retry will re-queue the Run. Idempotency key ensures no duplicate side effects.
+              Retry will re-queue the Run. This retry is safe — no duplicate actions will occur.
             </div>
+          </div>
+
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Review the execution state, planned effects, and evidence for this run. Take action if
+              approval is needed.
+            </div>
+            <a class="btn btn--primary" href="#approvals">Go to Approvals</a>
           </div>
 
           <!-- Run State Machine (run_state_machine) -->
@@ -1121,7 +1147,7 @@
               <div class="effects">
                 <div class="effects__section">
                   <div class="effects__title">Planned Effects</div>
-                  <div class="effects__hint subtle">Portarium intends to...</div>
+                  <div class="effects__hint subtle">This workflow will...</div>
                   <div class="effects__list">
                     <div class="effect">
                       <div class="effect__main">
@@ -1186,11 +1212,11 @@
               <!-- Policy Evaluation Card (policy_eval_card) -->
               <div class="callout callout--policy" style="margin-bottom: 10px">
                 <strong>Policy Evaluation:</strong> Tier = Human-approve | Rule: Invoice writes &gt;
-                $10,000 | Required approvers: 2 | SoD: maker-checker
+                $10,000 | Required approvers: 2 | Different approver required
               </div>
 
               <div class="callout callout--danger js-callout-sod" style="margin-bottom: 10px">
-                SoD constraint: the initiator cannot self-approve (maker-checker).
+                Policy: the person who started this run cannot approve it.
               </div>
 
               <!-- Rationale Thread (rationale_thread) -->
@@ -1241,7 +1267,7 @@
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">Evidence: Plan recorded (hash chained)</div>
+                  <div class="row__title">Evidence: Plan recorded (tamper-proof)</div>
                   <div class="row__subtle">
                     Category: Plan | Actor: User | Linked: Plan P-551
                     <span class="retention-tag">active 365d</span>
@@ -1314,7 +1340,7 @@
                   <th>Work Item</th>
                   <th>Run</th>
                   <th>Tier</th>
-                  <th>SoD</th>
+                  <th>Approval Rule</th>
                   <th>Requested</th>
                   <th>Action</th>
                 </tr>
@@ -1325,7 +1351,7 @@
                   <td><a href="#work-item">WI-1099</a></td>
                   <td><a href="#run">R-8920</a></td>
                   <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
-                  <td><span class="sod-badge">maker-checker</span></td>
+                  <td><span class="sod-badge">Different-approver rule</span></td>
                   <td>12m</td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
@@ -1407,27 +1433,37 @@
                         <span class="ai-summary__label">AI Summary</span>
                       </div>
                       <div class="ai-summary__header-right">
-                        <span class="ai-summary__confidence" data-confidence="high" title="Confidence: 92%">
+                        <span
+                          class="ai-summary__confidence"
+                          data-confidence="high"
+                          title="Confidence: 92%"
+                        >
                           <span class="ai-summary__confidence-dot"></span>
                           92%
                         </span>
-                        <button class="ai-summary__toggle js-ai-summary-toggle"
+                        <button
+                          class="ai-summary__toggle js-ai-summary-toggle"
                           type="button"
                           aria-expanded="false"
-                          aria-controls="aiDetailAG442">
+                          aria-controls="aiDetailAG442"
+                        >
                           Details
                         </button>
                       </div>
                     </div>
                     <div class="ai-summary__quick">
                       <p class="ai-summary__action">
-                        Updates invoice INV-22318 memo and line items in NetSuite, then creates
-                        a receipt bundle in Drive for audit evidence.
+                        Updates invoice INV-22318 memo and line items in NetSuite, then creates a
+                        receipt bundle in Drive for audit evidence.
                       </p>
                       <div class="ai-summary__tags">
                         <span class="ai-summary__risk ai-summary__risk--medium">Medium risk</span>
-                        <span class="ai-summary__compliance ai-summary__compliance--pass">Compliance: pass</span>
-                        <span class="ai-summary__reversibility ai-summary__reversibility--partial">Partially reversible</span>
+                        <span class="ai-summary__compliance ai-summary__compliance--pass"
+                          >Compliance: pass</span
+                        >
+                        <span class="ai-summary__reversibility ai-summary__reversibility--partial"
+                          >Partially reversible</span
+                        >
                       </div>
                     </div>
                     <div class="ai-summary__detail" id="aiDetailAG442" hidden>
@@ -1437,15 +1473,15 @@
                           <span class="ai-summary__risk ai-summary__risk--medium">Medium</span>
                         </div>
                         <p class="ai-summary__section-body">
-                          Invoice amount ($12,500) exceeds the $10,000 policy threshold.
-                          Two external systems will be written to. No prior failed attempts
-                          for this work item.
+                          Invoice amount ($12,500) exceeds the $10,000 policy threshold. Two
+                          external systems will be written to. No prior failed attempts for this
+                          work item.
                         </p>
                         <button class="ai-summary__why js-ai-why" type="button">Why?</button>
                         <div class="ai-summary__why-detail" hidden>
-                          Risk scored medium because: (1) write amount is above policy threshold
-                          but within 2x the limit; (2) both target systems have healthy
-                          connections; (3) idempotency keys are present for retry safety.
+                          Risk scored medium because: (1) write amount is above policy threshold but
+                          within 2x the limit; (2) both target systems have healthy connections; (3)
+                          retries are safe — no duplicate actions.
                         </div>
                       </div>
                       <div class="ai-summary__section">
@@ -1454,12 +1490,19 @@
                         </div>
                         <div class="ai-summary__compliance-list">
                           <div class="ai-summary__compliance-item">
-                            <span class="ai-summary__compliance ai-summary__compliance--pass">Pass</span>
-                            <span>Invoice write threshold policy (amount &gt; $10,000 requires human approval)</span>
+                            <span class="ai-summary__compliance ai-summary__compliance--pass"
+                              >Pass</span
+                            >
+                            <span
+                              >Invoice write threshold policy (amount &gt; $10,000 requires human
+                              approval)</span
+                            >
                           </div>
                           <div class="ai-summary__compliance-item">
-                            <span class="ai-summary__compliance ai-summary__compliance--pass">Pass</span>
-                            <span>Segregation of Duties: maker-checker constraint satisfied</span>
+                            <span class="ai-summary__compliance ai-summary__compliance--pass"
+                              >Pass</span
+                            >
+                            <span>Approval rule: different-approver requirement met</span>
                           </div>
                         </div>
                       </div>
@@ -1481,19 +1524,20 @@
                       <div class="ai-summary__section">
                         <div class="ai-summary__section-header">
                           <span class="ai-summary__section-title">Reversibility</span>
-                          <span class="ai-summary__reversibility ai-summary__reversibility--partial">Partial</span>
+                          <span class="ai-summary__reversibility ai-summary__reversibility--partial"
+                            >Partial</span
+                          >
                         </div>
                         <p class="ai-summary__section-body">
-                          Invoice memo update can be reverted. Line item reclassification
-                          can be undone. Drive document creation cannot be automatically
-                          deleted (requires manual removal).
+                          Invoice memo update can be reverted. Line item reclassification can be
+                          undone. Drive document creation cannot be automatically deleted (requires
+                          manual removal).
                         </p>
                         <button class="ai-summary__why js-ai-why" type="button">Why?</button>
                         <div class="ai-summary__why-detail" hidden>
-                          NetSuite invoice fields support PUT overwrite, so the memo and
-                          line items can be restored to previous values. Google Drive
-                          file creation has no automated delete in the current adapter
-                          scope configuration.
+                          NetSuite invoice fields support PUT overwrite, so the memo and line items
+                          can be restored to previous values. Google Drive file creation has no
+                          automated delete in the current adapter scope configuration.
                         </div>
                       </div>
                       <div class="ai-summary__section">
@@ -1501,9 +1545,8 @@
                           <span class="ai-summary__section-title">Legal / Regulatory</span>
                         </div>
                         <p class="ai-summary__section-body">
-                          Invoice modifications above $10,000 are subject to SOX
-                          compliance logging. Evidence chain entry will be created
-                          automatically upon approval.
+                          Invoice modifications above $10,000 are subject to SOX compliance logging.
+                          Evidence chain entry will be created automatically upon approval.
                         </p>
                       </div>
                       <div class="ai-summary__section ai-summary__section--confidence">
@@ -1515,14 +1558,12 @@
                           </span>
                         </div>
                         <p class="ai-summary__section-body">
-                          High confidence. Based on: matching historical approval
-                          patterns (14 similar invoices approved), healthy system
-                          connections, and complete policy rule coverage.
+                          High confidence. Based on: matching historical approval patterns (14
+                          similar invoices approved), healthy system connections, and complete
+                          policy rule coverage.
                         </p>
                       </div>
-                      <div class="ai-summary__footer">
-                        Generated 2 minutes ago
-                      </div>
+                      <div class="ai-summary__footer">Generated 2 minutes ago</div>
                     </div>
                   </div>
 
@@ -1588,7 +1629,7 @@
                     <div class="list" style="margin-top: 6px">
                       <div class="row row--static">
                         <div class="row__main">
-                          <div class="row__title">Plan recorded (hash chained)</div>
+                          <div class="row__title">Plan recorded (tamper-proof)</div>
                           <div class="row__subtle">Category: Plan | Actor: User</div>
                         </div>
                       </div>
@@ -1678,7 +1719,8 @@
               </button>
             </div>
             <div class="triage__hint subtle">
-              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle details, I = Toggle AI summary
+              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle
+              details, I = Toggle AI summary
             </div>
           </div>
 
@@ -1711,7 +1753,7 @@
           <div class="screen__header">
             <div>
               <h1 id="h-evidence" class="h1">Evidence</h1>
-              <div class="subtle">Explore and verify hash-chained evidence entries</div>
+              <div class="subtle">Explore and verify the tamper-proof audit log</div>
             </div>
             <div class="screen__actions">
               <button class="btn" type="button">Export verification report</button>
@@ -1720,6 +1762,14 @@
                 Context
               </button>
             </div>
+          </div>
+
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Browse the tamper-proof audit log. Each entry is cryptographically linked to verify
+              chain integrity.
+            </div>
+            <button class="btn btn--primary" type="button">Export report</button>
           </div>
 
           <div class="filters">
@@ -1750,7 +1800,7 @@
               style="cursor: pointer"
             >
               <div class="row__main">
-                <div class="row__title">EvidenceEntry: Approval decision submitted</div>
+                <div class="row__title">Approval decision submitted</div>
                 <div class="row__subtle">
                   Category: Approval | Actor: User | occurredAt: 2026-02-17T00:20Z
                   <span class="retention-tag">active 365d</span>
@@ -1764,7 +1814,7 @@
               style="cursor: pointer"
             >
               <div class="row__main">
-                <div class="row__title">EvidenceEntry: Action executed (adapter write)</div>
+                <div class="row__title">Action executed (adapter write)</div>
                 <div class="row__subtle">
                   Category: Action | Actor: Adapter | payloadRefs: Diff, Log
                   <span class="retention-tag">active 365d</span>
@@ -1774,7 +1824,7 @@
             </div>
             <div class="row row--static">
               <div class="row__main">
-                <div class="row__title">EvidenceEntry: Plan recorded (hash chained)</div>
+                <div class="row__title">Plan recorded (tamper-proof)</div>
                 <div class="row__subtle">
                   Category: Plan | Actor: User | Linked: Plan P-551
                   <span class="retention-tag">active 365d</span>
@@ -1784,7 +1834,7 @@
             </div>
             <div class="row row--static">
               <div class="row__main">
-                <div class="row__title">EvidenceEntry: Approval Gate opened</div>
+                <div class="row__title">Approval Gate opened</div>
                 <div class="row__subtle">
                   Category: Approval | Actor: System | Linked: Run R-8920
                   <span class="retention-tag">approaching expiry 30d</span>
@@ -1794,7 +1844,7 @@
             </div>
             <div class="row row--static">
               <div class="row__main">
-                <div class="row__title">EvidenceEntry: Run initiated</div>
+                <div class="row__title">Run initiated</div>
                 <div class="row__subtle">
                   Category: Run | Actor: User | Linked: Run R-8920, WI-1099
                   <span class="retention-tag">payload purged</span>
@@ -1811,19 +1861,19 @@
             <div class="grid grid--3">
               <div class="card">
                 <div class="card__title"><span class="port-icon">FA</span> Invoice</div>
-                <div class="subtle">NetSuite | INV-22318 | SoR: FinanceAccounting</div>
+                <div class="subtle">NetSuite | INV-22318 | Integration: FinanceAccounting</div>
                 <div class="subtle" style="margin-top: 4px">Total: $12,500 | Status: Open</div>
               </div>
               <div class="card">
                 <div class="card__title"><span class="port-icon">PB</span> Charge</div>
-                <div class="subtle">Stripe | ch_9d2a | SoR: PaymentsBilling</div>
+                <div class="subtle">Stripe | ch_9d2a | Integration: PaymentsBilling</div>
                 <div class="subtle" style="margin-top: 4px">
                   Amount: $12,500 | Status: Succeeded
                 </div>
               </div>
               <div class="card">
                 <div class="card__title"><span class="port-icon">CS</span> Ticket</div>
-                <div class="subtle">Zendesk | 4831 | SoR: CustomerSupport</div>
+                <div class="subtle">Zendesk | 4831 | Integration: CustomerSupport</div>
                 <div class="subtle" style="margin-top: 4px">Priority: High | Status: Open</div>
               </div>
             </div>
@@ -1842,232 +1892,319 @@
           <div class="screen__header">
             <div>
               <h1 id="h-settings" class="h1">Workspace Settings</h1>
-              <div class="subtle">RBAC, credential vaulting, adapters/providers, and policies</div>
+              <div class="subtle">RBAC, secure credentials, adapters/providers, and policies</div>
             </div>
           </div>
 
-          <div class="grid grid--2">
-            <article class="card">
-              <div class="card__title">RBAC</div>
-              <div class="card__meta subtle">Workspace users and roles</div>
-              <div style="margin-bottom: 10px">
-                <button class="btn btn--primary btn--small" type="button">Add user</button>
-              </div>
-              <div class="list">
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">admin@acme.com</div>
-                    <div class="row__subtle">Role: admin</div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">operator@acme.com</div>
-                    <div class="row__subtle">Role: operator, approver</div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">auditor@acme.com</div>
-                    <div class="row__subtle">Role: auditor</div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Active</span></div>
-                </div>
-              </div>
-            </article>
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Configure workspace access, integrations, and governance policies. Changes here affect
+              all workflows and team members.
+            </div>
+          </div>
 
-            <article class="card">
-              <div class="card__title">Credentials</div>
-              <div class="card__meta subtle">Vaulting, rotation, scoped issuance</div>
-              <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                <button class="btn btn--primary btn--small" type="button">Add credential</button>
-                <button class="btn btn--small" type="button">Rotate</button>
-              </div>
-              <div class="list">
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Stripe API Key</div>
-                    <div class="row__subtle">
-                      Scopes: charges.read, charges.write | Expires: 2026-06-01
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Valid</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">NetSuite OAuth</div>
-                    <div class="row__subtle">
-                      Scopes: invoice.read, invoice.write | Expires: 2026-03-15
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--warn">Expiring</span></div>
-                </div>
-              </div>
-            </article>
+          <div class="tabs" role="tablist" aria-label="Settings tabs">
+            <button class="tab tab--active" type="button" data-tab="settings-access">
+              Access
+            </button>
+            <button class="tab" type="button" data-tab="settings-integrations">
+              Integrations
+            </button>
+            <button class="tab" type="button" data-tab="settings-governance">Governance</button>
+          </div>
 
-            <!-- Adapters with Capability Matrix Grid (capability_matrix_grid) -->
-            <article class="card">
-              <div class="card__title">Adapters / Providers</div>
-              <div class="card__meta subtle">
-                Select provider per port family, connect credentials, validate scopes
-              </div>
-              <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                <button class="btn btn--primary btn--small" type="button">Select provider</button>
-                <button class="btn btn--small" type="button">Register adapter</button>
-              </div>
-              <div class="list">
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title"><span class="port-icon">PB</span> PaymentsBilling</div>
-                    <div class="row__subtle">Provider: Stripe | Capability Matrix: loaded</div>
+          <div class="tabpanes">
+            <!-- Access tab -->
+            <div
+              class="tabpane tabpane--active"
+              data-pane="settings-access"
+              role="region"
+              aria-label="Access pane"
+            >
+              <div class="grid grid--2">
+                <article class="card">
+                  <div class="card__title">RBAC</div>
+                  <div class="card__meta subtle">Workspace users and roles</div>
+                  <div style="margin-bottom: 10px">
+                    <button class="btn btn--primary btn--small" type="button">Add user</button>
                   </div>
-                  <div class="row__right"><span class="status status--ok">Configured</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">
-                      <span class="port-icon">FA</span> FinanceAccounting
+                  <div class="list">
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">admin@acme.com</div>
+                        <div class="row__subtle">Role: admin</div>
+                      </div>
+                      <div class="row__right">
+                        <span class="status status--ok">Active</span>
+                      </div>
                     </div>
-                    <div class="row__subtle">Provider: NetSuite | Capability Matrix: loaded</div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">operator@acme.com</div>
+                        <div class="row__subtle">Role: operator, approver</div>
+                      </div>
+                      <div class="row__right">
+                        <span class="status status--ok">Active</span>
+                      </div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">auditor@acme.com</div>
+                        <div class="row__subtle">Role: auditor</div>
+                      </div>
+                      <div class="row__right">
+                        <span class="status status--ok">Active</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok">Configured</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title"><span class="port-icon">CS</span> CustomerSupport</div>
-                    <div class="row__subtle">Provider: Zendesk | Capability Matrix: loaded</div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Configured</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title"><span class="port-icon">CR</span> CrmSales</div>
-                    <div class="row__subtle">Provider: not selected</div>
-                  </div>
-                  <div class="row__right"><span class="status status--danger">Missing</span></div>
-                </div>
-              </div>
+                </article>
 
-              <!-- Capability Matrix Grid -->
-              <div style="margin-top: 12px">
-                <div style="font-weight: 700; font-size: 13px; margin-bottom: 8px">
-                  Capability Matrix (Stripe)
-                </div>
-                <div class="table-wrap">
-                  <table class="cap-grid">
-                    <thead>
-                      <tr>
-                        <th>Object</th>
-                        <th>Read</th>
-                        <th>Write</th>
-                        <th>Webhook</th>
-                        <th>Idempotency</th>
-                        <th>Plan/Diff</th>
-                        <th>Reversible</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Payment</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Idempotency key</td>
-                        <td>Yes</td>
-                        <td>Refund</td>
-                      </tr>
-                      <tr>
-                        <td>Invoice</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Idempotency key</td>
-                        <td>Yes</td>
-                        <td>Void</td>
-                      </tr>
-                      <tr>
-                        <td>Subscription</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Idempotency key</td>
-                        <td>Partial</td>
-                        <td>Cancel</td>
-                      </tr>
-                      <tr>
-                        <td>Customer</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                        <td>None</td>
-                        <td>No</td>
-                        <td>No</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <article class="card card--subtle">
+                  <div class="card__title">Credentials</div>
+                  <div class="card__meta subtle">Vaulting, rotation, access scoping</div>
+                  <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                    <button class="btn btn--primary btn--small" type="button">
+                      Add credential
+                    </button>
+                    <button class="btn btn--small" type="button">Rotate</button>
+                  </div>
+                  <div class="list">
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Stripe API Key</div>
+                        <div class="row__subtle">
+                          Scopes: charges.read, charges.write | Expires: 2026-06-01
+                        </div>
+                      </div>
+                      <div class="row__right">
+                        <span class="status status--ok">Valid</span>
+                      </div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">NetSuite OAuth</div>
+                        <div class="row__subtle">
+                          Scopes: invoice.read, invoice.write | Expires: 2026-03-15
+                        </div>
+                      </div>
+                      <div class="row__right">
+                        <span class="status status--warn">Expiring</span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
               </div>
-            </article>
+            </div>
 
-            <!-- Policies with tier_indicator -->
-            <article class="card">
-              <div class="card__title">Policies</div>
-              <div class="card__meta subtle">Execution tiers, SoD constraints, approvals</div>
-              <div style="margin-bottom: 10px">
-                <button class="btn btn--primary btn--small" type="button">Create rule</button>
-              </div>
-              <div class="list">
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Invoice writes &gt; $10,000</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--human">Human-approve</span>
-                      N-approvers: 2
+            <!-- Integrations tab -->
+            <div
+              class="tabpane"
+              data-pane="settings-integrations"
+              role="region"
+              aria-label="Integrations pane"
+            >
+              <article class="card">
+                <div class="card__title">Adapters / Providers</div>
+                <div class="card__meta subtle">
+                  Select provider per integration category, connect credentials, validate scopes
+                </div>
+                <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                  <button class="btn btn--primary btn--small" type="button">
+                    Select provider
+                  </button>
+                  <button class="btn btn--small" type="button">Register adapter</button>
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="port-icon">PB</span> PaymentsBilling
+                      </div>
+                      <div class="row__subtle">
+                        Provider: Stripe | Capability Matrix: loaded
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok">Configured</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--info">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Default workflow tier</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--assisted">Assisted</span>
-                      Plan review recommended
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="port-icon">FA</span> FinanceAccounting
+                      </div>
+                      <div class="row__subtle">
+                        Provider: NetSuite | Capability Matrix: loaded
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok">Configured</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--info">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Read-only operations</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--auto">Auto</span>
-                      No approval required
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="port-icon">CS</span> CustomerSupport
+                      </div>
+                      <div class="row__subtle">
+                        Provider: Zendesk | Capability Matrix: loaded
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok">Configured</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--info">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Maker-checker (SoD)</div>
-                    <div class="row__subtle">Initiator cannot approve the same Run</div>
-                  </div>
-                  <div class="row__right"><span class="status status--info">Active</span></div>
-                </div>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">Destructive operations</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--manual">Manual-only</span>
-                      Requires admin + explicit confirmation
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">
+                        <span class="port-icon">CR</span> CrmSales
+                      </div>
+                      <div class="row__subtle">Provider: not selected</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--danger">Missing</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--info">Active</span></div>
                 </div>
-              </div>
-            </article>
+
+                <!-- Capability Matrix Grid -->
+                <div style="margin-top: 12px">
+                  <div style="font-weight: 700; font-size: 13px; margin-bottom: 8px">
+                    Capability Matrix (Stripe)
+                  </div>
+                  <div class="table-wrap">
+                    <table class="cap-grid">
+                      <thead>
+                        <tr>
+                          <th>Object</th>
+                          <th>Read</th>
+                          <th>Write</th>
+                          <th>Webhook</th>
+                          <th>Idempotency</th>
+                          <th>Plan/Diff</th>
+                          <th>Reversible</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Payment</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Idempotency key</td>
+                          <td>Yes</td>
+                          <td>Refund</td>
+                        </tr>
+                        <tr>
+                          <td>Invoice</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Idempotency key</td>
+                          <td>Yes</td>
+                          <td>Void</td>
+                        </tr>
+                        <tr>
+                          <td>Subscription</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Idempotency key</td>
+                          <td>Partial</td>
+                          <td>Cancel</td>
+                        </tr>
+                        <tr>
+                          <td>Customer</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>Yes</td>
+                          <td>None</td>
+                          <td>No</td>
+                          <td>No</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- Governance tab -->
+            <div
+              class="tabpane"
+              data-pane="settings-governance"
+              role="region"
+              aria-label="Governance pane"
+            >
+              <article class="card">
+                <div class="card__title">Policies</div>
+                <div class="card__meta subtle">
+                  Automation levels, approval rules, governance
+                </div>
+                <div style="margin-bottom: 10px">
+                  <button class="btn btn--primary btn--small" type="button">Create rule</button>
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Invoice writes &gt; $10,000</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        N-approvers: 2
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--info">Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Default workflow tier</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--assisted">Assisted</span>
+                        Plan review recommended
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--info">Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Read-only operations</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--auto">Auto</span>
+                        No approval required
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--info">Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Different-approver rule</div>
+                      <div class="row__subtle">Initiator cannot approve the same Run</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--info">Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Destructive operations</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--manual">Manual-only</span>
+                        Requires admin + explicit confirmation
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--info">Active</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
           </div>
         </section>
 
@@ -2219,7 +2356,7 @@
                             style="font-size: 9px; padding: 1px 5px"
                             >Human-approve</span
                           ><span class="sod-badge" style="font-size: 9px; padding: 1px 5px"
-                            >SoD</span
+                            >Diff-approver</span
                           >
                         </div>
                         <div class="wf-node__status">
@@ -2355,7 +2492,7 @@
                 <label class="field"
                   ><span class="field__label">Separation of Duties</span>
                   <select class="field__input">
-                    <option selected>Maker-checker</option>
+                    <option selected>Different-approver</option>
                     <option>None</option>
                     <option>N-of-M</option>
                   </select>
@@ -2380,7 +2517,7 @@
               </div>
               <div class="callout" style="margin-top: 12px">
                 This step will pause the run and require <strong>2 approvers</strong> before
-                continuing. The maker-checker constraint prevents self-approval.
+                continuing. A different person must approve.
               </div>
             </aside>
           </div>
@@ -2761,11 +2898,19 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         </span>
         <span class="statusbar__item statusbar__toast js-kbd-toast" hidden></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
-          <button class="statusbar__hint-btn js-open-palette" type="button" aria-label="Open command palette">
+          <button
+            class="statusbar__hint-btn js-open-palette"
+            type="button"
+            aria-label="Open command palette"
+          >
             <kbd class="triage__kbd">Ctrl+K</kbd> palette
           </button>
           <span class="statusbar__sep">&middot;</span>
-          <button class="statusbar__hint-btn js-open-cheatsheet" type="button" aria-label="Open keyboard shortcuts">
+          <button
+            class="statusbar__hint-btn js-open-cheatsheet"
+            type="button"
+            aria-label="Open keyboard shortcuts"
+          >
             <kbd class="triage__kbd">?</kbd> shortcuts
           </button>
         </span>
@@ -2776,7 +2921,14 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
          COMMAND PALETTE (Ctrl+K / Cmd+K)
          ============================================================ -->
     <div class="cmd-palette-backdrop js-cmd-backdrop" hidden aria-hidden="true"></div>
-    <div class="cmd-palette" id="cmdPalette" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+    <div
+      class="cmd-palette"
+      id="cmdPalette"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      hidden
+    >
       <div class="cmd-palette__header">
         <input
           class="cmd-palette__input"
@@ -2787,7 +2939,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           spellcheck="false"
           aria-label="Search commands"
         />
-        <button class="cmd-palette__close js-cmd-close" type="button" aria-label="Close">&times;</button>
+        <button class="cmd-palette__close js-cmd-close" type="button" aria-label="Close">
+          &times;
+        </button>
       </div>
       <div class="cmd-palette__body" id="cmdResults" role="listbox" aria-label="Command results">
         <!-- Results injected by JS -->
@@ -2803,10 +2957,19 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
          KEYBOARD CHEATSHEET (?)
          ============================================================ -->
     <div class="kbd-cheatsheet-backdrop js-cheatsheet-backdrop" hidden aria-hidden="true"></div>
-    <div class="kbd-cheatsheet" id="kbdCheatsheet" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden>
+    <div
+      class="kbd-cheatsheet"
+      id="kbdCheatsheet"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Keyboard shortcuts"
+      hidden
+    >
       <div class="kbd-cheatsheet__header">
         <h2 class="kbd-cheatsheet__title">Keyboard Shortcuts</h2>
-        <button class="drawer__close js-cheatsheet-close" type="button" aria-label="Close">&times;</button>
+        <button class="drawer__close js-cheatsheet-close" type="button" aria-label="Close">
+          &times;
+        </button>
       </div>
       <div class="kbd-cheatsheet__body">
         <div class="kbd-cheatsheet__context js-cheatsheet-context">
@@ -2816,15 +2979,31 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <div class="kbd-cheatsheet__group">
             <h3 class="kbd-cheatsheet__group-title">Navigation</h3>
             <div class="kbd-cheatsheet__list">
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>i</kbd><span>Inbox</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>p</kbd><span>Project Overview</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>w</kbd><span>Work Items</span></div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>i</kbd><span>Inbox</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>p</kbd><span>Project Overview</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>w</kbd><span>Work Items</span>
+              </div>
               <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>r</kbd><span>Runs</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>b</kbd><span>Workflow Builder</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>a</kbd><span>Approvals</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>e</kbd><span>Evidence</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>n</kbd><span>Agents</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>s</kbd><span>Settings</span></div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>b</kbd><span>Workflow Builder</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>a</kbd><span>Approvals</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>e</kbd><span>Evidence</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>n</kbd><span>Agents</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>s</kbd><span>Settings</span>
+              </div>
             </div>
           </div>
           <div class="kbd-cheatsheet__group">
@@ -2833,8 +3012,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="kbd-cheatsheet__row"><kbd>Ctrl+K</kbd><span>Command palette</span></div>
               <div class="kbd-cheatsheet__row"><kbd>/</kbd><span>Focus search</span></div>
               <div class="kbd-cheatsheet__row"><kbd>?</kbd><span>This cheatsheet</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>Esc</kbd><span>Close overlay / drawer</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>n</kbd><span>New (context-sensitive)</span></div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>Esc</kbd><span>Close overlay / drawer</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>n</kbd><span>New (context-sensitive)</span>
+              </div>
               <div class="kbd-cheatsheet__row"><kbd>c</kbd><span>Toggle context drawer</span></div>
             </div>
           </div>

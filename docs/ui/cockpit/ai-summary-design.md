@@ -64,10 +64,10 @@ interface AISummary {
 
 ### 1.1 Display Modes
 
-| Mode        | Shows                                                    | Use case                      |
-|-------------|----------------------------------------------------------|-------------------------------|
-| **Quick**   | Action summary + risk badge + confidence dot             | Scan-and-decide in <5 seconds |
-| **Detailed**| Full schema: all six fields + "Why?" links               | Deep review before high-risk  |
+| Mode         | Shows                                        | Use case                      |
+| ------------ | -------------------------------------------- | ----------------------------- |
+| **Quick**    | Action summary + risk badge + confidence dot | Scan-and-decide in <5 seconds |
+| **Detailed** | Full schema: all six fields + "Why?" links   | Deep review before high-risk  |
 
 ---
 
@@ -87,31 +87,28 @@ and before the `.callout--policy` block.
       <span class="ai-summary__label">AI Summary</span>
     </div>
     <div class="ai-summary__header-right">
-      <span class="ai-summary__confidence" data-confidence="high"
-        title="Confidence: 92%">
+      <span class="ai-summary__confidence" data-confidence="high" title="Confidence: 92%">
         <span class="ai-summary__confidence-dot"></span>
         92%
       </span>
-      <button class="ai-summary__toggle js-ai-summary-toggle"
+      <button
+        class="ai-summary__toggle js-ai-summary-toggle"
         type="button"
         aria-expanded="false"
-        aria-controls="aiDetailAG442">
+        aria-controls="aiDetailAG442"
+      >
         Details
       </button>
     </div>
   </div>
   <div class="ai-summary__quick">
     <p class="ai-summary__action">
-      Updates invoice INV-22318 memo and line items in NetSuite, then creates
-      a receipt bundle in Drive for audit evidence.
+      Updates invoice INV-22318 memo and line items in NetSuite, then creates a receipt bundle in
+      Drive for audit evidence.
     </p>
     <div class="ai-summary__tags">
-      <span class="ai-summary__risk ai-summary__risk--medium">
-        Medium risk
-      </span>
-      <span class="ai-summary__compliance ai-summary__compliance--pass">
-        Compliance: pass
-      </span>
+      <span class="ai-summary__risk ai-summary__risk--medium"> Medium risk </span>
+      <span class="ai-summary__compliance ai-summary__compliance--pass"> Compliance: pass </span>
       <span class="ai-summary__reversibility ai-summary__reversibility--partial">
         Partially reversible
       </span>
@@ -127,15 +124,14 @@ and before the `.callout--policy` block.
         <span class="ai-summary__risk ai-summary__risk--medium">Medium</span>
       </div>
       <p class="ai-summary__section-body">
-        Invoice amount ($12,500) exceeds the $10,000 policy threshold.
-        Two external systems will be written to. No prior failed attempts
-        for this work item.
+        Invoice amount ($12,500) exceeds the $10,000 policy threshold. Two external systems will be
+        written to. No prior failed attempts for this work item.
       </p>
       <button class="ai-summary__why js-ai-why" type="button">Why?</button>
       <div class="ai-summary__why-detail" hidden>
-        Risk scored medium because: (1) write amount is above policy threshold
-        but within 2x the limit; (2) both target systems have healthy
-        connections; (3) idempotency keys are present for retry safety.
+        Risk scored medium because: (1) write amount is above policy threshold but within 2x the
+        limit; (2) both target systems have healthy connections; (3) idempotency keys are present
+        for retry safety.
       </div>
     </div>
 
@@ -180,15 +176,13 @@ and before the `.callout--policy` block.
         <span class="ai-summary__reversibility ai-summary__reversibility--partial">Partial</span>
       </div>
       <p class="ai-summary__section-body">
-        Invoice memo update can be reverted. Line item reclassification
-        can be undone. Drive document creation cannot be automatically
-        deleted (requires manual removal).
+        Invoice memo update can be reverted. Line item reclassification can be undone. Drive
+        document creation cannot be automatically deleted (requires manual removal).
       </p>
       <button class="ai-summary__why js-ai-why" type="button">Why?</button>
       <div class="ai-summary__why-detail" hidden>
-        NetSuite invoice fields support PUT overwrite, so the memo and
-        line items can be restored to previous values. Google Drive
-        file creation has no automated delete in the current adapter
+        NetSuite invoice fields support PUT overwrite, so the memo and line items can be restored to
+        previous values. Google Drive file creation has no automated delete in the current adapter
         scope configuration.
       </div>
     </div>
@@ -199,9 +193,8 @@ and before the `.callout--policy` block.
         <span class="ai-summary__section-title">Legal / Regulatory</span>
       </div>
       <p class="ai-summary__section-body">
-        Invoice modifications above $10,000 are subject to SOX
-        compliance logging. Evidence chain entry will be created
-        automatically upon approval.
+        Invoice modifications above $10,000 are subject to SOX compliance logging. Evidence chain
+        entry will be created automatically upon approval.
       </p>
     </div>
 
@@ -215,15 +208,12 @@ and before the `.callout--policy` block.
         </span>
       </div>
       <p class="ai-summary__section-body">
-        High confidence. Based on: matching historical approval
-        patterns (14 similar invoices approved), healthy system
-        connections, and complete policy rule coverage.
+        High confidence. Based on: matching historical approval patterns (14 similar invoices
+        approved), healthy system connections, and complete policy rule coverage.
       </p>
     </div>
 
-    <div class="ai-summary__footer">
-      Generated 2 minutes ago
-    </div>
+    <div class="ai-summary__footer">Generated 2 minutes ago</div>
   </div>
 </div>
 ```
@@ -291,15 +281,15 @@ Append to `wireframe.css`:
   border: 2px solid var(--line-soft);
   background: var(--muted);
 }
-.ai-summary__confidence[data-confidence="high"] .ai-summary__confidence-dot {
+.ai-summary__confidence[data-confidence='high'] .ai-summary__confidence-dot {
   background: var(--ok);
   border-color: var(--ok);
 }
-.ai-summary__confidence[data-confidence="medium"] .ai-summary__confidence-dot {
+.ai-summary__confidence[data-confidence='medium'] .ai-summary__confidence-dot {
   background: var(--warn);
   border-color: var(--warn);
 }
-.ai-summary__confidence[data-confidence="low"] .ai-summary__confidence-dot {
+.ai-summary__confidence[data-confidence='low'] .ai-summary__confidence-dot {
   background: var(--danger);
   border-color: var(--danger);
 }
@@ -315,7 +305,9 @@ Append to `wireframe.css`:
   font-family: inherit;
   cursor: pointer;
   color: #6c5dd3;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 .ai-summary__toggle:hover {
   background: rgba(108, 93, 211, 0.12);
@@ -325,7 +317,7 @@ Append to `wireframe.css`:
   outline: 3px solid rgba(10, 102, 255, 0.35);
   outline-offset: 2px;
 }
-.ai-summary__toggle[aria-expanded="true"] {
+.ai-summary__toggle[aria-expanded='true'] {
   background: rgba(108, 93, 211, 0.15);
   border-color: #6c5dd3;
 }
@@ -548,7 +540,10 @@ Append to `wireframe.css`:
   font-family: inherit;
   cursor: pointer;
   color: var(--muted);
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   user-select: none;
 }
 .ai-toggle:hover {
@@ -569,7 +564,9 @@ Append to `wireframe.css`:
   border-radius: 999px;
   border: 2px solid var(--line-soft);
   background: var(--muted);
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .ai-toggle--active .ai-toggle__dot {
   background: #6c5dd3;
@@ -657,9 +654,7 @@ const AISummaryToggle = (function () {
     btn.title = 'Toggle AI summaries on approval cards';
     if (enabled) btn.classList.add('ai-toggle--active');
 
-    btn.innerHTML =
-      '<span class="ai-toggle__dot"></span>' +
-      '<span>AI Summary</span>';
+    btn.innerHTML = '<span class="ai-toggle__dot"></span>' + '<span>AI Summary</span>';
 
     btn.addEventListener('click', function () {
       toggle();
@@ -794,9 +789,7 @@ const AI_SUMMARY_MOCKS = {
         detail: 'Priority changes require human-approve tier for audit trail.',
       },
     ],
-    affectedSystems: [
-      { system: 'Zendesk', operation: 'write', target: 'Ticket | #4831' },
-    ],
+    affectedSystems: [{ system: 'Zendesk', operation: 'write', target: 'Ticket | #4831' }],
     reversibility: {
       reversible: true,
       detail:
@@ -960,8 +953,8 @@ Update the hint text:
 
 ```html
 <div class="triage__hint subtle">
-  Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip,
-  Space = Toggle details, I = Toggle AI summary
+  Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle details, I = Toggle
+  AI summary
 </div>
 ```
 
@@ -1037,6 +1030,7 @@ where purple/violet denotes AI-assisted features.
 ### 7.4 Confidence Score
 
 The confidence indicator serves two purposes:
+
 1. **Trust calibration:** The approver knows when to trust the summary
    at a glance vs. when to dig deeper.
 2. **Liability signal:** A low-confidence summary is an explicit signal

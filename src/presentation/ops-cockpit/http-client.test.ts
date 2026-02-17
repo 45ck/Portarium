@@ -72,13 +72,11 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
       fetchImpl,
     });
 
-    await client.decideApproval(
-      'workspace-1',
-      'approval-1',
-      'Approved',
-      'Looks good',
-      'idem-1',
-    );
+    await client.decideApproval('workspace-1', 'approval-1', {
+      decision: 'Approved',
+      rationale: 'Looks good',
+      idempotencyKey: 'idem-1',
+    });
 
     expect(calls).toHaveLength(1);
     const call = calls[0]!;

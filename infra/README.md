@@ -15,6 +15,7 @@ This folder stores the infrastructure baseline for Portarium and follows ADR-005
 - `.specify/specs/infrastructure-layer-v1.md` defines the infra contract for v1.
 - `docs/adr/0056-infrastructure-reference-architecture.md` stores the architectural decision.
 - `infra/kubernetes` provides a reference base and `dev|staging|prod` overlays.
+- `infra/terraform` contains provider entry points with a concrete AWS baseline.
 
 ## Execution model
 
@@ -28,12 +29,11 @@ This folder stores the infrastructure baseline for Portarium and follows ADR-005
 ## Reference structure
 
 - `infra/` currently stores infrastructure documentation and
-  observability runtime config. A future phase can add Terraform and Kubernetes
-  module catalogs here.
+  observability runtime config, plus Terraform and Kubernetes module catalogs.
 - `infra/docker/` stores container image scaffolds for Control Plane / Execution Plane.
 - `infra/kubernetes/` stores reference Kubernetes manifests using Kustomize.
-- `infra/terraform/README.md` should become the provider-neutral entrypoint for
-  IaC once multi-cloud modules land.
+- `infra/terraform/` tracks provider-specific IaC entry points (`aws` implemented,
+  `azure`/`gcp` planned).
 
 ## Workstreams and owners
 

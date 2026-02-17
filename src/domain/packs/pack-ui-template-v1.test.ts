@@ -45,31 +45,31 @@ describe('parsePackUiTemplateV1: validation', () => {
   });
 
   it('rejects unsupported schemaVersion', () => {
-    expect(() =>
-      parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, schemaVersion: 2 }),
-    ).toThrow(/Unsupported schemaVersion/);
+    expect(() => parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, schemaVersion: 2 })).toThrow(
+      /Unsupported schemaVersion/,
+    );
   });
 
   it('rejects non-array fields', () => {
-    expect(() =>
-      parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, fields: 'oops' }),
-    ).toThrow(/fields must be an array/);
+    expect(() => parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, fields: 'oops' })).toThrow(
+      /fields must be an array/,
+    );
   });
 
   it('rejects non-object field entry', () => {
-    expect(() =>
-      parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, fields: [null] }),
-    ).toThrow(/fields\[0\] must be an object/);
+    expect(() => parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, fields: [null] })).toThrow(
+      /fields\[0\] must be an object/,
+    );
   });
 
   it('rejects missing required string fields', () => {
-    expect(() =>
-      parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, templateId: '' }),
-    ).toThrow(/templateId must be a non-empty string/);
+    expect(() => parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, templateId: '' })).toThrow(
+      /templateId must be a non-empty string/,
+    );
 
-    expect(() =>
-      parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, schemaRef: 123 }),
-    ).toThrow(/schemaRef must be a non-empty string/);
+    expect(() => parsePackUiTemplateV1({ ...VALID_UI_TEMPLATE, schemaRef: 123 })).toThrow(
+      /schemaRef must be a non-empty string/,
+    );
   });
 
   it('rejects empty label in field when provided', () => {

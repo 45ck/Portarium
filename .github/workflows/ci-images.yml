@@ -5,12 +5,12 @@ on:
     branches:
       - main
     tags:
-      - "v*"
+      - 'v*'
     paths:
-      - "infra/docker/**"
-      - "src/**"
-      - "package.json"
-      - "package-lock.json"
+      - 'infra/docker/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 
 jobs:
@@ -78,8 +78,8 @@ jobs:
         run: |
           mkdir -p artifacts
           cat > artifacts/${{ matrix.component }}-build-metadata.json <<'EOF'
-{"component":"${{ matrix.component }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}","tags":"${{ steps.tags.outputs.TAGS }}"}
-EOF
+          {"component":"${{ matrix.component }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}","tags":"${{ steps.tags.outputs.TAGS }}"}
+          EOF
 
       - name: Archive release metadata
         uses: actions/upload-artifact@v4

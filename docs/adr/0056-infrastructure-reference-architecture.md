@@ -46,6 +46,8 @@ Adopt a reference baseline that is intentionally cloud-neutral while still concr
 
 - Use Terraform as default for network, cluster, storage, and policy primitives.
 - Keep provider-neutral references in this repository; provider modules are added as explicit submodules per provider.
+- AWS implementation is now present in-repo (`infra/terraform/aws`) as the first concrete
+  provider baseline; Azure/GCP remain planned.
 - Add infrastructure validation gates in CI before app changes can merge:
   - Docker Compose manifest validation,
   - Terraform format/validation where manifests exist,

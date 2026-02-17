@@ -11,24 +11,32 @@ describe('QueryBus', () => {
       value: { runId: 'run-1' },
     }));
 
-    const result = await bus.execute('GetRun', toAppContext({
-      tenantId: 'tenant-1',
-      principalId: 'user-1',
-      correlationId: 'corr-1',
-      roles: ['operator'],
-    }), undefined);
+    const result = await bus.execute(
+      'GetRun',
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      undefined,
+    );
 
     expect(result.ok).toBe(true);
   });
 
   it('returns dependency failure for missing handlers', async () => {
     const bus = new QueryBus();
-    const result = await bus.execute('MissingQuery', toAppContext({
-      tenantId: 'tenant-1',
-      principalId: 'user-1',
-      correlationId: 'corr-1',
-      roles: ['operator'],
-    }), undefined);
+    const result = await bus.execute(
+      'MissingQuery',
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      undefined,
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) {
@@ -58,12 +66,16 @@ describe('QueryBus', () => {
       throw new Error('query exploded');
     });
 
-    const result = await bus.execute('ExplodingQuery', toAppContext({
-      tenantId: 'tenant-1',
-      principalId: 'user-1',
-      correlationId: 'corr-1',
-      roles: ['operator'],
-    }), undefined);
+    const result = await bus.execute(
+      'ExplodingQuery',
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      undefined,
+    );
 
     expect(result.ok).toBe(false);
     if (result.ok) {

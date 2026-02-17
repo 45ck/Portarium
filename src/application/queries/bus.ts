@@ -14,10 +14,7 @@ export class QueryBus {
     (ctx: AppContext, input: unknown) => Promise<Result<unknown, AppError>>
   >();
 
-  public register<TInput, TOutput>(
-    name: string,
-    handler: QueryHandler<TInput, TOutput>,
-  ): void {
+  public register<TInput, TOutput>(name: string, handler: QueryHandler<TInput, TOutput>): void {
     if (this.handlers.has(name)) {
       throw new Error(`Query handler '${name}' is already registered.`);
     }

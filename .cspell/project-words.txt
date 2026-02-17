@@ -362,6 +362,29 @@ esign
 eSign
 webhook
 webhooks
+Buildx
+buildx
+elif
+opencontainers
+anchore
+healthcheck
+isReady
+isready
+Temporalio
+temporalio
+contrib
+otelcol
+readyz
+healthz
+readyz
+poddisruptionbudgets
+podDisruptionBudgets
+Workstreams
+tfvars
+workstreams
+WorkStream
+Workstream
+Dockerfiles
 OpenAPI
 GraphQL
 OData
@@ -594,6 +617,15 @@ clickability
 toggleable
 judgment
 WCAG
+
+# Application layer terms
+cloudevent
+cloudevents
+
+# General English (US spelling)
+centered
+tiering
+behavioral
 
 # Vertical pack docs
 versionable

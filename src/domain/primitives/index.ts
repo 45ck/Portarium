@@ -212,8 +212,7 @@ export const WorkflowDefinitionId = (value: string): WorkflowDefinitionId =>
   brand<string, 'WorkflowDefinitionId'>(value);
 export const ConnectorMappingId = (value: string): ConnectorMappingId =>
   brand<string, 'ConnectorMappingId'>(value);
-export const UiTemplateId = (value: string): UiTemplateId =>
-  brand<string, 'UiTemplateId'>(value);
+export const UiTemplateId = (value: string): UiTemplateId => brand<string, 'UiTemplateId'>(value);
 export const ComplianceProfileId = (value: string): ComplianceProfileId =>
   brand<string, 'ComplianceProfileId'>(value);
 export const TenantConfigId = (value: string): TenantConfigId =>

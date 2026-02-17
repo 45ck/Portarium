@@ -54,9 +54,7 @@ describe('parseMachineRegistrationV1: validation', () => {
     expect(() => parseMachineRegistrationV1(null)).toThrow(
       /MachineRegistration must be an object/i,
     );
-    expect(() => parseMachineRegistrationV1([])).toThrow(
-      /MachineRegistration must be an object/i,
-    );
+    expect(() => parseMachineRegistrationV1([])).toThrow(/MachineRegistration must be an object/i);
   });
 
   it('rejects unsupported schemaVersion', () => {

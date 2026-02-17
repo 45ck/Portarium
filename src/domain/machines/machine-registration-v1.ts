@@ -68,9 +68,7 @@ function parseCapabilities(raw: unknown): readonly string[] {
 
   return raw.map((item: unknown, i: number) => {
     if (typeof item !== 'string' || item.trim() === '') {
-      throw new MachineRegistrationParseError(
-        `capabilities[${i}] must be a non-empty string.`,
-      );
+      throw new MachineRegistrationParseError(`capabilities[${i}] must be a non-empty string.`);
     }
     return item;
   });

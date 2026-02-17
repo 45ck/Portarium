@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Deployment environment"
+        description: 'Deployment environment'
         required: true
         type: choice
         default: dev
@@ -12,33 +12,83 @@ on:
           - dev
           - staging
           - prod
+      image_tag:
+        description: 'Container image tag to apply (defaults to latest)'
+        required: false
+        default: ''
+      apply:
+        description: 'Apply manifests directly to the selected cluster'
+        required: true
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     environment: ${{ github.event.inputs.environment }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate overlay before deploy
+      - name: Resolve overlay and image tag
+        id: resolve
+        shell: bash
         run: |
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-            OVERLAY="infra/kubernetes/overlays/dev"
+            echo "overlay=infra/kubernetes/overlays/dev" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.inputs.environment }}" = "staging" ]; then
-            OVERLAY="infra/kubernetes/overlays/staging"
+            echo "overlay=infra/kubernetes/overlays/staging" >> "$GITHUB_OUTPUT"
           else
-            OVERLAY="infra/kubernetes/overlays/prod"
+            echo "overlay=infra/kubernetes/overlays/prod" >> "$GITHUB_OUTPUT"
           fi
-          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace \
-            k8s.gcr.io/kustomize/kustomize:v5.4.2 build "$OVERLAY"
+
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "image_tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build manifest
+        id: manifest
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            k8s.gcr.io/kustomize/kustomize:v5.4.2 \
+            build "${{ steps.resolve.outputs.overlay }}" > /tmp/manifest.yaml
+
+          if [ "${{ steps.resolve.outputs.image_tag }}" != "latest" ]; then
+            sed -i \
+              -e "s#ghcr.io/your-org/portarium-control-plane:latest#ghcr.io/your-org/portarium-control-plane:${{ steps.resolve.outputs.image_tag }}#g" \
+              -e "s#ghcr.io/your-org/portarium-worker:latest#ghcr.io/your-org/portarium-worker:${{ steps.resolve.outputs.image_tag }}#g" \
+              /tmp/manifest.yaml
+          fi
+
+      - name: Validate manifest
+        run: |
+          if [ ! -s /tmp/manifest.yaml ]; then
+            echo "Manifest generation failed."
+            exit 1
+          fi
+          kubectl apply --dry-run=client -f /tmp/manifest.yaml
 
       - name: Deploy control and execution planes
-        # Intentionally scoped as an explicit operator step for the reference baseline.
+        if: github.event.inputs.apply == 'true'
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
         run: |
-          echo "Attach kubectl auth method and apply in your environment."
-          echo "Example: kubectl apply -k <overlay>"
-          echo "Environment: ${{ github.event.inputs.environment }}"
+          if [ -z "$KUBECONFIG_B64" ]; then
+            echo "KUBECONFIG_B64 secret is required when apply=true."
+            exit 1
+          fi
+
+          echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          kubectl apply -f /tmp/manifest.yaml
+          kubectl rollout status deployment/portarium-control-plane -n portarium --timeout=120s
+          kubectl rollout status deployment/portarium-execution-plane -n portarium --timeout=120s

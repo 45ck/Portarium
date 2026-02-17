@@ -14,10 +14,7 @@ export class CommandBus {
     (ctx: AppContext, input: unknown) => Promise<Result<unknown, AppError>>
   >();
 
-  public register<TInput, TOutput>(
-    name: string,
-    handler: CommandHandler<TInput, TOutput>,
-  ): void {
+  public register<TInput, TOutput>(name: string, handler: CommandHandler<TInput, TOutput>): void {
     if (this.handlers.has(name)) {
       throw new Error(`Command handler '${name}' is already registered.`);
     }

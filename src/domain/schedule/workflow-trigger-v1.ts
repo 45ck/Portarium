@@ -55,9 +55,7 @@ export function parseWorkflowTriggerV1(value: unknown): WorkflowTriggerV1 {
 
   const kindRaw = readString(value, 'kind');
   if (!isTriggerKind(kindRaw)) {
-    throw new WorkflowTriggerParseError(
-      'kind must be one of: Cron, Webhook, DomainEvent, Manual.',
-    );
+    throw new WorkflowTriggerParseError('kind must be one of: Cron, Webhook, DomainEvent, Manual.');
   }
 
   if (typeof value['active'] !== 'boolean') {

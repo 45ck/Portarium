@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   api:
@@ -21,7 +21,7 @@ services:
       otel-collector:
         condition: service_started
     ports:
-      - "8080:8080"
+      - '8080:8080'
     networks:
       - portarium-control
 
@@ -43,6 +43,6 @@ services:
       otel-collector:
         condition: service_started
     ports:
-      - "8081:8081"
+      - '8081:8081'
     networks:
       - portarium-control

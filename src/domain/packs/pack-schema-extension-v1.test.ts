@@ -58,9 +58,9 @@ describe('parsePackSchemaExtensionV1: validation', () => {
   });
 
   it('rejects non-array fields', () => {
-    expect(() =>
-      parsePackSchemaExtensionV1({ ...VALID_SCHEMA_EXTENSION, fields: 'oops' }),
-    ).toThrow(/fields must be an array/);
+    expect(() => parsePackSchemaExtensionV1({ ...VALID_SCHEMA_EXTENSION, fields: 'oops' })).toThrow(
+      /fields must be an array/,
+    );
   });
 
   it('rejects non-object field entry', () => {
@@ -74,9 +74,9 @@ describe('parsePackSchemaExtensionV1: validation', () => {
       parsePackSchemaExtensionV1({ ...VALID_SCHEMA_EXTENSION, extensionId: '' }),
     ).toThrow(/extensionId must be a non-empty string/);
 
-    expect(() =>
-      parsePackSchemaExtensionV1({ ...VALID_SCHEMA_EXTENSION, namespace: 123 }),
-    ).toThrow(/namespace must be a non-empty string/);
+    expect(() => parsePackSchemaExtensionV1({ ...VALID_SCHEMA_EXTENSION, namespace: 123 })).toThrow(
+      /namespace must be a non-empty string/,
+    );
   });
 
   it('rejects non-boolean required in field', () => {

@@ -19,58 +19,58 @@
 
 ### 2.1 Global Shortcuts (work everywhere)
 
-| Shortcut | Action | Category |
-|---|---|---|
-| `Ctrl+K` / `Cmd+K` | Open command palette | Global |
-| `?` | Open keyboard cheatsheet | Global |
-| `Escape` | Close topmost overlay (palette > cheatsheet > drawer > modal) | Global |
-| `/` | Focus global search input | Global |
-| `n` | New (context-sensitive: work item, run, etc.) | Action |
+| Shortcut           | Action                                                        | Category |
+| ------------------ | ------------------------------------------------------------- | -------- |
+| `Ctrl+K` / `Cmd+K` | Open command palette                                          | Global   |
+| `?`                | Open keyboard cheatsheet                                      | Global   |
+| `Escape`           | Close topmost overlay (palette > cheatsheet > drawer > modal) | Global   |
+| `/`                | Focus global search input                                     | Global   |
+| `n`                | New (context-sensitive: work item, run, etc.)                 | Action   |
 
 ### 2.2 Go-To Navigation (g + key chord)
 
 After pressing `g`, the system waits up to 800ms for the second key. A visual indicator appears in the status bar: `g...` while waiting.
 
-| Chord | Destination | Screen |
-|---|---|---|
-| `g i` | Inbox | `#inbox` |
-| `g p` | Project Overview | `#project` |
-| `g w` | Work Items | `#work-items` |
-| `g r` | Runs | `#runs` |
+| Chord | Destination      | Screen              |
+| ----- | ---------------- | ------------------- |
+| `g i` | Inbox            | `#inbox`            |
+| `g p` | Project Overview | `#project`          |
+| `g w` | Work Items       | `#work-items`       |
+| `g r` | Runs             | `#runs`             |
 | `g b` | Workflow Builder | `#workflow-builder` |
-| `g a` | Approvals | `#approvals` |
-| `g e` | Evidence | `#evidence` |
-| `g n` | Agents | `#agents` |
-| `g s` | Settings | `#settings` |
+| `g a` | Approvals        | `#approvals`        |
+| `g e` | Evidence         | `#evidence`         |
+| `g n` | Agents           | `#agents`           |
+| `g s` | Settings         | `#settings`         |
 
 ### 2.3 List Navigation (active on list/table screens)
 
-| Shortcut | Action |
-|---|---|
-| `j` | Move selection down |
-| `k` | Move selection up |
-| `Enter` | Open/navigate to selected item |
+| Shortcut    | Action                                   |
+| ----------- | ---------------------------------------- |
+| `j`         | Move selection down                      |
+| `k`         | Move selection up                        |
+| `Enter`     | Open/navigate to selected item           |
 | `Backspace` | Go back (navigate to parent list screen) |
-| `x` | Toggle select (for batch operations) |
+| `x`         | Toggle select (for batch operations)     |
 
 ### 2.4 Approval Triage (existing, extended)
 
 These only fire when the triage view is active and no text input is focused.
 
-| Shortcut | Action |
-|---|---|
-| `A` | Approve |
-| `D` | Deny (opens rationale) |
-| `R` | Request changes (opens rationale) |
-| `S` | Skip |
-| `Space` | Toggle card detail expansion |
+| Shortcut | Action                            |
+| -------- | --------------------------------- |
+| `A`      | Approve                           |
+| `D`      | Deny (opens rationale)            |
+| `R`      | Request changes (opens rationale) |
+| `S`      | Skip                              |
+| `Space`  | Toggle card detail expansion      |
 
 ### 2.5 Drawer Shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `c` | Open/toggle correlation context drawer |
-| `Escape` | Close drawer |
+| Shortcut | Action                                 |
+| -------- | -------------------------------------- |
+| `c`      | Open/toggle correlation context drawer |
+| `Escape` | Close drawer                           |
 
 ---
 
@@ -123,6 +123,7 @@ COMMANDS = [
 ### 3.3 Fuzzy Search Algorithm
 
 Simple token-based fuzzy match:
+
 1. Split query into tokens (space-separated).
 2. For each command, build a search string: `label + ' ' + keywords + ' ' + category`.
 3. Every token must appear as a substring (case-insensitive).
@@ -190,7 +191,14 @@ Add this before `</body>` in `index.html`:
      COMMAND PALETTE (Ctrl+K / Cmd+K)
      ============================================================ -->
 <div class="cmd-palette-backdrop js-cmd-backdrop" hidden aria-hidden="true"></div>
-<div class="cmd-palette" id="cmdPalette" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+<div
+  class="cmd-palette"
+  id="cmdPalette"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Command palette"
+  hidden
+>
   <div class="cmd-palette__header">
     <input
       class="cmd-palette__input"
@@ -221,10 +229,19 @@ Add this before `</body>` in `index.html`:
      KEYBOARD CHEATSHEET (?)
      ============================================================ -->
 <div class="kbd-cheatsheet-backdrop js-cheatsheet-backdrop" hidden aria-hidden="true"></div>
-<div class="kbd-cheatsheet" id="kbdCheatsheet" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden>
+<div
+  class="kbd-cheatsheet"
+  id="kbdCheatsheet"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Keyboard shortcuts"
+  hidden
+>
   <div class="kbd-cheatsheet__header">
     <h2 class="kbd-cheatsheet__title">Keyboard Shortcuts</h2>
-    <button class="drawer__close js-cheatsheet-close" type="button" aria-label="Close">&times;</button>
+    <button class="drawer__close js-cheatsheet-close" type="button" aria-label="Close">
+      &times;
+    </button>
   </div>
   <div class="kbd-cheatsheet__body">
     <div class="kbd-cheatsheet__context js-cheatsheet-context">
@@ -235,11 +252,19 @@ Add this before `</body>` in `index.html`:
         <h3 class="kbd-cheatsheet__group-title">Navigation</h3>
         <div class="kbd-cheatsheet__list">
           <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>i</kbd><span>Inbox</span></div>
-          <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>p</kbd><span>Project Overview</span></div>
-          <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>w</kbd><span>Work Items</span></div>
+          <div class="kbd-cheatsheet__row">
+            <kbd>g</kbd> then <kbd>p</kbd><span>Project Overview</span>
+          </div>
+          <div class="kbd-cheatsheet__row">
+            <kbd>g</kbd> then <kbd>w</kbd><span>Work Items</span>
+          </div>
           <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>r</kbd><span>Runs</span></div>
-          <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>b</kbd><span>Workflow Builder</span></div>
-          <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>a</kbd><span>Approvals</span></div>
+          <div class="kbd-cheatsheet__row">
+            <kbd>g</kbd> then <kbd>b</kbd><span>Workflow Builder</span>
+          </div>
+          <div class="kbd-cheatsheet__row">
+            <kbd>g</kbd> then <kbd>a</kbd><span>Approvals</span>
+          </div>
           <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>e</kbd><span>Evidence</span></div>
           <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>n</kbd><span>Agents</span></div>
           <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>s</kbd><span>Settings</span></div>
@@ -312,8 +337,12 @@ Add to `wireframe.css`:
   animation: cmd-backdrop-in 0.15s ease;
 }
 @keyframes cmd-backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .cmd-palette {
@@ -645,8 +674,12 @@ Add to `wireframe.css`:
   animation: toast-out 0.3s ease forwards;
 }
 @keyframes toast-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* ============================================================
@@ -761,42 +794,213 @@ const Keyboard = (function () {
      ============================================================ */
   const COMMANDS = [
     // Navigate
-    { id: 'nav-inbox',      label: 'Go to Inbox',             category: 'Navigate', keywords: 'inbox home notifications',  shortcut: 'g i',  icon: '!',  action: function () { goto('inbox'); } },
-    { id: 'nav-project',    label: 'Go to Project Overview',  category: 'Navigate', keywords: 'project dashboard overview', shortcut: 'g p', icon: '#',  action: function () { goto('project'); } },
-    { id: 'nav-work-items', label: 'Go to Work Items',        category: 'Navigate', keywords: 'work items list',           shortcut: 'g w',  icon: '\u2261', action: function () { goto('work-items'); } },
-    { id: 'nav-runs',       label: 'Go to Runs',              category: 'Navigate', keywords: 'runs executions',           shortcut: 'g r',  icon: '\u203A', action: function () { goto('runs'); } },
-    { id: 'nav-builder',    label: 'Go to Workflow Builder',  category: 'Navigate', keywords: 'workflow builder canvas',   shortcut: 'g b',  icon: '\u25CA', action: function () { goto('workflow-builder'); } },
-    { id: 'nav-approvals',  label: 'Go to Approvals',         category: 'Navigate', keywords: 'approvals gates review',    shortcut: 'g a',  icon: '\u2713', action: function () { goto('approvals'); } },
-    { id: 'nav-evidence',   label: 'Go to Evidence',          category: 'Navigate', keywords: 'evidence audit chain',      shortcut: 'g e',  icon: '\u00A7', action: function () { goto('evidence'); } },
-    { id: 'nav-agents',     label: 'Go to Agents',            category: 'Navigate', keywords: 'agents ai configuration',   shortcut: 'g n',  icon: '\u2666', action: function () { goto('agents'); } },
-    { id: 'nav-settings',   label: 'Go to Settings',          category: 'Navigate', keywords: 'settings workspace config', shortcut: 'g s',  icon: '\u2022', action: function () { goto('settings'); } },
+    {
+      id: 'nav-inbox',
+      label: 'Go to Inbox',
+      category: 'Navigate',
+      keywords: 'inbox home notifications',
+      shortcut: 'g i',
+      icon: '!',
+      action: function () {
+        goto('inbox');
+      },
+    },
+    {
+      id: 'nav-project',
+      label: 'Go to Project Overview',
+      category: 'Navigate',
+      keywords: 'project dashboard overview',
+      shortcut: 'g p',
+      icon: '#',
+      action: function () {
+        goto('project');
+      },
+    },
+    {
+      id: 'nav-work-items',
+      label: 'Go to Work Items',
+      category: 'Navigate',
+      keywords: 'work items list',
+      shortcut: 'g w',
+      icon: '\u2261',
+      action: function () {
+        goto('work-items');
+      },
+    },
+    {
+      id: 'nav-runs',
+      label: 'Go to Runs',
+      category: 'Navigate',
+      keywords: 'runs executions',
+      shortcut: 'g r',
+      icon: '\u203A',
+      action: function () {
+        goto('runs');
+      },
+    },
+    {
+      id: 'nav-builder',
+      label: 'Go to Workflow Builder',
+      category: 'Navigate',
+      keywords: 'workflow builder canvas',
+      shortcut: 'g b',
+      icon: '\u25CA',
+      action: function () {
+        goto('workflow-builder');
+      },
+    },
+    {
+      id: 'nav-approvals',
+      label: 'Go to Approvals',
+      category: 'Navigate',
+      keywords: 'approvals gates review',
+      shortcut: 'g a',
+      icon: '\u2713',
+      action: function () {
+        goto('approvals');
+      },
+    },
+    {
+      id: 'nav-evidence',
+      label: 'Go to Evidence',
+      category: 'Navigate',
+      keywords: 'evidence audit chain',
+      shortcut: 'g e',
+      icon: '\u00A7',
+      action: function () {
+        goto('evidence');
+      },
+    },
+    {
+      id: 'nav-agents',
+      label: 'Go to Agents',
+      category: 'Navigate',
+      keywords: 'agents ai configuration',
+      shortcut: 'g n',
+      icon: '\u2666',
+      action: function () {
+        goto('agents');
+      },
+    },
+    {
+      id: 'nav-settings',
+      label: 'Go to Settings',
+      category: 'Navigate',
+      keywords: 'settings workspace config',
+      shortcut: 'g s',
+      icon: '\u2022',
+      action: function () {
+        goto('settings');
+      },
+    },
 
     // Actions
-    { id: 'act-new-wi',     label: 'Create Work Item',        category: 'Action',   keywords: 'new create work item',      shortcut: 'n',    action: function () { goto('work-item'); } },
-    { id: 'act-start-wf',   label: 'Start Workflow',          category: 'Action',   keywords: 'start run workflow execute', action: function () { goto('work-item'); } },
-    { id: 'act-drawer',     label: 'Toggle Context Drawer',   category: 'Action',   keywords: 'context drawer correlation', shortcut: 'c',    action: function () {
-        var drawer = document.getElementById('drawer');
-        if (drawer && drawer.classList.contains('is-open')) { closeDrawer(); } else { openDrawer('context'); }
-      }
+    {
+      id: 'act-new-wi',
+      label: 'Create Work Item',
+      category: 'Action',
+      keywords: 'new create work item',
+      shortcut: 'n',
+      action: function () {
+        goto('work-item');
+      },
     },
-    { id: 'act-triage',     label: 'Start Approval Triage',   category: 'Action',   keywords: 'triage approve batch swipe', action: function () {
+    {
+      id: 'act-start-wf',
+      label: 'Start Workflow',
+      category: 'Action',
+      keywords: 'start run workflow execute',
+      action: function () {
+        goto('work-item');
+      },
+    },
+    {
+      id: 'act-drawer',
+      label: 'Toggle Context Drawer',
+      category: 'Action',
+      keywords: 'context drawer correlation',
+      shortcut: 'c',
+      action: function () {
+        var drawer = document.getElementById('drawer');
+        if (drawer && drawer.classList.contains('is-open')) {
+          closeDrawer();
+        } else {
+          openDrawer('context');
+        }
+      },
+    },
+    {
+      id: 'act-triage',
+      label: 'Start Approval Triage',
+      category: 'Action',
+      keywords: 'triage approve batch swipe',
+      action: function () {
         goto('approvals');
         setTimeout(function () {
           var btn = document.querySelector('.js-triage-mode[data-mode="triage"]');
           if (btn) btn.click();
         }, 100);
-      }
+      },
     },
 
     // Filter
-    { id: 'flt-failed',     label: 'Filter: Failed runs',      category: 'Filter',  keywords: 'filter failed errors danger', action: function () { showToast('Filter applied: Failed runs'); } },
-    { id: 'flt-pending',    label: 'Filter: Pending approvals', category: 'Filter', keywords: 'filter pending approval gate', action: function () { showToast('Filter applied: Pending approvals'); } },
-    { id: 'flt-assigned',   label: 'Filter: Assigned to me',   category: 'Filter',  keywords: 'filter assigned owner me',    action: function () { showToast('Filter applied: Assigned to me'); } },
+    {
+      id: 'flt-failed',
+      label: 'Filter: Failed runs',
+      category: 'Filter',
+      keywords: 'filter failed errors danger',
+      action: function () {
+        showToast('Filter applied: Failed runs');
+      },
+    },
+    {
+      id: 'flt-pending',
+      label: 'Filter: Pending approvals',
+      category: 'Filter',
+      keywords: 'filter pending approval gate',
+      action: function () {
+        showToast('Filter applied: Pending approvals');
+      },
+    },
+    {
+      id: 'flt-assigned',
+      label: 'Filter: Assigned to me',
+      category: 'Filter',
+      keywords: 'filter assigned owner me',
+      action: function () {
+        showToast('Filter applied: Assigned to me');
+      },
+    },
 
     // Settings
-    { id: 'set-persona',    label: 'Switch Persona',           category: 'Settings', keywords: 'persona operator approver auditor admin role', action: function () { document.getElementById('persona').focus(); } },
-    { id: 'set-workspace',  label: 'Switch Workspace Type',    category: 'Settings', keywords: 'workspace solo team type',  action: function () { document.getElementById('workspaceType').focus(); } },
-    { id: 'set-shortcuts',  label: 'Keyboard Shortcuts',       category: 'Settings', keywords: 'keyboard shortcuts help cheatsheet', shortcut: '?', action: function () { openCheatsheet(); } },
+    {
+      id: 'set-persona',
+      label: 'Switch Persona',
+      category: 'Settings',
+      keywords: 'persona operator approver auditor admin role',
+      action: function () {
+        document.getElementById('persona').focus();
+      },
+    },
+    {
+      id: 'set-workspace',
+      label: 'Switch Workspace Type',
+      category: 'Settings',
+      keywords: 'workspace solo team type',
+      action: function () {
+        document.getElementById('workspaceType').focus();
+      },
+    },
+    {
+      id: 'set-shortcuts',
+      label: 'Keyboard Shortcuts',
+      category: 'Settings',
+      keywords: 'keyboard shortcuts help cheatsheet',
+      shortcut: '?',
+      action: function () {
+        openCheatsheet();
+      },
+    },
   ];
 
   let paletteOpen = false;
@@ -832,12 +1036,18 @@ const Keyboard = (function () {
       var result = [];
       if (recentCommands.length > 0) {
         for (var i = 0; i < recentCommands.length; i++) {
-          var cmd = commands.find(function (c) { return c.id === recentCommands[i]; });
+          var cmd = commands.find(function (c) {
+            return c.id === recentCommands[i];
+          });
           if (cmd) result.push({ cmd: cmd, score: 1000 - i, recent: true });
         }
       }
       for (var j = 0; j < commands.length; j++) {
-        if (!result.find(function (r) { return r.cmd.id === commands[j].id; })) {
+        if (
+          !result.find(function (r) {
+            return r.cmd.id === commands[j].id;
+          })
+        ) {
           result.push({ cmd: commands[j], score: 0, recent: false });
         }
       }
@@ -853,13 +1063,18 @@ const Keyboard = (function () {
       var score = 0;
       for (var t = 0; t < tokens.length; t++) {
         var pos = haystack.indexOf(tokens[t]);
-        if (pos === -1) { allMatch = false; break; }
-        score += (100 - pos); // earlier = better
+        if (pos === -1) {
+          allMatch = false;
+          break;
+        }
+        score += 100 - pos; // earlier = better
         if (c.label.toLowerCase().indexOf(tokens[t]) > -1) score += 50; // label bonus
       }
       if (allMatch) results.push({ cmd: c, score: score, recent: false });
     }
-    results.sort(function (a, b) { return b.score - a.score; });
+    results.sort(function (a, b) {
+      return b.score - a.score;
+    });
     return results;
   }
 
@@ -867,7 +1082,9 @@ const Keyboard = (function () {
     var container = document.getElementById('cmdResults');
     if (!container) return;
     var matches = fuzzyMatch(query, COMMANDS);
-    filteredCommands = matches.map(function (m) { return m.cmd; });
+    filteredCommands = matches.map(function (m) {
+      return m.cmd;
+    });
     container.innerHTML = '';
 
     if (filteredCommands.length === 0) {
@@ -876,20 +1093,35 @@ const Keyboard = (function () {
     }
 
     // Group by category, but show recents first
-    var hasRecents = matches.some(function (m) { return m.recent; });
+    var hasRecents = matches.some(function (m) {
+      return m.recent;
+    });
     if (hasRecents && !query.trim()) {
       var catDiv = document.createElement('div');
       catDiv.className = 'cmd-palette__category';
       catDiv.textContent = 'Recent';
       container.appendChild(catDiv);
-      matches.filter(function (m) { return m.recent; }).forEach(function (m, idx) {
-        container.appendChild(createPaletteItem(m.cmd, idx));
-      });
+      matches
+        .filter(function (m) {
+          return m.recent;
+        })
+        .forEach(function (m, idx) {
+          container.appendChild(createPaletteItem(m.cmd, idx));
+        });
     }
 
     var currentCat = '';
-    var globalIdx = hasRecents && !query.trim() ? matches.filter(function (m) { return m.recent; }).length : 0;
-    var nonRecent = query.trim() ? matches : matches.filter(function (m) { return !m.recent; });
+    var globalIdx =
+      hasRecents && !query.trim()
+        ? matches.filter(function (m) {
+            return m.recent;
+          }).length
+        : 0;
+    var nonRecent = query.trim()
+      ? matches
+      : matches.filter(function (m) {
+          return !m.recent;
+        });
     for (var i = 0; i < nonRecent.length; i++) {
       var cat = nonRecent[i].cmd.category;
       if (cat !== currentCat) {
@@ -985,9 +1217,13 @@ const Keyboard = (function () {
       var screen = getActiveScreenId();
       var ctxShortcuts = getContextShortcuts(screen);
       if (ctxShortcuts) {
-        ctxEl.innerHTML = '<div class="kbd-cheatsheet__context-title">Current Screen: ' +
-          screen.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }) +
-          '</div>' + ctxShortcuts;
+        ctxEl.innerHTML =
+          '<div class="kbd-cheatsheet__context-title">Current Screen: ' +
+          screen.replace(/-/g, ' ').replace(/\b\w/g, function (c) {
+            return c.toUpperCase();
+          }) +
+          '</div>' +
+          ctxShortcuts;
       } else {
         ctxEl.innerHTML = '';
       }
@@ -1009,27 +1245,32 @@ const Keyboard = (function () {
 
   function getContextShortcuts(screen) {
     var map = {
-      'approvals': '<div class="kbd-cheatsheet__list">' +
+      approvals:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>A</kbd> <span>Approve</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>D</kbd> <span>Deny</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>R</kbd> <span>Request changes</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>S</kbd> <span>Skip</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Space</kbd> <span>Expand / collapse card</span></div>' +
         '</div>',
-      'work-items': '<div class="kbd-cheatsheet__list">' +
+      'work-items':
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate rows</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open work item</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create new work item</span></div>' +
         '</div>',
-      'runs': '<div class="kbd-cheatsheet__list">' +
+      runs:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate rows</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open run</span></div>' +
         '</div>',
-      'evidence': '<div class="kbd-cheatsheet__list">' +
+      evidence:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate entries</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>View evidence detail</span></div>' +
         '</div>',
-      'inbox': '<div class="kbd-cheatsheet__list">' +
+      inbox:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate items</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open item</span></div>' +
         '</div>',
@@ -1045,11 +1286,13 @@ const Keyboard = (function () {
     if (!screen) return [];
     // Collect rows, kanban cards, table rows (skip thead)
     var items = [];
-    screen.querySelectorAll('.row:not(.row--static), .kanban__card, tbody tr').forEach(function (el) {
-      if (!el.closest('[hidden]') && el.offsetParent !== null) {
-        items.push(el);
-      }
-    });
+    screen
+      .querySelectorAll('.row:not(.row--static), .kanban__card, tbody tr')
+      .forEach(function (el) {
+        if (!el.closest('[hidden]') && el.offsetParent !== null) {
+          items.push(el);
+        }
+      });
     return items;
   }
 
@@ -1091,15 +1334,15 @@ const Keyboard = (function () {
      GO-TO CHORD HANDLER
      ============================================================ */
   var GO_TO_MAP = {
-    'i': 'inbox',
-    'p': 'project',
-    'w': 'work-items',
-    'r': 'runs',
-    'b': 'workflow-builder',
-    'a': 'approvals',
-    'e': 'evidence',
-    'n': 'agents',
-    's': 'settings',
+    i: 'inbox',
+    p: 'project',
+    w: 'work-items',
+    r: 'runs',
+    b: 'workflow-builder',
+    a: 'approvals',
+    e: 'evidence',
+    n: 'agents',
+    s: 'settings',
   };
 
   function startChord(key) {
@@ -1125,7 +1368,9 @@ const Keyboard = (function () {
 
     if (target) {
       goto(target);
-      var label = target.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      var label = target.replace(/-/g, ' ').replace(/\b\w/g, function (c) {
+        return c.toUpperCase();
+      });
       showToast('Go to ' + label);
     }
   }
@@ -1135,7 +1380,7 @@ const Keyboard = (function () {
      ============================================================ */
   var BACK_MAP = {
     'work-item': 'work-items',
-    'run': 'runs',
+    run: 'runs',
   };
 
   function goBack() {
@@ -1362,15 +1607,16 @@ No modifications to `wireframe.js` are required. The triage keyboard shortcuts i
 
 ### 9.3 Conflict Resolution
 
-| Key | When triage active | When triage inactive |
-|---|---|---|
-| `a` | Approve (existing handler) | Go-to chord handled by keyboard module **only after `g`** |
-| `d` | Deny (existing handler) | Not mapped as standalone key |
-| `r` | Request changes (existing handler) | Not mapped as standalone key |
-| `s` | Skip (existing handler) | Not mapped as standalone key |
-| `Escape` | Existing handler closes drawer | Keyboard module closes palette/cheatsheet first |
+| Key      | When triage active                 | When triage inactive                                      |
+| -------- | ---------------------------------- | --------------------------------------------------------- |
+| `a`      | Approve (existing handler)         | Go-to chord handled by keyboard module **only after `g`** |
+| `d`      | Deny (existing handler)            | Not mapped as standalone key                              |
+| `r`      | Request changes (existing handler) | Not mapped as standalone key                              |
+| `s`      | Skip (existing handler)            | Not mapped as standalone key                              |
+| `Escape` | Existing handler closes drawer     | Keyboard module closes palette/cheatsheet first           |
 
 The `Escape` key uses a priority stack:
+
 1. Command palette (keyboard module)
 2. Cheatsheet (keyboard module)
 3. Drawer (existing wireframe.js handler)
@@ -1397,7 +1643,12 @@ This works because the keyboard module's handler checks `paletteOpen` and `cheat
 ### Recommended ARIA addition for the toast:
 
 ```html
-<span class="statusbar__item statusbar__toast js-kbd-toast" hidden aria-live="polite" role="status"></span>
+<span
+  class="statusbar__item statusbar__toast js-kbd-toast"
+  hidden
+  aria-live="polite"
+  role="status"
+></span>
 ```
 
 ---

@@ -88,5 +88,6 @@ ADR-0056 and existing domain invariants:
 - `docker-compose.yml` exists and documents local dependencies.
 - Infrastructure ADR and this specification are linked from `README.md`.
 - A baseline evidence and control-plane topology is reproducible from this repo.
-- Next-phase artifacts (Terraform modules, Helm/Kubernetes manifests, deployment
-  workflows) are tracked as explicit follow-up tasks before production rollout.
+- AWS Terraform modules are now implemented under `infra/terraform/aws` with local
+  validation and environment examples. Azure/GCP provider directories are tracked
+  as planned follow-up milestones.

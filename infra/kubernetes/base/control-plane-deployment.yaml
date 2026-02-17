@@ -61,7 +61,7 @@ spec:
             - name: PORTARIUM_CONTAINER_ROLE
               value: control-plane
             - name: PORTARIUM_HTTP_PORT
-              value: "8080"
+              value: '8080'
             - name: PORTARIUM_API_ROLE
               value: control-plane
             - name: PORTARIUM_OTEL_EXPORTER

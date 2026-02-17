@@ -29,28 +29,28 @@ describe('parsePackTestAssetV1: validation', () => {
   });
 
   it('rejects unsupported schemaVersion', () => {
-    expect(() =>
-      parsePackTestAssetV1({ ...VALID_TEST_ASSET, schemaVersion: 2 }),
-    ).toThrow(/Unsupported schemaVersion/);
+    expect(() => parsePackTestAssetV1({ ...VALID_TEST_ASSET, schemaVersion: 2 })).toThrow(
+      /Unsupported schemaVersion/,
+    );
   });
 
   it('rejects missing required string fields', () => {
-    expect(() =>
-      parsePackTestAssetV1({ ...VALID_TEST_ASSET, assetId: '' }),
-    ).toThrow(/assetId must be a non-empty string/);
+    expect(() => parsePackTestAssetV1({ ...VALID_TEST_ASSET, assetId: '' })).toThrow(
+      /assetId must be a non-empty string/,
+    );
 
-    expect(() =>
-      parsePackTestAssetV1({ ...VALID_TEST_ASSET, kind: 123 }),
-    ).toThrow(/kind must be a non-empty string/);
+    expect(() => parsePackTestAssetV1({ ...VALID_TEST_ASSET, kind: 123 })).toThrow(
+      /kind must be a non-empty string/,
+    );
 
-    expect(() =>
-      parsePackTestAssetV1({ ...VALID_TEST_ASSET, dataPath: '' }),
-    ).toThrow(/dataPath must be a non-empty string/);
+    expect(() => parsePackTestAssetV1({ ...VALID_TEST_ASSET, dataPath: '' })).toThrow(
+      /dataPath must be a non-empty string/,
+    );
   });
 
   it('rejects non-integer schemaVersion', () => {
-    expect(() =>
-      parsePackTestAssetV1({ ...VALID_TEST_ASSET, schemaVersion: 1.5 }),
-    ).toThrow(/schemaVersion must be an integer/);
+    expect(() => parsePackTestAssetV1({ ...VALID_TEST_ASSET, schemaVersion: 1.5 })).toThrow(
+      /schemaVersion must be an integer/,
+    );
   });
 });

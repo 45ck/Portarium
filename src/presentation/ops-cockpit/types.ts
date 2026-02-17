@@ -39,7 +39,14 @@ export interface PlanSection {
   effects: PlanEffect[];
 }
 
-export type RunStatus = 'Pending' | 'Running' | 'WaitingForApproval' | 'Paused' | 'Succeeded' | 'Failed' | 'Cancelled';
+export type RunStatus =
+  | 'Pending'
+  | 'Running'
+  | 'WaitingForApproval'
+  | 'Paused'
+  | 'Succeeded'
+  | 'Failed'
+  | 'Cancelled';
 
 export interface RunSummary {
   schemaVersion: number;
@@ -116,7 +123,11 @@ export interface EvidenceActorSystem {
   kind: 'System';
 }
 
-export type EvidenceActor = EvidenceActorUser | EvidenceActorMachine | EvidenceActorAdapter | EvidenceActorSystem;
+export type EvidenceActor =
+  | EvidenceActorUser
+  | EvidenceActorMachine
+  | EvidenceActorAdapter
+  | EvidenceActorSystem;
 
 export interface EvidenceEntry {
   schemaVersion: number;

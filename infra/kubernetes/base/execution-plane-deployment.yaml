@@ -61,7 +61,7 @@ spec:
             - name: PORTARIUM_CONTAINER_ROLE
               value: execution-plane
             - name: PORTARIUM_HTTP_PORT
-              value: "8081"
+              value: '8081'
             - name: PORTARIUM_API_ROLE
               value: execution-plane
             - name: PORTARIUM_TEMPORAL_SERVER

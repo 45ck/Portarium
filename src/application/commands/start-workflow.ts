@@ -27,6 +27,7 @@ import type {
   EventPublisher,
   IdGenerator,
   IdempotencyStore,
+  IdempotencyKey,
   RunStore,
   UnitOfWork,
   WorkflowOrchestrator,
@@ -46,7 +47,12 @@ export type StartWorkflowOutput = Readonly<{
   runId: RunIdType;
 }>;
 
-export type StartWorkflowError = Forbidden | ValidationFailed | NotFound | Conflict | DependencyFailure;
+export type StartWorkflowError =
+  | Forbidden
+  | ValidationFailed
+  | NotFound
+  | Conflict
+  | DependencyFailure;
 
 export interface StartWorkflowDeps {
   authorization: AuthorizationPort;
@@ -60,16 +66,50 @@ export interface StartWorkflowDeps {
   eventPublisher: EventPublisher;
 }
 
-export async function startWorkflow(
-  deps: StartWorkflowDeps,
-  ctx: AppContext,
-  input: StartWorkflowInput,
-): Promise<Result<StartWorkflowOutput, StartWorkflowError>> {
-  if (typeof input.idempotencyKey !== 'string' || input.idempotencyKey.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'idempotencyKey must be a non-empty string.' });
-  }
+type Err<E> = Readonly<{ ok: false; error: E }>;
 
-  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.runStart);
+type ParsedIds = Readonly<{
+  workspaceId: WorkspaceIdType;
+  workflowId: WorkflowIdType;
+}>;
+
+type GeneratedValues = Readonly<{
+  runIdValue: string;
+  createdAtIso: string;
+  eventIdValue: string;
+}>;
+
+function requireNonEmpty(
+  value: string | undefined | null,
+  fieldName: string,
+): Result<string, ValidationFailed> {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: `${fieldName} must be a non-empty string.` });
+  }
+  return ok(value);
+}
+
+function validateInput(input: StartWorkflowInput): Result<ParsedIds, StartWorkflowError> {
+  const wsCheck = requireNonEmpty(input.workspaceId, 'workspaceId');
+  if (!wsCheck.ok) return wsCheck;
+  const wfCheck = requireNonEmpty(input.workflowId, 'workflowId');
+  if (!wfCheck.ok) return wfCheck;
+
+  try {
+    return ok({
+      workspaceId: WorkspaceId(input.workspaceId),
+      workflowId: WorkflowId(input.workflowId),
+    });
+  } catch {
+    return err({ kind: 'ValidationFailed', message: 'Invalid workflow identifiers.' });
+  }
+}
+
+async function checkAuthorization(
+  authorization: AuthorizationPort,
+  ctx: AppContext,
+): Promise<Err<Forbidden> | null> {
+  const allowed = await authorization.isAllowed(ctx, APP_ACTIONS.runStart);
   if (!allowed) {
     return err({
       kind: 'Forbidden',
@@ -77,43 +117,27 @@ export async function startWorkflow(
       message: 'Caller is not permitted to start runs.',
     });
   }
+  return null;
+}
 
-  let workspaceId: WorkspaceIdType;
-  let workflowId: WorkflowIdType;
-  try {
-    if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
-    }
-    if (typeof input.workflowId !== 'string' || input.workflowId.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: 'workflowId must be a non-empty string.' });
-    }
-    workspaceId = WorkspaceId(input.workspaceId);
-    workflowId = WorkflowId(input.workflowId);
-  } catch {
-    return err({ kind: 'ValidationFailed', message: 'Invalid workflow identifiers.' });
-  }
-
-  const commandKey = {
-    tenantId: ctx.tenantId,
-    commandName: START_WORKFLOW_COMMAND,
-    requestKey: input.idempotencyKey,
-  };
-
-  const cached = await deps.idempotency.get<StartWorkflowOutput>(commandKey);
-  if (cached) return ok(cached);
-
-  const workflow = await deps.workflowStore.getWorkflowById(ctx.tenantId, workspaceId, workflowId);
+async function resolveWorkflow(
+  store: WorkflowStore,
+  ctx: AppContext,
+  ids: ParsedIds,
+  rawWorkflowId: string,
+): Promise<Result<WorkflowV1, StartWorkflowError>> {
+  const workflow = await store.getWorkflowById(ctx.tenantId, ids.workspaceId, ids.workflowId);
   if (workflow === null) {
     return err({
       kind: 'NotFound',
-      message: `Workflow ${input.workflowId} not found.`,
+      message: `Workflow ${rawWorkflowId} not found.`,
       resource: 'Workflow',
     });
   }
 
-  let parsedWorkflow: WorkflowV1;
+  let parsed: WorkflowV1;
   try {
-    parsedWorkflow = parseWorkflowV1(workflow);
+    parsed = parseWorkflowV1(workflow);
   } catch (error) {
     return err({
       kind: 'DependencyFailure',
@@ -121,99 +145,115 @@ export async function startWorkflow(
     });
   }
 
-  if (!parsedWorkflow.active) {
-    return err({
-      kind: 'Conflict',
-      message: `Workflow ${input.workflowId} is not active.`,
-    });
+  if (!parsed.active) {
+    return err({ kind: 'Conflict', message: `Workflow ${rawWorkflowId} is not active.` });
   }
-  if (parsedWorkflow.workspaceId !== workspaceId) {
+  if (parsed.workspaceId !== ids.workspaceId) {
     return err({
       kind: 'Forbidden',
       action: APP_ACTIONS.runStart,
       message: 'Workspace mismatch for workflow reference.',
     });
   }
+  return ok(parsed);
+}
 
-  const runIdValue = deps.idGenerator.generateId();
+function generateDepsValues(
+  idGenerator: IdGenerator,
+  clock: Clock,
+): Result<GeneratedValues, DependencyFailure> {
+  const runIdValue = idGenerator.generateId();
   if (runIdValue.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Unable to generate run identifier.' });
   }
 
-  const createdAtIso = deps.clock.nowIso();
+  const createdAtIso = clock.nowIso();
   if (createdAtIso.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Clock returned an empty timestamp.' });
   }
 
-  let run: RunV1;
+  const eventIdValue = idGenerator.generateId();
+  if (eventIdValue.trim() === '') {
+    return err({ kind: 'DependencyFailure', message: 'Unable to generate event identifier.' });
+  }
+
+  return ok({ runIdValue, createdAtIso, eventIdValue });
+}
+
+function buildRun(
+  ctx: AppContext,
+  ids: ParsedIds,
+  workflow: WorkflowV1,
+  generated: GeneratedValues,
+): Result<RunV1, ValidationFailed> {
   try {
-    run = parseRunV1({
-      schemaVersion: 1,
-      runId: runIdValue,
-      workspaceId: workspaceId.toString(),
-      workflowId: workflowId.toString(),
-      correlationId: ctx.correlationId.toString(),
-      executionTier: parsedWorkflow.executionTier,
-      initiatedByUserId: ctx.principalId.toString(),
-      status: 'Pending',
-      createdAtIso,
-    });
+    return ok(
+      parseRunV1({
+        schemaVersion: 1,
+        runId: generated.runIdValue,
+        workspaceId: ids.workspaceId.toString(),
+        workflowId: ids.workflowId.toString(),
+        correlationId: ctx.correlationId.toString(),
+        executionTier: workflow.executionTier,
+        initiatedByUserId: ctx.principalId.toString(),
+        status: 'Pending',
+        createdAtIso: generated.createdAtIso,
+      }),
+    );
   } catch (error) {
     return err({
       kind: 'ValidationFailed',
       message: error instanceof Error ? error.message : 'Unable to construct run payload.',
     });
   }
+}
 
-  const eventIdValue = deps.idGenerator.generateId();
-  if (eventIdValue.trim() === '') {
-    return err({
-      kind: 'DependencyFailure',
-      message: 'Unable to generate event identifier.',
-    });
-  }
-
+async function executeTransaction(
+  deps: StartWorkflowDeps,
+  ctx: AppContext,
+  plan: NewStartWorkflowPlan,
+): Promise<Result<StartWorkflowOutput, DependencyFailure>> {
   const domainEvent = {
     schemaVersion: 1,
-    eventId: eventIdValue,
+    eventId: plan.generated.eventIdValue,
     eventType: 'RunStarted',
     aggregateKind: 'Run',
-    aggregateId: run.runId,
-    occurredAtIso: createdAtIso,
+    aggregateId: plan.run.runId,
+    occurredAtIso: plan.generated.createdAtIso,
     actorUserId: ctx.principalId,
     correlationId: ctx.correlationId,
     payload: {
-      runId: run.runId,
-      workflowId: workflowId.toString(),
-      workspaceId: workspaceId.toString(),
+      runId: plan.run.runId,
+      workflowId: plan.ids.workflowId.toString(),
+      workspaceId: plan.ids.workspaceId.toString(),
     },
   };
 
   try {
     return await deps.unitOfWork.execute(async () => {
-      await deps.runStore.saveRun(ctx.tenantId, run);
+      await deps.runStore.saveRun(ctx.tenantId, plan.run);
       await deps.orchestrator.startRun({
-        runId: run.runId,
+        runId: plan.run.runId,
         tenantId: ctx.tenantId,
-        workflowId,
+        workflowId: plan.ids.workflowId,
         initiatedByUserId: ctx.principalId,
         correlationId: ctx.correlationId,
-        executionTier: parsedWorkflow.executionTier,
+        executionTier: plan.workflow.executionTier,
       });
       await deps.eventPublisher.publish(
         createPortariumCloudEvent({
           source: START_WORKFLOW_SOURCE,
           eventType: `com.portarium.run.${domainEvent.eventType}`,
-          eventId: eventIdValue,
+          eventId: plan.generated.eventIdValue,
           tenantId: ctx.tenantId,
           correlationId: ctx.correlationId,
-          subject: `runs/${run.runId}`,
-          occurredAtIso: createdAtIso,
+          subject: `runs/${plan.run.runId}`,
+          occurredAtIso: plan.generated.createdAtIso,
           data: domainEvent,
         }),
       );
-      const output: StartWorkflowOutput = { runId: run.runId };
-      await deps.idempotency.set(commandKey, output);
+      const output: StartWorkflowOutput = { runId: plan.run.runId };
+      await deps.idempotency.set(plan.commandKey, output);
       return ok(output);
     });
   } catch (error) {
@@ -221,4 +261,85 @@ export async function startWorkflow(
       error instanceof Error ? error.message : 'Workflow start failed due to a dependency failure.';
     return err({ kind: 'DependencyFailure', message });
   }
+}
+
+type NewStartWorkflowPlan = Readonly<{
+  kind: 'new';
+  ids: ParsedIds;
+  workflow: WorkflowV1;
+  generated: GeneratedValues;
+  run: RunV1;
+  commandKey: IdempotencyKey;
+}>;
+
+type CachedStartWorkflowPlan = Readonly<{
+  kind: 'cached';
+  output: StartWorkflowOutput;
+}>;
+
+type StartWorkflowPlan = CachedStartWorkflowPlan | NewStartWorkflowPlan;
+
+async function buildStartWorkflowPlan(
+  deps: StartWorkflowDeps,
+  ctx: AppContext,
+  input: StartWorkflowInput,
+): Promise<Result<StartWorkflowPlan, StartWorkflowError>> {
+  const keyCheck = requireNonEmpty(input.idempotencyKey, 'idempotencyKey');
+  if (!keyCheck.ok) return keyCheck;
+
+  const idsResult = validateInput(input);
+  if (!idsResult.ok) return idsResult;
+
+  const commandKey = {
+    tenantId: ctx.tenantId,
+    commandName: START_WORKFLOW_COMMAND,
+    requestKey: keyCheck.value,
+  };
+
+  const cached = await deps.idempotency.get<StartWorkflowOutput>(commandKey);
+  if (cached) {
+    return ok({ kind: 'cached', output: cached });
+  }
+
+  const workflowResult = await resolveWorkflow(
+    deps.workflowStore,
+    ctx,
+    idsResult.value,
+    input.workflowId,
+  );
+  if (!workflowResult.ok) return workflowResult;
+
+  const genResult = generateDepsValues(deps.idGenerator, deps.clock);
+  if (!genResult.ok) return genResult;
+
+  const runResult = buildRun(ctx, idsResult.value, workflowResult.value, genResult.value);
+  if (!runResult.ok) return runResult;
+
+  return ok({
+    kind: 'new',
+    ids: idsResult.value,
+    workflow: workflowResult.value,
+    generated: genResult.value,
+    run: runResult.value,
+    commandKey,
+  });
+}
+
+export async function startWorkflow(
+  deps: StartWorkflowDeps,
+  ctx: AppContext,
+  input: StartWorkflowInput,
+): Promise<Result<StartWorkflowOutput, StartWorkflowError>> {
+  const authErr = await checkAuthorization(deps.authorization, ctx);
+  if (authErr) return authErr;
+
+  const planResult = await buildStartWorkflowPlan(deps, ctx, input);
+  if (!planResult.ok) return planResult;
+  const plan = planResult.value;
+
+  if (plan.kind === 'cached') {
+    return ok(plan.output);
+  }
+
+  return executeTransaction(deps, ctx, plan);
 }

@@ -883,9 +883,7 @@ const AISummaryToggle = (function () {
     btn.title = 'Toggle AI summaries on approval cards';
     if (enabled) btn.classList.add('ai-toggle--active');
 
-    btn.innerHTML =
-      '<span class="ai-toggle__dot"></span>' +
-      '<span>AI Summary</span>';
+    btn.innerHTML = '<span class="ai-toggle__dot"></span>' + '<span>AI Summary</span>';
 
     btn.addEventListener('click', function () {
       toggle();

@@ -8,7 +8,12 @@ import {
   type RunId as RunIdType,
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
-import { type ErrorFactory, readOptionalString, readRecord, readString } from '../validation/parse-utils.js';
+import {
+  type ErrorFactory,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type CloudEventsSpecVersion = '1.0';
 
@@ -70,7 +75,11 @@ export function parseCloudEventV1(value: unknown): CloudEventV1 {
 
   const data = record['data'];
   const dataBase64Raw = record['data_base64'];
-  const data_base64 = readOptionalNonEmptyString(dataBase64Raw, 'data_base64', CloudEventParseError);
+  const data_base64 = readOptionalNonEmptyString(
+    dataBase64Raw,
+    'data_base64',
+    CloudEventParseError,
+  );
 
   if (data !== undefined && data_base64 !== undefined) {
     throw new CloudEventParseError('CloudEvent cannot include both data and data_base64.');
@@ -153,4 +162,3 @@ function buildCloudEventOptionalFields(params: {
 
   return out;
 }
-

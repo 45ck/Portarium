@@ -6,7 +6,7 @@ import {
   type ApprovalId as ApprovalIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
-import { parseApprovalV1, type ApprovalDecidedV1, type ApprovalV1 } from '../../domain/approvals/index.js';
+import { parseApprovalV1, type ApprovalDecidedV1 } from '../../domain/approvals/index.js';
 import {
   type AppContext,
   type Conflict,
@@ -60,71 +60,63 @@ export interface SubmitApprovalDeps {
   eventPublisher: EventPublisher;
 }
 
-export async function submitApproval(
-  deps: SubmitApprovalDeps,
-  ctx: AppContext,
-  input: SubmitApprovalInput,
-): Promise<Result<SubmitApprovalOutput, SubmitApprovalError>> {
+type ParsedIds = Readonly<{
+  workspaceId: WorkspaceIdType;
+  approvalId: ApprovalIdType;
+}>;
+
+type Err<E> = Readonly<{ ok: false; error: E }>;
+
+function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | null {
   if (input.decision === 'RequestChanges') {
     return err({
       kind: 'ValidationFailed',
       message: 'RequestChanges is currently not supported in command execution.',
     });
   }
-
   if (typeof input.rationale !== 'string' || input.rationale.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'rationale must be a non-empty string.' });
   }
-
-  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.approvalSubmit);
-  if (!allowed) {
-    return err({
-      kind: 'Forbidden',
-      action: APP_ACTIONS.approvalSubmit,
-      message: 'Caller is not permitted to submit approval decisions.',
-    });
-  }
-
   if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
   if (typeof input.approvalId !== 'string' || input.approvalId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'approvalId must be a non-empty string.' });
   }
+  return null;
+}
 
-  let workspaceId: WorkspaceIdType;
-  let approvalId: ApprovalIdType;
+function parseIds(input: SubmitApprovalInput): Result<ParsedIds, ValidationFailed> {
   try {
-    workspaceId = WorkspaceId(input.workspaceId);
-    approvalId = ApprovalId(input.approvalId);
+    return ok({
+      workspaceId: WorkspaceId(input.workspaceId),
+      approvalId: ApprovalId(input.approvalId),
+    });
   } catch {
     return err({ kind: 'ValidationFailed', message: 'Invalid workspaceId or approvalId.' });
   }
+}
 
-  const existing = await deps.approvalStore.getApprovalById(ctx.tenantId, workspaceId, approvalId);
-  if (existing === null) {
-    return err({
-      kind: 'NotFound',
-      resource: 'Approval',
-      message: `Approval ${input.approvalId} not found.`,
-    });
-  }
-
-  let current: ReturnType<typeof parseApprovalV1>;
+function parseExistingApproval(
+  existing: unknown,
+): Result<ReturnType<typeof parseApprovalV1>, DependencyFailure> {
   try {
-    current = parseApprovalV1(existing);
+    return ok(parseApprovalV1(existing));
   } catch (error) {
     return err({
       kind: 'DependencyFailure',
       message: error instanceof Error ? error.message : 'Stored approval is invalid.',
     });
   }
+}
 
+function guardPendingState(
+  current: ReturnType<typeof parseApprovalV1>,
+  approvalId: string,
+  workspaceId: WorkspaceIdType,
+): Err<SubmitApprovalError> | null {
   if (current.status !== 'Pending') {
-    return err({
-      kind: 'Conflict',
-      message: `Approval ${input.approvalId} is already decided.`,
-    });
+    return err({ kind: 'Conflict', message: `Approval ${approvalId} is already decided.` });
   }
   if (current.workspaceId !== workspaceId) {
     return err({
@@ -133,40 +125,62 @@ export async function submitApproval(
       message: 'Approval workspace does not match requested workspace.',
     });
   }
+  return null;
+}
 
-  const decidedAtIso = deps.clock.nowIso();
-  if (decidedAtIso.trim() === '') {
-    return err({
-      kind: 'DependencyFailure',
-      message: 'Clock returned an invalid timestamp.',
-    });
-  }
-
-  const decided: ApprovalV1 = {
+function buildDecidedApproval(
+  current: ReturnType<typeof parseApprovalV1>,
+  input: SubmitApprovalInput,
+  decidedAtIso: string,
+  decidedByUserId: string,
+): ApprovalDecidedV1 {
+  return {
     ...current,
     status: input.decision,
     decidedAtIso,
-    decidedByUserId: UserId(ctx.principalId.toString()),
+    decidedByUserId: UserId(decidedByUserId),
     rationale: input.rationale,
   };
+}
 
-  const eventType = input.decision === 'Approved' ? 'ApprovalGranted' : 'ApprovalDenied';
-  const eventId = deps.idGenerator.generateId();
-  if (eventId.trim() === '') {
-    return err({ kind: 'DependencyFailure', message: 'Unable to generate event identifier.' });
-  }
-  const domainEvent: DomainEventV1 = {
+type EventBuildArgs = Readonly<{
+  decision: ApprovalDecision;
+  ids: ParsedIds;
+  ctx: AppContext;
+  eventId: string;
+  decidedAtIso: string;
+  decided: ApprovalDecidedV1;
+}>;
+
+function buildDomainEvent(args: EventBuildArgs): DomainEventV1 {
+  const eventType = args.decision === 'Approved' ? 'ApprovalGranted' : 'ApprovalDenied';
+  return {
     schemaVersion: 1,
-    eventId,
+    eventId: args.eventId,
     eventType,
     aggregateKind: 'Approval',
-    aggregateId: approvalId,
-    occurredAtIso: decidedAtIso,
-    actorUserId: ctx.principalId,
-    correlationId: ctx.correlationId,
-    payload: decided,
+    aggregateId: args.ids.approvalId,
+    occurredAtIso: args.decidedAtIso,
+    actorUserId: args.ctx.principalId,
+    correlationId: args.ctx.correlationId,
+    payload: args.decided,
   };
+}
 
+type PersistArgs = Readonly<{
+  deps: SubmitApprovalDeps;
+  ctx: AppContext;
+  ids: ParsedIds;
+  decided: ApprovalDecidedV1;
+  domainEvent: DomainEventV1;
+  eventId: string;
+  decidedAtIso: string;
+}>;
+
+async function persistDecision(
+  args: PersistArgs,
+): Promise<Result<SubmitApprovalOutput, DependencyFailure>> {
+  const { deps, ctx, ids, decided, domainEvent, eventId, decidedAtIso } = args;
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.approvalStore.saveApproval(ctx.tenantId, decided);
@@ -177,15 +191,12 @@ export async function submitApproval(
           eventId,
           tenantId: ctx.tenantId,
           correlationId: ctx.correlationId,
-          subject: `approvals/${approvalId}`,
+          subject: `approvals/${ids.approvalId}`,
           occurredAtIso: decidedAtIso,
           data: domainEvent,
         }),
       );
-      return ok({
-        approvalId,
-        status: decided.status,
-      });
+      return ok({ approvalId: ids.approvalId, status: decided.status });
     });
   } catch (error) {
     return err({
@@ -193,4 +204,68 @@ export async function submitApproval(
       message: error instanceof Error ? error.message : 'Failed to submit approval decision.',
     });
   }
+}
+
+export async function submitApproval(
+  deps: SubmitApprovalDeps,
+  ctx: AppContext,
+  input: SubmitApprovalInput,
+): Promise<Result<SubmitApprovalOutput, SubmitApprovalError>> {
+  const validationError = validateInput(input);
+  if (validationError) return validationError;
+
+  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.approvalSubmit);
+  if (!allowed) {
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.approvalSubmit,
+      message: 'Caller is not permitted to submit approval decisions.',
+    });
+  }
+
+  const idsResult = parseIds(input);
+  if (!idsResult.ok) return idsResult;
+  const ids = idsResult.value;
+
+  const existing = await deps.approvalStore.getApprovalById(
+    ctx.tenantId,
+    ids.workspaceId,
+    ids.approvalId,
+  );
+  if (existing === null) {
+    return err({
+      kind: 'NotFound',
+      resource: 'Approval',
+      message: `Approval ${input.approvalId} not found.`,
+    });
+  }
+
+  const parseResult = parseExistingApproval(existing);
+  if (!parseResult.ok) return parseResult;
+  const current = parseResult.value;
+
+  const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
+  if (stateError) return stateError;
+
+  const decidedAtIso = deps.clock.nowIso();
+  if (decidedAtIso.trim() === '') {
+    return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
+  }
+
+  const eventId = deps.idGenerator.generateId();
+  if (eventId.trim() === '') {
+    return err({ kind: 'DependencyFailure', message: 'Unable to generate event identifier.' });
+  }
+
+  const decided = buildDecidedApproval(current, input, decidedAtIso, ctx.principalId.toString());
+  const domainEvent = buildDomainEvent({
+    decision: input.decision,
+    ids,
+    ctx,
+    eventId,
+    decidedAtIso,
+    decided,
+  });
+
+  return persistDecision({ deps, ctx, ids, decided, domainEvent, eventId, decidedAtIso });
 }

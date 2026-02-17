@@ -1,3 +1,5 @@
+import type { AppAction } from './actions.js';
+
 export type AppErrorKind =
   | 'Forbidden'
   | 'ValidationFailed'
@@ -7,8 +9,8 @@ export type AppErrorKind =
 
 export type Forbidden = Readonly<{
   kind: 'Forbidden';
+  action: AppAction;
   message: string;
-  action: string;
 }>;
 
 export type ValidationFailed = Readonly<{

@@ -66,7 +66,9 @@ export function parseWorkItemV1(value: unknown): WorkItemV1 {
 
   const statusRaw = readString(value, 'status');
   if (!isWorkItemStatus(statusRaw)) {
-    throw new WorkItemParseError('status must be one of: Open, InProgress, Blocked, Resolved, Closed.');
+    throw new WorkItemParseError(
+      'status must be one of: Open, InProgress, Blocked, Resolved, Closed.',
+    );
   }
 
   const ownerUserIdRaw = readOptionalString(value, 'ownerUserId');
@@ -155,7 +157,13 @@ function parseIds<T>(value: unknown, label: string, ctor: (id: string) => T): re
 }
 
 function isWorkItemStatus(value: string): value is WorkItemStatus {
-  return value === 'Open' || value === 'InProgress' || value === 'Blocked' || value === 'Resolved' || value === 'Closed';
+  return (
+    value === 'Open' ||
+    value === 'InProgress' ||
+    value === 'Blocked' ||
+    value === 'Resolved' ||
+    value === 'Closed'
+  );
 }
 
 function readString(obj: Record<string, unknown>, key: string): string {

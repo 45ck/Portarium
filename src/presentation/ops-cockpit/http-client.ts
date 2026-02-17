@@ -1,7 +1,6 @@
 import { isProblemDetails, ProblemDetailsError } from './problem-details.js';
 import { buildCursorQuery } from './pagination.js';
 import type {
-  ApprovalDecision,
   ApprovalDecisionRequest,
   ApprovalSummary,
   CursorPage,

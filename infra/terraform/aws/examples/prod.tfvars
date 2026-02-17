@@ -1,0 +1,16 @@
+aws_region                     = "us-east-1"
+namespace                      = "portarium"
+environment                    = "prod"
+availability_zones             = ["us-east-1a", "us-east-1b"]
+public_subnet_count            = 2
+private_subnet_count           = 2
+eks_node_desired_size          = 4
+eks_node_min_size              = 3
+eks_node_max_size              = 8
+eks_node_instance_types        = ["t3.large"]
+postgres_instance_class         = "db.t4g.large"
+postgres_backup_retention_days  = 30
+postgres_multi_az              = true
+postgres_deletion_protection   = true
+enable_evidence_object_lock    = true
+evidence_lock_days             = 1095

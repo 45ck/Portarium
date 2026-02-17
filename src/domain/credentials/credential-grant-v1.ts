@@ -44,7 +44,9 @@ export function parseCredentialGrantV1(value: unknown): CredentialGrantV1 {
     throw new CredentialGrantParseError('schemaVersion must be 1.');
   }
 
-  const credentialGrantId = CredentialGrantId(readString(record, 'credentialGrantId', CredentialGrantParseError));
+  const credentialGrantId = CredentialGrantId(
+    readString(record, 'credentialGrantId', CredentialGrantParseError),
+  );
   const workspaceId = WorkspaceId(readString(record, 'workspaceId', CredentialGrantParseError));
   const adapterId = AdapterId(readString(record, 'adapterId', CredentialGrantParseError));
   const credentialsRef = readString(record, 'credentialsRef', CredentialGrantParseError);
@@ -52,7 +54,11 @@ export function parseCredentialGrantV1(value: unknown): CredentialGrantV1 {
   const issuedAtIso = readIsoString(record, 'issuedAtIso', CredentialGrantParseError);
   const issuedAt = parseIsoDate(issuedAtIso, 'issuedAtIso', CredentialGrantParseError);
   const expiresAtIso = readOptionalIsoString(record, 'expiresAtIso', CredentialGrantParseError);
-  const lastRotatedAtIso = readOptionalIsoString(record, 'lastRotatedAtIso', CredentialGrantParseError);
+  const lastRotatedAtIso = readOptionalIsoString(
+    record,
+    'lastRotatedAtIso',
+    CredentialGrantParseError,
+  );
   const revokedAtIso = readOptionalIsoString(record, 'revokedAtIso', CredentialGrantParseError);
 
   if (revokedAtIso !== undefined) {
@@ -87,10 +93,7 @@ export function deriveCredentialGrantStatus(
   if (expiresAt !== undefined && !Number.isNaN(expiresAt.getTime()) && expiresAt <= now) {
     return 'Expired';
   }
-  if (
-    grant.lastRotatedAtIso !== undefined &&
-    grant.expiresAtIso !== undefined
-  ) {
+  if (grant.lastRotatedAtIso !== undefined && grant.expiresAtIso !== undefined) {
     const expiresAtMs = new Date(grant.expiresAtIso).getTime();
     const nowMs = now.getTime();
     const issuedAtMs = new Date(grant.issuedAtIso).getTime();

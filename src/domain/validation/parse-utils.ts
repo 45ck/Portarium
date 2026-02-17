@@ -107,4 +107,3 @@ export function readEnum<T extends string>(
   }
   return value as T;
 }
-

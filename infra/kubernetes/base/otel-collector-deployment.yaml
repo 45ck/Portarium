@@ -22,7 +22,7 @@ spec:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.103.0
           imagePullPolicy: IfNotPresent
-          args: ["--config=/etc/otelcol-contrib/config.yaml"]
+          args: ['--config=/etc/otelcol-contrib/config.yaml']
           ports:
             - name: otlp-grpc
               containerPort: 4317

@@ -27,7 +27,7 @@ describe('getRun', () => {
       saveRun: vi.fn(async () => undefined),
     };
 
-  const result = await getRun(
+    const result = await getRun(
       { authorization, runStore },
       toAppContext({
         tenantId: 'tenant-1',

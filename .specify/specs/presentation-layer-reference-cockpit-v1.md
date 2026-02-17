@@ -47,6 +47,7 @@ The specification uses vocabulary from `docs/glossary.md` without synonyms.
 ### R1 Contract-first data layer
 
 The presentation layer must have one typed entrypoint for HTTP interactions with:
+
 - request helpers
 - cursor pagination helpers
 - response error conversion to Problem Details error shape
@@ -76,6 +77,7 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 ### R5 System states
 
 For each primary screen, show dedicated state components for:
+
 - empty
 - misconfigured
 - policy blocked

@@ -45,8 +45,10 @@ describe('parseTenantConfigV1: happy path', () => {
   });
 
   it('parses without optional complianceProfiles', () => {
-    const { complianceProfiles: _unused, ...withoutProfiles } = VALID_TENANT_CONFIG;
-    const config = parseTenantConfigV1(withoutProfiles);
+    const config = parseTenantConfigV1({
+      ...VALID_TENANT_CONFIG,
+      complianceProfiles: undefined,
+    });
 
     expect(config.complianceProfiles).toBeUndefined();
     expect(config.enabledPacks).toHaveLength(2);
@@ -85,21 +87,21 @@ describe('parseTenantConfigV1: validation', () => {
     expect(() =>
       parseTenantConfigV1({ ...VALID_TENANT_CONFIG, tenantConfigId: undefined }),
     ).toThrow(/tenantConfigId/i);
-    expect(() =>
-      parseTenantConfigV1({ ...VALID_TENANT_CONFIG, tenantId: undefined }),
-    ).toThrow(/tenantId/i);
-    expect(() =>
-      parseTenantConfigV1({ ...VALID_TENANT_CONFIG, workspaceId: undefined }),
-    ).toThrow(/workspaceId/i);
+    expect(() => parseTenantConfigV1({ ...VALID_TENANT_CONFIG, tenantId: undefined })).toThrow(
+      /tenantId/i,
+    );
+    expect(() => parseTenantConfigV1({ ...VALID_TENANT_CONFIG, workspaceId: undefined })).toThrow(
+      /workspaceId/i,
+    );
   });
 
   it('rejects invalid enabledPacks', () => {
     expect(() =>
       parseTenantConfigV1({ ...VALID_TENANT_CONFIG, enabledPacks: 'not-array' }),
     ).toThrow(/enabledPacks must be an array/i);
-    expect(() =>
-      parseTenantConfigV1({ ...VALID_TENANT_CONFIG, enabledPacks: ['bad'] }),
-    ).toThrow(/enabledPacks\[0\] must be an object/i);
+    expect(() => parseTenantConfigV1({ ...VALID_TENANT_CONFIG, enabledPacks: ['bad'] })).toThrow(
+      /enabledPacks\[0\] must be an object/i,
+    );
     expect(() =>
       parseTenantConfigV1({
         ...VALID_TENANT_CONFIG,
@@ -127,9 +129,9 @@ describe('parseTenantConfigV1: validation', () => {
     expect(() =>
       parseTenantConfigV1({ ...VALID_TENANT_CONFIG, complianceProfiles: 'not-array' }),
     ).toThrow(/complianceProfiles must be an array/i);
-    expect(() =>
-      parseTenantConfigV1({ ...VALID_TENANT_CONFIG, complianceProfiles: [''] }),
-    ).toThrow(/complianceProfiles\[0\]/i);
+    expect(() => parseTenantConfigV1({ ...VALID_TENANT_CONFIG, complianceProfiles: [''] })).toThrow(
+      /complianceProfiles\[0\]/i,
+    );
   });
 
   it('rejects invalid updatedAtIso', () => {

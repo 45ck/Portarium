@@ -10,11 +10,7 @@ import {
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
-import {
-  readIsoString,
-  readRecord,
-  readString,
-} from '../validation/parse-utils.js';
+import { readIsoString, readRecord, readString } from '../validation/parse-utils.js';
 
 export type WorkspaceV1 = Readonly<{
   workspaceId: WorkspaceIdType;
@@ -85,4 +81,3 @@ function parseOptionalIdArray<T>(
 
   return items;
 }
-

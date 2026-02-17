@@ -1,8 +1,4 @@
-import type {
-  RunId,
-  TenantId,
-  WorkspaceId,
-} from '../../domain/primitives/index.js';
+import type { RunId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { RunV1 } from '../../domain/runs/index.js';
 
 export interface RunStore {

@@ -29,7 +29,7 @@ Primary non-goals are business policy evaluation and source-of-truth state trans
 - Enforce accessibility, security posture, and error ergonomics.
 - Keep source-of-truth in the server; UI owns cache, staleness, and optimistic UX only.
 
-## What the presentation layer must *not* do
+## What the presentation layer must _not_ do
 
 - Decide policy outcomes (SoD, tiering, constraints).
 - Perform authoritative workflow orchestration.
@@ -48,7 +48,7 @@ Primary non-goals are business policy evaluation and source-of-truth state trans
 
 ### Data-state split
 
-- **Server state**: runs, plans, evidence, approvals, work items, status.  
+- **Server state**: runs, plans, evidence, approvals, work items, status.
   - Use a server-state cache abstraction in the first package.
 - **UI state**: local selections, filters, pagination cursors, modal visibility, nav context.
   - Keep this in a small explicit store, not spread globally.

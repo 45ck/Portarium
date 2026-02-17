@@ -88,9 +88,7 @@ function parseEnabledPacks(raw: unknown): readonly EnabledPackV1[] {
     try {
       version = parseSemVer(versionRaw);
     } catch {
-      throw new TenantConfigParseError(
-        `enabledPacks[${i}].version is not a valid SemVer string.`,
-      );
+      throw new TenantConfigParseError(`enabledPacks[${i}].version is not a valid SemVer string.`);
     }
 
     return { packId, version };
@@ -127,9 +125,7 @@ function parseComplianceProfiles(raw: unknown): readonly string[] | undefined {
 
   return raw.map((item: unknown, i: number) => {
     if (typeof item !== 'string' || item.trim() === '') {
-      throw new TenantConfigParseError(
-        `complianceProfiles[${i}] must be a non-empty string.`,
-      );
+      throw new TenantConfigParseError(`complianceProfiles[${i}] must be a non-empty string.`);
     }
     return item;
   });
@@ -158,9 +154,7 @@ function readNumber(obj: Record<string, unknown>, key: string): number {
 function readPackString(obj: Record<string, unknown>, key: string, index: number): string {
   const v = obj[key];
   if (typeof v !== 'string' || v.trim() === '') {
-    throw new TenantConfigParseError(
-      `enabledPacks[${index}].${key} must be a non-empty string.`,
-    );
+    throw new TenantConfigParseError(`enabledPacks[${index}].${key} must be a non-empty string.`);
   }
   return v;
 }
@@ -168,9 +162,7 @@ function readPackString(obj: Record<string, unknown>, key: string, index: number
 function readFlagString(obj: Record<string, unknown>, key: string, index: number): string {
   const v = obj[key];
   if (typeof v !== 'string' || v.trim() === '') {
-    throw new TenantConfigParseError(
-      `featureFlags[${index}].${key} must be a non-empty string.`,
-    );
+    throw new TenantConfigParseError(`featureFlags[${index}].${key} must be a non-empty string.`);
   }
   return v;
 }

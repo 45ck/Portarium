@@ -3,11 +3,11 @@ name: CI (Infrastructure Gates)
 on:
   pull_request:
     paths:
-      - ".github/workflows/ci-infra.yml"
-      - "docker-compose.yml"
-      - "infra/**"
-      - "docs/adr/0056-infrastructure-reference-architecture.md"
-      - ".specify/specs/infrastructure-layer-v1.md"
+      - '.github/workflows/ci-infra.yml'
+      - 'docker-compose.yml'
+      - 'infra/**'
+      - 'docs/adr/0056-infrastructure-reference-architecture.md'
+      - '.specify/specs/infrastructure-layer-v1.md'
 
 jobs:
   infra-gates:
@@ -25,9 +25,19 @@ jobs:
         with:
           terraform_version: 1.8.5
 
-      - name: Validate Terraform formatting
-        working-directory: infra/terraform
-        run: terraform fmt -recursive -check
+      - name: Validate Terraform formatting and syntax
+        run: |
+          for STACK_DIR in infra/terraform/*/; do
+            if [ ! -f "${STACK_DIR}main.tf" ] && [ ! -f "${STACK_DIR}versions.tf" ]; then
+              echo "Skipping ${STACK_DIR} (no Terraform stack manifest)"
+              continue
+            fi
+
+            echo "Initializing Terraform stack: $STACK_DIR"
+            terraform -chdir="$STACK_DIR" fmt -recursive -check
+            terraform -chdir="$STACK_DIR" init -backend=false
+            terraform -chdir="$STACK_DIR" validate
+          done
 
       - name: Validate local Kubernetes overlays
         run: |

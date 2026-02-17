@@ -123,11 +123,7 @@ function parseWorkflowActionV1(
   const operation = parseActionOperation(record, pathLabel, capability);
   const inputSchemaRef = readOptionalString(record, 'inputSchemaRef', WorkflowParseError);
   const outputSchemaRef = readOptionalString(record, 'outputSchemaRef', WorkflowParseError);
-  const executionTierOverride = parseExecutionTierOverride(
-    record,
-    pathLabel,
-    workflowTier,
-  );
+  const executionTierOverride = parseExecutionTierOverride(record, pathLabel, workflowTier);
 
   return {
     actionId,
@@ -204,7 +200,11 @@ function parseExecutionTierOverride(
   pathLabel: string,
   workflowTier: ExecutionTier,
 ): ExecutionTier | undefined {
-  const executionTierOverrideRaw = readOptionalString(record, 'executionTierOverride', WorkflowParseError);
+  const executionTierOverrideRaw = readOptionalString(
+    record,
+    'executionTierOverride',
+    WorkflowParseError,
+  );
   if (executionTierOverrideRaw === undefined) return undefined;
 
   if (!isExecutionTier(executionTierOverrideRaw)) {

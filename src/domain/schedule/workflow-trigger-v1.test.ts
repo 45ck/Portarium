@@ -98,60 +98,60 @@ describe('parseWorkflowTriggerV1: validation', () => {
   });
 
   it('rejects unsupported schemaVersion', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, schemaVersion: 2 }),
-    ).toThrow(/schemaVersion/i);
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, schemaVersion: 1.5 }),
-    ).toThrow(/schemaVersion/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, schemaVersion: 2 })).toThrow(
+      /schemaVersion/i,
+    );
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, schemaVersion: 1.5 })).toThrow(
+      /schemaVersion/i,
+    );
   });
 
   it('rejects invalid kind', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, kind: 'Timer' }),
-    ).toThrow(/kind must be one of/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, kind: 'Timer' })).toThrow(
+      /kind must be one of/i,
+    );
   });
 
   it('rejects non-boolean active', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, active: 'yes' }),
-    ).toThrow(/active must be a boolean/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, active: 'yes' })).toThrow(
+      /active must be a boolean/i,
+    );
   });
 
   it('rejects non-object config', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, config: 'bad' }),
-    ).toThrow(/config must be an object/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, config: 'bad' })).toThrow(
+      /config must be an object/i,
+    );
   });
 
   it('rejects Cron config without expression', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, config: {} }),
-    ).toThrow(/config\.expression/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, config: {} })).toThrow(
+      /config\.expression/i,
+    );
   });
 
   it('rejects Webhook config without endpointPath', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_WEBHOOK_TRIGGER, config: {} }),
-    ).toThrow(/config\.endpointPath/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_WEBHOOK_TRIGGER, config: {} })).toThrow(
+      /config\.endpointPath/i,
+    );
   });
 
   it('rejects DomainEvent config without eventType', () => {
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_DOMAIN_EVENT_TRIGGER, config: {} }),
-    ).toThrow(/config\.eventType/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_DOMAIN_EVENT_TRIGGER, config: {} })).toThrow(
+      /config\.eventType/i,
+    );
   });
 
   it('rejects missing required string fields', () => {
     expect(() =>
       parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, triggerDefinitionId: undefined }),
     ).toThrow(/triggerDefinitionId/i);
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, workspaceId: undefined }),
-    ).toThrow(/workspaceId/i);
-    expect(() =>
-      parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, workflowId: undefined }),
-    ).toThrow(/workflowId/i);
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, workspaceId: undefined })).toThrow(
+      /workspaceId/i,
+    );
+    expect(() => parseWorkflowTriggerV1({ ...VALID_CRON_TRIGGER, workflowId: undefined })).toThrow(
+      /workflowId/i,
+    );
   });
 
   it('rejects invalid createdAtIso', () => {

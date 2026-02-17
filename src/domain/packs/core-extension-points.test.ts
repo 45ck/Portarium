@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  CORE_EXTENSION_POINTS,
-  isCoreExtensionPoint,
-} from './core-extension-points.js';
+import { CORE_EXTENSION_POINTS, isCoreExtensionPoint } from './core-extension-points.js';
 
 describe('CoreExtensionPoints', () => {
   it('contains exactly 12 extension points', () => {

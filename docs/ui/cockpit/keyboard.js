@@ -1,4 +1,3 @@
-/* global closeDrawer, openDrawer */
 /* ============================================================
    Portarium Cockpit -- Keyboard-First UX Module
    ============================================================ */
@@ -73,42 +72,217 @@ const Keyboard = (function () {
      ============================================================ */
   var COMMANDS = [
     // Navigate
-    { id: 'nav-inbox',      label: 'Go to Inbox',             category: 'Navigate', keywords: 'inbox home notifications',   shortcut: 'g i',  icon: '!',      action: function () { goto('inbox'); } },
-    { id: 'nav-project',    label: 'Go to Project Overview',  category: 'Navigate', keywords: 'project dashboard overview',  shortcut: 'g p',  icon: '#',      action: function () { goto('project'); } },
-    { id: 'nav-work-items', label: 'Go to Work Items',        category: 'Navigate', keywords: 'work items list',            shortcut: 'g w',  icon: '\u2261', action: function () { goto('work-items'); } },
-    { id: 'nav-runs',       label: 'Go to Runs',              category: 'Navigate', keywords: 'runs executions',            shortcut: 'g r',  icon: '\u203A', action: function () { goto('runs'); } },
-    { id: 'nav-builder',    label: 'Go to Workflow Builder',  category: 'Navigate', keywords: 'workflow builder canvas',    shortcut: 'g b',  icon: '\u25CA', action: function () { goto('workflow-builder'); } },
-    { id: 'nav-approvals',  label: 'Go to Approvals',         category: 'Navigate', keywords: 'approvals gates review',     shortcut: 'g a',  icon: '\u2713', action: function () { goto('approvals'); } },
-    { id: 'nav-evidence',   label: 'Go to Evidence',          category: 'Navigate', keywords: 'evidence audit chain',       shortcut: 'g e',  icon: '\u00A7', action: function () { goto('evidence'); } },
-    { id: 'nav-agents',     label: 'Go to Agents',            category: 'Navigate', keywords: 'agents ai configuration',    shortcut: 'g n',  icon: '\u2666', action: function () { goto('agents'); } },
-    { id: 'nav-settings',   label: 'Go to Settings',          category: 'Navigate', keywords: 'settings workspace config',  shortcut: 'g s',  icon: '\u2022', action: function () { goto('settings'); } },
+    {
+      id: 'nav-inbox',
+      label: 'Go to Inbox',
+      category: 'Navigate',
+      keywords: 'inbox home notifications',
+      shortcut: 'g i',
+      icon: '!',
+      action: function () {
+        goto('inbox');
+      },
+    },
+    {
+      id: 'nav-project',
+      label: 'Go to Project Overview',
+      category: 'Navigate',
+      keywords: 'project dashboard overview',
+      shortcut: 'g p',
+      icon: '#',
+      action: function () {
+        goto('project');
+      },
+    },
+    {
+      id: 'nav-work-items',
+      label: 'Go to Work Items',
+      category: 'Navigate',
+      keywords: 'work items list',
+      shortcut: 'g w',
+      icon: '\u2261',
+      action: function () {
+        goto('work-items');
+      },
+    },
+    {
+      id: 'nav-runs',
+      label: 'Go to Runs',
+      category: 'Navigate',
+      keywords: 'runs executions',
+      shortcut: 'g r',
+      icon: '\u203A',
+      action: function () {
+        goto('runs');
+      },
+    },
+    {
+      id: 'nav-builder',
+      label: 'Go to Workflow Builder',
+      category: 'Navigate',
+      keywords: 'workflow builder canvas',
+      shortcut: 'g b',
+      icon: '\u25CA',
+      action: function () {
+        goto('workflow-builder');
+      },
+    },
+    {
+      id: 'nav-approvals',
+      label: 'Go to Approvals',
+      category: 'Navigate',
+      keywords: 'approvals gates review',
+      shortcut: 'g a',
+      icon: '\u2713',
+      action: function () {
+        goto('approvals');
+      },
+    },
+    {
+      id: 'nav-evidence',
+      label: 'Go to Evidence',
+      category: 'Navigate',
+      keywords: 'evidence audit chain',
+      shortcut: 'g e',
+      icon: '\u00A7',
+      action: function () {
+        goto('evidence');
+      },
+    },
+    {
+      id: 'nav-agents',
+      label: 'Go to Agents',
+      category: 'Navigate',
+      keywords: 'agents ai configuration',
+      shortcut: 'g n',
+      icon: '\u2666',
+      action: function () {
+        goto('agents');
+      },
+    },
+    {
+      id: 'nav-settings',
+      label: 'Go to Settings',
+      category: 'Navigate',
+      keywords: 'settings workspace config',
+      shortcut: 'g s',
+      icon: '\u2022',
+      action: function () {
+        goto('settings');
+      },
+    },
 
     // Actions
-    { id: 'act-new-wi',     label: 'Create Work Item',        category: 'Action',   keywords: 'new create work item',       shortcut: 'n',    action: function () { goto('work-item'); } },
-    { id: 'act-start-wf',   label: 'Start Workflow',          category: 'Action',   keywords: 'start run workflow execute',                    action: function () { goto('work-item'); } },
-    { id: 'act-drawer',     label: 'Toggle Context Drawer',   category: 'Action',   keywords: 'context drawer correlation', shortcut: 'c',    action: function () {
-        var drawer = document.getElementById('drawer');
-        if (drawer && drawer.classList.contains('is-open')) { closeDrawer(); } else { openDrawer('context'); }
-      }
+    {
+      id: 'act-new-wi',
+      label: 'Create Work Item',
+      category: 'Action',
+      keywords: 'new create work item',
+      shortcut: 'n',
+      action: function () {
+        goto('work-item');
+      },
     },
-    { id: 'act-triage',     label: 'Start Approval Triage',   category: 'Action',   keywords: 'triage approve batch swipe',                   action: function () {
+    {
+      id: 'act-start-wf',
+      label: 'Start Workflow',
+      category: 'Action',
+      keywords: 'start run workflow execute',
+      action: function () {
+        goto('work-item');
+      },
+    },
+    {
+      id: 'act-drawer',
+      label: 'Toggle Context Drawer',
+      category: 'Action',
+      keywords: 'context drawer correlation',
+      shortcut: 'c',
+      action: function () {
+        var drawer = document.getElementById('drawer');
+        if (drawer && drawer.classList.contains('is-open')) {
+          if (typeof globalThis.closeDrawer === 'function') {
+            globalThis.closeDrawer();
+          }
+          return;
+        }
+        if (typeof globalThis.openDrawer === 'function') {
+          globalThis.openDrawer('context');
+        }
+      },
+    },
+    {
+      id: 'act-triage',
+      label: 'Start Approval Triage',
+      category: 'Action',
+      keywords: 'triage approve batch swipe',
+      action: function () {
         goto('approvals');
         setTimeout(function () {
           var btn = document.querySelector('.js-triage-mode[data-mode="triage"]');
           if (btn) btn.click();
         }, 100);
-      }
+      },
     },
 
     // Filter
-    { id: 'flt-failed',     label: 'Filter: Failed runs',      category: 'Filter',  keywords: 'filter failed errors danger',  action: function () { showToast('Filter applied: Failed runs'); } },
-    { id: 'flt-pending',    label: 'Filter: Pending approvals', category: 'Filter', keywords: 'filter pending approval gate', action: function () { showToast('Filter applied: Pending approvals'); } },
-    { id: 'flt-assigned',   label: 'Filter: Assigned to me',   category: 'Filter',  keywords: 'filter assigned owner me',     action: function () { showToast('Filter applied: Assigned to me'); } },
+    {
+      id: 'flt-failed',
+      label: 'Filter: Failed runs',
+      category: 'Filter',
+      keywords: 'filter failed errors danger',
+      action: function () {
+        showToast('Filter applied: Failed runs');
+      },
+    },
+    {
+      id: 'flt-pending',
+      label: 'Filter: Pending approvals',
+      category: 'Filter',
+      keywords: 'filter pending approval gate',
+      action: function () {
+        showToast('Filter applied: Pending approvals');
+      },
+    },
+    {
+      id: 'flt-assigned',
+      label: 'Filter: Assigned to me',
+      category: 'Filter',
+      keywords: 'filter assigned owner me',
+      action: function () {
+        showToast('Filter applied: Assigned to me');
+      },
+    },
 
     // Settings
-    { id: 'set-persona',    label: 'Switch Persona',           category: 'Settings', keywords: 'persona operator approver auditor admin role', action: function () { document.getElementById('persona').focus(); } },
-    { id: 'set-workspace',  label: 'Switch Workspace Type',    category: 'Settings', keywords: 'workspace solo team type',   action: function () { document.getElementById('workspaceType').focus(); } },
-    { id: 'set-shortcuts',  label: 'Keyboard Shortcuts',       category: 'Settings', keywords: 'keyboard shortcuts help cheatsheet', shortcut: '?', action: function () { openCheatsheet(); } },
+    {
+      id: 'set-persona',
+      label: 'Switch Persona',
+      category: 'Settings',
+      keywords: 'persona operator approver auditor admin role',
+      action: function () {
+        document.getElementById('persona').focus();
+      },
+    },
+    {
+      id: 'set-workspace',
+      label: 'Switch Workspace Type',
+      category: 'Settings',
+      keywords: 'workspace solo team type',
+      action: function () {
+        document.getElementById('workspaceType').focus();
+      },
+    },
+    {
+      id: 'set-shortcuts',
+      label: 'Keyboard Shortcuts',
+      category: 'Settings',
+      keywords: 'keyboard shortcuts help cheatsheet',
+      shortcut: '?',
+      action: function () {
+        openCheatsheet();
+      },
+    },
   ];
 
   var paletteOpen = false;
@@ -143,12 +317,18 @@ const Keyboard = (function () {
       var result = [];
       if (recentCommands.length > 0) {
         for (var i = 0; i < recentCommands.length; i++) {
-          var cmd = commands.find(function (c) { return c.id === recentCommands[i]; });
+          var cmd = commands.find(function (c) {
+            return c.id === recentCommands[i];
+          });
           if (cmd) result.push({ cmd: cmd, score: 1000 - i, recent: true });
         }
       }
       for (var j = 0; j < commands.length; j++) {
-        if (!result.find(function (r) { return r.cmd.id === commands[j].id; })) {
+        if (
+          !result.find(function (r) {
+            return r.cmd.id === commands[j].id;
+          })
+        ) {
           result.push({ cmd: commands[j], score: 0, recent: false });
         }
       }
@@ -164,13 +344,18 @@ const Keyboard = (function () {
       var score = 0;
       for (var t = 0; t < tokens.length; t++) {
         var pos = haystack.indexOf(tokens[t]);
-        if (pos === -1) { allMatch = false; break; }
-        score += (100 - pos);
+        if (pos === -1) {
+          allMatch = false;
+          break;
+        }
+        score += 100 - pos;
         if (c.label.toLowerCase().indexOf(tokens[t]) > -1) score += 50;
       }
       if (allMatch) results.push({ cmd: c, score: score, recent: false });
     }
-    results.sort(function (a, b) { return b.score - a.score; });
+    results.sort(function (a, b) {
+      return b.score - a.score;
+    });
     return results;
   }
 
@@ -178,7 +363,9 @@ const Keyboard = (function () {
     var container = document.getElementById('cmdResults');
     if (!container) return;
     var matches = fuzzyMatch(query, COMMANDS);
-    filteredCommands = matches.map(function (m) { return m.cmd; });
+    filteredCommands = matches.map(function (m) {
+      return m.cmd;
+    });
     container.innerHTML = '';
 
     if (filteredCommands.length === 0) {
@@ -186,20 +373,35 @@ const Keyboard = (function () {
       return;
     }
 
-    var hasRecents = matches.some(function (m) { return m.recent; });
+    var hasRecents = matches.some(function (m) {
+      return m.recent;
+    });
     if (hasRecents && !query.trim()) {
       var catDiv = document.createElement('div');
       catDiv.className = 'cmd-palette__category';
       catDiv.textContent = 'Recent';
       container.appendChild(catDiv);
-      matches.filter(function (m) { return m.recent; }).forEach(function (m, idx) {
-        container.appendChild(createPaletteItem(m.cmd, idx));
-      });
+      matches
+        .filter(function (m) {
+          return m.recent;
+        })
+        .forEach(function (m, idx) {
+          container.appendChild(createPaletteItem(m.cmd, idx));
+        });
     }
 
     var currentCat = '';
-    var globalIdx = hasRecents && !query.trim() ? matches.filter(function (m) { return m.recent; }).length : 0;
-    var nonRecent = query.trim() ? matches : matches.filter(function (m) { return !m.recent; });
+    var globalIdx =
+      hasRecents && !query.trim()
+        ? matches.filter(function (m) {
+            return m.recent;
+          }).length
+        : 0;
+    var nonRecent = query.trim()
+      ? matches
+      : matches.filter(function (m) {
+          return !m.recent;
+        });
     for (var i = 0; i < nonRecent.length; i++) {
       var cat = nonRecent[i].cmd.category;
       if (cat !== currentCat) {
@@ -293,9 +495,13 @@ const Keyboard = (function () {
       var screen = getActiveScreenId();
       var ctxShortcuts = getContextShortcuts(screen);
       if (ctxShortcuts) {
-        ctxEl.innerHTML = '<div class="kbd-cheatsheet__context-title">Current Screen: ' +
-          screen.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }) +
-          '</div>' + ctxShortcuts;
+        ctxEl.innerHTML =
+          '<div class="kbd-cheatsheet__context-title">Current Screen: ' +
+          screen.replace(/-/g, ' ').replace(/\b\w/g, function (c) {
+            return c.toUpperCase();
+          }) +
+          '</div>' +
+          ctxShortcuts;
       } else {
         ctxEl.innerHTML = '';
       }
@@ -317,7 +523,8 @@ const Keyboard = (function () {
 
   function getContextShortcuts(screen) {
     var map = {
-      'approvals': '<div class="kbd-cheatsheet__list">' +
+      approvals:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>A</kbd> <span>Approve</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>D</kbd> <span>Deny</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>R</kbd> <span>Request changes</span></div>' +
@@ -325,20 +532,24 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__row"><kbd>I</kbd> <span>Toggle AI summary</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Space</kbd> <span>Expand / collapse card</span></div>' +
         '</div>',
-      'work-items': '<div class="kbd-cheatsheet__list">' +
+      'work-items':
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate rows</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open work item</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create new work item</span></div>' +
         '</div>',
-      'runs': '<div class="kbd-cheatsheet__list">' +
+      runs:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate rows</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open run</span></div>' +
         '</div>',
-      'evidence': '<div class="kbd-cheatsheet__list">' +
+      evidence:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate entries</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>View evidence detail</span></div>' +
         '</div>',
-      'inbox': '<div class="kbd-cheatsheet__list">' +
+      inbox:
+        '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate items</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open item</span></div>' +
         '</div>',
@@ -353,11 +564,13 @@ const Keyboard = (function () {
     var screen = document.querySelector('.screen.is-active');
     if (!screen) return [];
     var items = [];
-    screen.querySelectorAll('.row:not(.row--static), .kanban__card, tbody tr').forEach(function (el) {
-      if (!el.closest('[hidden]') && el.offsetParent !== null) {
-        items.push(el);
-      }
-    });
+    screen
+      .querySelectorAll('.row:not(.row--static), .kanban__card, tbody tr')
+      .forEach(function (el) {
+        if (!el.closest('[hidden]') && el.offsetParent !== null) {
+          items.push(el);
+        }
+      });
     return items;
   }
 
@@ -398,15 +611,15 @@ const Keyboard = (function () {
      GO-TO CHORD HANDLER
      ============================================================ */
   var GO_TO_MAP = {
-    'i': 'inbox',
-    'p': 'project',
-    'w': 'work-items',
-    'r': 'runs',
-    'b': 'workflow-builder',
-    'a': 'approvals',
-    'e': 'evidence',
-    'n': 'agents',
-    's': 'settings',
+    i: 'inbox',
+    p: 'project',
+    w: 'work-items',
+    r: 'runs',
+    b: 'workflow-builder',
+    a: 'approvals',
+    e: 'evidence',
+    n: 'agents',
+    s: 'settings',
   };
 
   function startChord(key) {
@@ -432,7 +645,9 @@ const Keyboard = (function () {
 
     if (target) {
       goto(target);
-      var label = target.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      var label = target.replace(/-/g, ' ').replace(/\b\w/g, function (c) {
+        return c.toUpperCase();
+      });
       showToast('Go to ' + label);
     }
   }
@@ -442,7 +657,7 @@ const Keyboard = (function () {
      ============================================================ */
   var BACK_MAP = {
     'work-item': 'work-items',
-    'run': 'runs',
+    run: 'runs',
   };
 
   function goBack() {
@@ -555,10 +770,14 @@ const Keyboard = (function () {
     if (key === 'c') {
       var drawer = document.getElementById('drawer');
       if (drawer && drawer.classList.contains('is-open')) {
-        closeDrawer();
+        if (typeof globalThis.closeDrawer === 'function') {
+          globalThis.closeDrawer();
+        }
         showToast('Drawer closed');
       } else {
-        openDrawer('context');
+        if (typeof globalThis.openDrawer === 'function') {
+          globalThis.openDrawer('context');
+        }
         showToast('Context drawer opened');
       }
       e.preventDefault();
@@ -637,7 +856,14 @@ const Keyboard = (function () {
     });
   }
 
-  return { init: init, openPalette: openPalette, closePalette: closePalette, openCheatsheet: openCheatsheet, closeCheatsheet: closeCheatsheet, showToast: showToast };
+  return {
+    init: init,
+    openPalette: openPalette,
+    closePalette: closePalette,
+    openCheatsheet: openCheatsheet,
+    closeCheatsheet: closeCheatsheet,
+    showToast: showToast,
+  };
 })();
 
 // Initialize after DOM ready

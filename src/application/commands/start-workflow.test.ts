@@ -4,7 +4,17 @@ import { TenantId } from '../../domain/primitives/index.js';
 import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
-import { type AuthorizationPort, type Clock, type EventPublisher, type IdGenerator, type IdempotencyStore, type RunStore, type UnitOfWork, type WorkflowOrchestrator, type WorkflowStore } from '../ports/index.js';
+import {
+  type AuthorizationPort,
+  type Clock,
+  type EventPublisher,
+  type IdGenerator,
+  type IdempotencyStore,
+  type RunStore,
+  type UnitOfWork,
+  type WorkflowOrchestrator,
+  type WorkflowStore,
+} from '../ports/index.js';
 import { startWorkflow } from './start-workflow.js';
 
 const WORKFLOW = parseWorkflowV1({
@@ -20,7 +30,7 @@ const WORKFLOW = parseWorkflowV1({
       actionId: 'act-1',
       order: 1,
       portFamily: 'ItsmItOps',
-      operation: 'simulate',
+      operation: 'workflow:simulate',
     },
   ],
 });
@@ -68,7 +78,7 @@ describe('startWorkflow', () => {
   });
 
   it('starts a run, stores state, and emits an event', async () => {
-  const result = await startWorkflow(
+    const result = await startWorkflow(
       {
         authorization,
         clock,
@@ -248,10 +258,7 @@ describe('startWorkflow', () => {
   });
 
   it('rejects empty generated event identifier', async () => {
-    idGenerator.generateId = vi
-      .fn()
-      .mockReturnValueOnce('run-1')
-      .mockReturnValueOnce('');
+    idGenerator.generateId = vi.fn().mockReturnValueOnce('run-1').mockReturnValueOnce('');
 
     const result = await startWorkflow(
       {

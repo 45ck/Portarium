@@ -3,7 +3,13 @@
   "status": "PLANNED",
   "providerId": "openapi-directory",
   "providerName": "OpenAPI Directory",
-  "portFamilies": ["PaymentsBilling", "FinanceAccounting", "CrmSales", "CustomerSupport", "CommsCollaboration"],
+  "portFamilies": [
+    "PaymentsBilling",
+    "FinanceAccounting",
+    "CrmSales",
+    "CustomerSupport",
+    "CommsCollaboration"
+  ],
   "upstream": {
     "kind": "openapi",
     "repoUrl": "https://github.com/APIs-guru/openapi-directory"

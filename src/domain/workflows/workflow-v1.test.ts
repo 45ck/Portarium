@@ -41,7 +41,7 @@ describe('parseWorkflowV1: happy path', () => {
           actionId: 'act-1',
           order: 1,
           portFamily: 'SecretsVaulting',
-          operation: 'mount',
+          operation: 'secret:write',
           executionTierOverride: 'HumanApprove',
         },
       ],
@@ -93,7 +93,7 @@ describe('parseWorkflowV1: happy path', () => {
           },
         ],
       }),
-    ).toThrow(/must match \"entity:verb\" format when capability is not provided/);
+    ).toThrow(/must match "entity:verb" format when capability is not provided/);
   });
 });
 
@@ -128,7 +128,14 @@ describe('parseWorkflowV1: validation', () => {
         version: 1,
         active: true,
         executionTier: 'Auto',
-        actions: [{ actionId: 'act-1', order: 1, portFamily: 'NotARealFamily', operation: 'op' }],
+        actions: [
+          {
+            actionId: 'act-1',
+            order: 1,
+            portFamily: 'NotARealFamily',
+            operation: 'secret:read',
+          },
+        ],
       }),
     ).toThrow(/portFamily/i);
   });
@@ -144,8 +151,18 @@ describe('parseWorkflowV1: validation', () => {
         active: true,
         executionTier: 'Auto',
         actions: [
-          { actionId: 'act-1', order: 2, portFamily: 'SecretsVaulting', operation: 'op' },
-          { actionId: 'act-2', order: 1, portFamily: 'SecretsVaulting', operation: 'op' },
+          {
+            actionId: 'act-1',
+            order: 2,
+            portFamily: 'SecretsVaulting',
+            operation: 'secret:read',
+          },
+          {
+            actionId: 'act-2',
+            order: 1,
+            portFamily: 'SecretsVaulting',
+            operation: 'secret:write',
+          },
         ],
       }),
     ).toThrow(/contiguous/i);
@@ -211,7 +228,7 @@ describe('parseWorkflowV1: validation', () => {
             actionId: 'act-1',
             order: 1,
             portFamily: 'SecretsVaulting',
-            operation: 'op',
+            operation: 'secret:read',
             executionTierOverride: 'Auto',
           },
         ],

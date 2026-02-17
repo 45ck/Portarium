@@ -52,4 +52,3 @@ export function parseProjectV1(value: unknown): ProjectV1 {
     createdAtIso,
   };
 }
-
