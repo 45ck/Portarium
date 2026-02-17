@@ -16,6 +16,14 @@ Priority is sorted by risk and delivery order:
 
 ## Epics and stories
 
+### EPIC-00 — Cockpit MVP milestone
+
+Goal: deliver the minimum cockpit that makes Portarium operable by real approver, operator, and admin roles.
+
+- STORY-00.1 — bead-0427
+  - Cockpit UI MVP — approver queue (approve/deny with rationale and RequestChanges once bead-0419 is done), run list with planned-vs-verified diff, work item creation, adapter registration overview.
+  - AC: approver can process an approval end-to-end; operator can start and monitor a run with evidence; admin can register an adapter; all screens connect to the live OpenAPI v1 backend (not mocks); WCAG 2.2 AA baseline met.
+
 ### EPIC-01 — Contract-first data layer (target: 8 PD)
 
 Goal: make all screen work depend on one typed/control-plane boundary.
@@ -150,6 +158,12 @@ Related: bead-0326 (API transport strategy, open)
   - Immutable versioned artefact deployment with CDN caching + fast rollback.
 - STORY-09.9 — bead-0377
   - Dual-run migration mode (old UI + new UI in parallel with audit parity verification).
+
+## New beads created for this backlog
+
+| Bead | Title |
+|---|---|
+| bead-0427 | Presentation: cockpit UI MVP - approver queue (approve/deny with rationale), run list with planned-vs-verified diff, work item creation, adapter registration overview |
 
 ## Pre-existing beads (cross-reference)
 

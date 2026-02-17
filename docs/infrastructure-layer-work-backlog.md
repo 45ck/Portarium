@@ -53,10 +53,16 @@ Goal: one-command local development environment that mirrors production dependen
 
 Goal: durable workflow orchestration with HA and properly provisioned persistence.
 
-- STORY-I03.1 — bead-0388
+- STORY-I03.1 — bead-0400 — **URGENT**
+  - Migrate Temporal compose image from `temporalio/auto-setup` to `temporalio/server` (upstream deprecated/unmaintained).
+  - AC: `docker-compose.yml` updated; local stack starts cleanly; comment updated; existing Temporal behaviour preserved.
+- STORY-I03.2 — bead-0388
   - Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend).
   - AC: Temporal deployed via Helm; default store and visibility store provisioned; HA mode for staging/prod.
-- STORY-I03.2 — bead-0399
+- STORY-I03.3 — bead-0402
+  - Install Temporal TypeScript SDK (`@temporalio/client`, `@temporalio/worker`) and wire `WorkflowOrchestrator` port adapter against local dev instance.
+  - AC: `npm run ci:pr` passes with SDK installed; `WorkflowOrchestrator` adapter starts a Temporal workflow; integration smoke test passes.
+- STORY-I03.4 — bead-0399
   - Workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume).
   - AC: workflows resume after infrastructure failure; no data loss; test results documented.
 
@@ -142,6 +148,69 @@ Goal: validated disaster recovery, cost governance, and continuous reliability a
 - STORY-I08.5 — bead-0190
   - Review: validate rollback plan includes data, evidence, and credential cleanup actions.
 
+### EPIC-I10 — External execution planes
+
+Goal: adopt permissively-licensed open-source platforms as subordinate execution planes so Portarium does not build connector ecosystems, agentic runtimes, or ops automation engines from scratch.
+
+Architecture: Portarium remains the governance/control-plane system of record. External platforms are invoked as *action runners* within runs — not as orchestrators of record.
+
+- STORY-I10.1 — bead-0401
+  - ADR: external execution plane strategy — formal decision record adopting Activepieces (MIT) as primary connector runtime, Langflow (MIT) as agentic/machine runtime, and optionally Kestra or StackStorm for ops pipeline workloads.
+  - AC: ADR created in `docs/adr/`; licensing risks documented; multi-tenancy isolation requirements stated; decision rationale covers build-vs-buy trade-offs.
+- STORY-I10.2 — bead-0403
+  - Spike: evaluate Activepieces piece coverage for the 18 port adapter families (IamDirectory, FinanceAccounting, PaymentsBilling, HrisHcm, etc.).
+  - AC: coverage matrix produced; families with ready pieces identified; gap analysis drives adapter work priority.
+- STORY-I10.3 — bead-0404
+  - Activepieces self-hosted deployment configuration (Docker Compose dev stack entry and Helm production chart).
+  - AC: `docker compose up` starts Activepieces alongside existing stack; Helm chart deployable to staging; configuration documented.
+- STORY-I10.4 — bead-0405
+  - Activepieces action executor adapter — invoke Activepieces flows as Portarium workflow actions with CloudEvents correlation header propagation (`tenantId`, `correlationId`, `runId`).
+  - AC: adapter calls Activepieces API; correlation headers present on every request; response mapped to Portarium result type.
+- STORY-I10.5 — bead-0406
+  - DomainEvent trigger routing to Activepieces webhook endpoint with `tenantId` and `correlationId` headers.
+  - AC: `DomainEvent` TriggerKind fires Activepieces webhook; correlation propagated; test proves end-to-end event delivery.
+- STORY-I10.6 — bead-0410
+  - Activepieces custom piece TypeScript npm package pattern for Portarium port adapter families.
+  - AC: example piece created; pattern documented; can be applied across adapter families to replace bespoke HTTP code.
+- STORY-I10.7 — bead-0407
+  - Langflow isolated deployment — per-environment instances, disabled auto-login, secret key configured, reverse proxy, network policies enforced.
+  - AC: Langflow never shares a runtime across tenants; network policies block cross-tenant egress; auto-login disabled; all access via API key.
+- STORY-I10.8 — bead-0408
+  - Langflow agent flow HTTP adapter — invoke Langflow flows from Portarium workflow steps with correlation header propagation.
+  - AC: adapter calls Langflow `/v1/run/<flow-id>`; correlation headers present; response mapped to Portarium result type; test covers happy path and timeout.
+- STORY-I10.9 — bead-0412
+  - Spike: evaluate Kestra for CloudEvents-triggered ops and pipeline workloads (OTel integration, scalable execution components).
+  - AC: spike report covers architecture fit, deployment cost, OTel compatibility, licence risk; recommendation documented.
+- STORY-I10.10 — bead-0413
+  - Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring port adapter families).
+  - AC: spike report covers architecture fit, pack ecosystem, audit trail, licence risk; recommendation documented.
+
+### EPIC-I11 — Control plane implementation and reference adapters
+
+Goal: bridge the gap between OpenAPI contract and working server; deliver one reference adapter per operational domain.
+
+- STORY-I11.1 — bead-0415
+  - Implement control plane HTTP server handlers to match OpenAPI v1 contract (Workspaces, Users, WorkItems, Workflows, Runs, Approvals, Evidence, AdapterRegistrations, CredentialGrants).
+  - AC: every route in `portarium-control-plane.v1.yaml` returns documented status codes and schema; problem+json error shape used throughout; OpenAPI breaking-change CI gate passes.
+- STORY-I11.2 — bead-0416
+  - Replace `bootstrap.sh` scaffold containers with production entrypoints for API server and worker runtime.
+  - AC: API server Dockerfile runs the application layer; worker Dockerfile starts Temporal task queue; health probes pass; no `bootstrap.sh` in production images.
+- STORY-I11.3 — bead-0421
+  - Mautic reference adapter for MarketingAutomation port family (campaign CRUD, contact segmentation, workflow trigger integration).
+  - AC: adapter passes capability matrix contract tests; CI uses record/replay fixtures; duplicate-run safety enforced.
+- STORY-I11.4 — bead-0422
+  - Odoo or ERPNext reference adapter for FinanceAccounting port family (GL, AR/AP, invoice lifecycle, period close hooks).
+  - AC: adapter passes capability matrix contract tests; invoice idempotency enforced; CI uses offline fixtures.
+- STORY-I11.5 — bead-0423
+  - Zammad reference adapter for CustomerSupport port family (ticket intake, triage, SLA tracking, knowledge base integration).
+  - AC: adapter passes capability matrix contract tests; SLA fields mapped to canonical Ticket; CI uses offline fixtures.
+- STORY-I11.6 — bead-0424
+  - GitHub reference adapter for software development operations (PR lifecycle, deployment events, DORA metrics — lead time, deployment frequency, change failure rate, MTTR).
+  - AC: adapter passes capability matrix contract tests; DORA metric events emitted as domain events; CI uses offline fixtures.
+- STORY-I11.7 — bead-0428
+  - OTel Collector production pipeline — add OTLP trace/metrics/logs backend, alerting, and cross-signal correlation beyond current logging-only config.
+  - AC: traces, metrics, and logs exported to a persistent backend; cross-signal correlation verifiable; alerting fires on SLO breach.
+
 ### EPIC-I09 — Release gates
 
 Goal: infrastructure layer completion evidence.
@@ -183,6 +252,25 @@ Goal: infrastructure layer completion evidence.
 
 | Bead | Title |
 |---|---|
+| bead-0415 | Infra: implement control plane HTTP server handlers to match OpenAPI v1 contract |
+| bead-0416 | Infra: replace bootstrap.sh scaffold containers with production entrypoints for API server and worker runtime |
+| bead-0421 | Infra: Mautic reference adapter for MarketingAutomation port family |
+| bead-0422 | Infra: Odoo or ERPNext reference adapter for FinanceAccounting port family |
+| bead-0423 | Infra: Zammad reference adapter for CustomerSupport port family |
+| bead-0424 | Infra: GitHub reference adapter for software development operations (DORA metrics) |
+| bead-0428 | Infra: OTel Collector production pipeline - OTLP backends, alerting, cross-signal correlation |
+| bead-0400 | Infra: migrate Temporal compose image from temporalio/auto-setup to temporalio/server (upstream deprecated, urgent) |
+| bead-0401 | ADR: external execution plane strategy - adopt Activepieces as primary connector runtime and Langflow as agentic runtime alongside Temporal |
+| bead-0402 | Infra: install Temporal TypeScript SDK and wire WorkflowOrchestrator port adapter against local dev instance |
+| bead-0403 | Spike: evaluate Activepieces piece coverage for the 18 port adapter families |
+| bead-0404 | Infra: Activepieces self-hosted deployment configuration (Docker Compose dev stack entry and Helm production chart) |
+| bead-0405 | Infra: Activepieces action executor adapter - invoke Activepieces flows as Portarium workflow actions with correlation header propagation |
+| bead-0406 | Infra: DomainEvent trigger routing to Activepieces webhook endpoint with tenantId and correlationId headers |
+| bead-0407 | Infra: Langflow isolated deployment - per-environment instances, disabled auto-login, hardened auth, reverse proxy, network policies |
+| bead-0408 | Infra: Langflow agent flow HTTP adapter - invoke Langflow flows from Portarium workflow steps with correlation header propagation |
+| bead-0410 | Infra: Activepieces custom piece TypeScript npm package pattern for Portarium port adapter families |
+| bead-0412 | Spike: evaluate Kestra for CloudEvents-triggered ops and pipeline workloads (OTel integration, scalable execution) |
+| bead-0413 | Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring families) |
 | bead-0385 | Infra: Docker Compose local development stack (DB, Temporal dev, vault dev, object store, OTel Collector) |
 | bead-0386 | Infra: OCI container images for API server and worker runtime (Dockerfiles, multi-stage builds, image build CI pipeline) |
 | bead-0387 | Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion) |

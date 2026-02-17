@@ -186,6 +186,22 @@ Goal: layered quality assurance with traceability.
   - Review: verify tenant-isolated fixtures block cross-tenant leakage.
   - AC: review passed.
 
+### EPIC-V07c — Operational domain coverage tracking
+
+Goal: maintain a living gap map between Portarium's capabilities and the requirements of each operational domain.
+
+- STORY-V07c.1 — bead-0429
+  - Domain coverage matrix — map Portarium port families and canonical objects against operational domain requirements (marketing, finance, accounting, IT support, software delivery) with gap tracking.
+  - AC: matrix published in `docs/`; gaps linked to open beads; reviewed each cycle; CI fails if a port family has no linked bead.
+
+### EPIC-V07b — Third-party platform governance
+
+Goal: manage licence risk and commercial obligations for adopted external execution platforms.
+
+- STORY-V07b.1 — bead-0414
+  - Licence compliance audit for adopted execution platforms: Activepieces (MIT core, commercial EE carve-outs), Kestra (Apache 2.0, EE features), StackStorm (Apache 2.0), Langflow (MIT).
+  - AC: licence obligations documented per platform; EE feature boundaries identified; "safe use" guidelines published for each; any fair-code or multi-tenant restrictions flagged.
+
 ### EPIC-V08 — CI gates
 
 Goal: automated quality enforcement in CI pipeline.
@@ -216,6 +232,13 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 - STORY-V09.4 — bead-0190
   - Runbook review: validate rollback includes data, evidence, and credential cleanup.
   - AC: review passed.
+
+## New beads created for this backlog
+
+| Bead | Title |
+|---|---|
+| bead-0429 | Governance: domain coverage matrix (port families vs operational domain requirements with gap tracking) |
+| bead-0414 | Governance: licence compliance audit for adopted execution platforms (Activepieces MIT EE carve-outs, Kestra Apache 2.0 EE features) |
 
 ## Bead summary
 

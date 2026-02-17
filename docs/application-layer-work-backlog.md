@@ -57,6 +57,12 @@ Goal: enforce authentication, authorisation, and tenant isolation at every appli
 - STORY-A02.6 — bead-0318
   - Policy/authorization matrix for all app commands and queries (APP_ACTIONS coverage + tenant-aware checks).
   - AC: every command/query has a named action with tenant-scoped authorization check.
+- STORY-A02.7 — bead-0417
+  - Implement production-grade JWT validation and principal extraction against `bearerAuth` defined in OpenAPI contract.
+  - AC: invalid/expired tokens rejected with 401; claims extracted to `AppContext`; tenant scoping enforced on every request.
+- STORY-A02.8 — bead-0418
+  - Wire `AuthorizationPort` to a real authorisation system (Keycloak OIDC + OpenFGA fine-grained authz) with role gating per OpenAPI route.
+  - AC: each role (`admin`, `operator`, `approver`, `auditor`) enforced at every route; deny-by-default for unknown roles; OWASP BOLA scenarios pass.
 
 ### EPIC-A03 — Command framework, idempotency, and outbox
 
@@ -93,6 +99,15 @@ Goal: durable execution with human-in-the-loop and immutable evidence trail.
 - STORY-A04.2 — **PARTIALLY DONE** (submit-approval command exists)
   - Approval wait/signal pattern for human-in-the-loop decisions.
   - AC: complete scenario: start workflow → require approval → apply decision → resume.
+- STORY-A04.2b — bead-0419
+  - Close submit-approval `RequestChanges` gap — current command rejects `RequestChanges`; implement approval cycle support with re-route to initiator.
+  - AC: `RequestChanges` decision persists in evidence; workflow signal re-routes to initiator for revision; regression test covers full cycle.
+- STORY-A04.2c — bead-0425
+  - Implement Temporal worker execution loop: resolve approvals, build plan, execute via adapter, collect verified effects, compute planned-vs-verified diff, write evidence, transition run status.
+  - AC: end-to-end run reaches `Succeeded` status; evidence entries written with hash chain; diff computed and stored.
+- STORY-A04.2d — bead-0426
+  - Idempotent workflow start — repeated `StartWorkflow` with same idempotency key returns same `runId` without creating duplicate Temporal executions.
+  - AC: second call with same idempotency key returns existing run; no duplicate Temporal workflow started; idempotency tested under concurrent retry.
 - STORY-A04.3 — bead-0041
   - CloudEvents envelope implementation for all event emission points and subscription contracts.
   - AC: events use CloudEvents v1 envelope; type, source, subject fields populated.
@@ -104,6 +119,17 @@ Goal: durable execution with human-in-the-loop and immutable evidence trail.
   - AC: versioning rules documented; breaking changes detectable; consumers resilient to additive changes.
 - STORY-A04.6 — bead-0308
   - Repository-level aggregate invariants (workspace policy, cross-aggregate uniqueness checks) enforced at application boundaries.
+
+### EPIC-A04b — External execution plane integration
+
+Goal: decouple workflow action dispatch from Temporal-only implementation via typed ports and trigger routing.
+
+- STORY-A04b.1 — bead-0409
+  - External action runner port interface for dispatching workflow actions to external execution planes (Activepieces, Langflow, future).
+  - AC: `ActionRunner` port defined in `src/application/ports/`; implementation-agnostic; each execution plane registers as an adapter.
+- STORY-A04b.2 — bead-0411
+  - Trigger-to-execution-plane routing — route `TriggerKind` (`Cron` / `Webhook` / `DomainEvent` / `Manual`) to the correct execution plane adapter at workflow start.
+  - AC: `DomainEvent` and `Webhook` triggers dispatch to Activepieces; agentic steps dispatch to Langflow; routing is configurable; unit tests cover all four kinds.
 
 ### EPIC-A05 — Read path and hardening
 
@@ -242,6 +268,13 @@ Goal: safe rollout with rollback capability.
 
 | Bead | Title |
 |---|---|
+| bead-0417 | App: production-grade JWT validation and principal extraction against bearerAuth in OpenAPI contract |
+| bead-0418 | App: wire AuthorizationPort to Keycloak OIDC and OpenFGA fine-grained authz |
+| bead-0419 | App: close submit-approval RequestChanges gap |
+| bead-0425 | App: Temporal worker execution loop (plan, execute, diff, evidence, run status) |
+| bead-0426 | App: idempotent workflow start (same idempotency key returns same runId) |
+| bead-0409 | App: external action runner port interface for dispatching workflow actions to external execution planes |
+| bead-0411 | App: trigger-to-execution-plane routing - route TriggerKind to correct execution plane adapter at workflow start |
 | bead-0378 | App: API backward compatibility and versioning strategy |
 | bead-0379 | App: input validation framework at command/query boundary |
 | bead-0380 | CI: security gates (OpenAPI diff, vuln scan, secret scan) |

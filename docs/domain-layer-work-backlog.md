@@ -28,6 +28,14 @@ Goal: consolidate parsing, validation, and error handling across all domain pars
   - Temporal invariants and ordering checks in domain models (issued/revoked, started/ended, due/created, retention deadlines).
   - AC: invariants enforced at parse time; violated invariants produce typed errors.
 
+### EPIC-D01b — Domain canonical object completeness
+
+Goal: ensure canonical objects cover privacy and consent obligations required for marketing and regulated operations.
+
+- STORY-D01b.1 — bead-0420
+  - Add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail).
+  - AC: `ConsentRecord` canonical type defined with opt-in/opt-out status, timestamp, and `externalRefs`; parser tests pass; suppression-list linkage documented.
+
 ### EPIC-D02 — Identity and tenancy
 
 Goal: unify tenant identity and enforce correlation across domain events.
@@ -151,6 +159,12 @@ Goal: domain layer completion evidence.
   - Phase gate: Domain complete only when aggregate invariants, parser coverage, domain factory, and ADR traceability beads are closed.
 - STORY-D09.2 — bead-0311
   - Closeout review: domain hardening release gate confirms all domain-beads merged, tested, and signed.
+
+## New beads created for this backlog
+
+| Bead | Title |
+|---|---|
+| bead-0420 | Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail) |
 
 ## Pre-existing beads (cross-reference)
 
