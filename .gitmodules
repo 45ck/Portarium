@@ -19,3 +19,6 @@
 [submodule "domain-atlas/upstreams/zammad"]
 	path = domain-atlas/upstreams/zammad
 	url = https://github.com/zammad/zammad
+[submodule "domain-atlas/upstreams/odoo"]
+	path = domain-atlas/upstreams/odoo
+	url = https://github.com/odoo/odoo
