@@ -34,7 +34,7 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 
 2. **Branded primitives everywhere** -- Every ID is a branded type (`TenantId`, `WorkflowId`, etc.) preventing accidental mixing. See `src/domain/primitives/`.
 
-3. **Canonical objects as cross-system bridges** -- Thirteen normalised entity types (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
+3. **Canonical objects as cross-system bridges** -- Fourteen canonical entity types (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account, ExternalObjectRef) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
 
 4. **ExternalObjectRef for everything else** -- Rather than bloating canonical objects with vendor-specific fields, we use typed deep links (`{ sorName, portFamily, externalId, externalType, deepLinkUrl?, displayLabel? }`) to reference any SoR entity. This keeps the canonical model minimal and avoids N x M field mapping.
 
@@ -68,20 +68,39 @@ src/domain/
 │   ├── artifact.ts       # Artifact entity (within Run)
 │   └── credential-grant.ts # Credential grant (within Workspace)
 ├── canonical/            # Cross-system bridge types
-│   ├── party.ts          # Unified person/org with role tags
-│   ├── ticket.ts         # Support/service/incident ticket
-│   ├── invoice.ts        # Sales invoice or purchase bill
-│   ├── payment.ts        # Payment record
-│   ├── task.ts           # Work item or project task
-│   ├── campaign.ts       # Marketing/advertising campaign
-│   ├── asset.ts          # IT/physical/inventory asset
-│   ├── document.ts       # Document, file, or attachment
-│   ├── subscription.ts   # Subscription, contract, or agreement
-│   ├── opportunity.ts    # Sales opportunity or deal
-│   ├── product.ts        # Product, service, or SKU
-│   ├── order.ts          # Sales or purchase order
-│   ├── account.ts        # Financial/GL account
-│   └── external-object-ref.ts  # Deep link to any SoR entity
+│   ├── account-v1.ts                         # Financial/GL account
+│   ├── account-v1.test.ts                    # Account parser tests
+│   ├── asset-v1.ts                           # IT/physical/inventory asset
+│   ├── asset-v1.test.ts                      # Asset parser tests
+│   ├── campaign-v1.ts                        # Marketing/advertising campaign
+│   ├── campaign-v1.test.ts                   # Campaign parser tests
+│   ├── canonical-namespace-alignment.test.ts  # Canonical ID/namespace parity tests
+│   ├── canonical-v1.test.ts                  # Canonical parser surface tests
+│   ├── document-v1.ts                        # Document, file, or attachment
+│   ├── document-v1.test.ts                   # Document parser tests
+│   ├── external-object-ref.ts                 # Deep link to any SoR entity
+│   ├── external-object-ref.test.ts            # ExternalObjectRef parser tests
+│   ├── index.ts                              # Canonical barrel exports
+│   ├── index.test.ts                         # Canonical barrel export tests
+│   ├── invoice-v1.ts                         # Sales invoice or purchase bill
+│   ├── invoice-v1.test.ts                    # Invoice parser tests
+│   ├── objects-v1.ts                         # Legacy compatibility barrel (deprecated in canonical index)
+│   ├── opportunity-v1.ts                     # Sales opportunity or deal
+│   ├── opportunity-v1.test.ts                # Opportunity parser tests
+│   ├── order-v1.ts                           # Sales or purchase order
+│   ├── order-v1.test.ts                      # Order parser tests
+│   ├── party-v1.ts                           # Unified person/org with role tags
+│   ├── party-v1.test.ts                      # Party parser tests
+│   ├── payment-v1.ts                         # Payment record
+│   ├── payment-v1.test.ts                    # Payment parser tests
+│   ├── product-v1.ts                         # Product, service, or SKU
+│   ├── product-v1.test.ts                    # Product parser tests
+│   ├── subscription-v1.ts                    # Subscription, contract, or agreement
+│   ├── subscription-v1.test.ts               # Subscription parser tests
+│   ├── task-v1.ts                            # Work item or project task
+│   ├── task-v1.test.ts                       # Task parser tests
+│   ├── ticket-v1.ts                          # Support/service/incident ticket
+│   └── ticket-v1.test.ts                     # Ticket parser tests
 ├── events/               # Domain events (past-tense naming)
 │   ├── workflow-events.ts
 │   ├── run-events.ts
@@ -91,12 +110,11 @@ src/domain/
 │   ├── workspace-events.ts
 │   ├── evidence-events.ts
 │   └── action-events.ts
-├── ports/                # Port interfaces (one per capability family)
-│   ├── port.ts           # Base Port interface + PortCapability
-│   ├── finance-accounting.ts
-│   ├── payments-billing.ts
-│   ├── ... (18 port files total)
-│   └── compliance-grc.ts
+├── ports/                # Port interfaces and capability matrix
+│   ├── index.ts                          # Barrel exports for port domain contracts
+│   ├── port-family-capabilities-v1.ts     # Capability matrix by port family
+│   ├── port-v1.ts                        # Generic parser for all port-family registrations
+│   └── port-v1.test.ts                   # Port parser contract tests
 └── services/             # Pure domain logic
     ├── provider-selection.ts
     ├── policy-evaluation.ts

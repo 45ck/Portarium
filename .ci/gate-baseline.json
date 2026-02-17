@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-17T02:48:40.115Z",
+  "generatedAt": "2026-02-17T04:13:55.654Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
@@ -14,7 +14,7 @@
     "vitest.config.ts": "ebc57bcd7c3b62fabbb19438ebde0a602f353eeb807195f5db293f69b317f2fc",
     "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
     "knip.json": "092e4a41e64b7ef62507553e467133e693635bd8a6ed65b50d291d03e116bcf9",
-    "cspell.json": "c85ec65f9af3307d63563d0d7f415cceda83c4338f39b6b2ad892d7d18dca431",
+    "cspell.json": "71f1e1ce5031d3ea844b1902d6f6829dfef35cc8a84d7c9b29b279312d3ffbd4",
     ".prettierrc.json": "4327187804b79827a218473e09d1482078b7b9d91ac9e2b4a814284f8727062f",
     ".github/workflows/ci.yml": "f9b9875f5c43035669dc55eabb935a9dc114dc00feea3d08960dab93877023dc",
     ".github/workflows/nightly.yml": "58d0752235fdde08b08fe1772bd7b81cf8f1315db583f0439ddf9ac74c944af0",
