@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "chargebee-openapi",
+  "providerName": "Chargebee OpenAPI",
+  "portFamilies": ["PaymentsBilling"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/chargebee/openapi"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "Official Chargebee OpenAPI spec."
+  },
+  "extraction": {
+    "modelSources": ["**/*.yaml"],
+    "notes": "Extract subscription billing entity schemas."
+  }
+}

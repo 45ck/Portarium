@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "moodle",
+  "providerName": "Moodle",
+  "portFamilies": ["ProjectsWorkMgmt"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/moodle/moodle"
+  },
+  "license": {
+    "spdxId": "GPL-3.0-only",
+    "classification": "study_only",
+    "notes": "GPL-licensed; study web services definitions only."
+  },
+  "extraction": {
+    "modelSources": ["lib/external/**/*"],
+    "notes": "Extract Moodle web services external function definitions."
+  }
+}

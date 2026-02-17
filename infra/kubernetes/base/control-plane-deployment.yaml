@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portarium-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-control-plane
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-control-plane
+      app.kubernetes.io/part-of: portarium
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-control-plane
+        app.kubernetes.io/part-of: portarium
+    spec:
+      serviceAccountName: portarium-control-plane
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: control-plane
+          image: ghcr.io/your-org/portarium-control-plane:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: portarium-config
+            - secretRef:
+                name: portarium-runtime-secrets
+                optional: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          env:
+            - name: PORTARIUM_CONTAINER_ROLE
+              value: control-plane
+            - name: PORTARIUM_HTTP_PORT
+              value: "8080"
+            - name: PORTARIUM_API_ROLE
+              value: control-plane
+            - name: PORTARIUM_OTEL_EXPORTER
+              value: http://portarium-otel-collector:4317
+            - name: PORTARIUM_TEMPORAL_SERVER
+              value: temporal:7233
+            - name: PORTARIUM_EVIDENCE_STORE_ENDPOINT
+              value: http://evidence-store:9000
+            - name: POSTGRES_DSN
+              value: postgresql://portarium:portarium@postgres:5432/portarium
+            - name: PORTARIUM_ENVIRONMENT
+              value: production
+            - name: NODE_ENV
+              value: production
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

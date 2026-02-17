@@ -13,8 +13,22 @@ import {
   type WorkItemId as WorkItemIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import {
+  parseIsoDate,
+  readInteger,
+  readIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type ApprovalStatus = 'Pending' | ApprovalDecision;
+
+export type EscalationStepV1 = Readonly<{
+  stepOrder: number;
+  escalateToUserId: string;
+  afterHours: number;
+}>;
 
 type ApprovalBaseV1 = Readonly<{
   schemaVersion: 1;
@@ -28,6 +42,7 @@ type ApprovalBaseV1 = Readonly<{
   requestedByUserId: UserIdType;
   assigneeUserId?: UserIdType;
   dueAtIso?: string;
+  escalationChain?: readonly EscalationStepV1[];
 }>;
 
 export type ApprovalPendingV1 = Readonly<
@@ -56,14 +71,14 @@ export class ApprovalParseError extends Error {
 }
 
 export function parseApprovalV1(value: unknown): ApprovalV1 {
-  if (!isRecord(value)) throw new ApprovalParseError('Approval must be an object.');
+  const record = readRecord(value, 'Approval', ApprovalParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', ApprovalParseError);
   if (schemaVersion !== 1) {
     throw new ApprovalParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const statusRaw = readString(value, 'status');
+  const statusRaw = readString(record, 'status', ApprovalParseError);
   if (!isApprovalStatus(statusRaw)) {
     throw new ApprovalParseError(
       'status must be one of: Pending, Approved, Denied, RequestChanges.',
@@ -71,29 +86,40 @@ export function parseApprovalV1(value: unknown): ApprovalV1 {
   }
 
   if (statusRaw === 'Pending') {
-    assertNoDecisionFields(value);
-    const base = parseApprovalBaseV1(value);
+    assertNoDecisionFields(record);
+    const base = parseApprovalBaseV1(record);
     return { ...base, status: 'Pending' };
   }
 
-  const base = parseApprovalBaseV1(value);
-  const decision = parseDecisionFields(value, statusRaw);
+  const base = parseApprovalBaseV1(record);
+  const decision = parseDecisionFields(record, statusRaw, base.requestedAtIso);
   return { ...base, ...decision };
 }
 
 function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
-  const approvalId = ApprovalId(readString(value, 'approvalId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const runId = RunId(readString(value, 'runId'));
-  const planId = PlanId(readString(value, 'planId'));
+  const approvalId = ApprovalId(readString(value, 'approvalId', ApprovalParseError));
+  const workspaceId = WorkspaceId(readString(value, 'workspaceId', ApprovalParseError));
+  const runId = RunId(readString(value, 'runId', ApprovalParseError));
+  const planId = PlanId(readString(value, 'planId', ApprovalParseError));
 
   const workItemId = parseOptionalId(value, 'workItemId', WorkItemId);
   const assigneeUserId = parseOptionalId(value, 'assigneeUserId', UserId);
 
-  const prompt = readString(value, 'prompt');
-  const requestedAtIso = readString(value, 'requestedAtIso');
-  const requestedByUserId = UserId(readString(value, 'requestedByUserId'));
-  const dueAtIso = readOptionalString(value, 'dueAtIso');
+  const prompt = readString(value, 'prompt', ApprovalParseError);
+  const requestedAtIso = readIsoString(value, 'requestedAtIso', ApprovalParseError);
+  const requestedByUserId = UserId(readString(value, 'requestedByUserId', ApprovalParseError));
+  const dueAtIso = readOptionalString(value, 'dueAtIso', ApprovalParseError);
+  if (dueAtIso !== undefined) {
+    const requestedAt = parseIsoDate(requestedAtIso, 'requestedAtIso', ApprovalParseError);
+    const dueAt = parseIsoDate(dueAtIso, 'dueAtIso', ApprovalParseError);
+    if (dueAt < requestedAt) {
+      throw new ApprovalParseError('dueAtIso must not precede requestedAtIso.');
+    }
+  }
+
+  const escalationChainRaw = value['escalationChain'];
+  const escalationChain =
+    escalationChainRaw === undefined ? undefined : parseEscalationChain(escalationChainRaw);
 
   return {
     schemaVersion: 1,
@@ -107,16 +133,23 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
     requestedByUserId,
     ...(assigneeUserId ? { assigneeUserId } : {}),
     ...(dueAtIso ? { dueAtIso } : {}),
+    ...(escalationChain ? { escalationChain } : {}),
   };
 }
 
 function parseDecisionFields(
   value: Record<string, unknown>,
   status: ApprovalDecision,
+  requestedAtIso: string,
 ): Pick<ApprovalDecidedV1, 'status' | 'decidedAtIso' | 'decidedByUserId' | 'rationale'> {
-  const decidedAtIso = readString(value, 'decidedAtIso');
-  const decidedByUserId = UserId(readString(value, 'decidedByUserId'));
-  const rationale = readString(value, 'rationale');
+  const decidedAtIso = readIsoString(value, 'decidedAtIso', ApprovalParseError);
+  const requestedAt = parseIsoDate(requestedAtIso, 'requestedAtIso', ApprovalParseError);
+  const decidedAt = parseIsoDate(decidedAtIso, 'decidedAtIso', ApprovalParseError);
+  if (decidedAt < requestedAt) {
+    throw new ApprovalParseError('decidedAtIso must not precede requestedAtIso.');
+  }
+  const decidedByUserId = UserId(readString(value, 'decidedByUserId', ApprovalParseError));
+  const rationale = readString(value, 'rationale', ApprovalParseError);
   return { status, decidedAtIso, decidedByUserId, rationale };
 }
 
@@ -132,12 +165,27 @@ function assertNoDecisionFields(value: Record<string, unknown>): void {
   }
 }
 
+function parseEscalationChain(value: unknown): readonly EscalationStepV1[] {
+  if (!Array.isArray(value)) {
+    throw new ApprovalParseError('escalationChain must be an array.');
+  }
+  return value.map((s, idx) => parseEscalationStep(s, `escalationChain[${idx}]`));
+}
+
+function parseEscalationStep(value: unknown, pathLabel: string): EscalationStepV1 {
+  if (!isRecord(value)) throw new ApprovalParseError(`${pathLabel} must be an object.`);
+  const stepOrder = readInteger(value, 'stepOrder', ApprovalParseError);
+  const escalateToUserId = readString(value, 'escalateToUserId', ApprovalParseError);
+  const afterHours = readInteger(value, 'afterHours', ApprovalParseError);
+  return { stepOrder, escalateToUserId, afterHours };
+}
+
 function parseOptionalId<T>(
   value: Record<string, unknown>,
   key: string,
   ctor: (raw: string) => T,
 ): T | undefined {
-  const raw = readOptionalString(value, key);
+  const raw = readOptionalString(value, key, ApprovalParseError);
   return raw === undefined ? undefined : ctor(raw);
 }
 
@@ -147,31 +195,6 @@ function isApprovalDecision(value: string): value is ApprovalDecision {
 
 function isApprovalStatus(value: string): value is ApprovalStatus {
   return value === 'Pending' || isApprovalDecision(value);
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ApprovalParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ApprovalParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new ApprovalParseError(`${key} must be an integer.`);
-  }
-  return v;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

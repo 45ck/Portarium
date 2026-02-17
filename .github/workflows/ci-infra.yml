@@ -1,0 +1,41 @@
+name: CI (Infrastructure Gates)
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ci-infra.yml"
+      - "docker-compose.yml"
+      - "infra/**"
+      - "docs/adr/0056-infrastructure-reference-architecture.md"
+      - ".specify/specs/infrastructure-layer-v1.md"
+
+jobs:
+  infra-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker compose manifest
+        run: docker compose -f docker-compose.yml config
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Validate Terraform formatting
+        working-directory: infra/terraform
+        run: terraform fmt -recursive -check
+
+      - name: Validate local Kubernetes overlays
+        run: |
+          for OVERLAY in infra/kubernetes/overlays/dev infra/kubernetes/overlays/staging infra/kubernetes/overlays/prod; do
+            docker run --rm \
+              -v "${{ github.workspace }}:/workspace" \
+              -w /workspace \
+              k8s.gcr.io/kustomize/kustomize:v5.4.2 \
+              build "$OVERLAY" >/tmp/"$(echo "$OVERLAY" | tr '/' '_').yaml"
+          done
+          echo "Kubernetes overlay validation passed for dev/staging/prod."

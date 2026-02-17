@@ -85,6 +85,30 @@ describe('selectProvider', () => {
     }
   });
 
+  it('matches adapters by canonical capability when both capability and operation are provided', () => {
+    const result = selectProvider({
+      adapters: [
+        {
+          ...makeAdapter({ adapterId: 'capability-adapter' }),
+          capabilityMatrix: [
+            {
+              capability: 'account:read',
+              operation: 'account:read',
+              requiresAuth: false,
+            },
+          ],
+        },
+      ],
+      portFamily: 'FinanceAccounting',
+      operation: 'account:read',
+    });
+
+    expect(result).toMatchObject({ ok: true, alternativeCount: 0 });
+    if (result.ok) {
+      expect(result.adapter.adapterId).toBe('capability-adapter');
+    }
+  });
+
   it('returns correct alternativeCount', () => {
     const adapters = [
       makeAdapter({ adapterId: 'a1' }),

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "keycloak-openapi",
+  "providerName": "Keycloak OpenAPI",
+  "portFamilies": ["IamDirectory"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/ccouzens/keycloak-openapi"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Community-maintained Keycloak OpenAPI specs."
+  },
+  "extraction": {
+    "modelSources": ["**/*.json"],
+    "notes": "Extract IAM/SSO entity schemas."
+  }
+}

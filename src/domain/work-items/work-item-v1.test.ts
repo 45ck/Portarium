@@ -117,7 +117,7 @@ describe('parseWorkItemV1: validation', () => {
         createdAtIso: '2026-02-16T00:00:00.000Z',
         createdByUserId: 'user-1',
         title: 't',
-        status: 'InProgress',
+        status: 'Cancelled',
       }),
     ).toThrow(/status/i);
   });

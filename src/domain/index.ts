@@ -18,3 +18,6 @@ export * from './ports/index.js';
 export * from './credentials/index.js';
 export * from './adapters/index.js';
 export * from './services/index.js';
+export * from './tenancy/index.js';
+export * from './schedule/index.js';
+export * from './machines/index.js';

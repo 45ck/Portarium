@@ -119,10 +119,17 @@ export default tseslint.config(
   },
 
   // Tests can be longer/more verbose; keep production caps strict.
+  // Mock port implementations idiomatically use async without await, unbound method
+  // references (expect(obj.method)), and type-unsafe mocks — all standard Vitest patterns.
   {
     files: ['**/*.test.ts'],
     rules: {
       'max-lines-per-function': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
 

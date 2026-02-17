@@ -1,16 +1,23 @@
 import {
   CorrelationId,
   RunId,
-  UserId,
-  WorkspaceId,
-  WorkflowId,
   type CorrelationId as CorrelationIdType,
-  type ExecutionTier,
   type RunId as RunIdType,
   type UserId as UserIdType,
-  type WorkspaceId as WorkspaceIdType,
   type WorkflowId as WorkflowIdType,
+  type WorkspaceId as WorkspaceIdType,
+  type ExecutionTier,
+  WorkspaceId,
+  WorkflowId,
+  UserId,
 } from '../primitives/index.js';
+import {
+  readIsoString,
+  readInteger,
+  readOptionalIsoString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type RunStatus =
   | 'Pending'
@@ -43,39 +50,34 @@ export class RunParseError extends Error {
   }
 }
 
-export function parseRunV1(value: unknown): RunV1 {
-  if (!isRecord(value)) throw new RunParseError('Run must be an object.');
+const RUN_STATUSES = [
+  'Pending',
+  'Running',
+  'WaitingForApproval',
+  'Paused',
+  'Succeeded',
+  'Failed',
+  'Cancelled',
+] as const;
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+const EXECUTION_TIERS = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const;
+
+export function parseRunV1(value: unknown): RunV1 {
+  const record = readRecord(value, 'Run', RunParseError);
+
+  const schemaVersion = readInteger(record, 'schemaVersion', RunParseError);
   if (schemaVersion !== 1) throw new RunParseError(`Unsupported schemaVersion: ${schemaVersion}`);
 
-  const runId = RunId(readString(value, 'runId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const workflowId = WorkflowId(readString(value, 'workflowId'));
-  const correlationId = CorrelationId(readString(value, 'correlationId'));
-
-  const executionTierRaw = readString(value, 'executionTier');
-  if (!isExecutionTier(executionTierRaw)) {
-    throw new RunParseError(
-      'executionTier must be one of: Auto, Assisted, HumanApprove, ManualOnly.',
-    );
-  }
-
-  const initiatedByUserId = UserId(readString(value, 'initiatedByUserId'));
-
-  const statusRaw = readString(value, 'status');
-  if (!isRunStatus(statusRaw)) {
-    throw new RunParseError(
-      'status must be one of: Pending, Running, WaitingForApproval, Paused, Succeeded, Failed, Cancelled.',
-    );
-  }
-
-  const createdAtIso = readString(value, 'createdAtIso');
-  parseIsoString(createdAtIso, 'createdAtIso');
-  const startedAtIso = readOptionalString(value, 'startedAtIso');
-  if (startedAtIso !== undefined) parseIsoString(startedAtIso, 'startedAtIso');
-  const endedAtIso = readOptionalString(value, 'endedAtIso');
-  if (endedAtIso !== undefined) parseIsoString(endedAtIso, 'endedAtIso');
+  const runId = RunId(readString(record, 'runId', RunParseError));
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', RunParseError));
+  const workflowId = WorkflowId(readString(record, 'workflowId', RunParseError));
+  const correlationId = CorrelationId(readString(record, 'correlationId', RunParseError));
+  const executionTier = readExecutionTier(record);
+  const initiatedByUserId = UserId(readString(record, 'initiatedByUserId', RunParseError));
+  const status = readStatus(record);
+  const createdAtIso = readIsoString(record, 'createdAtIso', RunParseError);
+  const startedAtIso = readOptionalIsoString(record, 'startedAtIso', RunParseError);
+  const endedAtIso = readOptionalIsoString(record, 'endedAtIso', RunParseError);
 
   return {
     schemaVersion: 1,
@@ -83,65 +85,29 @@ export function parseRunV1(value: unknown): RunV1 {
     workspaceId,
     workflowId,
     correlationId,
-    executionTier: executionTierRaw,
+    executionTier,
     initiatedByUserId,
-    status: statusRaw,
+    status,
     createdAtIso,
     ...(startedAtIso ? { startedAtIso } : {}),
     ...(endedAtIso ? { endedAtIso } : {}),
   };
 }
 
-function isExecutionTier(value: string): value is ExecutionTier {
-  return (
-    value === 'Auto' || value === 'Assisted' || value === 'HumanApprove' || value === 'ManualOnly'
+function readStatus(record: Record<string, unknown>): RunStatus {
+  const status = readString(record, 'status', RunParseError);
+  if (RUN_STATUSES.includes(status as RunStatus)) return status as RunStatus;
+  throw new RunParseError(
+    'status must be one of: Pending, Running, WaitingForApproval, Paused, Succeeded, Failed, Cancelled.',
   );
 }
 
-function isRunStatus(value: string): value is RunStatus {
-  return (
-    value === 'Pending' ||
-    value === 'Running' ||
-    value === 'WaitingForApproval' ||
-    value === 'Paused' ||
-    value === 'Succeeded' ||
-    value === 'Failed' ||
-    value === 'Cancelled'
+function readExecutionTier(record: Record<string, unknown>): ExecutionTier {
+  const executionTierRaw = readString(record, 'executionTier', RunParseError);
+  if (EXECUTION_TIERS.includes(executionTierRaw as ExecutionTier)) {
+    return executionTierRaw as ExecutionTier;
+  }
+  throw new RunParseError(
+    'executionTier must be one of: Auto, Assisted, HumanApprove, ManualOnly.',
   );
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new RunParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new RunParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new RunParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function parseIsoString(value: string, label: string): void {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new RunParseError(`${label} must be a valid ISO timestamp.`);
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

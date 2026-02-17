@@ -1,0 +1,98 @@
+name: portarium-local
+
+services:
+  evidence-db:
+    image: postgres:16-alpine
+    container_name: portarium-postgres
+    environment:
+      POSTGRES_DB: portarium
+      POSTGRES_USER: portarium
+      POSTGRES_PASSWORD: portarium
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portarium"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - evidence-db-data:/var/lib/postgresql/data
+    networks:
+      - portarium-control
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: portarium-temporal
+    environment:
+      # Local durable workflow plane for testing with a shared database.
+      # Replace with provider-grade managed Temporal if required.
+      DB: postgres12
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: evidence-db
+      TEMPORAL_SQL_CONNECTION: postgresql://temporal:temporal@evidence-db:5432/temporal
+      TEMPORAL_VISIBILITY_DB: temporal_visibility
+    ports:
+      - "7233:7233"
+    depends_on:
+      evidence-db:
+        condition: service_healthy
+    networks:
+      - portarium-control
+
+  evidence-store:
+    image: minio/minio:latest
+    container_name: portarium-evidence-store
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: portarium
+      MINIO_ROOT_PASSWORD: portarium123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - evidence-store-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - portarium-control
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: portarium-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: portarium-root-token
+      VAULT_ADDR: http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
+    command: server -dev -dev-listen-address=0.0.0.0:8200 -dev-root-token-id=portarium-root-token
+    ports:
+      - "8200:8200"
+    networks:
+      - portarium-control
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: portarium-otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./infra/otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - portarium-control
+
+  # API and worker services are intentionally omitted from this baseline compose file.
+  # Add them in a local override when Dockerfiles / container images are available.
+
+volumes:
+  evidence-db-data:
+  evidence-store-data:
+
+networks:
+  portarium-control:
+    name: portarium-control-plane

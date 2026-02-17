@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "oscal",
+  "providerName": "OSCAL",
+  "portFamilies": ["ComplianceGrc"],
+  "upstream": {
+    "kind": "other",
+    "repoUrl": "https://github.com/usnistgov/OSCAL"
+  },
+  "license": {
+    "spdxId": "NIST-PD",
+    "classification": "safe_to_reuse",
+    "notes": "NIST public domain; OSCAL compliance framework schemas."
+  },
+  "extraction": {
+    "modelSources": ["json/schema/**/*"],
+    "notes": "Extract OSCAL compliance model schemas."
+  }
+}

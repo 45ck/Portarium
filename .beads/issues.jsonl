@@ -291,3 +291,7 @@
 {"id":"bead-0291","title":"Implement domain events parser and expose domain events aggregate parsing","status":"closed","createdAt":"2026-02-17T03:51:47.425Z","updatedAt":"2026-02-17T03:52:39.828Z"}
 {"id":"bead-0292","title":"Create code review bead for domain events parser and event stream parsing coverage","status":"closed","createdAt":"2026-02-17T03:51:47.775Z","updatedAt":"2026-02-17T03:52:35.977Z"}
 {"id":"bead-0293","title":"feat(cockpit): implement cockpit prototype UX fixes (persona layout, drawer push, visual hierarchy)","status":"closed","createdAt":"2026-02-17T04:15:14.894Z","updatedAt":"2026-02-17T06:28:33.304Z"}
+{"id":"bead-0294","title":"Implement infrastructure baseline ADR-0056, local compose, and infra specs","status":"closed","createdAt":"2026-02-17T08:44:43.218Z","updatedAt":"2026-02-17T18:37:49.850Z"}
+{"id":"bead-0295","title":"Implement first-pass Portarium presentation layer reference package and roadmap artifacts","status":"closed","createdAt":"2026-02-17T08:45:42.364Z","updatedAt":"2026-02-17T08:48:00.346Z"}
+{"id":"bead-0296","title":"Add CI image build pipeline with tagged Control Plane/worker artefacts for infra baseline","status":"closed","createdAt":"2026-02-17T18:34:45.828Z","updatedAt":"2026-02-17T18:37:50.422Z"}
+{"id":"bead-0297","title":"Harden infra baseline scaffolding and runnable image manifests for ADR-0056","status":"closed","createdAt":"2026-02-17T18:36:10.935Z","updatedAt":"2026-02-17T18:37:50.926Z"}

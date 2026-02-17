@@ -59,6 +59,7 @@
 - **ADR-053** Vertical pack security, privacy, and compliance _(new)_
 - **ADR-054** Vertical pack observability and telemetry _(new)_
 - **ADR-055** Vertical pack rollout and migration strategy _(new)_
+- **ADR-056** Infrastructure reference architecture and platform baseline _(new)_
 
 ---
 

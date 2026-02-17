@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseCredentialGrantV1 } from './credential-grant-v1.js';
+import { deriveCredentialGrantStatus, parseCredentialGrantV1 } from './credential-grant-v1.js';
 
 describe('parseCredentialGrantV1', () => {
   const validMinimal = {
@@ -101,5 +101,55 @@ describe('parseCredentialGrantV1', () => {
         revokedAtIso: 'not-a-date',
       }),
     ).toThrow(/revokedAtIso must be a valid ISO timestamp/);
+  });
+});
+
+describe('deriveCredentialGrantStatus', () => {
+  const baseGrant = parseCredentialGrantV1({
+    schemaVersion: 1,
+    credentialGrantId: 'cg-1',
+    workspaceId: 'ws-1',
+    adapterId: 'adapter-1',
+    credentialsRef: 'vault://secrets/cg-1',
+    scope: 'read:invoices',
+    issuedAtIso: '2026-01-01T00:00:00.000Z',
+  });
+
+  it('returns Revoked when revokedAtIso is set', () => {
+    const grant = parseCredentialGrantV1({
+      schemaVersion: 1,
+      credentialGrantId: 'cg-1',
+      workspaceId: 'ws-1',
+      adapterId: 'adapter-1',
+      credentialsRef: 'vault://secrets/cg-1',
+      scope: 'read:invoices',
+      issuedAtIso: '2026-01-01T00:00:00.000Z',
+      revokedAtIso: '2026-06-01T00:00:00.000Z',
+    });
+    expect(deriveCredentialGrantStatus(grant, new Date('2026-03-01T00:00:00.000Z'))).toBe(
+      'Revoked',
+    );
+  });
+
+  it('returns Expired when past expiresAtIso', () => {
+    const grant = parseCredentialGrantV1({
+      schemaVersion: 1,
+      credentialGrantId: 'cg-1',
+      workspaceId: 'ws-1',
+      adapterId: 'adapter-1',
+      credentialsRef: 'vault://secrets/cg-1',
+      scope: 'read:invoices',
+      issuedAtIso: '2026-01-01T00:00:00.000Z',
+      expiresAtIso: '2026-06-01T00:00:00.000Z',
+    });
+    expect(deriveCredentialGrantStatus(grant, new Date('2026-07-01T00:00:00.000Z'))).toBe(
+      'Expired',
+    );
+  });
+
+  it('returns Active for valid non-expired grant', () => {
+    expect(deriveCredentialGrantStatus(baseGrant, new Date('2026-03-01T00:00:00.000Z'))).toBe(
+      'Active',
+    );
   });
 });

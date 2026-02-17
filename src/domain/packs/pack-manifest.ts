@@ -12,6 +12,7 @@ export type PackAssets = Readonly<{
   uiTemplates?: readonly string[];
   mappings?: readonly string[];
   testAssets?: readonly string[];
+  complianceProfiles?: readonly string[];
 }>;
 
 export type PackManifestV1 = Readonly<{
@@ -117,6 +118,7 @@ function parseAssets(value: unknown): PackAssets {
   const uiTemplates = readOptionalStringArray(value, 'uiTemplates');
   const mappings = readOptionalStringArray(value, 'mappings');
   const testAssets = readOptionalStringArray(value, 'testAssets');
+  const complianceProfiles = readOptionalStringArray(value, 'complianceProfiles');
 
   const out: {
     schemas?: readonly string[];
@@ -124,6 +126,7 @@ function parseAssets(value: unknown): PackAssets {
     uiTemplates?: readonly string[];
     mappings?: readonly string[];
     testAssets?: readonly string[];
+    complianceProfiles?: readonly string[];
   } = {};
 
   if (schemas !== undefined) out.schemas = schemas;
@@ -131,6 +134,7 @@ function parseAssets(value: unknown): PackAssets {
   if (uiTemplates !== undefined) out.uiTemplates = uiTemplates;
   if (mappings !== undefined) out.mappings = mappings;
   if (testAssets !== undefined) out.testAssets = testAssets;
+  if (complianceProfiles !== undefined) out.complianceProfiles = complianceProfiles;
 
   return out;
 }

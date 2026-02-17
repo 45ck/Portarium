@@ -1,4 +1,5 @@
 import type { AdapterRegistrationV1 } from '../adapters/adapter-registration-v1.js';
+import type { CapabilityClaimV1 } from '../adapters/adapter-registration-v1.js';
 import type { PortFamily } from '../primitives/index.js';
 
 export type ProviderSelectionResult =
@@ -34,7 +35,7 @@ export function selectProvider(params: {
   }
 
   const capable = enabled.filter((a) =>
-    a.capabilityMatrix.some((cap) => cap.operation === operation),
+    a.capabilityMatrix.some((claim) => isCapableFor(claim, operation)),
   );
   if (capable.length === 0) {
     return { ok: false, reason: 'no_capable_adapter' };
@@ -47,4 +48,11 @@ export function selectProvider(params: {
   });
 
   return { ok: true, adapter: sorted[0]!, alternativeCount: sorted.length - 1 };
+}
+
+function isCapableFor(claim: CapabilityClaimV1, operation: string): boolean {
+  if (claim.capability !== undefined) {
+    return claim.capability === operation;
+  }
+  return claim.operation === operation;
 }

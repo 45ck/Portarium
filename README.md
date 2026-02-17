@@ -32,6 +32,22 @@ npm run test
 npm run ci:pr        # full CI gate
 ```
 
+Run a local dependency stack for infra parity:
+
+```bash
+docker compose up
+```
+
+Run the full runnable scaffold (control plane + worker) when you want to validate
+readiness/liveness probes and deployable image manifests locally:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+```
+
+This references the repository root `docker-compose.yml` and the local development
+stack described in the Infrastructure ADR (ADR-0056).
+
 ## Documentation
 
 - [Project Overview](docs/project-overview.md)
@@ -39,6 +55,8 @@ npm run ci:pr        # full CI gate
 - [Domain Model](docs/domain/README.md)
 - [Integration Catalog (18 port families, 150+ tools)](docs/integration-catalog/README.md)
 - [ADRs (Architecture Decision Records)](docs/ADRs-v0.md)
+- [Infrastructure Layer Spec](.specify/specs/infrastructure-layer-v1.md)
+- [Infrastructure ADR-0056](docs/adr/0056-infrastructure-reference-architecture.md)
 
 ## Deployment
 

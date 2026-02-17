@@ -58,6 +58,24 @@ describe('parsePolicyV1: happy path', () => {
     expect(policy.sodConstraints?.[0]?.kind).toBe('MakerChecker');
   });
 
+  it('parses rules when provided', () => {
+    const policy = parsePolicyV1({
+      ...VALID_POLICY,
+      rules: [
+        { ruleId: 'r-1', condition: 'user.role === "admin"', effect: 'Allow' },
+        { ruleId: 'r-2', condition: 'resource.type === "secret"', effect: 'Deny' },
+      ],
+    });
+
+    expect(policy.rules).toHaveLength(2);
+    expect(policy.rules?.[0]).toEqual({
+      ruleId: 'r-1',
+      condition: 'user.role === "admin"',
+      effect: 'Allow',
+    });
+    expect(policy.rules?.[1]?.effect).toBe('Deny');
+  });
+
   it('parses when optional description is omitted', () => {
     const policy = parsePolicyV1({ ...VALID_POLICY, description: undefined });
 
@@ -132,6 +150,22 @@ describe('parsePolicyV1: validation', () => {
         version: 0.5,
       }),
     ).toThrow(/version must be an integer/i);
+  });
+
+  it('rejects invalid rules array', () => {
+    expect(() =>
+      parsePolicyV1({
+        ...VALID_POLICY,
+        rules: 'not-an-array',
+      }),
+    ).toThrow(/rules must be an array/i);
+
+    expect(() =>
+      parsePolicyV1({
+        ...VALID_POLICY,
+        rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }],
+      }),
+    ).toThrow(/effect must be "Allow" or "Deny"/i);
   });
 
   it('rejects invalid ISO timestamp for createdAtIso', () => {

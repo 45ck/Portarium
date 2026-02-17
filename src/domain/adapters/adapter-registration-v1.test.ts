@@ -43,6 +43,22 @@ describe('parseAdapterRegistrationV1', () => {
     expect(reg.machineRegistrations![0]!.endpointUrl).toBe('https://api.example.com/v1');
   });
 
+  it('parses canonical capability and mirrors it into operation', () => {
+    const reg = parseAdapterRegistrationV1({
+      ...validFull,
+      capabilityMatrix: [
+        {
+          capability: 'invoice:write',
+          requiresAuth: false,
+        },
+      ],
+    });
+
+    expect(reg.capabilityMatrix).toHaveLength(1);
+    expect(reg.capabilityMatrix[0]!.capability).toBe('invoice:write');
+    expect(reg.capabilityMatrix[0]!.operation).toBe('invoice:write');
+  });
+
   it('parses minimal registration without machines', () => {
     const minimal = { ...validFull } as Record<string, unknown>;
     delete minimal['machineRegistrations'];
@@ -76,6 +92,21 @@ describe('parseAdapterRegistrationV1', () => {
         capabilityMatrix: [{ operation: 'INVALID', requiresAuth: false }],
       }),
     ).toThrow(/operation must match "entity:verb" format/);
+  });
+
+  it('rejects capability and operation mismatch when both are provided', () => {
+    expect(() =>
+      parseAdapterRegistrationV1({
+        ...validFull,
+        capabilityMatrix: [
+          {
+            capability: 'invoice:read',
+            operation: 'invoice:write',
+            requiresAuth: true,
+          },
+        ],
+      }),
+    ).toThrow(/operation must match capability when both are provided/);
   });
 
   it('rejects invalid endpointUrl', () => {

@@ -1,0 +1,12 @@
+node_modules
+coverage
+reports
+.git
+.github
+.beads
+.claude
+coverage
+node_modules
+dist
+tmp
+tsconfig.tsbuildinfo

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "square",
+  "providerName": "Square",
+  "portFamilies": ["PaymentsBilling"],
+  "upstream": {
+    "kind": "sdk",
+    "repoUrl": "https://github.com/square/square-nodejs-sdk"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "SDK for POS/Orders/Payments."
+  },
+  "extraction": {
+    "modelSources": ["src/models/**/*"],
+    "notes": "Extract Square POS and payment entity models."
+  }
+}

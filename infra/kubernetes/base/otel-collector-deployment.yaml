@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portarium-otel-collector
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-otel-collector
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-otel-collector
+      app.kubernetes.io/part-of: portarium
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-otel-collector
+        app.kubernetes.io/part-of: portarium
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.103.0
+          imagePullPolicy: IfNotPresent
+          args: ["--config=/etc/otelcol-contrib/config.yaml"]
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+          volumeMounts:
+            - name: collector-config
+              mountPath: /etc/otelcol-contrib
+          readinessProbe:
+            tcpSocket:
+              port: 4317
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4317
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          startupProbe:
+            tcpSocket:
+              port: 4317
+            failureThreshold: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: collector-config
+          configMap:
+            name: portarium-otel-config

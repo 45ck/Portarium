@@ -1398,6 +1398,134 @@
                       <span class="idem-badge idem-badge--safe">retry-safe</span>
                     </div>
                   </div>
+
+                  <!-- AI Summary (hidden by default, toggled via feature flag) -->
+                  <div class="ai-summary ai-summary--hidden" data-ai-gate="AG-442">
+                    <div class="ai-summary__header">
+                      <div class="ai-summary__badge">
+                        <span class="ai-summary__icon">&#9670;</span>
+                        <span class="ai-summary__label">AI Summary</span>
+                      </div>
+                      <div class="ai-summary__header-right">
+                        <span class="ai-summary__confidence" data-confidence="high" title="Confidence: 92%">
+                          <span class="ai-summary__confidence-dot"></span>
+                          92%
+                        </span>
+                        <button class="ai-summary__toggle js-ai-summary-toggle"
+                          type="button"
+                          aria-expanded="false"
+                          aria-controls="aiDetailAG442">
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                    <div class="ai-summary__quick">
+                      <p class="ai-summary__action">
+                        Updates invoice INV-22318 memo and line items in NetSuite, then creates
+                        a receipt bundle in Drive for audit evidence.
+                      </p>
+                      <div class="ai-summary__tags">
+                        <span class="ai-summary__risk ai-summary__risk--medium">Medium risk</span>
+                        <span class="ai-summary__compliance ai-summary__compliance--pass">Compliance: pass</span>
+                        <span class="ai-summary__reversibility ai-summary__reversibility--partial">Partially reversible</span>
+                      </div>
+                    </div>
+                    <div class="ai-summary__detail" id="aiDetailAG442" hidden>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Risk Assessment</span>
+                          <span class="ai-summary__risk ai-summary__risk--medium">Medium</span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          Invoice amount ($12,500) exceeds the $10,000 policy threshold.
+                          Two external systems will be written to. No prior failed attempts
+                          for this work item.
+                        </p>
+                        <button class="ai-summary__why js-ai-why" type="button">Why?</button>
+                        <div class="ai-summary__why-detail" hidden>
+                          Risk scored medium because: (1) write amount is above policy threshold
+                          but within 2x the limit; (2) both target systems have healthy
+                          connections; (3) idempotency keys are present for retry safety.
+                        </div>
+                      </div>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Compliance</span>
+                        </div>
+                        <div class="ai-summary__compliance-list">
+                          <div class="ai-summary__compliance-item">
+                            <span class="ai-summary__compliance ai-summary__compliance--pass">Pass</span>
+                            <span>Invoice write threshold policy (amount &gt; $10,000 requires human approval)</span>
+                          </div>
+                          <div class="ai-summary__compliance-item">
+                            <span class="ai-summary__compliance ai-summary__compliance--pass">Pass</span>
+                            <span>Segregation of Duties: maker-checker constraint satisfied</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Affected Systems</span>
+                        </div>
+                        <div class="ai-summary__systems">
+                          <div class="ai-summary__system">
+                            <span class="pill">Write</span>
+                            <span>NetSuite | Invoice | INV-22318</span>
+                          </div>
+                          <div class="ai-summary__system">
+                            <span class="pill">Create</span>
+                            <span>Google Drive | Document | Receipt bundle</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Reversibility</span>
+                          <span class="ai-summary__reversibility ai-summary__reversibility--partial">Partial</span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          Invoice memo update can be reverted. Line item reclassification
+                          can be undone. Drive document creation cannot be automatically
+                          deleted (requires manual removal).
+                        </p>
+                        <button class="ai-summary__why js-ai-why" type="button">Why?</button>
+                        <div class="ai-summary__why-detail" hidden>
+                          NetSuite invoice fields support PUT overwrite, so the memo and
+                          line items can be restored to previous values. Google Drive
+                          file creation has no automated delete in the current adapter
+                          scope configuration.
+                        </div>
+                      </div>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Legal / Regulatory</span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          Invoice modifications above $10,000 are subject to SOX
+                          compliance logging. Evidence chain entry will be created
+                          automatically upon approval.
+                        </p>
+                      </div>
+                      <div class="ai-summary__section ai-summary__section--confidence">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">AI Confidence</span>
+                          <span class="ai-summary__confidence" data-confidence="high">
+                            <span class="ai-summary__confidence-dot"></span>
+                            92%
+                          </span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          High confidence. Based on: matching historical approval
+                          patterns (14 similar invoices approved), healthy system
+                          connections, and complete policy rule coverage.
+                        </p>
+                      </div>
+                      <div class="ai-summary__footer">
+                        Generated 2 minutes ago
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="callout callout--policy">
                     Tier: <strong>Human-approve</strong> | Rule: Invoice writes &gt; $10,000 |
                     Required approvers: 2 | Scopes: netsuite.write, drive.write
@@ -1550,7 +1678,7 @@
               </button>
             </div>
             <div class="triage__hint subtle">
-              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle details
+              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle details, I = Toggle AI summary
             </div>
           </div>
 
@@ -2631,9 +2759,110 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <span class="statusbar__dot statusbar__dot--ok js-status-events"></span>
           <span class="js-status-events-text">Events: connected</span>
         </span>
+        <span class="statusbar__item statusbar__toast js-kbd-toast" hidden></span>
+        <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
+          <button class="statusbar__hint-btn js-open-palette" type="button" aria-label="Open command palette">
+            <kbd class="triage__kbd">Ctrl+K</kbd> palette
+          </button>
+          <span class="statusbar__sep">&middot;</span>
+          <button class="statusbar__hint-btn js-open-cheatsheet" type="button" aria-label="Open keyboard shortcuts">
+            <kbd class="triage__kbd">?</kbd> shortcuts
+          </button>
+        </span>
       </footer>
     </div>
 
+    <!-- ============================================================
+         COMMAND PALETTE (Ctrl+K / Cmd+K)
+         ============================================================ -->
+    <div class="cmd-palette-backdrop js-cmd-backdrop" hidden aria-hidden="true"></div>
+    <div class="cmd-palette" id="cmdPalette" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+      <div class="cmd-palette__header">
+        <input
+          class="cmd-palette__input"
+          id="cmdInput"
+          type="text"
+          placeholder="Type a command..."
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search commands"
+        />
+        <button class="cmd-palette__close js-cmd-close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="cmd-palette__body" id="cmdResults" role="listbox" aria-label="Command results">
+        <!-- Results injected by JS -->
+      </div>
+      <div class="cmd-palette__footer">
+        <span class="cmd-palette__hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+        <span class="cmd-palette__hint"><kbd>Enter</kbd> execute</span>
+        <span class="cmd-palette__hint"><kbd>Esc</kbd> close</span>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         KEYBOARD CHEATSHEET (?)
+         ============================================================ -->
+    <div class="kbd-cheatsheet-backdrop js-cheatsheet-backdrop" hidden aria-hidden="true"></div>
+    <div class="kbd-cheatsheet" id="kbdCheatsheet" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden>
+      <div class="kbd-cheatsheet__header">
+        <h2 class="kbd-cheatsheet__title">Keyboard Shortcuts</h2>
+        <button class="drawer__close js-cheatsheet-close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="kbd-cheatsheet__body">
+        <div class="kbd-cheatsheet__context js-cheatsheet-context">
+          <!-- Contextual shortcuts for current screen injected by JS -->
+        </div>
+        <div class="kbd-cheatsheet__grid">
+          <div class="kbd-cheatsheet__group">
+            <h3 class="kbd-cheatsheet__group-title">Navigation</h3>
+            <div class="kbd-cheatsheet__list">
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>i</kbd><span>Inbox</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>p</kbd><span>Project Overview</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>w</kbd><span>Work Items</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>r</kbd><span>Runs</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>b</kbd><span>Workflow Builder</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>a</kbd><span>Approvals</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>e</kbd><span>Evidence</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>n</kbd><span>Agents</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>g</kbd> then <kbd>s</kbd><span>Settings</span></div>
+            </div>
+          </div>
+          <div class="kbd-cheatsheet__group">
+            <h3 class="kbd-cheatsheet__group-title">Global</h3>
+            <div class="kbd-cheatsheet__list">
+              <div class="kbd-cheatsheet__row"><kbd>Ctrl+K</kbd><span>Command palette</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>/</kbd><span>Focus search</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>?</kbd><span>This cheatsheet</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>Esc</kbd><span>Close overlay / drawer</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>n</kbd><span>New (context-sensitive)</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>c</kbd><span>Toggle context drawer</span></div>
+            </div>
+          </div>
+          <div class="kbd-cheatsheet__group">
+            <h3 class="kbd-cheatsheet__group-title">Lists</h3>
+            <div class="kbd-cheatsheet__list">
+              <div class="kbd-cheatsheet__row"><kbd>j</kbd><span>Move down</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>k</kbd><span>Move up</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>Enter</kbd><span>Open selected</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>Backspace</kbd><span>Go back</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>x</kbd><span>Toggle select</span></div>
+            </div>
+          </div>
+          <div class="kbd-cheatsheet__group">
+            <h3 class="kbd-cheatsheet__group-title">Approval Triage</h3>
+            <div class="kbd-cheatsheet__list">
+              <div class="kbd-cheatsheet__row"><kbd>A</kbd><span>Approve</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>D</kbd><span>Deny</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>R</kbd><span>Request changes</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>S</kbd><span>Skip</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>Space</kbd><span>Expand / collapse</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="./wireframe.js" defer></script>
+    <script src="./keyboard.js" defer></script>
   </body>
 </html>

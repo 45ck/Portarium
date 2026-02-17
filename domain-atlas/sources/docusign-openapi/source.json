@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "docusign-openapi",
+  "providerName": "DocuSign OpenAPI",
+  "portFamilies": ["DocumentsEsign"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/docusign/OpenAPI-Specifications"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "Official DocuSign OpenAPI specs."
+  },
+  "extraction": {
+    "modelSources": ["**/*.json"],
+    "notes": "Extract eSignature API entity schemas."
+  }
+}

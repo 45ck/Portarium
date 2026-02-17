@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "stripe-openapi",
+  "providerName": "Stripe OpenAPI",
+  "portFamilies": ["PaymentsBilling"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/stripe/openapi"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "Official Stripe OpenAPI spec."
+  },
+  "extraction": {
+    "modelSources": ["openapi/spec3.json"],
+    "notes": "Extract payment and billing entity schemas."
+  }
+}

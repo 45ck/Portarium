@@ -582,6 +582,19 @@ colored
 scanability
 Wayfinding
 
+# Keyboard UX / cockpit design terms
+cheatsheet
+Cheatsheet
+CHEATSHEET
+recents
+Recents
+flyout
+scannable
+clickability
+toggleable
+judgment
+WCAG
+
 # Vertical pack docs
 versionable
 linters

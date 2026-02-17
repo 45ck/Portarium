@@ -17,7 +17,7 @@ describe('parseWorkflowV1: happy path', () => {
           actionId: 'act-1',
           order: 1,
           portFamily: 'SecretsVaulting',
-          operation: 'readKvV2Secret',
+          operation: 'secret:read',
         },
       ],
     });
@@ -49,6 +49,51 @@ describe('parseWorkflowV1: happy path', () => {
 
     expect(wf.executionTier).toBe('Auto');
     expect(wf.actions[0]?.executionTierOverride).toBe('HumanApprove');
+  });
+
+  it('supports canonical capability while retaining legacy operation support', () => {
+    const wf = parseWorkflowV1({
+      schemaVersion: 1,
+      workflowId: 'wf-3',
+      workspaceId: 'ws-1',
+      name: 'Canonical path',
+      version: 1,
+      active: true,
+      executionTier: 'Auto',
+      actions: [
+        {
+          actionId: 'act-1',
+          order: 1,
+          portFamily: 'SecretsVaulting',
+          capability: 'secret:read',
+        },
+      ],
+    });
+
+    expect(wf.actions[0]?.capability).toBe('secret:read');
+    expect(wf.actions[0]?.operation).toBe('secret:read');
+  });
+
+  it('rejects legacy operation values that do not match capability format', () => {
+    expect(() =>
+      parseWorkflowV1({
+        schemaVersion: 1,
+        workflowId: 'wf-4',
+        workspaceId: 'ws-1',
+        name: 'Bad legacy op',
+        version: 1,
+        active: true,
+        executionTier: 'Auto',
+        actions: [
+          {
+            actionId: 'act-1',
+            order: 1,
+            portFamily: 'SecretsVaulting',
+            operation: 'readKvV2Secret',
+          },
+        ],
+      }),
+    ).toThrow(/must match \"entity:verb\" format when capability is not provided/);
   });
 });
 
@@ -104,6 +149,51 @@ describe('parseWorkflowV1: validation', () => {
         ],
       }),
     ).toThrow(/contiguous/i);
+  });
+
+  it('rejects capability values that are not valid for the port family', () => {
+    expect(() =>
+      parseWorkflowV1({
+        schemaVersion: 1,
+        workflowId: 'wf-1',
+        workspaceId: 'ws-1',
+        name: 'x',
+        version: 1,
+        active: true,
+        executionTier: 'Auto',
+        actions: [
+          {
+            actionId: 'act-1',
+            order: 1,
+            portFamily: 'SecretsVaulting',
+            capability: 'invoice:read',
+          },
+        ],
+      }),
+    ).toThrow(/not supported/);
+  });
+
+  it('rejects mismatched capability and operation fields when both are provided', () => {
+    expect(() =>
+      parseWorkflowV1({
+        schemaVersion: 1,
+        workflowId: 'wf-1',
+        workspaceId: 'ws-1',
+        name: 'x',
+        version: 1,
+        active: true,
+        executionTier: 'Auto',
+        actions: [
+          {
+            actionId: 'act-1',
+            order: 1,
+            portFamily: 'SecretsVaulting',
+            capability: 'secret:read',
+            operation: 'secret:write',
+          },
+        ],
+      }),
+    ).toThrow(/operation must match capability when both are provided/);
   });
 
   it('rejects action tier overrides that are less strict than the workflow tier', () => {

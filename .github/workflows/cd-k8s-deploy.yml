@@ -1,0 +1,44 @@
+name: CD (Platform Deploy)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate overlay before deploy
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+            OVERLAY="infra/kubernetes/overlays/dev"
+          elif [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            OVERLAY="infra/kubernetes/overlays/staging"
+          else
+            OVERLAY="infra/kubernetes/overlays/prod"
+          fi
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace \
+            k8s.gcr.io/kustomize/kustomize:v5.4.2 build "$OVERLAY"
+
+      - name: Deploy control and execution planes
+        # Intentionally scoped as an explicit operator step for the reference baseline.
+        run: |
+          echo "Attach kubectl auth method and apply in your environment."
+          echo "Example: kubectl apply -k <overlay>"
+          echo "Environment: ${{ github.event.inputs.environment }}"

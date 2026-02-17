@@ -8,6 +8,7 @@ import {
   type RunId as RunIdType,
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
+import { type ErrorFactory, readOptionalString, readRecord, readString } from '../validation/parse-utils.js';
 
 export type CloudEventsSpecVersion = '1.0';
 
@@ -51,25 +52,25 @@ export class CloudEventParseError extends Error {
 }
 
 export function parseCloudEventV1(value: unknown): CloudEventV1 {
-  if (!isRecord(value)) throw new CloudEventParseError('CloudEvent must be an object.');
+  const record = readRecord(value, 'CloudEvent', CloudEventParseError);
 
-  const specversion = readString(value, 'specversion');
+  const specversion = readString(record, 'specversion', CloudEventParseError);
   if (specversion !== '1.0') {
     throw new CloudEventParseError(`Unsupported specversion: ${specversion}`);
   }
 
-  const id = readString(value, 'id');
-  const source = readString(value, 'source');
-  const type = readString(value, 'type');
+  const id = readString(record, 'id', CloudEventParseError);
+  const source = readString(record, 'source', CloudEventParseError);
+  const type = readString(record, 'type', CloudEventParseError);
 
-  const subject = readOptionalString(value, 'subject');
-  const time = readOptionalString(value, 'time');
-  const datacontenttype = readOptionalString(value, 'datacontenttype');
-  const dataschema = readOptionalString(value, 'dataschema');
+  const subject = readOptionalString(record, 'subject', CloudEventParseError);
+  const time = readOptionalIsoTime(record, 'time', CloudEventParseError);
+  const datacontenttype = readOptionalString(record, 'datacontenttype', CloudEventParseError);
+  const dataschema = readOptionalString(record, 'dataschema', CloudEventParseError);
 
-  const data = value['data'];
-  const dataBase64Raw = value['data_base64'];
-  const data_base64 = readOptionalNonEmptyString(dataBase64Raw, 'data_base64');
+  const data = record['data'];
+  const dataBase64Raw = record['data_base64'];
+  const data_base64 = readOptionalNonEmptyString(dataBase64Raw, 'data_base64', CloudEventParseError);
 
   if (data !== undefined && data_base64 !== undefined) {
     throw new CloudEventParseError('CloudEvent cannot include both data and data_base64.');
@@ -88,15 +89,14 @@ export function parseCloudEventV1(value: unknown): CloudEventV1 {
 }
 
 export function parsePortariumCloudEventV1(value: unknown): PortariumCloudEventV1 {
-  if (!isRecord(value)) throw new CloudEventParseError('CloudEvent must be an object.');
+  const record = readRecord(value, 'CloudEvent', CloudEventParseError);
 
-  const base = parseCloudEventV1(value);
+  const base = parseCloudEventV1(record);
 
-  const tenantidRaw = readString(value, 'tenantid');
-  const correlationidRaw = readString(value, 'correlationid');
-
-  const runidRaw = readOptionalString(value, 'runid');
-  const actionidRaw = readOptionalString(value, 'actionid');
+  const tenantidRaw = readString(record, 'tenantid', CloudEventParseError);
+  const correlationidRaw = readString(record, 'correlationid', CloudEventParseError);
+  const runidRaw = readOptionalString(record, 'runid', CloudEventParseError);
+  const actionidRaw = readOptionalString(record, 'actionid', CloudEventParseError);
 
   return {
     ...base,
@@ -107,27 +107,29 @@ export function parsePortariumCloudEventV1(value: unknown): PortariumCloudEventV
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new CloudEventParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new CloudEventParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readOptionalNonEmptyString(value: unknown, key: string): string | undefined {
+function readOptionalNonEmptyString(
+  value: unknown,
+  key: string,
+  createError: ErrorFactory,
+): string | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== 'string' || value.trim() === '') {
-    throw new CloudEventParseError(`${key} must be a non-empty string when provided.`);
+    throw new createError(`${key} must be a non-empty string when provided.`);
+  }
+  return value;
+}
+
+function readOptionalIsoTime(
+  record: Record<string, unknown>,
+  key: string,
+  createError: ErrorFactory,
+): string | undefined {
+  const value = readOptionalString(record, key, createError);
+  if (value !== undefined) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new createError(`${key} must be a valid ISO timestamp.`);
+    }
   }
   return value;
 }
@@ -152,6 +154,3 @@ function buildCloudEventOptionalFields(params: {
   return out;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}

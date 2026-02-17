@@ -67,6 +67,22 @@ export type DomainEventType =
   | 'PortRegistered'
   | 'PortEnabled'
   | 'PortDisabled'
+  // Pack lifecycle
+  | 'PackEnabled'
+  | 'PackDisabled'
+  | 'PackUpgraded'
+  | 'PackResolutionCompleted'
+  // Tenant config
+  | 'TenantConfigUpdated'
+  | 'FeatureFlagToggled'
+  | 'ComplianceProfileEnabled'
+  // Triggers
+  | 'TriggerCreated'
+  | 'TriggerActivated'
+  | 'TriggerDeactivated'
+  | 'TriggerFired'
+  // Work item extended
+  | 'WorkItemTransitioned'
   // Catch-all
   | 'Unknown';
 
@@ -152,6 +168,22 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'PortRegistered',
   'PortEnabled',
   'PortDisabled',
+  // Pack lifecycle
+  'PackEnabled',
+  'PackDisabled',
+  'PackUpgraded',
+  'PackResolutionCompleted',
+  // Tenant config
+  'TenantConfigUpdated',
+  'FeatureFlagToggled',
+  'ComplianceProfileEnabled',
+  // Triggers
+  'TriggerCreated',
+  'TriggerActivated',
+  'TriggerDeactivated',
+  'TriggerFired',
+  // Work item extended
+  'WorkItemTransitioned',
   // Catch-all
   'Unknown',
 ]);

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "opencontrol",
+  "providerName": "OpenControl",
+  "portFamilies": ["ComplianceGrc"],
+  "upstream": {
+    "kind": "other",
+    "repoUrl": "https://github.com/opencontrol/standards"
+  },
+  "license": {
+    "spdxId": "CC0-1.0",
+    "classification": "safe_to_reuse",
+    "notes": "Public domain compliance control standards."
+  },
+  "extraction": {
+    "modelSources": ["**/*.yaml"],
+    "notes": "Extract compliance control framework definitions."
+  }
+}

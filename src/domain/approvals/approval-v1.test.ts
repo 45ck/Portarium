@@ -81,6 +81,71 @@ describe('parseApprovalV1: validation', () => {
     ).toThrow(/decidedAtIso/i);
   });
 
+  it('rejects invalid requestedAtIso and dueAtIso formats', () => {
+    expect(() =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-1',
+        workspaceId: 'ws-1',
+        runId: 'run-1',
+        planId: 'plan-1',
+        prompt: 'Approve Plan',
+        requestedAtIso: 'not-a-date',
+        requestedByUserId: 'user-1',
+        status: 'Pending',
+      }),
+    ).toThrow(/requestedAtIso must be a valid ISO timestamp/);
+
+    expect(() =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-2',
+        workspaceId: 'ws-1',
+        runId: 'run-2',
+        planId: 'plan-2',
+        prompt: 'Approve Plan',
+        requestedAtIso: '2026-02-17T00:00:00.000Z',
+        requestedByUserId: 'user-1',
+        dueAtIso: 'not-a-date',
+        status: 'Pending',
+      }),
+    ).toThrow(/dueAtIso must be a valid ISO timestamp/);
+  });
+
+  it('rejects decision and due dates that precede requestedAtIso', () => {
+    expect(() =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-3',
+        workspaceId: 'ws-1',
+        runId: 'run-3',
+        planId: 'plan-3',
+        prompt: 'Approve Plan',
+        requestedAtIso: '2026-02-17T00:00:00.000Z',
+        requestedByUserId: 'user-1',
+        dueAtIso: '2026-02-16T00:00:00.000Z',
+        status: 'Pending',
+      }),
+    ).toThrow(/dueAtIso must not precede requestedAtIso/);
+
+    expect(() =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-4',
+        workspaceId: 'ws-1',
+        runId: 'run-4',
+        planId: 'plan-4',
+        prompt: 'Approve Plan',
+        requestedAtIso: '2026-02-17T00:00:00.000Z',
+        requestedByUserId: 'user-1',
+        status: 'Denied',
+        decidedAtIso: '2026-02-16T00:00:00.000Z',
+        decidedByUserId: 'user-2',
+        rationale: 'Out of order',
+      }),
+    ).toThrow(/decidedAtIso must not precede requestedAtIso/);
+  });
+
   it('rejects decision fields on pending approvals', () => {
     expect(() =>
       parseApprovalV1({

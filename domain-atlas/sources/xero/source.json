@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "xero",
+  "providerName": "Xero",
+  "portFamilies": ["FinanceAccounting"],
+  "upstream": {
+    "kind": "sdk",
+    "repoUrl": "https://github.com/XeroAPI/xero-node"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "Node SDK for Xero accounting API."
+  },
+  "extraction": {
+    "modelSources": ["src/gen/model/**/*"],
+    "notes": "Extract Xero accounting entity models from generated SDK."
+  }
+}

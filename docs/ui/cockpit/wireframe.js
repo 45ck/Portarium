@@ -702,6 +702,7 @@ function render(state) {
   setStatusBar(state.systemState);
   activateScreen(getScreenFromHash());
   ABToggle.applyAll();
+  AISummaryToggle.apply();
 }
 
 /* ============================================================
@@ -816,6 +817,85 @@ const ABToggle = (function () {
   }
 
   return { register, injectToggles, applyVariant, applyAll, getVariant, setVariant };
+})();
+
+/* ============================================================
+   AI SUMMARY FEATURE FLAG
+   ============================================================ */
+const AISummaryToggle = (function () {
+  'use strict';
+
+  const STORAGE_KEY = 'portarium_ai_summary';
+  let enabled = false;
+
+  function loadState() {
+    try {
+      return sessionStorage.getItem(STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  function saveState(val) {
+    sessionStorage.setItem(STORAGE_KEY, String(val));
+  }
+
+  function isEnabled() {
+    return enabled;
+  }
+
+  function toggle() {
+    enabled = !enabled;
+    saveState(enabled);
+    apply();
+    return enabled;
+  }
+
+  function apply() {
+    /* Toggle button state */
+    var btn = document.querySelector('.js-ai-toggle');
+    if (btn) {
+      btn.classList.toggle('ai-toggle--active', enabled);
+      btn.setAttribute('aria-pressed', String(enabled));
+    }
+
+    /* Show/hide all AI summary blocks */
+    var summaries = document.querySelectorAll('.ai-summary');
+    summaries.forEach(function (el) {
+      el.classList.toggle('ai-summary--hidden', !enabled);
+    });
+  }
+
+  function init() {
+    enabled = loadState();
+
+    /* Inject toggle button into Approvals screen header */
+    var approvalsScreen = document.querySelector('#screen-approvals');
+    if (!approvalsScreen) return;
+    var actions = approvalsScreen.querySelector('.screen__actions');
+    if (!actions) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'ai-toggle js-ai-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Toggle AI summaries');
+    btn.setAttribute('aria-pressed', String(enabled));
+    btn.title = 'Toggle AI summaries on approval cards';
+    if (enabled) btn.classList.add('ai-toggle--active');
+
+    btn.innerHTML =
+      '<span class="ai-toggle__dot"></span>' +
+      '<span>AI Summary</span>';
+
+    btn.addEventListener('click', function () {
+      toggle();
+    });
+
+    actions.insertBefore(btn, actions.firstChild);
+    apply();
+  }
+
+  return { init, isEnabled, toggle, apply };
 })();
 
 /* ============================================================
@@ -1030,6 +1110,9 @@ function main() {
   /* A/B Toggle */
   ABToggle.injectToggles();
 
+  /* AI Summary Toggle */
+  AISummaryToggle.init();
+
   /* Triage mode toggle */
   document.addEventListener('click', function (e) {
     var modeBtn = e.target.closest('.js-triage-mode');
@@ -1062,7 +1145,7 @@ function main() {
       var action = rationaleEl.dataset.pendingAction;
       rationaleEl.hidden = true;
       document.getElementById('triageRationaleInput').value = '';
-      triageAction(action === 'deny' ? 'skip' : action);
+      triageAction(action);
     }
     if (e.target.id === 'triageRationaleCancel') {
       document.getElementById('triageRationale').hidden = true;
@@ -1082,17 +1165,52 @@ function main() {
     }
   });
 
+  /* AI Summary: toggle between quick and detailed mode */
+  document.addEventListener('click', function (e) {
+    var toggleBtn = e.target.closest('.js-ai-summary-toggle');
+    if (!toggleBtn) return;
+
+    var targetId = toggleBtn.getAttribute('aria-controls');
+    var detail = document.getElementById(targetId);
+    if (!detail) return;
+
+    var isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+    toggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+    detail.hidden = isExpanded;
+    toggleBtn.textContent = isExpanded ? 'Details' : 'Collapse';
+  });
+
+  /* AI Summary: "Why?" reasoning links */
+  document.addEventListener('click', function (e) {
+    var whyBtn = e.target.closest('.js-ai-why');
+    if (!whyBtn) return;
+
+    var detail = whyBtn.nextElementSibling;
+    if (detail && detail.classList.contains('ai-summary__why-detail')) {
+      detail.hidden = !detail.hidden;
+      whyBtn.textContent = detail.hidden ? 'Why?' : 'Hide reasoning';
+    }
+  });
+
   /* Triage keyboard shortcuts */
   document.addEventListener('keydown', function (e) {
     var triageEl = document.getElementById('triage');
     var rationaleEl = document.getElementById('triageRationale');
     if (!triageEl || triageEl.hidden) return;
     if (rationaleEl && !rationaleEl.hidden) return;
+    /* Guard: skip when focus is in a text input (prevents firing in forms) */
+    var focused = document.activeElement;
+    if (focused) {
+      var tag = focused.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (focused.isContentEditable) return;
+    }
     var key = e.key.toLowerCase();
     if (key === 'a') triageAction('approve');
     else if (key === 'd') triageAction('deny');
     else if (key === 'r') triageAction('changes');
     else if (key === 's') triageAction('skip');
+    else if (key === 'i') AISummaryToggle.toggle();
     else if (key === ' ') {
       e.preventDefault();
       var back = document.querySelector('.triage-card__back');

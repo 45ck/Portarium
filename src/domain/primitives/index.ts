@@ -40,7 +40,7 @@ export function unbrand<T>(branded: Branded<T, string>): T {
 export type TenantId = Branded<string, 'TenantId'>;
 
 /** Unique identifier for a workspace (alias for TenantId in v1). */
-export type WorkspaceId = Branded<string, 'WorkspaceId'>;
+export type WorkspaceId = TenantId;
 
 /** Unique identifier for a workflow definition. */
 export type WorkflowId = Branded<string, 'WorkflowId'>;
@@ -138,12 +138,36 @@ export type OrderId = Branded<string, 'OrderId'>;
 /** Unique identifier for a financial account. */
 export type FinancialAccountId = Branded<string, 'FinancialAccountId'>;
 
+/** Unique identifier for a pack schema extension. */
+export type SchemaExtensionId = Branded<string, 'SchemaExtensionId'>;
+
+/** Unique identifier for a pack workflow definition. */
+export type WorkflowDefinitionId = Branded<string, 'WorkflowDefinitionId'>;
+
+/** Unique identifier for a pack connector mapping. */
+export type ConnectorMappingId = Branded<string, 'ConnectorMappingId'>;
+
+/** Unique identifier for a pack UI template. */
+export type UiTemplateId = Branded<string, 'UiTemplateId'>;
+
+/** Unique identifier for a pack compliance profile. */
+export type ComplianceProfileId = Branded<string, 'ComplianceProfileId'>;
+
+/** Unique identifier for a tenant configuration. */
+export type TenantConfigId = Branded<string, 'TenantConfigId'>;
+
+/** Unique identifier for a workflow trigger definition. */
+export type TriggerDefinitionId = Branded<string, 'TriggerDefinitionId'>;
+
+/** Unique identifier for a provider catalog entry. */
+export type CatalogEntryId = Branded<string, 'CatalogEntryId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
 
 export const TenantId = (value: string): TenantId => brand<string, 'TenantId'>(value);
-export const WorkspaceId = (value: string): WorkspaceId => brand<string, 'WorkspaceId'>(value);
+export const WorkspaceId = TenantId;
 export const WorkflowId = (value: string): WorkflowId => brand<string, 'WorkflowId'>(value);
 export const RunId = (value: string): RunId => brand<string, 'RunId'>(value);
 export const CorrelationId = (value: string): CorrelationId =>
@@ -182,6 +206,22 @@ export const ProductId = (value: string): ProductId => brand<string, 'ProductId'
 export const OrderId = (value: string): OrderId => brand<string, 'OrderId'>(value);
 export const FinancialAccountId = (value: string): FinancialAccountId =>
   brand<string, 'FinancialAccountId'>(value);
+export const SchemaExtensionId = (value: string): SchemaExtensionId =>
+  brand<string, 'SchemaExtensionId'>(value);
+export const WorkflowDefinitionId = (value: string): WorkflowDefinitionId =>
+  brand<string, 'WorkflowDefinitionId'>(value);
+export const ConnectorMappingId = (value: string): ConnectorMappingId =>
+  brand<string, 'ConnectorMappingId'>(value);
+export const UiTemplateId = (value: string): UiTemplateId =>
+  brand<string, 'UiTemplateId'>(value);
+export const ComplianceProfileId = (value: string): ComplianceProfileId =>
+  brand<string, 'ComplianceProfileId'>(value);
+export const TenantConfigId = (value: string): TenantConfigId =>
+  brand<string, 'TenantConfigId'>(value);
+export const TriggerDefinitionId = (value: string): TriggerDefinitionId =>
+  brand<string, 'TriggerDefinitionId'>(value);
+export const CatalogEntryId = (value: string): CatalogEntryId =>
+  brand<string, 'CatalogEntryId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "twilio-oai",
+  "providerName": "Twilio OpenAPI",
+  "portFamilies": ["CommsCollaboration"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/twilio/twilio-oai"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "Official Twilio OpenAPI specs."
+  },
+  "extraction": {
+    "modelSources": ["spec/**/*.json"],
+    "notes": "Extract communications API entity schemas."
+  }
+}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portarium
+  labels:
+    app.kubernetes.io/name: portarium
+    app.kubernetes.io/part-of: portarium-control-plane

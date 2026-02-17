@@ -2,21 +2,34 @@ import {
   AdapterId,
   MachineId,
   WorkspaceId,
-  type AdapterId as AdapterIdType,
+  isPortFamily,
   type MachineId as MachineIdType,
   type PortFamily,
   type WorkspaceId as WorkspaceIdType,
+  type AdapterId as AdapterIdType,
 } from '../primitives/index.js';
-import { isPortFamily } from '../primitives/index.js';
+import {
+  isAllowedPortCapability,
+  type PortCapability,
+  PORT_FAMILY_CAPABILITIES,
+} from '../ports/port-family-capabilities-v1.js';
+import {
+  readBoolean,
+  readInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type CapabilityClaimV1 = Readonly<{
+  capability?: PortCapability;
   operation: string;
   requiresAuth: boolean;
   inputKind?: string;
   outputKind?: string;
 }>;
 
-export type MachineRegistrationV1 = Readonly<{
+export type AdapterMachineEntryV1 = Readonly<{
   machineId: MachineIdType;
   endpointUrl: string;
   active: boolean;
@@ -32,7 +45,7 @@ export type AdapterRegistrationV1 = Readonly<{
   portFamily: PortFamily;
   enabled: boolean;
   capabilityMatrix: readonly CapabilityClaimV1[];
-  machineRegistrations?: readonly MachineRegistrationV1[];
+  machineRegistrations?: readonly AdapterMachineEntryV1[];
 }>;
 
 export class AdapterRegistrationParseError extends Error {
@@ -43,33 +56,26 @@ export class AdapterRegistrationParseError extends Error {
   }
 }
 
-const OPERATION_RE = /^[a-z]+:[a-z]+$/;
-
 export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV1 {
-  if (!isRecord(value)) {
-    throw new AdapterRegistrationParseError('AdapterRegistration must be an object.');
-  }
+  const record = readRecord(value, 'AdapterRegistration', AdapterRegistrationParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', AdapterRegistrationParseError);
+  if (schemaVersion !== 1) {
     throw new AdapterRegistrationParseError('schemaVersion must be 1.');
   }
 
-  const adapterId = AdapterId(readString(value, 'adapterId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const providerSlug = readString(value, 'providerSlug');
+  const adapterId = AdapterId(readString(record, 'adapterId', AdapterRegistrationParseError));
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', AdapterRegistrationParseError));
+  const providerSlug = readString(record, 'providerSlug', AdapterRegistrationParseError);
 
-  const portFamilyRaw = readString(value, 'portFamily');
+  const portFamilyRaw = readString(record, 'portFamily', AdapterRegistrationParseError);
   if (!isPortFamily(portFamilyRaw)) {
     throw new AdapterRegistrationParseError(`Invalid portFamily: "${portFamilyRaw}"`);
   }
 
-  if (typeof value['enabled'] !== 'boolean') {
-    throw new AdapterRegistrationParseError('enabled must be a boolean.');
-  }
-  const enabled: boolean = value['enabled'];
-
-  const capabilityMatrix = parseCapabilityMatrix(value['capabilityMatrix']);
-  const machineRegistrations = parseMachineRegistrations(value['machineRegistrations']);
+  const enabled = readBoolean(record, 'enabled', AdapterRegistrationParseError);
+  const capabilityMatrix = parseCapabilityMatrix(record['capabilityMatrix'], portFamilyRaw);
+  const machineRegistrations = parseMachineRegistrations(record['machineRegistrations']);
 
   return {
     schemaVersion: 1,
@@ -83,143 +89,156 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
   };
 }
 
-function parseCapabilityMatrix(raw: unknown): readonly CapabilityClaimV1[] {
+function parseCapabilityMatrix(
+  raw: unknown,
+  portFamily: PortFamily,
+): readonly CapabilityClaimV1[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new AdapterRegistrationParseError('capabilityMatrix must be a non-empty array.');
   }
 
-  return raw.map((item: unknown, i: number) => {
-    if (!isRecord(item)) {
-      throw new AdapterRegistrationParseError(`capabilityMatrix[${i}] must be an object.`);
-    }
+  return raw.map((item, i) => parseCapability(item, `capabilityMatrix[${i}]`, portFamily));
+}
 
-    const operation = readCapString(item, 'operation', i);
-    if (!OPERATION_RE.test(operation)) {
+function parseCapability(
+  raw: unknown,
+  path: string,
+  portFamily: PortFamily,
+): CapabilityClaimV1 {
+  const record = assertRecord(raw, path);
+  const capability = parseOptionalCapability(record, path);
+  const operation = parseOperation(record, path, capability);
+  const requiresAuth = readBoolean(record, `${path}.requiresAuth`, AdapterRegistrationParseError);
+  const inputKind = readOptionalString(record, `${path}.inputKind`, AdapterRegistrationParseError);
+  const outputKind = readOptionalString(record, `${path}.outputKind`, AdapterRegistrationParseError);
+
+  if (capability !== undefined) {
+    if (!isAllowedPortCapability(portFamily, capability)) {
+      const known = PORT_FAMILY_CAPABILITIES[portFamily].join(', ');
       throw new AdapterRegistrationParseError(
-        `capabilityMatrix[${i}].operation must match "entity:verb" format.`,
+        `${path}.capability '${String(capability)}' is not supported for port family ${portFamily}. Supported values are: ${known}`,
       );
     }
-
-    if (typeof item['requiresAuth'] !== 'boolean') {
-      throw new AdapterRegistrationParseError(
-        `capabilityMatrix[${i}].requiresAuth must be a boolean.`,
-      );
-    }
-    const requiresAuth: boolean = item['requiresAuth'];
-
-    const inputKind = readCapOptionalString(item, 'inputKind', i);
-    const outputKind = readCapOptionalString(item, 'outputKind', i);
-
     return {
-      operation,
+      ...(capability !== undefined ? { capability } : {}),
+      operation: capability,
       requiresAuth,
       ...(inputKind !== undefined ? { inputKind } : {}),
       ...(outputKind !== undefined ? { outputKind } : {}),
     };
-  });
+  }
+
+  if (operation === undefined) {
+    throw new AdapterRegistrationParseError(
+      `${path} must specify either capability or operation.`,
+    );
+  }
+
+  return {
+    operation,
+    requiresAuth,
+    ...(inputKind !== undefined ? { inputKind } : {}),
+    ...(outputKind !== undefined ? { outputKind } : {}),
+  };
 }
 
-function parseMachineRegistrations(raw: unknown): readonly MachineRegistrationV1[] | undefined {
-  if (raw === undefined) return undefined;
+function parseOptionalCapability(
+  record: Record<string, unknown>,
+  path: string,
+): PortCapability | undefined {
+  const value = readOptionalString(record, `${path}.capability`, AdapterRegistrationParseError);
+  return value === undefined ? undefined : (value as PortCapability);
+}
 
+function parseOperation(
+  record: Record<string, unknown>,
+  path: string,
+  capability?: PortCapability,
+): string | undefined {
+  const operation = readOptionalString(record, `${path}.operation`, AdapterRegistrationParseError);
+  if (operation === undefined) return undefined;
+
+  if (capability !== undefined && operation !== capability) {
+    throw new AdapterRegistrationParseError(
+      `${path}.operation must match capability when both are provided.`,
+    );
+  }
+
+  if (!capability && !/^[^:\s]+:[^:\s]+$/.test(operation)) {
+    throw new AdapterRegistrationParseError(
+      `${path}.operation must match "entity:verb" format.`,
+    );
+  }
+
+  return operation;
+}
+
+function parseMachineRegistrations(
+  raw: unknown,
+): readonly AdapterMachineEntryV1[] | undefined {
+  if (raw === undefined) return undefined;
   if (!Array.isArray(raw)) {
     throw new AdapterRegistrationParseError('machineRegistrations must be an array when provided.');
   }
 
-  return raw.map((item: unknown, i: number) => {
-    if (!isRecord(item)) {
-      throw new AdapterRegistrationParseError(`machineRegistrations[${i}] must be an object.`);
-    }
-
-    const machineId = MachineId(readMachineString(item, 'machineId', i));
-
-    const endpointUrl = readMachineString(item, 'endpointUrl', i);
-    if (!endpointUrl.startsWith('http://') && !endpointUrl.startsWith('https://')) {
-      throw new AdapterRegistrationParseError(
-        `machineRegistrations[${i}].endpointUrl must start with http:// or https://.`,
-      );
-    }
-
-    if (typeof item['active'] !== 'boolean') {
-      throw new AdapterRegistrationParseError(
-        `machineRegistrations[${i}].active must be a boolean.`,
-      );
-    }
-    const active: boolean = item['active'];
-
-    const displayName = readMachineOptionalString(item, 'displayName', i);
-    const authHint = readMachineOptionalString(item, 'authHint', i);
-
-    return {
-      machineId,
-      endpointUrl,
-      active,
-      ...(displayName !== undefined ? { displayName } : {}),
-      ...(authHint !== undefined ? { authHint } : {}),
-    };
-  });
+  return raw.map((item, i) => parseMachineRegistration(item, `machineRegistrations[${i}]`));
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AdapterRegistrationParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readCapString(obj: Record<string, unknown>, key: string, index: number): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
+function parseMachineRegistration(
+  raw: unknown,
+  path: string,
+): AdapterMachineEntryV1 {
+  const record = assertRecord(raw, path);
+  const machineId = MachineId(readMachineField(record, `${path}.machineId`, 'machineId'));
+  const endpointUrl = readMachineField(record, `${path}.endpointUrl`, 'endpointUrl');
+  if (!endpointUrl.startsWith('http://') && !endpointUrl.startsWith('https://')) {
     throw new AdapterRegistrationParseError(
-      `capabilityMatrix[${index}].${key} must be a non-empty string.`,
+      `${path}.endpointUrl must start with http:// or https://.`,
     );
   }
-  return v;
+  const active = readBoolean(record, `${path}.active`, AdapterRegistrationParseError);
+  const displayName = parseMachineFieldOptional(record, `${path}.displayName`, 'displayName');
+  const authHint = parseMachineFieldOptional(record, `${path}.authHint`, 'authHint');
+
+  return {
+    machineId,
+    endpointUrl,
+    active,
+    ...(displayName ? { displayName } : {}),
+    ...(authHint ? { authHint } : {}),
+  };
 }
 
-function readCapOptionalString(
-  obj: Record<string, unknown>,
+function readMachineField(
+  record: Record<string, unknown>,
+  label: string,
   key: string,
-  index: number,
-): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AdapterRegistrationParseError(
-      `capabilityMatrix[${index}].${key} must be a non-empty string when provided.`,
-    );
+): string {
+  const value = record[key];
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new AdapterRegistrationParseError(`${label} must be a non-empty string.`);
   }
-  return v;
+  return value;
 }
 
-function readMachineString(obj: Record<string, unknown>, key: string, index: number): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AdapterRegistrationParseError(
-      `machineRegistrations[${index}].${key} must be a non-empty string.`,
-    );
-  }
-  return v;
-}
-
-function readMachineOptionalString(
-  obj: Record<string, unknown>,
+function parseMachineFieldOptional(
+  record: Record<string, unknown>,
+  label: string,
   key: string,
-  index: number,
 ): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AdapterRegistrationParseError(
-      `machineRegistrations[${index}].${key} must be a non-empty string when provided.`,
-    );
+  const value = record[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new AdapterRegistrationParseError(`${label} must be a non-empty string when provided.`);
   }
-  return v;
+  return value;
+}
+
+function assertRecord(value: unknown, path: string): Record<string, unknown> {
+  if (!isRecord(value)) {
+    throw new AdapterRegistrationParseError(`${path} must be an object.`);
+  }
+  return value;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

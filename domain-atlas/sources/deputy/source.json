@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "deputy",
+  "providerName": "Deputy",
+  "portFamilies": ["HrisHcm"],
+  "upstream": {
+    "kind": "docs",
+    "repoUrl": "https://developer.deputy.com"
+  },
+  "license": {
+    "spdxId": "Proprietary",
+    "classification": "study_only",
+    "notes": "Proprietary API; docs reference only, no source to clone."
+  },
+  "extraction": {
+    "modelSources": ["api/v1/**/*"],
+    "notes": "Reference Deputy REST API documentation for entity definitions."
+  }
+}

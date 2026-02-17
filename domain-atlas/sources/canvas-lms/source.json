@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PLANNED",
+  "providerId": "canvas-lms",
+  "providerName": "Canvas LMS",
+  "portFamilies": ["ProjectsWorkMgmt"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/instructure/canvas-lms"
+  },
+  "license": {
+    "spdxId": "AGPL-3.0-only",
+    "classification": "study_only",
+    "notes": "AGPL-licensed; study API schemas only, do not vendor source."
+  },
+  "extraction": {
+    "modelSources": ["app/controllers/api/**/*"],
+    "notes": "Extract REST API entity definitions from Rails controllers."
+  }
+}

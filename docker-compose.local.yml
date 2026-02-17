@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/control-plane.Dockerfile
+    container_name: portarium-api
+    environment:
+      PORTARIUM_ENVIRONMENT: local
+      PORTARIUM_RUNTIME_PROFILE: local-sandbox
+    depends_on:
+      temporal:
+        condition: service_started
+      evidence-db:
+        condition: service_healthy
+      evidence-store:
+        condition: service_healthy
+      vault:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    networks:
+      - portarium-control
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    container_name: portarium-worker
+    environment:
+      PORTARIUM_ENVIRONMENT: local
+      PORTARIUM_RUNTIME_PROFILE: local-sandbox
+    depends_on:
+      temporal:
+        condition: service_started
+      vault:
+        condition: service_started
+      evidence-db:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    ports:
+      - "8081:8081"
+    networks:
+      - portarium-control

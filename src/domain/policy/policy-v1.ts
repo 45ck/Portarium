@@ -10,6 +10,12 @@ import {
 import type { SodConstraintV1 } from './sod-constraints-v1.js';
 import { parseSodConstraintsV1 } from './sod-constraints-v1.js';
 
+export type PolicyInlineRuleV1 = Readonly<{
+  ruleId: string;
+  condition: string;
+  effect: 'Allow' | 'Deny';
+}>;
+
 export type PolicyV1 = Readonly<{
   schemaVersion: 1;
   policyId: PolicyIdType;
@@ -22,6 +28,7 @@ export type PolicyV1 = Readonly<{
   createdAtIso: string;
   createdByUserId: UserIdType;
   sodConstraints?: readonly SodConstraintV1[];
+  rules?: readonly PolicyInlineRuleV1[];
 }>;
 
 export class PolicyParseError extends Error {
@@ -57,6 +64,9 @@ export function parsePolicyV1(value: unknown): PolicyV1 {
   const sodConstraints =
     sodConstraintsRaw === undefined ? undefined : parseSodConstraintsV1(sodConstraintsRaw);
 
+  const rulesRaw = value['rules'];
+  const rules = rulesRaw === undefined ? undefined : parsePolicyRulesV1(rulesRaw);
+
   return {
     schemaVersion: 1,
     policyId,
@@ -69,7 +79,26 @@ export function parsePolicyV1(value: unknown): PolicyV1 {
     createdAtIso,
     createdByUserId,
     ...(sodConstraints ? { sodConstraints } : {}),
+    ...(rules ? { rules } : {}),
   };
+}
+
+function parsePolicyRulesV1(value: unknown): readonly PolicyInlineRuleV1[] {
+  if (!Array.isArray(value)) {
+    throw new PolicyParseError('rules must be an array.');
+  }
+  return value.map((r, idx) => parsePolicyRuleV1(r, `rules[${idx}]`));
+}
+
+function parsePolicyRuleV1(value: unknown, pathLabel: string): PolicyInlineRuleV1 {
+  if (!isRecord(value)) throw new PolicyParseError(`${pathLabel} must be an object.`);
+  const ruleId = readString(value, 'ruleId');
+  const condition = readString(value, 'condition');
+  const effectRaw = readString(value, 'effect');
+  if (effectRaw !== 'Allow' && effectRaw !== 'Deny') {
+    throw new PolicyParseError(`${pathLabel}.effect must be "Allow" or "Deny".`);
+  }
+  return { ruleId, condition, effect: effectRaw };
 }
 
 function readString(obj: Record<string, unknown>, key: string): string {

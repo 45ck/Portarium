@@ -10,6 +10,11 @@ import {
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import {
+  readIsoString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type WorkspaceV1 = Readonly<{
   workspaceId: WorkspaceIdType;
@@ -30,18 +35,15 @@ export class WorkspaceParseError extends Error {
 }
 
 export function parseWorkspaceV1(value: unknown): WorkspaceV1 {
-  if (!isRecord(value)) {
-    throw new WorkspaceParseError('Workspace must be an object.');
-  }
+  const record = readRecord(value, 'Workspace', WorkspaceParseError);
 
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const name = readString(value, 'name');
-  const createdAtIso = readString(value, 'createdAtIso');
-  parseIsoString(createdAtIso, 'createdAtIso');
-  const userIds = parseOptionalIdArray(value, 'userIds', UserId);
-  const projectIds = parseOptionalIdArray(value, 'projectIds', ProjectId);
-  const credentialGrantIds = parseOptionalIdArray(value, 'credentialGrantIds', CredentialGrantId);
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', WorkspaceParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', WorkspaceParseError));
+  const name = readString(record, 'name', WorkspaceParseError);
+  const createdAtIso = readIsoString(record, 'createdAtIso', WorkspaceParseError);
+  const userIds = parseOptionalIdArray(record, 'userIds', UserId);
+  const projectIds = parseOptionalIdArray(record, 'projectIds', ProjectId);
+  const credentialGrantIds = parseOptionalIdArray(record, 'credentialGrantIds', CredentialGrantId);
 
   return {
     workspaceId,
@@ -52,14 +54,6 @@ export function parseWorkspaceV1(value: unknown): WorkspaceV1 {
     ...(projectIds ? { projectIds } : {}),
     ...(credentialGrantIds ? { credentialGrantIds } : {}),
   };
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkspaceParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
 }
 
 function parseOptionalIdArray<T>(
@@ -92,13 +86,3 @@ function parseOptionalIdArray<T>(
   return items;
 }
 
-function parseIsoString(value: string, label: string): void {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new WorkspaceParseError(`${label} must be a valid ISO timestamp.`);
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}

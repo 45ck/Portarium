@@ -1,0 +1,23 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: portarium-control-plane
+  namespace: portarium
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-control-plane
+      app.kubernetes.io/part-of: portarium
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: portarium-execution-plane
+  namespace: portarium
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-execution-plane
+      app.kubernetes.io/part-of: portarium
