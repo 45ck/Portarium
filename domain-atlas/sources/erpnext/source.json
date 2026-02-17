@@ -1,20 +1,24 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "ACTIVE",
   "providerId": "erpnext",
   "providerName": "ERPNext",
   "portFamilies": ["FinanceAccounting", "ProcurementSpend"],
   "upstream": {
     "kind": "git",
     "repoUrl": "https://github.com/frappe/erpnext",
-    "version": "pinned-by-commit"
+    "version": "pinned-by-commit",
+    "commit": "c8c54a42e2c6491c5a5ba037e21107c4c7f6d23d",
+    "retrievedAt": "2026-02-16T23:09:58.442Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+    "spdxId": "GPL-3.0-only",
+    "classification": "study_only",
+    "notes": "Upstream license.txt is GPLv3. Use for pattern extraction + SoR integration; do not vendor upstream code into Portarium core."
   },
   "extraction": {
-    "modelSources": ["erpnext/**", "frappe/**"],
-    "notes": "TBD: likely source of truth is DocTypes + server-side models."
+    "modelSources": ["erpnext/**/doctype/**/**/*.json"],
+    "command": "node scripts/domain-atlas/extract-erpnext-cif.mjs",
+    "notes": "Initial extraction uses DocType JSON as the most honest, integration-relevant schema source. MVP scope: Customer/Supplier, Sales Invoice + items, Purchase Order + items, Payment Entry, Item."
   }
 }

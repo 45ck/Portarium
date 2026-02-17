@@ -14,6 +14,7 @@ authn
 authz
 OIDC
 RBAC
+superadmin
 APQC
 WORM
 CloudEvents
@@ -198,6 +199,21 @@ FreeIPA
 Authentik
 Zitadel
 FusionAuth
+
+# Stripe / PaymentsBilling schema words
+prorations
+paymentintents
+topup
+noncompliant
+
+# Kill Bill (JAX-RS) extraction
+jaxrs
+JAXRS
+
+# Git / OpenAPI jargon
+worktree
+invoiceitem
+idemp
 HashiCorp
 Infisical
 Doppler

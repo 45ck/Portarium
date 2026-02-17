@@ -104,8 +104,19 @@ describe('Domain Atlas artefacts', () => {
     }
 
     for (const providerId of mappingProviders) {
-      const mapping = await readJson(path.join(mappingsRoot, providerId, 'mapping.json'));
-      expect(() => validateOrThrow(validators.mapping, mapping)).not.toThrow();
+      const providerDir = path.join(mappingsRoot, providerId);
+      const files = await readdir(providerDir, { withFileTypes: true });
+      const mappings = files
+        .filter((e) => e.isFile() && e.name.endsWith('.mapping.json'))
+        .map((e) => e.name)
+        .sort((a, b) => a.localeCompare(b));
+
+      expect(mappings.length).toBeGreaterThan(0);
+
+      for (const filename of mappings) {
+        const mapping = await readJson(path.join(providerDir, filename));
+        expect(() => validateOrThrow(validators.mapping, mapping)).not.toThrow();
+      }
     }
 
     for (const providerId of capabilityProviders) {

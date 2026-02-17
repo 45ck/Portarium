@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-02-16T23:49:51.961Z",
+  "domainAtlas": {
+    "erpnext": {
+      "status": "TODO",
+      "workItem": "bead-0010",
+      "notes": "Upstream intake manifest exists; commit pin + CIF/mappings/capabilities pending."
+    },
+    "keycloak": {
+      "status": "ACTIVE",
+      "workItem": "bead-0020",
+      "notes": "Vendored upstream as a git submodule; generating CIF/mappings/capabilities from Admin REST representations under core/src/main/java/org/keycloak/representations/idm."
+    },
+    "killbill": {
+      "status": "DONE",
+      "workItem": "bead-0017",
+      "notes": "CIF/mappings/capabilities added; upstream vendored as a git submodule; CIF extraction script available at scripts/domain-atlas/extract-killbill-cif.mjs."
+    },
+    "mautic": {
+      "status": "TODO",
+      "notes": "Upstream commit pinned; CIF/mappings/capabilities pending."
+    },
+    "odoo": {
+      "status": "ACTIVE",
+      "workItem": "bead-0006",
+      "notes": "Upstream pinned; seeded CIF extraction (res.partner + res.partner.category subset) via scripts/domain-atlas/extract-odoo.mjs."
+    },
+    "stripe": {
+      "status": "DONE",
+      "workItem": "bead-0002",
+      "notes": "Example provider validates schemas; upstream pinned; CIF/mappings/capabilities present."
+    },
+    "vault": {
+      "status": "TODO",
+      "notes": "Upstream intake manifest exists; commit pin + CIF/mappings/capabilities pending."
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "erpnext",
+  "providerName": "ERPNext",
+  "portFamily": "FinanceAccounting",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "session"],
+    "notes": "ERPNext (Frappe) supports API key/secret token auth and session-based auth. Exact auth posture depends on deployment policy."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat limits as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "notes": "Frappe provides webhook notifications via configuration; polling remains a portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No first-class idempotency keys. Use deterministic document naming/external keys and verify by query + read-after-write."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via read-after-write; predicted effects require a provider-side simulation surface (not standard)."
+  },
+  "capabilities": [
+    {
+      "capability": "party:read",
+      "supported": true,
+      "operations": ["getCustomer", "listCustomers", "getSupplier", "listSuppliers"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "party:write",
+      "supported": true,
+      "operations": ["createCustomer", "updateCustomer", "createSupplier", "updateSupplier"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Idempotency depends on naming series and unique constraints. Prefer adapter-side dedupe + verification."
+    },
+    {
+      "capability": "invoice:read",
+      "supported": true,
+      "operations": ["getSalesInvoice", "listSalesInvoices"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "invoice:write",
+      "supported": true,
+      "operations": ["createSalesInvoice", "submitSalesInvoice", "cancelSalesInvoice"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Cancellation can compensate in some workflows, but treat invoice writes as high-liability."
+    },
+    {
+      "capability": "payment:read",
+      "supported": true,
+      "operations": ["getPaymentEntry", "listPaymentEntries"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "payment:write",
+      "supported": true,
+      "operations": ["createPaymentEntry", "submitPaymentEntry", "cancelPaymentEntry"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      }
+    },
+    {
+      "capability": "product:read",
+      "supported": true,
+      "operations": ["getItem", "listItems"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    }
+  ],
+  "notes": "Initial matrix derived from DocType models and common ERPNext workflows. Refine against concrete REST resources and deployment permissions."
+}

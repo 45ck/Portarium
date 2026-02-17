@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "erpnext",
+  "portFamily": "ProcurementSpend",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Supplier",
+      "fieldMappings": {
+        "displayName": "supplier_name",
+        "email": "email_id",
+        "phone": "mobile_no",
+        "currency": "default_currency",
+        "taxId": "tax_id"
+      },
+      "notes": "ERPNext Supplier maps to Party with role tags applied by the adapter (vendor)."
+    },
+    {
+      "canonicalObject": "Order",
+      "vendorEntity": "Purchase Order",
+      "fieldMappings": {
+        "partyRef": "supplier",
+        "currency": "currency",
+        "total": "grand_total",
+        "status": "status",
+        "transactionDate": "transaction_date",
+        "scheduleDate": "schedule_date"
+      },
+      "notes": "Purchase Orders are submittable and use docstatus for Draft/Submitted/Cancelled."
+    },
+    {
+      "canonicalObject": "Product",
+      "vendorEntity": "Item",
+      "fieldMappings": {
+        "sku": "item_code",
+        "name": "item_name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Purchase Order Item",
+      "notes": "Line items remain provider-native until VAOP finalizes canonical line item semantics."
+    }
+  ]
+}

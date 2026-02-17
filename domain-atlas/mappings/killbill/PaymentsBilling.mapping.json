@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "killbill",
+  "portFamily": "PaymentsBilling",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Account",
+      "fieldMappings": {
+        "displayName": "name",
+        "email": "email",
+        "externalKey": "externalKey"
+      },
+      "notes": "Kill Bill Account is Party-like (account-scoped identity + contact fields). Keep accountId as an external ref."
+    },
+    {
+      "canonicalObject": "Invoice",
+      "vendorEntity": "Invoice",
+      "fieldMappings": {
+        "partyRef": "accountId",
+        "currency": "currency",
+        "total": "amount",
+        "status": "status",
+        "invoiceNumber": "invoiceNumber"
+      },
+      "notes": "Invoice items map separately to support line-item diffs and adjustments."
+    },
+    {
+      "canonicalObject": "Payment",
+      "vendorEntity": "Payment",
+      "fieldMappings": {
+        "partyRef": "accountId",
+        "currency": "currency",
+        "purchasedAmount": "purchasedAmount",
+        "refundedAmount": "refundedAmount",
+        "externalKey": "paymentExternalKey"
+      },
+      "notes": "Kill Bill splits auth/capture/purchase/refund amounts; adapter must choose a canonical interpretation per use-case."
+    },
+    {
+      "canonicalObject": "Subscription",
+      "vendorEntity": "Subscription",
+      "fieldMappings": {
+        "partyRef": "accountId",
+        "status": "state",
+        "externalKey": "externalKey",
+        "startDate": "startDate",
+        "cancelledDate": "cancelledDate"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Bundle",
+      "fieldMappings": {
+        "externalId": "bundleId",
+        "externalType": "Bundle",
+        "displayLabel": "externalKey"
+      },
+      "notes": "Bundle groups subscriptions under an account. Keep as ExternalObjectRef to avoid canonical bloat."
+    }
+  ]
+}

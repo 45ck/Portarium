@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "keycloak",
+  "providerName": "Keycloak",
+  "portFamily": "IamDirectory",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["oauth2"],
+    "notes": "Admin API access is typically via OIDC service account (client credentials) or an admin user token; required roles depend on realm configuration."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": true,
+    "supportsEventStream": true,
+    "notes": "Keycloak emits admin/user events via event listener SPI; without a listener bridge, polling the Admin API is the portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No provider idempotency key support. Adapters should use read-before-write and stable natural keys (e.g., username/clientId) where policy allows."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via post-write reads; predicted effects require adapter-side simulation."
+  },
+  "capabilities": [
+    {
+      "capability": "user:read",
+      "supported": true,
+      "operations": ["getUser", "listUsers"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:view-users"]
+      }
+    },
+    {
+      "capability": "user:write",
+      "supported": true,
+      "operations": ["createUser", "updateUser", "deleteUser", "setUserEnabled"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:manage-users"]
+      },
+      "notes": "Compensation is best-effort (e.g., re-enable user, restore attributes); deletions are generally irreversible."
+    },
+    {
+      "capability": "group:read",
+      "supported": true,
+      "operations": ["getGroup", "listGroups"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:view-users"]
+      }
+    },
+    {
+      "capability": "group:write",
+      "supported": true,
+      "operations": ["createGroup", "updateGroup", "deleteGroup"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:manage-users"]
+      }
+    },
+    {
+      "capability": "membership:write",
+      "supported": true,
+      "operations": ["addUserToGroup", "removeUserFromGroup"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsRollback": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:manage-users"]
+      }
+    },
+    {
+      "capability": "role:read",
+      "supported": true,
+      "operations": ["getRole", "listRoles"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:view-realm"]
+      }
+    },
+    {
+      "capability": "role:write",
+      "supported": true,
+      "operations": ["createRole", "deleteRole", "assignRoleToUser", "removeRoleFromUser"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:manage-realm"]
+      }
+    },
+    {
+      "capability": "client:read",
+      "supported": true,
+      "operations": ["getClient", "listClients"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:view-clients"]
+      }
+    },
+    {
+      "capability": "client:write",
+      "supported": true,
+      "operations": ["createClient", "updateClient", "deleteClient"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "constraints": {
+        "requiredScopes": ["realm-management:manage-clients"]
+      }
+    }
+  ],
+  "notes": "Capability names reflect the VAOP adapter surface, not the full Keycloak Admin API. Tighten per deployment and tenant policy."
+}

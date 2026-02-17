@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "erpnext",
+  "providerName": "ERPNext",
+  "portFamily": "ProcurementSpend",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "session"],
+    "notes": "ERPNext (Frappe) supports API key/secret token auth and session-based auth. Exact auth posture depends on deployment policy."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat limits as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "notes": "Frappe provides webhook notifications via configuration; polling remains a portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No first-class idempotency keys. Use deterministic document naming/external keys and verify by query + read-after-write."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via read-after-write; predicted effects require a provider-side simulation surface (not standard)."
+  },
+  "capabilities": [
+    {
+      "capability": "party:read",
+      "supported": true,
+      "operations": ["getSupplier", "listSuppliers"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "party:write",
+      "supported": true,
+      "operations": ["createSupplier", "updateSupplier"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      }
+    },
+    {
+      "capability": "order:read",
+      "supported": true,
+      "operations": ["getPurchaseOrder", "listPurchaseOrders"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "order:write",
+      "supported": true,
+      "operations": ["createPurchaseOrder", "submitPurchaseOrder", "cancelPurchaseOrder"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "PO cancellation can compensate in some workflows, but treat procurement writes as high-liability."
+    },
+    {
+      "capability": "product:read",
+      "supported": true,
+      "operations": ["getItem", "listItems"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    }
+  ],
+  "notes": "Initial matrix derived from DocType models and common ERPNext procurement workflows. Refine against concrete REST resources and deployment permissions."
+}

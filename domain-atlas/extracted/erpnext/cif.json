@@ -1,0 +1,965 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "erpnext",
+    "providerName": "ERPNext",
+    "upstream": {
+      "repoUrl": "https://github.com/frappe/erpnext",
+      "commit": "c8c54a42e2c6491c5a5ba037e21107c4c7f6d23d",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-16T23:45:09.745Z",
+  "entities": [
+    {
+      "name": "Customer",
+      "description": "Buyer of Goods and Services.",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "customer_name",
+          "type": "data",
+          "required": true,
+          "description": "Customer Name"
+        },
+        {
+          "name": "customer_type",
+          "type": "enum",
+          "required": true,
+          "description": "Customer Type",
+          "validation": "options: Company | Individual | Partnership"
+        },
+        {
+          "name": "customer_group",
+          "type": "link(Customer Group)",
+          "required": false,
+          "description": "Customer Group"
+        },
+        {
+          "name": "territory",
+          "type": "link(Territory)",
+          "required": false,
+          "description": "Territory"
+        },
+        {
+          "name": "email_id",
+          "type": "read_only",
+          "required": false,
+          "description": "Email Id"
+        },
+        {
+          "name": "mobile_no",
+          "type": "read_only",
+          "required": false,
+          "description": "Mobile No"
+        },
+        {
+          "name": "default_currency",
+          "type": "link(Currency)",
+          "required": false,
+          "description": "Billing Currency"
+        },
+        {
+          "name": "tax_id",
+          "type": "data",
+          "required": false,
+          "description": "Tax ID"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Disabled"
+        }
+      ]
+    },
+    {
+      "name": "Supplier",
+      "description": "Supplier of Goods or Services.",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "supplier_name",
+          "type": "data",
+          "required": true,
+          "description": "Supplier Name"
+        },
+        {
+          "name": "supplier_type",
+          "type": "enum",
+          "required": true,
+          "description": "Supplier Type",
+          "validation": "options: Company | Individual | Partnership"
+        },
+        {
+          "name": "supplier_group",
+          "type": "link(Supplier Group)",
+          "required": false,
+          "description": "Supplier Group"
+        },
+        {
+          "name": "country",
+          "type": "link(Country)",
+          "required": false,
+          "description": "Country"
+        },
+        {
+          "name": "email_id",
+          "type": "read_only",
+          "required": false,
+          "description": "Email Id"
+        },
+        {
+          "name": "mobile_no",
+          "type": "read_only",
+          "required": false,
+          "description": "Mobile No"
+        },
+        {
+          "name": "default_currency",
+          "type": "link(Currency)",
+          "required": false,
+          "description": "Billing Currency"
+        },
+        {
+          "name": "tax_id",
+          "type": "data",
+          "required": false,
+          "description": "Tax ID"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Disabled"
+        }
+      ]
+    },
+    {
+      "name": "Sales Invoice",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "company",
+          "type": "link(Company)",
+          "required": true,
+          "description": "Company"
+        },
+        {
+          "name": "customer",
+          "type": "link(Customer)",
+          "required": false,
+          "description": "Customer"
+        },
+        {
+          "name": "posting_date",
+          "type": "date",
+          "required": true,
+          "description": "Date"
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": false,
+          "description": "Payment Due Date"
+        },
+        {
+          "name": "currency",
+          "type": "link(Currency)",
+          "required": true,
+          "description": "Currency"
+        },
+        {
+          "name": "conversion_rate",
+          "type": "decimal",
+          "required": true,
+          "description": "Exchange Rate"
+        },
+        {
+          "name": "grand_total",
+          "type": "decimal",
+          "required": true,
+          "description": "Grand Total"
+        },
+        {
+          "name": "outstanding_amount",
+          "type": "decimal",
+          "required": false,
+          "description": "Outstanding Amount"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": false,
+          "description": "Status",
+          "validation": "options: Draft | Return | Credit Note Issued | Submitted | Paid | Partly Paid | Unpaid | Unpaid and Discounted | Partly Paid and Discounted | Overdue and Discounted | Overdue | Cancelled | …"
+        },
+        {
+          "name": "is_return",
+          "type": "boolean",
+          "required": false,
+          "description": "Is Return (Credit Note)"
+        },
+        {
+          "name": "return_against",
+          "type": "link(Sales Invoice)",
+          "required": false,
+          "description": "Return Against"
+        },
+        {
+          "name": "items",
+          "type": "table(Sales Invoice Item)",
+          "required": true,
+          "description": "Items"
+        },
+        {
+          "name": "docstatus",
+          "type": "docstatus",
+          "required": true,
+          "description": "Frappe docstatus (0=Draft, 1=Submitted, 2=Cancelled)."
+        }
+      ]
+    },
+    {
+      "name": "Sales Invoice Item",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "item_code",
+          "type": "link(Item)",
+          "required": false,
+          "description": "Item"
+        },
+        {
+          "name": "item_name",
+          "type": "data",
+          "required": true,
+          "description": "Item Name"
+        },
+        {
+          "name": "description",
+          "type": "text_editor",
+          "required": false,
+          "description": "Description"
+        },
+        {
+          "name": "qty",
+          "type": "decimal",
+          "required": false,
+          "description": "Quantity"
+        },
+        {
+          "name": "rate",
+          "type": "decimal",
+          "required": true,
+          "description": "Rate"
+        },
+        {
+          "name": "amount",
+          "type": "decimal",
+          "required": true,
+          "description": "Amount"
+        },
+        {
+          "name": "net_amount",
+          "type": "decimal",
+          "required": false,
+          "description": "Net Amount"
+        },
+        {
+          "name": "uom",
+          "type": "link(UOM)",
+          "required": true,
+          "description": "UOM"
+        },
+        {
+          "name": "stock_uom",
+          "type": "link(UOM)",
+          "required": false,
+          "description": "Stock UOM"
+        },
+        {
+          "name": "conversion_factor",
+          "type": "decimal",
+          "required": true,
+          "description": "UOM Conversion Factor"
+        }
+      ]
+    },
+    {
+      "name": "Purchase Order",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "company",
+          "type": "link(Company)",
+          "required": true,
+          "description": "Company"
+        },
+        {
+          "name": "supplier",
+          "type": "link(Supplier)",
+          "required": true,
+          "description": "Supplier"
+        },
+        {
+          "name": "transaction_date",
+          "type": "date",
+          "required": true,
+          "description": "Date"
+        },
+        {
+          "name": "schedule_date",
+          "type": "date",
+          "required": false,
+          "description": "Required By"
+        },
+        {
+          "name": "currency",
+          "type": "link(Currency)",
+          "required": true,
+          "description": "Currency"
+        },
+        {
+          "name": "conversion_rate",
+          "type": "decimal",
+          "required": true,
+          "description": "Exchange Rate"
+        },
+        {
+          "name": "grand_total",
+          "type": "decimal",
+          "required": false,
+          "description": "Grand Total"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": true,
+          "description": "Status",
+          "validation": "options: Draft | On Hold | To Receive and Bill | To Bill | To Receive | Completed | Cancelled | Closed | Delivered"
+        },
+        {
+          "name": "items",
+          "type": "table(Purchase Order Item)",
+          "required": true,
+          "description": "Items"
+        },
+        {
+          "name": "docstatus",
+          "type": "docstatus",
+          "required": true,
+          "description": "Frappe docstatus (0=Draft, 1=Submitted, 2=Cancelled)."
+        }
+      ]
+    },
+    {
+      "name": "Purchase Order Item",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "item_code",
+          "type": "link(Item)",
+          "required": true,
+          "description": "Item Code"
+        },
+        {
+          "name": "item_name",
+          "type": "data",
+          "required": true,
+          "description": "Item Name"
+        },
+        {
+          "name": "description",
+          "type": "text_editor",
+          "required": false,
+          "description": "Description"
+        },
+        {
+          "name": "qty",
+          "type": "decimal",
+          "required": true,
+          "description": "Quantity"
+        },
+        {
+          "name": "rate",
+          "type": "decimal",
+          "required": false,
+          "description": "Rate"
+        },
+        {
+          "name": "amount",
+          "type": "decimal",
+          "required": false,
+          "description": "Amount"
+        },
+        {
+          "name": "uom",
+          "type": "link(UOM)",
+          "required": true,
+          "description": "UOM"
+        },
+        {
+          "name": "stock_uom",
+          "type": "link(UOM)",
+          "required": true,
+          "description": "Stock UOM"
+        },
+        {
+          "name": "conversion_factor",
+          "type": "decimal",
+          "required": true,
+          "description": "UOM Conversion Factor"
+        },
+        {
+          "name": "schedule_date",
+          "type": "date",
+          "required": true,
+          "description": "Required By"
+        }
+      ]
+    },
+    {
+      "name": "Payment Entry",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "company",
+          "type": "link(Company)",
+          "required": true,
+          "description": "Company"
+        },
+        {
+          "name": "payment_type",
+          "type": "enum",
+          "required": true,
+          "description": "Payment Type",
+          "validation": "options: Receive | Pay | Internal Transfer"
+        },
+        {
+          "name": "party_type",
+          "type": "link(DocType)",
+          "required": false,
+          "description": "Party Type"
+        },
+        {
+          "name": "party",
+          "type": "dynamic_link",
+          "required": false,
+          "description": "Party"
+        },
+        {
+          "name": "posting_date",
+          "type": "date",
+          "required": true,
+          "description": "Posting Date"
+        },
+        {
+          "name": "paid_amount",
+          "type": "decimal",
+          "required": true,
+          "description": "Paid Amount"
+        },
+        {
+          "name": "received_amount",
+          "type": "decimal",
+          "required": true,
+          "description": "Received Amount"
+        },
+        {
+          "name": "paid_from",
+          "type": "link(Account)",
+          "required": true,
+          "description": "Account Paid From"
+        },
+        {
+          "name": "paid_to",
+          "type": "link(Account)",
+          "required": true,
+          "description": "Account Paid To"
+        },
+        {
+          "name": "reference_no",
+          "type": "data",
+          "required": false,
+          "description": "Cheque/Reference No"
+        },
+        {
+          "name": "reference_date",
+          "type": "date",
+          "required": false,
+          "description": "Cheque/Reference Date"
+        },
+        {
+          "name": "remarks",
+          "type": "small_text",
+          "required": false,
+          "description": "Remarks"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": false,
+          "description": "Status",
+          "validation": "options: Draft | Submitted | Cancelled"
+        },
+        {
+          "name": "docstatus",
+          "type": "docstatus",
+          "required": true,
+          "description": "Frappe docstatus (0=Draft, 1=Submitted, 2=Cancelled)."
+        }
+      ]
+    },
+    {
+      "name": "Item",
+      "description": "A Product or a Service that is bought, sold or kept in stock.",
+      "primaryKeys": ["name"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Frappe document primary key (name)."
+        },
+        {
+          "name": "item_code",
+          "type": "data",
+          "required": true,
+          "description": "Item Code"
+        },
+        {
+          "name": "item_name",
+          "type": "data",
+          "required": false,
+          "description": "Item Name"
+        },
+        {
+          "name": "item_group",
+          "type": "link(Item Group)",
+          "required": true,
+          "description": "Item Group"
+        },
+        {
+          "name": "stock_uom",
+          "type": "link(UOM)",
+          "required": true,
+          "description": "Default Unit of Measure"
+        },
+        {
+          "name": "is_stock_item",
+          "type": "boolean",
+          "required": false,
+          "description": "Maintain Stock"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "required": false,
+          "description": "Disabled"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Customer",
+      "toEntity": "Customer Group",
+      "kind": "many_to_one",
+      "fromField": "customer_group",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Customer",
+      "toEntity": "Territory",
+      "kind": "many_to_one",
+      "fromField": "territory",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Customer",
+      "toEntity": "Currency",
+      "kind": "many_to_one",
+      "fromField": "default_currency",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Supplier",
+      "toEntity": "Supplier Group",
+      "kind": "many_to_one",
+      "fromField": "supplier_group",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Supplier",
+      "toEntity": "Country",
+      "kind": "many_to_one",
+      "fromField": "country",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Supplier",
+      "toEntity": "Currency",
+      "kind": "many_to_one",
+      "fromField": "default_currency",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice",
+      "toEntity": "Company",
+      "kind": "many_to_one",
+      "fromField": "company",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice",
+      "toEntity": "Customer",
+      "kind": "many_to_one",
+      "fromField": "customer",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice",
+      "toEntity": "Currency",
+      "kind": "many_to_one",
+      "fromField": "currency",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice",
+      "toEntity": "Sales Invoice",
+      "kind": "many_to_one",
+      "fromField": "return_against",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice",
+      "toEntity": "Sales Invoice Item",
+      "kind": "one_to_many",
+      "fromField": "items",
+      "toField": "parent"
+    },
+    {
+      "fromEntity": "Sales Invoice Item",
+      "toEntity": "Item",
+      "kind": "many_to_one",
+      "fromField": "item_code",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice Item",
+      "toEntity": "UOM",
+      "kind": "many_to_one",
+      "fromField": "uom",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Sales Invoice Item",
+      "toEntity": "UOM",
+      "kind": "many_to_one",
+      "fromField": "stock_uom",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order",
+      "toEntity": "Company",
+      "kind": "many_to_one",
+      "fromField": "company",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order",
+      "toEntity": "Supplier",
+      "kind": "many_to_one",
+      "fromField": "supplier",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order",
+      "toEntity": "Currency",
+      "kind": "many_to_one",
+      "fromField": "currency",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order",
+      "toEntity": "Purchase Order Item",
+      "kind": "one_to_many",
+      "fromField": "items",
+      "toField": "parent"
+    },
+    {
+      "fromEntity": "Purchase Order Item",
+      "toEntity": "Item",
+      "kind": "many_to_one",
+      "fromField": "item_code",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order Item",
+      "toEntity": "UOM",
+      "kind": "many_to_one",
+      "fromField": "uom",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Purchase Order Item",
+      "toEntity": "UOM",
+      "kind": "many_to_one",
+      "fromField": "stock_uom",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Payment Entry",
+      "toEntity": "Company",
+      "kind": "many_to_one",
+      "fromField": "company",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Payment Entry",
+      "toEntity": "DocType",
+      "kind": "many_to_one",
+      "fromField": "party_type",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Payment Entry",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "paid_from",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Payment Entry",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "paid_to",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Item",
+      "toEntity": "Item Group",
+      "kind": "many_to_one",
+      "fromField": "item_group",
+      "toField": "name"
+    },
+    {
+      "fromEntity": "Item",
+      "toEntity": "UOM",
+      "kind": "many_to_one",
+      "fromField": "stock_uom",
+      "toField": "name"
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "Sales Invoice",
+      "statusField": "docstatus",
+      "states": ["Draft", "Submitted", "Cancelled"],
+      "notes": "Frappe docstatus: 0=Draft, 1=Submitted, 2=Cancelled."
+    },
+    {
+      "entity": "Purchase Order",
+      "statusField": "docstatus",
+      "states": ["Draft", "Submitted", "Cancelled"],
+      "notes": "Frappe docstatus: 0=Draft, 1=Submitted, 2=Cancelled."
+    },
+    {
+      "entity": "Payment Entry",
+      "statusField": "docstatus",
+      "states": ["Draft", "Submitted", "Cancelled"],
+      "notes": "Frappe docstatus: 0=Draft, 1=Submitted, 2=Cancelled."
+    }
+  ],
+  "actions": [
+    {
+      "name": "createCustomer",
+      "kind": "create",
+      "entities": ["Customer"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "createSupplier",
+      "kind": "create",
+      "entities": ["Supplier"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "createSalesInvoice",
+      "kind": "create",
+      "entities": ["Sales Invoice"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "submitSalesInvoice",
+      "kind": "workflow",
+      "entities": ["Sales Invoice"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Submit is deterministic per document name."
+      }
+    },
+    {
+      "name": "cancelSalesInvoice",
+      "kind": "workflow",
+      "entities": ["Sales Invoice"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Cancel is deterministic per document name."
+      }
+    },
+    {
+      "name": "createSalesInvoiceItem",
+      "kind": "create",
+      "entities": ["Sales Invoice Item"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "createPurchaseOrder",
+      "kind": "create",
+      "entities": ["Purchase Order"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "submitPurchaseOrder",
+      "kind": "workflow",
+      "entities": ["Purchase Order"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Submit is deterministic per document name."
+      }
+    },
+    {
+      "name": "cancelPurchaseOrder",
+      "kind": "workflow",
+      "entities": ["Purchase Order"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Cancel is deterministic per document name."
+      }
+    },
+    {
+      "name": "createPurchaseOrderItem",
+      "kind": "create",
+      "entities": ["Purchase Order Item"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "createPaymentEntry",
+      "kind": "create",
+      "entities": ["Payment Entry"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    },
+    {
+      "name": "submitPaymentEntry",
+      "kind": "workflow",
+      "entities": ["Payment Entry"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Submit is deterministic per document name."
+      }
+    },
+    {
+      "name": "cancelPaymentEntry",
+      "kind": "workflow",
+      "entities": ["Payment Entry"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Cancel is deterministic per document name."
+      }
+    },
+    {
+      "name": "createItem",
+      "kind": "create",
+      "entities": ["Item"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ERPNext uses naming series and server-side validation; adapter should verify by query and avoid duplicate creates."
+      }
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": true,
+      "notes": "Frappe supports custom fields (Custom Field / Property Setter). Treat as provider extensions in the adapter ACL."
+    },
+    "attachments": {
+      "supported": true,
+      "notes": "Attachments are first-class via File doctype; not extracted in this MVP subset."
+    },
+    "tags": {
+      "supported": true,
+      "notes": "ERPNext supports tagging via Tag Link (and other metadata patterns); not extracted in this MVP subset."
+    },
+    "comments": {
+      "supported": true
+    },
+    "activities": {
+      "supported": true
+    }
+  }
+}

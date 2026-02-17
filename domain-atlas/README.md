@@ -18,7 +18,7 @@ This is an internal control-plane toolchain, not a product surface. See `docs/ad
 domain-atlas/
   schema/         # JSON Schemas for artefacts (validated in CI)
   sources/        # Source intake manifests (upstream repo/spec + licence + extraction notes)
-  upstreams/      # Local upstream clones (gitignored; used for extraction)
+  upstreams/      # Upstream working copies (submodules or local clones; used for extraction)
   extracted/      # CIF snapshots (neutral intermediate format)
   mappings/       # CIF -> canonical mappings (explicit, versioned)
   capabilities/   # Capability Matrix instances per provider/port family
@@ -29,11 +29,16 @@ domain-atlas/
 
 1. **Intake**: create `sources/<provider>/source.json` with upstream location, commit/version, and licence classification.
 2. **Extract**: generate `extracted/<provider>/cif.json` (CIF) by reading the "honest schema" sources (migrations, ORM entities, OpenAPI, GraphQL schema, etc.).
-3. **Map**: add `mappings/<provider>/mapping.json` mapping vendor entities/fields to canonical objects (anti-corruption layer posture).
+3. **Map**: add one or more `mappings/<provider>/*.mapping.json` files mapping vendor entities/fields to canonical objects (anti-corruption layer posture), scoped per Port Family.
 4. **Declare**: add `capabilities/<provider>/<PortFamily>.capability-matrix.json` describing supported actions, safety properties, limits, and idempotency mechanisms.
 5. **Verify locally**: add contract fixtures and tests (record/replay) so CI can validate adapter conformance without live calls.
 
-## Vendoring upstream repos (local-only)
+## Vendoring upstream repos
+
+There are two supported approaches for `domain-atlas/upstreams/`:
+
+1. **Git submodules (recommended for shared research)**: upstream code is not committed, but the pinned commit is.
+2. **Local clones (gitignored)**: upstream clones exist only in your working copy.
 
 To clone upstream repos referenced in `sources/*/source.json` into `domain-atlas/upstreams/` and pin missing commits in the source manifests:
 

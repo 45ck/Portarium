@@ -36,7 +36,7 @@ The goal is pattern extraction + model synthesis, anchored to a pinned upstream 
    - Canonical response examples
    - Custom fields / extension subsystems
 3. Extract to CIF (`domain-atlas/extracted/<provider>/cif.json`).
-4. Map CIF -> VAOP canonical objects via explicit mapping files (`domain-atlas/mappings/<provider>/mapping.json`).
+4. Map CIF -> VAOP canonical objects via explicit mapping files (`domain-atlas/mappings/<provider>/*.mapping.json`, one per Port Family).
 5. Derive the provider capability matrix from actions, not objects (`domain-atlas/capabilities/<provider>/*.capability-matrix.json`).
 6. Convert into executable verification:
    - JSON Schema validation of artefacts in CI

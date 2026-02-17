@@ -155,3 +155,15 @@ export type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 // ---------------------------------------------------------------------------
 
 export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';
+
+// ---------------------------------------------------------------------------
+// Workspace RBAC roles (control plane v1)
+// ---------------------------------------------------------------------------
+
+export const WORKSPACE_USER_ROLES = ['admin', 'operator', 'approver', 'auditor'] as const;
+
+export type WorkspaceUserRole = (typeof WORKSPACE_USER_ROLES)[number];
+
+export function isWorkspaceUserRole(value: string): value is WorkspaceUserRole {
+  return (WORKSPACE_USER_ROLES as readonly string[]).includes(value);
+}

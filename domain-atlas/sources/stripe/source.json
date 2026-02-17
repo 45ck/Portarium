@@ -1,5 +1,6 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "DONE",
   "providerId": "stripe",
   "providerName": "Stripe",
   "portFamilies": ["PaymentsBilling"],
@@ -16,7 +17,7 @@
     "notes": "Source manifest is for research + schema extraction; do not vendor upstream source into core."
   },
   "extraction": {
-    "modelSources": ["openapi/spec3.*", "openapi/*.json", "openapi/*.yaml"],
-    "notes": "Use upstream OpenAPI as the domain model source of truth for Payments/Billing objects and events."
+    "modelSources": ["latest/openapi.spec3.*"],
+    "notes": "Use upstream /latest public OpenAPI (v1 + v2 endpoints) as the domain model source of truth for Payments/Billing entities and actions."
   }
 }

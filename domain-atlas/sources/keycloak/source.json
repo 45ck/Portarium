@@ -1,5 +1,6 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "ACTIVE",
   "providerId": "keycloak",
   "providerName": "Keycloak",
   "portFamilies": ["IamDirectory"],
@@ -11,12 +12,13 @@
     "retrievedAt": "2026-02-16T21:02:32.603Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Upstream LICENSE.txt is Apache 2.0. This manifest is for research + schema extraction; do not vendor upstream source into Portarium core."
   },
   "extraction": {
-    "modelSources": ["docs/**", "services/**", "server-spi/**"],
-    "notes": "TBD: prefer published Admin REST/OpenAPI if available; otherwise derive from server model + endpoints."
+    "modelSources": ["core/src/main/java/org/keycloak/representations/idm/**", "rest/**"],
+    "command": "node scripts/domain-atlas/extract-keycloak-cif.mjs",
+    "notes": "Initial extraction uses Admin REST representation DTOs as the most integration-relevant field list; extend with REST resources and event listener semantics as needed."
   }
 }

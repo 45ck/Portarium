@@ -13,6 +13,11 @@
     "license"
   ],
   "properties": {
+    "status": {
+      "type": "string",
+      "description": "Research status for coordination across agents.",
+      "enum": ["PLANNED", "ACTIVE", "PAUSED", "DONE"]
+    },
     "schemaVersion": {
       "type": "string",
       "description": "Schema version for this manifest (not the upstream provider version).",

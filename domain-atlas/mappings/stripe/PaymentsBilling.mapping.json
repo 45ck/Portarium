@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "stripe",
+  "portFamily": "PaymentsBilling",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Customer",
+      "fieldMappings": {
+        "displayName": "name",
+        "email": "email",
+        "phone": "phone"
+      },
+      "notes": "Stripe Customer maps to Party with role tags applied by the adapter."
+    },
+    {
+      "canonicalObject": "Invoice",
+      "vendorEntity": "Invoice",
+      "fieldMappings": {
+        "currency": "currency",
+        "subtotal": "subtotal",
+        "total": "total",
+        "status": "status",
+        "partyRef": "customer"
+      }
+    },
+    {
+      "canonicalObject": "Payment",
+      "vendorEntity": "Charge",
+      "fieldMappings": {
+        "amount": "amount",
+        "currency": "currency",
+        "status": "status",
+        "partyRef": "customer",
+        "paymentIntentRef": "payment_intent"
+      },
+      "notes": "Use Charge as the canonical Payment record; keep PaymentIntent as an orchestration reference."
+    },
+    {
+      "canonicalObject": "Payment",
+      "vendorEntity": "Refund",
+      "fieldMappings": {
+        "amount": "amount",
+        "currency": "currency",
+        "status": "status",
+        "chargeRef": "charge",
+        "paymentIntentRef": "payment_intent"
+      },
+      "notes": "Model as Payment subtype refund in the adapter ACL."
+    },
+    {
+      "canonicalObject": "Payment",
+      "vendorEntity": "Payout",
+      "fieldMappings": {
+        "amount": "amount",
+        "currency": "currency",
+        "status": "status",
+        "arrivalDate": "arrival_date"
+      },
+      "notes": "Model as Payment subtype payout in the adapter ACL."
+    },
+    {
+      "canonicalObject": "Subscription",
+      "vendorEntity": "Subscription",
+      "fieldMappings": {
+        "status": "status",
+        "partyRef": "customer",
+        "currentPeriodStart": "current_period_start",
+        "currentPeriodEnd": "current_period_end"
+      }
+    },
+    {
+      "canonicalObject": "Product",
+      "vendorEntity": "Product",
+      "fieldMappings": {
+        "name": "name",
+        "active": "active"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "PaymentIntent",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "object",
+        "displayLabel": "description"
+      },
+      "notes": "Orchestration object; often the API entry point for taking a payment."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Price",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "object"
+      },
+      "notes": "Pricing is provider-specific; map into canonical Product/Order later."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "PaymentMethod",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "object",
+        "displayLabel": "type"
+      }
+    }
+  ]
+}

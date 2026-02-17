@@ -62,6 +62,40 @@ function runGit(args, cwd) {
   return (res.stdout ?? '').trim();
 }
 
+function isGitWorkTree(dirPath) {
+  const res = spawnSync('git', ['-C', dirPath, 'rev-parse', '--is-inside-work-tree'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+  return res.status === 0 && (res.stdout ?? '').trim() === 'true';
+}
+
+function toPosixPath(filePath) {
+  return filePath.split(path.sep).join('/');
+}
+
+function isSubmodulePath(relPathPosix) {
+  const res = spawnSync('git', ['ls-files', '--stage', '--', relPathPosix], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
+
+  if (res.status !== 0) return false;
+  const line = String(res.stdout ?? '')
+    .trim()
+    .split('\n')[0]
+    ?.trim();
+  if (!line) return false;
+
+  const mode = line.split(/\s+/)[0];
+  return mode === '160000';
+}
+
+function ensureSubmoduleCheckedOut(relPathPosix) {
+  // This is a no-op if the submodule is already initialized and checked out.
+  runGit(['submodule', 'update', '--init', '--depth', '1', '--', relPathPosix], repoRoot);
+}
+
 function nowIsoUtc() {
   return new Date().toISOString();
 }
@@ -125,6 +159,7 @@ function main() {
 
   const summary = {
     cloned: [],
+    initializedSubmodules: [],
     checkedOut: [],
     pinned: [],
     skipped: [],
@@ -158,24 +193,54 @@ function main() {
     }
 
     const destDir = path.join(upstreamsRoot, providerId);
+    const relDestPosix = toPosixPath(path.relative(repoRoot, destDir));
     const desiredCommit = isNonEmptyString(manifest?.upstream?.commit)
       ? String(manifest.upstream.commit).trim()
       : null;
 
     if (!fs.existsSync(destDir)) {
-      if (noClone) {
-        summary.skipped.push({ providerDir, reason: 'missing clone (no-clone)' });
-        continue;
-      }
+      if (isSubmodulePath(relDestPosix)) {
+        if (noClone) {
+          summary.skipped.push({ providerDir, reason: 'missing submodule checkout (no-clone)' });
+          continue;
+        }
+        ensureSubmoduleCheckedOut(relDestPosix);
+        summary.initializedSubmodules.push(providerId);
+      } else {
+        if (noClone) {
+          summary.skipped.push({ providerDir, reason: 'missing clone (no-clone)' });
+          continue;
+        }
 
-      // Keep clones lightweight; if a specific commit is required later we can deepen.
-      const cloneArgs = ['clone', '--depth', '1', '--no-tags', repoUrl.trim(), destDir];
-      runGit(cloneArgs, repoRoot);
-      summary.cloned.push(providerId);
+        // Keep clones lightweight; if a specific commit is required later we can deepen.
+        const cloneArgs = ['clone', '--depth', '1', '--no-tags', repoUrl.trim(), destDir];
+        runGit(cloneArgs, repoRoot);
+        summary.cloned.push(providerId);
+      }
     }
 
     if (!fs.existsSync(destDir)) {
       summary.skipped.push({ providerDir, reason: 'clone missing after clone attempt' });
+      continue;
+    }
+
+    if (!isGitWorkTree(destDir)) {
+      if (isSubmodulePath(relDestPosix)) {
+        if (noClone) {
+          summary.skipped.push({ providerDir, reason: 'submodule not initialized (no-clone)' });
+          continue;
+        }
+        ensureSubmoduleCheckedOut(relDestPosix);
+        summary.initializedSubmodules.push(providerId);
+      }
+    }
+
+    if (!isGitWorkTree(destDir)) {
+      summary.skipped.push({
+        providerDir,
+        reason:
+          'upstream path exists but is not a git worktree (not a clone or initialized submodule)',
+      });
       continue;
     }
 

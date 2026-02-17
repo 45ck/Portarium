@@ -1,0 +1,263 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "odoo",
+    "providerName": "Odoo (Community Edition)",
+    "upstream": {
+      "repoUrl": "https://github.com/odoo/odoo",
+      "commit": "9dae06643309665b4336329befb60bcec3a5dc07",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-16T23:10:23.824Z",
+  "entities": [
+    {
+      "name": "res.partner.category",
+      "description": "Partner tags (used for labeling / segmentation).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "char",
+          "required": true
+        },
+        {
+          "name": "color",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "parent_id",
+          "type": "many2one(res.partner.category)",
+          "required": false
+        },
+        {
+          "name": "child_ids",
+          "type": "one2many(res.partner.category)",
+          "required": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "parent_path",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "partner_ids",
+          "type": "many2many(res.partner)",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "res.partner",
+      "description": "Unified Party entity: person/company/contact address. Field set is a minimal MVP subset; see upstream sources for full model.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "name",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "parent_id",
+          "type": "many2one(res.partner)",
+          "required": false
+        },
+        {
+          "name": "child_ids",
+          "type": "one2many(res.partner)",
+          "required": false
+        },
+        {
+          "name": "vat",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "company_registry",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "category_id",
+          "type": "many2many(res.partner.category)",
+          "required": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "employee",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "selection",
+          "required": false
+        },
+        {
+          "name": "street",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "street2",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "zip",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "city",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "state_id",
+          "type": "many2one(res.country.state)",
+          "required": false
+        },
+        {
+          "name": "country_id",
+          "type": "many2one(res.country)",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "phone",
+          "type": "char",
+          "required": false
+        },
+        {
+          "name": "is_company",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "company_type",
+          "type": "selection",
+          "required": false
+        },
+        {
+          "name": "commercial_partner_id",
+          "type": "many2one(res.partner)",
+          "required": false
+        },
+        {
+          "name": "supplier_rank",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "customer_rank",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.partner",
+      "kind": "many_to_one",
+      "fromField": "parent_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.partner",
+      "kind": "one_to_many",
+      "fromField": "child_ids",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.partner.category",
+      "kind": "many_to_many",
+      "fromField": "category_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.country.state",
+      "kind": "many_to_one",
+      "fromField": "state_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.country",
+      "kind": "many_to_one",
+      "fromField": "country_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner",
+      "toEntity": "res.partner",
+      "kind": "many_to_one",
+      "fromField": "commercial_partner_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner.category",
+      "toEntity": "res.partner.category",
+      "kind": "many_to_one",
+      "fromField": "parent_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner.category",
+      "toEntity": "res.partner.category",
+      "kind": "one_to_many",
+      "fromField": "child_ids",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "res.partner.category",
+      "toEntity": "res.partner",
+      "kind": "many_to_many",
+      "fromField": "partner_ids",
+      "toField": "id"
+    }
+  ],
+  "extensionPoints": {
+    "tags": {
+      "supported": true,
+      "notes": "Partner tags are represented by res.partner.category and linked via res.partner.category.partner_ids / res.partner.category_id."
+    },
+    "customFields": {
+      "supported": true,
+      "notes": "Odoo supports extensible models via dynamic fields (ir.model.fields / customizations). Not extracted yet; treat as provider extensions in the adapter ACL."
+    },
+    "attachments": {
+      "supported": true,
+      "notes": "Attachments are first-class via ir.attachment and mail thread mixins; not extracted in this MVP subset."
+    }
+  }
+}

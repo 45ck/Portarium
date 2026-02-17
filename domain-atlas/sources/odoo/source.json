@@ -1,20 +1,24 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "ACTIVE",
   "providerId": "odoo",
   "providerName": "Odoo (Community Edition)",
   "portFamilies": ["FinanceAccounting", "ProcurementSpend"],
   "upstream": {
     "kind": "git",
     "repoUrl": "https://github.com/odoo/odoo",
-    "version": "pinned-by-commit"
+    "version": "pinned-by-commit",
+    "commit": "9dae06643309665b4336329befb60bcec3a5dc07",
+    "retrievedAt": "2026-02-16T23:04:15.082Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm community edition license and contribution terms. Treat as study-only until confirmed."
+    "spdxId": "LGPL-3.0-only",
+    "classification": "study_only",
+    "notes": "Upstream repo LICENSE states Odoo is published under LGPLv3. Use for pattern extraction + SoR integration; do not vendor upstream code into Portarium core."
   },
   "extraction": {
     "modelSources": ["addons/**/models/**/*.py", "odoo/**"],
-    "notes": "TBD: decide extraction source of truth (ORM models vs migrations vs DB schema)."
+    "command": "node scripts/domain-atlas/extract-odoo.mjs",
+    "notes": "Initial extraction focuses on core Party semantics via res.partner (odoo/addons/base/models/res_partner.py)."
   }
 }

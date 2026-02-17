@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "erpnext",
+  "portFamily": "FinanceAccounting",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Customer",
+      "fieldMappings": {
+        "displayName": "customer_name",
+        "email": "email_id",
+        "phone": "mobile_no",
+        "currency": "default_currency",
+        "taxId": "tax_id"
+      },
+      "notes": "ERPNext Customer maps to Party with role tags applied by the adapter (customer)."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Supplier",
+      "fieldMappings": {
+        "displayName": "supplier_name",
+        "email": "email_id",
+        "phone": "mobile_no",
+        "currency": "default_currency",
+        "taxId": "tax_id"
+      },
+      "notes": "ERPNext Supplier maps to Party with role tags applied by the adapter (vendor)."
+    },
+    {
+      "canonicalObject": "Invoice",
+      "vendorEntity": "Sales Invoice",
+      "fieldMappings": {
+        "partyRef": "customer",
+        "currency": "currency",
+        "total": "grand_total",
+        "outstanding": "outstanding_amount",
+        "status": "status",
+        "dueDate": "due_date"
+      },
+      "notes": "Use docstatus for Draft/Submitted/Cancelled; status provides additional provider-native state."
+    },
+    {
+      "canonicalObject": "Payment",
+      "vendorEntity": "Payment Entry",
+      "fieldMappings": {
+        "partyRef": "party",
+        "paymentType": "payment_type",
+        "paidAmount": "paid_amount",
+        "receivedAmount": "received_amount",
+        "referenceNo": "reference_no",
+        "referenceDate": "reference_date"
+      },
+      "notes": "Payment Entry covers incoming/outgoing payments. Adapter must interpret direction and amounts based on payment_type and accounts."
+    },
+    {
+      "canonicalObject": "Product",
+      "vendorEntity": "Item",
+      "fieldMappings": {
+        "sku": "item_code",
+        "name": "item_name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Sales Invoice Item",
+      "notes": "Line items remain provider-native until VAOP finalizes canonical line item semantics."
+    }
+  ]
+}

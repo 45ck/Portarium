@@ -22,6 +22,10 @@
     "depgraph:mermaid": "depcruise --config .dependency-cruiser.cjs --output-type mermaid src --output-to reports/architecture/dependency-graph.mmd",
     "domain-atlas:vendor": "node scripts/domain-atlas/vendor-upstreams.mjs",
     "domain-atlas:index": "node scripts/domain-atlas/gen-research-index.mjs",
+    "domain-atlas:extract:erpnext": "node scripts/domain-atlas/extract-erpnext-cif.mjs",
+    "domain-atlas:extract:killbill": "node scripts/domain-atlas/extract-killbill-cif.mjs",
+    "domain-atlas:extract:odoo": "node scripts/domain-atlas/extract-odoo.mjs",
+    "domain-atlas:extract:stripe": "node scripts/domain-atlas/extract-stripe-cif.mjs",
     "bd": "node scripts/beads/bd.mjs",
     "ci:gates": "node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",
@@ -70,6 +74,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "yaml": "^2.8.2"
   }
 }

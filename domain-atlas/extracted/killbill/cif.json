@@ -1,0 +1,876 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "killbill",
+    "providerName": "Kill Bill",
+    "upstream": {
+      "repoUrl": "https://github.com/killbill/killbill",
+      "commit": "f7d48b5965cbc1d98805fea499f2e848bd021400",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-16T23:35:50.782Z",
+  "entities": [
+    {
+      "name": "Account",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/AccountJson.java.",
+      "primaryKeys": ["accountId"],
+      "fields": [
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "externalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "accountCBA",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "accountBalance",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "firstNameLength",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "billCycleDayLocal",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "parentAccountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "isPaymentDelegatedToParent",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "paymentMethodId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "referenceTime",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "timeZone",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "address1",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "address2",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "postalCode",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "company",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "isMigrated",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Bundle",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/BundleJson.java.",
+      "primaryKeys": ["bundleId"],
+      "fields": [
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": true
+        },
+        {
+          "name": "bundleId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "externalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "subscriptions",
+          "type": "array<SubscriptionJson>",
+          "required": false
+        },
+        {
+          "name": "timeline",
+          "type": "BundleTimelineJson",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Subscription",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/SubscriptionJson.java.",
+      "primaryKeys": ["subscriptionId"],
+      "fields": [
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "bundleId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "subscriptionId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "externalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "bundleExternalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "productName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "productCategory",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "billingPeriod",
+          "type": "enum",
+          "required": true
+        },
+        {
+          "name": "phaseType",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "priceList",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "planName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "sourceType",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "cancelledDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "chargedThroughDate",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "billingStartDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "billingEndDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "billCycleDayLocal",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "events",
+          "type": "array<EventSubscriptionJson>",
+          "required": false
+        },
+        {
+          "name": "prices",
+          "type": "array<PhasePriceJson>",
+          "required": false
+        },
+        {
+          "name": "priceOverrides",
+          "type": "array<PhasePriceJson>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/InvoiceJson.java.",
+      "primaryKeys": ["invoiceId"],
+      "fields": [
+        {
+          "name": "amount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "invoiceId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "invoiceDate",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "targetDate",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "invoiceNumber",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "balance",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "creditAdj",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "refundAdj",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "items",
+          "type": "array<InvoiceItemJson>",
+          "required": false
+        },
+        {
+          "name": "bundleKeys",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "credits",
+          "type": "array<InvoiceItemJson>",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "isParentInvoice",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "parentInvoiceId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "parentAccountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "trackingIds",
+          "type": "array<string>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "InvoiceItem",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/InvoiceItemJson.java.",
+      "primaryKeys": ["invoiceItemId"],
+      "fields": [
+        {
+          "name": "invoiceItemId",
+          "type": "uuid",
+          "required": true
+        },
+        {
+          "name": "invoiceId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "linkedInvoiceItemId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": true
+        },
+        {
+          "name": "childAccountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "bundleId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "subscriptionId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "productName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "planName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "phaseName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "usageName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "prettyProductName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "prettyPlanName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "prettyPhaseName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "prettyUsageName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "itemType",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "rate",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "quantity",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "itemDetails",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "catalogEffectiveDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "childItems",
+          "type": "array<InvoiceItemJson>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/PaymentJson.java.",
+      "primaryKeys": ["paymentId"],
+      "fields": [
+        {
+          "name": "accountId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "paymentId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "paymentNumber",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "paymentExternalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "authAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "capturedAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "purchasedAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "refundedAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "creditedAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "paymentMethodId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "transactions",
+          "type": "array<PaymentTransactionJson>",
+          "required": false
+        },
+        {
+          "name": "paymentAttempts",
+          "type": "array<PaymentAttemptJson>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "PaymentTransaction",
+      "description": "Extracted from domain-atlas/upstreams/killbill/jaxrs/src/main/java/org/killbill/billing/jaxrs/json/PaymentTransactionJson.java.",
+      "primaryKeys": ["transactionId"],
+      "fields": [
+        {
+          "name": "transactionId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "transactionExternalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "paymentId",
+          "type": "uuid",
+          "required": false
+        },
+        {
+          "name": "paymentExternalKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "transactionType",
+          "type": "enum",
+          "required": false
+        },
+        {
+          "name": "effectiveDate",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "processedAmount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "processedCurrency",
+          "type": "currency_code",
+          "required": false
+        },
+        {
+          "name": "gatewayErrorCode",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "gatewayErrorMsg",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "firstPaymentReferenceId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "secondPaymentReferenceId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "properties",
+          "type": "array<PluginPropertyJson>",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Invoice",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "accountId",
+      "toField": "accountId"
+    },
+    {
+      "fromEntity": "Payment",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "accountId",
+      "toField": "accountId"
+    },
+    {
+      "fromEntity": "Bundle",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "accountId",
+      "toField": "accountId"
+    },
+    {
+      "fromEntity": "Subscription",
+      "toEntity": "Account",
+      "kind": "many_to_one",
+      "fromField": "accountId",
+      "toField": "accountId"
+    },
+    {
+      "fromEntity": "Subscription",
+      "toEntity": "Bundle",
+      "kind": "many_to_one",
+      "fromField": "bundleId",
+      "toField": "bundleId"
+    },
+    {
+      "fromEntity": "InvoiceItem",
+      "toEntity": "Invoice",
+      "kind": "many_to_one",
+      "fromField": "invoiceId",
+      "toField": "invoiceId"
+    },
+    {
+      "fromEntity": "PaymentTransaction",
+      "toEntity": "Payment",
+      "kind": "many_to_one",
+      "fromField": "paymentId",
+      "toField": "paymentId"
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "Invoice",
+      "statusField": "status",
+      "states": ["DRAFT", "COMMITTED", "VOID"],
+      "notes": "InvoiceStatus states derived from usage in Kill Bill server code (InvoiceStatus.DRAFT/COMMITTED/VOID)."
+    },
+    {
+      "entity": "Subscription",
+      "statusField": "state",
+      "states": ["PENDING", "ACTIVE", "BLOCKED", "CANCELLED", "EXPIRED"],
+      "notes": "EntitlementState values derived from usage in Kill Bill server code (ACTIVE/BLOCKED/CANCELLED/EXPIRED/PENDING)."
+    },
+    {
+      "entity": "PaymentTransaction",
+      "statusField": "status",
+      "states": [
+        "PENDING",
+        "SUCCESS",
+        "PAYMENT_FAILURE",
+        "PAYMENT_SYSTEM_OFF",
+        "PLUGIN_FAILURE",
+        "UNKNOWN"
+      ],
+      "notes": "TransactionStatus values derived from usage in Kill Bill server code (PENDING/SUCCESS/PAYMENT_FAILURE/PAYMENT_SYSTEM_OFF/PLUGIN_FAILURE/UNKNOWN)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "createAccount",
+      "kind": "create",
+      "entities": ["Account"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Account externalKey (body)",
+        "notes": "Adapter should de-dupe on externalKey."
+      }
+    },
+    {
+      "name": "updateAccount",
+      "kind": "update",
+      "entities": ["Account"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Account ID (path)",
+        "notes": "PUT/PATCH semantics are deterministic per ID."
+      }
+    },
+    {
+      "name": "createSubscription",
+      "kind": "create",
+      "entities": ["Subscription", "Bundle"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Subscription/bundle external keys (body)",
+        "notes": "Kill Bill supports external keys for idempotent-ish client retries."
+      }
+    },
+    {
+      "name": "cancelSubscription",
+      "kind": "workflow",
+      "entities": ["Subscription"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Treat cancel operations as retryable only with adapter-side dedupe + verification."
+      }
+    },
+    {
+      "name": "generateDryRunInvoice",
+      "kind": "workflow",
+      "entities": ["Invoice"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "Dry run (no side effects)"
+      },
+      "notes": "See jaxrs InvoiceResource POST /dryRun."
+    },
+    {
+      "name": "createPayment",
+      "kind": "workflow",
+      "entities": ["Payment", "PaymentTransaction"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "paymentExternalKey + transactionExternalKey (body)",
+        "notes": "Adapter must supply stable external keys per attempt for safe retries."
+      }
+    },
+    {
+      "name": "refundPayment",
+      "kind": "workflow",
+      "entities": ["PaymentTransaction"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "transactionExternalKey (body)",
+        "notes": "Refunds should use a stable transactionExternalKey for retry safety."
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "invoice.changed",
+      "delivery": "poll",
+      "entities": ["Invoice"],
+      "notes": "Kill Bill does not expose first-class webhooks in core; polling is the portable baseline."
+    },
+    {
+      "name": "payment.changed",
+      "delivery": "poll",
+      "entities": ["Payment", "PaymentTransaction"],
+      "notes": "Polling recommended unless a deployment provides an event bridge."
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": true,
+      "notes": "Kill Bill supports custom fields on various object types via the util custom field subsystem."
+    },
+    "tags": {
+      "supported": true,
+      "notes": "Kill Bill supports tags (including control tags) on various object types."
+    },
+    "attachments": {
+      "supported": false
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

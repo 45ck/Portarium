@@ -1,0 +1,673 @@
+openapi: 3.1.0
+info:
+  title: Portarium Control Plane API
+  version: 1.0.0
+  description: |
+    Portarium is an API-first, multi-tenant control plane (VAOP) for governable business operations.
+
+    This document defines the v1 HTTP contract for core control plane resources, starting with:
+    - Workspaces (tenant boundary)
+    - Workspace Users (RBAC)
+    - Plan v1 and Evidence v1 schemas (used across Commands/Queries)
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Workspaces
+  - name: Users
+  - name: Plans
+  - name: Evidence
+paths:
+  /v1/workspaces:
+    get:
+      tags: [Workspaces]
+      summary: List workspaces visible to the caller
+      operationId: listWorkspaces
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}:
+    get:
+      tags: [Workspaces]
+      summary: Get a workspace
+      operationId: getWorkspace
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/users:
+    get:
+      tags: [Users]
+      summary: List users in a workspace
+      operationId: listWorkspaceUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Users]
+      summary: Add a user to a workspace
+      operationId: addWorkspaceUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddWorkspaceUserRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/users/{userId}:
+    get:
+      tags: [Users]
+      summary: Get a workspace user
+      operationId: getWorkspaceUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Users]
+      summary: Update a workspace user
+      operationId: updateWorkspaceUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkspaceUserRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Users]
+      summary: Remove a user from a workspace
+      operationId: removeWorkspaceUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '204':
+          description: No Content
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/plans/{planId}:
+    get:
+      tags: [Plans]
+      summary: Get a Plan (v1)
+      operationId: getPlan
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/PlanIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/evidence:
+    get:
+      tags: [Evidence]
+      summary: List evidence entries (v1)
+      operationId: listEvidenceEntries
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/EvidenceRunIdQuery'
+        - $ref: '#/components/parameters/EvidencePlanIdQuery'
+        - $ref: '#/components/parameters/EvidenceWorkItemIdQuery'
+        - $ref: '#/components/parameters/EvidenceCategoryQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceEntryListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    WorkspaceIdPath:
+      name: workspaceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/WorkspaceId'
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserId'
+    PlanIdPath:
+      name: planId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/PlanId'
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    CursorQuery:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+    EvidenceRunIdQuery:
+      name: runId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RunId'
+    EvidencePlanIdQuery:
+      name: planId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/PlanId'
+    EvidenceWorkItemIdQuery:
+      name: workItemId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkItemId'
+    EvidenceCategoryQuery:
+      name: category
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/EvidenceCategory'
+  responses:
+    Problem:
+      description: Error response
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required: [type, title, status]
+    IsoTimestamp:
+      type: string
+      format: date-time
+      description: RFC3339 timestamp (UTC recommended)
+    WorkspaceId:
+      type: string
+      minLength: 1
+      description: Opaque workspace identifier (tenant boundary)
+    UserId:
+      type: string
+      minLength: 1
+      description: Opaque user identifier
+    PlanId:
+      type: string
+      minLength: 1
+      description: Opaque plan identifier
+    RunId:
+      type: string
+      minLength: 1
+      description: Opaque run identifier
+    WorkItemId:
+      type: string
+      minLength: 1
+      description: Opaque work item identifier
+    EvidenceId:
+      type: string
+      minLength: 1
+      description: Opaque evidence entry identifier
+    AdapterId:
+      type: string
+      minLength: 1
+      description: Opaque adapter identifier
+    MachineId:
+      type: string
+      minLength: 1
+      description: Opaque machine identifier
+    HashSha256:
+      type: string
+      pattern: '^[a-f0-9]{64}$'
+      description: SHA-256 hex digest (lowercase)
+    Workspace:
+      type: object
+      additionalProperties: false
+      properties:
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        name:
+          type: string
+          minLength: 1
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [workspaceId, name, createdAtIso]
+    WorkspaceListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workspace'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    UserRole:
+      type: string
+      enum: [admin, operator, approver, auditor]
+    User:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+          minLength: 1
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          minItems: 1
+          uniqueItems: true
+        active:
+          type: boolean
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [userId, workspaceId, email, roles, active, createdAtIso]
+    UserListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    AddWorkspaceUserRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+          minLength: 1
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          minItems: 1
+          uniqueItems: true
+        active:
+          type: boolean
+          default: true
+      required: [email, roles]
+    UpdateWorkspaceUserRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          minItems: 1
+          uniqueItems: true
+        active:
+          type: boolean
+    PortFamily:
+      type: string
+      enum:
+        - FinanceAccounting
+        - PaymentsBilling
+        - ProcurementSpend
+        - HrisHcm
+        - Payroll
+        - CrmSales
+        - CustomerSupport
+        - ItsmItOps
+        - IamDirectory
+        - SecretsVaulting
+        - MarketingAutomation
+        - AdsPlatforms
+        - CommsCollaboration
+        - ProjectsWorkMgmt
+        - DocumentsEsign
+        - AnalyticsBi
+        - MonitoringIncident
+        - ComplianceGrc
+    ExternalObjectRef:
+      type: object
+      additionalProperties: false
+      properties:
+        sorName:
+          type: string
+          minLength: 1
+        portFamily:
+          $ref: '#/components/schemas/PortFamily'
+        externalId:
+          type: string
+          minLength: 1
+        externalType:
+          type: string
+          minLength: 1
+        displayLabel:
+          type: string
+          minLength: 1
+        deepLinkUrl:
+          type: string
+          format: uri
+      required: [sorName, portFamily, externalId, externalType]
+    EffectOperation:
+      type: string
+      enum: [Create, Update, Delete, Upsert]
+    PlannedEffectV1:
+      type: object
+      additionalProperties: false
+      properties:
+        effectId:
+          type: string
+          minLength: 1
+        operation:
+          $ref: '#/components/schemas/EffectOperation'
+        target:
+          $ref: '#/components/schemas/ExternalObjectRef'
+        summary:
+          type: string
+          minLength: 1
+        idempotencyKey:
+          type: string
+          minLength: 1
+      required: [effectId, operation, target, summary]
+    PredictedEffectV1:
+      allOf:
+        - $ref: '#/components/schemas/PlannedEffectV1'
+        - type: object
+          additionalProperties: false
+          properties:
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+    PlanV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        createdByUserId:
+          $ref: '#/components/schemas/UserId'
+        plannedEffects:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlannedEffectV1'
+        predictedEffects:
+          type: array
+          items:
+            $ref: '#/components/schemas/PredictedEffectV1'
+      required: [schemaVersion, planId, workspaceId, createdAtIso, createdByUserId, plannedEffects]
+    EvidenceCategory:
+      type: string
+      enum: [Plan, Action, Approval, Policy, System]
+    EvidenceActorUser:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: User
+        userId:
+          $ref: '#/components/schemas/UserId'
+      required: [kind, userId]
+    EvidenceActorMachine:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: Machine
+        machineId:
+          $ref: '#/components/schemas/MachineId'
+      required: [kind, machineId]
+    EvidenceActorAdapter:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: Adapter
+        adapterId:
+          $ref: '#/components/schemas/AdapterId'
+      required: [kind, adapterId]
+    EvidenceActorSystem:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: System
+      required: [kind]
+    EvidenceActor:
+      oneOf:
+        - $ref: '#/components/schemas/EvidenceActorUser'
+        - $ref: '#/components/schemas/EvidenceActorMachine'
+        - $ref: '#/components/schemas/EvidenceActorAdapter'
+        - $ref: '#/components/schemas/EvidenceActorSystem'
+      discriminator:
+        propertyName: kind
+        mapping:
+          User: '#/components/schemas/EvidenceActorUser'
+          Machine: '#/components/schemas/EvidenceActorMachine'
+          Adapter: '#/components/schemas/EvidenceActorAdapter'
+          System: '#/components/schemas/EvidenceActorSystem'
+    EvidenceLinks:
+      type: object
+      additionalProperties: false
+      properties:
+        runId:
+          $ref: '#/components/schemas/RunId'
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
+      required: []
+    EvidencePayloadKind:
+      type: string
+      enum: [Artifact, Snapshot, Diff, Log]
+    EvidencePayloadRef:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          $ref: '#/components/schemas/EvidencePayloadKind'
+        uri:
+          type: string
+          minLength: 1
+        contentType:
+          type: string
+          minLength: 1
+        sha256:
+          $ref: '#/components/schemas/HashSha256'
+      required: [kind, uri]
+    EvidenceEntryV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        evidenceId:
+          $ref: '#/components/schemas/EvidenceId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        occurredAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        category:
+          $ref: '#/components/schemas/EvidenceCategory'
+        summary:
+          type: string
+          minLength: 1
+        actor:
+          $ref: '#/components/schemas/EvidenceActor'
+        links:
+          $ref: '#/components/schemas/EvidenceLinks'
+        payloadRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidencePayloadRef'
+        previousHash:
+          $ref: '#/components/schemas/HashSha256'
+        hashSha256:
+          $ref: '#/components/schemas/HashSha256'
+      required:
+        - schemaVersion
+        - evidenceId
+        - workspaceId
+        - occurredAtIso
+        - category
+        - summary
+        - actor
+        - hashSha256
+    EvidenceEntryListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceEntryV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]

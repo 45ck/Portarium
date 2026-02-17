@@ -6,7 +6,7 @@
   "adapterVersion": "0.1.0",
   "auth": {
     "modes": ["api_key", "oauth2"],
-    "notes": "Authentication varies by Stripe product; adapters must declare the concrete mode they implement."
+    "notes": "OpenAPI declares basicAuth and bearerAuth; adapters must declare the concrete auth mode they implement (API key vs OAuth)."
   },
   "limits": {
     "rateLimit": {
@@ -32,18 +32,20 @@
   },
   "capabilities": [
     {
-      "capability": "charge:write",
+      "capability": "payment-intent:write",
       "supported": true,
-      "operations": ["createCharge", "createPaymentIntent"],
+      "operations": [
+        "createPaymentIntent",
+        "confirmPaymentIntent",
+        "capturePaymentIntent",
+        "cancelPaymentIntent"
+      ],
       "safety": {
         "defaultTier": "HumanApprove",
         "requiresApproval": true,
         "idempotent": true,
         "supportsRollback": false,
         "supportsCompensation": true
-      },
-      "constraints": {
-        "requiredScopes": ["payments:write"]
       }
     },
     {
@@ -54,36 +56,39 @@
         "defaultTier": "Auto",
         "requiresApproval": false,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["payments:read"]
       }
     },
     {
-      "capability": "refund:write",
+      "capability": "charge:write",
       "supported": true,
-      "operations": ["refundCharge"],
+      "operations": ["createCharge"],
       "safety": {
         "defaultTier": "HumanApprove",
         "requiresApproval": true,
         "idempotent": true,
-        "supportsCompensation": false
+        "supportsRollback": false,
+        "supportsCompensation": true
       },
-      "constraints": {
-        "requiredScopes": ["payments:write"]
+      "notes": "Prefer PaymentIntent flows for most integrations; Charge create exists but is legacy for many payment flows."
+    },
+    {
+      "capability": "refund:write",
+      "supported": true,
+      "operations": ["createRefund"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true
       }
     },
     {
       "capability": "subscription:write",
       "supported": true,
-      "operations": ["createSubscription", "cancelSubscription"],
+      "operations": ["createSubscription", "updateSubscription", "cancelSubscription"],
       "safety": {
         "defaultTier": "HumanApprove",
         "requiresApproval": true,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["subscriptions:write"]
       }
     },
     {
@@ -94,9 +99,16 @@
         "defaultTier": "Auto",
         "requiresApproval": false,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["subscriptions:read"]
+      }
+    },
+    {
+      "capability": "invoice:write",
+      "supported": true,
+      "operations": ["createInvoice", "finalizeInvoice", "voidInvoice"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true
       }
     },
     {
@@ -107,35 +119,16 @@
         "defaultTier": "Auto",
         "requiresApproval": false,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["invoices:read"]
       }
     },
     {
-      "capability": "invoice:write",
+      "capability": "payout:read",
       "supported": true,
-      "operations": ["createInvoice"],
+      "operations": ["getPayout", "listPayouts"],
       "safety": {
-        "defaultTier": "HumanApprove",
-        "requiresApproval": true,
+        "defaultTier": "Auto",
+        "requiresApproval": false,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["invoices:write"]
-      }
-    },
-    {
-      "capability": "payout:write",
-      "supported": true,
-      "operations": ["createPayout"],
-      "safety": {
-        "defaultTier": "HumanApprove",
-        "requiresApproval": true,
-        "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["payouts:write"]
       }
     },
     {
@@ -146,9 +139,6 @@
         "defaultTier": "Auto",
         "requiresApproval": false,
         "idempotent": true
-      },
-      "constraints": {
-        "requiredScopes": ["balance:read"]
       }
     }
   ]

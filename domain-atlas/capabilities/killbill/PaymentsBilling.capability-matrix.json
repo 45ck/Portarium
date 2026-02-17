@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "killbill",
+  "providerName": "Kill Bill",
+  "portFamily": "PaymentsBilling",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "basic"],
+    "notes": "Kill Bill deployments typically use API key/secret headers per tenant and user identity headers; some deployments front the API with basic auth or an SSO proxy."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat limits as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": true,
+    "notes": "No core outbound webhooks in the server; polling is the portable baseline unless a deployment provides an event bridge."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": true,
+    "keyLocations": ["body"],
+    "notes": "Use stable external keys (accountExternalKey, paymentExternalKey, transactionExternalKey) as idempotency anchors; verify by read-after-write."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": true,
+    "supportsVerifiedEffects": true,
+    "notes": "Predicted effects supported via invoice dry-run generation; verified effects via post-write reads."
+  },
+  "capabilities": [
+    {
+      "capability": "account:read",
+      "supported": true,
+      "operations": ["getAccount", "listAccounts"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "account:write",
+      "supported": true,
+      "operations": ["createAccount", "updateAccount"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      }
+    },
+    {
+      "capability": "subscription:read",
+      "supported": true,
+      "operations": ["getSubscription", "listSubscriptions"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "subscription:write",
+      "supported": true,
+      "operations": ["createSubscription", "changeSubscription", "cancelSubscription"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Compensation is possible via credits/adjustments. Treat plan changes and cancellations as high-liability actions."
+    },
+    {
+      "capability": "invoice:read",
+      "supported": true,
+      "operations": ["getInvoice", "listInvoices"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "invoice:dry-run",
+      "supported": true,
+      "operations": ["generateDryRunInvoice"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true,
+        "supportsDryRun": true
+      },
+      "notes": "Dry-run invoice generation is non-effectful and suitable for plan previews."
+    },
+    {
+      "capability": "invoice:write",
+      "supported": true,
+      "operations": ["createExternalCharge", "createMigrationInvoice", "commitInvoice"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Write operations can be compensated with credits/adjustments; treat as irreversible at the API level."
+    },
+    {
+      "capability": "payment:read",
+      "supported": true,
+      "operations": ["getPayment", "listPayments"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "payment:write",
+      "supported": true,
+      "operations": ["createPayment", "capturePayment", "voidPayment"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Payment plugin behavior varies by deployment; require verification and conservative defaults."
+    },
+    {
+      "capability": "refund:write",
+      "supported": true,
+      "operations": ["refundPayment"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsCompensation": false
+      }
+    }
+  ],
+  "notes": "Capabilities are derived from the Kill Bill JAX-RS REST surface. Exact behavior depends on configured plugins and deployment policy."
+}

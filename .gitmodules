@@ -1,0 +1,12 @@
+[submodule "domain-atlas/upstreams/stripe"]
+	path = domain-atlas/upstreams/stripe
+	url = https://github.com/stripe/openapi
+[submodule "domain-atlas/upstreams/killbill"]
+	path = domain-atlas/upstreams/killbill
+	url = https://github.com/killbill/killbill
+[submodule "domain-atlas/upstreams/keycloak"]
+	path = domain-atlas/upstreams/keycloak
+	url = https://github.com/keycloak/keycloak
+[submodule "domain-atlas/upstreams/erpnext"]
+	path = domain-atlas/upstreams/erpnext
+	url = https://github.com/frappe/erpnext

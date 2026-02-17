@@ -1,0 +1,1420 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "keycloak",
+    "providerName": "Keycloak",
+    "upstream": {
+      "repoUrl": "https://github.com/keycloak/keycloak",
+      "commit": "8258fceb33ef10840021cf4f472e8dac035ebe62",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-16T23:51:37.992Z",
+  "entities": [
+    {
+      "name": "User",
+      "description": "Extracted from domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/AbstractUserRepresentation.java, domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/UserRepresentation.java.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "firstName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "lastName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "emailVerified",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "map<string,array<string>>",
+          "required": false
+        },
+        {
+          "name": "userProfileMetadata",
+          "type": "UserProfileMetadata",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "self",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "origin",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "createdTimestamp",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "totp",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "federationLink",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "serviceAccountClientId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "array<CredentialRepresentation>",
+          "required": false
+        },
+        {
+          "name": "disableableCredentialTypes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "requiredActions",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "federatedIdentities",
+          "type": "array<FederatedIdentityRepresentation>",
+          "required": false
+        },
+        {
+          "name": "realmRoles",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "clientRoles",
+          "type": "map<string,array<string>>",
+          "required": false
+        },
+        {
+          "name": "clientConsents",
+          "type": "array<UserConsentRepresentation>",
+          "required": false
+        },
+        {
+          "name": "notBefore",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "applicationRoles",
+          "type": "map<string,array<string>>",
+          "required": false
+        },
+        {
+          "name": "socialLinks",
+          "type": "array<SocialLinkRepresentation>",
+          "required": false
+        },
+        {
+          "name": "groups",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "access",
+          "type": "map<string,boolean>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Group",
+      "description": "Extracted from domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/GroupRepresentation.java.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "parentId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "subGroupCount",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "subGroups",
+          "type": "array<GroupRepresentation>",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "map<string,array<string>>",
+          "required": false
+        },
+        {
+          "name": "realmRoles",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "clientRoles",
+          "type": "map<string,array<string>>",
+          "required": false
+        },
+        {
+          "name": "access",
+          "type": "map<string,boolean>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Role",
+      "description": "Extracted from domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/RoleRepresentation.java.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "scopeParamRequired",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "composite",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "composites",
+          "type": "Composites",
+          "required": false
+        },
+        {
+          "name": "clientRole",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "containerId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "map<string,array<string>>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "description": "Extracted from domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/ClientRepresentation.java.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "clientId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "rootUrl",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "adminUrl",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "baseUrl",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "surrogateAuthRequired",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "alwaysDisplayInConsole",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "clientAuthenticatorType",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "secret",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "registrationAccessToken",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "defaultRoles",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "redirectUris",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webOrigins",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "notBefore",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "bearerOnly",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "consentRequired",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "standardFlowEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "implicitFlowEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "directAccessGrantsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "serviceAccountsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "authorizationServicesEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "directGrantsOnly",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "publicClient",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "frontchannelLogout",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "authenticationFlowBindingOverrides",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "fullScopeAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "nodeReRegistrationTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "registeredNodes",
+          "type": "map<string,integer>",
+          "required": false
+        },
+        {
+          "name": "protocolMappers",
+          "type": "array<ProtocolMapperRepresentation>",
+          "required": false
+        },
+        {
+          "name": "clientTemplate",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "useTemplateConfig",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "useTemplateScope",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "useTemplateMappers",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "defaultClientScopes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "optionalClientScopes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "authorizationSettings",
+          "type": "ResourceServerRepresentation",
+          "required": false
+        },
+        {
+          "name": "access",
+          "type": "map<string,boolean>",
+          "required": false
+        },
+        {
+          "name": "origin",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Realm",
+      "description": "Extracted from domain-atlas/upstreams/keycloak/core/src/main/java/org/keycloak/representations/idm/RealmRepresentation.java.",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "realm",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "displayName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "displayNameHtml",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "notBefore",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "defaultSignatureAlgorithm",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "revokeRefreshToken",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "refreshTokenMaxReuse",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "accessTokenLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "accessTokenLifespanForImplicitFlow",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "ssoSessionIdleTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "ssoSessionMaxLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "ssoSessionIdleTimeoutRememberMe",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "ssoSessionMaxLifespanRememberMe",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "offlineSessionIdleTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "offlineSessionMaxLifespanEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "offlineSessionMaxLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "clientSessionIdleTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "clientSessionMaxLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "clientOfflineSessionIdleTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "clientOfflineSessionMaxLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "accessCodeLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "accessCodeLifespanUserAction",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "accessCodeLifespanLogin",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "actionTokenGeneratedByAdminLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "actionTokenGeneratedByUserLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "oauth2DeviceCodeLifespan",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "oauth2DevicePollingInterval",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "sslRequired",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "passwordCredentialGrantAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "registrationAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "registrationEmailAsUsername",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "rememberMe",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "verifyEmail",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "loginWithEmailAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "duplicateEmailsAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "resetPasswordAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "editUsernameAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "userCacheEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "realmCacheEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "bruteForceProtected",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "permanentLockout",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "maxTemporaryLockouts",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "bruteForceStrategy",
+          "type": "BruteForceStrategy",
+          "required": false
+        },
+        {
+          "name": "maxFailureWaitSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "minimumQuickLoginWaitSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "waitIncrementSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "quickLoginCheckMilliSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "maxDeltaTimeSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "failureFactor",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "privateKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "publicKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "certificate",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "codeSecret",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "roles",
+          "type": "RolesRepresentation",
+          "required": false
+        },
+        {
+          "name": "groups",
+          "type": "array<GroupRepresentation>",
+          "required": false
+        },
+        {
+          "name": "defaultRoles",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "defaultRole",
+          "type": "RoleRepresentation",
+          "required": false
+        },
+        {
+          "name": "adminPermissionsClient",
+          "type": "ClientRepresentation",
+          "required": false
+        },
+        {
+          "name": "defaultGroups",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "requiredCredentials",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "passwordPolicy",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "otpPolicyType",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "otpPolicyAlgorithm",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "otpPolicyInitialCounter",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "otpPolicyDigits",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "otpPolicyLookAheadWindow",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "otpPolicyPeriod",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "otpPolicyCodeReusable",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "otpSupportedApplications",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "localizationTexts",
+          "type": "map<String, Map<String,String>>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyRpEntityName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicySignatureAlgorithms",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyRpId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyAttestationConveyancePreference",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyAuthenticatorAttachment",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyRequireResidentKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyUserVerificationRequirement",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyCreateTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyAvoidSameAuthenticatorRegister",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyAcceptableAaguids",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyExtraOrigins",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessRpEntityName",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessSignatureAlgorithms",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessRpId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessAttestationConveyancePreference",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessAuthenticatorAttachment",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessRequireResidentKey",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessUserVerificationRequirement",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessCreateTimeout",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessAcceptableAaguids",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessExtraOrigins",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "webAuthnPolicyPasswordlessPasskeysEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "clientProfiles",
+          "type": "JsonNode",
+          "required": false
+        },
+        {
+          "name": "clientPolicies",
+          "type": "JsonNode",
+          "required": false
+        },
+        {
+          "name": "users",
+          "type": "array<UserRepresentation>",
+          "required": false
+        },
+        {
+          "name": "federatedUsers",
+          "type": "array<UserRepresentation>",
+          "required": false
+        },
+        {
+          "name": "scopeMappings",
+          "type": "array<ScopeMappingRepresentation>",
+          "required": false
+        },
+        {
+          "name": "clientScopeMappings",
+          "type": "map<string,array<ScopeMappingRepresentation>>",
+          "required": false
+        },
+        {
+          "name": "clients",
+          "type": "array<ClientRepresentation>",
+          "required": false
+        },
+        {
+          "name": "clientScopes",
+          "type": "array<ClientScopeRepresentation>",
+          "required": false
+        },
+        {
+          "name": "defaultDefaultClientScopes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "defaultOptionalClientScopes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "browserSecurityHeaders",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "smtpServer",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "userFederationProviders",
+          "type": "array<UserFederationProviderRepresentation>",
+          "required": false
+        },
+        {
+          "name": "userFederationMappers",
+          "type": "array<UserFederationMapperRepresentation>",
+          "required": false
+        },
+        {
+          "name": "loginTheme",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "accountTheme",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "adminTheme",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "emailTheme",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "eventsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "eventsExpiration",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "eventsListeners",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "enabledEventTypes",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "adminEventsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "adminEventsDetailsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "identityProviders",
+          "type": "array<IdentityProviderRepresentation>",
+          "required": false
+        },
+        {
+          "name": "identityProviderMappers",
+          "type": "array<IdentityProviderMapperRepresentation>",
+          "required": false
+        },
+        {
+          "name": "protocolMappers",
+          "type": "array<ProtocolMapperRepresentation>",
+          "required": false
+        },
+        {
+          "name": "components",
+          "type": "MultivaluedHashMap<String, ComponentExportRepresentation>",
+          "required": false
+        },
+        {
+          "name": "internationalizationEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "supportedLocales",
+          "type": "array<string>",
+          "required": false
+        },
+        {
+          "name": "defaultLocale",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "authenticationFlows",
+          "type": "array<AuthenticationFlowRepresentation>",
+          "required": false
+        },
+        {
+          "name": "authenticatorConfig",
+          "type": "array<AuthenticatorConfigRepresentation>",
+          "required": false
+        },
+        {
+          "name": "requiredActions",
+          "type": "array<RequiredActionProviderRepresentation>",
+          "required": false
+        },
+        {
+          "name": "browserFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "registrationFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "directGrantFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "resetCredentialsFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "clientAuthenticationFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "dockerAuthenticationFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "firstBrokerLoginFlow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "keycloakVersion",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "userManagedAccessAllowed",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "organizationsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "organizations",
+          "type": "array<OrganizationRepresentation>",
+          "required": false
+        },
+        {
+          "name": "verifiableCredentialsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "adminPermissionsEnabled",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "social",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "updateProfileOnInitialSocialLogin",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "socialProviders",
+          "type": "map<string,string>",
+          "required": false
+        },
+        {
+          "name": "applicationScopeMappings",
+          "type": "map<string,array<ScopeMappingRepresentation>>",
+          "required": false
+        },
+        {
+          "name": "applications",
+          "type": "array<ApplicationRepresentation>",
+          "required": false
+        },
+        {
+          "name": "oauthClients",
+          "type": "array<OAuthClientRepresentation>",
+          "required": false
+        },
+        {
+          "name": "clientTemplates",
+          "type": "array<ClientTemplateRepresentation>",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "User",
+      "toEntity": "Group",
+      "kind": "many_to_many",
+      "fromField": "groups",
+      "toField": "id",
+      "notes": "UserRepresentation.groups is a list of group paths; adapters may need a lookup to resolve IDs."
+    },
+    {
+      "fromEntity": "Group",
+      "toEntity": "Group",
+      "kind": "one_to_many",
+      "fromField": "subGroups",
+      "toField": "id",
+      "notes": "Groups are hierarchical; parentId/path are used for navigation."
+    },
+    {
+      "fromEntity": "User",
+      "toEntity": "Role",
+      "kind": "many_to_many",
+      "fromField": "realmRoles",
+      "toField": "name",
+      "notes": "realmRoles are role names (not IDs) in the representation."
+    },
+    {
+      "fromEntity": "Group",
+      "toEntity": "Role",
+      "kind": "many_to_many",
+      "fromField": "realmRoles",
+      "toField": "name"
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "User",
+      "statusField": "enabled",
+      "states": ["true", "false"],
+      "notes": "Keycloak uses a boolean enabled flag for user lifecycle gating."
+    },
+    {
+      "entity": "Realm",
+      "statusField": "enabled",
+      "states": ["true", "false"]
+    },
+    {
+      "entity": "Client",
+      "statusField": "enabled",
+      "states": ["true", "false"]
+    }
+  ],
+  "actions": [
+    {
+      "name": "createUser",
+      "kind": "create",
+      "entities": ["User"],
+      "idempotency": {
+        "supported": false,
+        "notes": "No provider idempotency key; adapters should dedupe by username where policy allows."
+      }
+    },
+    {
+      "name": "updateUser",
+      "kind": "update",
+      "entities": ["User"],
+      "idempotency": {
+        "supported": true,
+        "mechanism": "User ID (path)"
+      }
+    },
+    {
+      "name": "deleteUser",
+      "kind": "delete",
+      "entities": ["User"]
+    },
+    {
+      "name": "createGroup",
+      "kind": "create",
+      "entities": ["Group"]
+    },
+    {
+      "name": "updateGroup",
+      "kind": "update",
+      "entities": ["Group"]
+    },
+    {
+      "name": "deleteGroup",
+      "kind": "delete",
+      "entities": ["Group"]
+    },
+    {
+      "name": "addUserToGroup",
+      "kind": "workflow",
+      "entities": ["User", "Group"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Safe if membership is checked before add."
+      }
+    },
+    {
+      "name": "removeUserFromGroup",
+      "kind": "workflow",
+      "entities": ["User", "Group"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Safe if membership is checked before remove."
+      }
+    },
+    {
+      "name": "createRole",
+      "kind": "create",
+      "entities": ["Role"]
+    },
+    {
+      "name": "deleteRole",
+      "kind": "delete",
+      "entities": ["Role"]
+    },
+    {
+      "name": "createClient",
+      "kind": "create",
+      "entities": ["Client"]
+    },
+    {
+      "name": "updateClient",
+      "kind": "update",
+      "entities": ["Client"]
+    },
+    {
+      "name": "deleteClient",
+      "kind": "delete",
+      "entities": ["Client"]
+    }
+  ],
+  "events": [
+    {
+      "name": "admin.user.changed",
+      "delivery": "stream",
+      "entities": ["User"],
+      "notes": "Keycloak supports admin events and event listener SPI; delivery depends on deployment configuration."
+    },
+    {
+      "name": "admin.group.changed",
+      "delivery": "stream",
+      "entities": ["Group"]
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": true,
+      "notes": "User and group attributes maps provide tenant-defined extension fields."
+    },
+    "tags": {
+      "supported": false
+    },
+    "attachments": {
+      "supported": false
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

@@ -7,18 +7,18 @@ Do not edit by hand.
 
 Single source of truth: `domain-atlas/sources/*/source.json`.
 
-- Upstream clones (gitignored): `domain-atlas/upstreams/`
+- Upstream working copies (submodules or local clones): `domain-atlas/upstreams/`
 - Source intake manifests (committed): `domain-atlas/sources/`
 - Provider decision notes (committed): `domain-atlas/decisions/providers/`
 
 ## Sources
 
-| Provider   | Name                     | Port Families                       | Upstream                                     | Pinned         | License                      | Decisions                                      | Manifest                                    |
-| ---------- | ------------------------ | ----------------------------------- | -------------------------------------------- | -------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------- |
-| `erpnext`  | ERPNext                  | FinanceAccounting, ProcurementSpend | `git: https://github.com/frappe/erpnext`     | `TBD`          | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/erpnext.md`  | `domain-atlas/sources/erpnext/source.json`  |
-| `keycloak` | Keycloak                 | IamDirectory                        | `git: https://github.com/keycloak/keycloak`  | `8258fceb33ef` | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/keycloak.md` | `domain-atlas/sources/keycloak/source.json` |
-| `killbill` | Kill Bill                | PaymentsBilling                     | `git: https://github.com/killbill/killbill`  | `f7d48b5965cb` | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/killbill.md` | `domain-atlas/sources/killbill/source.json` |
-| `mautic`   | Mautic                   | MarketingAutomation                 | `git: https://github.com/mautic/mautic`      | `e3ac0d4d7e8d` | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/mautic.md`   | `domain-atlas/sources/mautic/source.json`   |
-| `odoo`     | Odoo (Community Edition) | FinanceAccounting, ProcurementSpend | `git: https://github.com/odoo/odoo`          | `TBD`          | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/odoo.md`     | `domain-atlas/sources/odoo/source.json`     |
-| `stripe`   | Stripe                   | PaymentsBilling                     | `openapi: https://github.com/stripe/openapi` | `2e9f84824b51` | `Apache-2.0 (safe_to_reuse)` | `domain-atlas/decisions/providers/stripe.md`   | `domain-atlas/sources/stripe/source.json`   |
-| `vault`    | HashiCorp Vault          | SecretsVaulting                     | `git: https://github.com/hashicorp/vault`    | `TBD`          | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/vault.md`    | `domain-atlas/sources/vault/source.json`    |
+| Status    | Provider   | Name                     | Port Families                       | Upstream                                     | Pinned         | License                      | Decisions                                      | Manifest                                    |
+| --------- | ---------- | ------------------------ | ----------------------------------- | -------------------------------------------- | -------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------- |
+| `ACTIVE`  | `erpnext`  | ERPNext                  | FinanceAccounting, ProcurementSpend | `git: https://github.com/frappe/erpnext`     | `c8c54a42e2c6` | `GPL-3.0-only (study_only)`  | `domain-atlas/decisions/providers/erpnext.md`  | `domain-atlas/sources/erpnext/source.json`  |
+| `ACTIVE`  | `keycloak` | Keycloak                 | IamDirectory                        | `git: https://github.com/keycloak/keycloak`  | `8258fceb33ef` | `Apache-2.0 (safe_to_reuse)` | `domain-atlas/decisions/providers/keycloak.md` | `domain-atlas/sources/keycloak/source.json` |
+| `ACTIVE`  | `odoo`     | Odoo (Community Edition) | FinanceAccounting, ProcurementSpend | `git: https://github.com/odoo/odoo`          | `9dae06643309` | `LGPL-3.0-only (study_only)` | `domain-atlas/decisions/providers/odoo.md`     | `domain-atlas/sources/odoo/source.json`     |
+| `PLANNED` | `mautic`   | Mautic                   | MarketingAutomation                 | `git: https://github.com/mautic/mautic`      | `e3ac0d4d7e8d` | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/mautic.md`   | `domain-atlas/sources/mautic/source.json`   |
+| `PLANNED` | `vault`    | HashiCorp Vault          | SecretsVaulting                     | `git: https://github.com/hashicorp/vault`    | `TBD`          | `UNKNOWN (unknown)`          | `domain-atlas/decisions/providers/vault.md`    | `domain-atlas/sources/vault/source.json`    |
+| `DONE`    | `killbill` | Kill Bill                | PaymentsBilling                     | `git: https://github.com/killbill/killbill`  | `f7d48b5965cb` | `Apache-2.0 (safe_to_reuse)` | `domain-atlas/decisions/providers/killbill.md` | `domain-atlas/sources/killbill/source.json` |
+| `DONE`    | `stripe`   | Stripe                   | PaymentsBilling                     | `openapi: https://github.com/stripe/openapi` | `2e9f84824b51` | `Apache-2.0 (safe_to_reuse)` | `domain-atlas/decisions/providers/stripe.md`   | `domain-atlas/sources/stripe/source.json`   |

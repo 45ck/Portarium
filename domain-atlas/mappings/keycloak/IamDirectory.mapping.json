@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "keycloak",
+  "portFamily": "IamDirectory",
+  "mappings": [
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "User",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "username",
+        "email": "email",
+        "enabled": "enabled"
+      },
+      "notes": "Keycloak users map to Party with role tags applied by the adapter (e.g., role: user). Keep groups/roles/clients as ExternalObjectRef to avoid canonical bloat."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Group",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Group",
+        "displayLabel": "name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Role",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Role",
+        "displayLabel": "name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Client",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Client",
+        "displayLabel": "clientId"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Realm",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Realm",
+        "displayLabel": "realm"
+      },
+      "notes": "Realms map to the provider tenant boundary. In Portarium, Workspace is the tenancy boundary; keep realm as an external reference."
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 {
   "schemaVersion": "1.0.0",
+  "status": "DONE",
   "providerId": "killbill",
   "providerName": "Kill Bill",
   "portFamilies": ["PaymentsBilling"],
@@ -11,12 +12,16 @@
     "retrievedAt": "2026-02-16T21:02:35.815Z"
   },
   "license": {
-    "spdxId": "UNKNOWN",
-    "classification": "unknown",
-    "notes": "TBD: confirm license. Treat as study-only until confirmed."
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Upstream LICENSE is Apache 2.0. This manifest is for research + schema extraction; do not vendor upstream source into Portarium core."
   },
   "extraction": {
-    "modelSources": ["catalog/**", "payment/**", "invoice/**"],
-    "notes": "TBD: prefer REST API surface + database schema for entity lifecycles."
+    "modelSources": [
+      "jaxrs/src/main/java/org/killbill/billing/jaxrs/json/**",
+      "jaxrs/src/main/java/org/killbill/billing/jaxrs/resources/**"
+    ],
+    "command": "node scripts/domain-atlas/extract-killbill-cif.mjs",
+    "notes": "Initial extraction uses JAX-RS JSON DTOs as the most integration-relevant field list (public REST surface)."
   }
 }

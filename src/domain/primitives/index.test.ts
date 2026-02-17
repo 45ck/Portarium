@@ -16,11 +16,13 @@ import {
   PortId,
   RunId,
   TenantId,
+  WORKSPACE_USER_ROLES,
   UserId,
   WorkspaceId,
   WorkflowId,
   brand,
   isPortFamily,
+  isWorkspaceUserRole,
   unbrand,
   WorkItemId,
 } from './index.js';
@@ -67,5 +69,12 @@ describe('domain primitives', () => {
       expect(isPortFamily(f)).toBe(true);
     }
     expect(isPortFamily('NotARealPortFamily')).toBe(false);
+  });
+
+  it('isWorkspaceUserRole accepts known roles', () => {
+    for (const role of WORKSPACE_USER_ROLES) {
+      expect(isWorkspaceUserRole(role)).toBe(true);
+    }
+    expect(isWorkspaceUserRole('superAdmin')).toBe(false);
   });
 });
