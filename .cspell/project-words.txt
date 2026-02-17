@@ -653,3 +653,26 @@ HACCP
 FLSA
 oneroster
 gdrive
+
+# External execution platforms (infrastructure and backlog docs)
+Activepieces
+Langflow
+Kestra
+StackStorm
+OpenClaw
+openclaw
+
+# Technical terms (backlog and start-here docs)
+agentic
+devenv
+provisionable
+Sigstore
+MTTR
+HSTS
+Rego
+traceparent
+tracestate
+deserialisation
+subheaders
+colorblind
+fulfillment

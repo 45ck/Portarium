@@ -157,11 +157,6 @@ function formatPriority(p) {
   return p;
 }
 
-function formatPhase(p) {
-  if (!p) return '          --';
-  return p.padEnd(14);
-}
-
 function print(value, jsonFlag) {
   if (jsonFlag) {
     process.stdout.write(JSON.stringify(value, null, 2) + '\n');
@@ -227,7 +222,9 @@ function buildUpdateChanges(argv, existingIssue) {
   const priority = readOption(argv, '--priority');
   if (priority) {
     if (!VALID_PRIORITIES.includes(priority)) {
-      throw new Error(`Invalid priority "${priority}". Expected one of: ${VALID_PRIORITIES.join(', ')}.`);
+      throw new Error(
+        `Invalid priority "${priority}". Expected one of: ${VALID_PRIORITIES.join(', ')}.`,
+      );
     }
     changes.priority = priority;
   }
