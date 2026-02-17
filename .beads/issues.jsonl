@@ -290,4 +290,4 @@
 {"id":"bead-0290","title":"IN-PROGRESS: Create implementation bead for canonical object v1 domain scaffolding","status":"closed","createdAt":"2026-02-17T03:51:01.562Z","updatedAt":"2026-02-17T03:52:15.497Z"}
 {"id":"bead-0291","title":"Implement domain events parser and expose domain events aggregate parsing","status":"closed","createdAt":"2026-02-17T03:51:47.425Z","updatedAt":"2026-02-17T03:52:39.828Z"}
 {"id":"bead-0292","title":"Create code review bead for domain events parser and event stream parsing coverage","status":"closed","createdAt":"2026-02-17T03:51:47.775Z","updatedAt":"2026-02-17T03:52:35.977Z"}
-{"id":"bead-0293","title":"feat(cockpit): implement cockpit prototype UX fixes (persona layout, drawer push, visual hierarchy)","status":"open","createdAt":"2026-02-17T04:15:14.894Z","updatedAt":"2026-02-17T04:15:14.894Z"}
+{"id":"bead-0293","title":"feat(cockpit): implement cockpit prototype UX fixes (persona layout, drawer push, visual hierarchy)","status":"closed","createdAt":"2026-02-17T04:15:14.894Z","updatedAt":"2026-02-17T04:15:25.941Z"}
