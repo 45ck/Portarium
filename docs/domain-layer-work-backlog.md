@@ -20,7 +20,7 @@ Goal: consolidate parsing, validation, and error handling across all domain pars
 
 - STORY-D01.1 — bead-0302
   - Domain parsing/validation toolkit consolidation (ISO timestamp, integer/enum validation, shared error model).
-  - AC: all *V1 parsers use shared toolkit; no duplicated parsing logic.
+  - AC: all \*V1 parsers use shared toolkit; no duplicated parsing logic.
 - STORY-D01.2 — bead-0338
   - Harden ErrorFactory pattern: path-aware overloads for nested object parsing.
   - AC: parse-utils readBoolean/readString/readOptionalString support nested paths.
@@ -190,59 +190,59 @@ Goal: domain layer completion evidence.
 
 ## New beads created for this backlog
 
-| Bead | Title |
-|---|---|
-| bead-0420 | Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail) |
+| Bead      | Title                                                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| bead-0420 | Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail)              |
 | bead-0430 | Domain: MachineRegistration aggregate and Agent configuration entity (machine runtime registry domain model with capability allowlist and auth config) |
-| bead-0431 | Domain: CloudEvents type catalogue for agent lifecycle (ActionDispatched/Completed/Failed with tenantId/correlationId/runId propagation) |
-| bead-0448 | Spec: Policy evaluation rule language — CEL/OPA/Rego/DSL decision and evaluator implementation for PolicyInlineRuleV1.condition |
-| bead-0449 | Spec: Workflow action execution semantics — sequential vs parallel, retry/timeout, manual-only signals, compensation hooks |
-| bead-0450 | Spec: Evidence hash canonicalization — align EvidenceEntry to RFC 8785 JCS for cross-language chain verification |
-| bead-0451 | Spec: Saga compensation interface — compensationOperation and compensationInputSchema in capability matrix; per-family compensation contract |
+| bead-0431 | Domain: CloudEvents type catalogue for agent lifecycle (ActionDispatched/Completed/Failed with tenantId/correlationId/runId propagation)               |
+| bead-0448 | Spec: Policy evaluation rule language — CEL/OPA/Rego/DSL decision and evaluator implementation for PolicyInlineRuleV1.condition                        |
+| bead-0449 | Spec: Workflow action execution semantics — sequential vs parallel, retry/timeout, manual-only signals, compensation hooks                             |
+| bead-0450 | Spec: Evidence hash canonicalization — align EvidenceEntry to RFC 8785 JCS for cross-language chain verification                                       |
+| bead-0451 | Spec: Saga compensation interface — compensationOperation and compensationInputSchema in capability matrix; per-family compensation contract           |
 
 ## Pre-existing beads (cross-reference)
 
-| Bead | Status | Title |
-|---|---|---|
-| bead-0034 | open | ADR-028 review: PII minimization and retention in evidence transitions |
-| bead-0035 | open | ADR-029: Tamper-evident hash chain on EvidenceEntry |
-| bead-0036 | open | ADR-029 review: hash chain continuity |
-| bead-0037 | open | ADR-030: Quota-aware execution primitives |
-| bead-0038 | open | ADR-030 review: 429/backoff bounded |
-| bead-0039 | open | ADR-031: SoD model evaluation |
-| bead-0040 | open | ADR-031 review: requestor/approver separation |
-| bead-0041 | open | ADR-032: CloudEvents envelope |
-| bead-0042 | open | ADR-032 review: event payload schema |
-| bead-0043 | open | ADR-033: OTel context propagation |
-| bead-0044 | open | ADR-033 review: trace/span IDs |
-| bead-0045 | open | ADR-034: Containment/least-privilege |
-| bead-0046 | open | ADR-034 review: sandbox assertions |
-| bead-0047 | open | ADR-035: Domain-atlas pipeline CI job |
-| bead-0049 | open | ADR-036: Portarium naming labels |
-| bead-0050 | open | ADR-036 review: naming consistency |
-| bead-0051 | open | ADR-037: Git-backed definitions |
-| bead-0052 | open | ADR-037 review: deployment modes |
-| bead-0053 | open | ADR-038: Work Item binding domain |
-| bead-0054 | open | ADR-038 review: thin binding |
-| bead-0055 | open | ADR-039: Reference-vertical package |
-| bead-0056 | open | ADR-039 review: scope gated |
-| bead-0057 | open | Port-family integration candidate matrix |
-| bead-0059 | open | Per-family operation contract stubs |
-| bead-0162 | open | Phase gate: Domain complete |
-| bead-0173 | open | Reconcile canonical-objects.md |
-| bead-0175 | open | Reconcile erd.md |
-| bead-0176 | open | Reconcile aggregates.md |
-| bead-0177 | open | Cross-layer: domain zero-external-dependencies |
-| bead-0302 | open | Domain parsing/validation toolkit |
-| bead-0303 | open | Temporal invariants and ordering checks |
-| bead-0304 | open | Tenancy identity unification |
-| bead-0305 | open | Canonical capability enforcement |
-| bead-0306 | open | Domain events correlation |
-| bead-0307 | open | Provider-selection hardening |
-| bead-0309 | open | Domain API compatibility |
-| bead-0311 | open | Closeout review: domain hardening gate |
-| bead-0337 | open | State machine: workflow run lifecycle |
-| bead-0338 | open | Harden ErrorFactory pattern |
+| Bead      | Status | Title                                                                  |
+| --------- | ------ | ---------------------------------------------------------------------- |
+| bead-0034 | open   | ADR-028 review: PII minimization and retention in evidence transitions |
+| bead-0035 | open   | ADR-029: Tamper-evident hash chain on EvidenceEntry                    |
+| bead-0036 | open   | ADR-029 review: hash chain continuity                                  |
+| bead-0037 | open   | ADR-030: Quota-aware execution primitives                              |
+| bead-0038 | open   | ADR-030 review: 429/backoff bounded                                    |
+| bead-0039 | open   | ADR-031: SoD model evaluation                                          |
+| bead-0040 | open   | ADR-031 review: requestor/approver separation                          |
+| bead-0041 | open   | ADR-032: CloudEvents envelope                                          |
+| bead-0042 | open   | ADR-032 review: event payload schema                                   |
+| bead-0043 | open   | ADR-033: OTel context propagation                                      |
+| bead-0044 | open   | ADR-033 review: trace/span IDs                                         |
+| bead-0045 | open   | ADR-034: Containment/least-privilege                                   |
+| bead-0046 | open   | ADR-034 review: sandbox assertions                                     |
+| bead-0047 | open   | ADR-035: Domain-atlas pipeline CI job                                  |
+| bead-0049 | open   | ADR-036: Portarium naming labels                                       |
+| bead-0050 | open   | ADR-036 review: naming consistency                                     |
+| bead-0051 | open   | ADR-037: Git-backed definitions                                        |
+| bead-0052 | open   | ADR-037 review: deployment modes                                       |
+| bead-0053 | open   | ADR-038: Work Item binding domain                                      |
+| bead-0054 | open   | ADR-038 review: thin binding                                           |
+| bead-0055 | open   | ADR-039: Reference-vertical package                                    |
+| bead-0056 | open   | ADR-039 review: scope gated                                            |
+| bead-0057 | open   | Port-family integration candidate matrix                               |
+| bead-0059 | open   | Per-family operation contract stubs                                    |
+| bead-0162 | open   | Phase gate: Domain complete                                            |
+| bead-0173 | open   | Reconcile canonical-objects.md                                         |
+| bead-0175 | open   | Reconcile erd.md                                                       |
+| bead-0176 | open   | Reconcile aggregates.md                                                |
+| bead-0177 | open   | Cross-layer: domain zero-external-dependencies                         |
+| bead-0302 | open   | Domain parsing/validation toolkit                                      |
+| bead-0303 | open   | Temporal invariants and ordering checks                                |
+| bead-0304 | open   | Tenancy identity unification                                           |
+| bead-0305 | open   | Canonical capability enforcement                                       |
+| bead-0306 | open   | Domain events correlation                                              |
+| bead-0307 | open   | Provider-selection hardening                                           |
+| bead-0309 | open   | Domain API compatibility                                               |
+| bead-0311 | open   | Closeout review: domain hardening gate                                 |
+| bead-0337 | open   | State machine: workflow run lifecycle                                  |
+| bead-0338 | open   | Harden ErrorFactory pattern                                            |
 
 ## Delivery notes
 

@@ -90,34 +90,34 @@ Goal: every implementation bead has a tracked code review.
 
 **Per-ADR code reviews:**
 
-| Bead | Review target |
-|---|---|
-| bead-0063 | Code review: scaffold domain model structure |
-| bead-0064 | Code review: IAM MVP workspace users + RBAC |
-| bead-0065 | Code review: Control plane API v1 OpenAPI |
-| bead-0066 | Code review: ADR-029 hash chain implementation |
-| bead-0067 | Code review: ADR-030 quota-aware primitives |
-| bead-0068 | Code review: ADR-031 SoD model evaluation |
-| bead-0069 | Code review: ADR-032 CloudEvents envelope |
-| bead-0070 | Code review: ADR-033 OTel context propagation |
+| Bead      | Review target                                    |
+| --------- | ------------------------------------------------ |
+| bead-0063 | Code review: scaffold domain model structure     |
+| bead-0064 | Code review: IAM MVP workspace users + RBAC      |
+| bead-0065 | Code review: Control plane API v1 OpenAPI        |
+| bead-0066 | Code review: ADR-029 hash chain implementation   |
+| bead-0067 | Code review: ADR-030 quota-aware primitives      |
+| bead-0068 | Code review: ADR-031 SoD model evaluation        |
+| bead-0069 | Code review: ADR-032 CloudEvents envelope        |
+| bead-0070 | Code review: ADR-033 OTel context propagation    |
 | bead-0071 | Code review: ADR-034 containment/least-privilege |
-| bead-0072 | Code review: ADR-035 domain-atlas pipeline |
-| bead-0073 | Code review: ADR-036 Portarium naming labels |
-| bead-0074 | Code review: ADR-037 git-backed definitions |
-| bead-0075 | Code review: ADR-038 Work Item binding domain |
-| bead-0076 | Code review: ADR-039 reference-vertical package |
-| bead-0077 | Code review: port-family integration matrix |
-| bead-0078 | Code review: per-family contract stubs |
-| bead-0079 | Code review: provider decision log automation |
+| bead-0072 | Code review: ADR-035 domain-atlas pipeline       |
+| bead-0073 | Code review: ADR-036 Portarium naming labels     |
+| bead-0074 | Code review: ADR-037 git-backed definitions      |
+| bead-0075 | Code review: ADR-038 Work Item binding domain    |
+| bead-0076 | Code review: ADR-039 reference-vertical package  |
+| bead-0077 | Code review: port-family integration matrix      |
+| bead-0078 | Code review: per-family contract stubs           |
+| bead-0079 | Code review: provider decision log automation    |
 
 **Other code reviews:**
 
-| Bead | Review target |
-|---|---|
-| bead-0058 | Port-family readiness matrix review |
-| bead-0060 | Per-family contract stubs review |
+| Bead      | Review target                                           |
+| --------- | ------------------------------------------------------- |
+| bead-0058 | Port-family readiness matrix review                     |
+| bead-0060 | Per-family contract stubs review                        |
 | bead-0178 | Code review: architecture boundaries for scaffold files |
-| bead-0323 | Code review: application-layer completion |
+| bead-0323 | Code review: application-layer completion               |
 
 ### EPIC-V06 — Closeout reviews
 
@@ -125,35 +125,35 @@ Goal: every major implementation has closeout evidence before close.
 
 **ADR/domain closeout reviews:**
 
-| Bead | Closeout target |
-|---|---|
+| Bead      | Closeout target                           |
+| --------- | ----------------------------------------- |
 | bead-0207 | Closeout: scaffold domain model structure |
-| bead-0208 | Closeout: IAM MVP |
-| bead-0209 | Closeout: Control plane API v1 |
-| bead-0210 | Closeout: ADR-029 hash chain |
-| bead-0211 | Closeout: ADR-030 quota primitives |
-| bead-0212 | Closeout: ADR-031 SoD model |
-| bead-0213 | Closeout: ADR-032 CloudEvents |
-| bead-0214 | Closeout: ADR-033 OTel propagation |
-| bead-0215 | Closeout: ADR-034 containment |
-| bead-0216 | Closeout: ADR-035 domain-atlas pipeline |
-| bead-0217 | Closeout: ADR-036 Portarium naming |
-| bead-0218 | Closeout: ADR-037 git-backed definitions |
-| bead-0219 | Closeout: ADR-038 Work Item binding |
-| bead-0220 | Closeout: ADR-039 reference-vertical |
-| bead-0221 | Closeout: port-family integration matrix |
-| bead-0222 | Closeout: per-family contract stubs |
+| bead-0208 | Closeout: IAM MVP                         |
+| bead-0209 | Closeout: Control plane API v1            |
+| bead-0210 | Closeout: ADR-029 hash chain              |
+| bead-0211 | Closeout: ADR-030 quota primitives        |
+| bead-0212 | Closeout: ADR-031 SoD model               |
+| bead-0213 | Closeout: ADR-032 CloudEvents             |
+| bead-0214 | Closeout: ADR-033 OTel propagation        |
+| bead-0215 | Closeout: ADR-034 containment             |
+| bead-0216 | Closeout: ADR-035 domain-atlas pipeline   |
+| bead-0217 | Closeout: ADR-036 Portarium naming        |
+| bead-0218 | Closeout: ADR-037 git-backed definitions  |
+| bead-0219 | Closeout: ADR-038 Work Item binding       |
+| bead-0220 | Closeout: ADR-039 reference-vertical      |
+| bead-0221 | Closeout: port-family integration matrix  |
+| bead-0222 | Closeout: per-family contract stubs       |
 
 **Phase gate closeout reviews:**
 
-| Bead | Closeout target |
-|---|---|
-| bead-0259 | Closeout: PE master execution DAG |
-| bead-0260 | Closeout: Foundation phase gate |
-| bead-0261 | Closeout: Domain phase gate |
-| bead-0262 | Closeout: Application phase gate |
+| Bead      | Closeout target                     |
+| --------- | ----------------------------------- |
+| bead-0259 | Closeout: PE master execution DAG   |
+| bead-0260 | Closeout: Foundation phase gate     |
+| bead-0261 | Closeout: Domain phase gate         |
+| bead-0262 | Closeout: Application phase gate    |
 | bead-0263 | Closeout: Infrastructure phase gate |
-| bead-0264 | Closeout: Presentation phase gate |
+| bead-0264 | Closeout: Presentation phase gate   |
 
 **Port adapter family closeout reviews:** covered in `docs/integration-layer-work-backlog.md` (bead-0223 through bead-0258).
 
@@ -255,32 +255,32 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 
 ## New beads created for this backlog
 
-| Bead | Title |
-|---|---|
-| bead-0429 | Governance: domain coverage matrix (port families vs operational domain requirements with gap tracking) |
-| bead-0414 | Governance: licence compliance audit for adopted execution platforms (Activepieces MIT EE carve-outs, Kestra Apache 2.0 EE features) |
-| bead-0441 | Governance: contract tests for machine/agent OpenAPI endpoints (schema, RBAC, Problem Details, multi-tenant scoping) |
-| bead-0442 | Governance: integration tests for OpenClaw adapter with stub Gateway (fixtures, 429 backoff, policy-blocked tools) |
-| bead-0443 | Governance: E2E approval-gated agent task run (HumanApprove gate, approval decision, evidence chain) |
-| bead-0444 | Governance: OpenClaw tool blast-radius policy (tool-to-capability-tier mapping, dangerous tools default HumanApprove) |
-| bead-0445 | Governance: OpenClaw multi-tenant isolation strategy (per-workspace Gateway model, credential scoping, ADR) |
+| Bead      | Title                                                                                                                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bead-0429 | Governance: domain coverage matrix (port families vs operational domain requirements with gap tracking)                                                     |
+| bead-0414 | Governance: licence compliance audit for adopted execution platforms (Activepieces MIT EE carve-outs, Kestra Apache 2.0 EE features)                        |
+| bead-0441 | Governance: contract tests for machine/agent OpenAPI endpoints (schema, RBAC, Problem Details, multi-tenant scoping)                                        |
+| bead-0442 | Governance: integration tests for OpenClaw adapter with stub Gateway (fixtures, 429 backoff, policy-blocked tools)                                          |
+| bead-0443 | Governance: E2E approval-gated agent task run (HumanApprove gate, approval decision, evidence chain)                                                        |
+| bead-0444 | Governance: OpenClaw tool blast-radius policy (tool-to-capability-tier mapping, dangerous tools default HumanApprove)                                       |
+| bead-0445 | Governance: OpenClaw multi-tenant isolation strategy (per-workspace Gateway model, credential scoping, ADR)                                                 |
 | bead-0452 | ADR: hybrid orchestration/choreography architecture — Temporal for run-lifecycle orchestration + CloudEvents stream for projection/integration choreography |
 
 ## Bead summary
 
-| Category | Bead count |
-|---|---|
-| Process gates | 2 |
-| Phase transition gates | 8 |
-| ADR closure tracking | 3 |
-| PE governance | 6 |
-| Code reviews (ADR + other) | 21 |
-| Closeout reviews (ADR/domain/phase) | 22 |
-| Testing and evidence gates | 8 |
-| CI gates | 3 |
-| Operational readiness | 4 |
-| Architecture decisions (research-derived) | 1 |
-| **Total** | **78** |
+| Category                                  | Bead count |
+| ----------------------------------------- | ---------- |
+| Process gates                             | 2          |
+| Phase transition gates                    | 8          |
+| ADR closure tracking                      | 3          |
+| PE governance                             | 6          |
+| Code reviews (ADR + other)                | 21         |
+| Closeout reviews (ADR/domain/phase)       | 22         |
+| Testing and evidence gates                | 8          |
+| CI gates                                  | 3          |
+| Operational readiness                     | 4          |
+| Architecture decisions (research-derived) | 1          |
+| **Total**                                 | **78**     |
 
 ## Delivery notes
 

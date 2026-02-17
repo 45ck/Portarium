@@ -3010,7 +3010,9 @@ tr.is-kbd-selected td {
   margin-left: 6px;
 }
 @keyframes btn-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---- Dismissible hero prompt (H3, H8: reduce visual density) ---- */
@@ -3033,7 +3035,9 @@ tr.is-kbd-selected td {
   font-size: 14px;
   font-weight: 900;
   color: var(--muted);
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 .hero-prompt__dismiss:hover {
   background: rgba(27, 27, 27, 0.08);
@@ -3439,6 +3443,6 @@ tr.is-kbd-selected td {
 }
 
 /* ---- Event Stream ---- */
-.row[style*="border-left"] {
+.row[style*='border-left'] {
   padding-left: 12px;
 }

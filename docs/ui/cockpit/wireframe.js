@@ -740,7 +740,12 @@ const ABToggle = (function () {
   }
 
   function register(screenId, variants, renderers, labelMap, defaultVariant) {
-    registry[screenId] = { variants, renderers, labelMap: labelMap || {}, defaultVariant: defaultVariant || 'A' };
+    registry[screenId] = {
+      variants,
+      renderers,
+      labelMap: labelMap || {},
+      defaultVariant: defaultVariant || 'A',
+    };
   }
 
   function injectToggles() {
@@ -1112,7 +1117,10 @@ const ConfirmModal = (function () {
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         var modal = document.getElementById('confirmModal');
-        if (modal && !modal.hidden) { hide(); e.preventDefault(); }
+        if (modal && !modal.hidden) {
+          hide();
+          e.preventDefault();
+        }
       }
     });
   }
@@ -1131,7 +1139,9 @@ const HeroDismiss = (function () {
     try {
       var raw = sessionStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : {};
-    } catch { return {}; }
+    } catch {
+      return {};
+    }
   }
   function saveDismissed(state) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1197,7 +1207,8 @@ const ApprovalValidation = (function () {
 
     var fieldDecision = document.getElementById('fieldDecision');
     var fieldRationale = document.getElementById('fieldRationale');
-    if (fieldDecision) fieldDecision.classList.toggle('field--error', decision.value !== '' && !decisionValid);
+    if (fieldDecision)
+      fieldDecision.classList.toggle('field--error', decision.value !== '' && !decisionValid);
     if (fieldRationale) {
       var showError = rationale.value.trim().length > 0 && !rationaleValid;
       fieldRationale.classList.toggle('field--error', showError);
@@ -1217,7 +1228,9 @@ const ApprovalValidation = (function () {
     if (submitBtn) {
       submitBtn.addEventListener('click', function () {
         var decisionEl = document.getElementById('approvalDecision');
-        var decisionText = decisionEl ? decisionEl.options[decisionEl.selectedIndex].text : 'this decision';
+        var decisionText = decisionEl
+          ? decisionEl.options[decisionEl.selectedIndex].text
+          : 'this decision';
         ConfirmModal.show({
           icon: decisionText.toLowerCase() === 'approve' ? '✓' : '✕',
           title: 'Submit approval decision?',
@@ -1284,7 +1297,9 @@ function initActionConfirmations() {
         title: 'Retry this run?',
         body: 'The run will be re-queued for execution. This is safe — no duplicate actions will occur.',
         okText: 'Retry run',
-        onConfirm: function () { withLoadingState(retryBtn, 2000); },
+        onConfirm: function () {
+          withLoadingState(retryBtn, 2000);
+        },
       });
       return;
     }
@@ -1296,7 +1311,9 @@ function initActionConfirmations() {
         title: 'Deactivate this agent?',
         body: 'This agent may be used in active workflows. Deactivating it could cause running processes to fail.',
         okText: 'Deactivate',
-        onConfirm: function () { withLoadingState(retryBtn, 1500); },
+        onConfirm: function () {
+          withLoadingState(retryBtn, 1500);
+        },
       });
       return;
     }
@@ -1308,7 +1325,9 @@ function initActionConfirmations() {
         title: 'Rotate this credential?',
         body: 'Workflows using this credential will need the new value. Ensure you have the replacement ready.',
         okText: 'Rotate credential',
-        onConfirm: function () { withLoadingState(retryBtn, 1500); },
+        onConfirm: function () {
+          withLoadingState(retryBtn, 1500);
+        },
       });
       return;
     }
@@ -1322,7 +1341,9 @@ function initActionConfirmations() {
         title: 'Retry ' + count + ' selected runs?',
         body: 'All selected runs will be re-queued. Only retry-safe runs will execute; others will be skipped.',
         okText: 'Retry ' + count + ' runs',
-        onConfirm: function () { withLoadingState(retryBtn, 2000); },
+        onConfirm: function () {
+          withLoadingState(retryBtn, 2000);
+        },
       });
       return;
     }
@@ -1332,11 +1353,36 @@ function initActionConfirmations() {
     if (confirmKey) {
       e.preventDefault();
       var CONFIRM_MAP = {
-        'cancel-run': { icon: '⊘', title: 'Cancel this run?', body: 'The run will be terminated. Any in-progress actions will be rolled back if possible. This cannot be undone.', okText: 'Cancel run' },
-        'revoke-credential': { icon: '🔒', title: 'Revoke this credential?', body: 'Adapters using this credential will lose access immediately. Running workflows may fail at their next action step.', okText: 'Revoke credential' },
-        'deactivate-workflow': { icon: '⚠', title: 'Deactivate this workflow?', body: 'No new runs can be started. Existing runs will complete but no new triggers will fire.', okText: 'Deactivate' },
-        'delete-workflow': { icon: '🗑', title: 'Delete this workflow?', body: 'This permanently removes the workflow definition and all draft versions. Active runs will not be affected. This cannot be undone.', okText: 'Delete workflow' },
-        'deregister-agent': { icon: '⚠', title: 'Deregister this agent?', body: 'The agent will be removed from all workflow steps that reference it. Running workflows will fail at the agent step.', okText: 'Deregister' },
+        'cancel-run': {
+          icon: '⊘',
+          title: 'Cancel this run?',
+          body: 'The run will be terminated. Any in-progress actions will be rolled back if possible. This cannot be undone.',
+          okText: 'Cancel run',
+        },
+        'revoke-credential': {
+          icon: '🔒',
+          title: 'Revoke this credential?',
+          body: 'Adapters using this credential will lose access immediately. Running workflows may fail at their next action step.',
+          okText: 'Revoke credential',
+        },
+        'deactivate-workflow': {
+          icon: '⚠',
+          title: 'Deactivate this workflow?',
+          body: 'No new runs can be started. Existing runs will complete but no new triggers will fire.',
+          okText: 'Deactivate',
+        },
+        'delete-workflow': {
+          icon: '🗑',
+          title: 'Delete this workflow?',
+          body: 'This permanently removes the workflow definition and all draft versions. Active runs will not be affected. This cannot be undone.',
+          okText: 'Delete workflow',
+        },
+        'deregister-agent': {
+          icon: '⚠',
+          title: 'Deregister this agent?',
+          body: 'The agent will be removed from all workflow steps that reference it. Running workflows will fail at the agent step.',
+          okText: 'Deregister',
+        },
       };
       var cfg = CONFIRM_MAP[confirmKey];
       if (cfg) {
@@ -1345,7 +1391,9 @@ function initActionConfirmations() {
           title: cfg.title,
           body: cfg.body,
           okText: cfg.okText,
-          onConfirm: function () { withLoadingState(retryBtn, 1500); },
+          onConfirm: function () {
+            withLoadingState(retryBtn, 1500);
+          },
         });
       }
     }
@@ -1566,8 +1614,13 @@ function main() {
     if (btn.textContent.trim().indexOf('Export') === 0) {
       btn.addEventListener('click', function () {
         btn.textContent = 'Downloading...';
-        setTimeout(function () { btn.textContent = btn.textContent.replace('Downloading...', 'Downloaded ✓'); }, 800);
-        setTimeout(function () { btn.textContent = btn.getAttribute('data-original') || btn.textContent.replace('Downloaded ✓', 'Export'); }, 2500);
+        setTimeout(function () {
+          btn.textContent = btn.textContent.replace('Downloading...', 'Downloaded ✓');
+        }, 800);
+        setTimeout(function () {
+          btn.textContent =
+            btn.getAttribute('data-original') || btn.textContent.replace('Downloaded ✓', 'Export');
+        }, 2500);
       });
     }
   });
@@ -1581,7 +1634,9 @@ function main() {
       }
       var orig = el.textContent;
       el.textContent = 'Copied!';
-      setTimeout(function () { el.textContent = orig; }, 1200);
+      setTimeout(function () {
+        el.textContent = orig;
+      }, 1200);
     });
   });
 
@@ -1590,7 +1645,9 @@ function main() {
     allCb.addEventListener('change', function () {
       var table = allCb.closest('table');
       if (!table) return;
-      qsa('.bulk-checkbox', table).forEach(function (cb) { cb.checked = allCb.checked; });
+      qsa('.bulk-checkbox', table).forEach(function (cb) {
+        cb.checked = allCb.checked;
+      });
       var bar = allCb.closest('.table-wrap').previousElementSibling;
       if (bar && bar.classList.contains('bulk-bar')) {
         var count = qsa('.bulk-checkbox:checked', table).length;
@@ -1607,8 +1664,12 @@ function main() {
       e.preventDefault();
       var name = link.textContent;
       link.textContent = 'Loading...';
-      setTimeout(function () { link.textContent = name + ' (preview)'; }, 600);
-      setTimeout(function () { link.textContent = name; }, 2000);
+      setTimeout(function () {
+        link.textContent = name + ' (preview)';
+      }, 600);
+      setTimeout(function () {
+        link.textContent = name;
+      }, 2000);
     });
   });
 

@@ -175,24 +175,24 @@ Related: bead-0326 (API transport strategy, open)
 
 ## New beads created for this backlog
 
-| Bead | Title |
-|---|---|
+| Bead      | Title                                                                                                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | bead-0427 | Presentation: cockpit UI MVP - approver queue (approve/deny with rationale), run list with planned-vs-verified diff, work item creation, adapter registration overview |
-| bead-0438 | Presentation: OpenAPI v1 machine runtime registry endpoints (GET/POST /machines, POST /machines/{id}/test) |
-| bead-0439 | Presentation: OpenAPI v1 agent configuration endpoints (GET/POST /agents, PATCH /agents/{id}) |
-| bead-0440 | Presentation: cockpit Agents screen (machine connection test, capability allowlist, used-by-workflows query) |
+| bead-0438 | Presentation: OpenAPI v1 machine runtime registry endpoints (GET/POST /machines, POST /machines/{id}/test)                                                             |
+| bead-0439 | Presentation: OpenAPI v1 agent configuration endpoints (GET/POST /agents, PATCH /agents/{id})                                                                          |
+| bead-0440 | Presentation: cockpit Agents screen (machine connection test, capability allowlist, used-by-workflows query)                                                           |
 
 ## Pre-existing beads (cross-reference)
 
-| Bead | Status | Relevance |
-|---|---|---|
-| bead-0165 | open | Phase transition gate: Presentation complete |
-| bead-0264 | open | Closeout review for bead-0165 |
-| bead-0293 | closed | Cockpit prototype UX fixes |
-| bead-0295 | closed | First-pass presentation layer reference package |
-| bead-0326 | open | API transport strategy (HTTP/WS) |
-| bead-0333 | open | ops-cockpit http-client test coverage |
-| bead-0336 | open | ops-cockpit route handlers, middleware, OpenAPI spec |
+| Bead      | Status | Relevance                                            |
+| --------- | ------ | ---------------------------------------------------- |
+| bead-0165 | open   | Phase transition gate: Presentation complete         |
+| bead-0264 | open   | Closeout review for bead-0165                        |
+| bead-0293 | closed | Cockpit prototype UX fixes                           |
+| bead-0295 | closed | First-pass presentation layer reference package      |
+| bead-0326 | open   | API transport strategy (HTTP/WS)                     |
+| bead-0333 | open   | ops-cockpit http-client test coverage                |
+| bead-0336 | open   | ops-cockpit route handlers, middleware, OpenAPI spec |
 
 ## Delivery notes
 

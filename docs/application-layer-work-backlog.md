@@ -238,67 +238,67 @@ Goal: safe rollout with rollback capability.
 
 ## Pre-existing beads (cross-reference)
 
-| Bead | Status | Relevance |
-|---|---|---|
-| bead-0016 | open | IAM MVP: workspace users + RBAC roles + auth integration |
+| Bead      | Status | Relevance                                                        |
+| --------- | ------ | ---------------------------------------------------------------- |
+| bead-0016 | open   | IAM MVP: workspace users + RBAC roles + auth integration         |
 | bead-0019 | closed | Control Plane API v1: domain schemas for Workspace + User (RBAC) |
-| bead-0022 | closed | ADR-0032: Event stream CloudEvents v1 (domain + tests) |
-| bead-0041 | open | CloudEvents envelope implementation |
-| bead-0043 | open | OTel context propagation |
-| bead-0163 | open | Phase transition: Application complete |
-| bead-0167 | open | Phase transition: Security complete |
-| bead-0181 | open | Test coverage thresholds |
-| bead-0188 | open | Runbook: execution order |
-| bead-0189 | open | Runbook: rollback plan |
-| bead-0195 | open | Tenant-isolated fixture factories |
-| bead-0196 | open | Review: tenant-isolated fixtures |
-| bead-0298 | open | Infrastructure execution baseline |
-| bead-0299 | open | AuthZ actions and forbidden-action typing |
-| bead-0300 | open | E2E integration tests (command/query + idempotency + outbox) |
-| bead-0301 | closed | ci:pr green for application-layer changes |
-| bead-0303 | open | Temporal invariants and ordering checks |
-| bead-0308 | open | Repository-level aggregate invariants |
-| bead-0310 | open | Evidence/audit schema debt clean-up |
-| bead-0312 | open | Application-layer implementation roadmap |
-| bead-0313 | open | Application-level observability |
-| bead-0314 | open | Durable workflow adapter integration |
-| bead-0315 | open | Query read-model projection + caching |
-| bead-0316 | open | Outbox + event dispatcher |
-| bead-0317 | open | Rate limiting and anti-abuse guards |
-| bead-0319 | open | Missing command/query handlers |
-| bead-0320 | open | Contract tests for command/query surface |
-| bead-0321 | open | Integration tests for idempotency + outbox |
-| bead-0323 | open | Code review: application-layer completion |
-| bead-0326 | open | API transport strategy |
-| bead-0328 | open | AuthN/AuthZ production hardening |
-| bead-0329 | open | CI/CD provenance and image signing |
-| bead-0334 | open | Test coverage for errors.ts |
-| bead-0335 | open | Wire infrastructure adapters |
-| bead-0318 | open | Policy/authorization matrix for all commands and queries |
-| bead-0332 | open | Refactor start-workflow.ts complexity |
-| bead-0340 | open | Remaining application-layer use-cases |
+| bead-0022 | closed | ADR-0032: Event stream CloudEvents v1 (domain + tests)           |
+| bead-0041 | open   | CloudEvents envelope implementation                              |
+| bead-0043 | open   | OTel context propagation                                         |
+| bead-0163 | open   | Phase transition: Application complete                           |
+| bead-0167 | open   | Phase transition: Security complete                              |
+| bead-0181 | open   | Test coverage thresholds                                         |
+| bead-0188 | open   | Runbook: execution order                                         |
+| bead-0189 | open   | Runbook: rollback plan                                           |
+| bead-0195 | open   | Tenant-isolated fixture factories                                |
+| bead-0196 | open   | Review: tenant-isolated fixtures                                 |
+| bead-0298 | open   | Infrastructure execution baseline                                |
+| bead-0299 | open   | AuthZ actions and forbidden-action typing                        |
+| bead-0300 | open   | E2E integration tests (command/query + idempotency + outbox)     |
+| bead-0301 | closed | ci:pr green for application-layer changes                        |
+| bead-0303 | open   | Temporal invariants and ordering checks                          |
+| bead-0308 | open   | Repository-level aggregate invariants                            |
+| bead-0310 | open   | Evidence/audit schema debt clean-up                              |
+| bead-0312 | open   | Application-layer implementation roadmap                         |
+| bead-0313 | open   | Application-level observability                                  |
+| bead-0314 | open   | Durable workflow adapter integration                             |
+| bead-0315 | open   | Query read-model projection + caching                            |
+| bead-0316 | open   | Outbox + event dispatcher                                        |
+| bead-0317 | open   | Rate limiting and anti-abuse guards                              |
+| bead-0319 | open   | Missing command/query handlers                                   |
+| bead-0320 | open   | Contract tests for command/query surface                         |
+| bead-0321 | open   | Integration tests for idempotency + outbox                       |
+| bead-0323 | open   | Code review: application-layer completion                        |
+| bead-0326 | open   | API transport strategy                                           |
+| bead-0328 | open   | AuthN/AuthZ production hardening                                 |
+| bead-0329 | open   | CI/CD provenance and image signing                               |
+| bead-0334 | open   | Test coverage for errors.ts                                      |
+| bead-0335 | open   | Wire infrastructure adapters                                     |
+| bead-0318 | open   | Policy/authorization matrix for all commands and queries         |
+| bead-0332 | open   | Refactor start-workflow.ts complexity                            |
+| bead-0340 | open   | Remaining application-layer use-cases                            |
 
 ## New beads created for this backlog
 
-| Bead | Title |
-|---|---|
-| bead-0417 | App: production-grade JWT validation and principal extraction against bearerAuth in OpenAPI contract |
-| bead-0418 | App: wire AuthorizationPort to Keycloak OIDC and OpenFGA fine-grained authz |
-| bead-0419 | App: close submit-approval RequestChanges gap |
-| bead-0425 | App: Temporal worker execution loop (plan, execute, diff, evidence, run status) |
-| bead-0426 | App: idempotent workflow start (same idempotency key returns same runId) |
-| bead-0409 | App: external action runner port interface for dispatching workflow actions to external execution planes |
-| bead-0411 | App: trigger-to-execution-plane routing - route TriggerKind to correct execution plane adapter at workflow start |
-| bead-0378 | App: API backward compatibility and versioning strategy |
-| bead-0379 | App: input validation framework at command/query boundary |
-| bead-0380 | CI: security gates (OpenAPI diff, vuln scan, secret scan) |
-| bead-0381 | App: load and stress testing |
-| bead-0382 | App: GraphQL BFF evaluation |
-| bead-0383 | App: event schema versioning governance |
-| bead-0384 | App: HTTP precondition support (optimistic concurrency) |
+| Bead      | Title                                                                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| bead-0417 | App: production-grade JWT validation and principal extraction against bearerAuth in OpenAPI contract                                      |
+| bead-0418 | App: wire AuthorizationPort to Keycloak OIDC and OpenFGA fine-grained authz                                                               |
+| bead-0419 | App: close submit-approval RequestChanges gap                                                                                             |
+| bead-0425 | App: Temporal worker execution loop (plan, execute, diff, evidence, run status)                                                           |
+| bead-0426 | App: idempotent workflow start (same idempotency key returns same runId)                                                                  |
+| bead-0409 | App: external action runner port interface for dispatching workflow actions to external execution planes                                  |
+| bead-0411 | App: trigger-to-execution-plane routing - route TriggerKind to correct execution plane adapter at workflow start                          |
+| bead-0378 | App: API backward compatibility and versioning strategy                                                                                   |
+| bead-0379 | App: input validation framework at command/query boundary                                                                                 |
+| bead-0380 | CI: security gates (OpenAPI diff, vuln scan, secret scan)                                                                                 |
+| bead-0381 | App: load and stress testing                                                                                                              |
+| bead-0382 | App: GraphQL BFF evaluation                                                                                                               |
+| bead-0383 | App: event schema versioning governance                                                                                                   |
+| bead-0384 | App: HTTP precondition support (optimistic concurrency)                                                                                   |
 | bead-0432 | App: MachineInvokerPort — port interface for invoking external machine/agent runtimes (runAgent and invokeTool with credential injection) |
-| bead-0433 | App: Agent Task action execution path in workflow runner with policy tier gating and approval gate integration |
-| bead-0434 | App: machine/agent registration command handlers (RegisterMachine, CreateAgent, UpdateAgentCapabilities) |
+| bead-0433 | App: Agent Task action execution path in workflow runner with policy tier gating and approval gate integration                            |
+| bead-0434 | App: machine/agent registration command handlers (RegisterMachine, CreateAgent, UpdateAgentCapabilities)                                  |
 
 ## Delivery notes
 

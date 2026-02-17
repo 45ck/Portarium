@@ -179,7 +179,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible js-nonempty-inbox">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text js-hero-inbox-text">
               A run failed and can be retried. Review it and decide whether to retry or investigate
               further.
@@ -193,7 +200,17 @@
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Pending approvals</span>
             <span class="chip">Failed runs</span>
-            <button class="chip chip--clear" type="button" onclick="this.parentElement.querySelectorAll('.chip--active').forEach(c=>c.classList.remove('chip--active'))">✕ Clear all</button>
+            <button
+              class="chip chip--clear"
+              type="button"
+              onclick="
+                this.parentElement
+                  .querySelectorAll('.chip--active')
+                  .forEach((c) => c.classList.remove('chip--active'))
+              "
+            >
+              ✕ Clear all
+            </button>
           </div>
 
           <!-- Next action prompt (domain primitive) -->
@@ -216,7 +233,9 @@
               will appear here.
             </div>
             <div class="empty__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">
+                Create Work Item
+              </button>
             </div>
           </div>
 
@@ -231,26 +250,46 @@
                     <div class="row__main">
                       <div class="row__title">
                         Approve Plan: Create Invoice in NetSuite
-                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                        <span
+                          class="tier-badge tier-badge--human"
+                          data-tooltip="Requires explicit human approval before execution"
+                          >Human-approve</span
+                        >
                       </div>
                       <div class="row__subtle">
                         Project: Billing Governance | WI-1099 | R-8920
-                        <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
+                        <span
+                          class="sod-badge"
+                          data-tooltip="The person who started this run cannot be the one to approve it"
+                          >Requires different approver</span
+                        >
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
+                    <div class="row__right">
+                      <span class="status status--warn"
+                        ><span class="status__icon">◷</span>Pending</span
+                      >
+                    </div>
                   </a>
                   <a class="row" href="#run">
                     <div class="row__main">
                       <div class="row__title">
                         Approve Plan: Update Ticket priority in Zendesk
-                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                        <span
+                          class="tier-badge tier-badge--human"
+                          data-tooltip="Requires explicit human approval before execution"
+                          >Human-approve</span
+                        >
                       </div>
                       <div class="row__subtle">
                         Project: Customer Support Ops | WI-1042 | R-8892
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
+                    <div class="row__right">
+                      <span class="status status--warn"
+                        ><span class="status__icon">◷</span>Pending</span
+                      >
+                    </div>
                   </a>
                 </div>
               </article>
@@ -264,17 +303,32 @@
                       <div class="row__title">Run failed: CRM sync hit rate limit</div>
                       <div class="row__subtle">
                         WI-1021 | Update Opportunity
-                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                        <span
+                          class="idem-badge idem-badge--safe"
+                          data-tooltip="Retrying this action won't create duplicates"
+                          >Safe to retry</span
+                        >
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--danger"><span class="status__icon">✕</span>Failed</span></div>
+                    <div class="row__right">
+                      <span class="status status--danger"
+                        ><span class="status__icon">✕</span>Failed</span
+                      >
+                    </div>
                   </a>
                   <a class="row" href="#run">
                     <div class="row__main">
                       <div class="row__title">Run blocked: missing provider scope</div>
-                      <div class="row__subtle">WI-1103 | Send Email — <a href="#settings">Update scope in Settings → Integrations</a></div>
+                      <div class="row__subtle">
+                        WI-1103 | Send Email —
+                        <a href="#settings">Update scope in Settings → Integrations</a>
+                      </div>
                     </div>
-                    <div class="row__right"><span class="status status--danger"><span class="status__icon">⊘</span>Blocked</span></div>
+                    <div class="row__right">
+                      <span class="status status--danger"
+                        ><span class="status__icon">⊘</span>Blocked</span
+                      >
+                    </div>
                   </a>
                 </div>
               </article>
@@ -317,14 +371,22 @@
                         Audit log: OK (entries 120-146 verified). No gaps detected.
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Verified</span></div>
+                    <div class="row__right">
+                      <span class="status status--ok"
+                        ><span class="status__icon">✓</span>Verified</span
+                      >
+                    </div>
                   </a>
                   <a class="row" href="#evidence" style="text-decoration: none">
                     <div class="row__main">
                       <div class="row__title">2 entries approaching retention expiry</div>
                       <div class="row__subtle">Category: Approval | 30 days remaining</div>
                     </div>
-                    <div class="row__right"><span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span></div>
+                    <div class="row__right">
+                      <span class="status status--warn"
+                        ><span class="status__icon">⏰</span>Expiring</span
+                      >
+                    </div>
                   </a>
                 </div>
               </article>
@@ -343,7 +405,9 @@
                         blocked.
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--danger">Not configured</span></div>
+                    <div class="row__right">
+                      <span class="status status--danger">Not configured</span>
+                    </div>
                   </a>
                   <a class="row" href="#settings" style="text-decoration: none">
                     <div class="row__main">
@@ -352,7 +416,11 @@
                         Expires 2026-03-15. Rotate or renew to avoid disruption.
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span></div>
+                    <div class="row__right">
+                      <span class="status status--warn"
+                        ><span class="status__icon">⏰</span>Expiring</span
+                      >
+                    </div>
                   </a>
                   <div class="row row--static">
                     <div class="row__main">
@@ -379,8 +447,15 @@
                     <div class="row__main">
                       <div class="row__title">Run failed: CRM sync hit rate limit</div>
                       <div class="row__subtle">
-                        WI-1021 | <span class="status status--danger"><span class="status__icon">✕</span>Failed</span>
-                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                        WI-1021 |
+                        <span class="status status--danger"
+                          ><span class="status__icon">✕</span>Failed</span
+                        >
+                        <span
+                          class="idem-badge idem-badge--safe"
+                          data-tooltip="Retrying this action won't create duplicates"
+                          >Safe to retry</span
+                        >
                       </div>
                     </div>
                   </a>
@@ -389,7 +464,11 @@
                       <div class="row__title">Approve Plan: Create Invoice in NetSuite</div>
                       <div class="row__subtle">
                         WI-1099 | R-8920 |
-                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                        <span
+                          class="tier-badge tier-badge--human"
+                          data-tooltip="Requires explicit human approval before execution"
+                          >Human-approve</span
+                        >
                       </div>
                     </div>
                   </a>
@@ -402,7 +481,10 @@
                     <div class="row__main">
                       <div class="row__title">Run blocked: missing provider scope</div>
                       <div class="row__subtle">
-                        WI-1103 | <span class="status status--danger"><span class="status__icon">⊘</span>Blocked</span>
+                        WI-1103 |
+                        <span class="status status--danger"
+                          ><span class="status__icon">⊘</span>Blocked</span
+                        >
                       </div>
                     </div>
                   </a>
@@ -416,7 +498,11 @@
                       <div class="row__title">Approve Plan: Update Ticket priority in Zendesk</div>
                       <div class="row__subtle">
                         WI-1042 | R-8892 |
-                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                        <span
+                          class="tier-badge tier-badge--human"
+                          data-tooltip="Requires explicit human approval before execution"
+                          >Human-approve</span
+                        >
                       </div>
                     </div>
                   </a>
@@ -452,8 +538,12 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
-              <button class="btn" type="button" data-dialog="dlgStartWorkflow">Start workflow</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">
+                Create Work Item
+              </button>
+              <button class="btn" type="button" data-dialog="dlgStartWorkflow">
+                Start workflow
+              </button>
               <a class="btn" href="#work-items">View Work Items</a>
               <button class="btn js-drawer-trigger" type="button" data-drawer="context">
                 Context
@@ -469,7 +559,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               This project has 7 items that need attention, including 2 failed runs and 4 pending
               approvals.
@@ -500,22 +597,38 @@
                 <div class="bars">
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></span
+                      ><span
+                        class="tier-badge tier-badge--auto"
+                        data-tooltip="Runs without human intervention"
+                        >Auto</span
+                      ></span
                     ><span class="bar__fill" style="width: 45%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span></span
+                      ><span
+                        class="tier-badge tier-badge--assisted"
+                        data-tooltip="AI helps, but a human reviews the result"
+                        >Assisted</span
+                      ></span
                     ><span class="bar__fill" style="width: 30%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human</span></span
+                      ><span
+                        class="tier-badge tier-badge--human"
+                        data-tooltip="Requires explicit human approval before execution"
+                        >Human</span
+                      ></span
                     ><span class="bar__fill" style="width: 20%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--manual" data-tooltip="Fully manual — no automation, human performs all steps">Manual</span></span
+                      ><span
+                        class="tier-badge tier-badge--manual"
+                        data-tooltip="Fully manual — no automation, human performs all steps"
+                        >Manual</span
+                      ></span
                     ><span class="bar__fill" style="width: 5%"></span>
                   </div>
                 </div>
@@ -531,8 +644,12 @@
                     <div class="row__main">
                       <div class="row__title">Start runbook: Invoice correction</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span> Approval Gate
-                        likely
+                        <span
+                          class="tier-badge tier-badge--assisted"
+                          data-tooltip="AI helps, but a human reviews the result"
+                          >Assisted</span
+                        >
+                        Approval Gate likely
                       </div>
                     </div>
                     <div class="row__right"><span class="status status--info">Runbook</span></div>
@@ -541,8 +658,12 @@
                     <div class="row__main">
                       <div class="row__title">Start workflow: Collect payment receipts</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span> evidence payloads
-                        stored
+                        <span
+                          class="tier-badge tier-badge--auto"
+                          data-tooltip="Runs without human intervention"
+                          >Auto</span
+                        >
+                        evidence payloads stored
                       </div>
                     </div>
                     <div class="row__right"><span class="status status--info">Workflow</span></div>
@@ -659,26 +780,39 @@
                     <div class="row__title">Invoice Correction</div>
                     <div class="row__subtle">14 runs | 96% success | P50: 3.1s | P95: 12.4s</div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size: 10px; padding: 2px 6px">Healthy</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                      >Healthy</span
+                    >
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">Collect Payment Receipts</div>
                     <div class="row__subtle">28 runs | 100% success | P50: 1.8s | P95: 4.2s</div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size: 10px; padding: 2px 6px">Healthy</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                      >Healthy</span
+                    >
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">CRM Contact Sync</div>
                     <div class="row__subtle">6 runs | 50% success | P50: 8.4s | P95: 22.1s</div>
                   </div>
-                  <div class="row__right"><span class="status status--danger" style="font-size: 10px; padding: 2px 6px">Degraded</span></div>
+                  <div class="row__right">
+                    <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                      >Degraded</span
+                    >
+                  </div>
                 </div>
               </div>
               <div class="callout" style="margin-top: 10px">
-                Traces export to: <code style="font-size: 11px">otel.acme.com:4317</code> (OTLP gRPC) |
-                <a href="#" onclick="return false" style="font-size: 11px">Configure endpoint</a>
+                Traces export to: <code style="font-size: 11px">otel.acme.com:4317</code> (OTLP
+                gRPC) |
+                <a href="#" onclick="return false;" style="font-size: 11px">Configure endpoint</a>
               </div>
             </article>
           </div>
@@ -700,12 +834,21 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">
+                Create Work Item
+              </button>
             </div>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible js-nonempty-workitems">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               You have 7 work items. 1 needs approval and 1 has a failed run. Start from the top.
             </div>
@@ -727,17 +870,15 @@
               governed work.
             </div>
             <div class="empty__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">
+                Create Work Item
+              </button>
               <a class="btn" href="#settings">Configure integrations</a>
             </div>
           </div>
 
           <!-- Variant A: Table view -->
-          <div
-            class="ab-variant"
-            data-variant="A"
-            data-variant-screen="work-items"
-          >
+          <div class="ab-variant" data-variant="A" data-variant-screen="work-items">
             <div class="bulk-bar" hidden>
               <span class="bulk-bar__count">0 selected</span>
               <button class="btn btn--small" type="button">Close selected</button>
@@ -748,7 +889,9 @@
               <table class="table" aria-label="Work Items table">
                 <thead>
                   <tr>
-                    <th><input type="checkbox" aria-label="Select all" class="bulk-checkbox-all"></th>
+                    <th>
+                      <input type="checkbox" aria-label="Select all" class="bulk-checkbox-all" />
+                    </th>
                     <th>Title</th>
                     <th>Status</th>
                     <th>Tier</th>
@@ -761,41 +904,81 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1099"></td>
+                    <td>
+                      <input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1099" />
+                    </td>
                     <td>
                       <a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099"
                         >WI-1099 Invoice correction for ACME</a
                       >
                     </td>
                     <td><span class="status">Open</span></td>
-                    <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
+                    <td>
+                      <span
+                        class="tier-badge tier-badge--human"
+                        data-tooltip="Requires explicit human approval before execution"
+                        >Human-approve</span
+                      >
+                    </td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">FA</span> NetSuite</span>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
                     </td>
-                    <td><span class="status status--warn"><span class="status__icon">⏸</span>Waiting for approval</span></td>
-                    <td><span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m">3h 48m</span></td>
+                    <td>
+                      <span class="status status--warn"
+                        ><span class="status__icon">⏸</span>Waiting for approval</span
+                      >
+                    </td>
+                    <td>
+                      <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m"
+                        >3h 48m</span
+                      >
+                    </td>
                     <td>5m</td>
                   </tr>
                   <tr>
-                    <td><input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1042"></td>
+                    <td>
+                      <input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1042" />
+                    </td>
                     <td><a href="#work-item">WI-1042 Dispute: investigate payment failure</a></td>
                     <td><span class="status">Open</span></td>
-                    <td><span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span></td>
+                    <td>
+                      <span
+                        class="tier-badge tier-badge--assisted"
+                        data-tooltip="AI helps, but a human reviews the result"
+                        >Assisted</span
+                      >
+                    </td>
                     <td class="js-owner-unassigned">Unassigned</td>
                     <td>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
                     </td>
-                    <td><span class="status status--info"><span class="status__icon">↻</span>Running</span></td>
-                    <td><span class="sla-badge sla-badge--danger" data-tooltip="SLA overdue by 2h">Overdue 2h</span></td>
+                    <td>
+                      <span class="status status--info"
+                        ><span class="status__icon">↻</span>Running</span
+                      >
+                    </td>
+                    <td>
+                      <span class="sla-badge sla-badge--danger" data-tooltip="SLA overdue by 2h"
+                        >Overdue 2h</span
+                      >
+                    </td>
                     <td>18m</td>
                   </tr>
                   <tr>
-                    <td><input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1013"></td>
+                    <td>
+                      <input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1013" />
+                    </td>
                     <td><a href="#work-item">WI-1013 Receipt export for audit period</a></td>
                     <td><span class="status">Open</span></td>
-                    <td><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></td>
+                    <td>
+                      <span
+                        class="tier-badge tier-badge--auto"
+                        data-tooltip="Runs without human intervention"
+                        >Auto</span
+                      >
+                    </td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
@@ -806,18 +989,30 @@
                     <td>2d</td>
                   </tr>
                   <tr>
-                    <td><input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1105"></td>
+                    <td>
+                      <input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1105" />
+                    </td>
                     <td><a href="#work-item">WI-1105 Sync Salesforce contacts</a></td>
                     <td>
                       <span class="status status--ok">Closed</span>
                       <span class="drift-badge">drift</span>
                     </td>
-                    <td><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></td>
+                    <td>
+                      <span
+                        class="tier-badge tier-badge--auto"
+                        data-tooltip="Runs without human intervention"
+                        >Auto</span
+                      >
+                    </td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">CR</span> Salesforce</span>
                     </td>
-                    <td><span class="status status--ok"><span class="status__icon">✓</span>Succeeded</span></td>
+                    <td>
+                      <span class="status status--ok"
+                        ><span class="status__icon">✓</span>Succeeded</span
+                      >
+                    </td>
                     <td><span class="subtle">--</span></td>
                     <td>1d</td>
                   </tr>
@@ -838,7 +1033,11 @@
           <!-- /ab-variant A work-items -->
 
           <!-- Variant B: Kanban Board -->
-          <div class="ab-variant ab-variant--active" data-variant="B" data-variant-screen="work-items">
+          <div
+            class="ab-variant ab-variant--active"
+            data-variant="B"
+            data-variant-screen="work-items"
+          >
             <div class="kanban js-nonempty-workitems">
               <div class="kanban__column">
                 <div class="kanban__column-title">
@@ -847,7 +1046,11 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1013 Receipt export for audit period</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
+                    <span
+                      class="tier-badge tier-badge--auto"
+                      data-tooltip="Runs without human intervention"
+                      >Auto</span
+                    >
                     <span class="chip" style="font-size: 11px; padding: 3px 6px"
                       ><span class="port-icon">PB</span> Stripe</span
                     >
@@ -861,7 +1064,11 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1042 Dispute: investigate payment failure</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span>
+                    <span
+                      class="tier-badge tier-badge--assisted"
+                      data-tooltip="AI helps, but a human reviews the result"
+                      >Assisted</span
+                    >
                     <span class="status status--info" style="font-size: 11px; padding: 3px 6px"
                       >Running</span
                     >
@@ -875,7 +1082,11 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1099 Invoice correction for ACME</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Requires explicit human approval before execution"
+                      >Human-approve</span
+                    >
                     <span class="status status--warn" style="font-size: 11px; padding: 3px 6px"
                       >Awaiting approval</span
                     >
@@ -889,7 +1100,11 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1105 Sync Salesforce contacts</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
+                    <span
+                      class="tier-badge tier-badge--auto"
+                      data-tooltip="Runs without human intervention"
+                      >Auto</span
+                    >
                     <span class="status status--ok" style="font-size: 11px; padding: 3px 6px"
                       >Closed</span
                     >
@@ -912,12 +1127,21 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgStartWorkflow">Start workflow</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgStartWorkflow">
+                Start workflow
+              </button>
             </div>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               Track execution history. Filter by status or time period to find specific runs.
             </div>
@@ -943,17 +1167,17 @@
           </div>
 
           <div class="bulk-bar" id="bulkBar" hidden>
-              <span class="bulk-bar__count"><span id="bulkCount">0</span> selected</span>
-              <div class="bulk-bar__actions">
-                <button class="btn btn--small btn--primary" type="button">Retry selected</button>
-                <button class="btn btn--small" type="button">Export selected</button>
-              </div>
+            <span class="bulk-bar__count"><span id="bulkCount">0</span> selected</span>
+            <div class="bulk-bar__actions">
+              <button class="btn btn--small btn--primary" type="button">Retry selected</button>
+              <button class="btn btn--small" type="button">Export selected</button>
             </div>
+          </div>
           <div class="table-wrap js-nonempty-runs">
             <table class="table" aria-label="Runs table">
               <thead>
                 <tr>
-                  <th><input type="checkbox" id="bulkSelectAll" aria-label="Select all runs"></th>
+                  <th><input type="checkbox" id="bulkSelectAll" aria-label="Select all runs" /></th>
                   <th>Run</th>
                   <th>Status</th>
                   <th>Workflow</th>
@@ -965,9 +1189,15 @@
               </thead>
               <tbody>
                 <tr>
-                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8920"></td>
+                  <td>
+                    <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8920" />
+                  </td>
                   <td><a href="#run">R-8920</a></td>
-                  <td><span class="status status--warn"><span class="status__icon">⏸</span>Waiting for approval</span></td>
+                  <td>
+                    <span class="status status--warn"
+                      ><span class="status__icon">⏸</span>Waiting for approval</span
+                    >
+                  </td>
                   <td>Invoice correction</td>
                   <td><a href="#work-item">WI-1099</a></td>
                   <td><span class="status status--warn">1 pending</span></td>
@@ -975,9 +1205,15 @@
                   <td>12m ago</td>
                 </tr>
                 <tr>
-                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8892"></td>
+                  <td>
+                    <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8892" />
+                  </td>
                   <td><a href="#run">R-8892</a></td>
-                  <td><span class="status status--info"><span class="status__icon">↻</span>Running</span></td>
+                  <td>
+                    <span class="status status--info"
+                      ><span class="status__icon">↻</span>Running</span
+                    >
+                  </td>
                   <td>Ticket priority update</td>
                   <td><a href="#work-item">WI-1042</a></td>
                   <td></td>
@@ -985,9 +1221,15 @@
                   <td>1h ago</td>
                 </tr>
                 <tr>
-                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8850"></td>
+                  <td>
+                    <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8850" />
+                  </td>
                   <td><a href="#run">R-8850</a></td>
-                  <td><span class="status status--danger"><span class="status__icon">✕</span>Failed</span></td>
+                  <td>
+                    <span class="status status--danger"
+                      ><span class="status__icon">✕</span>Failed</span
+                    >
+                  </td>
                   <td>CRM sync</td>
                   <td><a href="#work-item">WI-1021</a></td>
                   <td></td>
@@ -995,9 +1237,15 @@
                   <td>3h ago</td>
                 </tr>
                 <tr>
-                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8801"></td>
+                  <td>
+                    <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8801" />
+                  </td>
                   <td><a href="#run">R-8801</a></td>
-                  <td><span class="status status--ok"><span class="status__icon">✓</span>Succeeded</span></td>
+                  <td>
+                    <span class="status status--ok"
+                      ><span class="status__icon">✓</span>Succeeded</span
+                    >
+                  </td>
                   <td>Collect payment receipts</td>
                   <td><a href="#work-item">WI-1105</a></td>
                   <td></td>
@@ -1005,9 +1253,13 @@
                   <td>1d ago</td>
                 </tr>
                 <tr>
-                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8779"></td>
+                  <td>
+                    <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8779" />
+                  </td>
                   <td><a href="#run">R-8779</a></td>
-                  <td><span class="status"><span class="status__icon">⊘</span>Cancelled</span></td>
+                  <td>
+                    <span class="status"><span class="status__icon">⊘</span>Cancelled</span>
+                  </td>
                   <td>CRM Contact Sync</td>
                   <td><a href="#work-item">WI-1038</a></td>
                   <td></td>
@@ -1047,9 +1299,19 @@
               <div class="subtle">
                 Owner: <strong>Me</strong> | Status:
                 <span class="status">Open</span>
-                <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
-                <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Different approver</span>
-                <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m">Due 3h 48m</span>
+                <span
+                  class="tier-badge tier-badge--human"
+                  data-tooltip="Requires explicit human approval before execution"
+                  >Human-approve</span
+                >
+                <span
+                  class="sod-badge"
+                  data-tooltip="The person who started this run cannot be the one to approve it"
+                  >Different approver</span
+                >
+                <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m"
+                  >Due 3h 48m</span
+                >
               </div>
             </div>
             <div class="screen__actions">
@@ -1063,7 +1325,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               1 approval pending. Review the run and submit your decision.
             </div>
@@ -1073,13 +1342,25 @@
           <!-- Linked records — compact inline -->
           <div class="chips" style="margin-top: 8px">
             <span class="subtle" style="font-size: 12px; margin-right: 4px">Linked:</span>
-            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+            <span
+              class="chip chip--small js-drawer-trigger"
+              data-drawer="wi-1099"
+              style="cursor: pointer"
+            >
               <span class="port-icon">FA</span> NetSuite INV-22318
             </span>
-            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+            <span
+              class="chip chip--small js-drawer-trigger"
+              data-drawer="wi-1099"
+              style="cursor: pointer"
+            >
               <span class="port-icon">PB</span> Stripe ch_9d2a
             </span>
-            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+            <span
+              class="chip chip--small js-drawer-trigger"
+              data-drawer="wi-1099"
+              style="cursor: pointer"
+            >
               <span class="port-icon">CS</span> Zendesk #4831
             </span>
           </div>
@@ -1106,7 +1387,12 @@
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">
-                      Plan created <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                      Plan created
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
                     </div>
                     <div class="row__subtle">
                       Actor: User | This workflow will update invoice fields.
@@ -1117,7 +1403,12 @@
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">
-                      Approval Gate opened <span class="idem-badge" data-tooltip="This action runs at most once — it cannot be repeated">One-time action</span>
+                      Approval Gate opened
+                      <span
+                        class="idem-badge"
+                        data-tooltip="This action runs at most once — it cannot be repeated"
+                        >One-time action</span
+                      >
                     </div>
                     <div class="row__subtle">
                       Actor: System | Waiting on decision with rationale
@@ -1142,7 +1433,11 @@
                     <div class="row__title">R-8920 Invoice correction (waiting for approval)</div>
                     <div class="row__subtle">Started 12m ago | Waiting on Approval Gate</div>
                   </div>
-                  <div class="row__right"><span class="status status--warn"><span class="status__icon">⏸</span>Waiting for approval</span></div>
+                  <div class="row__right">
+                    <span class="status status--warn"
+                      ><span class="status__icon">⏸</span>Waiting for approval</span
+                    >
+                  </div>
                 </a>
               </div>
               <div class="subtle" style="margin-top: 8px; font-size: 12px">
@@ -1157,10 +1452,18 @@
                     <div class="row__title">Approval Gate: Approve Plan (1 pending)</div>
                     <div class="row__subtle">
                       Requires rationale |
-                      <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
+                      <span
+                        class="sod-badge"
+                        data-tooltip="The person who started this run cannot be the one to approve it"
+                        >Requires different approver</span
+                      >
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
+                  <div class="row__right">
+                    <span class="status status--warn"
+                      ><span class="status__icon">◷</span>Pending</span
+                    >
+                  </div>
                 </a>
               </div>
             </div>
@@ -1177,7 +1480,6 @@
               </div>
             </div>
           </div>
-
         </section>
 
         <!-- ============================================================
@@ -1192,9 +1494,18 @@
               </div>
               <h1 id="h-run" class="h1">
                 Run R-8920 (Waiting for Approval)
-                <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                <span
+                  class="tier-badge tier-badge--human"
+                  data-tooltip="Requires explicit human approval before execution"
+                  >Human-approve</span
+                >
               </h1>
-              <div class="subtle">Workflow: Invoice correction | Initiator: Me | <span class="correlation-id" title="Click to copy">Correlation: cor_8920_wi1099_f7a2</span></div>
+              <div class="subtle">
+                Workflow: Invoice correction | Initiator: Me |
+                <span class="correlation-id" title="Click to copy"
+                  >Correlation: cor_8920_wi1099_f7a2</span
+                >
+              </div>
             </div>
             <div class="screen__actions">
               <a class="btn" href="#approvals">Approvals queue</a>
@@ -1232,7 +1543,11 @@
                     <div class="effect__main">
                       <span class="pill">Update</span>
                       <span class="effect__target">NetSuite INV-22318</span>
-                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
                     </div>
                     <div class="effect__subtle">Update memo and line item classification.</div>
                   </div>
@@ -1240,13 +1555,19 @@
                     <div class="effect__main">
                       <span class="pill">Create</span>
                       <span class="effect__target">Drive &middot; Receipt bundle</span>
-                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
                     </div>
                     <div class="effect__subtle">Create evidence artifact for audit trail.</div>
                   </div>
                 </div>
                 <details class="effects__section" style="margin-top: 8px">
-                  <summary class="subtle" style="cursor: pointer; font-size: 12px">Predicted effects (1)</summary>
+                  <summary class="subtle" style="cursor: pointer; font-size: 12px">
+                    Predicted effects (1)
+                  </summary>
                   <div class="effects__list">
                     <div class="effect">
                       <div class="effect__main">
@@ -1259,9 +1580,12 @@
                   </div>
                 </details>
                 <details class="effects__section" style="margin-top: 8px">
-                  <summary class="subtle" style="cursor: pointer; font-size: 12px">Verified effects (post-execution)</summary>
+                  <summary class="subtle" style="cursor: pointer; font-size: 12px">
+                    Verified effects (post-execution)
+                  </summary>
                   <div class="subtle" style="padding: 8px 0; font-size: 12px">
-                    Verified effects appear after the run completes. They show the actual diff between pre- and post-execution state.
+                    Verified effects appear after the run completes. They show the actual diff
+                    between pre- and post-execution state.
                   </div>
                 </details>
               </div>
@@ -1276,7 +1600,9 @@
               </div>
 
               <div style="margin-bottom: 10px">
-                <div class="subtle" style="font-size: 11px; margin-bottom: 4px">Escalation chain</div>
+                <div class="subtle" style="font-size: 11px; margin-bottom: 4px">
+                  Escalation chain
+                </div>
                 <div class="escalation">
                   <span class="escalation__step escalation__step--active">You (now)</span>
                   <span class="escalation__arrow">&rarr;</span>
@@ -1312,7 +1638,15 @@
                   After approval the run resumes. 1 more approver needed.
                 </div>
                 <div class="form__actions">
-                  <button class="btn btn--primary" type="button" id="submitDecision" disabled data-confirm="approval">Submit decision</button>
+                  <button
+                    class="btn btn--primary"
+                    type="button"
+                    id="submitDecision"
+                    disabled
+                    data-confirm="approval"
+                  >
+                    Submit decision
+                  </button>
                   <a class="btn" href="#work-item">Back to Work Item</a>
                 </div>
               </div>
@@ -1320,7 +1654,12 @@
           </div>
 
           <details class="card card--subtle" style="margin-top: 12px">
-            <summary class="card__title" style="cursor: pointer">Evidence (2 entries) <span class="subtle" style="font-weight: 400; font-size: 12px">— <a href="#evidence">View full log</a></span></summary>
+            <summary class="card__title" style="cursor: pointer">
+              Evidence (2 entries)
+              <span class="subtle" style="font-weight: 400; font-size: 12px"
+                >— <a href="#evidence">View full log</a></span
+              >
+            </summary>
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
@@ -1366,7 +1705,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               You have 2 approvals waiting for your decision. Review each plan and decide.
             </div>
@@ -1410,18 +1756,34 @@
                   <td>Approve Plan: Create Invoice in NetSuite</td>
                   <td><a href="#work-item">WI-1099</a></td>
                   <td><a href="#run">R-8920</a></td>
-                  <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
+                  <td>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Requires explicit human approval before execution"
+                      >Human-approve</span
+                    >
+                  </td>
                   <td><span class="sod-badge">Different-approver rule</span></td>
                   <td>operator@acme.com</td>
                   <td>12m</td>
-                  <td><span class="sla-badge sla-badge--warn" data-tooltip="Due in 3h 48m">Due 3h 48m</span></td>
+                  <td>
+                    <span class="sla-badge sla-badge--warn" data-tooltip="Due in 3h 48m"
+                      >Due 3h 48m</span
+                    >
+                  </td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
                 <tr>
                   <td>Approve Plan: Update Ticket priority in Zendesk</td>
                   <td><a href="#work-item">WI-1042</a></td>
                   <td><a href="#run">R-8892</a></td>
-                  <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
+                  <td>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Requires explicit human approval before execution"
+                      >Human-approve</span
+                    >
+                  </td>
                   <td></td>
                   <td>Unassigned</td>
                   <td>1h</td>
@@ -1453,8 +1815,16 @@
                 <div class="triage-card__front">
                   <div class="triage-card__header">
                     <div class="triage-card__id">AG-442</div>
-                    <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
-                    <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Requires explicit human approval before execution"
+                      >Human-approve</span
+                    >
+                    <span
+                      class="sod-badge"
+                      data-tooltip="The person who started this run cannot be the one to approve it"
+                      >Requires different approver</span
+                    >
                   </div>
                   <h2 class="triage-card__title">Approve Plan: Create Invoice in NetSuite</h2>
                   <div class="triage-card__meta">
@@ -1480,12 +1850,20 @@
                     <div class="triage-card__effect-row">
                       <span class="pill">Update</span>
                       <span>NetSuite | Invoice | INV-22318</span>
-                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
                     </div>
                     <div class="triage-card__effect-row">
                       <span class="pill">Create</span>
                       <span>Drive | Document | Receipt bundle</span>
-                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
                     </div>
                   </div>
 
@@ -1658,7 +2036,11 @@
                           <div class="effect__main">
                             <span class="pill">Update</span>
                             <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                            <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                            <span
+                              class="idem-badge idem-badge--safe"
+                              data-tooltip="Retrying this action won't create duplicates"
+                              >Safe to retry</span
+                            >
                           </div>
                           <div class="effect__subtle">
                             Update memo and line item classification.
@@ -1668,7 +2050,11 @@
                           <div class="effect__main">
                             <span class="pill">Create</span>
                             <span class="effect__target">Drive | Document | Receipt bundle</span>
-                            <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
+                            <span
+                              class="idem-badge idem-badge--safe"
+                              data-tooltip="Retrying this action won't create duplicates"
+                              >Safe to retry</span
+                            >
                           </div>
                           <div class="effect__subtle">
                             Create evidence artifact for audit trail.
@@ -1829,7 +2215,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               Browse the tamper-proof audit log. Each entry is cryptographically linked to verify
               chain integrity.
@@ -1846,8 +2239,8 @@
 
           <!-- Chain Integrity Banner (chain_integrity_banner) -->
           <div class="integrity-banner integrity-banner--ok" style="margin-bottom: 12px">
-            Audit log integrity: all entries 120 to 146 verified (contiguous). No gaps or tamper alerts
-            detected.
+            Audit log integrity: all entries 120 to 146 verified (contiguous). No gaps or tamper
+            alerts detected.
           </div>
 
           <div class="empty js-empty-evidence" hidden>
@@ -1877,7 +2270,9 @@
                   <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
+              <div class="row__right">
+                <span class="status status--info"><span class="status__icon">✓</span>Verified</span>
+              </div>
             </div>
             <div
               class="row row--static js-drawer-trigger"
@@ -1887,12 +2282,15 @@
               <div class="row__main">
                 <div class="row__title">Action executed (adapter write)</div>
                 <div class="row__subtle">
-                  Category: Action | Actor: Adapter |
-                  Payloads: <a href="#" onclick="return false" class="payload-link">Diff</a>, <a href="#" onclick="return false" class="payload-link">Log</a>
+                  Category: Action | Actor: Adapter | Payloads:
+                  <a href="#" onclick="return false;" class="payload-link">Diff</a>,
+                  <a href="#" onclick="return false;" class="payload-link">Log</a>
                   <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
+              <div class="row__right">
+                <span class="status status--info"><span class="status__icon">✓</span>Verified</span>
+              </div>
             </div>
             <div class="row row--static">
               <div class="row__main">
@@ -1902,27 +2300,37 @@
                   <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
+              <div class="row__right">
+                <span class="status status--info"><span class="status__icon">✓</span>Verified</span>
+              </div>
             </div>
             <div class="row row--static">
               <div class="row__main">
                 <div class="row__title">Approval Gate opened</div>
                 <div class="row__subtle">
                   Category: Approval | Actor: System | Linked: Run R-8920
-                  <span class="retention-tag" style="border-color:var(--warn);color:var(--warn)">Expires in 30 days</span>
+                  <span class="retention-tag" style="border-color: var(--warn); color: var(--warn)"
+                    >Expires in 30 days</span
+                  >
                 </div>
               </div>
-              <div class="row__right"><span class="status status--warn"><span class="status__icon">✓</span>Verified</span></div>
+              <div class="row__right">
+                <span class="status status--warn"><span class="status__icon">✓</span>Verified</span>
+              </div>
             </div>
             <div class="row row--static">
               <div class="row__main">
                 <div class="row__title">Run initiated</div>
                 <div class="row__subtle">
                   Category: Run | Actor: User | Linked: Run R-8920, WI-1099
-                  <span class="retention-tag" style="border-color:var(--muted)">Payload removed</span>
+                  <span class="retention-tag" style="border-color: var(--muted)"
+                    >Payload removed</span
+                  >
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
+              <div class="row__right">
+                <span class="status status--info"><span class="status__icon">✓</span>Verified</span>
+              </div>
             </div>
           </div>
 
@@ -1980,7 +2388,14 @@
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               Configure workspace access, integrations, and governance policies. Changes here affect
               all workflows and team members.
@@ -2008,7 +2423,13 @@
                   <div class="card__title">RBAC</div>
                   <div class="card__meta subtle">Workspace users and roles</div>
                   <div style="margin-bottom: 10px">
-                    <button class="btn btn--primary btn--small" type="button" data-dialog="dlgAddUser">Add user</button>
+                    <button
+                      class="btn btn--primary btn--small"
+                      type="button"
+                      data-dialog="dlgAddUser"
+                    >
+                      Add user
+                    </button>
                     <button class="btn btn--small" type="button">Remove</button>
                     <button class="btn btn--small" type="button">Edit roles</button>
                   </div>
@@ -2019,7 +2440,9 @@
                         <div class="row__subtle">Role: admin</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                        <span class="status status--ok"
+                          ><span class="status__icon">●</span>Active</span
+                        >
                       </div>
                     </div>
                     <div class="row row--static">
@@ -2028,7 +2451,9 @@
                         <div class="row__subtle">Role: operator, approver</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                        <span class="status status--ok"
+                          ><span class="status__icon">●</span>Active</span
+                        >
                       </div>
                     </div>
                     <div class="row row--static">
@@ -2037,7 +2462,9 @@
                         <div class="row__subtle">Role: auditor</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                        <span class="status status--ok"
+                          ><span class="status__icon">●</span>Active</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -2047,44 +2474,59 @@
                   <div class="card__title">Credentials</div>
                   <div class="card__meta subtle">Vaulting, rotation, access scoping</div>
                   <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                    <button class="btn btn--primary btn--small" type="button" data-dialog="dlgAddCredential">
+                    <button
+                      class="btn btn--primary btn--small"
+                      type="button"
+                      data-dialog="dlgAddCredential"
+                    >
                       Add credential
                     </button>
                     <button class="btn btn--small" type="button">Rotate</button>
-                    <button class="btn btn--small" type="button" data-confirm="revoke-credential">Revoke</button>
+                    <button class="btn btn--small" type="button" data-confirm="revoke-credential">
+                      Revoke
+                    </button>
                   </div>
                   <div class="list">
                     <div class="row row--static">
                       <div class="row__main">
                         <div class="row__title">Stripe API Key</div>
                         <div class="row__subtle">
-                          Scopes: charges.read, charges.write | Expires: 2026-06-01 | Last rotated: 2026-01-15
+                          Scopes: charges.read, charges.write | Expires: 2026-06-01 | Last rotated:
+                          2026-01-15
                         </div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok"><span class="status__icon">✓</span>Valid</span>
+                        <span class="status status--ok"
+                          ><span class="status__icon">✓</span>Valid</span
+                        >
                       </div>
                     </div>
                     <div class="row row--static">
                       <div class="row__main">
                         <div class="row__title">NetSuite OAuth</div>
                         <div class="row__subtle">
-                          Scopes: invoice.read, invoice.write | Expires: 2026-03-15 | Last rotated: 2025-09-15
+                          Scopes: invoice.read, invoice.write | Expires: 2026-03-15 | Last rotated:
+                          2025-09-15
                         </div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span>
+                        <span class="status status--warn"
+                          ><span class="status__icon">⏰</span>Expiring</span
+                        >
                       </div>
                     </div>
                     <div class="row row--static">
                       <div class="row__main">
                         <div class="row__title">Zendesk Token</div>
                         <div class="row__subtle">
-                          Scopes: tickets.read, tickets.write | Expires: 2026-12-01 | Last rotated: 2026-02-01
+                          Scopes: tickets.read, tickets.write | Expires: 2026-12-01 | Last rotated:
+                          2026-02-01
                         </div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok"><span class="status__icon">✓</span>Valid</span>
+                        <span class="status status--ok"
+                          ><span class="status__icon">✓</span>Valid</span
+                        >
                       </div>
                     </div>
                     <div class="row row--static">
@@ -2129,7 +2571,9 @@
                       <div class="row__subtle">Provider: Stripe | Capability Matrix: loaded</div>
                     </div>
                     <div class="row__right" style="display: flex; gap: 8px; align-items: center">
-                      <label class="toggle" title="Enable/disable adapter"><input type="checkbox" checked><span class="toggle__slider"></span></label>
+                      <label class="toggle" title="Enable/disable adapter"
+                        ><input type="checkbox" checked /><span class="toggle__slider"></span
+                      ></label>
                       <span class="status status--ok">Active</span>
                     </div>
                   </div>
@@ -2141,7 +2585,9 @@
                       <div class="row__subtle">Provider: NetSuite | Capability Matrix: loaded</div>
                     </div>
                     <div class="row__right" style="display: flex; gap: 8px; align-items: center">
-                      <label class="toggle" title="Enable/disable adapter"><input type="checkbox" checked><span class="toggle__slider"></span></label>
+                      <label class="toggle" title="Enable/disable adapter"
+                        ><input type="checkbox" checked /><span class="toggle__slider"></span
+                      ></label>
                       <span class="status status--ok">Active</span>
                     </div>
                   </div>
@@ -2153,7 +2599,9 @@
                       <div class="row__subtle">Provider: Zendesk | Capability Matrix: loaded</div>
                     </div>
                     <div class="row__right" style="display: flex; gap: 8px; align-items: center">
-                      <label class="toggle" title="Enable/disable adapter"><input type="checkbox" checked><span class="toggle__slider"></span></label>
+                      <label class="toggle" title="Enable/disable adapter"
+                        ><input type="checkbox" checked /><span class="toggle__slider"></span
+                      ></label>
                       <span class="status status--ok">Active</span>
                     </div>
                   </div>
@@ -2163,17 +2611,23 @@
                       <div class="row__subtle">Provider: not selected</div>
                     </div>
                     <div class="row__right" style="display: flex; gap: 8px; align-items: center">
-                      <label class="toggle" title="Enable/disable adapter"><input type="checkbox"><span class="toggle__slider"></span></label>
+                      <label class="toggle" title="Enable/disable adapter"
+                        ><input type="checkbox" /><span class="toggle__slider"></span
+                      ></label>
                       <span class="status status--danger">Not configured</span>
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title"><span class="port-icon">DM</span> DocumentsEsign</div>
-                      <div class="row__subtle">Provider: Google Drive | Capability Matrix: loaded</div>
+                      <div class="row__subtle">
+                        Provider: Google Drive | Capability Matrix: loaded
+                      </div>
                     </div>
                     <div class="row__right" style="display: flex; gap: 8px; align-items: center">
-                      <label class="toggle" title="Enable/disable adapter"><input type="checkbox"><span class="toggle__slider"></span></label>
+                      <label class="toggle" title="Enable/disable adapter"
+                        ><input type="checkbox" /><span class="toggle__slider"></span
+                      ></label>
                       <span class="status">Inactive</span>
                     </div>
                   </div>
@@ -2262,7 +2716,13 @@
                 <div class="card__title">Policies</div>
                 <div class="card__meta subtle">Execution tiers, approval rules, governance</div>
                 <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                  <button class="btn btn--primary btn--small" type="button" data-dialog="dlgCreatePolicy">Create rule</button>
+                  <button
+                    class="btn btn--primary btn--small"
+                    type="button"
+                    data-dialog="dlgCreatePolicy"
+                  >
+                    Create rule
+                  </button>
                   <button class="btn btn--small" type="button">Edit</button>
                   <button class="btn btn--small" type="button">Deactivate</button>
                 </div>
@@ -2271,45 +2731,67 @@
                     <div class="row__main">
                       <div class="row__title">Invoice writes &gt; $10,000</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                        <span
+                          class="tier-badge tier-badge--human"
+                          data-tooltip="Requires explicit human approval before execution"
+                          >Human-approve</span
+                        >
                         N-approvers: 2 | Priority: 100
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Default workflow tier</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span>
+                        <span
+                          class="tier-badge tier-badge--assisted"
+                          data-tooltip="AI helps, but a human reviews the result"
+                          >Assisted</span
+                        >
                         Plan review recommended | Priority: 50
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Read-only operations</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
+                        <span
+                          class="tier-badge tier-badge--auto"
+                          data-tooltip="Runs without human intervention"
+                          >Auto</span
+                        >
                         No approval required | Priority: 10
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Different-approver rule</div>
-                      <div class="row__subtle">Initiator cannot approve the same Run (SoD constraint)</div>
+                      <div class="row__subtle">
+                        Initiator cannot approve the same Run (SoD constraint)
+                      </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
@@ -2321,7 +2803,9 @@
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
@@ -2329,11 +2813,14 @@
                       <div class="row__title">Incompatible duties: Finance + Audit separation</div>
                       <div class="row__subtle">
                         <span class="sod-badge">Incompatible duties</span>
-                        Users with "finance-write" cannot also hold "audit-review" role for the same work item
+                        Users with "finance-write" cannot also hold "audit-review" role for the same
+                        work item
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
@@ -2341,11 +2828,14 @@
                       <div class="row__title">Distinct approvers for high-value</div>
                       <div class="row__subtle">
                         <span class="sod-badge">Distinct approvers</span>
-                        Each approver must be a different person (no duplicate approvals) | Priority: 150
+                        Each approver must be a different person (no duplicate approvals) |
+                        Priority: 150
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -2380,60 +2870,91 @@
             <div class="tabpane" data-pane="settings-packs" role="region" aria-label="Packs pane">
               <article class="card">
                 <div class="card__title">Installed Packs</div>
-                <div class="card__meta subtle">Vertical packs extend workflows, schemas, and compliance profiles</div>
+                <div class="card__meta subtle">
+                  Vertical packs extend workflows, schemas, and compliance profiles
+                </div>
                 <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                  <button class="btn btn--primary btn--small" type="button" data-dialog="dlgPackCatalog">Browse catalog</button>
+                  <button
+                    class="btn btn--primary btn--small"
+                    type="button"
+                    data-dialog="dlgPackCatalog"
+                  >
+                    Browse catalog
+                  </button>
                   <button class="btn btn--small" type="button">Check for updates</button>
                 </div>
                 <div class="list">
                   <div class="row row--static">
                     <div class="row__main">
-                      <div class="row__title">billing-governance-pack <span class="subtle" style="font-weight: 400">v2.1.0</span></div>
+                      <div class="row__title">
+                        billing-governance-pack
+                        <span class="subtle" style="font-weight: 400">v2.1.0</span>
+                      </div>
                       <div class="row__subtle">
-                        Workflows: 3 | Schema extensions: 2 | Compliance profiles: 1 | UI templates: 1
+                        Workflows: 3 | Schema extensions: 2 | Compliance profiles: 1 | UI templates:
+                        1
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Enabled</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Enabled</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
-                      <div class="row__title">audit-preparation-pack <span class="subtle" style="font-weight: 400">v1.4.2</span></div>
+                      <div class="row__title">
+                        audit-preparation-pack
+                        <span class="subtle" style="font-weight: 400">v1.4.2</span>
+                      </div>
                       <div class="row__subtle">
-                        Workflows: 2 | Schema extensions: 1 | Compliance profiles: 2 | UI templates: 0
+                        Workflows: 2 | Schema extensions: 1 | Compliance profiles: 2 | UI templates:
+                        0
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Enabled</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Enabled</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
-                      <div class="row__title">crm-sync-pack <span class="subtle" style="font-weight: 400">v3.0.1</span></div>
+                      <div class="row__title">
+                        crm-sync-pack <span class="subtle" style="font-weight: 400">v3.0.1</span>
+                      </div>
                       <div class="row__subtle">
-                        Workflows: 1 | Schema extensions: 0 | Compliance profiles: 0 | Connector mappings: 4
+                        Workflows: 1 | Schema extensions: 0 | Compliance profiles: 0 | Connector
+                        mappings: 4
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--danger"><span class="status__icon">○</span>Disabled</span>
+                      <span class="status status--danger"
+                        ><span class="status__icon">○</span>Disabled</span
+                      >
                     </div>
                   </div>
                 </div>
               </article>
               <article class="card" style="margin-top: 12px">
                 <div class="card__title">Tenant Configuration</div>
-                <div class="card__meta subtle">Feature flags and compliance profiles for this workspace</div>
+                <div class="card__meta subtle">
+                  Feature flags and compliance profiles for this workspace
+                </div>
                 <div class="grid grid--2">
                   <div>
-                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">Feature Flags</div>
+                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">
+                      Feature Flags
+                    </div>
                     <div class="list">
                       <div class="row row--static">
                         <div class="row__main"><div class="row__title">ai-summary</div></div>
                         <div class="row__right"><span class="status status--ok">On</span></div>
                       </div>
                       <div class="row row--static">
-                        <div class="row__main"><div class="row__title">predictive-effects</div></div>
+                        <div class="row__main">
+                          <div class="row__title">predictive-effects</div>
+                        </div>
                         <div class="row__right"><span class="status status--ok">On</span></div>
                       </div>
                       <div class="row row--static">
@@ -2443,7 +2964,9 @@
                     </div>
                   </div>
                   <div>
-                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">Compliance Profiles</div>
+                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">
+                      Compliance Profiles
+                    </div>
                     <div class="list">
                       <div class="row row--static">
                         <div class="row__main"><div class="row__title">SOC 2 Type II</div></div>
@@ -2460,10 +2983,17 @@
             </div>
 
             <!-- Triggers tab -->
-            <div class="tabpane" data-pane="settings-triggers" role="region" aria-label="Triggers pane">
+            <div
+              class="tabpane"
+              data-pane="settings-triggers"
+              role="region"
+              aria-label="Triggers pane"
+            >
               <article class="card">
                 <div class="card__title">Workflow Triggers</div>
-                <div class="card__meta subtle">Automate workflow execution via schedules, webhooks, or events</div>
+                <div class="card__meta subtle">
+                  Automate workflow execution via schedules, webhooks, or events
+                </div>
                 <div style="margin-bottom: 10px; display: flex; gap: 6px">
                   <button class="btn btn--primary btn--small" type="button">Create trigger</button>
                 </div>
@@ -2472,36 +3002,42 @@
                     <div class="row__main">
                       <div class="row__title">Daily receipt collection</div>
                       <div class="row__subtle">
-                        Kind: <strong>Cron</strong> | Schedule: 0 8 * * 1-5 (weekdays 8am)
-                        | Workflow: Collect Payment Receipts
+                        Kind: <strong>Cron</strong> | Schedule: 0 8 * * 1-5 (weekdays 8am) |
+                        Workflow: Collect Payment Receipts
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Stripe payment webhook</div>
                       <div class="row__subtle">
-                        Kind: <strong>Webhook</strong> | Event: payment_intent.succeeded
-                        | Workflow: Invoice Correction
+                        Kind: <strong>Webhook</strong> | Event: payment_intent.succeeded | Workflow:
+                        Invoice Correction
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">New work item created</div>
                       <div class="row__subtle">
-                        Kind: <strong>Domain Event</strong> | Event: WorkItemCreated
-                        | Workflow: CRM Contact Sync
+                        Kind: <strong>Domain Event</strong> | Event: WorkItemCreated | Workflow: CRM
+                        Contact Sync
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--danger"><span class="status__icon">○</span>Inactive</span>
+                      <span class="status status--danger"
+                        ><span class="status__icon">○</span>Inactive</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -2523,7 +3059,9 @@
                   <div class="bar">
                     <span class="bar__label">Evidence entries</span>
                     <span class="bar__fill" style="width: 15%"></span>
-                    <span class="subtle" style="font-size: 11px; margin-left: 6px">1,500 / 10,000</span>
+                    <span class="subtle" style="font-size: 11px; margin-left: 6px"
+                      >1,500 / 10,000</span
+                    >
                   </div>
                 </div>
               </article>
@@ -2551,13 +3089,22 @@
               <button class="btn btn--small" type="button">Redo</button>
               <button class="btn" type="button">Save draft</button>
               <button class="btn" type="button" data-dialog="dlgStartWorkflow">Run workflow</button>
-              <button class="btn" type="button" data-confirm="deactivate-workflow">Deactivate</button>
+              <button class="btn" type="button" data-confirm="deactivate-workflow">
+                Deactivate
+              </button>
               <button class="btn" type="button" data-confirm="delete-workflow">Delete</button>
             </div>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               Build your workflow by connecting steps. Click any node to configure it.
             </div>
@@ -2851,12 +3398,22 @@
 
           <!-- Version History -->
           <details class="card" style="margin-top: 12px">
-            <summary class="card__title" style="cursor: pointer">Version History (4 versions)</summary>
+            <summary class="card__title" style="cursor: pointer">
+              Version History (4 versions)
+            </summary>
             <div class="list" style="margin-top: 8px">
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">v1.2 <span class="status status--warn" style="font-size: 10px; padding: 2px 6px">Draft</span></div>
-                  <div class="row__subtle">Modified 5m ago by operator@acme.com | Added approval gate for high-value invoices</div>
+                  <div class="row__title">
+                    v1.2
+                    <span class="status status--warn" style="font-size: 10px; padding: 2px 6px"
+                      >Draft</span
+                    >
+                  </div>
+                  <div class="row__subtle">
+                    Modified 5m ago by operator@acme.com | Added approval gate for high-value
+                    invoices
+                  </div>
                 </div>
                 <div class="row__right">
                   <button class="btn btn--small btn--primary" type="button">Activate</button>
@@ -2864,8 +3421,15 @@
               </div>
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">v1.1 <span class="status status--ok" style="font-size: 10px; padding: 2px 6px">Active</span></div>
-                  <div class="row__subtle">Activated 3d ago by admin@acme.com | Added line item classification agent step</div>
+                  <div class="row__title">
+                    v1.1
+                    <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                      >Active</span
+                    >
+                  </div>
+                  <div class="row__subtle">
+                    Activated 3d ago by admin@acme.com | Added line item classification agent step
+                  </div>
                 </div>
                 <div class="row__right" style="display: flex; gap: 4px">
                   <button class="btn btn--small" type="button">Diff</button>
@@ -2875,7 +3439,9 @@
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">v1.0</div>
-                  <div class="row__subtle">Created 14d ago by admin@acme.com | Initial workflow with manual approval</div>
+                  <div class="row__subtle">
+                    Created 14d ago by admin@acme.com | Initial workflow with manual approval
+                  </div>
                 </div>
                 <div class="row__right">
                   <button class="btn btn--small" type="button">Diff</button>
@@ -2884,7 +3450,9 @@
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">v0.9</div>
-                  <div class="row__subtle">Created 21d ago by operator@acme.com | Draft prototype (never activated)</div>
+                  <div class="row__subtle">
+                    Created 21d ago by operator@acme.com | Draft prototype (never activated)
+                  </div>
                 </div>
                 <div class="row__right">
                   <button class="btn btn--small" type="button">Diff</button>
@@ -2904,13 +3472,22 @@
               <div class="subtle">AI agents participating in workflows</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button" data-dialog="dlgAddAgent">Add agent</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgAddAgent">
+                Add agent
+              </button>
               <button class="btn" type="button" data-confirm="deregister-agent">Deregister</button>
             </div>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              ✕
+            </button>
             <div class="hero-prompt__text">
               Configure AI agents that classify data, generate documents, or analyze patterns in
               your workflows.
@@ -3007,7 +3584,9 @@
                     <div class="agent-card__name">Draft Generator</div>
                     <div class="agent-card__model subtle">Claude Haiku 4.5</div>
                   </div>
-                  <span class="status" style="font-size: 10px; padding: 2px 6px"><span class="status__icon">○</span>Inactive</span>
+                  <span class="status" style="font-size: 10px; padding: 2px 6px"
+                    ><span class="status__icon">○</span>Inactive</span
+                  >
                 </div>
                 <div class="agent-card__stats">
                   <div class="agent-card__stat">
@@ -3239,7 +3818,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: ONBOARDING (setup wizard for empty workspaces)
              ============================================================ -->
-        <section id="screen-onboarding" class="screen" data-screen="onboarding" aria-labelledby="h-onboarding">
+        <section
+          id="screen-onboarding"
+          class="screen"
+          data-screen="onboarding"
+          aria-labelledby="h-onboarding"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-onboarding" class="h1">Get Started</h1>
@@ -3253,17 +3837,33 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <div class="onboarding-step__number">1</div>
                 <div class="onboarding-step__content">
                   <div class="onboarding-step__title">Connect an integration</div>
-                  <div class="onboarding-step__desc">Link an external system like Stripe, NetSuite, or Zendesk so workflows can read and write data.</div>
-                  <div class="onboarding-step__status"><span class="status status--ok"><span class="status__icon">✓</span>Stripe connected</span></div>
+                  <div class="onboarding-step__desc">
+                    Link an external system like Stripe, NetSuite, or Zendesk so workflows can read
+                    and write data.
+                  </div>
+                  <div class="onboarding-step__status">
+                    <span class="status status--ok"
+                      ><span class="status__icon">✓</span>Stripe connected</span
+                    >
+                  </div>
                 </div>
               </div>
               <div class="onboarding-step onboarding-step--active">
                 <div class="onboarding-step__number">2</div>
                 <div class="onboarding-step__content">
                   <div class="onboarding-step__title">Store a credential</div>
-                  <div class="onboarding-step__desc">Add API keys or OAuth tokens to the vault. Credentials are encrypted and never exposed in logs.</div>
+                  <div class="onboarding-step__desc">
+                    Add API keys or OAuth tokens to the vault. Credentials are encrypted and never
+                    exposed in logs.
+                  </div>
                   <div class="onboarding-step__actions">
-                    <button class="btn btn--primary btn--small" type="button" data-dialog="dlgAddCredential">Add credential</button>
+                    <button
+                      class="btn btn--primary btn--small"
+                      type="button"
+                      data-dialog="dlgAddCredential"
+                    >
+                      Add credential
+                    </button>
                     <button class="btn btn--small" type="button">Skip for now</button>
                   </div>
                 </div>
@@ -3272,14 +3872,20 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <div class="onboarding-step__number">3</div>
                 <div class="onboarding-step__content">
                   <div class="onboarding-step__title">Create your first workflow</div>
-                  <div class="onboarding-step__desc">Build a workflow that reads, transforms, and writes data across your connected systems. Set execution tiers and approval rules.</div>
+                  <div class="onboarding-step__desc">
+                    Build a workflow that reads, transforms, and writes data across your connected
+                    systems. Set execution tiers and approval rules.
+                  </div>
                 </div>
               </div>
               <div class="onboarding-step">
                 <div class="onboarding-step__number">4</div>
                 <div class="onboarding-step__content">
                   <div class="onboarding-step__title">Start your first run</div>
-                  <div class="onboarding-step__desc">Execute a workflow against real data. The system will create a plan, request approval if needed, and record evidence automatically.</div>
+                  <div class="onboarding-step__desc">
+                    Execute a workflow against real data. The system will create a plan, request
+                    approval if needed, and record evidence automatically.
+                  </div>
                 </div>
               </div>
             </div>
@@ -3290,24 +3896,40 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="grid grid--3">
                 <div class="card card--subtle" style="cursor: pointer">
                   <div class="card__title" style="font-size: 13px">Invoice Processing</div>
-                  <div class="subtle">Fetch, classify, approve, and update invoices across Finance systems.</div>
-                  <div style="margin-top: 6px"><span class="tier-badge tier-badge--human">Human-approve</span></div>
+                  <div class="subtle">
+                    Fetch, classify, approve, and update invoices across Finance systems.
+                  </div>
+                  <div style="margin-top: 6px">
+                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                  </div>
                 </div>
                 <div class="card card--subtle" style="cursor: pointer">
                   <div class="card__title" style="font-size: 13px">Payment Reconciliation</div>
-                  <div class="subtle">Match payments to invoices, flag discrepancies, and create audit evidence.</div>
-                  <div style="margin-top: 6px"><span class="tier-badge tier-badge--assisted">Assisted</span></div>
+                  <div class="subtle">
+                    Match payments to invoices, flag discrepancies, and create audit evidence.
+                  </div>
+                  <div style="margin-top: 6px">
+                    <span class="tier-badge tier-badge--assisted">Assisted</span>
+                  </div>
                 </div>
                 <div class="card card--subtle" style="cursor: pointer">
                   <div class="card__title" style="font-size: 13px">CRM Sync</div>
-                  <div class="subtle">Keep contacts, opportunities, and accounts in sync across systems.</div>
-                  <div style="margin-top: 6px"><span class="tier-badge tier-badge--auto">Auto</span></div>
+                  <div class="subtle">
+                    Keep contacts, opportunities, and accounts in sync across systems.
+                  </div>
+                  <div style="margin-top: 6px">
+                    <span class="tier-badge tier-badge--auto">Auto</span>
+                  </div>
                 </div>
               </div>
             </article>
 
             <div class="callout" style="margin-top: 12px">
-              Need help? Check the <a href="#" onclick="return false" title="Documentation link (placeholder)">documentation</a> or contact your workspace admin.
+              Need help? Check the
+              <a href="#" onclick="return false;" title="Documentation link (placeholder)"
+                >documentation</a
+              >
+              or contact your workspace admin.
             </div>
           </div>
         </section>
@@ -3315,21 +3937,40 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: CANONICAL OBJECT BROWSER
              ============================================================ -->
-        <section id="screen-objects" class="screen" data-screen="objects" aria-labelledby="h-objects">
+        <section
+          id="screen-objects"
+          class="screen"
+          data-screen="objects"
+          aria-labelledby="h-objects"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-objects" class="h1">Objects</h1>
               <div class="subtle">Browse external records linked across all work items</div>
             </div>
             <div class="screen__actions">
-              <input class="topbar__search" type="search" placeholder="Search objects by type, ID, or integration..." aria-label="Search objects" style="max-width: 300px">
+              <input
+                class="topbar__search"
+                type="search"
+                placeholder="Search objects by type, ID, or integration..."
+                aria-label="Search objects"
+                style="max-width: 300px"
+              />
             </div>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">&#10005;</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              &#10005;
+            </button>
             <div class="hero-prompt__text">
-              Explore the external records your workflows interact with. Click any object to see its history, linked work items, and evidence.
+              Explore the external records your workflows interact with. Click any object to see its
+              history, linked work items, and evidence.
             </div>
           </div>
 
@@ -3346,13 +3987,27 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <div class="grid grid--2">
             <!-- Object detail cards -->
             <article class="card card--hero" style="cursor: pointer">
-              <div class="card__title"><span class="port-icon">FA</span> Invoice &middot; INV-22318</div>
+              <div class="card__title">
+                <span class="port-icon">FA</span> Invoice &middot; INV-22318
+              </div>
               <div class="card__meta subtle">NetSuite | FinanceAccounting</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Amount</span><div style="font-weight: 600">$12,500.00</div></div>
-                <div><span class="subtle" style="font-size: 11px">Status</span><div>Open</div></div>
-                <div><span class="subtle" style="font-size: 11px">Customer</span><div>ACME Corp</div></div>
-                <div><span class="subtle" style="font-size: 11px">Due Date</span><div>2026-03-01</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Amount</span>
+                  <div style="font-weight: 600">$12,500.00</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Status</span>
+                  <div>Open</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Customer</span>
+                  <div>ACME Corp</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Due Date</span>
+                  <div>2026-03-01</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Linked:</span>
@@ -3362,13 +4017,27 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
             </article>
             <article class="card" style="cursor: pointer">
-              <div class="card__title"><span class="port-icon">PB</span> Charge &middot; ch_9d2a</div>
+              <div class="card__title">
+                <span class="port-icon">PB</span> Charge &middot; ch_9d2a
+              </div>
               <div class="card__meta subtle">Stripe | PaymentsBilling</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Amount</span><div style="font-weight: 600">$12,500.00</div></div>
-                <div><span class="subtle" style="font-size: 11px">Status</span><div>Succeeded</div></div>
-                <div><span class="subtle" style="font-size: 11px">Customer</span><div>cus_acme_001</div></div>
-                <div><span class="subtle" style="font-size: 11px">Created</span><div>2026-02-15</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Amount</span>
+                  <div style="font-weight: 600">$12,500.00</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Status</span>
+                  <div>Succeeded</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Customer</span>
+                  <div>cus_acme_001</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Created</span>
+                  <div>2026-02-15</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Linked:</span>
@@ -3381,10 +4050,22 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="card__title"><span class="port-icon">CS</span> Ticket &middot; #4831</div>
               <div class="card__meta subtle">Zendesk | CustomerSupport</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Subject</span><div>Invoice discrepancy — ACME Corp</div></div>
-                <div><span class="subtle" style="font-size: 11px">Priority</span><div>High</div></div>
-                <div><span class="subtle" style="font-size: 11px">Status</span><div>Open</div></div>
-                <div><span class="subtle" style="font-size: 11px">Requester</span><div>billing@acme.com</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Subject</span>
+                  <div>Invoice discrepancy — ACME Corp</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Priority</span>
+                  <div>High</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Status</span>
+                  <div>Open</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Requester</span>
+                  <div>billing@acme.com</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Linked:</span>
@@ -3393,13 +4074,27 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
             </article>
             <article class="card" style="cursor: pointer">
-              <div class="card__title"><span class="port-icon">CR</span> Opportunity &middot; OPP-2291</div>
+              <div class="card__title">
+                <span class="port-icon">CR</span> Opportunity &middot; OPP-2291
+              </div>
               <div class="card__meta subtle">Salesforce | CrmSales</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Name</span><div>ACME Corp Q1 Renewal</div></div>
-                <div><span class="subtle" style="font-size: 11px">Stage</span><div>Negotiation</div></div>
-                <div><span class="subtle" style="font-size: 11px">Amount</span><div style="font-weight: 600">$48,000.00</div></div>
-                <div><span class="subtle" style="font-size: 11px">Close Date</span><div>2026-03-31</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Name</span>
+                  <div>ACME Corp Q1 Renewal</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Stage</span>
+                  <div>Negotiation</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Amount</span>
+                  <div style="font-weight: 600">$48,000.00</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Close Date</span>
+                  <div>2026-03-31</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Linked:</span>
@@ -3408,13 +4103,27 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
             </article>
             <article class="card card--subtle" style="cursor: pointer">
-              <div class="card__title"><span class="port-icon">PB</span> Subscription &middot; sub_acme_monthly</div>
+              <div class="card__title">
+                <span class="port-icon">PB</span> Subscription &middot; sub_acme_monthly
+              </div>
               <div class="card__meta subtle">Stripe | PaymentsBilling</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Plan</span><div>Enterprise Monthly</div></div>
-                <div><span class="subtle" style="font-size: 11px">Status</span><div>Active</div></div>
-                <div><span class="subtle" style="font-size: 11px">MRR</span><div style="font-weight: 600">$4,000.00</div></div>
-                <div><span class="subtle" style="font-size: 11px">Next billing</span><div>2026-03-01</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Plan</span>
+                  <div>Enterprise Monthly</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Status</span>
+                  <div>Active</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">MRR</span>
+                  <div style="font-weight: 600">$4,000.00</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Next billing</span>
+                  <div>2026-03-01</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Linked:</span>
@@ -3425,10 +4134,22 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="card__title">&#128100; Party &middot; ACME Corp</div>
               <div class="card__meta subtle">Cross-system | Aggregated from 3 integrations</div>
               <div class="grid grid--2" style="margin-top: 8px; gap: 6px">
-                <div><span class="subtle" style="font-size: 11px">Type</span><div>Organization</div></div>
-                <div><span class="subtle" style="font-size: 11px">Contacts</span><div>3</div></div>
-                <div><span class="subtle" style="font-size: 11px">Open work items</span><div>2</div></div>
-                <div><span class="subtle" style="font-size: 11px">Total evidence</span><div>24 entries</div></div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Type</span>
+                  <div>Organization</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Contacts</span>
+                  <div>3</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Open work items</span>
+                  <div>2</div>
+                </div>
+                <div>
+                  <span class="subtle" style="font-size: 11px">Total evidence</span>
+                  <div>24 entries</div>
+                </div>
               </div>
               <div style="margin-top: 8px; font-size: 12px">
                 <span class="subtle">Known as:</span>
@@ -3465,9 +4186,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">&#10005;</button>
+            <button
+              class="hero-prompt__dismiss"
+              type="button"
+              aria-label="Dismiss"
+              title="Dismiss this tip"
+            >
+              &#10005;
+            </button>
             <div class="hero-prompt__text">
-              Watch domain events in real time. Filter by aggregate type, correlation ID, or event name to trace execution flow across the system.
+              Watch domain events in real time. Filter by aggregate type, correlation ID, or event
+              name to trace execution flow across the system.
             </div>
           </div>
 
@@ -3482,8 +4211,18 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <div style="display: flex; gap: 8px; margin-bottom: 12px">
-            <input class="field__input" type="text" placeholder="Filter by correlationId..." style="max-width: 280px; font-size: 12px">
-            <input class="field__input" type="text" placeholder="Filter by event type..." style="max-width: 220px; font-size: 12px">
+            <input
+              class="field__input"
+              type="text"
+              placeholder="Filter by correlationId..."
+              style="max-width: 280px; font-size: 12px"
+            />
+            <input
+              class="field__input"
+              type="text"
+              placeholder="Filter by event type..."
+              style="max-width: 220px; font-size: 12px"
+            />
           </div>
 
           <!-- Stream health indicator -->
@@ -3495,7 +4234,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <div class="row row--static" style="border-left: 3px solid var(--ok)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px">WorkItemCreated</span>
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >WorkItemCreated</span
+                  >
                   WI-1099 Invoice correction for ACME
                 </div>
                 <div class="row__subtle">
@@ -3503,12 +4244,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_001</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_001</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--info)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--info" style="font-size: 10px; padding: 2px 6px">RunStarted</span>
+                  <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                    >RunStarted</span
+                  >
                   R-8920 Invoice correction
                 </div>
                 <div class="row__subtle">
@@ -3516,12 +4261,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_002</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_002</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--info)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--info" style="font-size: 10px; padding: 2px 6px">PlanCreated</span>
+                  <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                    >PlanCreated</span
+                  >
                   Plan P-551 for R-8920
                 </div>
                 <div class="row__subtle">
@@ -3529,12 +4278,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_003</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_003</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--warn)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--warn" style="font-size: 10px; padding: 2px 6px">ApprovalGateOpened</span>
+                  <span class="status status--warn" style="font-size: 10px; padding: 2px 6px"
+                    >ApprovalGateOpened</span
+                  >
                   AG-442 for R-8920
                 </div>
                 <div class="row__subtle">
@@ -3542,12 +4295,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_004</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_004</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--ok)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px">EvidenceRecorded</span>
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >EvidenceRecorded</span
+                  >
                   Chain entry #145
                 </div>
                 <div class="row__subtle">
@@ -3555,12 +4312,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_005</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_005</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--danger)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--danger" style="font-size: 10px; padding: 2px 6px">RunFailed</span>
+                  <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                    >RunFailed</span
+                  >
                   R-8850 CRM sync
                 </div>
                 <div class="row__subtle">
@@ -3568,24 +4329,32 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8850_wi1021_c3b1</span> | 3h ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_006</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_006</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--ok)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px">AdapterEnabled</span>
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >AdapterEnabled</span
+                  >
                   Stripe adapter activated
                 </div>
                 <div class="row__subtle">
                   Aggregate: Adapter | Source: adapter-registry | 1d ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_007</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_007</span>
+              </div>
             </div>
             <div class="row row--static" style="border-left: 3px solid var(--muted)">
               <div class="row__main">
                 <div class="row__title">
-                  <span class="status" style="font-size: 10px; padding: 2px 6px">PolicyEvaluated</span>
+                  <span class="status" style="font-size: 10px; padding: 2px 6px"
+                    >PolicyEvaluated</span
+                  >
                   Invoice writes &gt; $10k matched for R-8920
                 </div>
                 <div class="row__subtle">
@@ -3593,7 +4362,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="correlation-id">cor_8920_wi1099_f7a2</span> | 12m ago
                 </div>
               </div>
-              <div class="row__right"><span class="subtle" style="font-size: 10px">ce_008</span></div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_008</span>
+              </div>
             </div>
           </div>
 
@@ -3605,7 +4376,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
 
           <!-- Event payload inspection -->
           <details class="card" style="margin-top: 12px">
-            <summary class="card__title" style="cursor: pointer">Event Detail: RunFailed (ce_006)</summary>
+            <summary class="card__title" style="cursor: pointer">
+              Event Detail: RunFailed (ce_006)
+            </summary>
             <div style="margin-top: 8px">
               <div class="grid grid--2" style="gap: 8px">
                 <div>
@@ -3614,20 +4387,37 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </div>
                 <div>
                   <div class="subtle" style="font-size: 11px">Type</div>
-                  <div style="font-family: monospace; font-size: 12px">com.portarium.run.failed</div>
+                  <div style="font-family: monospace; font-size: 12px">
+                    com.portarium.run.failed
+                  </div>
                 </div>
                 <div>
                   <div class="subtle" style="font-size: 11px">Source</div>
-                  <div style="font-family: monospace; font-size: 12px">/execution-engine/runs/R-8850</div>
+                  <div style="font-family: monospace; font-size: 12px">
+                    /execution-engine/runs/R-8850
+                  </div>
                 </div>
                 <div>
                   <div class="subtle" style="font-size: 11px">Time</div>
-                  <div style="font-family: monospace; font-size: 12px">2026-02-18T11:14:22.431Z</div>
+                  <div style="font-family: monospace; font-size: 12px">
+                    2026-02-18T11:14:22.431Z
+                  </div>
                 </div>
               </div>
               <div style="margin-top: 10px">
                 <div class="subtle" style="font-size: 11px; margin-bottom: 4px">Payload</div>
-                <pre style="background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 10px; font-size: 11px; overflow-x: auto; margin: 0">{
+                <pre
+                  style="
+                    background: var(--bg);
+                    border: 1px solid var(--line-soft);
+                    border-radius: var(--r-sm);
+                    padding: 10px;
+                    font-size: 11px;
+                    overflow-x: auto;
+                    margin: 0;
+                  "
+                >
+{
   "runId": "R-8850",
   "workItemId": "WI-1021",
   "workflowId": "crm-sync-v1",
@@ -3635,7 +4425,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
   "adapter": "salesforce",
   "retryable": true,
   "idempotencyKey": "idem_8850_opp2291"
-}</pre>
+}</pre
+                >
               </div>
             </div>
           </details>
@@ -3658,27 +4449,56 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgCreateWorkItem">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Create Work Item</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Title</span>
-              <input class="field__input" type="text" placeholder="e.g. Invoice correction for ACME" required></label>
-            <label class="field"><span class="field__label">Owner</span>
+            <label class="field"
+              ><span class="field__label">Title</span>
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. Invoice correction for ACME"
+                required
+            /></label>
+            <label class="field"
+              ><span class="field__label">Owner</span>
               <select class="field__input">
                 <option>Me</option>
                 <option>operator@acme.com</option>
                 <option>auditor@acme.com</option>
                 <option>Unassigned</option>
-              </select></label>
-            <label class="field"><span class="field__label">SLA Due Date</span>
-              <input class="field__input" type="date"></label>
-            <label class="field"><span class="field__label">Linked Records (optional)</span>
-              <input class="field__input" type="text" placeholder="e.g. NetSuite INV-22318, Stripe ch_9d2a"></label>
-            <label class="field"><span class="field__label">Description</span>
-              <textarea class="field__input" rows="3" placeholder="What needs to be done?"></textarea></label>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">SLA Due Date</span>
+              <input class="field__input" type="date"
+            /></label>
+            <label class="field"
+              ><span class="field__label">Linked Records (optional)</span>
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. NetSuite INV-22318, Stripe ch_9d2a"
+            /></label>
+            <label class="field"
+              ><span class="field__label">Description</span>
+              <textarea
+                class="field__input"
+                rows="3"
+                placeholder="What needs to be done?"
+              ></textarea>
+            </label>
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Create Work Item</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>
@@ -3686,37 +4506,51 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgStartWorkflow">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Start Workflow</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Workflow</span>
+            <label class="field"
+              ><span class="field__label">Workflow</span>
               <select class="field__input" required>
                 <option value="">Select a workflow...</option>
                 <option>Invoice Correction</option>
                 <option>Collect Payment Receipts</option>
                 <option>Quarterly Audit Preparation</option>
                 <option>CRM Contact Sync</option>
-              </select></label>
-            <label class="field"><span class="field__label">Work Item (optional)</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Work Item (optional)</span>
               <select class="field__input">
                 <option value="">Create new work item</option>
                 <option>WI-1099 Invoice correction for ACME</option>
                 <option>WI-1042 Dispute: investigate payment failure</option>
                 <option>WI-1013 Receipt export for audit period</option>
-              </select></label>
-            <label class="field"><span class="field__label">Trigger</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Trigger</span>
               <select class="field__input">
                 <option selected>Manual (one-time)</option>
                 <option>Cron schedule</option>
                 <option>Webhook</option>
                 <option>Domain event</option>
-              </select></label>
+              </select></label
+            >
             <div class="callout" style="margin: 8px 0">
               An idempotency key will be assigned to prevent duplicate runs.
             </div>
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Start Run</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>
@@ -3724,38 +4558,69 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgCreatePolicy">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Create Policy Rule</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Rule Name</span>
-              <input class="field__input" type="text" placeholder="e.g. Invoice writes > $10,000" required></label>
-            <label class="field"><span class="field__label">Condition</span>
-              <textarea class="field__input" rows="2" placeholder="e.g. integration == 'FinanceAccounting' AND operation == 'write' AND amount > 10000" title="Policy DSL condition expression"></textarea></label>
-            <label class="field"><span class="field__label">Effect</span>
+            <label class="field"
+              ><span class="field__label">Rule Name</span>
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. Invoice writes > $10,000"
+                required
+            /></label>
+            <label class="field"
+              ><span class="field__label">Condition</span>
+              <textarea
+                class="field__input"
+                rows="2"
+                placeholder="e.g. integration == 'FinanceAccounting' AND operation == 'write' AND amount > 10000"
+                title="Policy DSL condition expression"
+              ></textarea>
+            </label>
+            <label class="field"
+              ><span class="field__label">Effect</span>
               <select class="field__input">
                 <option>Allow (with tier override)</option>
                 <option>Deny</option>
-              </select></label>
-            <label class="field"><span class="field__label">Execution Tier</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Execution Tier</span>
               <select class="field__input">
                 <option>Auto</option>
                 <option>Assisted</option>
                 <option selected>Human-approve</option>
                 <option>Manual-only</option>
-              </select></label>
-            <label class="field"><span class="field__label">Required Approvers</span>
-              <input class="field__input" type="number" value="1" min="1" max="10"></label>
-            <label class="field"><span class="field__label">Separation of Duties</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Required Approvers</span>
+              <input class="field__input" type="number" value="1" min="1" max="10"
+            /></label>
+            <label class="field"
+              ><span class="field__label">Separation of Duties</span>
               <select class="field__input">
                 <option>None</option>
                 <option selected>Different-approver</option>
                 <option>N-of-M</option>
-              </select></label>
-            <label class="field"><span class="field__label">Priority</span>
-              <input class="field__input" type="number" value="100" min="1" max="999"></label>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Priority</span>
+              <input class="field__input" type="number" value="100" min="1" max="999"
+            /></label>
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Create Rule</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>
@@ -3763,21 +4628,33 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgAddUser">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Add User</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Email</span>
-              <input class="field__input" type="email" placeholder="user@company.com" required></label>
-            <label class="field"><span class="field__label">Roles</span>
+            <label class="field"
+              ><span class="field__label">Email</span>
+              <input class="field__input" type="email" placeholder="user@company.com" required
+            /></label>
+            <label class="field"
+              ><span class="field__label">Roles</span>
               <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px">
-                <label><input type="checkbox"> Operator</label>
-                <label><input type="checkbox"> Approver</label>
-                <label><input type="checkbox"> Auditor</label>
-                <label><input type="checkbox"> Admin</label>
-              </div></label>
+                <label><input type="checkbox" /> Operator</label>
+                <label><input type="checkbox" /> Approver</label>
+                <label><input type="checkbox" /> Auditor</label>
+                <label><input type="checkbox" /> Admin</label>
+              </div></label
+            >
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Add User</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>
@@ -3785,32 +4662,50 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgAddCredential">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Add Credential</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Adapter</span>
+            <label class="field"
+              ><span class="field__label">Adapter</span>
               <select class="field__input" required>
                 <option value="">Select adapter...</option>
                 <option>Stripe (PaymentsBilling)</option>
                 <option>NetSuite (FinanceAccounting)</option>
                 <option>Zendesk (CustomerSupport)</option>
-              </select></label>
-            <label class="field"><span class="field__label">Credential Type</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Credential Type</span>
               <select class="field__input">
                 <option>API Key</option>
                 <option>OAuth 2.0</option>
                 <option>Service Account</option>
-              </select></label>
-            <label class="field"><span class="field__label">Scopes</span>
-              <input class="field__input" type="text" placeholder="e.g. charges.read, charges.write"></label>
-            <label class="field"><span class="field__label">Expires</span>
-              <input class="field__input" type="date"></label>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Scopes</span>
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. charges.read, charges.write"
+            /></label>
+            <label class="field"
+              ><span class="field__label">Expires</span> <input class="field__input" type="date"
+            /></label>
             <div class="callout" style="margin: 8px 0">
               Credentials are stored in the vault and never exposed in logs or evidence.
             </div>
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Store Credential</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>
@@ -3818,42 +4713,81 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgPackCatalog" style="max-width: 640px">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Pack Catalog</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <div class="form" style="padding: 20px">
-            <input class="field__input" type="search" placeholder="Search packs..." style="margin-bottom: 12px">
+            <input
+              class="field__input"
+              type="search"
+              placeholder="Search packs..."
+              style="margin-bottom: 12px"
+            />
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">billing-governance-pack <span class="subtle" style="font-weight: 400">v2.1.0</span></div>
-                  <div class="row__subtle">Invoice processing, payment reconciliation, and audit evidence workflows.</div>
+                  <div class="row__title">
+                    billing-governance-pack
+                    <span class="subtle" style="font-weight: 400">v2.1.0</span>
+                  </div>
+                  <div class="row__subtle">
+                    Invoice processing, payment reconciliation, and audit evidence workflows.
+                  </div>
                   <div class="row__subtle">Workflows: 3 | Schemas: 2 | Compliance: 1</div>
                 </div>
-                <div class="row__right"><span class="status status--ok" style="font-size: 10px; padding: 2px 6px">Installed</span></div>
+                <div class="row__right">
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >Installed</span
+                  >
+                </div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">hr-onboarding-pack <span class="subtle" style="font-weight: 400">v1.0.3</span></div>
-                  <div class="row__subtle">Employee onboarding across HRIS, payroll, and identity provider systems.</div>
+                  <div class="row__title">
+                    hr-onboarding-pack <span class="subtle" style="font-weight: 400">v1.0.3</span>
+                  </div>
+                  <div class="row__subtle">
+                    Employee onboarding across HRIS, payroll, and identity provider systems.
+                  </div>
                   <div class="row__subtle">Workflows: 4 | Schemas: 3 | Compliance: 2</div>
                 </div>
-                <div class="row__right"><button class="btn btn--primary btn--small" type="button">Install</button></div>
+                <div class="row__right">
+                  <button class="btn btn--primary btn--small" type="button">Install</button>
+                </div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">compliance-soc2-pack <span class="subtle" style="font-weight: 400">v3.2.1</span></div>
-                  <div class="row__subtle">SOC 2 Type II evidence collection, access reviews, and audit report generation.</div>
+                  <div class="row__title">
+                    compliance-soc2-pack <span class="subtle" style="font-weight: 400">v3.2.1</span>
+                  </div>
+                  <div class="row__subtle">
+                    SOC 2 Type II evidence collection, access reviews, and audit report generation.
+                  </div>
                   <div class="row__subtle">Workflows: 6 | Schemas: 4 | Compliance: 3</div>
                 </div>
-                <div class="row__right"><button class="btn btn--primary btn--small" type="button">Install</button></div>
+                <div class="row__right">
+                  <button class="btn btn--primary btn--small" type="button">Install</button>
+                </div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">e-commerce-fulfillment-pack <span class="subtle" style="font-weight: 400">v2.0.0</span></div>
-                  <div class="row__subtle">Order fulfillment, inventory sync, and shipping notification workflows.</div>
+                  <div class="row__title">
+                    e-commerce-fulfillment-pack
+                    <span class="subtle" style="font-weight: 400">v2.0.0</span>
+                  </div>
+                  <div class="row__subtle">
+                    Order fulfillment, inventory sync, and shipping notification workflows.
+                  </div>
                   <div class="row__subtle">Workflows: 5 | Schemas: 6 | Connectors: 3</div>
                 </div>
-                <div class="row__right"><button class="btn btn--primary btn--small" type="button">Install</button></div>
+                <div class="row__right">
+                  <button class="btn btn--primary btn--small" type="button">Install</button>
+                </div>
               </div>
             </div>
           </div>
@@ -3862,30 +4796,50 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <dialog class="form-dialog" id="dlgAddAgent">
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Register Agent</h2>
-            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+            >
+              &times;
+            </button>
           </div>
           <form method="dialog" class="form">
-            <label class="field"><span class="field__label">Agent Name</span>
-              <input class="field__input" type="text" placeholder="e.g. Invoice Classifier" required></label>
-            <label class="field"><span class="field__label">Endpoint URL</span>
-              <input class="field__input" type="url" placeholder="https://api.example.com/agent"></label>
-            <label class="field"><span class="field__label">Provider</span>
+            <label class="field"
+              ><span class="field__label">Agent Name</span>
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. Invoice Classifier"
+                required
+            /></label>
+            <label class="field"
+              ><span class="field__label">Endpoint URL</span>
+              <input class="field__input" type="url" placeholder="https://api.example.com/agent"
+            /></label>
+            <label class="field"
+              ><span class="field__label">Provider</span>
               <select class="field__input">
                 <option>Anthropic (Claude)</option>
                 <option>OpenAI</option>
                 <option>Custom endpoint</option>
-              </select></label>
-            <label class="field"><span class="field__label">Capabilities</span>
+              </select></label
+            >
+            <label class="field"
+              ><span class="field__label">Capabilities</span>
               <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px">
-                <label><input type="checkbox"> Read external records</label>
-                <label><input type="checkbox"> Classify / categorize</label>
-                <label><input type="checkbox"> Generate documents</label>
-                <label><input type="checkbox"> Analyze data</label>
-                <label><input type="checkbox"> Execute code</label>
-              </div></label>
+                <label><input type="checkbox" /> Read external records</label>
+                <label><input type="checkbox" /> Classify / categorize</label>
+                <label><input type="checkbox" /> Generate documents</label>
+                <label><input type="checkbox" /> Analyze data</label>
+                <label><input type="checkbox" /> Execute code</label>
+              </div></label
+            >
             <div class="form__actions">
               <button class="btn btn--primary" type="submit">Register Agent</button>
-              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
             </div>
           </form>
         </dialog>

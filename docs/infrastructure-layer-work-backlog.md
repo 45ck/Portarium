@@ -152,7 +152,7 @@ Goal: validated disaster recovery, cost governance, and continuous reliability a
 
 Goal: adopt permissively-licensed open-source platforms as subordinate execution planes so Portarium does not build connector ecosystems, agentic runtimes, or ops automation engines from scratch.
 
-Architecture: Portarium remains the governance/control-plane system of record. External platforms are invoked as *action runners* within runs — not as orchestrators of record.
+Architecture: Portarium remains the governance/control-plane system of record. External platforms are invoked as _action runners_ within runs — not as orchestrators of record.
 
 - STORY-I10.1 — bead-0401
   - ADR: external execution plane strategy — formal decision record adopting Activepieces (MIT) as primary connector runtime, Langflow (MIT) as agentic/machine runtime, and optionally Kestra or StackStorm for ops pipeline workloads.
@@ -244,73 +244,73 @@ Goal: infrastructure layer completion evidence.
 
 ## Pre-existing beads (cross-reference)
 
-| Bead | Status | Relevance |
-|---|---|---|
-| bead-0035 | open | Tamper-evident hash chain + signature hooks on EvidenceEntry |
-| bead-0036 | open | Verify hash chain continuity under retention/disposition events |
-| bead-0043 | open | OTel context propagation in request/workflow/adapter stacks |
-| bead-0045 | open | Containment and least-privilege in execution environments |
-| bead-0046 | open | Verify sandbox/egress/isolation in runtime integration tests |
-| bead-0116 | open | SecretsVaulting port adapter implementation |
-| bead-0164 | open | Phase transition: Infrastructure complete |
-| bead-0167 | open | Phase transition: Security complete |
-| bead-0181 | open | Coverage thresholds on infrastructure code |
-| bead-0188 | open | Runbook: execution order |
-| bead-0189 | open | Runbook: rollback plan |
-| bead-0190 | open | Review: rollback plan validation |
-| bead-0194 | open | Synthetic evidence and retention fixtures |
-| bead-0298 | open | Infrastructure execution baseline (Terraform) |
-| bead-0313 | open | Application-level observability |
-| bead-0322 | open | Terraform remote state + locking |
-| bead-0324 | open | Terraform validation matrix in CI |
-| bead-0325 | open | AWS control-plane bootstrap script |
-| bead-0327 | open | Egress allowlist + namespace isolation + Vault auth |
-| bead-0329 | open | CI/CD provenance and image signing (SBOM + attestation) |
-| bead-0330 | open | Azure/GCP Terraform baselines |
-| bead-0335 | open | Wire infrastructure adapters (PostgreSQL, event publisher, ID gen) |
-| bead-0380 | open | CI security gates (OpenAPI diff, vuln scan, secret scan) |
+| Bead      | Status | Relevance                                                          |
+| --------- | ------ | ------------------------------------------------------------------ |
+| bead-0035 | open   | Tamper-evident hash chain + signature hooks on EvidenceEntry       |
+| bead-0036 | open   | Verify hash chain continuity under retention/disposition events    |
+| bead-0043 | open   | OTel context propagation in request/workflow/adapter stacks        |
+| bead-0045 | open   | Containment and least-privilege in execution environments          |
+| bead-0046 | open   | Verify sandbox/egress/isolation in runtime integration tests       |
+| bead-0116 | open   | SecretsVaulting port adapter implementation                        |
+| bead-0164 | open   | Phase transition: Infrastructure complete                          |
+| bead-0167 | open   | Phase transition: Security complete                                |
+| bead-0181 | open   | Coverage thresholds on infrastructure code                         |
+| bead-0188 | open   | Runbook: execution order                                           |
+| bead-0189 | open   | Runbook: rollback plan                                             |
+| bead-0190 | open   | Review: rollback plan validation                                   |
+| bead-0194 | open   | Synthetic evidence and retention fixtures                          |
+| bead-0298 | open   | Infrastructure execution baseline (Terraform)                      |
+| bead-0313 | open   | Application-level observability                                    |
+| bead-0322 | open   | Terraform remote state + locking                                   |
+| bead-0324 | open   | Terraform validation matrix in CI                                  |
+| bead-0325 | open   | AWS control-plane bootstrap script                                 |
+| bead-0327 | open   | Egress allowlist + namespace isolation + Vault auth                |
+| bead-0329 | open   | CI/CD provenance and image signing (SBOM + attestation)            |
+| bead-0330 | open   | Azure/GCP Terraform baselines                                      |
+| bead-0335 | open   | Wire infrastructure adapters (PostgreSQL, event publisher, ID gen) |
+| bead-0380 | open   | CI security gates (OpenAPI diff, vuln scan, secret scan)           |
 
 ## New beads created for this backlog
 
-| Bead | Title |
-|---|---|
-| bead-0415 | Infra: implement control plane HTTP server handlers to match OpenAPI v1 contract |
-| bead-0416 | Infra: replace bootstrap.sh scaffold containers with production entrypoints for API server and worker runtime |
-| bead-0421 | Infra: Mautic reference adapter for MarketingAutomation port family |
-| bead-0422 | Infra: Odoo or ERPNext reference adapter for FinanceAccounting port family |
-| bead-0423 | Infra: Zammad reference adapter for CustomerSupport port family |
-| bead-0424 | Infra: GitHub reference adapter for software development operations (DORA metrics) |
-| bead-0428 | Infra: OTel Collector production pipeline - OTLP backends, alerting, cross-signal correlation |
-| bead-0435 | Infra: OpenClaw Gateway HTTP adapter implementing MachineInvokerPort (/v1/responses client with credential injection and retry/backoff) |
-| bead-0436 | Infra: OpenClaw /tools/invoke constrained-tool client (429/Retry-After backoff, policy gating, dry-run) |
-| bead-0437 | Infra: evidence logging hooks for agent step lifecycle (ActionDispatched/Completed/Failed entries with payloadRefs and CloudEvents emission) |
-| bead-0400 | Infra: migrate Temporal compose image from temporalio/auto-setup to temporalio/server (upstream deprecated, urgent) |
-| bead-0401 | ADR: external execution plane strategy - adopt Activepieces as primary connector runtime and Langflow as agentic runtime alongside Temporal |
-| bead-0402 | Infra: install Temporal TypeScript SDK and wire WorkflowOrchestrator port adapter against local dev instance |
-| bead-0403 | Spike: evaluate Activepieces piece coverage for the 18 port adapter families |
-| bead-0404 | Infra: Activepieces self-hosted deployment configuration (Docker Compose dev stack entry and Helm production chart) |
-| bead-0405 | Infra: Activepieces action executor adapter - invoke Activepieces flows as Portarium workflow actions with correlation header propagation |
-| bead-0406 | Infra: DomainEvent trigger routing to Activepieces webhook endpoint with tenantId and correlationId headers |
-| bead-0407 | Infra: Langflow isolated deployment - per-environment instances, disabled auto-login, hardened auth, reverse proxy, network policies |
-| bead-0408 | Infra: Langflow agent flow HTTP adapter - invoke Langflow flows from Portarium workflow steps with correlation header propagation |
-| bead-0410 | Infra: Activepieces custom piece TypeScript npm package pattern for Portarium port adapter families |
-| bead-0412 | Spike: evaluate Kestra for CloudEvents-triggered ops and pipeline workloads (OTel integration, scalable execution) |
-| bead-0413 | Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring families) |
-| bead-0385 | Infra: Docker Compose local development stack (DB, Temporal dev, vault dev, object store, OTel Collector) |
-| bead-0386 | Infra: OCI container images for API server and worker runtime (Dockerfiles, multi-stage builds, image build CI pipeline) |
-| bead-0387 | Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion) |
-| bead-0388 | Infra: Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend) |
-| bead-0389 | Infra: evidence payload WORM storage controls (S3 Object Lock or equivalent, retention periods, legal holds, compliance mode) |
-| bead-0390 | Infra: OTel Collector deployment and observability backend wiring (Collector Helm chart, OTLP pipelines, metrics/traces/logs backend integration) |
-| bead-0391 | Infra: database schema migration framework (versioned migrations, expand/contract pattern, rollback safety, tenant-aware migrations) |
-| bead-0392 | Infra: multi-tenant storage tier automation (schema-per-tenant provisioning, DB-per-tenant lifecycle, backup/restore per tier) |
-| bead-0393 | Infra: SLO definitions, dashboards, and alerting (API latency/error, workflow completion, worker actions, evidence integrity) |
-| bead-0394 | Infra: progressive delivery pipeline (canary or blue-green deployment, traffic shifting, automated rollback on SLO breach) |
-| bead-0395 | Infra: CI OIDC federation for cloud access (GitHub Actions OIDC to cloud providers, no long-lived credentials) |
-| bead-0396 | Infra: Kubernetes health probes and PodDisruptionBudgets for all control-plane and worker services |
-| bead-0397 | Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification) |
-| bead-0398 | Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy) |
-| bead-0399 | Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume) |
+| Bead      | Title                                                                                                                                                                                                                |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bead-0415 | Infra: implement control plane HTTP server handlers to match OpenAPI v1 contract                                                                                                                                     |
+| bead-0416 | Infra: replace bootstrap.sh scaffold containers with production entrypoints for API server and worker runtime                                                                                                        |
+| bead-0421 | Infra: Mautic reference adapter for MarketingAutomation port family                                                                                                                                                  |
+| bead-0422 | Infra: Odoo or ERPNext reference adapter for FinanceAccounting port family                                                                                                                                           |
+| bead-0423 | Infra: Zammad reference adapter for CustomerSupport port family                                                                                                                                                      |
+| bead-0424 | Infra: GitHub reference adapter for software development operations (DORA metrics)                                                                                                                                   |
+| bead-0428 | Infra: OTel Collector production pipeline - OTLP backends, alerting, cross-signal correlation                                                                                                                        |
+| bead-0435 | Infra: OpenClaw Gateway HTTP adapter implementing MachineInvokerPort (/v1/responses client with credential injection and retry/backoff)                                                                              |
+| bead-0436 | Infra: OpenClaw /tools/invoke constrained-tool client (429/Retry-After backoff, policy gating, dry-run)                                                                                                              |
+| bead-0437 | Infra: evidence logging hooks for agent step lifecycle (ActionDispatched/Completed/Failed entries with payloadRefs and CloudEvents emission)                                                                         |
+| bead-0400 | Infra: migrate Temporal compose image from temporalio/auto-setup to temporalio/server (upstream deprecated, urgent)                                                                                                  |
+| bead-0401 | ADR: external execution plane strategy - adopt Activepieces as primary connector runtime and Langflow as agentic runtime alongside Temporal                                                                          |
+| bead-0402 | Infra: install Temporal TypeScript SDK and wire WorkflowOrchestrator port adapter against local dev instance                                                                                                         |
+| bead-0403 | Spike: evaluate Activepieces piece coverage for the 18 port adapter families                                                                                                                                         |
+| bead-0404 | Infra: Activepieces self-hosted deployment configuration (Docker Compose dev stack entry and Helm production chart)                                                                                                  |
+| bead-0405 | Infra: Activepieces action executor adapter - invoke Activepieces flows as Portarium workflow actions with correlation header propagation                                                                            |
+| bead-0406 | Infra: DomainEvent trigger routing to Activepieces webhook endpoint with tenantId and correlationId headers                                                                                                          |
+| bead-0407 | Infra: Langflow isolated deployment - per-environment instances, disabled auto-login, hardened auth, reverse proxy, network policies                                                                                 |
+| bead-0408 | Infra: Langflow agent flow HTTP adapter - invoke Langflow flows from Portarium workflow steps with correlation header propagation                                                                                    |
+| bead-0410 | Infra: Activepieces custom piece TypeScript npm package pattern for Portarium port adapter families                                                                                                                  |
+| bead-0412 | Spike: evaluate Kestra for CloudEvents-triggered ops and pipeline workloads (OTel integration, scalable execution)                                                                                                   |
+| bead-0413 | Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring families)                                                                                   |
+| bead-0385 | Infra: Docker Compose local development stack (DB, Temporal dev, vault dev, object store, OTel Collector)                                                                                                            |
+| bead-0386 | Infra: OCI container images for API server and worker runtime (Dockerfiles, multi-stage builds, image build CI pipeline)                                                                                             |
+| bead-0387 | Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion)                                                                                    |
+| bead-0388 | Infra: Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend)                                                                                                   |
+| bead-0389 | Infra: evidence payload WORM storage controls (S3 Object Lock or equivalent, retention periods, legal holds, compliance mode)                                                                                        |
+| bead-0390 | Infra: OTel Collector deployment and observability backend wiring (Collector Helm chart, OTLP pipelines, metrics/traces/logs backend integration)                                                                    |
+| bead-0391 | Infra: database schema migration framework (versioned migrations, expand/contract pattern, rollback safety, tenant-aware migrations)                                                                                 |
+| bead-0392 | Infra: multi-tenant storage tier automation (schema-per-tenant provisioning, DB-per-tenant lifecycle, backup/restore per tier)                                                                                       |
+| bead-0393 | Infra: SLO definitions, dashboards, and alerting (API latency/error, workflow completion, worker actions, evidence integrity)                                                                                        |
+| bead-0394 | Infra: progressive delivery pipeline (canary or blue-green deployment, traffic shifting, automated rollback on SLO breach)                                                                                           |
+| bead-0395 | Infra: CI OIDC federation for cloud access (GitHub Actions OIDC to cloud providers, no long-lived credentials)                                                                                                       |
+| bead-0396 | Infra: Kubernetes health probes and PodDisruptionBudgets for all control-plane and worker services                                                                                                                   |
+| bead-0397 | Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification)                                                                                |
+| bead-0398 | Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy)                                                                                                |
+| bead-0399 | Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume)                                                                                                |
 | bead-0447 | Spec: OpenAPI contract alignment — add AdapterRegistration capability matrix and machineRegistrations to portarium-control-plane.v1.yaml; reconcile WorkItem, CredentialGrant, Policy schemas against domain parsers |
 
 ## Delivery notes
