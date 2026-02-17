@@ -202,6 +202,26 @@ Goal: manage licence risk and commercial obligations for adopted external execut
   - Licence compliance audit for adopted execution platforms: Activepieces (MIT core, commercial EE carve-outs), Kestra (Apache 2.0, EE features), StackStorm (Apache 2.0), Langflow (MIT).
   - AC: licence obligations documented per platform; EE feature boundaries identified; "safe use" guidelines published for each; any fair-code or multi-tenant restrictions flagged.
 
+### EPIC-V07d — OpenClaw integration quality and security gates
+
+Goal: ensure OpenClaw integration is tested, tool-safe, and multi-tenant by design.
+
+- STORY-V07d.1 — bead-0441
+  - Contract tests for machine/agent OpenAPI endpoints — schema validation, RBAC role gating, Problem Details error shapes, multi-tenant scoping assertions (cross-workspace access rejected).
+  - AC: every new endpoint tested for auth, RBAC, and multi-tenant isolation; no schema drift from OpenAPI spec.
+- STORY-V07d.2 — bead-0442
+  - Integration tests for OpenClaw Gateway adapter with stub HTTP server — deterministic fixtures, `429`/`Retry-After` backoff, policy-blocked tool scenarios, agent output capture and evidence linkage.
+  - AC: adapter tests run offline (no live Gateway dependency); 429 backoff verified; policy violations produce correct run state.
+- STORY-V07d.3 — bead-0443
+  - E2E approval-gated agent task run — cockpit starts a run containing an Agent Task step, run pauses at `HumanApprove` gate, approver submits decision, run resumes and completes with evidence entries showing `ActionDispatched`/`ActionCompleted`.
+  - AC: approval gate works end-to-end; evidence chain intact; run status transitions verified.
+- STORY-V07d.4 — bead-0444
+  - OpenClaw tool blast-radius policy — map Gateway tools/skills to Portarium capability tiers; dangerous tools (system exec, browser automation) default to `HumanApprove` or `ManualOnly`; policy violations surface as "Policy blocked" run state in cockpit.
+  - AC: policy mapping documented; CI tests verify dangerous tools cannot auto-run; documentation covers rationale per tool category.
+- STORY-V07d.5 — bead-0445
+  - OpenClaw multi-tenant isolation strategy — define per-workspace or per-security-domain Gateway deployment model; credential scoping requirements; network isolation requirements; decision recorded as ADR.
+  - AC: decision document published; isolation requirements enforceable via network policy and credential grants; runbook covers provisioning a new workspace Gateway instance.
+
 ### EPIC-V08 — CI gates
 
 Goal: automated quality enforcement in CI pipeline.
@@ -239,6 +259,11 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 |---|---|
 | bead-0429 | Governance: domain coverage matrix (port families vs operational domain requirements with gap tracking) |
 | bead-0414 | Governance: licence compliance audit for adopted execution platforms (Activepieces MIT EE carve-outs, Kestra Apache 2.0 EE features) |
+| bead-0441 | Governance: contract tests for machine/agent OpenAPI endpoints (schema, RBAC, Problem Details, multi-tenant scoping) |
+| bead-0442 | Governance: integration tests for OpenClaw adapter with stub Gateway (fixtures, 429 backoff, policy-blocked tools) |
+| bead-0443 | Governance: E2E approval-gated agent task run (HumanApprove gate, approval decision, evidence chain) |
+| bead-0444 | Governance: OpenClaw tool blast-radius policy (tool-to-capability-tier mapping, dangerous tools default HumanApprove) |
+| bead-0445 | Governance: OpenClaw multi-tenant isolation strategy (per-workspace Gateway model, credential scoping, ADR) |
 
 ## Bead summary
 

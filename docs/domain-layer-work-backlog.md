@@ -36,6 +36,17 @@ Goal: ensure canonical objects cover privacy and consent obligations required fo
   - Add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail).
   - AC: `ConsentRecord` canonical type defined with opt-in/opt-out status, timestamp, and `externalRefs`; parser tests pass; suppression-list linkage documented.
 
+### EPIC-D01c — Machine runtime domain model
+
+Goal: model machine runtime registrations and agent configurations as first-class domain objects.
+
+- STORY-D01c.1 — bead-0430
+  - `MachineRegistration` aggregate (gateway URL, display name, capability allowlist, auth config) and `Agent` configuration entity (agentId, machineId, policy tier, allowed tool set).
+  - AC: domain types parseable with branded primitives; parsers enforce required fields; no external runtime dependencies.
+- STORY-D01c.2 — bead-0431
+  - CloudEvents type catalogue for agent lifecycle: `com.portarium.agent.ActionDispatched`, `ActionCompleted`, `ActionFailed` carrying `tenantId`, `correlationId`, `runId`, and `machineId`.
+  - AC: CloudEvents types extend the existing envelope; all fields typed and required; used by infra evidence adapter.
+
 ### EPIC-D02 — Identity and tenancy
 
 Goal: unify tenant identity and enforce correlation across domain events.
@@ -165,6 +176,8 @@ Goal: domain layer completion evidence.
 | Bead | Title |
 |---|---|
 | bead-0420 | Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail) |
+| bead-0430 | Domain: MachineRegistration aggregate and Agent configuration entity (machine runtime registry domain model with capability allowlist and auth config) |
+| bead-0431 | Domain: CloudEvents type catalogue for agent lifecycle (ActionDispatched/Completed/Failed with tenantId/correlationId/runId propagation) |
 
 ## Pre-existing beads (cross-reference)
 

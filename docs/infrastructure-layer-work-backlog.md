@@ -211,6 +211,20 @@ Goal: bridge the gap between OpenAPI contract and working server; deliver one re
   - OTel Collector production pipeline — add OTLP trace/metrics/logs backend, alerting, and cross-signal correlation beyond current logging-only config.
   - AC: traces, metrics, and logs exported to a persistent backend; cross-signal correlation verifiable; alerting fires on SLO breach.
 
+### EPIC-I12 — OpenClaw Gateway HTTP adapter
+
+Goal: implement the execution-plane adapter that invokes OpenClaw as a machine runtime endpoint.
+
+- STORY-I12.1 — bead-0435
+  - OpenClaw Gateway HTTP adapter implementing `MachineInvokerPort` — `POST /v1/responses` client with `model: "openclaw:<agentId>"` agent selection, bearer-token credential injection from Portarium vault, and retry/backoff.
+  - AC: adapter compiles against `MachineInvokerPort`; credentials never exposed in logs; unit tests with stub Gateway cover success, 4xx, 5xx, and timeout paths.
+- STORY-I12.2 — bead-0436
+  - OpenClaw `/tools/invoke` constrained-tool client — tool policy gating, `429`/`Retry-After` compliance, per-session key routing, and dry-run support.
+  - AC: `429` responses trigger `Retry-After`-respecting backoff; policy-blocked tools surface as `Policy blocked` run state; dry-run does not mutate external state.
+- STORY-I12.3 — bead-0437
+  - Evidence logging hooks for agent step lifecycle — persist `ActionDispatched`/`ActionCompleted`/`ActionFailed` evidence entries with `payloadRefs`, hash chain, and emit CloudEvents using `com.portarium.agent.*` types (bead-0431).
+  - AC: every agent invocation produces at least one evidence entry; hash chain continuity maintained; CloudEvents emitted to outbox.
+
 ### EPIC-I09 — Release gates
 
 Goal: infrastructure layer completion evidence.
@@ -259,6 +273,9 @@ Goal: infrastructure layer completion evidence.
 | bead-0423 | Infra: Zammad reference adapter for CustomerSupport port family |
 | bead-0424 | Infra: GitHub reference adapter for software development operations (DORA metrics) |
 | bead-0428 | Infra: OTel Collector production pipeline - OTLP backends, alerting, cross-signal correlation |
+| bead-0435 | Infra: OpenClaw Gateway HTTP adapter implementing MachineInvokerPort (/v1/responses client with credential injection and retry/backoff) |
+| bead-0436 | Infra: OpenClaw /tools/invoke constrained-tool client (429/Retry-After backoff, policy gating, dry-run) |
+| bead-0437 | Infra: evidence logging hooks for agent step lifecycle (ActionDispatched/Completed/Failed entries with payloadRefs and CloudEvents emission) |
 | bead-0400 | Infra: migrate Temporal compose image from temporalio/auto-setup to temporalio/server (upstream deprecated, urgent) |
 | bead-0401 | ADR: external execution plane strategy - adopt Activepieces as primary connector runtime and Langflow as agentic runtime alongside Temporal |
 | bead-0402 | Infra: install Temporal TypeScript SDK and wire WorkflowOrchestrator port adapter against local dev instance |

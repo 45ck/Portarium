@@ -24,6 +24,20 @@ Goal: deliver the minimum cockpit that makes Portarium operable by real approver
   - Cockpit UI MVP — approver queue (approve/deny with rationale and RequestChanges once bead-0419 is done), run list with planned-vs-verified diff, work item creation, adapter registration overview.
   - AC: approver can process an approval end-to-end; operator can start and monitor a run with evidence; admin can register an adapter; all screens connect to the live OpenAPI v1 backend (not mocks); WCAG 2.2 AA baseline met.
 
+### EPIC-P10 — Machine runtime registry API and cockpit Agents screen
+
+Goal: expose machine/agent lifecycle management through the control-plane contract and the cockpit.
+
+- STORY-P10.1 — bead-0438
+  - OpenAPI v1 machine runtime endpoints — `GET/POST /v1/workspaces/{ws}/machines` (list/register) and `POST /v1/workspaces/{ws}/machines/{id}/test` (connection smoke-test to Gateway). RBAC: admin-only for write; operator/auditor for read. Problem Details on all error paths.
+  - AC: routes added to `portarium-control-plane.v1.yaml`; handlers implement OpenAPI contract; smoke-test issues a safe `/tools/invoke` probe and records evidence entry.
+- STORY-P10.2 — bead-0439
+  - OpenAPI v1 agent configuration endpoints — `GET/POST /v1/workspaces/{ws}/agents` and `PATCH /v1/workspaces/{ws}/agents/{id}` (update capability allowlist, policy tier). RBAC enforced per IAM MVP.
+  - AC: routes added to OpenAPI spec; handlers enforce tenant scoping and RBAC; agent capability updates emit evidence entries; problem+json on errors.
+- STORY-P10.3 — bead-0440
+  - Cockpit "Agents" screen — machine connection test, capability allowlist editing, "used by workflows" query; depends on bead-0427 (cockpit MVP) and bead-0438/0439 (API endpoints).
+  - AC: operator can register a machine and run a connection test; admin can edit capability allowlist; screen shows which workflows reference each agent; WCAG 2.2 AA baseline met.
+
 ### EPIC-01 — Contract-first data layer (target: 8 PD)
 
 Goal: make all screen work depend on one typed/control-plane boundary.
@@ -164,6 +178,9 @@ Related: bead-0326 (API transport strategy, open)
 | Bead | Title |
 |---|---|
 | bead-0427 | Presentation: cockpit UI MVP - approver queue (approve/deny with rationale), run list with planned-vs-verified diff, work item creation, adapter registration overview |
+| bead-0438 | Presentation: OpenAPI v1 machine runtime registry endpoints (GET/POST /machines, POST /machines/{id}/test) |
+| bead-0439 | Presentation: OpenAPI v1 agent configuration endpoints (GET/POST /agents, PATCH /agents/{id}) |
+| bead-0440 | Presentation: cockpit Agents screen (machine connection test, capability allowlist, used-by-workflows query) |
 
 ## Pre-existing beads (cross-reference)
 

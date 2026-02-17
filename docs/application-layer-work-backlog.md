@@ -131,6 +131,20 @@ Goal: decouple workflow action dispatch from Temporal-only implementation via ty
   - Trigger-to-execution-plane routing — route `TriggerKind` (`Cron` / `Webhook` / `DomainEvent` / `Manual`) to the correct execution plane adapter at workflow start.
   - AC: `DomainEvent` and `Webhook` triggers dispatch to Activepieces; agentic steps dispatch to Langflow; routing is configurable; unit tests cover all four kinds.
 
+### EPIC-A04c — Machine runtime application integration
+
+Goal: application layer ports and command handlers for machine/agent registration and invocation.
+
+- STORY-A04c.1 — bead-0432
+  - `MachineInvokerPort` — port interface for invoking external machine/agent runtimes: `runAgent(...)` (via `/v1/responses`) and `invokeTool(...)` (via `/tools/invoke`) with credential injection contract and correlated error taxonomy.
+  - AC: port defined in `src/application/ports/`; `MachineInvokerResult` discriminated union; no infra imports in port.
+- STORY-A04c.2 — bead-0433
+  - "Agent Task" action execution path in workflow runner — dispatch to `MachineInvokerPort`, apply policy tier gating (`Auto`/`Assisted` pass-through, `HumanApprove` pauses run for approval), append evidence, transition run status.
+  - AC: `HumanApprove` tier creates approval gate and pauses run; approved run resumes invocation; evidence entry appended on completion or failure.
+- STORY-A04c.3 — bead-0434
+  - Machine/agent registration command handlers — `RegisterMachine`, `CreateAgent`, `UpdateAgentCapabilities` with tenancy enforcement, idempotency keys, and evidence emission.
+  - AC: commands follow `(ctx, input) => Result<T, AppError>` contract; evidence entry recorded for each registration change; cross-tenant creation rejected.
+
 ### EPIC-A05 — Read path and hardening
 
 Goal: performant queries with caching, observability, and resource governance.
@@ -282,6 +296,9 @@ Goal: safe rollout with rollback capability.
 | bead-0382 | App: GraphQL BFF evaluation |
 | bead-0383 | App: event schema versioning governance |
 | bead-0384 | App: HTTP precondition support (optimistic concurrency) |
+| bead-0432 | App: MachineInvokerPort — port interface for invoking external machine/agent runtimes (runAgent and invokeTool with credential injection) |
+| bead-0433 | App: Agent Task action execution path in workflow runner with policy tier gating and approval gate integration |
+| bead-0434 | App: machine/agent registration command handlers (RegisterMachine, CreateAgent, UpdateAgentCapabilities) |
 
 ## Delivery notes
 
