@@ -12,4 +12,6 @@ export * from './versioning/index.js';
 export * from './packs/index.js';
 export * from './quota/index.js';
 export * from './event-stream/index.js';
+export * from './events/index.js';
 export * from './work-items/index.js';
+export * from './ports/index.js';
