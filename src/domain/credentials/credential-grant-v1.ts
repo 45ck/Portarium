@@ -43,9 +43,10 @@ export function parseCredentialGrantV1(value: unknown): CredentialGrantV1 {
   const credentialsRef = readString(value, 'credentialsRef');
   const scope = readString(value, 'scope');
   const issuedAtIso = readString(value, 'issuedAtIso');
-  const expiresAtIso = readOptionalString(value, 'expiresAtIso');
-  const lastRotatedAtIso = readOptionalString(value, 'lastRotatedAtIso');
-  const revokedAtIso = readOptionalString(value, 'revokedAtIso');
+  parseIsoString(issuedAtIso, 'issuedAtIso');
+  const expiresAtIso = readOptionalIsoString(value, 'expiresAtIso');
+  const lastRotatedAtIso = readOptionalIsoString(value, 'lastRotatedAtIso');
+  const revokedAtIso = readOptionalIsoString(value, 'revokedAtIso');
 
   if (revokedAtIso !== undefined && revokedAtIso < issuedAtIso) {
     throw new CredentialGrantParseError('revokedAtIso must not precede issuedAtIso.');
@@ -80,6 +81,19 @@ function readOptionalString(obj: Record<string, unknown>, key: string): string |
     throw new CredentialGrantParseError(`${key} must be a non-empty string when provided.`);
   }
   return v;
+}
+
+function readOptionalIsoString(obj: Record<string, unknown>, key: string): string | undefined {
+  const v = readOptionalString(obj, key);
+  if (v !== undefined) parseIsoString(v, key);
+  return v;
+}
+
+function parseIsoString(value: string, label: string): void {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new CredentialGrantParseError(`${label} must be a valid ISO timestamp.`);
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

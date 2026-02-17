@@ -37,6 +37,22 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.correlationId).toBe('corr-1');
     expect(evt.payload).toEqual({ source: 'run-service', version: 1 });
   });
+
+  it('parses a new domain event type (RunPaused)', () => {
+    const evt = parseDomainEventV1({
+      schemaVersion: 1,
+      eventId: 'evt-3',
+      eventType: 'RunPaused',
+      aggregateKind: 'Run',
+      aggregateId: 'run-2',
+      occurredAtIso: '2026-02-17T12:30:00.000Z',
+      payload: { reason: 'awaiting-approval' },
+    });
+
+    expect(evt.eventType).toBe('RunPaused');
+    expect(evt.aggregateKind).toBe('Run');
+    expect(evt.payload).toEqual({ reason: 'awaiting-approval' });
+  });
 });
 
 describe('parseDomainEventV1: validation', () => {
@@ -65,7 +81,7 @@ describe('parseDomainEventV1: validation', () => {
         aggregateId: 'run-1',
         occurredAtIso: '2026-02-17T00:00:00.000Z',
       }),
-    ).toThrow(/eventType/);
+    ).toThrow(/eventType is not a recognised DomainEventType/);
 
     expect(() =>
       parseDomainEventV1({

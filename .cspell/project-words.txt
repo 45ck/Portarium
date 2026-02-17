@@ -568,6 +568,19 @@ workitems
 undisposed
 cutoff
 honors
+fadein
+sparkline
+sparklines
+Sparklines
+nuni
+reflow
+tradeoff
+Fitts
+Shneiderman
+dialogs
+colored
+scanability
+Wayfinding
 
 # Vertical pack docs
 versionable

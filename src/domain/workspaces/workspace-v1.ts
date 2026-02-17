@@ -1,16 +1,19 @@
 import {
   CredentialGrantId,
   ProjectId,
+  TenantId,
   UserId,
   WorkspaceId,
   type CredentialGrantId as CredentialGrantIdType,
   type ProjectId as ProjectIdType,
+  type TenantId as TenantIdType,
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 
 export type WorkspaceV1 = Readonly<{
   workspaceId: WorkspaceIdType;
+  tenantId: TenantIdType;
   name: string;
   createdAtIso: string;
   userIds?: readonly UserIdType[];
@@ -32,14 +35,17 @@ export function parseWorkspaceV1(value: unknown): WorkspaceV1 {
   }
 
   const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
+  const tenantId = TenantId(readString(value, 'tenantId'));
   const name = readString(value, 'name');
   const createdAtIso = readString(value, 'createdAtIso');
+  parseIsoString(createdAtIso, 'createdAtIso');
   const userIds = parseOptionalIdArray(value, 'userIds', UserId);
   const projectIds = parseOptionalIdArray(value, 'projectIds', ProjectId);
   const credentialGrantIds = parseOptionalIdArray(value, 'credentialGrantIds', CredentialGrantId);
 
   return {
     workspaceId,
+    tenantId,
     name,
     createdAtIso,
     ...(userIds ? { userIds } : {}),
@@ -84,6 +90,13 @@ function parseOptionalIdArray<T>(
   }
 
   return items;
+}
+
+function parseIsoString(value: string, label: string): void {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new WorkspaceParseError(`${label} must be a valid ISO timestamp.`);
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

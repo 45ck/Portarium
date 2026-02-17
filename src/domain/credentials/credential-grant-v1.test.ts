@@ -70,4 +70,36 @@ describe('parseCredentialGrantV1', () => {
       }),
     ).toThrow(/revokedAtIso must not precede issuedAtIso/);
   });
+
+  it('rejects invalid ISO timestamp for issuedAtIso', () => {
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        issuedAtIso: 'not-a-date',
+      }),
+    ).toThrow(/issuedAtIso must be a valid ISO timestamp/);
+  });
+
+  it('rejects invalid ISO timestamp for optional ISO fields', () => {
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        expiresAtIso: 'not-a-date',
+      }),
+    ).toThrow(/expiresAtIso must be a valid ISO timestamp/);
+
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        lastRotatedAtIso: 'not-a-date',
+      }),
+    ).toThrow(/lastRotatedAtIso must be a valid ISO timestamp/);
+
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        revokedAtIso: 'not-a-date',
+      }),
+    ).toThrow(/revokedAtIso must be a valid ISO timestamp/);
+  });
 });

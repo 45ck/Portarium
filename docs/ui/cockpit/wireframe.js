@@ -373,10 +373,13 @@ const SCREENS = [
   'inbox',
   'project',
   'work-items',
+  'runs',
+  'workflow-builder',
   'work-item',
   'run',
   'approvals',
   'evidence',
+  'agents',
   'settings',
 ];
 
@@ -390,9 +393,12 @@ function activateScreen(screen) {
   for (const el of qsa('.screen')) {
     el.classList.toggle('is-active', el.id === target);
   }
+  /* Map detail views to their parent nav item for sidebar highlighting (H6) */
+  const parentMap = { 'work-item': 'work-items', run: 'runs' };
+  const navScreen = parentMap[screen] || screen;
   for (const link of qsa('.nav__item')) {
     const href = link.getAttribute('href') || '';
-    link.setAttribute('aria-current', href === '#' + screen ? 'page' : 'false');
+    link.setAttribute('aria-current', href === '#' + navScreen ? 'page' : 'false');
   }
 }
 
@@ -424,6 +430,11 @@ function setEmptyStates(systemState) {
   const nonEmptyEv = document.querySelector('.js-nonempty-evidence');
   if (emptyEv) emptyEv.hidden = !isEmpty;
   if (nonEmptyEv) nonEmptyEv.hidden = isEmpty;
+
+  const emptyRuns = document.querySelector('.js-empty-runs');
+  const nonEmptyRuns = document.querySelector('.js-nonempty-runs');
+  if (emptyRuns) emptyRuns.hidden = !isEmpty;
+  if (nonEmptyRuns) nonEmptyRuns.hidden = isEmpty;
 }
 
 /* ============================================================
@@ -459,7 +470,7 @@ function setPersona(persona) {
   const inboxCta = document.querySelector('.js-inbox-cta');
   if (inboxCta) {
     const ctaConfig = {
-      operator: { text: 'Start workflow', href: '#work-item' },
+      operator: { text: 'Start workflow', href: '#work-items' },
       approver: { text: 'Review + decide', href: '#approvals' },
       auditor: { text: 'Export evidence', href: '#evidence' },
       admin: { text: 'Diagnose', href: '#settings' },
@@ -540,8 +551,8 @@ function setPersona(persona) {
   if (action1 && action2) {
     const actions = {
       operator: [
-        { text: 'Start workflow', href: '#work-item' },
-        { text: 'Retry failed runs', href: '#run' },
+        { text: 'Start workflow', href: '#work-items' },
+        { text: 'Retry failed runs', href: '#runs' },
       ],
       approver: [
         { text: 'Review approvals', href: '#approvals' },
@@ -653,17 +664,20 @@ function closeDrawer() {
    TABS
    ============================================================ */
 function bindTabs() {
-  const tabs = qsa('.tab');
-  if (tabs.length === 0) return;
-  const panes = qsa('.tabpane');
+  const tabContainers = qsa('.tabs');
+  for (const container of tabContainers) {
+    const parent = container.closest('.agent-detail') || container.closest('.screen') || document;
+    const tabs = qsa('.tab', container);
+    const panes = qsa('.tabpane', parent);
 
-  function setTab(tabId) {
-    for (const t of tabs) t.classList.toggle('tab--active', t.dataset.tab === tabId);
-    for (const p of panes) p.classList.toggle('tabpane--active', p.dataset.pane === tabId);
-  }
+    function setTab(tabId) {
+      for (const t of tabs) t.classList.toggle('tab--active', t.dataset.tab === tabId);
+      for (const p of panes) p.classList.toggle('tabpane--active', p.dataset.pane === tabId);
+    }
 
-  for (const t of tabs) {
-    t.addEventListener('click', () => setTab(t.dataset.tab));
+    for (const t of tabs) {
+      t.addEventListener('click', () => setTab(t.dataset.tab));
+    }
   }
 }
 
@@ -687,7 +701,263 @@ function render(state) {
   setPersona(state.persona);
   setStatusBar(state.systemState);
   activateScreen(getScreenFromHash());
+  ABToggle.applyAll();
 }
+
+/* ============================================================
+   A/B LAYOUT VARIANT TOGGLE CONTROLLER
+   ============================================================ */
+const ABToggle = (function () {
+  'use strict';
+  const AB_STORAGE_KEY = 'portarium_ab_variants';
+  const registry = {};
+
+  function loadState() {
+    try {
+      const raw = sessionStorage.getItem(AB_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+  function saveState(state) {
+    sessionStorage.setItem(AB_STORAGE_KEY, JSON.stringify(state));
+  }
+  function getVariant(screenId) {
+    return loadState()[screenId] || 'A';
+  }
+  function setVariant(screenId, variant) {
+    const s = loadState();
+    s[screenId] = variant;
+    saveState(s);
+  }
+
+  function register(screenId, variants, renderers) {
+    registry[screenId] = { variants, renderers };
+  }
+
+  function injectToggles() {
+    for (const [screenId, config] of Object.entries(registry)) {
+      const screenEl = document.querySelector('[data-screen="' + screenId + '"]');
+      if (!screenEl) continue;
+      const header = screenEl.querySelector('.screen__header');
+      if (header) header.style.position = 'relative';
+
+      const btn = document.createElement('button');
+      btn.className = 'ab-toggle';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Switch layout variant');
+      btn.title = 'Switch layout variant';
+      btn.dataset.screen = screenId;
+
+      const track = document.createElement('span');
+      track.className = 'ab-toggle__track';
+      const currentVariant = getVariant(screenId);
+
+      config.variants.forEach(function (v, i) {
+        if (i > 0) {
+          const d = document.createElement('span');
+          d.className = 'ab-toggle__divider';
+          d.textContent = '|';
+          track.appendChild(d);
+        }
+        const label = document.createElement('span');
+        label.className = 'ab-toggle__label';
+        label.dataset.variant = v;
+        label.textContent = v;
+        if (v === currentVariant) label.classList.add('ab-toggle__label--active');
+        track.appendChild(label);
+      });
+      btn.appendChild(track);
+
+      btn.addEventListener('click', function () {
+        const current = getVariant(screenId);
+        const idx = config.variants.indexOf(current);
+        const next = config.variants[(idx + 1) % config.variants.length];
+        setVariant(screenId, next);
+        btn.querySelectorAll('.ab-toggle__label').forEach(function (lbl) {
+          lbl.classList.toggle('ab-toggle__label--active', lbl.dataset.variant === next);
+        });
+        btn.classList.remove('ab-toggle--animating');
+        void btn.offsetWidth;
+        btn.classList.add('ab-toggle--animating');
+        applyVariant(screenId);
+      });
+
+      const actionsEl = screenEl.querySelector('.screen__actions');
+      if (actionsEl) actionsEl.insertBefore(btn, actionsEl.firstChild);
+      else if (header) header.appendChild(btn);
+    }
+  }
+
+  function applyVariant(screenId) {
+    const config = registry[screenId];
+    if (!config) return;
+    const screenEl = document.querySelector('[data-screen="' + screenId + '"]');
+    if (!screenEl) return;
+    const variant = getVariant(screenId);
+    const renderer = config.renderers[variant];
+    if (typeof renderer === 'function') renderer(screenEl);
+    const active = screenEl.querySelector('.ab-variant--active');
+    if (active) {
+      active.classList.remove('ab-variant--entering');
+      void active.offsetWidth;
+      active.classList.add('ab-variant--entering');
+    }
+    const btn = screenEl.querySelector('.ab-toggle');
+    if (btn)
+      btn.querySelectorAll('.ab-toggle__label').forEach(function (lbl) {
+        lbl.classList.toggle('ab-toggle__label--active', lbl.dataset.variant === variant);
+      });
+  }
+
+  function applyAll() {
+    for (const screenId of Object.keys(registry)) applyVariant(screenId);
+  }
+
+  return { register, injectToggles, applyVariant, applyAll, getVariant, setVariant };
+})();
+
+/* ============================================================
+   A/B VARIANT REGISTRATIONS
+   ============================================================ */
+function showVariant(screenEl, variantLetter) {
+  const wrappers = screenEl.querySelectorAll('.ab-variant');
+  wrappers.forEach(function (w) {
+    var isTarget =
+      w.dataset.variant === variantLetter && w.dataset.variantScreen === screenEl.dataset.screen;
+    w.classList.toggle('ab-variant--active', isTarget);
+  });
+}
+
+ABToggle.register('inbox', ['A', 'B'], {
+  A: function (el) {
+    showVariant(el, 'A');
+  },
+  B: function (el) {
+    showVariant(el, 'B');
+  },
+});
+ABToggle.register('work-items', ['A', 'B'], {
+  A: function (el) {
+    showVariant(el, 'A');
+  },
+  B: function (el) {
+    showVariant(el, 'B');
+  },
+});
+ABToggle.register('project', ['A', 'B'], {
+  A: function (el) {
+    showVariant(el, 'A');
+  },
+  B: function (el) {
+    showVariant(el, 'B');
+  },
+});
+
+/* ============================================================
+   APPROVAL TRIAGE
+   ============================================================ */
+let triageIndex = 0;
+const triageResults = { approved: 0, denied: 0, changes: 0, skipped: 0 };
+
+function triageAction(action) {
+  var requiresRationale = action === 'deny' || action === 'changes';
+  var rationaleEl = document.getElementById('triageRationale');
+  var rationaleInput = document.getElementById('triageRationaleInput');
+
+  if (requiresRationale && rationaleEl) {
+    rationaleEl.hidden = false;
+    var label =
+      action === 'deny'
+        ? 'Rationale (required for deny)'
+        : 'Rationale (required for request changes)';
+    document.getElementById('triageRationaleLabel').textContent = label;
+    rationaleInput.focus();
+    rationaleEl.dataset.pendingAction = action;
+    return;
+  }
+
+  var card = document.getElementById('triageCard');
+  if (!card) return;
+  var exitClass = {
+    approve: 'triage-card--exit-right',
+    deny: 'triage-card--exit-left',
+    changes: 'triage-card--exit-up',
+    skip: 'triage-card--exit-down',
+  }[action];
+  card.classList.add(exitClass);
+  var resultKey = { approve: 'approved', deny: 'denied', changes: 'changes', skip: 'skipped' }[
+    action
+  ];
+  triageResults[resultKey]++;
+  setTimeout(function () {
+    card.classList.remove(exitClass);
+    triageIndex++;
+    if (triageIndex >= 2) {
+      var triageEl = document.getElementById('triage');
+      var completeEl = document.getElementById('triageComplete');
+      if (triageEl) triageEl.hidden = true;
+      if (completeEl) completeEl.hidden = false;
+    }
+  }, 350);
+}
+
+/* ============================================================
+   WORKFLOW BUILDER - Node Selection
+   ============================================================ */
+document.addEventListener('click', function (e) {
+  var node = e.target.closest('.wf-node');
+  if (!node) return;
+  qsa('.wf-node').forEach(function (n) {
+    n.classList.remove('wf-node--selected');
+  });
+  node.classList.add('wf-node--selected');
+  var configPanel = document.getElementById('wfConfig');
+  if (configPanel) {
+    var nameEl = node.querySelector('.wf-node__name');
+    var nodeName = nameEl ? nameEl.textContent : 'Step';
+    var configTitle = configPanel.querySelector('.wf-config__title');
+    var configSubtitle = configPanel.querySelector('.wf-config__subtitle');
+    if (configTitle) configTitle.textContent = nodeName;
+    if (configSubtitle)
+      configSubtitle.textContent = 'Configure step: ' + (node.dataset.nodeId || '');
+  }
+});
+
+/* ============================================================
+   AGENT CONFIG - Card Selection
+   ============================================================ */
+document.addEventListener('click', function (e) {
+  var card = e.target.closest('.agent-card');
+  if (!card) return;
+  qsa('.agent-card').forEach(function (c) {
+    c.classList.remove('agent-card--selected');
+  });
+  card.classList.add('agent-card--selected');
+  var detailPanel = document.getElementById('agentDetail');
+  if (detailPanel) {
+    var nameEl = card.querySelector('.agent-card__name');
+    var name = nameEl ? nameEl.textContent : 'Agent';
+    var detailName = detailPanel.querySelector('.agent-detail__name');
+    if (detailName) detailName.textContent = name;
+    var statusEl = card.querySelector('.status');
+    var banner = detailPanel.querySelector('.integrity-banner');
+    if (banner && statusEl) {
+      var text = statusEl.textContent.trim();
+      if (text === 'Error') {
+        banner.className = 'integrity-banner integrity-banner--danger';
+        banner.textContent = 'Connection failed. Click "Test connection" to retry.';
+      } else if (text === 'Inactive') {
+        banner.className = 'integrity-banner integrity-banner--warn';
+        banner.textContent = 'Agent is inactive. Activate to use in workflows.';
+      } else {
+        banner.className = 'integrity-banner integrity-banner--ok';
+        banner.textContent = 'Connection healthy. Last test: 2m ago (latency: 180ms).';
+      }
+    }
+  }
+});
 
 /* ============================================================
    MAIN
@@ -756,6 +1026,79 @@ function main() {
 
   /* Tabs */
   bindTabs();
+
+  /* A/B Toggle */
+  ABToggle.injectToggles();
+
+  /* Triage mode toggle */
+  document.addEventListener('click', function (e) {
+    var modeBtn = e.target.closest('.js-triage-mode');
+    if (!modeBtn) return;
+    var mode = modeBtn.dataset.mode;
+    var tableWrap = document.querySelector('#screen-approvals .js-approvals-table');
+    var triageEl = document.getElementById('triage');
+    if (mode === 'triage') {
+      if (tableWrap) tableWrap.hidden = true;
+      if (triageEl) triageEl.hidden = false;
+    } else {
+      if (tableWrap) tableWrap.hidden = false;
+      if (triageEl) triageEl.hidden = true;
+    }
+    qsa('.js-triage-mode').forEach(function (btn) {
+      btn.classList.toggle('btn--primary', btn.dataset.mode === mode);
+    });
+  });
+
+  /* Triage action button clicks */
+  document.addEventListener('click', function (e) {
+    var actionBtn = e.target.closest('.triage__action');
+    if (actionBtn) triageAction(actionBtn.dataset.action);
+  });
+
+  /* Triage rationale submit/cancel */
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'triageRationaleSubmit') {
+      var rationaleEl = document.getElementById('triageRationale');
+      var action = rationaleEl.dataset.pendingAction;
+      rationaleEl.hidden = true;
+      document.getElementById('triageRationaleInput').value = '';
+      triageAction(action === 'deny' ? 'skip' : action);
+    }
+    if (e.target.id === 'triageRationaleCancel') {
+      document.getElementById('triageRationale').hidden = true;
+      document.getElementById('triageRationaleInput').value = '';
+    }
+  });
+
+  /* Triage expand/collapse */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.js-triage-expand')) {
+      var back = document.querySelector('.triage-card__back');
+      if (back) back.hidden = false;
+    }
+    if (e.target.closest('.js-triage-collapse')) {
+      var back2 = document.querySelector('.triage-card__back');
+      if (back2) back2.hidden = true;
+    }
+  });
+
+  /* Triage keyboard shortcuts */
+  document.addEventListener('keydown', function (e) {
+    var triageEl = document.getElementById('triage');
+    var rationaleEl = document.getElementById('triageRationale');
+    if (!triageEl || triageEl.hidden) return;
+    if (rationaleEl && !rationaleEl.hidden) return;
+    var key = e.key.toLowerCase();
+    if (key === 'a') triageAction('approve');
+    else if (key === 'd') triageAction('deny');
+    else if (key === 'r') triageAction('changes');
+    else if (key === 's') triageAction('skip');
+    else if (key === ' ') {
+      e.preventDefault();
+      var back = document.querySelector('.triage-card__back');
+      if (back) back.hidden = !back.hidden;
+    }
+  });
 
   /* Initial render */
   render(initial);

@@ -71,8 +71,11 @@ export function parseRunV1(value: unknown): RunV1 {
   }
 
   const createdAtIso = readString(value, 'createdAtIso');
+  parseIsoString(createdAtIso, 'createdAtIso');
   const startedAtIso = readOptionalString(value, 'startedAtIso');
+  if (startedAtIso !== undefined) parseIsoString(startedAtIso, 'startedAtIso');
   const endedAtIso = readOptionalString(value, 'endedAtIso');
+  if (endedAtIso !== undefined) parseIsoString(endedAtIso, 'endedAtIso');
 
   return {
     schemaVersion: 1,
@@ -130,6 +133,13 @@ function readNumber(obj: Record<string, unknown>, key: string): number {
     throw new RunParseError(`${key} must be an integer.`);
   }
   return v;
+}
+
+function parseIsoString(value: string, label: string): void {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new RunParseError(`${label} must be a valid ISO timestamp.`);
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -6,33 +6,68 @@ import {
 } from '../primitives/index.js';
 
 export type DomainEventType =
+  // Workspace aggregate
   | 'WorkspaceCreated'
   | 'WorkspaceUpdated'
   | 'WorkspaceDeleted'
   | 'UserAdded'
   | 'UserRemoved'
+  | 'UserRolesUpdated'
+  | 'ProjectCreated'
   | 'CredentialGrantIssued'
   | 'CredentialGrantRotated'
   | 'CredentialGrantRevoked'
+  // Workflow aggregate
   | 'WorkflowCreated'
   | 'WorkflowUpdated'
   | 'WorkflowActivated'
   | 'WorkflowDeactivated'
+  | 'WorkflowVersionIncremented'
+  | 'ActionAddedToWorkflow'
+  | 'ActionRemovedFromWorkflow'
+  | 'ActionReordered'
+  // Run aggregate
   | 'RunStarted'
   | 'RunSucceeded'
   | 'RunFailed'
   | 'RunCancelled'
-  | 'PolicyCreated'
-  | 'PolicyUpdated'
+  | 'RunPaused'
+  | 'RunResumed'
+  | 'PlanGenerated'
+  | 'DiffComputed'
+  | 'EvidenceRecorded'
+  | 'ArtifactProduced'
+  | 'ActionDispatched'
+  | 'ActionCompleted'
+  | 'ActionFailed'
+  // Approval
   | 'ApprovalRequested'
   | 'ApprovalGranted'
   | 'ApprovalDenied'
+  // Policy aggregate
+  | 'PolicyCreated'
+  | 'PolicyUpdated'
+  | 'PolicyActivated'
+  | 'PolicyDeactivated'
+  | 'PolicyVersionIncremented'
+  | 'SodConstraintAdded'
+  | 'SodConstraintRemoved'
+  | 'PolicyEvaluated'
+  | 'SodViolationDetected'
+  // Adapter aggregate
   | 'AdapterRegistered'
   | 'AdapterEnabled'
   | 'AdapterDisabled'
+  | 'AdapterCapabilitiesUpdated'
+  | 'AdapterUpgraded'
+  | 'MachineRegistered'
+  | 'MachineDeregistered'
+  | 'MachineEndpointUpdated'
+  // Port
   | 'PortRegistered'
   | 'PortEnabled'
   | 'PortDisabled'
+  // Catch-all
   | 'Unknown';
 
 export type DomainEventV1 = Readonly<{
@@ -56,33 +91,68 @@ export class DomainEventParseError extends Error {
 }
 
 const EVENT_TYPES = new Set<DomainEventType>([
+  // Workspace aggregate
   'WorkspaceCreated',
   'WorkspaceUpdated',
   'WorkspaceDeleted',
   'UserAdded',
   'UserRemoved',
+  'UserRolesUpdated',
+  'ProjectCreated',
   'CredentialGrantIssued',
   'CredentialGrantRotated',
   'CredentialGrantRevoked',
+  // Workflow aggregate
   'WorkflowCreated',
   'WorkflowUpdated',
   'WorkflowActivated',
   'WorkflowDeactivated',
+  'WorkflowVersionIncremented',
+  'ActionAddedToWorkflow',
+  'ActionRemovedFromWorkflow',
+  'ActionReordered',
+  // Run aggregate
   'RunStarted',
   'RunSucceeded',
   'RunFailed',
   'RunCancelled',
-  'PolicyCreated',
-  'PolicyUpdated',
+  'RunPaused',
+  'RunResumed',
+  'PlanGenerated',
+  'DiffComputed',
+  'EvidenceRecorded',
+  'ArtifactProduced',
+  'ActionDispatched',
+  'ActionCompleted',
+  'ActionFailed',
+  // Approval
   'ApprovalRequested',
   'ApprovalGranted',
   'ApprovalDenied',
+  // Policy aggregate
+  'PolicyCreated',
+  'PolicyUpdated',
+  'PolicyActivated',
+  'PolicyDeactivated',
+  'PolicyVersionIncremented',
+  'SodConstraintAdded',
+  'SodConstraintRemoved',
+  'PolicyEvaluated',
+  'SodViolationDetected',
+  // Adapter aggregate
   'AdapterRegistered',
   'AdapterEnabled',
   'AdapterDisabled',
+  'AdapterCapabilitiesUpdated',
+  'AdapterUpgraded',
+  'MachineRegistered',
+  'MachineDeregistered',
+  'MachineEndpointUpdated',
+  // Port
   'PortRegistered',
   'PortEnabled',
   'PortDisabled',
+  // Catch-all
   'Unknown',
 ]);
 
@@ -126,9 +196,7 @@ export function parseDomainEventV1(value: unknown): DomainEventV1 {
 function readEventType(record: Record<string, unknown>, key: string): DomainEventType {
   const raw = readString(record, key);
   if (!EVENT_TYPES.has(raw as DomainEventType)) {
-    throw new DomainEventParseError(
-      'eventType must be one of: WorkspaceCreated, WorkspaceUpdated, WorkspaceDeleted, UserAdded, UserRemoved, CredentialGrantIssued, CredentialGrantRotated, CredentialGrantRevoked, WorkflowCreated, WorkflowUpdated, WorkflowActivated, WorkflowDeactivated, RunStarted, RunSucceeded, RunFailed, RunCancelled, PolicyCreated, PolicyUpdated, ApprovalRequested, ApprovalGranted, ApprovalDenied, AdapterRegistered, AdapterEnabled, AdapterDisabled, PortRegistered, PortEnabled, PortDisabled, Unknown.',
-    );
+    throw new DomainEventParseError('eventType is not a recognised DomainEventType.');
   }
   return raw as DomainEventType;
 }

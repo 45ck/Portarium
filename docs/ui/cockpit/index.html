@@ -26,7 +26,7 @@
           <input
             class="topbar__search"
             type="search"
-            placeholder="Search Work Items, Runs, Evidence, SoR refs..."
+            placeholder="Search work items, runs, evidence..."
             aria-label="Global search"
           />
           <button class="topbar__notifications" type="button" aria-label="Notifications">
@@ -70,20 +70,50 @@
            SIDEBAR
            ============================================================ -->
       <aside class="sidebar" aria-label="Primary navigation">
+        <div class="sidebar__section-title">Workspace</div>
         <nav class="nav" aria-label="Main navigation">
-          <a class="nav__item" href="#inbox">Inbox</a>
-          <a class="nav__item" href="#project">Project Overview</a>
-          <a class="nav__item" href="#work-items">Work Items</a>
-          <a class="nav__item" href="#runs">Runs</a>
-          <a class="nav__item" href="#approvals">Approvals</a>
-          <a class="nav__item" href="#evidence">Evidence</a>
-          <a class="nav__item" href="#settings">Settings</a>
+          <a class="nav__item" href="#inbox"
+            ><span class="nav__icon">!</span> Inbox
+            <span class="nav__badge nav__badge--warn">5</span></a
+          >
+          <a class="nav__item" href="#project"><span class="nav__icon">#</span> Project Overview</a>
+        </nav>
+
+        <div class="sidebar__section-title">Work</div>
+        <nav class="nav" aria-label="Project navigation">
+          <a class="nav__item" href="#work-items"
+            ><span class="nav__icon">&equiv;</span> Work Items <span class="nav__badge">7</span></a
+          >
+          <a class="nav__item" href="#runs"
+            ><span class="nav__icon">&rsaquo;</span> Runs <span class="nav__badge">1</span></a
+          >
+          <a class="nav__item" href="#workflow-builder"
+            ><span class="nav__icon">&loz;</span> Workflow Builder</a
+          >
+          <a class="nav__item" href="#approvals"
+            ><span class="nav__icon">&check;</span> Approvals
+            <span class="nav__badge nav__badge--warn">2</span></a
+          >
+          <a class="nav__item" href="#evidence"><span class="nav__icon">&sect;</span> Evidence</a>
+        </nav>
+
+        <div class="sidebar__section-title">Configuration</div>
+        <nav class="nav" aria-label="Configuration navigation">
+          <a class="nav__item" href="#agents"
+            ><span class="nav__icon">&diams;</span> Agents
+            <span class="nav__badge nav__badge--danger">1</span></a
+          >
+          <a class="nav__item" href="#settings"><span class="nav__icon">&bull;</span> Settings</a>
         </nav>
 
         <div class="sidebar__section-title">Quick Actions</div>
         <nav class="nav" aria-label="Quick actions">
-          <a class="nav__item js-persona-action-1" href="#work-items">Start workflow</a>
-          <a class="nav__item js-persona-action-2" href="#approvals">Review approvals</a>
+          <a class="nav__item js-persona-action-1" href="#work-items"
+            ><span class="nav__icon">&plus;</span> Start workflow</a
+          >
+          <a class="nav__item js-persona-action-2" href="#approvals"
+            ><span class="nav__icon">&rArr;</span> Review approvals</a
+          >
         </nav>
 
         <div class="sidebar__hint">
@@ -97,7 +127,7 @@
         <div class="sidebar__section-title">Support</div>
         <nav class="nav" aria-label="Help">
           <a class="nav__item" href="#" onclick="return false;" style="font-size: 12px"
-            >Help &amp; Documentation</a
+            ><span class="nav__icon">?</span> Help &amp; Documentation</a
           >
         </nav>
       </aside>
@@ -138,10 +168,16 @@
             </div>
           </div>
 
+          <div class="hero-prompt js-nonempty-inbox">
+            <div class="hero-prompt__text js-hero-inbox-text">
+              A run failed and can be retried. Review it and decide whether to retry or investigate
+              further.
+            </div>
+            <a class="btn btn--primary" href="#run">Review failed run</a>
+          </div>
+
           <div class="filters">
-            <span class="chip chip--active js-filter-persona"
-              >Default filters: failures + blocks</span
-            >
+            <span class="chip chip--active js-filter-persona">Failures + blocks</span>
             <span class="chip">Assigned to me</span>
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Pending approvals</span>
@@ -172,147 +208,220 @@
             </div>
           </div>
 
-          <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
-            <article class="card" data-inbox-section="approvals">
-              <div class="card__title">Pending Approval Gates</div>
-              <div class="card__meta subtle">Approver default: items assigned to me</div>
-              <div class="list">
-                <a class="row js-drawer-trigger" href="#run" data-drawer="ag-wi1099">
-                  <div class="row__main">
-                    <div class="row__title">
-                      Approve Plan: Create Invoice in NetSuite
-                      <span class="tier-badge tier-badge--human">Human-approve</span>
+          <!-- Variant A: Existing card grid layout -->
+          <div class="ab-variant ab-variant--active" data-variant="A" data-variant-screen="inbox">
+            <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
+              <article class="card" data-inbox-section="approvals">
+                <div class="card__title">Pending Approval Gates</div>
+                <div class="card__meta subtle">Approver default: items assigned to me</div>
+                <div class="list">
+                  <a class="row js-drawer-trigger" href="#run" data-drawer="ag-wi1099">
+                    <div class="row__main">
+                      <div class="row__title">
+                        Approve Plan: Create Invoice in NetSuite
+                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                      </div>
+                      <div class="row__subtle">
+                        Project: Billing Governance | WI-1099 | R-8920
+                        <span class="sod-badge">SoD: maker-checker</span>
+                      </div>
                     </div>
-                    <div class="row__subtle">
-                      Project: Billing Governance | WI-1099 | R-8920
-                      <span class="sod-badge">SoD: maker-checker</span>
+                    <div class="row__right"><span class="status status--warn">Pending</span></div>
+                  </a>
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">
+                        Approve Plan: Update Ticket priority in Zendesk
+                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                      </div>
+                      <div class="row__subtle">
+                        Project: Customer Support Ops | WI-1042 | R-8892
+                      </div>
                     </div>
-                  </div>
-                  <div class="row__right"><span class="status status--warn">Pending</span></div>
-                </a>
-                <a class="row" href="#run">
-                  <div class="row__main">
-                    <div class="row__title">
-                      Approve Plan: Update Ticket priority in Zendesk
-                      <span class="tier-badge tier-badge--human">Human-approve</span>
-                    </div>
-                    <div class="row__subtle">Project: Customer Support Ops | WI-1042 | R-8892</div>
-                  </div>
-                  <div class="row__right"><span class="status status--warn">Pending</span></div>
-                </a>
-              </div>
-            </article>
+                    <div class="row__right"><span class="status status--warn">Pending</span></div>
+                  </a>
+                </div>
+              </article>
 
-            <article class="card" data-inbox-section="failures">
-              <div class="card__title">Run Failures</div>
-              <div class="card__meta subtle">Operator default: failures first</div>
-              <div class="list">
-                <a class="row js-drawer-trigger" href="#run" data-drawer="run-failed">
-                  <div class="row__main">
-                    <div class="row__title">Run failed: CRM sync hit rate limit</div>
-                    <div class="row__subtle">
-                      WI-1021 | Update Opportunity
-                      <span class="idem-badge idem-badge--safe">retry-safe</span>
+              <article class="card" data-inbox-section="failures">
+                <div class="card__title">Run Failures</div>
+                <div class="card__meta subtle">Operator default: failures first</div>
+                <div class="list">
+                  <a class="row js-drawer-trigger" href="#run" data-drawer="run-failed">
+                    <div class="row__main">
+                      <div class="row__title">Run failed: CRM sync hit rate limit</div>
+                      <div class="row__subtle">
+                        WI-1021 | Update Opportunity
+                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--danger">Failed</span></div>
+                  </a>
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">Run blocked: missing provider scope</div>
+                      <div class="row__subtle">WI-1103 | Send Email</div>
+                    </div>
+                    <div class="row__right"><span class="status status--danger">Blocked</span></div>
+                  </a>
+                </div>
+              </article>
+            </div>
+
+            <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
+              <article class="card" data-inbox-section="violations">
+                <div class="card__title">Policy Violations</div>
+                <div class="card__meta subtle">Visible to Operators and Admins (RBAC)</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">SoD constraint: maker-checker required</div>
+                      <div class="row__subtle">
+                        Initiator cannot approve. Assign an approver or update policy.
+                      </div>
+                      <div class="row__actions" style="margin-top: 6px; display: flex; gap: 6px">
+                        <a class="btn btn--small btn--primary" href="#work-item">Assign approver</a>
+                        <a class="btn btn--small" href="#settings">Edit policy</a>
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--warn">Needs action</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--danger">Failed</span></div>
-                </a>
-                <a class="row" href="#run">
-                  <div class="row__main">
-                    <div class="row__title">Run blocked: missing provider scope</div>
-                    <div class="row__subtle">WI-1103 | Send Email</div>
+                </div>
+              </article>
+              <!-- Quick Search removed (Fix 2): duplicates topbar search bar -->
+
+              <article class="card" data-inbox-section="evidence" hidden>
+                <div class="card__title">Recent Evidence</div>
+                <div class="card__meta subtle">
+                  Auditor default: latest evidence entries and chain status
+                </div>
+                <div class="list">
+                  <a class="row" href="#evidence" style="text-decoration: none">
+                    <div class="row__main">
+                      <div class="row__title">12 new evidence entries (last 24h)</div>
+                      <div class="row__subtle">
+                        Chain integrity: verified (120-146). No gaps detected.
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Verified</span></div>
+                  </a>
+                  <a class="row" href="#evidence" style="text-decoration: none">
+                    <div class="row__main">
+                      <div class="row__title">2 entries approaching retention expiry</div>
+                      <div class="row__subtle">Category: Approval | 30 days remaining</div>
+                    </div>
+                    <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                  </a>
+                </div>
+              </article>
+
+              <article class="card" data-inbox-section="health" hidden>
+                <div class="card__title">Workspace Health</div>
+                <div class="card__meta subtle">
+                  Admin default: configuration status and diagnostics
+                </div>
+                <div class="list">
+                  <a class="row" href="#settings" style="text-decoration: none">
+                    <div class="row__main">
+                      <div class="row__title">CrmSales: no adapter configured</div>
+                      <div class="row__subtle">
+                        Port family missing provider. Work Items using CRM refs will be blocked.
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--danger">Missing</span></div>
+                  </a>
+                  <a class="row" href="#settings" style="text-decoration: none">
+                    <div class="row__main">
+                      <div class="row__title">NetSuite OAuth credential expiring</div>
+                      <div class="row__subtle">
+                        Expires 2026-03-15. Rotate or renew to avoid disruption.
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                  </a>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">3 of 4 port families configured</div>
+                      <div class="row__subtle">
+                        PaymentsBilling, FinanceAccounting, CustomerSupport: OK
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--ok">Healthy</span></div>
                   </div>
-                  <div class="row__right"><span class="status status--danger">Blocked</span></div>
-                </a>
-              </div>
-            </article>
+                </div>
+              </article>
+            </div>
           </div>
+          <!-- /ab-variant A inbox -->
 
-          <div class="grid grid--2 js-nonempty-inbox js-inbox-grid">
-            <article class="card" data-inbox-section="violations">
-              <div class="card__title">Policy Violations</div>
-              <div class="card__meta subtle">Visible to Operators and Admins (RBAC)</div>
-              <div class="list">
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">SoD constraint: maker-checker required</div>
-                    <div class="row__subtle">
-                      Initiator cannot approve. Assign an approver or update policy.
+          <!-- Variant B: Priority Matrix -->
+          <div class="ab-variant" data-variant="B" data-variant-screen="inbox">
+            <div class="priority-matrix js-nonempty-inbox">
+              <div class="priority-matrix__quadrant priority-matrix__quadrant--ui">
+                <div class="priority-matrix__quadrant-title">Urgent + Important</div>
+                <div class="list">
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">Run failed: CRM sync hit rate limit</div>
+                      <div class="row__subtle">
+                        WI-1021 | <span class="status status--danger">Failed</span>
+                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                      </div>
                     </div>
-                    <div class="row__actions" style="margin-top: 6px; display: flex; gap: 6px">
-                      <a class="btn btn--small btn--primary" href="#work-item">Assign approver</a>
-                      <a class="btn btn--small" href="#settings">Edit policy</a>
+                  </a>
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">Approve Plan: Create Invoice in NetSuite</div>
+                      <div class="row__subtle">
+                        WI-1099 | R-8920 |
+                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row__right">
-                    <span class="status status--warn">Needs action</span>
+                  </a>
+                </div>
+              </div>
+              <div class="priority-matrix__quadrant priority-matrix__quadrant--uni">
+                <div class="priority-matrix__quadrant-title">Urgent + Not Important</div>
+                <div class="list">
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">Run blocked: missing provider scope</div>
+                      <div class="row__subtle">
+                        WI-1103 | <span class="status status--danger">Blocked</span>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+              <div class="priority-matrix__quadrant priority-matrix__quadrant--nui">
+                <div class="priority-matrix__quadrant-title">Not Urgent + Important</div>
+                <div class="list">
+                  <a class="row" href="#run">
+                    <div class="row__main">
+                      <div class="row__title">Approve Plan: Update Ticket priority in Zendesk</div>
+                      <div class="row__subtle">
+                        WI-1042 | R-8892 |
+                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                      </div>
+                    </div>
+                  </a>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Requires different approver</div>
+                      <div class="row__subtle">Assign an approver or update policy.</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </article>
-            <!-- Quick Search removed (Fix 2): duplicates topbar search bar -->
-
-            <article class="card" data-inbox-section="evidence" hidden>
-              <div class="card__title">Recent Evidence</div>
-              <div class="card__meta subtle">
-                Auditor default: latest evidence entries and chain status
+              <div class="priority-matrix__quadrant priority-matrix__quadrant--nuni">
+                <div class="priority-matrix__quadrant-title">Not Urgent + Not Important</div>
+                <div class="subtle" style="padding: 8px 0">No items in this quadrant.</div>
               </div>
-              <div class="list">
-                <a class="row" href="#evidence" style="text-decoration: none">
-                  <div class="row__main">
-                    <div class="row__title">12 new evidence entries (last 24h)</div>
-                    <div class="row__subtle">
-                      Chain integrity: verified (120-146). No gaps detected.
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Verified</span></div>
-                </a>
-                <a class="row" href="#evidence" style="text-decoration: none">
-                  <div class="row__main">
-                    <div class="row__title">2 entries approaching retention expiry</div>
-                    <div class="row__subtle">Category: Approval | 30 days remaining</div>
-                  </div>
-                  <div class="row__right"><span class="status status--warn">Expiring</span></div>
-                </a>
-              </div>
-            </article>
-
-            <article class="card" data-inbox-section="health" hidden>
-              <div class="card__title">Workspace Health</div>
-              <div class="card__meta subtle">
-                Admin default: configuration status and diagnostics
-              </div>
-              <div class="list">
-                <a class="row" href="#settings" style="text-decoration: none">
-                  <div class="row__main">
-                    <div class="row__title">CrmSales: no adapter configured</div>
-                    <div class="row__subtle">
-                      Port family missing provider. Work Items using CRM refs will be blocked.
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--danger">Missing</span></div>
-                </a>
-                <a class="row" href="#settings" style="text-decoration: none">
-                  <div class="row__main">
-                    <div class="row__title">NetSuite OAuth credential expiring</div>
-                    <div class="row__subtle">
-                      Expires 2026-03-15. Rotate or renew to avoid disruption.
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--warn">Expiring</span></div>
-                </a>
-                <div class="row row--static">
-                  <div class="row__main">
-                    <div class="row__title">3 of 4 port families configured</div>
-                    <div class="row__subtle">
-                      PaymentsBilling, FinanceAccounting, CustomerSupport: OK
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--ok">Healthy</span></div>
-                </div>
-              </div>
-            </article>
+            </div>
           </div>
+          <!-- /ab-variant B inbox -->
         </section>
 
         <!-- ============================================================
@@ -338,82 +447,173 @@
             </div>
           </div>
 
-          <div class="grid grid--3">
-            <div class="metric">
-              <div class="metric__label">Work Items needing attention</div>
-              <div class="metric__value">7</div>
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              This project has 7 items that need attention, including 2 failed runs and 4 pending
+              approvals.
             </div>
-            <div class="metric">
-              <div class="metric__label">Runs in progress / failed (24h)</div>
-              <div class="metric__value">3 / 2</div>
-            </div>
-            <div class="metric">
-              <div class="metric__label">Pending approvals</div>
-              <div class="metric__value">4</div>
-            </div>
+            <a class="btn btn--primary" href="#inbox">Go to Inbox</a>
           </div>
 
-          <div class="grid grid--2">
-            <article class="card">
-              <div class="card__title">Health and Risk</div>
-              <div class="card__meta subtle">Execution tier distribution (effective)</div>
-              <div class="bars">
-                <div class="bar">
-                  <span class="bar__label"
-                    ><span class="tier-badge tier-badge--auto">Auto</span></span
-                  >
-                  <span class="bar__fill" style="width: 45%"></span>
-                </div>
-                <div class="bar">
-                  <span class="bar__label"
-                    ><span class="tier-badge tier-badge--assisted">Assisted</span></span
-                  >
-                  <span class="bar__fill" style="width: 30%"></span>
-                </div>
-                <div class="bar">
-                  <span class="bar__label"
-                    ><span class="tier-badge tier-badge--human">Human</span></span
-                  >
-                  <span class="bar__fill" style="width: 20%"></span>
-                </div>
-                <div class="bar">
-                  <span class="bar__label"
-                    ><span class="tier-badge tier-badge--manual">Manual</span></span
-                  >
-                  <span class="bar__fill" style="width: 5%"></span>
-                </div>
+          <!-- Variant A: Existing metrics + cards -->
+          <div class="ab-variant ab-variant--active" data-variant="A" data-variant-screen="project">
+            <div class="grid grid--3">
+              <div class="metric">
+                <div class="metric__label">Work Items needing attention</div>
+                <div class="metric__value">7</div>
               </div>
-              <div class="callout">
-                Top policy issue: Invoices above $10,000 require N-approvers (2).
+              <div class="metric">
+                <div class="metric__label">Runs in progress / failed (24h)</div>
+                <div class="metric__value">3 / 2</div>
               </div>
-            </article>
+              <div class="metric">
+                <div class="metric__label">Pending approvals</div>
+                <div class="metric__value">4</div>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <article class="card">
+                <div class="card__title">Health and Risk</div>
+                <div class="card__meta subtle">Automation level distribution</div>
+                <div class="bars">
+                  <div class="bar">
+                    <span class="bar__label"
+                      ><span class="tier-badge tier-badge--auto">Auto</span></span
+                    ><span class="bar__fill" style="width: 45%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label"
+                      ><span class="tier-badge tier-badge--assisted">Assisted</span></span
+                    ><span class="bar__fill" style="width: 30%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label"
+                      ><span class="tier-badge tier-badge--human">Human</span></span
+                    ><span class="bar__fill" style="width: 20%"></span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label"
+                      ><span class="tier-badge tier-badge--manual">Manual</span></span
+                    ><span class="bar__fill" style="width: 5%"></span>
+                  </div>
+                </div>
+                <div class="callout">
+                  Top policy issue: Invoices above $10,000 require 2 approvers.
+                </div>
+              </article>
+              <article class="card">
+                <div class="card__title">Common Workflows</div>
+                <div class="card__meta subtle">Start common workflows/runbooks</div>
+                <div class="list">
+                  <a class="row" href="#work-item">
+                    <div class="row__main">
+                      <div class="row__title">Start runbook: Invoice correction</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--assisted">Assisted</span> Approval Gate
+                        likely
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Runbook</span></div>
+                  </a>
+                  <a class="row" href="#work-item">
+                    <div class="row__main">
+                      <div class="row__title">Start workflow: Collect payment receipts</div>
+                      <div class="row__subtle">
+                        <span class="tier-badge tier-badge--auto">Auto</span> evidence payloads
+                        stored
+                      </div>
+                    </div>
+                    <div class="row__right"><span class="status status--info">Workflow</span></div>
+                  </a>
+                </div>
+              </article>
+            </div>
+          </div>
+          <!-- /ab-variant A project -->
 
-            <article class="card">
-              <div class="card__title">Quick Actions</div>
-              <div class="card__meta subtle">Start common workflows/runbooks</div>
-              <div class="list">
-                <a class="row" href="#work-item">
-                  <div class="row__main">
-                    <div class="row__title">Start runbook: Invoice correction</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--assisted">Assisted</span> Approval Gate
-                      likely
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--info">Runbook</span></div>
-                </a>
-                <a class="row" href="#work-item">
-                  <div class="row__main">
-                    <div class="row__title">Start workflow: Collect payment receipts</div>
-                    <div class="row__subtle">
-                      <span class="tier-badge tier-badge--auto">Auto</span> evidence payloads stored
-                    </div>
-                  </div>
-                  <div class="row__right"><span class="status status--info">Workflow</span></div>
-                </a>
+          <!-- Variant B: Dashboard with sparklines + heatmap -->
+          <div class="ab-variant" data-variant="B" data-variant-screen="project">
+            <div class="dashboard-grid">
+              <div class="card">
+                <div class="card__title">Runs (7d)</div>
+                <div class="card__meta subtle">Completed vs Failed</div>
+                <div class="metric__value" style="font-size: 22px">14 total</div>
+                <div class="sparkline">
+                  <div class="sparkline__bar" style="height: 60%"></div>
+                  <div class="sparkline__bar" style="height: 80%"></div>
+                  <div class="sparkline__bar sparkline__bar--accent" style="height: 30%"></div>
+                  <div class="sparkline__bar" style="height: 100%"></div>
+                  <div class="sparkline__bar" style="height: 50%"></div>
+                  <div class="sparkline__bar sparkline__bar--accent" style="height: 20%"></div>
+                  <div class="sparkline__bar" style="height: 70%"></div>
+                </div>
+                <div class="subtle" style="margin-top: 6px; font-size: 11px">
+                  Blue = failure | Gray = success
+                </div>
+              </div>
+              <div class="card">
+                <div class="card__title">Approval Throughput (7d)</div>
+                <div class="card__meta subtle">Decisions per day</div>
+                <div class="metric__value" style="font-size: 22px">8 decided</div>
+                <div class="sparkline">
+                  <div class="sparkline__bar" style="height: 40%"></div>
+                  <div class="sparkline__bar" style="height: 70%"></div>
+                  <div class="sparkline__bar" style="height: 50%"></div>
+                  <div class="sparkline__bar" style="height: 90%"></div>
+                  <div class="sparkline__bar" style="height: 30%"></div>
+                  <div class="sparkline__bar" style="height: 60%"></div>
+                  <div class="sparkline__bar" style="height: 80%"></div>
+                </div>
+                <div class="subtle" style="margin-top: 6px; font-size: 11px">Avg latency: 22m</div>
+              </div>
+              <div class="card">
+                <div class="card__title">Evidence Volume (7d)</div>
+                <div class="card__meta subtle">Entries recorded per day</div>
+                <div class="metric__value" style="font-size: 22px">47 entries</div>
+                <div class="sparkline">
+                  <div class="sparkline__bar" style="height: 50%"></div>
+                  <div class="sparkline__bar" style="height: 60%"></div>
+                  <div class="sparkline__bar" style="height: 90%"></div>
+                  <div class="sparkline__bar" style="height: 70%"></div>
+                  <div class="sparkline__bar" style="height: 100%"></div>
+                  <div class="sparkline__bar" style="height: 80%"></div>
+                  <div class="sparkline__bar" style="height: 65%"></div>
+                </div>
+                <div class="subtle" style="margin-top: 6px; font-size: 11px">
+                  Audit log: OK | No gaps
+                </div>
+              </div>
+            </div>
+            <article class="card" style="margin-top: 12px">
+              <div class="card__title">Risk Heatmap (by Integration)</div>
+              <div class="card__meta subtle">
+                Color intensity = open issues (failures + blocks + policy violations)
+              </div>
+              <div class="heatmap">
+                <div class="heatmap__cell heatmap__cell--high">
+                  <span class="heatmap__cell-value">3</span
+                  ><span class="heatmap__cell-label">CRM Sales</span
+                  ><span class="subtle" style="font-size: 10px">No adapter</span>
+                </div>
+                <div class="heatmap__cell heatmap__cell--medium">
+                  <span class="heatmap__cell-value">2</span
+                  ><span class="heatmap__cell-label">Finance</span
+                  ><span class="subtle" style="font-size: 10px">Cred expiring</span>
+                </div>
+                <div class="heatmap__cell heatmap__cell--low">
+                  <span class="heatmap__cell-value">0</span
+                  ><span class="heatmap__cell-label">Payments</span
+                  ><span class="subtle" style="font-size: 10px">Healthy</span>
+                </div>
+                <div class="heatmap__cell heatmap__cell--low">
+                  <span class="heatmap__cell-value">0</span
+                  ><span class="heatmap__cell-label">Support</span
+                  ><span class="subtle" style="font-size: 10px">Healthy</span>
+                </div>
               </div>
             </article>
           </div>
+          <!-- /ab-variant B project -->
         </section>
 
         <!-- ============================================================
@@ -435,12 +635,19 @@
             </div>
           </div>
 
+          <div class="hero-prompt js-nonempty-workitems">
+            <div class="hero-prompt__text">
+              You have 7 work items. 1 needs approval and 1 has a failed run. Start from the top.
+            </div>
+            <a class="btn btn--primary" href="#work-item">Open top item</a>
+          </div>
+
           <div class="filters">
             <span class="chip chip--active">Assigned to me</span>
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Has pending approvals</span>
             <span class="chip">Has failed runs</span>
-            <span class="chip">Port Family: PaymentsBilling</span>
+            <span class="chip">Category: Payments &amp; Billing</span>
           </div>
 
           <div class="empty js-empty-workitems" hidden>
@@ -455,78 +662,148 @@
             </div>
           </div>
 
-          <div class="table-wrap js-nonempty-workitems">
-            <table class="table" aria-label="Work Items table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Tier</th>
-                  <th>Owner</th>
-                  <th>SoR Refs</th>
-                  <th>Latest Run</th>
-                  <th>Drift</th>
-                  <th>Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099"
-                      >WI-1099 Invoice correction for ACME</a
-                    >
-                  </td>
-                  <td><span class="status status--warn">Needs approval</span></td>
-                  <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
-                  <td>Me</td>
-                  <td>
-                    <span class="chip"><span class="port-icon">FA</span> NetSuite</span>
-                    <span class="chip"><span class="port-icon">PB</span> Stripe</span>
-                  </td>
-                  <td><span class="status status--warn">Paused</span></td>
-                  <td></td>
-                  <td>5m</td>
-                </tr>
-                <tr>
-                  <td><a href="#work-item">WI-1042 Dispute: investigate payment failure</a></td>
-                  <td><span class="status status--info">In progress</span></td>
-                  <td><span class="tier-badge tier-badge--assisted">Assisted</span></td>
-                  <td class="js-owner-unassigned">Unassigned</td>
-                  <td>
-                    <span class="chip"><span class="port-icon">PB</span> Stripe</span>
-                  </td>
-                  <td><span class="status status--info">Running</span></td>
-                  <td></td>
-                  <td>18m</td>
-                </tr>
-                <tr>
-                  <td><a href="#work-item">WI-1013 Receipt export for audit period</a></td>
-                  <td><span class="status">Open</span></td>
-                  <td><span class="tier-badge tier-badge--auto">Auto</span></td>
-                  <td>Me</td>
-                  <td>
-                    <span class="chip"><span class="port-icon">PB</span> Stripe</span>
-                    <span class="chip"><span class="port-icon">DM</span> Drive</span>
-                  </td>
-                  <td><span class="status">None</span></td>
-                  <td></td>
-                  <td>2d</td>
-                </tr>
-                <tr>
-                  <td><a href="#work-item">WI-1105 Sync Salesforce contacts</a></td>
-                  <td><span class="status status--ok">Completed</span></td>
-                  <td><span class="tier-badge tier-badge--auto">Auto</span></td>
-                  <td>Me</td>
-                  <td>
-                    <span class="chip"><span class="port-icon">CS</span> Salesforce</span>
-                  </td>
-                  <td><span class="status status--ok">Succeeded</span></td>
-                  <td><span class="drift-badge">drift</span></td>
-                  <td>1d</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Variant A: Table view -->
+          <div
+            class="ab-variant ab-variant--active"
+            data-variant="A"
+            data-variant-screen="work-items"
+          >
+            <div class="table-wrap js-nonempty-workitems">
+              <table class="table" aria-label="Work Items table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Tier</th>
+                    <th>Owner</th>
+                    <th>Linked Systems</th>
+                    <th>Latest Run</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099"
+                        >WI-1099 Invoice correction for ACME</a
+                      >
+                    </td>
+                    <td><span class="status status--warn">Needs approval</span></td>
+                    <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
+                    <td>Me</td>
+                    <td>
+                      <span class="chip"><span class="port-icon">FA</span> NetSuite</span>
+                      <span class="chip"><span class="port-icon">PB</span> Stripe</span>
+                    </td>
+                    <td><span class="status status--warn">Paused</span></td>
+                    <td>5m</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#work-item">WI-1042 Dispute: investigate payment failure</a></td>
+                    <td><span class="status status--info">In progress</span></td>
+                    <td><span class="tier-badge tier-badge--assisted">Assisted</span></td>
+                    <td class="js-owner-unassigned">Unassigned</td>
+                    <td>
+                      <span class="chip"><span class="port-icon">PB</span> Stripe</span>
+                    </td>
+                    <td><span class="status status--info">Running</span></td>
+                    <td>18m</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#work-item">WI-1013 Receipt export for audit period</a></td>
+                    <td><span class="status">Open</span></td>
+                    <td><span class="tier-badge tier-badge--auto">Auto</span></td>
+                    <td>Me</td>
+                    <td>
+                      <span class="chip"><span class="port-icon">PB</span> Stripe</span>
+                      <span class="chip"><span class="port-icon">DM</span> Drive</span>
+                    </td>
+                    <td><span class="status">None</span></td>
+                    <td>2d</td>
+                  </tr>
+                  <tr>
+                    <td><a href="#work-item">WI-1105 Sync Salesforce contacts</a></td>
+                    <td>
+                      <span class="status status--ok">Completed</span>
+                      <span class="drift-badge">drift</span>
+                    </td>
+                    <td><span class="tier-badge tier-badge--auto">Auto</span></td>
+                    <td>Me</td>
+                    <td>
+                      <span class="chip"><span class="port-icon">CS</span> Salesforce</span>
+                    </td>
+                    <td><span class="status status--ok">Succeeded</span></td>
+                    <td>1d</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+          <!-- /ab-variant A work-items -->
+
+          <!-- Variant B: Kanban Board -->
+          <div class="ab-variant" data-variant="B" data-variant-screen="work-items">
+            <div class="kanban js-nonempty-workitems">
+              <div class="kanban__column">
+                <div class="kanban__column-title">
+                  Open <span class="kanban__column-count">1</span>
+                </div>
+                <a class="kanban__card" href="#work-item">
+                  <div class="kanban__card-title">WI-1013 Receipt export for audit period</div>
+                  <div class="kanban__card-meta">
+                    <span class="tier-badge tier-badge--auto">Auto</span>
+                    <span class="chip" style="font-size: 11px; padding: 3px 6px"
+                      ><span class="port-icon">PB</span> Stripe</span
+                    >
+                  </div>
+                </a>
+              </div>
+              <div class="kanban__column">
+                <div class="kanban__column-title">
+                  In Progress <span class="kanban__column-count">1</span>
+                </div>
+                <a class="kanban__card" href="#work-item">
+                  <div class="kanban__card-title">WI-1042 Dispute: investigate payment failure</div>
+                  <div class="kanban__card-meta">
+                    <span class="tier-badge tier-badge--assisted">Assisted</span>
+                    <span class="status status--info" style="font-size: 11px; padding: 3px 6px"
+                      >Running</span
+                    >
+                  </div>
+                </a>
+              </div>
+              <div class="kanban__column">
+                <div class="kanban__column-title">
+                  Blocked <span class="kanban__column-count">1</span>
+                </div>
+                <a class="kanban__card" href="#work-item">
+                  <div class="kanban__card-title">WI-1099 Invoice correction for ACME</div>
+                  <div class="kanban__card-meta">
+                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                    <span class="status status--warn" style="font-size: 11px; padding: 3px 6px"
+                      >Needs approval</span
+                    >
+                  </div>
+                </a>
+              </div>
+              <div class="kanban__column">
+                <div class="kanban__column-title">
+                  Done <span class="kanban__column-count">1</span>
+                </div>
+                <a class="kanban__card" href="#work-item">
+                  <div class="kanban__card-title">WI-1105 Sync Salesforce contacts</div>
+                  <div class="kanban__card-meta">
+                    <span class="tier-badge tier-badge--auto">Auto</span>
+                    <span class="status status--ok" style="font-size: 11px; padding: 3px 6px"
+                      >Completed</span
+                    >
+                    <span class="drift-badge">drift</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- /ab-variant B work-items -->
         </section>
 
         <!-- ============================================================
@@ -642,7 +919,7 @@
             </div>
             <div class="screen__actions">
               <a class="btn btn--primary" href="#run">Start workflow/runbook</a>
-              <button class="btn" type="button">Attach ExternalObjectRef</button>
+              <button class="btn" type="button">Link external record</button>
               <button class="btn js-drawer-trigger" type="button" data-drawer="wi-1099">
                 Context
               </button>
@@ -673,9 +950,9 @@
           <!-- Tabs (Timeline, Runs, Approvals, Evidence) -->
           <div class="tabs" role="tablist" aria-label="Work Item tabs">
             <button class="tab tab--active" type="button" data-tab="timeline">Timeline</button>
-            <button class="tab" type="button" data-tab="runs">Runs</button>
-            <button class="tab" type="button" data-tab="approvals">Approvals</button>
-            <button class="tab" type="button" data-tab="evidence">Evidence</button>
+            <button class="tab" type="button" data-tab="runs">Runs (1)</button>
+            <button class="tab" type="button" data-tab="approvals">Approvals (1)</button>
+            <button class="tab" type="button" data-tab="evidence">Evidence (12)</button>
           </div>
 
           <div class="tabpanes">
@@ -930,6 +1207,7 @@
                 <label class="field">
                   <span class="field__label">Decision</span>
                   <select class="field__input">
+                    <option value="" disabled selected>Select decision...</option>
                     <option>Approve</option>
                     <option>Deny</option>
                     <option>Request changes</option>
@@ -943,13 +1221,13 @@
                     placeholder="Explain why this Plan is acceptable or not."
                   ></textarea>
                 </label>
+                <div class="outcome-preview">
+                  After approval: Run will resume automatically. 1 more approver needed (requires a
+                  different approver).
+                </div>
                 <div class="form__actions">
                   <button class="btn btn--primary" type="button">Submit decision</button>
                   <a class="btn" href="#work-item">Back to Work Item</a>
-                </div>
-                <div class="outcome-preview">
-                  After approval: Run will resume automatically. 1 more approver needed (SoD:
-                  maker-checker).
                 </div>
               </div>
             </article>
@@ -1004,13 +1282,31 @@
             </div>
           </div>
 
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              You have 2 approvals waiting for your decision. Review each plan and decide.
+            </div>
+            <div class="triage-toggle">
+              <button class="btn btn--small js-triage-mode" type="button" data-mode="table">
+                Table view
+              </button>
+              <button
+                class="btn btn--small btn--primary js-triage-mode"
+                type="button"
+                data-mode="triage"
+              >
+                Triage view
+              </button>
+            </div>
+          </div>
+
           <div class="filters">
             <span class="chip chip--active">Assigned to me</span>
             <span class="chip">Project: Billing Governance</span>
             <span class="chip">Status: Pending</span>
           </div>
 
-          <div class="table-wrap">
+          <div class="table-wrap js-approvals-table">
             <table class="table" aria-label="Approvals table">
               <thead>
                 <tr>
@@ -1050,37 +1346,229 @@
             After deciding, the queue advances to the next pending gate.
           </div>
 
-          <!-- Inline Plan Review Block for focused review mode -->
-          <article class="card" style="margin-top: 12px">
-            <div class="card__title">Focused Review: WI-1099 / R-8920</div>
-            <div class="card__meta subtle">Review the Plan before deciding</div>
-            <div class="effects">
-              <div class="effects__section">
-                <div class="effects__title">Planned Effects</div>
-                <div class="effects__list">
-                  <div class="effect">
-                    <div class="effect__main">
+          <!-- TRIAGE VIEW (hidden by default, toggled via JS) -->
+          <div class="triage" id="triage" hidden>
+            <div class="triage__progress">
+              <div class="triage__progress-bar">
+                <div class="triage__progress-fill" style="width: 0%"></div>
+              </div>
+              <div class="triage__progress-text">
+                <span class="triage__current">1</span> of
+                <span class="triage__total">2</span> pending
+              </div>
+            </div>
+
+            <div class="triage__stack">
+              <article class="triage-card" id="triageCard">
+                <div class="triage-card__front">
+                  <div class="triage-card__header">
+                    <div class="triage-card__id">AG-442</div>
+                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                    <span class="sod-badge">Requires different approver</span>
+                  </div>
+                  <h2 class="triage-card__title">Approve Plan: Create Invoice in NetSuite</h2>
+                  <div class="triage-card__meta">
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Work Item</span>
+                      <span>WI-1099 Invoice correction for ACME</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Run</span>
+                      <span>R-8920 (paused)</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requester</span>
+                      <span>operator@acme.com</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requested</span>
+                      <span>12 minutes ago</span>
+                    </div>
+                  </div>
+                  <div class="triage-card__effects-summary">
+                    <div class="triage-card__label">Planned Effects (2)</div>
+                    <div class="triage-card__effect-row">
                       <span class="pill">Update</span>
-                      <span class="effect__target">NetSuite | Invoice | INV-22318</span>
+                      <span>NetSuite | Invoice | INV-22318</span>
+                      <span class="idem-badge idem-badge--safe">retry-safe</span>
                     </div>
-                    <div class="effect__subtle">Update memo and line item classification.</div>
-                  </div>
-                  <div class="effect">
-                    <div class="effect__main">
+                    <div class="triage-card__effect-row">
                       <span class="pill">Create</span>
-                      <span class="effect__target">Drive | Document | Receipt bundle</span>
+                      <span>Drive | Document | Receipt bundle</span>
+                      <span class="idem-badge idem-badge--safe">retry-safe</span>
                     </div>
-                    <div class="effect__subtle">Create evidence artifact for audit trail.</div>
                   </div>
+                  <div class="callout callout--policy">
+                    Tier: <strong>Human-approve</strong> | Rule: Invoice writes &gt; $10,000 |
+                    Required approvers: 2 | Scopes: netsuite.write, drive.write
+                  </div>
+                  <button
+                    class="btn btn--small triage-card__expand-btn js-triage-expand"
+                    type="button"
+                  >
+                    Show full details (Space)
+                  </button>
+                </div>
+                <div class="triage-card__back" hidden>
+                  <button
+                    class="btn btn--small triage-card__collapse-btn js-triage-collapse"
+                    type="button"
+                  >
+                    Collapse details (Space)
+                  </button>
+                  <div class="effects">
+                    <div class="effects__section">
+                      <div class="effects__title">Planned Effects</div>
+                      <div class="effects__hint subtle">This workflow will...</div>
+                      <div class="effects__list">
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill">Update</span>
+                            <span class="effect__target">NetSuite | Invoice | INV-22318</span>
+                            <span class="idem-badge idem-badge--safe">retry-safe</span>
+                          </div>
+                          <div class="effect__subtle">
+                            Update memo and line item classification.
+                          </div>
+                        </div>
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill">Create</span>
+                            <span class="effect__target">Drive | Document | Receipt bundle</span>
+                            <span class="idem-badge idem-badge--safe">retry-safe</span>
+                          </div>
+                          <div class="effect__subtle">
+                            Create evidence artifact for audit trail.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Linked External Records</div>
+                    <div class="chips" style="margin-top: 6px">
+                      <span class="chip"
+                        ><span class="port-icon">FA</span> NetSuite | Invoice | INV-22318</span
+                      >
+                      <span class="chip"
+                        ><span class="port-icon">PB</span> Stripe | Charge | ch_9d2a</span
+                      >
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Recent Evidence (2 entries)</div>
+                    <div class="list" style="margin-top: 6px">
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Plan recorded (hash chained)</div>
+                          <div class="row__subtle">Category: Plan | Actor: User</div>
+                        </div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Approval Gate opened</div>
+                          <div class="row__subtle">Category: Approval | Actor: System</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <div class="triage__next-preview">
+                <div class="triage__next-title">
+                  Next: Approve Plan: Update Ticket priority in Zendesk
                 </div>
               </div>
             </div>
-            <div class="callout callout--policy" style="margin-top: 10px">
-              <span class="tier-badge tier-badge--human">Human-approve</span>
-              <span class="sod-badge" style="margin-left: 6px">SoD: maker-checker</span>
-              Required approvers: 2 | Scopes: netsuite.write, drive.write
+
+            <div class="triage__rationale" id="triageRationale" hidden>
+              <label class="field">
+                <span class="field__label" id="triageRationaleLabel"
+                  >Rationale (required for deny)</span
+                >
+                <textarea
+                  class="field__input"
+                  id="triageRationaleInput"
+                  rows="3"
+                  placeholder="Explain your decision..."
+                ></textarea>
+              </label>
+              <div class="triage__rationale-actions">
+                <button
+                  class="btn btn--primary btn--small"
+                  id="triageRationaleSubmit"
+                  type="button"
+                >
+                  Confirm decision
+                </button>
+                <button class="btn btn--small" id="triageRationaleCancel" type="button">
+                  Cancel
+                </button>
+              </div>
             </div>
-          </article>
+
+            <div class="triage__actions">
+              <button
+                class="triage__action triage__action--deny"
+                type="button"
+                data-action="deny"
+                aria-label="Deny (D)"
+              >
+                <span class="triage__action-icon">&#10005;</span>
+                <span class="triage__action-label">Deny</span>
+                <kbd class="triage__kbd">D</kbd>
+              </button>
+              <button
+                class="triage__action triage__action--changes"
+                type="button"
+                data-action="changes"
+                aria-label="Request Changes (R)"
+              >
+                <span class="triage__action-icon">&#8634;</span>
+                <span class="triage__action-label">Changes</span>
+                <kbd class="triage__kbd">R</kbd>
+              </button>
+              <button
+                class="triage__action triage__action--skip"
+                type="button"
+                data-action="skip"
+                aria-label="Skip (S)"
+              >
+                <span class="triage__action-icon">&#8628;</span>
+                <span class="triage__action-label">Skip</span>
+                <kbd class="triage__kbd">S</kbd>
+              </button>
+              <button
+                class="triage__action triage__action--approve"
+                type="button"
+                data-action="approve"
+                aria-label="Approve (A)"
+              >
+                <span class="triage__action-icon">&#10003;</span>
+                <span class="triage__action-label">Approve</span>
+                <kbd class="triage__kbd">A</kbd>
+              </button>
+            </div>
+            <div class="triage__hint subtle">
+              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle details
+            </div>
+          </div>
+
+          <div class="triage__complete" id="triageComplete" hidden>
+            <div class="empty">
+              <div class="empty__title">All caught up</div>
+              <div class="empty__body">You have reviewed all pending approval gates.</div>
+              <div class="triage__complete-stats">
+                <span class="status status--ok">8 approved</span>
+                <span class="status status--danger">2 denied</span>
+                <span class="status status--warn">1 changes requested</span>
+                <span class="status">1 skipped</span>
+              </div>
+              <div class="empty__actions" style="margin-top: 12px">
+                <a class="btn btn--primary" href="#inbox">Back to Inbox</a>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- ============================================================
@@ -1452,6 +1940,662 @@
                 </div>
               </div>
             </article>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: WORKFLOW BUILDER
+             ============================================================ -->
+        <section
+          id="screen-workflow-builder"
+          class="screen"
+          data-screen="workflow-builder"
+          aria-labelledby="h-workflow-builder"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-workflow-builder" class="h1">Workflow Builder</h1>
+              <div class="subtle">Invoice Correction Workflow (draft)</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--small" type="button">Undo</button>
+              <button class="btn btn--small" type="button">Redo</button>
+              <button class="btn" type="button">Save draft</button>
+              <button class="btn btn--primary" type="button">Run workflow</button>
+            </div>
+          </div>
+
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Build your workflow by connecting steps. Click any node to configure it.
+            </div>
+          </div>
+
+          <div class="wf-layout">
+            <aside class="wf-palette">
+              <div class="wf-palette__title">Step Types</div>
+              <div class="wf-palette__hint subtle">Click to add to canvas</div>
+              <div class="wf-palette__list">
+                <button class="wf-palette__item" type="button" data-step-type="action">
+                  <span class="wf-node-icon wf-node-icon--action">&#9889;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Action</div>
+                    <div class="wf-palette__item-desc">Execute adapter write</div>
+                  </div>
+                </button>
+                <button class="wf-palette__item" type="button" data-step-type="approval">
+                  <span class="wf-node-icon wf-node-icon--approval">&#9730;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Approval Gate</div>
+                    <div class="wf-palette__item-desc">Pause for human decision</div>
+                  </div>
+                </button>
+                <button class="wf-palette__item" type="button" data-step-type="condition">
+                  <span class="wf-node-icon wf-node-icon--condition">&#9670;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Condition</div>
+                    <div class="wf-palette__item-desc">Branch logic (if/else)</div>
+                  </div>
+                </button>
+                <button class="wf-palette__item" type="button" data-step-type="notification">
+                  <span class="wf-node-icon wf-node-icon--notification">&#128276;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Notification</div>
+                    <div class="wf-palette__item-desc">Send alert or message</div>
+                  </div>
+                </button>
+                <button class="wf-palette__item" type="button" data-step-type="agent">
+                  <span class="wf-node-icon wf-node-icon--agent">&#129504;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Agent Task</div>
+                    <div class="wf-palette__item-desc">Delegate to AI agent</div>
+                  </div>
+                </button>
+              </div>
+            </aside>
+
+            <div class="wf-canvas" id="wfCanvas">
+              <div class="wf-canvas__controls">
+                <button class="btn btn--small" type="button" title="Zoom in">+</button>
+                <button class="btn btn--small" type="button" title="Zoom out">&minus;</button>
+                <button class="btn btn--small" type="button" title="Fit to view">Fit</button>
+              </div>
+              <div class="wf-graph" id="wfGraph">
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: Manual</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="fetch">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Fetch Invoice</span>
+                    </div>
+                    <div class="wf-node__meta subtle">
+                      <span class="port-icon" style="font-size: 9px">FA</span> NetSuite | Read
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                        >Action</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--condition" data-node-id="check-amount">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
+                      ><span class="wf-node__name">Amount > $10k?</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status" style="font-size: 10px; padding: 2px 6px"
+                        >Condition</span
+                      >
+                    </div>
+                    <div class="wf-node__branches">
+                      <span class="wf-branch-label wf-branch-label--yes">Yes</span
+                      ><span class="wf-branch-label wf-branch-label--no">No</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="wf-graph__branches">
+                  <div class="wf-graph__branch wf-graph__branch--yes">
+                    <div class="wf-connector wf-connector--vertical">
+                      <div class="wf-connector__line wf-connector__line--vertical"></div>
+                    </div>
+                    <div class="wf-graph__row">
+                      <div
+                        class="wf-node wf-node--approval wf-node--selected"
+                        data-node-id="approve"
+                      >
+                        <div class="wf-node__header">
+                          <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
+                          ><span class="wf-node__name">Approval Gate</span>
+                        </div>
+                        <div class="wf-node__meta subtle">
+                          <span
+                            class="tier-badge tier-badge--human"
+                            style="font-size: 9px; padding: 1px 5px"
+                            >Human-approve</span
+                          ><span class="sod-badge" style="font-size: 9px; padding: 1px 5px"
+                            >SoD</span
+                          >
+                        </div>
+                        <div class="wf-node__status">
+                          <span
+                            class="status status--warn"
+                            style="font-size: 10px; padding: 2px 6px"
+                            >Gate</span
+                          >
+                        </div>
+                      </div>
+                      <div class="wf-connector">
+                        <div class="wf-connector__line"></div>
+                        <div class="wf-connector__arrow">&#8250;</div>
+                      </div>
+                      <div class="wf-node wf-node--agent" data-node-id="classify">
+                        <div class="wf-node__header">
+                          <span class="wf-node-icon wf-node-icon--agent">&#129504;</span
+                          ><span class="wf-node__name">Classify Line Items</span>
+                        </div>
+                        <div class="wf-node__meta subtle">Agent: Claude | Prompt: classify</div>
+                        <div class="wf-node__status">
+                          <span
+                            class="status status--info"
+                            style="font-size: 10px; padding: 2px 6px"
+                            >Agent</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="wf-graph__branch wf-graph__branch--no">
+                    <div class="wf-connector wf-connector--vertical">
+                      <div class="wf-connector__line wf-connector__line--vertical"></div>
+                    </div>
+                    <div class="wf-graph__row">
+                      <div class="wf-node wf-node--notification" data-node-id="notify-skip">
+                        <div class="wf-node__header">
+                          <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
+                          ><span class="wf-node__name">Notify: Auto-approved</span>
+                        </div>
+                        <div class="wf-node__meta subtle">Channel: Slack | #billing-ops</div>
+                        <div class="wf-node__status">
+                          <span class="status" style="font-size: 10px; padding: 2px 6px"
+                            >Notify</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="update-invoice">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Update Invoice</span>
+                    </div>
+                    <div class="wf-node__meta subtle">
+                      <span class="port-icon" style="font-size: 9px">FA</span> NetSuite | Write
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        style="font-size: 8px; padding: 1px 4px"
+                        >retry-safe</span
+                      >
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                        >Action</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="evidence">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Create Evidence Bundle</span>
+                    </div>
+                    <div class="wf-node__meta subtle">
+                      <span class="port-icon" style="font-size: 9px">DM</span> Drive | Write
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                        >Action</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Complete</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="wf-config" id="wfConfig">
+              <div class="wf-config__title">Approval Gate</div>
+              <div class="wf-config__subtitle subtle">Configure step: approve</div>
+              <div class="form" style="margin-top: 12px">
+                <label class="field"
+                  ><span class="field__label">Step Name</span
+                  ><input class="field__input" type="text" value="Approval Gate"
+                /></label>
+                <label class="field"
+                  ><span class="field__label">Automation Level</span>
+                  <select class="field__input">
+                    <option>Auto</option>
+                    <option>Assisted</option>
+                    <option selected>Human-approve</option>
+                    <option>Manual-only</option>
+                  </select>
+                </label>
+                <label class="field"
+                  ><span class="field__label">Required Approvers</span
+                  ><input class="field__input" type="number" value="2" min="1" max="10"
+                /></label>
+                <label class="field"
+                  ><span class="field__label">Separation of Duties</span>
+                  <select class="field__input">
+                    <option selected>Maker-checker</option>
+                    <option>None</option>
+                    <option>N-of-M</option>
+                  </select>
+                </label>
+                <label class="field"
+                  ><span class="field__label">Timeout</span>
+                  <select class="field__input">
+                    <option>No timeout</option>
+                    <option>1 hour</option>
+                    <option selected>24 hours</option>
+                    <option>7 days</option>
+                  </select>
+                </label>
+                <label class="field"
+                  ><span class="field__label">On Timeout</span>
+                  <select class="field__input">
+                    <option selected>Escalate</option>
+                    <option>Auto-deny</option>
+                    <option>Auto-approve</option>
+                  </select>
+                </label>
+              </div>
+              <div class="callout" style="margin-top: 12px">
+                This step will pause the run and require <strong>2 approvers</strong> before
+                continuing. The maker-checker constraint prevents self-approval.
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: AGENTS
+             ============================================================ -->
+        <section id="screen-agents" class="screen" data-screen="agents" aria-labelledby="h-agents">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-agents" class="h1">Agents</h1>
+              <div class="subtle">AI agents participating in workflows</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button">Add agent</button>
+            </div>
+          </div>
+
+          <div class="hero-prompt">
+            <div class="hero-prompt__text">
+              Configure AI agents that classify data, generate documents, or analyze patterns in
+              your workflows.
+            </div>
+          </div>
+
+          <div class="agent-layout">
+            <div class="agent-list">
+              <article class="agent-card agent-card--selected" data-agent-id="claude-classify">
+                <div class="agent-card__header">
+                  <span class="agent-card__provider agent-card__provider--claude">C</span>
+                  <div>
+                    <div class="agent-card__name">Invoice Classifier</div>
+                    <div class="agent-card__model subtle">Claude Sonnet 4.5</div>
+                  </div>
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >Active</span
+                  >
+                </div>
+                <div class="agent-card__stats">
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">142</span
+                    ><span class="agent-card__stat-label">runs (7d)</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">96%</span
+                    ><span class="agent-card__stat-label">success</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">1.2s</span
+                    ><span class="agent-card__stat-label">avg time</span>
+                  </div>
+                </div>
+              </article>
+              <article class="agent-card" data-agent-id="openai-summarize">
+                <div class="agent-card__header">
+                  <span class="agent-card__provider agent-card__provider--openai">O</span>
+                  <div>
+                    <div class="agent-card__name">Document Summarizer</div>
+                    <div class="agent-card__model subtle">GPT-4o</div>
+                  </div>
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >Active</span
+                  >
+                </div>
+                <div class="agent-card__stats">
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">58</span
+                    ><span class="agent-card__stat-label">runs (7d)</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">91%</span
+                    ><span class="agent-card__stat-label">success</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">3.4s</span
+                    ><span class="agent-card__stat-label">avg time</span>
+                  </div>
+                </div>
+              </article>
+              <article class="agent-card" data-agent-id="custom-validator">
+                <div class="agent-card__header">
+                  <span class="agent-card__provider agent-card__provider--custom">X</span>
+                  <div>
+                    <div class="agent-card__name">Policy Validator</div>
+                    <div class="agent-card__model subtle">Custom endpoint</div>
+                  </div>
+                  <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                    >Error</span
+                  >
+                </div>
+                <div class="agent-card__stats">
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">0</span
+                    ><span class="agent-card__stat-label">runs (7d)</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">--</span
+                    ><span class="agent-card__stat-label">success</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">--</span
+                    ><span class="agent-card__stat-label">avg time</span>
+                  </div>
+                </div>
+                <div class="agent-card__error">
+                  Connection failed: endpoint returned 502. Last checked 5m ago.
+                </div>
+              </article>
+              <article class="agent-card" data-agent-id="claude-draft">
+                <div class="agent-card__header">
+                  <span class="agent-card__provider agent-card__provider--claude">C</span>
+                  <div>
+                    <div class="agent-card__name">Draft Generator</div>
+                    <div class="agent-card__model subtle">Claude Haiku 4.5</div>
+                  </div>
+                  <span class="status" style="font-size: 10px; padding: 2px 6px">Inactive</span>
+                </div>
+                <div class="agent-card__stats">
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">0</span
+                    ><span class="agent-card__stat-label">runs (7d)</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">--</span
+                    ><span class="agent-card__stat-label">success</span>
+                  </div>
+                  <div class="agent-card__stat">
+                    <span class="agent-card__stat-value">--</span
+                    ><span class="agent-card__stat-label">avg time</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="agent-detail" id="agentDetail">
+              <div class="agent-detail__header">
+                <div>
+                  <h2 class="agent-detail__name">Invoice Classifier</h2>
+                  <div class="subtle">Agent: claude-classify</div>
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btn--small" type="button">Test connection</button>
+                  <button class="btn btn--small" type="button">Deactivate</button>
+                </div>
+              </div>
+              <div class="integrity-banner integrity-banner--ok" style="margin: 12px 0">
+                Connection healthy. Last test: 2m ago (latency: 180ms).
+              </div>
+
+              <div class="tabs" role="tablist" aria-label="Agent tabs">
+                <button class="tab tab--active" type="button" data-tab="agent-config">
+                  Configuration
+                </button>
+                <button class="tab" type="button" data-tab="agent-usage">Usage</button>
+                <button class="tab" type="button" data-tab="agent-integrations">
+                  Integrations
+                </button>
+              </div>
+              <div class="tabpanes" style="margin-top: 10px">
+                <div class="tabpane tabpane--active" data-pane="agent-config">
+                  <div class="form">
+                    <label class="field"
+                      ><span class="field__label">Agent Name</span
+                      ><input class="field__input" type="text" value="Invoice Classifier"
+                    /></label>
+                    <label class="field"
+                      ><span class="field__label">Provider</span>
+                      <select class="field__input">
+                        <option selected>Anthropic (Claude)</option>
+                        <option>OpenAI</option>
+                        <option>Custom endpoint</option>
+                      </select>
+                    </label>
+                    <label class="field"
+                      ><span class="field__label">Model</span>
+                      <select class="field__input">
+                        <option>Claude Opus 4.6</option>
+                        <option selected>Claude Sonnet 4.5</option>
+                        <option>Claude Haiku 4.5</option>
+                      </select>
+                    </label>
+                    <label class="field"
+                      ><span class="field__label">Temperature</span
+                      ><input
+                        class="field__input"
+                        type="number"
+                        value="0.1"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                    /></label>
+                    <label class="field"
+                      ><span class="field__label">Max Tokens</span
+                      ><input class="field__input" type="number" value="4096" min="1" max="200000"
+                    /></label>
+                  </div>
+                  <div style="margin-top: 16px">
+                    <div class="agent-section-title">Capabilities</div>
+                    <div class="agent-capabilities">
+                      <label class="agent-capability"
+                        ><input type="checkbox" checked /> Read external records</label
+                      >
+                      <label class="agent-capability"
+                        ><input type="checkbox" checked /> Classify / categorize</label
+                      >
+                      <label class="agent-capability"
+                        ><input type="checkbox" /> Write external records</label
+                      >
+                      <label class="agent-capability"
+                        ><input type="checkbox" /> Generate documents</label
+                      >
+                      <label class="agent-capability"
+                        ><input type="checkbox" checked /> Analyze data</label
+                      >
+                      <label class="agent-capability"><input type="checkbox" /> Execute code</label>
+                    </div>
+                  </div>
+                  <div style="margin-top: 16px">
+                    <div class="agent-section-title">Permissions</div>
+                    <div class="callout" style="margin-top: 6px">
+                      This agent can access data from: <strong>Finance</strong>,
+                      <strong>Payments</strong>. It cannot write to any external system directly.
+                    </div>
+                    <div class="chips" style="margin-top: 8px">
+                      <span class="chip"><span class="port-icon">FA</span> Finance (read)</span>
+                      <span class="chip"><span class="port-icon">PB</span> Payments (read)</span>
+                    </div>
+                  </div>
+                  <div style="margin-top: 16px">
+                    <div class="agent-section-title">Prompt Template</div>
+                    <label class="field" style="margin-top: 6px"
+                      ><span class="field__label">System prompt</span>
+                      <textarea class="field__input" rows="5">
+You are an invoice classification agent for Portarium. Given an invoice record, classify each line item into the correct accounting category. Return a JSON array of {lineItemId, category, confidence}.</textarea
+                      >
+                    </label>
+                  </div>
+                  <div class="form__actions" style="margin-top: 16px">
+                    <button class="btn btn--primary" type="button">Save changes</button>
+                    <button class="btn" type="button">Discard</button>
+                  </div>
+                </div>
+                <div class="tabpane" data-pane="agent-usage">
+                  <div class="grid grid--3" style="margin-top: 0">
+                    <div class="metric">
+                      <div class="metric__label">Total runs (7d)</div>
+                      <div class="metric__value">142</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Success rate</div>
+                      <div class="metric__value">96%</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Avg response time</div>
+                      <div class="metric__value">1.2s</div>
+                    </div>
+                  </div>
+                  <article class="card" style="margin-top: 12px">
+                    <div class="card__title">Recent Runs</div>
+                    <div class="list">
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Classify: INV-22318 (12 line items)</div>
+                          <div class="row__subtle">Run R-8920 | WI-1099 | 12m ago | 0.9s</div>
+                        </div>
+                        <div class="row__right">
+                          <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                            >Success</span
+                          >
+                        </div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Classify: INV-22305 (8 line items)</div>
+                          <div class="row__subtle">Run R-8901 | WI-1088 | 2h ago | 1.1s</div>
+                        </div>
+                        <div class="row__right">
+                          <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                            >Success</span
+                          >
+                        </div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Classify: INV-22291 (3 line items)</div>
+                          <div class="row__subtle">Run R-8889 | WI-1072 | 6h ago | 0.8s</div>
+                        </div>
+                        <div class="row__right">
+                          <span
+                            class="status status--danger"
+                            style="font-size: 10px; padding: 2px 6px"
+                            >Failed</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+                <div class="tabpane" data-pane="agent-integrations">
+                  <article class="card">
+                    <div class="card__title">Workflows using this agent</div>
+                    <div class="card__meta subtle">Steps that reference Invoice Classifier</div>
+                    <div class="list">
+                      <a class="row" href="#workflow-builder" style="text-decoration: none"
+                        ><div class="row__main">
+                          <div class="row__title">Invoice Correction Workflow</div>
+                          <div class="row__subtle">
+                            Step: "Classify Line Items" (position 4 of 7)
+                          </div>
+                        </div>
+                        <div class="row__right">
+                          <span
+                            class="status status--info"
+                            style="font-size: 10px; padding: 2px 6px"
+                            >Active</span
+                          >
+                        </div></a
+                      >
+                      <a class="row" href="#workflow-builder" style="text-decoration: none"
+                        ><div class="row__main">
+                          <div class="row__title">Quarterly Audit Preparation</div>
+                          <div class="row__subtle">
+                            Step: "Categorize Entries" (position 2 of 5)
+                          </div>
+                        </div>
+                        <div class="row__right">
+                          <span
+                            class="status status--info"
+                            style="font-size: 10px; padding: 2px 6px"
+                            >Active</span
+                          >
+                        </div></a
+                      >
+                    </div>
+                  </article>
+                  <div class="callout" style="margin-top: 12px">
+                    Deactivating this agent will pause 2 active workflows at their next Agent Task
+                    step.
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

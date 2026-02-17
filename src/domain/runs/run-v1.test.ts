@@ -81,6 +81,53 @@ describe('parseRunV1: validation', () => {
     ).toThrow(/status/i);
   });
 
+  it('rejects invalid ISO timestamps', () => {
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Pending',
+        createdAtIso: 'not-a-date',
+      }),
+    ).toThrow(/createdAtIso must be a valid ISO timestamp/);
+
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Running',
+        createdAtIso: '2026-02-17T00:00:00.000Z',
+        startedAtIso: 'not-a-date',
+      }),
+    ).toThrow(/startedAtIso must be a valid ISO timestamp/);
+
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Succeeded',
+        createdAtIso: '2026-02-17T00:00:00.000Z',
+        startedAtIso: '2026-02-17T00:00:01.000Z',
+        endedAtIso: 'not-a-date',
+      }),
+    ).toThrow(/endedAtIso must be a valid ISO timestamp/);
+  });
+
   it('rejects invalid required and optional strings', () => {
     expect(() =>
       parseRunV1({
