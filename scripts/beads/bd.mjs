@@ -1,16 +1,34 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const VALID_PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
+const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, undefined: 4 };
+
 function usage() {
   const lines = [
     'Beads (bd) - local issue tracker',
     '',
     'Usage:',
-    '  bd issue list [--json]',
-    '  bd issue create --title "..." [--json]',
-    '  bd issue close <id> [--json]',
+    '  bd issue list   [--open] [--phase <phase>] [--priority <P0|P1|P2|P3>] [--json]',
+    '  bd issue next   [--phase <phase>] [--priority <P0|P1|P2|P3>] [--json]',
+    '  bd issue view   <id>',
+    '  bd issue create --title "..." [--priority P0] [--phase <phase>] [--blocked-by "id1,id2"] [--body "..."] [--json]',
+    '  bd issue close  <id> [--json]',
     '  bd issue reopen <id> [--json]',
-    '  bd issue update <id> [--title "..." ] [--status open|closed] [--json]',
+    '  bd issue update <id> [--title "..."] [--status open|closed] [--priority <P0|P1|P2|P3>]',
+    '                       [--phase <phase>] [--blocked-by "id1,id2"] [--add-blocked-by "id1,id2"]',
+    '                       [--remove-blocked-by "id1,id2"] [--body "..."] [--json]',
+    '',
+    'Fields:',
+    '  priority   P0 (must-have) | P1 (important) | P2 (nice-to-have) | P3 (future)',
+    '  phase      devenv | domain | application | infrastructure | presentation |',
+    '             integration | governance | security | release | cross-cutting',
+    '  blockedBy  comma-separated list of bead IDs that must be closed first',
+    '  body       free-text description / acceptance criteria',
+    '',
+    'Commands:',
+    '  next       shows open beads with no unresolved blockers, sorted by priority',
+    '  view       shows all fields of a bead including body and blockers',
     '',
     'Notes:',
     '  - Issues are stored in .beads/issues.jsonl (JSON Lines).',
@@ -73,12 +91,6 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function parseArgs(argv) {
-  const flags = new Set(argv.filter((a) => a.startsWith('--')));
-  const args = argv.filter((a) => !a.startsWith('--'));
-  return { args, flags };
-}
-
 function nextIssueId(issues) {
   let max = 0;
   for (const issue of issues) {
@@ -99,22 +111,55 @@ function findIssueIndex(issues, id) {
   return idx;
 }
 
-function setStatus(issues, id, status) {
-  if (status !== 'open' && status !== 'closed') {
-    throw new Error(`Invalid status "${status}". Expected "open" or "closed".`);
-  }
-  const idx = findIssueIndex(issues, id);
-  const issue = issues[idx];
-  issues[idx] = { ...issue, status, updatedAt: nowIsoUtc() };
-  return issues[idx];
+function readOption(argv, name) {
+  const idx = argv.indexOf(name);
+  if (idx < 0) return null;
+  const value = argv[idx + 1];
+  if (!isNonEmptyString(value)) throw new Error(`Missing value for ${name}.`);
+  return value;
 }
 
-function setTitle(issues, id, title) {
-  if (!isNonEmptyString(title)) throw new Error('title must be a non-empty string.');
-  const idx = findIssueIndex(issues, id);
-  const issue = issues[idx];
-  issues[idx] = { ...issue, title: title.trim(), updatedAt: nowIsoUtc() };
-  return issues[idx];
+function parseBlockedBy(raw) {
+  if (!raw) return undefined;
+  const ids = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  if (ids.length === 0) return undefined;
+  for (const id of ids) {
+    if (!/^bead-\d{4}$/.test(id)) throw new Error(`Invalid bead ID in --blocked-by: "${id}"`);
+  }
+  return ids;
+}
+
+/** Return true if the issue is unblocked (no open prerequisites). */
+function isUnblocked(issue, closedIds) {
+  const blockedBy = issue.blockedBy;
+  if (!blockedBy || blockedBy.length === 0) return true;
+  return blockedBy.every((dep) => closedIds.has(dep));
+}
+
+function prioritySortKey(issue) {
+  return PRIORITY_ORDER[issue.priority] ?? PRIORITY_ORDER['undefined'];
+}
+
+/** Sort: priority asc (P0 first), then createdAt asc. */
+function sortByPriority(issues) {
+  return [...issues].sort((a, b) => {
+    const pd = prioritySortKey(a) - prioritySortKey(b);
+    if (pd !== 0) return pd;
+    return (a.createdAt ?? '').localeCompare(b.createdAt ?? '');
+  });
+}
+
+function formatPriority(p) {
+  if (!p) return '  --';
+  return p;
+}
+
+function formatPhase(p) {
+  if (!p) return '          --';
+  return p.padEnd(14);
 }
 
 function print(value, jsonFlag) {
@@ -124,52 +169,196 @@ function print(value, jsonFlag) {
   }
 
   if (Array.isArray(value)) {
-    for (const v of value) process.stdout.write(`${v.id} [${v.status}] ${v.title}\n`);
+    for (const v of value) {
+      const pri = formatPriority(v.priority);
+      const phase = v.phase ? ` [${v.phase}]` : '';
+      process.stdout.write(`${v.id} ${pri} [${v.status}]${phase} ${v.title}\n`);
+    }
     return;
   }
 
   if (value && typeof value === 'object') {
-    process.stdout.write(`${value.id} [${value.status}] ${value.title}\n`);
+    const pri = formatPriority(value.priority);
+    const phase = value.phase ? ` [${value.phase}]` : '';
+    process.stdout.write(`${value.id} ${pri} [${value.status}]${phase} ${value.title}\n`);
     return;
   }
 
   process.stdout.write(String(value) + '\n');
 }
 
-function readOption(argv, name) {
-  const idx = argv.indexOf(name);
-  if (idx < 0) return null;
-  const value = argv[idx + 1];
-  if (!isNonEmptyString(value)) throw new Error(`Missing value for ${name}.`);
-  return value;
+function printView(issue) {
+  const lines = [
+    `ID:        ${issue.id}`,
+    `Title:     ${issue.title}`,
+    `Status:    ${issue.status}`,
+    `Priority:  ${issue.priority ?? '(unset)'}`,
+    `Phase:     ${issue.phase ?? '(unset)'}`,
+    `BlockedBy: ${issue.blockedBy?.join(', ') ?? '(none)'}`,
+    `Created:   ${issue.createdAt}`,
+    `Updated:   ${issue.updatedAt}`,
+    '',
+    issue.body ? issue.body : '(no body)',
+  ];
+  process.stdout.write(lines.join('\n') + '\n');
+}
+
+function applyUpdate(issues, id, changes) {
+  const idx = findIssueIndex(issues, id);
+  const issue = issues[idx];
+  issues[idx] = { ...issue, ...changes, updatedAt: nowIsoUtc() };
+  return issues[idx];
+}
+
+function buildUpdateChanges(argv, existingIssue) {
+  const changes = {};
+
+  const title = readOption(argv, '--title');
+  if (title) changes.title = title.trim();
+
+  const status = readOption(argv, '--status');
+  if (status) {
+    if (status !== 'open' && status !== 'closed') {
+      throw new Error(`Invalid status "${status}". Expected "open" or "closed".`);
+    }
+    changes.status = status;
+  }
+
+  const priority = readOption(argv, '--priority');
+  if (priority) {
+    if (!VALID_PRIORITIES.includes(priority)) {
+      throw new Error(`Invalid priority "${priority}". Expected one of: ${VALID_PRIORITIES.join(', ')}.`);
+    }
+    changes.priority = priority;
+  }
+
+  const phase = readOption(argv, '--phase');
+  if (phase) changes.phase = phase.trim();
+
+  const body = readOption(argv, '--body');
+  if (body) changes.body = body.trim();
+
+  // --blocked-by replaces entirely
+  const blockedByRaw = readOption(argv, '--blocked-by');
+  if (blockedByRaw !== null) {
+    const parsed = parseBlockedBy(blockedByRaw);
+    changes.blockedBy = parsed ?? [];
+  }
+
+  // --add-blocked-by merges
+  const addRaw = readOption(argv, '--add-blocked-by');
+  if (addRaw !== null) {
+    const toAdd = parseBlockedBy(addRaw) ?? [];
+    const current = changes.blockedBy ?? existingIssue.blockedBy ?? [];
+    changes.blockedBy = [...new Set([...current, ...toAdd])];
+  }
+
+  // --remove-blocked-by removes
+  const removeRaw = readOption(argv, '--remove-blocked-by');
+  if (removeRaw !== null) {
+    const toRemove = new Set(parseBlockedBy(removeRaw) ?? []);
+    const current = changes.blockedBy ?? existingIssue.blockedBy ?? [];
+    changes.blockedBy = current.filter((id) => !toRemove.has(id));
+  }
+
+  return changes;
 }
 
 function main() {
   const root = repoRoot();
   const rawArgv = process.argv.slice(2);
+
   if (rawArgv.length === 0 || rawArgv.includes('--help') || rawArgv.includes('-h')) {
     usage();
     return;
   }
 
-  const { args, flags } = parseArgs(rawArgv);
-  const asJson = flags.has('--json');
+  const asJson = rawArgv.includes('--json');
 
-  const [noun, verb, ...rest] = args;
+  // Split into positional args (non-flag) and flags
+  const positional = rawArgv.filter((a) => !a.startsWith('--'));
+  const [noun, verb, ...rest] = positional;
+
   if (noun !== 'issue') {
     fail(`Unknown noun "${noun}". Expected "issue".\n\nRun: bd --help`);
   }
 
   const issues = readIssues(root);
 
+  // ── list ──────────────────────────────────────────────────────────────────
   if (verb === 'list') {
-    print(issues, asJson);
+    const filterPhase = readOption(rawArgv, '--phase');
+    const filterPriority = readOption(rawArgv, '--priority');
+    const openOnly = rawArgv.includes('--open');
+
+    let result = issues;
+    if (openOnly) result = result.filter((i) => i.status === 'open');
+    if (filterPhase) result = result.filter((i) => i.phase === filterPhase);
+    if (filterPriority) result = result.filter((i) => i.priority === filterPriority);
+
+    print(result, asJson);
     return;
   }
 
+  // ── next ──────────────────────────────────────────────────────────────────
+  if (verb === 'next') {
+    const filterPhase = readOption(rawArgv, '--phase');
+    const filterPriority = readOption(rawArgv, '--priority');
+
+    const closedIds = new Set(issues.filter((i) => i.status === 'closed').map((i) => i.id));
+
+    let open = issues.filter((i) => i.status === 'open');
+    let ready = open.filter((i) => isUnblocked(i, closedIds));
+
+    if (filterPhase) ready = ready.filter((i) => i.phase === filterPhase);
+    if (filterPriority) ready = ready.filter((i) => i.priority === filterPriority);
+
+    ready = sortByPriority(ready);
+
+    if (asJson) {
+      print(ready, true);
+    } else {
+      if (ready.length === 0) {
+        process.stdout.write('No ready beads found.\n');
+      } else {
+        process.stdout.write(`Ready to work on (${ready.length} beads):\n\n`);
+        for (const v of ready) {
+          const pri = formatPriority(v.priority);
+          const phase = v.phase ? ` [${v.phase}]` : '';
+          process.stdout.write(`  ${v.id} ${pri}${phase} ${v.title}\n`);
+        }
+      }
+    }
+    return;
+  }
+
+  // ── view ──────────────────────────────────────────────────────────────────
+  if (verb === 'view') {
+    const id = rest[0];
+    if (!isNonEmptyString(id)) fail('Missing issue id for issue view.');
+    const idx = findIssueIndex(issues, id);
+    if (asJson) {
+      process.stdout.write(JSON.stringify(issues[idx], null, 2) + '\n');
+    } else {
+      printView(issues[idx]);
+    }
+    return;
+  }
+
+  // ── create ────────────────────────────────────────────────────────────────
   if (verb === 'create') {
-    const title = readOption(process.argv.slice(2), '--title');
+    const title = readOption(rawArgv, '--title');
     if (!title) fail('Missing --title for issue create.');
+
+    const priority = readOption(rawArgv, '--priority');
+    if (priority && !VALID_PRIORITIES.includes(priority)) {
+      fail(`Invalid priority "${priority}". Expected one of: ${VALID_PRIORITIES.join(', ')}.`);
+    }
+
+    const phase = readOption(rawArgv, '--phase');
+    const body = readOption(rawArgv, '--body');
+    const blockedByRaw = readOption(rawArgv, '--blocked-by');
+    const blockedBy = parseBlockedBy(blockedByRaw);
 
     const id = nextIssueId(issues);
     const now = nowIsoUtc();
@@ -177,6 +366,10 @@ function main() {
       id,
       title: title.trim(),
       status: 'open',
+      ...(priority ? { priority } : {}),
+      ...(phase ? { phase } : {}),
+      ...(blockedBy ? { blockedBy } : {}),
+      ...(body ? { body: body.trim() } : {}),
       createdAt: now,
       updatedAt: now,
     };
@@ -186,35 +379,34 @@ function main() {
     return;
   }
 
+  // ── close ─────────────────────────────────────────────────────────────────
   if (verb === 'close') {
     const id = rest[0];
     if (!isNonEmptyString(id)) fail('Missing issue id for issue close.');
-    const updated = setStatus(issues, id, 'closed');
+    const updated = applyUpdate(issues, id, { status: 'closed' });
     writeIssues(root, issues);
     print(updated, asJson);
     return;
   }
 
+  // ── reopen ────────────────────────────────────────────────────────────────
   if (verb === 'reopen') {
     const id = rest[0];
     if (!isNonEmptyString(id)) fail('Missing issue id for issue reopen.');
-    const updated = setStatus(issues, id, 'open');
+    const updated = applyUpdate(issues, id, { status: 'open' });
     writeIssues(root, issues);
     print(updated, asJson);
     return;
   }
 
+  // ── update ────────────────────────────────────────────────────────────────
   if (verb === 'update') {
     const id = rest[0];
     if (!isNonEmptyString(id)) fail('Missing issue id for issue update.');
-
-    const title = readOption(process.argv.slice(2), '--title');
-    const status = readOption(process.argv.slice(2), '--status');
-
-    let updated = issues[findIssueIndex(issues, id)];
-    if (title) updated = setTitle(issues, id, title);
-    if (status) updated = setStatus(issues, id, status);
-
+    const idx = findIssueIndex(issues, id);
+    const changes = buildUpdateChanges(rawArgv, issues[idx]);
+    if (Object.keys(changes).length === 0) fail('No changes specified for issue update.');
+    const updated = applyUpdate(issues, id, changes);
     writeIssues(root, issues);
     print(updated, asJson);
     return;
