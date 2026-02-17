@@ -26,6 +26,7 @@
     "domain-atlas:extract:killbill": "node scripts/domain-atlas/extract-killbill-cif.mjs",
     "domain-atlas:extract:mautic": "node scripts/domain-atlas/extract-mautic-cif.mjs",
     "domain-atlas:extract:odoo": "node scripts/domain-atlas/extract-odoo.mjs",
+    "domain-atlas:extract:paperless-ngx": "node scripts/domain-atlas/extract-paperless-ngx-cif.mjs",
     "domain-atlas:extract:stripe": "node scripts/domain-atlas/extract-stripe-cif.mjs",
     "domain-atlas:extract:vault": "node scripts/domain-atlas/extract-vault-cif.mjs",
     "domain-atlas:extract:zammad": "node scripts/domain-atlas/extract-zammad-cif.mjs",

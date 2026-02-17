@@ -22,3 +22,6 @@
 [submodule "domain-atlas/upstreams/odoo"]
 	path = domain-atlas/upstreams/odoo
 	url = https://github.com/odoo/odoo
+[submodule "domain-atlas/upstreams/paperless-ngx"]
+	path = domain-atlas/upstreams/paperless-ngx
+	url = https://github.com/paperless-ngx/paperless-ngx

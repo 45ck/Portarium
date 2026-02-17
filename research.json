@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-02-17T01:39:16.346Z",
+  "updatedAt": "2026-02-17T02:00:46.697Z",
   "domainAtlas": {
     "erpnext": {
       "status": "ACTIVE",
@@ -43,9 +43,9 @@
       "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (AGPL-3.0-only); extraction script: scripts/domain-atlas/extract-zammad-cif.mjs."
     },
     "paperless-ngx": {
-      "status": "ACTIVE",
+      "status": "DONE",
       "workItem": "bead-0030",
-      "notes": "Vendoring upstream as a git submodule; initial extraction targets Django migrations (CreateModel blocks) as the honest schema source for core document entities."
+      "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (GPL-3.0-only); extraction script: scripts/domain-atlas/extract-paperless-ngx-cif.mjs."
     }
   }
 }

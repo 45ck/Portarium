@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "providerId": "paperless-ngx",
+  "providerName": "Paperless-ngx",
+  "portFamilies": ["DocumentsEsign"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/paperless-ngx/paperless-ngx",
+    "version": "pinned-by-commit",
+    "commit": "eda0e61cec3f69b6adfe06594654c723f74f2917",
+    "retrievedAt": "2026-02-17T01:49:13.187Z"
+  },
+  "license": {
+    "spdxId": "GPL-3.0-only",
+    "classification": "study_only",
+    "notes": "Upstream is GPLv3. Use for pattern extraction + SoR integration; do not vendor upstream code into Portarium core."
+  },
+  "extraction": {
+    "modelSources": [
+      "src/documents/migrations/0001_initial.py",
+      "src/documents/migrations/0002_initial.py",
+      "src/paperless/migrations/0001_initial.py",
+      "src/paperless_mail/migrations/0001_initial.py",
+      "src/documents/models.py",
+      "src/documents/serialisers.py",
+      "src/documents/views.py"
+    ],
+    "command": "node scripts/domain-atlas/extract-paperless-ngx-cif.mjs",
+    "notes": "Initial extraction parses Django migrations (CreateModel/AddField/AddConstraint blocks) to capture core document entities (Document, Tag, Correspondent, DocumentType, StoragePath) plus extension surfaces (CustomField*, Note)."
+  }
+}

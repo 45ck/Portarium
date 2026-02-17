@@ -269,6 +269,7 @@ SignNow
 airSlate
 Dropbox
 Paperless
+ngx
 ONLYOFFICE
 Nextcloud
 Tableau
@@ -543,6 +544,10 @@ testdata
 Airbyte
 Rundeck
 immudb
+allauth
+compensatable
+multiselectfield
+serialisers
 
 # UI / wireframe terms
 lofi

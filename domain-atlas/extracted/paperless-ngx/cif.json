@@ -1,0 +1,809 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "paperless-ngx",
+    "providerName": "Paperless-ngx",
+    "upstream": {
+      "repoUrl": "https://github.com/paperless-ngx/paperless-ngx",
+      "commit": "eda0e61cec3f69b6adfe06594654c723f74f2917",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-17T02:07:05.531Z",
+  "entities": [
+    {
+      "name": "Correspondent",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["name", "owner"], ["name"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name"
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "required": false,
+          "description": "match"
+        },
+        {
+          "name": "matching_algorithm",
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "matching algorithm"
+        },
+        {
+          "name": "is_insensitive",
+          "type": "boolean",
+          "required": true,
+          "default": true,
+          "description": "is insensitive"
+        },
+        {
+          "name": "owner",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "owner"
+        }
+      ]
+    },
+    {
+      "name": "CustomField",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["name"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "created",
+          "type": "datetime",
+          "required": true,
+          "description": "created"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "required": true,
+          "description": "data type"
+        },
+        {
+          "name": "extra_data",
+          "type": "json",
+          "required": false,
+          "nullable": true,
+          "description": "Extra data for the custom field, such as select options"
+        }
+      ]
+    },
+    {
+      "name": "CustomFieldInstance",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["document", "field"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "restored_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "transaction_id",
+          "type": "uuid",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "created",
+          "type": "datetime",
+          "required": true,
+          "description": "created"
+        },
+        {
+          "name": "value_text",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_bool",
+          "type": "boolean",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_url",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_date",
+          "type": "date",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_int",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_float",
+          "type": "float",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_monetary",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_monetary_amount",
+          "type": "generated",
+          "required": true
+        },
+        {
+          "name": "value_document_ids",
+          "type": "json",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_select",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "value_long_text",
+          "type": "string",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "field",
+          "type": "many2one(CustomField)",
+          "required": true
+        },
+        {
+          "name": "document",
+          "type": "many2one(Document)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Document",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [
+        ["checksum"],
+        ["filename"],
+        ["archive_filename"],
+        ["archive_serial_number"]
+      ],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "restored_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "transaction_id",
+          "type": "uuid",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "title"
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false,
+          "description": "The raw, text-only data of the document. This field is primarily used for searching."
+        },
+        {
+          "name": "mime_type",
+          "type": "string",
+          "required": true,
+          "description": "mime type"
+        },
+        {
+          "name": "checksum",
+          "type": "string",
+          "required": true,
+          "description": "The checksum of the original document."
+        },
+        {
+          "name": "archive_checksum",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "The checksum of the archived document."
+        },
+        {
+          "name": "page_count",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "The number of pages of the document."
+        },
+        {
+          "name": "created",
+          "type": "date",
+          "required": true,
+          "description": "created"
+        },
+        {
+          "name": "modified",
+          "type": "datetime",
+          "required": true,
+          "description": "modified"
+        },
+        {
+          "name": "storage_type",
+          "type": "string",
+          "required": true,
+          "default": "unencrypted",
+          "description": "storage type"
+        },
+        {
+          "name": "added",
+          "type": "datetime",
+          "required": true,
+          "description": "added"
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "Current filename in storage"
+        },
+        {
+          "name": "archive_filename",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "Current archive filename in storage"
+        },
+        {
+          "name": "original_filename",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "The original name of the file when it was uploaded"
+        },
+        {
+          "name": "archive_serial_number",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "The position of this document in your physical document archive."
+        },
+        {
+          "name": "correspondent",
+          "type": "many2one(Correspondent)",
+          "required": false,
+          "nullable": true,
+          "description": "correspondent"
+        },
+        {
+          "name": "owner",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "owner"
+        },
+        {
+          "name": "document_type",
+          "type": "many2one(DocumentType)",
+          "required": false,
+          "nullable": true,
+          "description": "document type"
+        },
+        {
+          "name": "storage_path",
+          "type": "many2one(StoragePath)",
+          "required": false,
+          "nullable": true,
+          "description": "storage path"
+        },
+        {
+          "name": "tags",
+          "type": "many2many(Tag)",
+          "required": false,
+          "description": "tags"
+        }
+      ]
+    },
+    {
+      "name": "DocumentType",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["name", "owner"], ["name"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name"
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "required": false,
+          "description": "match"
+        },
+        {
+          "name": "matching_algorithm",
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "matching algorithm"
+        },
+        {
+          "name": "is_insensitive",
+          "type": "boolean",
+          "required": true,
+          "default": true,
+          "description": "is insensitive"
+        },
+        {
+          "name": "owner",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "owner"
+        }
+      ]
+    },
+    {
+      "name": "Note",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "deleted_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "restored_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "transaction_id",
+          "type": "uuid",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "description": "Note for the document"
+        },
+        {
+          "name": "created",
+          "type": "datetime",
+          "required": true,
+          "description": "created"
+        },
+        {
+          "name": "document",
+          "type": "many2one(Document)",
+          "required": false,
+          "nullable": true,
+          "description": "document"
+        },
+        {
+          "name": "user",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "description": "user"
+        }
+      ]
+    },
+    {
+      "name": "StoragePath",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["name", "owner"], ["name"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name"
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "required": false,
+          "description": "match"
+        },
+        {
+          "name": "matching_algorithm",
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "matching algorithm"
+        },
+        {
+          "name": "is_insensitive",
+          "type": "boolean",
+          "required": true,
+          "default": true,
+          "description": "is insensitive"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "required": true,
+          "description": "path"
+        },
+        {
+          "name": "owner",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "owner"
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "primaryKeys": ["id"],
+      "uniqueConstraints": [["name", "owner"], ["name"]],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true,
+          "description": "ID"
+        },
+        {
+          "name": "tn_ancestors_pks",
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Ancestors pks"
+        },
+        {
+          "name": "tn_ancestors_count",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Ancestors count"
+        },
+        {
+          "name": "tn_children_pks",
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Children pks"
+        },
+        {
+          "name": "tn_children_count",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Children count"
+        },
+        {
+          "name": "tn_depth",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Depth"
+        },
+        {
+          "name": "tn_descendants_pks",
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Descendants pks"
+        },
+        {
+          "name": "tn_descendants_count",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Descendants count"
+        },
+        {
+          "name": "tn_index",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Index"
+        },
+        {
+          "name": "tn_level",
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "Level"
+        },
+        {
+          "name": "tn_priority",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Priority"
+        },
+        {
+          "name": "tn_order",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Order"
+        },
+        {
+          "name": "tn_siblings_pks",
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Siblings pks"
+        },
+        {
+          "name": "tn_siblings_count",
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Siblings count"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name"
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "required": false,
+          "description": "match"
+        },
+        {
+          "name": "matching_algorithm",
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "matching algorithm"
+        },
+        {
+          "name": "is_insensitive",
+          "type": "boolean",
+          "required": true,
+          "default": true,
+          "description": "is insensitive"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": true,
+          "default": "#a6cee3",
+          "description": "color"
+        },
+        {
+          "name": "is_inbox_tag",
+          "type": "boolean",
+          "required": true,
+          "default": false,
+          "description": "Marks this tag as an inbox tag: All newly consumed documents will be tagged with inbox tags."
+        },
+        {
+          "name": "owner",
+          "type": "many2one(settings.AUTH_USER_MODEL)",
+          "required": false,
+          "nullable": true,
+          "default": null,
+          "description": "owner"
+        },
+        {
+          "name": "tn_parent",
+          "type": "many2one(Tag)",
+          "required": false,
+          "nullable": true,
+          "description": "Parent"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Correspondent",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "DocumentType",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "StoragePath",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Tag",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Tag",
+      "toEntity": "Tag",
+      "kind": "many_to_one",
+      "fromField": "tn_parent",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Document",
+      "toEntity": "Correspondent",
+      "kind": "many_to_one",
+      "fromField": "correspondent",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Document",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "owner",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Document",
+      "toEntity": "DocumentType",
+      "kind": "many_to_one",
+      "fromField": "document_type",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Document",
+      "toEntity": "StoragePath",
+      "kind": "many_to_one",
+      "fromField": "storage_path",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Document",
+      "toEntity": "Tag",
+      "kind": "many_to_many",
+      "fromField": "tags",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "CustomFieldInstance",
+      "toEntity": "CustomField",
+      "kind": "many_to_one",
+      "fromField": "field",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "CustomFieldInstance",
+      "toEntity": "Document",
+      "kind": "many_to_one",
+      "fromField": "document",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Note",
+      "toEntity": "Document",
+      "kind": "many_to_one",
+      "fromField": "document",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Note",
+      "toEntity": "settings.AUTH_USER_MODEL",
+      "kind": "many_to_one",
+      "fromField": "user",
+      "toField": "id"
+    }
+  ],
+  "extensionPoints": {
+    "tags": {
+      "supported": true,
+      "notes": "Tag model + Document.tags many-to-many relationship."
+    },
+    "attachments": {
+      "supported": true,
+      "notes": "Documents represent stored files with original/archive filename fields. Treat content as sensitive by default."
+    },
+    "customFields": {
+      "supported": true,
+      "notes": "CustomField + CustomFieldInstance provide extensible metadata on Documents."
+    },
+    "comments": {
+      "supported": true,
+      "notes": "Note model provides per-document notes/comments."
+    }
+  }
+}

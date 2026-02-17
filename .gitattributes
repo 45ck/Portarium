@@ -12,6 +12,11 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 *.md text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.txt text eol=lf
 
 # Repo config files
+.gitattributes text eol=lf
 .gitignore text eol=lf
+.gitmodules text eol=lf

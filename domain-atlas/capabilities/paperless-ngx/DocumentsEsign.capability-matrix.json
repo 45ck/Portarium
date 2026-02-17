@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "paperless-ngx",
+  "providerName": "Paperless-ngx",
+  "portFamily": "DocumentsEsign",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["basic", "api_key", "session", "oauth2", "other"],
+    "notes": "Paperless-ngx REST API supports Basic auth, session auth, token auth (Authorization: Token ...), Remote User auth (deployment-specific), and headless OIDC via django-allauth."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "Paperless-ngx can send outbound webhooks via workflow actions. In the absence of configured webhooks, polling documents/tasks endpoints is the portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No generic idempotency key. Upload idempotency can often be approximated via checksum-based de-duplication + read-before-write policies, but adapters must treat uploads and bulk edits as non-idempotent by default."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via post-write reads (documents, tags, correspondents) and tasks endpoint status. Predicted effects require adapter-side simulation (no provider dry-run API)."
+  },
+  "capabilities": [
+    {
+      "capability": "document:read",
+      "supported": true,
+      "operations": [
+        "getDocument",
+        "listDocuments",
+        "searchDocuments",
+        "downloadOriginal",
+        "downloadArchive"
+      ],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Search is supported via query parameters on /api/documents/; full-text highlights may include sensitive content and should be redacted in evidence by default."
+    },
+    {
+      "capability": "document:write",
+      "supported": true,
+      "operations": [
+        "uploadDocument",
+        "updateDocumentMetadata",
+        "bulkEditDocuments",
+        "deleteDocument",
+        "reprocessDocument"
+      ],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Uploads are asynchronous via /api/documents/post_document/ and return a task id; bulk edits are asynchronous. Compensation is best-effort (e.g., revert metadata), not a true rollback for deletes/reprocess."
+    },
+    {
+      "capability": "task:read",
+      "supported": true,
+      "operations": ["listTasks", "getTask"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Tasks are used to track async ingestion and bulk operations; adapters should attach task status to evidence."
+    },
+    {
+      "capability": "correspondent:read",
+      "supported": true,
+      "operations": ["getCorrespondent", "listCorrespondents"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "correspondent:write",
+      "supported": true,
+      "operations": ["createCorrespondent", "updateCorrespondent", "deleteCorrespondent"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false
+      }
+    },
+    {
+      "capability": "tag:read",
+      "supported": true,
+      "operations": ["getTag", "listTags"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "tag:write",
+      "supported": true,
+      "operations": ["createTag", "updateTag", "deleteTag", "applyTag", "removeTag"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Applying/removing tags is compensatable; creating/deleting tags may have broad impact on search and automation."
+    },
+    {
+      "capability": "custom-field:read",
+      "supported": true,
+      "operations": ["getCustomField", "listCustomFields"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "custom-field:write",
+      "supported": true,
+      "operations": [
+        "createCustomField",
+        "updateCustomField",
+        "deleteCustomField",
+        "setDocumentCustomFields"
+      ],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false
+      }
+    }
+  ],
+  "notes": "Initial matrix derived from Paperless-ngx API documentation and Django model/migration surfaces. Refine with concrete multi-tenant policy (permissions, ownership, evidence retention)."
+}

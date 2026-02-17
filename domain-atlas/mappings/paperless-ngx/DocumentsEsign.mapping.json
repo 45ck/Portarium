@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "paperless-ngx",
+  "portFamily": "DocumentsEsign",
+  "mappings": [
+    {
+      "canonicalObject": "Document",
+      "vendorEntity": "Document",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayLabel": "title",
+        "createdDate": "created",
+        "addedAt": "added",
+        "modifiedAt": "modified",
+        "mimeType": "mime_type",
+        "checksum": "checksum",
+        "archiveChecksum": "archive_checksum",
+        "originalFilename": "original_filename",
+        "archiveFilename": "archive_filename",
+        "storagePathExternalId": "storage_path",
+        "documentTypeExternalId": "document_type",
+        "correspondentExternalId": "correspondent"
+      },
+      "notes": "Paperless Document maps to canonical Document. Provider-native classification objects (DocumentType, StoragePath) remain ExternalObjectRefs until canonical taxonomy is finalised."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Correspondent",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "name",
+        "match": "match"
+      },
+      "notes": "Correspondents represent a document counterparty (issuer/sender). Map to Party with adapter-inferred role tags (vendor/org/person) based on usage context."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Tag",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Tag",
+        "displayLabel": "name"
+      },
+      "notes": "Tags remain provider-native until canonical tagging semantics are defined across port families."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "DocumentType",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "DocumentType",
+        "displayLabel": "name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "StoragePath",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "StoragePath",
+        "displayLabel": "name"
+      }
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "CustomField",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "CustomField",
+        "displayLabel": "name"
+      },
+      "notes": "Custom fields are first-class and should be mapped to canonical extension points once defined."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Note",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Note",
+        "displayLabel": "created"
+      },
+      "notes": "Notes/comments remain provider-native until canonical comment semantics are defined."
+    }
+  ]
+}
