@@ -5,11 +5,11 @@
 {"id":"bead-0005","title":"ADR-0042: dependency vulnerability gate (npm audit)","status":"closed","createdAt":"2026-02-16T22:36:11.957Z","updatedAt":"2026-02-16T22:36:17.339Z"}
 {"id":"bead-0006","title":"Domain Atlas: Odoo intake (vendor + res.partner CIF)","status":"open","createdAt":"2026-02-16T23:02:50.733Z","updatedAt":"2026-02-16T23:02:50.733Z"}
 {"id":"bead-0007","title":"Scaffold domain model structure (aggregates, ports, events, canonical objects)","status":"open","createdAt":"2026-02-16T23:04:06.896Z","updatedAt":"2026-02-16T23:04:06.896Z"}
-{"id":"bead-0008","title":"Draft default Project UI/UX plan (shared for teams and individuals)","status":"open","createdAt":"2026-02-16T23:04:41.814Z","updatedAt":"2026-02-16T23:04:41.814Z"}
+{"id":"bead-0008","title":"Draft default Project UI/UX plan (shared for teams and individuals)","status":"closed","createdAt":"2026-02-16T23:04:41.814Z","updatedAt":"2026-02-17T01:09:27.631Z"}
 {"id":"bead-0009","title":"DUPLICATE: Domain Atlas Odoo intake (use bead-0006)","status":"closed","createdAt":"2026-02-16T23:05:05.271Z","updatedAt":"2026-02-16T23:05:34.575Z"}
 {"id":"bead-0010","title":"Domain Atlas: ERPNext upstream intake + initial CIF/mapping/capabilities","status":"open","createdAt":"2026-02-16T23:05:05.875Z","updatedAt":"2026-02-16T23:05:05.875Z"}
 {"id":"bead-0011","title":"Work Item v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-16T23:05:20.802Z","updatedAt":"2026-02-16T23:14:30.551Z"}
-{"id":"bead-0012","title":"Scaffold Work Item v1 domain model (ADR-0038)","status":"open","createdAt":"2026-02-16T23:06:01.581Z","updatedAt":"2026-02-16T23:06:01.581Z"}
+{"id":"bead-0012","title":"DUPLICATE: Scaffold Work Item v1 domain model (use bead-0011)","status":"closed","createdAt":"2026-02-16T23:06:01.581Z","updatedAt":"2026-02-17T01:09:27.327Z"}
 {"id":"bead-0013","title":"Domain Atlas: Stripe (OpenAPI) extract CIF + mapping hardening","status":"closed","createdAt":"2026-02-16T23:06:14.039Z","updatedAt":"2026-02-17T00:12:17.665Z"}
 {"id":"bead-0014","title":"OpenAPI contract gate: validate OpenAPI + add boundary tests","status":"closed","createdAt":"2026-02-16T23:12:00.853Z","updatedAt":"2026-02-16T23:55:32.605Z"}
 {"id":"bead-0015","title":"Control plane API v1 contract: OpenAPI + specs for workspaces/users + Plan/Evidence","status":"closed","createdAt":"2026-02-16T23:12:00.868Z","updatedAt":"2026-02-16T23:12:11.938Z"}
@@ -23,7 +23,7 @@
 {"id":"bead-0023","title":"Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:07:16.654Z","updatedAt":"2026-02-17T00:31:08.260Z"}
 {"id":"bead-0024","title":"Run v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-17T00:49:00.423Z","updatedAt":"2026-02-17T00:50:50.079Z"}
 {"id":"bead-0025","title":"Domain Atlas: Vault initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:49:51.528Z","updatedAt":"2026-02-17T00:53:08.098Z"}
-{"id":"bead-0026","title":"Low-fi UI prototype: Inbox + Project/Work Items/Run/Approvals/Evidence (v1)","status":"open","createdAt":"2026-02-17T00:59:21.245Z","updatedAt":"2026-02-17T00:59:21.245Z"}
+{"id":"bead-0026","title":"Low-fi UI prototype: Inbox + Project/Work Items/Run/Approvals/Evidence (v1)","status":"closed","createdAt":"2026-02-17T00:59:21.245Z","updatedAt":"2026-02-17T01:09:27.953Z"}
 {"id":"bead-0027","title":"Domain Atlas: Zammad initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-17T01:02:39.202Z","updatedAt":"2026-02-17T01:02:39.202Z"}
 {"id":"bead-0028","title":"Approval v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:28.012Z","updatedAt":"2026-02-17T01:03:28.012Z"}
 {"id":"bead-0029","title":"Workflow v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:44.608Z","updatedAt":"2026-02-17T01:03:44.608Z"}
