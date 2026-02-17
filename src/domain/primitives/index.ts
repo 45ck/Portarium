@@ -93,6 +93,12 @@ export type PackId = Branded<string, 'PackId'>;
 /** Unique identifier for a user. */
 export type UserId = Branded<string, 'UserId'>;
 
+/** Unique identifier for a project/workspace container. */
+export type ProjectId = Branded<string, 'ProjectId'>;
+
+/** Unique identifier for a credential grant. */
+export type CredentialGrantId = Branded<string, 'CredentialGrantId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -117,6 +123,9 @@ export const HashSha256 = (value: string): HashSha256 => brand<string, 'HashSha2
 export const MachineId = (value: string): MachineId => brand<string, 'MachineId'>(value);
 export const PackId = (value: string): PackId => brand<string, 'PackId'>(value);
 export const UserId = (value: string): UserId => brand<string, 'UserId'>(value);
+export const ProjectId = (value: string): ProjectId => brand<string, 'ProjectId'>(value);
+export const CredentialGrantId = (value: string): CredentialGrantId =>
+  brand<string, 'CredentialGrantId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families
