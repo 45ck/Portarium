@@ -9,7 +9,7 @@
       "addWords": true
     }
   ],
-  "words": [],
+  "words": ["undisposed", "cutoff", "honors"],
   "ignorePaths": [
     "dist/**",
     "coverage/**",
