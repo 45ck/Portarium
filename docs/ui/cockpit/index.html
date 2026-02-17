@@ -1095,13 +1095,6 @@
             </div>
           </div>
 
-          <div class="hero-prompt hero-prompt--dismissible">
-            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
-            <div class="hero-prompt__text">
-              Your decision is needed. Review the planned effects (left), then submit your decision (right).
-            </div>
-          </div>
-
           <!-- Run State Machine (run_state_machine) -->
           <div class="stepper">
             <span class="stepper__step stepper__step--done">Queued</span>
@@ -1114,76 +1107,50 @@
           </div>
 
           <div class="grid grid--2">
-            <!-- Plan Review Block (plan_review_block) with Effects Diff (effects_diff) -->
+            <!-- Plan Review Block -->
             <article class="card">
-              <div class="card__title">Plan + Effects</div>
+              <div class="card__title">This run will&hellip;</div>
               <div class="effects">
-                <div class="effects__section">
-                  <div class="effects__title">Planned Effects</div>
-                  <div class="effects__hint subtle">This workflow will...</div>
-                  <div class="effects__list">
-                    <div class="effect">
-                      <div class="effect__main">
-                        <span class="pill">Update</span>
-                        <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
-                      </div>
-                      <div class="effect__subtle">Update memo and line item classification.</div>
+                <div class="effects__list">
+                  <div class="effect">
+                    <div class="effect__main">
+                      <span class="pill">Update</span>
+                      <span class="effect__target">NetSuite INV-22318</span>
+                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                     </div>
-                    <div class="effect">
-                      <div class="effect__main">
-                        <span class="pill">Create</span>
-                        <span class="effect__target">Drive | Document | Receipt bundle</span>
-                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
-                      </div>
-                      <div class="effect__subtle">Create evidence artifact for audit trail.</div>
+                    <div class="effect__subtle">Update memo and line item classification.</div>
+                  </div>
+                  <div class="effect">
+                    <div class="effect__main">
+                      <span class="pill">Create</span>
+                      <span class="effect__target">Drive &middot; Receipt bundle</span>
+                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                     </div>
+                    <div class="effect__subtle">Create evidence artifact for audit trail.</div>
                   </div>
                 </div>
-                <details class="effects__section">
-                  <summary class="effects__title" style="cursor: pointer">Predicted Effects <span class="subtle" style="font-weight: 400; font-size: 12px">(1)</span></summary>
+                <details class="effects__section" style="margin-top: 8px">
+                  <summary class="subtle" style="cursor: pointer; font-size: 12px">Predicted effects (1)</summary>
                   <div class="effects__list">
                     <div class="effect">
                       <div class="effect__main">
                         <span class="pill">Update</span>
-                        <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                        <span class="confidence">Confidence: 0.82</span>
+                        <span class="effect__target">NetSuite INV-22318</span>
+                        <span class="confidence">0.82</span>
                       </div>
                       <div class="effect__subtle">Total remains unchanged.</div>
                     </div>
                   </div>
                 </details>
-                <div class="effects__section effects__section--muted">
-                  <div class="subtle" style="font-size: 12px">Verified effects will appear after the run completes.</div>
-                </div>
               </div>
             </article>
 
-            <!-- Approval Gate Panel (approval_gate_panel) -->
+            <!-- Approval Gate Panel -->
             <article class="card card--hero">
               <div class="card__title">Approval Gate</div>
-              <div class="card__meta subtle">
-                A decision is required before this Run can continue.
-              </div>
-
-              <!-- Policy Evaluation Card (policy_eval_card) -->
-              <div class="callout callout--policy" style="margin-bottom: 10px">
-                <strong>Policy:</strong> Human-approve — invoice writes &gt; $10k<br>
-                <span class="subtle" style="font-size: 12px">2 approvers required, must be a different person</span>
-              </div>
 
               <div class="callout callout--danger js-callout-sod" style="margin-bottom: 10px">
-                Policy: the person who started this run cannot approve it.
-              </div>
-
-              <!-- Rationale Thread (rationale_thread) -->
-              <div style="margin-bottom: 10px">
-                <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">
-                  Prior Decisions
-                </div>
-                <div class="subtle">
-                  No prior decisions yet. This is the first approver in the sequence.
-                </div>
+                Invoice writes &gt; $10k &mdash; you cannot self-approve. 2 approvers required.
               </div>
 
               <div class="form">
@@ -1201,16 +1168,15 @@
                   <textarea
                     class="field__input"
                     id="approvalRationale"
-                    rows="4"
-                    placeholder="Explain why this Plan is acceptable or not."
+                    rows="3"
+                    placeholder="Why is this plan acceptable or not?"
                     required
                     minlength="10"
                   ></textarea>
                   <span class="field__error">Rationale is required (minimum 10 characters)</span>
                 </label>
                 <div class="outcome-preview">
-                  After approval: Run will resume automatically. 1 more approver needed (requires a
-                  different approver).
+                  After approval the run resumes. 1 more approver needed.
                 </div>
                 <div class="form__actions">
                   <button class="btn btn--primary" type="button" id="submitDecision" disabled data-confirm="approval">Submit decision</button>
