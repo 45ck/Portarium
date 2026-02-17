@@ -169,7 +169,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt js-nonempty-inbox">
+          <div class="hero-prompt hero-prompt--dismissible js-nonempty-inbox">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text js-hero-inbox-text">
               A run failed and can be retried. Review it and decide whether to retry or investigate
               further.
@@ -183,6 +184,7 @@
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Pending approvals</span>
             <span class="chip">Failed runs</span>
+            <button class="chip chip--clear" type="button" onclick="this.parentElement.querySelectorAll('.chip--active').forEach(c=>c.classList.remove('chip--active'))">✕ Clear all</button>
           </div>
 
           <!-- Next action prompt (domain primitive) -->
@@ -220,26 +222,26 @@
                     <div class="row__main">
                       <div class="row__title">
                         Approve Plan: Create Invoice in NetSuite
-                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                       </div>
                       <div class="row__subtle">
                         Project: Billing Governance | WI-1099 | R-8920
-                        <span class="sod-badge">Requires different approver</span>
+                        <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn">Pending</span></div>
+                    <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
                   </a>
                   <a class="row" href="#run">
                     <div class="row__main">
                       <div class="row__title">
                         Approve Plan: Update Ticket priority in Zendesk
-                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                       </div>
                       <div class="row__subtle">
                         Project: Customer Support Ops | WI-1042 | R-8892
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn">Pending</span></div>
+                    <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
                   </a>
                 </div>
               </article>
@@ -253,17 +255,17 @@
                       <div class="row__title">Run failed: CRM sync hit rate limit</div>
                       <div class="row__subtle">
                         WI-1021 | Update Opportunity
-                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--danger">Failed</span></div>
+                    <div class="row__right"><span class="status status--danger"><span class="status__icon">✕</span>Failed</span></div>
                   </a>
                   <a class="row" href="#run">
                     <div class="row__main">
                       <div class="row__title">Run blocked: missing provider scope</div>
-                      <div class="row__subtle">WI-1103 | Send Email</div>
+                      <div class="row__subtle">WI-1103 | Send Email — <a href="#settings">Update scope in Settings → Integrations</a></div>
                     </div>
-                    <div class="row__right"><span class="status status--danger">Blocked</span></div>
+                    <div class="row__right"><span class="status status--danger"><span class="status__icon">⊘</span>Blocked</span></div>
                   </a>
                 </div>
               </article>
@@ -306,14 +308,14 @@
                         Chain integrity: verified (120-146). No gaps detected.
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--ok">Verified</span></div>
+                    <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Verified</span></div>
                   </a>
                   <a class="row" href="#evidence" style="text-decoration: none">
                     <div class="row__main">
                       <div class="row__title">2 entries approaching retention expiry</div>
                       <div class="row__subtle">Category: Approval | 30 days remaining</div>
                     </div>
-                    <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                    <div class="row__right"><span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span></div>
                   </a>
                 </div>
               </article>
@@ -341,7 +343,7 @@
                         Expires 2026-03-15. Rotate or renew to avoid disruption.
                       </div>
                     </div>
-                    <div class="row__right"><span class="status status--warn">Expiring</span></div>
+                    <div class="row__right"><span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span></div>
                   </a>
                   <div class="row row--static">
                     <div class="row__main">
@@ -368,8 +370,8 @@
                     <div class="row__main">
                       <div class="row__title">Run failed: CRM sync hit rate limit</div>
                       <div class="row__subtle">
-                        WI-1021 | <span class="status status--danger">Failed</span>
-                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                        WI-1021 | <span class="status status--danger"><span class="status__icon">✕</span>Failed</span>
+                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                       </div>
                     </div>
                   </a>
@@ -378,7 +380,7 @@
                       <div class="row__title">Approve Plan: Create Invoice in NetSuite</div>
                       <div class="row__subtle">
                         WI-1099 | R-8920 |
-                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                       </div>
                     </div>
                   </a>
@@ -391,7 +393,7 @@
                     <div class="row__main">
                       <div class="row__title">Run blocked: missing provider scope</div>
                       <div class="row__subtle">
-                        WI-1103 | <span class="status status--danger">Blocked</span>
+                        WI-1103 | <span class="status status--danger"><span class="status__icon">⊘</span>Blocked</span>
                       </div>
                     </div>
                   </a>
@@ -405,7 +407,7 @@
                       <div class="row__title">Approve Plan: Update Ticket priority in Zendesk</div>
                       <div class="row__subtle">
                         WI-1042 | R-8892 |
-                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                       </div>
                     </div>
                   </a>
@@ -449,7 +451,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               This project has 7 items that need attention, including 2 failed runs and 4 pending
               approvals.
@@ -480,22 +483,22 @@
                 <div class="bars">
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--auto">Auto</span></span
+                      ><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></span
                     ><span class="bar__fill" style="width: 45%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--assisted">Assisted</span></span
+                      ><span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span></span
                     ><span class="bar__fill" style="width: 30%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--human">Human</span></span
+                      ><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human</span></span
                     ><span class="bar__fill" style="width: 20%"></span>
                   </div>
                   <div class="bar">
                     <span class="bar__label"
-                      ><span class="tier-badge tier-badge--manual">Manual</span></span
+                      ><span class="tier-badge tier-badge--manual" data-tooltip="Fully manual — no automation, human performs all steps">Manual</span></span
                     ><span class="bar__fill" style="width: 5%"></span>
                   </div>
                 </div>
@@ -511,7 +514,7 @@
                     <div class="row__main">
                       <div class="row__title">Start runbook: Invoice correction</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--assisted">Assisted</span> Approval Gate
+                        <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span> Approval Gate
                         likely
                       </div>
                     </div>
@@ -521,7 +524,7 @@
                     <div class="row__main">
                       <div class="row__title">Start workflow: Collect payment receipts</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--auto">Auto</span> evidence payloads
+                        <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span> evidence payloads
                         stored
                       </div>
                     </div>
@@ -637,7 +640,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt js-nonempty-workitems">
+          <div class="hero-prompt hero-prompt--dismissible js-nonempty-workitems">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               You have 7 work items. 1 needs approval and 1 has a failed run. Start from the top.
             </div>
@@ -691,30 +695,30 @@
                       >
                     </td>
                     <td><span class="status status--warn">Needs approval</span></td>
-                    <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
+                    <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">FA</span> NetSuite</span>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
                     </td>
-                    <td><span class="status status--warn">Paused</span></td>
+                    <td><span class="status status--warn"><span class="status__icon">⏸</span>Paused</span></td>
                     <td>5m</td>
                   </tr>
                   <tr>
                     <td><a href="#work-item">WI-1042 Dispute: investigate payment failure</a></td>
                     <td><span class="status status--info">In progress</span></td>
-                    <td><span class="tier-badge tier-badge--assisted">Assisted</span></td>
+                    <td><span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span></td>
                     <td class="js-owner-unassigned">Unassigned</td>
                     <td>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
                     </td>
-                    <td><span class="status status--info">Running</span></td>
+                    <td><span class="status status--info"><span class="status__icon">↻</span>Running</span></td>
                     <td>18m</td>
                   </tr>
                   <tr>
                     <td><a href="#work-item">WI-1013 Receipt export for audit period</a></td>
                     <td><span class="status">Open</span></td>
-                    <td><span class="tier-badge tier-badge--auto">Auto</span></td>
+                    <td><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
@@ -729,12 +733,12 @@
                       <span class="status status--ok">Completed</span>
                       <span class="drift-badge">drift</span>
                     </td>
-                    <td><span class="tier-badge tier-badge--auto">Auto</span></td>
+                    <td><span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span></td>
                     <td>Me</td>
                     <td>
                       <span class="chip"><span class="port-icon">CS</span> Salesforce</span>
                     </td>
-                    <td><span class="status status--ok">Succeeded</span></td>
+                    <td><span class="status status--ok"><span class="status__icon">✓</span>Succeeded</span></td>
                     <td>1d</td>
                   </tr>
                 </tbody>
@@ -753,7 +757,7 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1013 Receipt export for audit period</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--auto">Auto</span>
+                    <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
                     <span class="chip" style="font-size: 11px; padding: 3px 6px"
                       ><span class="port-icon">PB</span> Stripe</span
                     >
@@ -767,7 +771,7 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1042 Dispute: investigate payment failure</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--assisted">Assisted</span>
+                    <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span>
                     <span class="status status--info" style="font-size: 11px; padding: 3px 6px"
                       >Running</span
                     >
@@ -781,7 +785,7 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1099 Invoice correction for ACME</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                    <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                     <span class="status status--warn" style="font-size: 11px; padding: 3px 6px"
                       >Needs approval</span
                     >
@@ -795,7 +799,7 @@
                 <a class="kanban__card" href="#work-item">
                   <div class="kanban__card-title">WI-1105 Sync Salesforce contacts</div>
                   <div class="kanban__card-meta">
-                    <span class="tier-badge tier-badge--auto">Auto</span>
+                    <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
                     <span class="status status--ok" style="font-size: 11px; padding: 3px 6px"
                       >Completed</span
                     >
@@ -822,7 +826,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               Track execution history. Filter by status or time period to find specific runs.
             </div>
@@ -847,10 +852,18 @@
             </div>
           </div>
 
+          <div class="bulk-bar" id="bulkBar" hidden>
+              <span class="bulk-bar__count"><span id="bulkCount">0</span> selected</span>
+              <div class="bulk-bar__actions">
+                <button class="btn btn--small btn--primary" type="button">Retry selected</button>
+                <button class="btn btn--small" type="button">Export selected</button>
+              </div>
+            </div>
           <div class="table-wrap js-nonempty-runs">
             <table class="table" aria-label="Runs table">
               <thead>
                 <tr>
+                  <th><input type="checkbox" id="bulkSelectAll" aria-label="Select all runs"></th>
                   <th>Run</th>
                   <th>Status</th>
                   <th>Workflow</th>
@@ -862,8 +875,9 @@
               </thead>
               <tbody>
                 <tr>
+                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8920"></td>
                   <td><a href="#run">R-8920</a></td>
-                  <td><span class="status status--warn">Paused</span></td>
+                  <td><span class="status status--warn"><span class="status__icon">⏸</span>Paused</span></td>
                   <td>Invoice correction</td>
                   <td><a href="#work-item">WI-1099</a></td>
                   <td><span class="status status--warn">1 pending</span></td>
@@ -871,8 +885,9 @@
                   <td>12m ago</td>
                 </tr>
                 <tr>
+                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8892"></td>
                   <td><a href="#run">R-8892</a></td>
-                  <td><span class="status status--info">Running</span></td>
+                  <td><span class="status status--info"><span class="status__icon">↻</span>Running</span></td>
                   <td>Ticket priority update</td>
                   <td><a href="#work-item">WI-1042</a></td>
                   <td></td>
@@ -880,8 +895,9 @@
                   <td>1h ago</td>
                 </tr>
                 <tr>
+                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8850"></td>
                   <td><a href="#run">R-8850</a></td>
-                  <td><span class="status status--danger">Failed</span></td>
+                  <td><span class="status status--danger"><span class="status__icon">✕</span>Failed</span></td>
                   <td>CRM sync</td>
                   <td><a href="#work-item">WI-1021</a></td>
                   <td></td>
@@ -889,8 +905,9 @@
                   <td>3h ago</td>
                 </tr>
                 <tr>
+                  <td><input type="checkbox" class="bulk-checkbox" aria-label="Select R-8801"></td>
                   <td><a href="#run">R-8801</a></td>
-                  <td><span class="status status--ok">Succeeded</span></td>
+                  <td><span class="status status--ok"><span class="status__icon">✓</span>Succeeded</span></td>
                   <td>Collect payment receipts</td>
                   <td><a href="#work-item">WI-1105</a></td>
                   <td></td>
@@ -916,52 +933,44 @@
               <div class="crumbs subtle">
                 <a href="#project">Project</a> / <a href="#work-items">Work Items</a> /
               </div>
-              <h1 id="h-work-item" class="h1">
-                WI-1099 Invoice correction for ACME
-                <span class="tier-badge tier-badge--human">Human-approve</span>
-                <span class="sod-badge">Requires different approver</span>
-              </h1>
+              <h1 id="h-work-item" class="h1">WI-1099 Invoice correction for ACME</h1>
               <div class="subtle">
                 Owner: <strong>Me</strong> | Status:
                 <span class="status status--warn">Needs approval</span>
+                <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Different approver</span>
               </div>
             </div>
             <div class="screen__actions">
-              <a class="btn btn--primary" href="#run">Start workflow/runbook</a>
-              <button class="btn" type="button">Link external record</button>
+              <a class="btn btn--primary" href="#run">Review &amp; decide</a>
+              <a class="btn" href="#approvals">Approvals queue</a>
+              <button class="btn" type="button">Link record</button>
               <button class="btn js-drawer-trigger" type="button" data-drawer="wi-1099">
                 Context
               </button>
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
-              This work item coordinates runs, approvals, and evidence. Use the tabs below to
-              explore.
+              1 approval pending. Review the run and submit your decision.
             </div>
-            <a class="btn btn--primary" href="#run">View latest run</a>
+            <a class="btn btn--primary" href="#run">Review &amp; decide</a>
           </div>
 
-          <div class="callout callout--policy">
-            Effective policy: Automation level <strong>Human-approve</strong>. A different person
-            must approve.
-          </div>
-
-          <!-- SoR Ref Cluster (sor_ref_cluster) with port_family_icon -->
-          <div class="card" style="margin-top: 12px">
-            <div class="card__title">Linked External Records</div>
-            <div class="chips">
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
-                <span class="port-icon">FA</span> NetSuite | Invoice | INV-22318
-              </span>
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
-                <span class="port-icon">PB</span> Stripe | Charge | ch_9d2a
-              </span>
-              <span class="chip js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
-                <span class="port-icon">CS</span> Zendesk | Ticket | 4831
-              </span>
-            </div>
+          <!-- Linked records — compact inline -->
+          <div class="chips" style="margin-top: 8px">
+            <span class="subtle" style="font-size: 12px; margin-right: 4px">Linked:</span>
+            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+              <span class="port-icon">FA</span> NetSuite INV-22318
+            </span>
+            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+              <span class="port-icon">PB</span> Stripe ch_9d2a
+            </span>
+            <span class="chip chip--small js-drawer-trigger" data-drawer="wi-1099" style="cursor: pointer">
+              <span class="port-icon">CS</span> Zendesk #4831
+            </span>
           </div>
 
           <!-- Tabs (Timeline, Runs, Approvals, Evidence) -->
@@ -979,11 +988,14 @@
               role="region"
               aria-label="Timeline pane"
             >
+              <div class="callout callout--policy" style="margin-bottom: 10px">
+                Automation level <strong>Human-approve</strong>. A different person must approve.
+              </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">
-                      Plan created <span class="idem-badge idem-badge--safe">retry-safe</span>
+                      Plan created <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                     </div>
                     <div class="row__subtle">
                       Actor: User | This workflow will update invoice fields.
@@ -994,7 +1006,7 @@
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">
-                      Approval Gate opened <span class="idem-badge">at-most-once</span>
+                      Approval Gate opened <span class="idem-badge" data-tooltip="This action runs at most once — it cannot be repeated">One-time action</span>
                     </div>
                     <div class="row__subtle">
                       Actor: System | Waiting on decision with rationale
@@ -1019,8 +1031,11 @@
                     <div class="row__title">R-8920 Invoice correction (paused)</div>
                     <div class="row__subtle">Started 12m ago | Waiting on Approval Gate</div>
                   </div>
-                  <div class="row__right"><span class="status status--warn">Paused</span></div>
+                  <div class="row__right"><span class="status status--warn"><span class="status__icon">⏸</span>Paused</span></div>
                 </a>
+              </div>
+              <div class="subtle" style="margin-top: 8px; font-size: 12px">
+                <a href="#run">View planned effects →</a>
               </div>
             </div>
 
@@ -1031,10 +1046,10 @@
                     <div class="row__title">Approval Gate: Approve Plan (1 pending)</div>
                     <div class="row__subtle">
                       Requires rationale |
-                      <span class="sod-badge">Requires different approver</span>
+                      <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
                     </div>
                   </div>
-                  <div class="row__right"><span class="status status--warn">Pending</span></div>
+                  <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
                 </a>
               </div>
             </div>
@@ -1052,47 +1067,6 @@
             </div>
           </div>
 
-          <!-- Effects diff section -->
-          <article class="card" style="margin-top: 12px">
-            <div class="card__title">Effects</div>
-            <div class="effects">
-              <div class="effects__section">
-                <div class="effects__title">Planned Effects</div>
-                <div class="effects__hint subtle">This workflow will...</div>
-                <div class="effects__list">
-                  <div class="effect">
-                    <div class="effect__main">
-                      <span class="pill">Update</span>
-                      <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                      <span class="idem-badge idem-badge--safe">retry-safe</span>
-                    </div>
-                    <div class="effect__subtle">Update memo and line item classification.</div>
-                  </div>
-                  <div class="effect">
-                    <div class="effect__main">
-                      <span class="pill">Create</span>
-                      <span class="effect__target">Drive | Document | Receipt bundle</span>
-                      <span class="idem-badge idem-badge--safe">retry-safe</span>
-                    </div>
-                    <div class="effect__subtle">Create evidence artifact for audit trail.</div>
-                  </div>
-                </div>
-              </div>
-              <div class="effects__section">
-                <div class="effects__title">Verified Effects</div>
-                <div class="effects__hint subtle">Observed change (available post-run)</div>
-                <div class="effects__list">
-                  <div class="effect effect--muted">
-                    <div class="effect__main">
-                      <span class="pill">-</span>
-                      <span class="effect__target">Not available yet</span>
-                    </div>
-                    <div class="effect__subtle">Run must complete to record verified evidence.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </article>
         </section>
 
         <!-- ============================================================
@@ -1107,43 +1081,42 @@
               </div>
               <h1 id="h-run" class="h1">
                 Run R-8920 (Paused at Approval Gate)
-                <span class="tier-badge tier-badge--human">Human-approve</span>
+                <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
               </h1>
               <div class="subtle">Workflow: Invoice correction | Initiator: Me</div>
             </div>
             <div class="screen__actions">
+              <a class="btn" href="#approvals">Approvals queue</a>
               <button class="btn" type="button">Retry</button>
-              <button class="btn" type="button">Export run summary</button>
+              <button class="btn" type="button">Export</button>
               <button class="btn js-drawer-trigger" type="button" data-drawer="run-8920">
                 Context
               </button>
             </div>
-            <div class="outcome-preview" style="margin-top: 8px">
-              Retry will re-queue the Run. This retry is safe — no duplicate actions will occur.
-            </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
-              Review the execution state, planned effects, and evidence for this run. Take action if
-              approval is needed.
+              Your decision is needed. Review the planned effects (left), then submit your decision (right).
             </div>
-            <a class="btn btn--primary" href="#approvals">Go to Approvals</a>
           </div>
 
           <!-- Run State Machine (run_state_machine) -->
-          <div class="steps" aria-label="Run status timeline">
-            <div class="step step--done">Queued</div>
-            <div class="step step--done">Running</div>
-            <div class="step step--active">Approval Gate</div>
-            <div class="step">Complete</div>
+          <div class="stepper">
+            <span class="stepper__step stepper__step--done">Queued</span>
+            <span class="stepper__connector">→</span>
+            <span class="stepper__step stepper__step--done">Running</span>
+            <span class="stepper__connector">→</span>
+            <span class="stepper__step stepper__step--active">Approval Gate</span>
+            <span class="stepper__connector">→</span>
+            <span class="stepper__step">Complete</span>
           </div>
 
           <div class="grid grid--2">
             <!-- Plan Review Block (plan_review_block) with Effects Diff (effects_diff) -->
-            <article class="card card--hero">
+            <article class="card">
               <div class="card__title">Plan + Effects</div>
-              <div class="card__meta subtle">Review intended, predicted, and observed changes</div>
               <div class="effects">
                 <div class="effects__section">
                   <div class="effects__title">Planned Effects</div>
@@ -1153,7 +1126,7 @@
                       <div class="effect__main">
                         <span class="pill">Update</span>
                         <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                       </div>
                       <div class="effect__subtle">Update memo and line item classification.</div>
                     </div>
@@ -1161,17 +1134,14 @@
                       <div class="effect__main">
                         <span class="pill">Create</span>
                         <span class="effect__target">Drive | Document | Receipt bundle</span>
-                        <span class="idem-badge idem-badge--safe">retry-safe</span>
+                        <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                       </div>
                       <div class="effect__subtle">Create evidence artifact for audit trail.</div>
                     </div>
                   </div>
                 </div>
-                <div class="effects__section">
-                  <div class="effects__title">Predicted Effects</div>
-                  <div class="effects__hint subtle">
-                    The provider preview suggests these changes may occur
-                  </div>
+                <details class="effects__section">
+                  <summary class="effects__title" style="cursor: pointer">Predicted Effects <span class="subtle" style="font-weight: 400; font-size: 12px">(1)</span></summary>
                   <div class="effects__list">
                     <div class="effect">
                       <div class="effect__main">
@@ -1182,22 +1152,9 @@
                       <div class="effect__subtle">Total remains unchanged.</div>
                     </div>
                   </div>
-                </div>
-                <div class="effects__section">
-                  <div class="effects__title">Verified Effects</div>
-                  <div class="effects__hint subtle">Observed change (available post-run)</div>
-                  <div class="effects__list">
-                    <div class="effect effect--muted">
-                      <div class="effect__main">
-                        <span class="pill">-</span>
-                        <span class="effect__target">Not available yet</span>
-                        <span class="drift-badge" style="visibility: hidden">drift</span>
-                      </div>
-                      <div class="effect__subtle">
-                        Run must complete to record verified evidence.
-                      </div>
-                    </div>
-                  </div>
+                </details>
+                <div class="effects__section effects__section--muted">
+                  <div class="subtle" style="font-size: 12px">Verified effects will appear after the run completes.</div>
                 </div>
               </div>
             </article>
@@ -1211,8 +1168,8 @@
 
               <!-- Policy Evaluation Card (policy_eval_card) -->
               <div class="callout callout--policy" style="margin-bottom: 10px">
-                <strong>Policy Evaluation:</strong> Tier = Human-approve | Rule: Invoice writes &gt;
-                $10,000 | Required approvers: 2 | Different approver required
+                <strong>Policy:</strong> Human-approve — invoice writes &gt; $10k<br>
+                <span class="subtle" style="font-size: 12px">2 approvers required, must be a different person</span>
               </div>
 
               <div class="callout callout--danger js-callout-sod" style="margin-bottom: 10px">
@@ -1230,63 +1187,64 @@
               </div>
 
               <div class="form">
-                <label class="field">
+                <label class="field" id="fieldDecision">
                   <span class="field__label">Decision</span>
-                  <select class="field__input">
-                    <option value="" disabled selected>Select decision...</option>
+                  <select class="field__input" id="approvalDecision" required>
+                    <option value="">Select decision...</option>
                     <option>Approve</option>
                     <option>Deny</option>
                     <option>Request changes</option>
                   </select>
                 </label>
-                <label class="field">
+                <label class="field" id="fieldRationale">
                   <span class="field__label">Rationale (required)</span>
                   <textarea
                     class="field__input"
+                    id="approvalRationale"
                     rows="4"
                     placeholder="Explain why this Plan is acceptable or not."
+                    required
+                    minlength="10"
                   ></textarea>
+                  <span class="field__error">Rationale is required (minimum 10 characters)</span>
                 </label>
                 <div class="outcome-preview">
                   After approval: Run will resume automatically. 1 more approver needed (requires a
                   different approver).
                 </div>
                 <div class="form__actions">
-                  <button class="btn btn--primary" type="button">Submit decision</button>
+                  <button class="btn btn--primary" type="button" id="submitDecision" disabled data-confirm="approval">Submit decision</button>
                   <a class="btn" href="#work-item">Back to Work Item</a>
                 </div>
               </div>
             </article>
           </div>
 
-          <article class="card" style="margin-top: 12px">
-            <div class="card__title">Evidence</div>
-            <div class="card__meta subtle">
-              Events recorded during this Run, with links to stored payloads
-            </div>
+          <details class="card card--subtle" style="margin-top: 12px">
+            <summary class="card__title" style="cursor: pointer">Evidence (2 entries) <span class="subtle" style="font-weight: 400; font-size: 12px">— <a href="#evidence">View full log</a></span></summary>
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">Evidence: Plan recorded (tamper-proof)</div>
+                  <div class="row__title">Plan recorded (tamper-proof)</div>
                   <div class="row__subtle">
-                    Category: Plan | Actor: User | Linked: Plan P-551
-                    <span class="retention-tag">active 365d</span>
+                    Plan | User | Linked: P-551
+                    <span class="retention-tag">Retained 1 year</span>
                   </div>
                 </div>
                 <div class="row__right"><span class="status status--info">Evidence</span></div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
-                  <div class="row__title">Evidence: Approval Gate opened</div>
+                  <div class="row__title">Approval Gate opened</div>
                   <div class="row__subtle">
-                    Category: Approval | Actor: System | Linked: Run R-8920
-                    <span class="retention-tag">active 365d</span>
+                    Approval | System | Linked: R-8920
+                    <span class="retention-tag">Retained 1 year</span>
                   </div>
                 </div>
                 <div class="row__right"><span class="status status--warn">Evidence</span></div>
               </div>
             </div>
-          </article>
+          </details>
         </section>
 
         <!-- ============================================================
@@ -1308,7 +1266,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               You have 2 approvals waiting for your decision. Review each plan and decide.
             </div>
@@ -1350,7 +1309,7 @@
                   <td>Approve Plan: Create Invoice in NetSuite</td>
                   <td><a href="#work-item">WI-1099</a></td>
                   <td><a href="#run">R-8920</a></td>
-                  <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
+                  <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
                   <td><span class="sod-badge">Different-approver rule</span></td>
                   <td>12m</td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -1359,7 +1318,7 @@
                   <td>Approve Plan: Update Ticket priority in Zendesk</td>
                   <td><a href="#work-item">WI-1042</a></td>
                   <td><a href="#run">R-8892</a></td>
-                  <td><span class="tier-badge tier-badge--human">Human-approve</span></td>
+                  <td><span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span></td>
                   <td></td>
                   <td>1h</td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -1389,8 +1348,8 @@
                 <div class="triage-card__front">
                   <div class="triage-card__header">
                     <div class="triage-card__id">AG-442</div>
-                    <span class="tier-badge tier-badge--human">Human-approve</span>
-                    <span class="sod-badge">Requires different approver</span>
+                    <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
+                    <span class="sod-badge" data-tooltip="The person who started this run cannot be the one to approve it">Requires different approver</span>
                   </div>
                   <h2 class="triage-card__title">Approve Plan: Create Invoice in NetSuite</h2>
                   <div class="triage-card__meta">
@@ -1416,12 +1375,12 @@
                     <div class="triage-card__effect-row">
                       <span class="pill">Update</span>
                       <span>NetSuite | Invoice | INV-22318</span>
-                      <span class="idem-badge idem-badge--safe">retry-safe</span>
+                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                     </div>
                     <div class="triage-card__effect-row">
                       <span class="pill">Create</span>
                       <span>Drive | Document | Receipt bundle</span>
-                      <span class="idem-badge idem-badge--safe">retry-safe</span>
+                      <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                     </div>
                   </div>
 
@@ -1594,7 +1553,7 @@
                           <div class="effect__main">
                             <span class="pill">Update</span>
                             <span class="effect__target">NetSuite | Invoice | INV-22318</span>
-                            <span class="idem-badge idem-badge--safe">retry-safe</span>
+                            <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                           </div>
                           <div class="effect__subtle">
                             Update memo and line item classification.
@@ -1604,7 +1563,7 @@
                           <div class="effect__main">
                             <span class="pill">Create</span>
                             <span class="effect__target">Drive | Document | Receipt bundle</span>
-                            <span class="idem-badge idem-badge--safe">retry-safe</span>
+                            <span class="idem-badge idem-badge--safe" data-tooltip="Retrying this action won't create duplicates">Safe to retry</span>
                           </div>
                           <div class="effect__subtle">
                             Create evidence artifact for audit trail.
@@ -1764,7 +1723,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               Browse the tamper-proof audit log. Each entry is cryptographically linked to verify
               chain integrity.
@@ -1802,11 +1762,11 @@
               <div class="row__main">
                 <div class="row__title">Approval decision submitted</div>
                 <div class="row__subtle">
-                  Category: Approval | Actor: User | occurredAt: 2026-02-17T00:20Z
-                  <span class="retention-tag">active 365d</span>
+                  Category: Approval | Actor: User | 1 day ago
+                  <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info">Verified</span></div>
+              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
             </div>
             <div
               class="row row--static js-drawer-trigger"
@@ -1817,40 +1777,40 @@
                 <div class="row__title">Action executed (adapter write)</div>
                 <div class="row__subtle">
                   Category: Action | Actor: Adapter | payloadRefs: Diff, Log
-                  <span class="retention-tag">active 365d</span>
+                  <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info">Verified</span></div>
+              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
             </div>
             <div class="row row--static">
               <div class="row__main">
                 <div class="row__title">Plan recorded (tamper-proof)</div>
                 <div class="row__subtle">
                   Category: Plan | Actor: User | Linked: Plan P-551
-                  <span class="retention-tag">active 365d</span>
+                  <span class="retention-tag">Retained 1 year</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info">Verified</span></div>
+              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
             </div>
             <div class="row row--static">
               <div class="row__main">
                 <div class="row__title">Approval Gate opened</div>
                 <div class="row__subtle">
                   Category: Approval | Actor: System | Linked: Run R-8920
-                  <span class="retention-tag">approaching expiry 30d</span>
+                  <span class="retention-tag" style="border-color:var(--warn);color:var(--warn)">Expires in 30 days</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--warn">Verified</span></div>
+              <div class="row__right"><span class="status status--warn"><span class="status__icon">✓</span>Verified</span></div>
             </div>
             <div class="row row--static">
               <div class="row__main">
                 <div class="row__title">Run initiated</div>
                 <div class="row__subtle">
                   Category: Run | Actor: User | Linked: Run R-8920, WI-1099
-                  <span class="retention-tag">payload purged</span>
+                  <span class="retention-tag" style="border-color:var(--muted)">Payload removed</span>
                 </div>
               </div>
-              <div class="row__right"><span class="status status--info">Verified</span></div>
+              <div class="row__right"><span class="status status--info"><span class="status__icon">✓</span>Verified</span></div>
             </div>
           </div>
 
@@ -1896,7 +1856,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               Configure workspace access, integrations, and governance policies. Changes here affect
               all workflows and team members.
@@ -1931,7 +1892,7 @@
                         <div class="row__subtle">Role: admin</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok">Active</span>
+                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
                       </div>
                     </div>
                     <div class="row row--static">
@@ -1940,7 +1901,7 @@
                         <div class="row__subtle">Role: operator, approver</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok">Active</span>
+                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
                       </div>
                     </div>
                     <div class="row row--static">
@@ -1949,7 +1910,7 @@
                         <div class="row__subtle">Role: auditor</div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok">Active</span>
+                        <span class="status status--ok"><span class="status__icon">●</span>Active</span>
                       </div>
                     </div>
                   </div>
@@ -1973,7 +1934,7 @@
                         </div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--ok">Valid</span>
+                        <span class="status status--ok"><span class="status__icon">✓</span>Valid</span>
                       </div>
                     </div>
                     <div class="row row--static">
@@ -1984,7 +1945,7 @@
                         </div>
                       </div>
                       <div class="row__right">
-                        <span class="status status--warn">Expiring</span>
+                        <span class="status status--warn"><span class="status__icon">⏰</span>Expiring</span>
                       </div>
                     </div>
                   </div>
@@ -2133,36 +2094,36 @@
                     <div class="row__main">
                       <div class="row__title">Invoice writes &gt; $10,000</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--human">Human-approve</span>
+                        <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
                         N-approvers: 2
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info">Active</span>
+                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Default workflow tier</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--assisted">Assisted</span>
+                        <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span>
                         Plan review recommended
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info">Active</span>
+                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Read-only operations</div>
                       <div class="row__subtle">
-                        <span class="tier-badge tier-badge--auto">Auto</span>
+                        <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
                         No approval required
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info">Active</span>
+                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
                   </div>
                   <div class="row row--static">
@@ -2171,7 +2132,7 @@
                       <div class="row__subtle">Initiator cannot approve the same Run</div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info">Active</span>
+                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
                   </div>
                   <div class="row row--static">
@@ -2183,7 +2144,7 @@
                       </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--info">Active</span>
+                      <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
                   </div>
                 </div>
@@ -2214,7 +2175,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               Build your workflow by connecting steps. Click any node to configure it.
             </div>
@@ -2521,7 +2483,8 @@
             </div>
           </div>
 
-          <div class="hero-prompt">
+          <div class="hero-prompt hero-prompt--dismissible">
+            <button class="hero-prompt__dismiss" type="button" aria-label="Dismiss" title="Dismiss this tip">✕</button>
             <div class="hero-prompt__text">
               Configure AI agents that classify data, generate documents, or analyze patterns in
               your workflows.
@@ -2590,7 +2553,7 @@
                     <div class="agent-card__model subtle">Custom endpoint</div>
                   </div>
                   <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
-                    >Error</span
+                    ><span class="status__icon">⚠</span>Error</span
                   >
                 </div>
                 <div class="agent-card__stats">
@@ -2618,7 +2581,7 @@
                     <div class="agent-card__name">Draft Generator</div>
                     <div class="agent-card__model subtle">Claude Haiku 4.5</div>
                   </div>
-                  <span class="status" style="font-size: 10px; padding: 2px 6px">Inactive</span>
+                  <span class="status" style="font-size: 10px; padding: 2px 6px"><span class="status__icon">○</span>Inactive</span>
                 </div>
                 <div class="agent-card__stats">
                   <div class="agent-card__stat">
@@ -2847,6 +2810,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </div>
           </div>
         </section>
+        <!-- Confirmation Modal (H3, H5) -->
+        <div class="confirm-backdrop" id="confirmBackdrop" hidden></div>
+        <div class="confirm-modal" id="confirmModal" hidden>
+          <div class="confirm-modal__icon" id="confirmIcon"></div>
+          <div class="confirm-modal__title" id="confirmTitle">Are you sure?</div>
+          <div class="confirm-modal__body" id="confirmBody">This action cannot be undone.</div>
+          <div class="confirm-modal__actions">
+            <button class="btn" type="button" id="confirmCancel">Cancel</button>
+            <button class="btn btn--primary" type="button" id="confirmOk">Confirm</button>
+          </div>
+        </div>
       </main>
 
       <!-- ============================================================

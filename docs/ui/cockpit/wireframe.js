@@ -1062,6 +1062,270 @@ document.addEventListener('click', function (e) {
 });
 
 /* ============================================================
+   CONFIRMATION MODAL (H3, H5)
+   ============================================================ */
+const ConfirmModal = (function () {
+  'use strict';
+  var _callback = null;
+
+  function show(opts) {
+    var backdrop = document.getElementById('confirmBackdrop');
+    var modal = document.getElementById('confirmModal');
+    if (!backdrop || !modal) return;
+    var icon = document.getElementById('confirmIcon');
+    var title = document.getElementById('confirmTitle');
+    var body = document.getElementById('confirmBody');
+    var okBtn = document.getElementById('confirmOk');
+    if (icon) icon.textContent = opts.icon || '⚠';
+    if (title) title.textContent = opts.title || 'Are you sure?';
+    if (body) body.textContent = opts.body || 'This action cannot be undone.';
+    if (okBtn) okBtn.textContent = opts.okText || 'Confirm';
+    _callback = opts.onConfirm || null;
+    backdrop.hidden = false;
+    modal.hidden = false;
+    if (okBtn) okBtn.focus();
+  }
+
+  function hide() {
+    var backdrop = document.getElementById('confirmBackdrop');
+    var modal = document.getElementById('confirmModal');
+    if (backdrop) backdrop.hidden = true;
+    if (modal) modal.hidden = true;
+    _callback = null;
+  }
+
+  function confirm() {
+    var cb = _callback;
+    hide();
+    if (typeof cb === 'function') cb();
+  }
+
+  function init() {
+    document.addEventListener('click', function (e) {
+      if (e.target.id === 'confirmOk') confirm();
+      if (e.target.id === 'confirmCancel') hide();
+      if (e.target.id === 'confirmBackdrop') hide();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var modal = document.getElementById('confirmModal');
+        if (modal && !modal.hidden) { hide(); e.preventDefault(); }
+      }
+    });
+  }
+
+  return { show, hide, init };
+})();
+
+/* ============================================================
+   HERO PROMPT DISMISS (H3, H8)
+   ============================================================ */
+const HeroDismiss = (function () {
+  'use strict';
+  var STORAGE_KEY = 'portarium_hero_dismissed';
+
+  function loadDismissed() {
+    try {
+      var raw = sessionStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+  function saveDismissed(state) {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function init() {
+    /* Restore dismissed state */
+    var dismissed = loadDismissed();
+    document.querySelectorAll('.hero-prompt--dismissible').forEach(function (hp) {
+      var screen = hp.closest('.screen');
+      if (!screen) return;
+      var id = screen.dataset.screen || screen.id;
+      if (dismissed[id]) hp.classList.add('hero-prompt--hidden');
+    });
+
+    /* Click handler for dismiss buttons */
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.hero-prompt__dismiss');
+      if (!btn) return;
+      var hp = btn.closest('.hero-prompt--dismissible');
+      if (!hp) return;
+      hp.classList.add('hero-prompt--hidden');
+      var screen = hp.closest('.screen');
+      if (screen) {
+        var state = loadDismissed();
+        state[screen.dataset.screen || screen.id] = true;
+        saveDismissed(state);
+      }
+    });
+  }
+
+  return { init };
+})();
+
+/* ============================================================
+   BUTTON LOADING STATE (H1)
+   ============================================================ */
+function withLoadingState(btn, duration) {
+  if (!btn || btn.classList.contains('btn--loading')) return;
+  var originalText = btn.textContent;
+  btn.classList.add('btn--loading');
+  btn.textContent = originalText.replace(/^(.*?)$/, '$1');
+  setTimeout(function () {
+    btn.classList.remove('btn--loading');
+    btn.textContent = originalText;
+  }, duration || 1500);
+}
+
+/* ============================================================
+   APPROVAL FORM VALIDATION (H5, H9)
+   ============================================================ */
+const ApprovalValidation = (function () {
+  'use strict';
+
+  function validate() {
+    var decision = document.getElementById('approvalDecision');
+    var rationale = document.getElementById('approvalRationale');
+    var submitBtn = document.getElementById('submitDecision');
+    if (!decision || !rationale || !submitBtn) return;
+
+    var decisionValid = decision.value !== '';
+    var rationaleValid = rationale.value.trim().length >= 10;
+
+    var fieldDecision = document.getElementById('fieldDecision');
+    var fieldRationale = document.getElementById('fieldRationale');
+    if (fieldDecision) fieldDecision.classList.toggle('field--error', decision.value !== '' && !decisionValid);
+    if (fieldRationale) {
+      var showError = rationale.value.trim().length > 0 && !rationaleValid;
+      fieldRationale.classList.toggle('field--error', showError);
+    }
+
+    submitBtn.disabled = !(decisionValid && rationaleValid);
+  }
+
+  function init() {
+    var decision = document.getElementById('approvalDecision');
+    var rationale = document.getElementById('approvalRationale');
+    if (decision) decision.addEventListener('change', validate);
+    if (rationale) rationale.addEventListener('input', validate);
+
+    /* Submit with confirmation */
+    var submitBtn = document.getElementById('submitDecision');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function () {
+        var decisionEl = document.getElementById('approvalDecision');
+        var decisionText = decisionEl ? decisionEl.options[decisionEl.selectedIndex].text : 'this decision';
+        ConfirmModal.show({
+          icon: decisionText.toLowerCase().includes('reject') ? '✕' : '✓',
+          title: 'Submit approval decision?',
+          body: 'You are about to submit "' + decisionText + '". This action cannot be undone.',
+          okText: 'Submit decision',
+          onConfirm: function () {
+            withLoadingState(submitBtn, 2000);
+          },
+        });
+      });
+    }
+  }
+
+  return { init, validate };
+})();
+
+/* ============================================================
+   BULK SELECTION (H7)
+   ============================================================ */
+const BulkSelect = (function () {
+  'use strict';
+
+  function updateBar() {
+    var checks = document.querySelectorAll('.bulk-checkbox:checked');
+    var bar = document.getElementById('bulkBar');
+    var count = document.getElementById('bulkCount');
+    if (bar) bar.hidden = checks.length === 0;
+    if (count) count.textContent = checks.length;
+  }
+
+  function init() {
+    var selectAll = document.getElementById('bulkSelectAll');
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        var checked = selectAll.checked;
+        document.querySelectorAll('.bulk-checkbox').forEach(function (cb) {
+          cb.checked = checked;
+        });
+        updateBar();
+      });
+    }
+    document.addEventListener('change', function (e) {
+      if (e.target.classList.contains('bulk-checkbox')) updateBar();
+    });
+  }
+
+  return { init };
+})();
+
+/* ============================================================
+   ACTION BUTTON CONFIRMATIONS (H3, H5)
+   ============================================================ */
+function initActionConfirmations() {
+  document.addEventListener('click', function (e) {
+    /* Retry run button */
+    var retryBtn = e.target.closest('.btn');
+    if (!retryBtn) return;
+    var text = retryBtn.textContent.trim();
+
+    if (text === 'Retry run' || text === 'Retry') {
+      e.preventDefault();
+      ConfirmModal.show({
+        icon: '↻',
+        title: 'Retry this run?',
+        body: 'The run will be re-queued for execution. This is safe — no duplicate actions will occur.',
+        okText: 'Retry run',
+        onConfirm: function () { withLoadingState(retryBtn, 2000); },
+      });
+      return;
+    }
+
+    if (text === 'Deactivate') {
+      e.preventDefault();
+      ConfirmModal.show({
+        icon: '⚠',
+        title: 'Deactivate this agent?',
+        body: 'This agent may be used in active workflows. Deactivating it could cause running processes to fail.',
+        okText: 'Deactivate',
+        onConfirm: function () { withLoadingState(retryBtn, 1500); },
+      });
+      return;
+    }
+
+    if (text === 'Rotate') {
+      e.preventDefault();
+      ConfirmModal.show({
+        icon: '🔑',
+        title: 'Rotate this credential?',
+        body: 'Workflows using this credential will need the new value. Ensure you have the replacement ready.',
+        okText: 'Rotate credential',
+        onConfirm: function () { withLoadingState(retryBtn, 1500); },
+      });
+      return;
+    }
+
+    /* Retry selected (bulk) */
+    if (text === 'Retry selected') {
+      e.preventDefault();
+      var count = document.querySelectorAll('.bulk-checkbox:checked').length;
+      ConfirmModal.show({
+        icon: '↻',
+        title: 'Retry ' + count + ' selected runs?',
+        body: 'All selected runs will be re-queued. Only retry-safe runs will execute; others will be skipped.',
+        okText: 'Retry ' + count + ' runs',
+        onConfirm: function () { withLoadingState(retryBtn, 2000); },
+      });
+    }
+  });
+}
+
+/* ============================================================
    MAIN
    ============================================================ */
 function main() {
@@ -1134,6 +1398,21 @@ function main() {
 
   /* AI Summary Toggle */
   AISummaryToggle.init();
+
+  /* Confirmation Modal */
+  ConfirmModal.init();
+
+  /* Hero Prompt Dismiss */
+  HeroDismiss.init();
+
+  /* Approval Form Validation */
+  ApprovalValidation.init();
+
+  /* Bulk Selection */
+  BulkSelect.init();
+
+  /* Action Confirmations */
+  initActionConfirmations();
 
   /* Triage mode toggle */
   document.addEventListener('click', function (e) {

@@ -502,6 +502,12 @@ a {
 .chip--active {
   outline: 3px solid rgba(10, 102, 255, 0.25);
 }
+.chip--small {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-width: 1.5px;
+}
 .chips {
   display: flex;
   gap: 8px;
@@ -2895,4 +2901,256 @@ tr.is-kbd-selected td {
 /* ---- Hidden when AI is off ---- */
 .ai-summary--hidden {
   display: none;
+}
+
+/* ============================================================
+   HEURISTIC FIXES — Tooltips, Modals, Loading, Validation
+   ============================================================ */
+
+/* ---- Tooltip (H10, H2: explain badges on hover) ---- */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  border: 2px solid var(--line);
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  max-width: 280px;
+  white-space: normal;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus::after {
+  opacity: 1;
+}
+
+/* ---- Confirmation modal (H3, H5: irreversible actions) ---- */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 27, 27, 0.4);
+  z-index: 90;
+  animation: cmd-backdrop-in 0.15s ease;
+}
+.confirm-backdrop[hidden] {
+  display: none !important;
+}
+.confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, calc(100vw - 32px));
+  padding: 20px;
+  border-radius: var(--r-md);
+  border: 2px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 12px 40px rgba(27, 27, 27, 0.25);
+  z-index: 100;
+  animation: cmd-palette-in 0.15s ease;
+}
+.confirm-modal[hidden] {
+  display: none !important;
+}
+.confirm-modal__icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.confirm-modal__title {
+  font-size: 16px;
+  font-weight: 950;
+  margin-bottom: 6px;
+}
+.confirm-modal__body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+.confirm-modal__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ---- Button loading state (H1: processing feedback) ---- */
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.btn--loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+  margin-left: 6px;
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Dismissible hero prompt (H3, H8: reduce visual density) ---- */
+.hero-prompt--dismissible {
+  position: relative;
+  padding-right: 40px;
+}
+.hero-prompt__dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--muted);
+  transition: background 0.1s, color 0.1s;
+}
+.hero-prompt__dismiss:hover {
+  background: rgba(27, 27, 27, 0.08);
+  color: var(--ink);
+}
+.hero-prompt--hidden {
+  display: none;
+}
+
+/* ---- Form validation (H5, H9: error prevention) ---- */
+.field--error .field__input {
+  border-color: var(--danger);
+  background: rgba(179, 38, 30, 0.03);
+}
+.field__error {
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 2px;
+  display: none;
+}
+.field--error .field__error {
+  display: block;
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---- Bulk actions bar (H7: efficiency) ---- */
+.bulk-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  border: 2px solid var(--info);
+  background: rgba(37, 87, 167, 0.04);
+  margin-bottom: 12px;
+}
+.bulk-bar[hidden] {
+  display: none !important;
+}
+.bulk-bar__count {
+  font-weight: 900;
+  font-size: 13px;
+}
+.bulk-bar__actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* ---- Status icon prefix (A.1: colorblind accessibility) ---- */
+.status__icon {
+  margin-right: 4px;
+  font-size: 11px;
+}
+
+/* ---- Stepper for run phases (H4.3: differentiate from tabs) ---- */
+.stepper {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+  counter-reset: step;
+}
+.stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-weight: 900;
+  font-size: 12px;
+  color: var(--muted);
+  position: relative;
+}
+.stepper__step::before {
+  counter-increment: step;
+  content: counter(step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid var(--line-soft);
+  font-size: 11px;
+  font-weight: 950;
+  background: var(--panel);
+  flex-shrink: 0;
+}
+.stepper__step--done {
+  color: var(--ok);
+}
+.stepper__step--done::before {
+  border-color: var(--ok);
+  background: rgba(31, 122, 54, 0.08);
+  content: '\2713';
+}
+.stepper__step--active {
+  color: var(--ink);
+}
+.stepper__step--active::before {
+  border-color: var(--focus);
+  background: rgba(10, 102, 255, 0.08);
+}
+.stepper__connector {
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  color: var(--line-soft);
+  font-size: 10px;
+}
+
+/* ---- Clear all filter chip (H3.5) ---- */
+.chip--clear {
+  border-style: dashed;
+  cursor: pointer;
+  color: var(--muted);
+}
+.chip--clear:hover {
+  background: rgba(27, 27, 27, 0.06);
 }
