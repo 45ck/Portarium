@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "ACTIVE",
+  "providerId": "zammad",
+  "providerName": "Zammad",
+  "portFamilies": ["CustomerSupport"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/zammad/zammad",
+    "version": "pinned-by-commit"
+  },
+  "license": {
+    "spdxId": "AGPL-3.0-only",
+    "classification": "study_only",
+    "notes": "Upstream is AGPLv3. Use for pattern extraction + SoR integration; do not vendor upstream code into Portarium core."
+  },
+  "extraction": {
+    "modelSources": ["db/schema.rb", "app/models/**", "app/controllers/api/**"],
+    "command": "node scripts/domain-atlas/extract-zammad-cif.mjs",
+    "notes": "Initial extraction parses Rails db/schema.rb as the most honest field list for core objects (tickets/users/organisations) and key extension points (attachments, tags, custom fields)."
+  }
+}
