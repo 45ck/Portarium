@@ -207,7 +207,7 @@
               will appear here.
             </div>
             <div class="empty__actions">
-              <a class="btn btn--primary" href="#work-item">Create Work Item</a>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
             </div>
           </div>
 
@@ -443,12 +443,20 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <a class="btn btn--primary" href="#work-item">Create Work Item</a>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
+              <button class="btn" type="button" data-dialog="dlgStartWorkflow">Start workflow</button>
               <a class="btn" href="#work-items">View Work Items</a>
               <button class="btn js-drawer-trigger" type="button" data-drawer="context">
                 Context
               </button>
             </div>
+          </div>
+
+          <div class="chips" style="margin-bottom: 8px">
+            <span class="subtle" style="font-size: 12px; margin-right: 4px">Project:</span>
+            <span class="chip chip--active">Billing Governance</span>
+            <span class="chip">CRM Operations</span>
+            <span class="chip" style="border-style: dashed; cursor: pointer">+ New project</span>
           </div>
 
           <div class="hero-prompt hero-prompt--dismissible">
@@ -636,7 +644,7 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <a class="btn btn--primary" href="#work-item">Create Work Item</a>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
             </div>
           </div>
 
@@ -663,7 +671,7 @@
               governed work.
             </div>
             <div class="empty__actions">
-              <a class="btn btn--primary" href="#work-item">Create Work Item</a>
+              <button class="btn btn--primary" type="button" data-dialog="dlgCreateWorkItem">Create Work Item</button>
               <a class="btn" href="#settings">Configure integrations</a>
             </div>
           </div>
@@ -822,7 +830,7 @@
               <div class="subtle">Project: Billing Governance</div>
             </div>
             <div class="screen__actions">
-              <a class="btn btn--primary" href="#work-items">Start workflow</a>
+              <button class="btn btn--primary" type="button" data-dialog="dlgStartWorkflow">Start workflow</button>
             </div>
           </div>
 
@@ -1088,6 +1096,7 @@
             <div class="screen__actions">
               <a class="btn" href="#approvals">Approvals queue</a>
               <button class="btn" type="button">Retry</button>
+              <button class="btn" type="button" data-confirm="cancel-run">Cancel</button>
               <button class="btn" type="button">Export</button>
               <button class="btn js-drawer-trigger" type="button" data-drawer="run-8920">
                 Context
@@ -1142,6 +1151,12 @@
                     </div>
                   </div>
                 </details>
+                <details class="effects__section" style="margin-top: 8px">
+                  <summary class="subtle" style="cursor: pointer; font-size: 12px">Verified effects (post-execution)</summary>
+                  <div class="subtle" style="padding: 8px 0; font-size: 12px">
+                    Verified effects appear after the run completes. They show the actual diff between pre- and post-execution state.
+                  </div>
+                </details>
               </div>
             </article>
 
@@ -1151,6 +1166,17 @@
 
               <div class="callout callout--danger js-callout-sod" style="margin-bottom: 10px">
                 Invoice writes &gt; $10k &mdash; you cannot self-approve. 2 approvers required.
+              </div>
+
+              <div style="margin-bottom: 10px">
+                <div class="subtle" style="font-size: 11px; margin-bottom: 4px">Escalation chain</div>
+                <div class="escalation">
+                  <span class="escalation__step escalation__step--active">You (now)</span>
+                  <span class="escalation__arrow">&rarr;</span>
+                  <span class="escalation__step">manager@acme.com (after 24h)</span>
+                  <span class="escalation__arrow">&rarr;</span>
+                  <span class="escalation__step">admin@acme.com (after 48h)</span>
+                </div>
               </div>
 
               <div class="form">
@@ -1834,6 +1860,8 @@
             <button class="tab tab--active" type="button" data-tab="settings-access">Access</button>
             <button class="tab" type="button" data-tab="settings-integrations">Integrations</button>
             <button class="tab" type="button" data-tab="settings-governance">Governance</button>
+            <button class="tab" type="button" data-tab="settings-packs">Packs</button>
+            <button class="tab" type="button" data-tab="settings-triggers">Triggers</button>
           </div>
 
           <div class="tabpanes">
@@ -1849,7 +1877,9 @@
                   <div class="card__title">RBAC</div>
                   <div class="card__meta subtle">Workspace users and roles</div>
                   <div style="margin-bottom: 10px">
-                    <button class="btn btn--primary btn--small" type="button">Add user</button>
+                    <button class="btn btn--primary btn--small" type="button" data-dialog="dlgAddUser">Add user</button>
+                    <button class="btn btn--small" type="button">Remove</button>
+                    <button class="btn btn--small" type="button">Edit roles</button>
                   </div>
                   <div class="list">
                     <div class="row row--static">
@@ -1886,10 +1916,11 @@
                   <div class="card__title">Credentials</div>
                   <div class="card__meta subtle">Vaulting, rotation, access scoping</div>
                   <div style="margin-bottom: 10px; display: flex; gap: 6px">
-                    <button class="btn btn--primary btn--small" type="button">
+                    <button class="btn btn--primary btn--small" type="button" data-dialog="dlgAddCredential">
                       Add credential
                     </button>
                     <button class="btn btn--small" type="button">Rotate</button>
+                    <button class="btn btn--small" type="button" data-confirm="revoke-credential">Revoke</button>
                   </div>
                   <div class="list">
                     <div class="row row--static">
@@ -2052,8 +2083,10 @@
               <article class="card">
                 <div class="card__title">Policies</div>
                 <div class="card__meta subtle">Automation levels, approval rules, governance</div>
-                <div style="margin-bottom: 10px">
-                  <button class="btn btn--primary btn--small" type="button">Create rule</button>
+                <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                  <button class="btn btn--primary btn--small" type="button" data-dialog="dlgCreatePolicy">Create rule</button>
+                  <button class="btn btn--small" type="button">Edit</button>
+                  <button class="btn btn--small" type="button">Deactivate</button>
                 </div>
                 <div class="list">
                   <div class="row row--static">
@@ -2061,7 +2094,7 @@
                       <div class="row__title">Invoice writes &gt; $10,000</div>
                       <div class="row__subtle">
                         <span class="tier-badge tier-badge--human" data-tooltip="Requires explicit human approval before execution">Human-approve</span>
-                        N-approvers: 2
+                        N-approvers: 2 | Priority: 100
                       </div>
                     </div>
                     <div class="row__right">
@@ -2073,7 +2106,7 @@
                       <div class="row__title">Default workflow tier</div>
                       <div class="row__subtle">
                         <span class="tier-badge tier-badge--assisted" data-tooltip="AI helps, but a human reviews the result">Assisted</span>
-                        Plan review recommended
+                        Plan review recommended | Priority: 50
                       </div>
                     </div>
                     <div class="row__right">
@@ -2085,7 +2118,7 @@
                       <div class="row__title">Read-only operations</div>
                       <div class="row__subtle">
                         <span class="tier-badge tier-badge--auto" data-tooltip="Runs without human intervention">Auto</span>
-                        No approval required
+                        No approval required | Priority: 10
                       </div>
                     </div>
                     <div class="row__right">
@@ -2095,7 +2128,7 @@
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Different-approver rule</div>
-                      <div class="row__subtle">Initiator cannot approve the same Run</div>
+                      <div class="row__subtle">Initiator cannot approve the same Run (SoD constraint)</div>
                     </div>
                     <div class="row__right">
                       <span class="status status--info"><span class="status__icon">●</span>Active</span>
@@ -2106,12 +2139,189 @@
                       <div class="row__title">Destructive operations</div>
                       <div class="row__subtle">
                         <span class="tier-badge tier-badge--manual">Manual-only</span>
-                        Requires admin + explicit confirmation
+                        Requires admin + explicit confirmation | Priority: 200
                       </div>
                     </div>
                     <div class="row__right">
                       <span class="status status--info"><span class="status__icon">●</span>Active</span>
                     </div>
+                  </div>
+                </div>
+              </article>
+              <article class="card" style="margin-top: 12px">
+                <div class="card__title">Retention Schedule</div>
+                <div class="card__meta subtle">How long evidence and artifacts are retained</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Approval evidence</div>
+                      <div class="row__subtle">Category: Approval | Retain: 1 year</div>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Action evidence</div>
+                      <div class="row__subtle">Category: Action | Retain: 2 years</div>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">System logs</div>
+                      <div class="row__subtle">Category: System | Retain: 90 days</div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- Packs tab -->
+            <div class="tabpane" data-pane="settings-packs" role="region" aria-label="Packs pane">
+              <article class="card">
+                <div class="card__title">Installed Packs</div>
+                <div class="card__meta subtle">Vertical packs extend workflows, schemas, and compliance profiles</div>
+                <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                  <button class="btn btn--primary btn--small" type="button">Browse catalog</button>
+                  <button class="btn btn--small" type="button">Check for updates</button>
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">billing-governance-pack <span class="subtle" style="font-weight: 400">v2.1.0</span></div>
+                      <div class="row__subtle">
+                        Workflows: 3 | Schema extensions: 2 | Compliance profiles: 1 | UI templates: 1
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Enabled</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">audit-preparation-pack <span class="subtle" style="font-weight: 400">v1.4.2</span></div>
+                      <div class="row__subtle">
+                        Workflows: 2 | Schema extensions: 1 | Compliance profiles: 2 | UI templates: 0
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Enabled</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">crm-sync-pack <span class="subtle" style="font-weight: 400">v3.0.1</span></div>
+                      <div class="row__subtle">
+                        Workflows: 1 | Schema extensions: 0 | Compliance profiles: 0 | Connector mappings: 4
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--danger"><span class="status__icon">○</span>Disabled</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="card" style="margin-top: 12px">
+                <div class="card__title">Tenant Configuration</div>
+                <div class="card__meta subtle">Feature flags and compliance profiles for this workspace</div>
+                <div class="grid grid--2">
+                  <div>
+                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">Feature Flags</div>
+                    <div class="list">
+                      <div class="row row--static">
+                        <div class="row__main"><div class="row__title">ai-summary</div></div>
+                        <div class="row__right"><span class="status status--ok">On</span></div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main"><div class="row__title">predictive-effects</div></div>
+                        <div class="row__right"><span class="status status--ok">On</span></div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main"><div class="row__title">auto-escalation</div></div>
+                        <div class="row__right"><span class="status status--danger">Off</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 13px; margin-bottom: 6px">Compliance Profiles</div>
+                    <div class="list">
+                      <div class="row row--static">
+                        <div class="row__main"><div class="row__title">SOC 2 Type II</div></div>
+                        <div class="row__right"><span class="status status--ok">Active</span></div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main"><div class="row__title">SOX (Financial)</div></div>
+                        <div class="row__right"><span class="status status--ok">Active</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- Triggers tab -->
+            <div class="tabpane" data-pane="settings-triggers" role="region" aria-label="Triggers pane">
+              <article class="card">
+                <div class="card__title">Workflow Triggers</div>
+                <div class="card__meta subtle">Automate workflow execution via schedules, webhooks, or events</div>
+                <div style="margin-bottom: 10px; display: flex; gap: 6px">
+                  <button class="btn btn--primary btn--small" type="button">Create trigger</button>
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Daily receipt collection</div>
+                      <div class="row__subtle">
+                        Kind: <strong>Cron</strong> | Schedule: 0 8 * * 1-5 (weekdays 8am)
+                        | Workflow: Collect Payment Receipts
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Stripe payment webhook</div>
+                      <div class="row__subtle">
+                        Kind: <strong>Webhook</strong> | Event: payment_intent.succeeded
+                        | Workflow: Invoice Correction
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">New work item created</div>
+                      <div class="row__subtle">
+                        Kind: <strong>Domain Event</strong> | Event: WorkItemCreated
+                        | Workflow: CRM Contact Sync
+                      </div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--danger"><span class="status__icon">○</span>Inactive</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <article class="card" style="margin-top: 12px">
+                <div class="card__title">Quota Usage</div>
+                <div class="card__meta subtle">Workspace usage against plan limits</div>
+                <div class="bars">
+                  <div class="bar">
+                    <span class="bar__label">Runs / month</span>
+                    <span class="bar__fill" style="width: 35%"></span>
+                    <span class="subtle" style="font-size: 11px; margin-left: 6px">350 / 1000</span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label">Agent calls / month</span>
+                    <span class="bar__fill" style="width: 60%"></span>
+                    <span class="subtle" style="font-size: 11px; margin-left: 6px">600 / 1000</span>
+                  </div>
+                  <div class="bar">
+                    <span class="bar__label">Evidence entries</span>
+                    <span class="bar__fill" style="width: 15%"></span>
+                    <span class="subtle" style="font-size: 11px; margin-left: 6px">1,500 / 10,000</span>
                   </div>
                 </div>
               </article>
@@ -2134,10 +2344,13 @@
               <div class="subtle">Invoice Correction Workflow (draft)</div>
             </div>
             <div class="screen__actions">
+              <span class="subtle" style="font-size: 11px; margin-right: 4px">v1.2 (draft)</span>
               <button class="btn btn--small" type="button">Undo</button>
               <button class="btn btn--small" type="button">Redo</button>
               <button class="btn" type="button">Save draft</button>
-              <button class="btn btn--primary" type="button">Run workflow</button>
+              <button class="btn" type="button" data-dialog="dlgStartWorkflow">Run workflow</button>
+              <button class="btn" type="button" data-confirm="deactivate-workflow">Deactivate</button>
+              <button class="btn" type="button" data-confirm="delete-workflow">Delete</button>
             </div>
           </div>
 
@@ -2445,7 +2658,8 @@
               <div class="subtle">AI agents participating in workflows</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button">Add agent</button>
+              <button class="btn btn--primary" type="button" data-dialog="dlgAddAgent">Add agent</button>
+              <button class="btn" type="button" data-confirm="deregister-agent">Deregister</button>
             </div>
           </div>
 
@@ -2787,6 +3001,199 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <button class="btn btn--primary" type="button" id="confirmOk">Confirm</button>
           </div>
         </div>
+        <!-- ============================================================
+             FORM DIALOGS
+             ============================================================ -->
+        <dialog class="form-dialog" id="dlgCreateWorkItem">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Create Work Item</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Title</span>
+              <input class="field__input" type="text" placeholder="e.g. Invoice correction for ACME" required></label>
+            <label class="field"><span class="field__label">Owner</span>
+              <select class="field__input">
+                <option>Me</option>
+                <option>operator@acme.com</option>
+                <option>auditor@acme.com</option>
+                <option>Unassigned</option>
+              </select></label>
+            <label class="field"><span class="field__label">SLA Due Date</span>
+              <input class="field__input" type="date"></label>
+            <label class="field"><span class="field__label">Linked Records (optional)</span>
+              <input class="field__input" type="text" placeholder="e.g. NetSuite INV-22318, Stripe ch_9d2a"></label>
+            <label class="field"><span class="field__label">Description</span>
+              <textarea class="field__input" rows="3" placeholder="What needs to be done?"></textarea></label>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Create Work Item</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="form-dialog" id="dlgStartWorkflow">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Start Workflow</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Workflow</span>
+              <select class="field__input" required>
+                <option value="">Select a workflow...</option>
+                <option>Invoice Correction</option>
+                <option>Collect Payment Receipts</option>
+                <option>Quarterly Audit Preparation</option>
+                <option>CRM Contact Sync</option>
+              </select></label>
+            <label class="field"><span class="field__label">Work Item (optional)</span>
+              <select class="field__input">
+                <option value="">Create new work item</option>
+                <option>WI-1099 Invoice correction for ACME</option>
+                <option>WI-1042 Dispute: investigate payment failure</option>
+                <option>WI-1013 Receipt export for audit period</option>
+              </select></label>
+            <label class="field"><span class="field__label">Trigger</span>
+              <select class="field__input">
+                <option selected>Manual (one-time)</option>
+                <option>Cron schedule</option>
+                <option>Webhook</option>
+                <option>Domain event</option>
+              </select></label>
+            <div class="callout" style="margin: 8px 0">
+              An idempotency key will be assigned to prevent duplicate runs.
+            </div>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Start Run</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="form-dialog" id="dlgCreatePolicy">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Create Policy Rule</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Rule Name</span>
+              <input class="field__input" type="text" placeholder="e.g. Invoice writes > $10,000" required></label>
+            <label class="field"><span class="field__label">Condition</span>
+              <textarea class="field__input" rows="2" placeholder="e.g. portFamily == 'FinanceAccounting' AND operation == 'write' AND amount > 10000"></textarea></label>
+            <label class="field"><span class="field__label">Effect</span>
+              <select class="field__input">
+                <option>Allow (with tier override)</option>
+                <option>Deny</option>
+              </select></label>
+            <label class="field"><span class="field__label">Automation Level</span>
+              <select class="field__input">
+                <option>Auto</option>
+                <option>Assisted</option>
+                <option selected>Human-approve</option>
+                <option>Manual-only</option>
+              </select></label>
+            <label class="field"><span class="field__label">Required Approvers</span>
+              <input class="field__input" type="number" value="1" min="1" max="10"></label>
+            <label class="field"><span class="field__label">Separation of Duties</span>
+              <select class="field__input">
+                <option>None</option>
+                <option selected>Different-approver</option>
+                <option>N-of-M</option>
+              </select></label>
+            <label class="field"><span class="field__label">Priority</span>
+              <input class="field__input" type="number" value="100" min="1" max="999"></label>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Create Rule</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="form-dialog" id="dlgAddUser">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Add User</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Email</span>
+              <input class="field__input" type="email" placeholder="user@company.com" required></label>
+            <label class="field"><span class="field__label">Roles</span>
+              <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px">
+                <label><input type="checkbox"> Operator</label>
+                <label><input type="checkbox"> Approver</label>
+                <label><input type="checkbox"> Auditor</label>
+                <label><input type="checkbox"> Admin</label>
+              </div></label>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Add User</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="form-dialog" id="dlgAddCredential">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Add Credential</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Adapter</span>
+              <select class="field__input" required>
+                <option value="">Select adapter...</option>
+                <option>Stripe (PaymentsBilling)</option>
+                <option>NetSuite (FinanceAccounting)</option>
+                <option>Zendesk (CustomerSupport)</option>
+              </select></label>
+            <label class="field"><span class="field__label">Credential Type</span>
+              <select class="field__input">
+                <option>API Key</option>
+                <option>OAuth 2.0</option>
+                <option>Service Account</option>
+              </select></label>
+            <label class="field"><span class="field__label">Scopes</span>
+              <input class="field__input" type="text" placeholder="e.g. charges.read, charges.write"></label>
+            <label class="field"><span class="field__label">Expires</span>
+              <input class="field__input" type="date"></label>
+            <div class="callout" style="margin: 8px 0">
+              Credentials are stored in the vault and never exposed in logs or evidence.
+            </div>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Store Credential</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="form-dialog" id="dlgAddAgent">
+          <div class="form-dialog__header">
+            <h2 class="form-dialog__title">Register Agent</h2>
+            <button class="form-dialog__close" type="button" onclick="this.closest('dialog').close()">&times;</button>
+          </div>
+          <form method="dialog" class="form">
+            <label class="field"><span class="field__label">Agent Name</span>
+              <input class="field__input" type="text" placeholder="e.g. Invoice Classifier" required></label>
+            <label class="field"><span class="field__label">Endpoint URL</span>
+              <input class="field__input" type="url" placeholder="https://api.example.com/agent"></label>
+            <label class="field"><span class="field__label">Provider</span>
+              <select class="field__input">
+                <option>Anthropic (Claude)</option>
+                <option>OpenAI</option>
+                <option>Custom endpoint</option>
+              </select></label>
+            <label class="field"><span class="field__label">Capabilities</span>
+              <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px">
+                <label><input type="checkbox"> Read external records</label>
+                <label><input type="checkbox"> Classify / categorize</label>
+                <label><input type="checkbox"> Generate documents</label>
+                <label><input type="checkbox"> Analyze data</label>
+                <label><input type="checkbox"> Execute code</label>
+              </div></label>
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Register Agent</button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">Cancel</button>
+            </div>
+          </form>
+        </dialog>
       </main>
 
       <!-- ============================================================

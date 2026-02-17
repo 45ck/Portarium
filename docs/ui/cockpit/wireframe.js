@@ -1519,6 +1519,32 @@ function main() {
     }
   });
 
+  /* ---- Form Dialog wiring ---- */
+  qsa('[data-dialog]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var dlg = document.getElementById(btn.getAttribute('data-dialog'));
+      if (dlg && dlg.showModal) dlg.showModal();
+    });
+  });
+
+  /* Close dialogs on backdrop click */
+  qsa('.form-dialog').forEach(function (dlg) {
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) dlg.close();
+    });
+  });
+
+  /* Evidence export mock */
+  qsa('.screen__actions button').forEach(function (btn) {
+    if (btn.textContent.trim().indexOf('Export') === 0) {
+      btn.addEventListener('click', function () {
+        btn.textContent = 'Downloading...';
+        setTimeout(function () { btn.textContent = btn.textContent.replace('Downloading...', 'Downloaded ✓'); }, 800);
+        setTimeout(function () { btn.textContent = btn.getAttribute('data-original') || btn.textContent.replace('Downloaded ✓', 'Export'); }, 2500);
+      });
+    }
+  });
+
   /* Initial render */
   render(initial);
 }
