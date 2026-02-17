@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "status": "DONE",
+  "tracking": { "workItem": "bead-0013" },
   "providerId": "stripe",
   "providerName": "Stripe",
   "portFamilies": ["PaymentsBilling"],

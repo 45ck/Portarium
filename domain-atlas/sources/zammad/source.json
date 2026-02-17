@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "status": "DONE",
+  "tracking": { "workItem": "bead-0027" },
   "providerId": "zammad",
   "providerName": "Zammad",
   "portFamilies": ["CustomerSupport"],

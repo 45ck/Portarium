@@ -18,6 +18,22 @@
       "description": "Research status for coordination across agents.",
       "enum": ["PLANNED", "ACTIVE", "PAUSED", "DONE"]
     },
+    "tracking": {
+      "type": "object",
+      "description": "Optional work tracking metadata (non-authoritative; Beads remains the system of record).",
+      "additionalProperties": false,
+      "properties": {
+        "workItem": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Associated Beads issue id (example: bead-0030)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Coordination notes for other agents (keep short; prefer decisions/ for semantics)."
+        }
+      }
+    },
     "schemaVersion": {
       "type": "string",
       "description": "Schema version for this manifest (not the upstream provider version).",

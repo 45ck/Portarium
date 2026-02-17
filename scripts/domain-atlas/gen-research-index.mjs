@@ -111,6 +111,12 @@ function main() {
     const upstreamKind = typeof upstream?.kind === 'string' ? upstream.kind.trim() : '';
     const upstreamRepo = typeof upstream?.repoUrl === 'string' ? upstream.repoUrl.trim() : '';
 
+    const workItem =
+      typeof manifest?.tracking?.workItem === 'string' &&
+      manifest.tracking.workItem.trim().length > 0
+        ? manifest.tracking.workItem.trim()
+        : '';
+
     const decisionsPath = path.join(decisionsRoot, `${providerId}.md`);
     const decisionsLink = fs.existsSync(decisionsPath) ? `\`${relPosix(decisionsPath)}\`` : '';
 
@@ -118,6 +124,7 @@ function main() {
       status: formatStatus(manifest?.status),
       providerId,
       providerName,
+      workItem,
       ports,
       upstream: `${upstreamKind}: ${upstreamRepo}`,
       pinned: formatPinned(upstream),
@@ -156,13 +163,13 @@ function main() {
     lines.push('');
   } else {
     lines.push(
-      '| Status | Provider | Name | Port Families | Upstream | Pinned | License | Decisions | Manifest |',
+      '| Status | Provider | Work Item | Name | Port Families | Upstream | Pinned | License | Decisions | Manifest |',
     );
-    lines.push('|---|---|---|---|---|---|---|---|---|');
+    lines.push('|---|---|---|---|---|---|---|---|---|---|');
 
     for (const row of rows) {
       lines.push(
-        `| \`${escapePipes(row.status)}\` | \`${escapePipes(row.providerId)}\` | ${escapePipes(row.providerName)} | ${escapePipes(row.ports)} | \`${escapePipes(row.upstream)}\` | \`${escapePipes(row.pinned)}\` | \`${escapePipes(row.license)}\` | ${escapePipes(row.decisionsLink)} | ${escapePipes(row.manifestLink)} |`,
+        `| \`${escapePipes(row.status)}\` | \`${escapePipes(row.providerId)}\` | ${row.workItem.length > 0 ? `\`${escapePipes(row.workItem)}\`` : ''} | ${escapePipes(row.providerName)} | ${escapePipes(row.ports)} | \`${escapePipes(row.upstream)}\` | \`${escapePipes(row.pinned)}\` | \`${escapePipes(row.license)}\` | ${escapePipes(row.decisionsLink)} | ${escapePipes(row.manifestLink)} |`,
       );
     }
 

@@ -27,7 +27,7 @@ domain-atlas/
 
 ## Workflow (repeatable per upstream system)
 
-1. **Intake**: create `sources/<provider>/source.json` with upstream location, commit/version, and licence classification.
+1. **Intake**: create `sources/<provider>/source.json` with upstream location, commit/version, and licence classification. Set `status` (and optionally `tracking.workItem`) for coordination across agents.
 2. **Extract**: generate `extracted/<provider>/cif.json` (CIF) by reading the "honest schema" sources (migrations, ORM entities, OpenAPI, GraphQL schema, etc.).
 3. **Map**: add one or more `mappings/<provider>/*.mapping.json` files mapping vendor entities/fields to canonical objects (anti-corruption layer posture), scoped per Port Family.
 4. **Declare**: add `capabilities/<provider>/<PortFamily>.capability-matrix.json` describing supported actions, safety properties, limits, and idempotency mechanisms.

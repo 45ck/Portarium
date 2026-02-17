@@ -1,6 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "status": "DONE",
+  "tracking": { "workItem": "bead-0006" },
   "providerId": "odoo",
   "providerName": "Odoo (Community Edition)",
   "portFamilies": ["FinanceAccounting", "ProcurementSpend"],
