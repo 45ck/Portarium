@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "zammad",
+  "portFamily": "CustomerSupport",
+  "mappings": [
+    {
+      "canonicalObject": "Ticket",
+      "vendorEntity": "Ticket",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayLabel": "title",
+        "status": "state_id",
+        "priority": "priority_id"
+      },
+      "notes": "Zammad Ticket maps to canonical Ticket. Keep state/priority/group as provider-native ExternalObjectRefs until canonical enums and lifecycle semantics are finalised."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "User",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "login",
+        "email": "email",
+        "active": "active",
+        "organizationExternalId": "organization_id"
+      },
+      "notes": "Zammad users map to Party; adapter assigns Party role tags (customer/agent) based on permissions/roles."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "Organization",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "name",
+        "active": "active"
+      }
+    },
+    {
+      "canonicalObject": "Document",
+      "vendorEntity": "StoreFile",
+      "fieldMappings": {
+        "externalId": "sha",
+        "displayLabel": "sha"
+      },
+      "notes": "StoreFile represents file content (deduplicated by sha). Store attaches StoreFile to an object (store_object + o_id)."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "TicketArticle",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "TicketArticle",
+        "displayLabel": "subject"
+      },
+      "notes": "Ticket articles are messages/comments. Canonical comment model TBD; treat as ExternalObjectRef for MVP."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Tag",
+      "notes": "Tags attach TagItem to TagObject + o_id. Keep tag surfaces provider-native until canonical tagging semantics are defined."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Store",
+      "notes": "Store is the attachment instance (StoreObject + o_id) linking StoreFile to a domain object. Treat as provider-native; map StoreFile to canonical Document."
+    }
+  ]
+}

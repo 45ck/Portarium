@@ -28,6 +28,7 @@
     "domain-atlas:extract:odoo": "node scripts/domain-atlas/extract-odoo.mjs",
     "domain-atlas:extract:stripe": "node scripts/domain-atlas/extract-stripe-cif.mjs",
     "domain-atlas:extract:vault": "node scripts/domain-atlas/extract-vault-cif.mjs",
+    "domain-atlas:extract:zammad": "node scripts/domain-atlas/extract-zammad-cif.mjs",
     "bd": "node scripts/beads/bd.mjs",
     "ci:gates": "node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",

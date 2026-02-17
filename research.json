@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updatedAt": "2026-02-17T01:02:54.526Z",
+  "updatedAt": "2026-02-17T01:21:12.318Z",
   "domainAtlas": {
     "erpnext": {
       "status": "ACTIVE",
@@ -38,9 +38,9 @@
       "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (BUSL-1.1); extraction script: scripts/domain-atlas/extract-vault-cif.mjs."
     },
     "zammad": {
-      "status": "ACTIVE",
+      "status": "DONE",
       "workItem": "bead-0027",
-      "notes": "Vendoring upstream as a git submodule; initial extraction targets Rails db/schema.rb as the honest schema source for tickets/users/organisations and custom field/attachment surfaces."
+      "notes": "CIF/mappings/capabilities present; upstream vendored as a git submodule (AGPL-3.0-only); extraction script: scripts/domain-atlas/extract-zammad-cif.mjs."
     }
   }
 }

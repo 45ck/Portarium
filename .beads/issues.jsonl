@@ -24,6 +24,6 @@
 {"id":"bead-0024","title":"Run v1: domain model + parser + tests","status":"closed","createdAt":"2026-02-17T00:49:00.423Z","updatedAt":"2026-02-17T00:50:50.079Z"}
 {"id":"bead-0025","title":"Domain Atlas: Vault initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T00:49:51.528Z","updatedAt":"2026-02-17T00:53:08.098Z"}
 {"id":"bead-0026","title":"Low-fi UI prototype: Inbox + Project/Work Items/Run/Approvals/Evidence (v1)","status":"closed","createdAt":"2026-02-17T00:59:21.245Z","updatedAt":"2026-02-17T01:09:27.953Z"}
-{"id":"bead-0027","title":"Domain Atlas: Zammad initial artefacts (CIF + mapping + capability matrix)","status":"open","createdAt":"2026-02-17T01:02:39.202Z","updatedAt":"2026-02-17T01:02:39.202Z"}
-{"id":"bead-0028","title":"Approval v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:28.012Z","updatedAt":"2026-02-17T01:03:28.012Z"}
-{"id":"bead-0029","title":"Workflow v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:44.608Z","updatedAt":"2026-02-17T01:03:44.608Z"}
+{"id":"bead-0027","title":"Domain Atlas: Zammad initial artefacts (CIF + mapping + capability matrix)","status":"closed","createdAt":"2026-02-17T01:02:39.202Z","updatedAt":"2026-02-17T01:31:14.938Z"}
+{"id":"bead-0028","title":"Approval v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:28.012Z","updatedAt":"2026-02-17T01:33:27.654Z"}
+{"id":"bead-0029","title":"Workflow v1: domain model + parser + tests","status":"open","createdAt":"2026-02-17T01:03:44.608Z","updatedAt":"2026-02-17T01:33:27.959Z"}

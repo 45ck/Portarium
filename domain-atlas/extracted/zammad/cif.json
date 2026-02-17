@@ -1,0 +1,1344 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "zammad",
+    "providerName": "Zammad",
+    "upstream": {
+      "repoUrl": "https://github.com/zammad/zammad",
+      "commit": "a701e6837daaca55e722259b3309096847593232",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-17T01:22:12.685Z",
+  "entities": [
+    {
+      "name": "Group",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :groups).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "signature_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "reference:signature"
+        },
+        {
+          "name": "email_address_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "reference:email_address"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "limit:(160 * 10) + (2 * 9)"
+        },
+        {
+          "name": "name_last",
+          "type": "string",
+          "required": true,
+          "description": "limit:160"
+        },
+        {
+          "name": "parent_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "assignment_timeout",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "follow_up_possible",
+          "type": "string",
+          "required": true,
+          "default": "yes",
+          "description": "limit:100"
+        },
+        {
+          "name": "reopen_time_in_days",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "follow_up_assignment",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "shared_drafts",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "summary_generation",
+          "type": "string",
+          "required": true,
+          "default": "global_default"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :organizations).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:150"
+        },
+        {
+          "name": "shared",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:250"
+        },
+        {
+          "name": "domain_assignment",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "vip",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:5000"
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Store",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :stores).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "store_object_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:store_object"
+        },
+        {
+          "name": "store_file_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:store_file"
+        },
+        {
+          "name": "o_id",
+          "type": "string",
+          "required": true,
+          "description": "limit:255"
+        },
+        {
+          "name": "preferences",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:2500"
+        },
+        {
+          "name": "size",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:50"
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "StoreFile",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :store_files).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "sha",
+          "type": "string",
+          "required": true,
+          "description": "limit:128"
+        },
+        {
+          "name": "provider",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:20"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "StoreObject",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :store_objects).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :tags).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "tag_item_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:tag_item"
+        },
+        {
+          "name": "tag_object_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:tag_object"
+        },
+        {
+          "name": "o_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TagItem",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :tag_items).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "name_downcase",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TagObject",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :tag_objects).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Ticket",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :tickets).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "group_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:group"
+        },
+        {
+          "name": "priority_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:priority"
+        },
+        {
+          "name": "state_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:state"
+        },
+        {
+          "name": "organization_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "reference:organization"
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "limit:60"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "owner_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "first_response_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "first_response_escalation_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "first_response_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "first_response_diff_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "close_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "close_escalation_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "close_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "close_diff_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "update_escalation_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "update_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "update_diff_in_min",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "last_close_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "last_contact_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "last_contact_agent_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "last_contact_customer_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "last_owner_update_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "create_article_type_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "create_article_sender_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "article_count",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "escalation_at",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "pending_time",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:100"
+        },
+        {
+          "name": "time_unit",
+          "type": "decimal",
+          "required": false,
+          "nullable": true,
+          "description": "precision:6 scale:2"
+        },
+        {
+          "name": "preferences",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:500.kilobytes + 1"
+        },
+        {
+          "name": "ai_agent_running",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TicketArticle",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :ticket_articles).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "ticket_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:ticket"
+        },
+        {
+          "name": "type_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:type"
+        },
+        {
+          "name": "sender_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:sender"
+        },
+        {
+          "name": "detected_language",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:8"
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "cc",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "reply_to",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:300"
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "message_id_md5",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:32"
+        },
+        {
+          "name": "in_reply_to",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3000"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": true,
+          "default": "text/plain",
+          "description": "limit:20"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": true,
+          "description": "limit:20.megabytes + 1"
+        },
+        {
+          "name": "internal",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "preferences",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:500.kilobytes + 1"
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "origin_by_id",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TicketArticleSender",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :ticket_article_senders).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TicketArticleType",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :ticket_article_types).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "communication",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TicketPriority",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :ticket_priorities).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "default_create",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "ui_icon",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:100"
+        },
+        {
+          "name": "ui_color",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:100"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TicketState",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000010_create_ticket.rb (create_table :ticket_states).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "state_type_id",
+          "type": "integer",
+          "required": true,
+          "description": "reference:state_type"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "next_state_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "ignore_escalation",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "default_create",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "default_follow_up",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:250"
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Extracted from domain-atlas/upstreams/zammad/db/migrate/20120101000001_create_base.rb (create_table :users).",
+      "primaryKeys": ["id"],
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "organization_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true,
+          "description": "reference:organization"
+        },
+        {
+          "name": "login",
+          "type": "string",
+          "required": true,
+          "description": "limit:255"
+        },
+        {
+          "name": "firstname",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "lastname",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:255"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:100"
+        },
+        {
+          "name": "image_source",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:200"
+        },
+        {
+          "name": "web",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:100"
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "fax",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "mobile",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:200"
+        },
+        {
+          "name": "street",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:120"
+        },
+        {
+          "name": "zip",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:100"
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:500"
+        },
+        {
+          "name": "vip",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "verified",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "default": "",
+          "description": "limit:5000"
+        },
+        {
+          "name": "last_login",
+          "type": "datetime",
+          "required": false,
+          "nullable": true,
+          "description": "limit:3"
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:200"
+        },
+        {
+          "name": "login_failed",
+          "type": "integer",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "out_of_office",
+          "type": "boolean",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "out_of_office_start_at",
+          "type": "date",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "out_of_office_end_at",
+          "type": "date",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "out_of_office_replacement_id",
+          "type": "integer",
+          "required": false,
+          "nullable": true
+        },
+        {
+          "name": "preferences",
+          "type": "string",
+          "required": false,
+          "nullable": true,
+          "description": "limit:8000"
+        },
+        {
+          "name": "updated_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_by_id",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

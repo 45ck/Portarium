@@ -44,6 +44,7 @@ topbar
 tabpane
 tabpanes
 workitems
+javascripts
 
 # Branded IDs (existing)
 WorkspaceId

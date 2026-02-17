@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "zammad",
+  "providerName": "Zammad",
+  "portFamily": "CustomerSupport",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["api_key", "basic", "oauth2"],
+    "notes": "Zammad supports HTTP token auth (Authorization: Token token=...), HTTP basic auth (username/email + password), and OAuth2 (Doorkeeper). Prefer token/OAuth for non-interactive adapters."
+  },
+  "limits": {
+    "notes": "Self-hosted; treat rate limits and concurrency as deployment-specific and versioned per tenant."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "Zammad supports outbound webhooks and realtime UI updates; without a webhook bridge, polling the REST API is the portable baseline."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No generic idempotency key. Adapters should use read-before-write and provider natural keys where policy allows."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Verified effects via post-write reads. Predicted effects require adapter-side simulation (no provider dry-run API)."
+  },
+  "capabilities": [
+    {
+      "capability": "ticket:read",
+      "supported": true,
+      "operations": ["getTicket", "listTickets", "searchTickets"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "ticket:write",
+      "supported": true,
+      "operations": ["createTicket", "updateTicket", "closeTicket", "reopenTicket"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "notes": "Ticket updates are externally-effectful. Compensation is best-effort via reverting fields or creating follow-up tickets; closures are not always reversible depending on policy."
+    },
+    {
+      "capability": "ticket-article:write",
+      "supported": true,
+      "operations": ["createTicketArticle"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false
+      },
+      "notes": "Adding an article/comment is append-only. Prefer strict evidence capture and conservative defaults."
+    },
+    {
+      "capability": "user:read",
+      "supported": true,
+      "operations": ["getUser", "listUsers", "searchUsers"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "organization:read",
+      "supported": true,
+      "operations": ["getOrganization", "listOrganizations", "searchOrganizations"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "attachment:read",
+      "supported": true,
+      "operations": ["downloadAttachment"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Attachments are stored as StoreFile blobs and linked via Store records. Evidence capture must avoid exfiltrating sensitive payloads by default."
+    }
+  ],
+  "notes": "Initial matrix derived from Zammad REST auth surfaces and bootstrap migrations. Tighten per deployment and tenant policy."
+}
