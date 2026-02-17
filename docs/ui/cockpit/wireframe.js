@@ -733,8 +733,8 @@ const ABToggle = (function () {
     saveState(s);
   }
 
-  function register(screenId, variants, renderers) {
-    registry[screenId] = { variants, renderers };
+  function register(screenId, variants, renderers, labelMap) {
+    registry[screenId] = { variants, renderers, labelMap: labelMap || {} };
   }
 
   function injectToggles() {
@@ -765,7 +765,7 @@ const ABToggle = (function () {
         const label = document.createElement('span');
         label.className = 'ab-toggle__label';
         label.dataset.variant = v;
-        label.textContent = v;
+        label.textContent = config.labelMap[v] || v;
         if (v === currentVariant) label.classList.add('ab-toggle__label--active');
         track.appendChild(label);
       });
@@ -915,7 +915,7 @@ ABToggle.register('inbox', ['A', 'B'], {
   B: function (el) {
     showVariant(el, 'B');
   },
-});
+}, { A: 'Cards', B: 'Matrix' });
 ABToggle.register('work-items', ['A', 'B'], {
   A: function (el) {
     showVariant(el, 'A');
@@ -923,7 +923,7 @@ ABToggle.register('work-items', ['A', 'B'], {
   B: function (el) {
     showVariant(el, 'B');
   },
-});
+}, { A: 'Table', B: 'Kanban' });
 ABToggle.register('project', ['A', 'B'], {
   A: function (el) {
     showVariant(el, 'A');
@@ -931,7 +931,7 @@ ABToggle.register('project', ['A', 'B'], {
   B: function (el) {
     showVariant(el, 'B');
   },
-});
+}, { A: 'Summary', B: 'Dashboard' });
 
 /* ============================================================
    APPROVAL TRIAGE
@@ -972,6 +972,10 @@ function triageAction(action) {
   setTimeout(function () {
     card.classList.remove(exitClass);
     triageIndex++;
+    var progressFill = document.querySelector('.triage__progress-fill');
+    var currentSpan = document.querySelector('.triage__current');
+    if (progressFill) progressFill.style.width = ((triageIndex / 2) * 100) + '%';
+    if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 2);
     if (triageIndex >= 2) {
       var triageEl = document.getElementById('triage');
       var completeEl = document.getElementById('triageComplete');
