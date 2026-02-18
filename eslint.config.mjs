@@ -26,6 +26,10 @@ export default tseslint.config(
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
+      // Scratch/generator scripts left from interactive sessions
+      'tmp_*.{js,cjs,mjs,py}',
+      'gen*.{js,cjs,mjs,py}',
+      'gb*.{js,cjs,mjs}',
     ],
   },
 

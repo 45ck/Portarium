@@ -15,6 +15,7 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
+  assertNotBefore,
   parseNonEmptyString,
   readInteger,
   readIsoString,
@@ -84,7 +85,7 @@ export function parseWorkItemV1(value: unknown): WorkItemV1 {
   const ownerUserId = ownerUserIdRaw === undefined ? undefined : UserId(ownerUserIdRaw);
 
   const slaRaw = record['sla'];
-  const sla = slaRaw === undefined ? undefined : parseWorkItemSlaV1(slaRaw);
+  const sla = slaRaw === undefined ? undefined : parseWorkItemSlaV1(slaRaw, createdAtIso);
 
   const linksRaw = record['links'];
   const links = linksRaw === undefined ? undefined : parseWorkItemLinksV1(linksRaw);
@@ -103,9 +104,15 @@ export function parseWorkItemV1(value: unknown): WorkItemV1 {
   };
 }
 
-function parseWorkItemSlaV1(value: unknown): WorkItemSlaV1 {
+function parseWorkItemSlaV1(value: unknown, createdAtIso: string): WorkItemSlaV1 {
   const record = readRecord(value, 'sla', WorkItemParseError);
   const dueAtIso = readOptionalIsoString(record, 'dueAtIso', WorkItemParseError);
+  if (dueAtIso !== undefined) {
+    assertNotBefore(createdAtIso, dueAtIso, WorkItemParseError, {
+      anchorLabel: 'createdAtIso',
+      laterLabel: 'sla.dueAtIso',
+    });
+  }
   return {
     ...(dueAtIso ? { dueAtIso } : {}),
   };

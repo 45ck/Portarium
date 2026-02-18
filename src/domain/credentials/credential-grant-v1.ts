@@ -7,7 +7,7 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
-  parseIsoDate,
+  assertNotBefore,
   readInteger,
   readIsoString,
   readOptionalIsoString,
@@ -52,7 +52,6 @@ export function parseCredentialGrantV1(value: unknown): CredentialGrantV1 {
   const credentialsRef = readString(record, 'credentialsRef', CredentialGrantParseError);
   const scope = readString(record, 'scope', CredentialGrantParseError);
   const issuedAtIso = readIsoString(record, 'issuedAtIso', CredentialGrantParseError);
-  const issuedAt = parseIsoDate(issuedAtIso, 'issuedAtIso', CredentialGrantParseError);
   const expiresAtIso = readOptionalIsoString(record, 'expiresAtIso', CredentialGrantParseError);
   const lastRotatedAtIso = readOptionalIsoString(
     record,
@@ -61,11 +60,23 @@ export function parseCredentialGrantV1(value: unknown): CredentialGrantV1 {
   );
   const revokedAtIso = readOptionalIsoString(record, 'revokedAtIso', CredentialGrantParseError);
 
+  if (expiresAtIso !== undefined) {
+    assertNotBefore(issuedAtIso, expiresAtIso, CredentialGrantParseError, {
+      anchorLabel: 'issuedAtIso',
+      laterLabel: 'expiresAtIso',
+    });
+  }
+  if (lastRotatedAtIso !== undefined) {
+    assertNotBefore(issuedAtIso, lastRotatedAtIso, CredentialGrantParseError, {
+      anchorLabel: 'issuedAtIso',
+      laterLabel: 'lastRotatedAtIso',
+    });
+  }
   if (revokedAtIso !== undefined) {
-    const revokedAt = parseIsoDate(revokedAtIso, 'revokedAtIso', CredentialGrantParseError);
-    if (revokedAt < issuedAt) {
-      throw new CredentialGrantParseError('revokedAtIso must not precede issuedAtIso.');
-    }
+    assertNotBefore(issuedAtIso, revokedAtIso, CredentialGrantParseError, {
+      anchorLabel: 'issuedAtIso',
+      laterLabel: 'revokedAtIso',
+    });
   }
 
   return {

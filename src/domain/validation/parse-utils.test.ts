@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  assertNotBefore,
   parseBoolean,
   parseEnumValue,
   parseFiniteNumber,
@@ -375,5 +376,41 @@ describe('readRecordField / readOptionalRecordField', () => {
 
   it('readOptionalRecordField throws for non-object when present', () => {
     expect(() => readOptionalRecordField({ meta: 42 }, 'meta', E)).toThrow(TestError);
+  });
+});
+
+describe('assertNotBefore', () => {
+  it('does not throw when later is after anchor', () => {
+    expect(() =>
+      assertNotBefore('2026-01-01T00:00:00.000Z', '2026-02-01T00:00:00.000Z', E, {
+        anchorLabel: 'createdAtIso',
+        laterLabel: 'startedAtIso',
+      }),
+    ).not.toThrow();
+  });
+
+  it('does not throw when later equals anchor (same instant)', () => {
+    const ts = '2026-01-01T00:00:00.000Z';
+    expect(() =>
+      assertNotBefore(ts, ts, E, { anchorLabel: 'anchor', laterLabel: 'later' }),
+    ).not.toThrow();
+  });
+
+  it('throws when later precedes anchor', () => {
+    expect(() =>
+      assertNotBefore('2026-06-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z', E, {
+        anchorLabel: 'issuedAtIso',
+        laterLabel: 'revokedAtIso',
+      }),
+    ).toThrow(/revokedAtIso must not precede issuedAtIso/);
+  });
+
+  it('throws the supplied ErrorFactory type', () => {
+    expect(() =>
+      assertNotBefore('2026-06-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z', E, {
+        anchorLabel: 'a',
+        laterLabel: 'b',
+      }),
+    ).toThrow(TestError);
   });
 });

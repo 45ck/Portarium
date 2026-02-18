@@ -244,6 +244,24 @@ export function readOptionalIsoString(
   return value;
 }
 
+/**
+ * Assert that `laterIso` is not before `anchorIso`.
+ * If `laterIso` < `anchorIso`, throws using `createError`.
+ * Both values must already be validated ISO strings.
+ */
+export function assertNotBefore(
+  anchorIso: string,
+  laterIso: string,
+  createError: ErrorFactory,
+  opts: Readonly<{ anchorLabel: string; laterLabel: string }>,
+): void {
+  const anchor = parseIsoDate(anchorIso, opts.anchorLabel, createError);
+  const later = parseIsoDate(laterIso, opts.laterLabel, createError);
+  if (later < anchor) {
+    throw new createError(`${opts.laterLabel} must not precede ${opts.anchorLabel}.`);
+  }
+}
+
 export function readEnum<T extends string>(
   record: Record<string, unknown>,
   key: string,

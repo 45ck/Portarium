@@ -148,6 +148,21 @@ describe('parseWorkItemV1: validation', () => {
     ).toThrow(/title/i);
   });
 
+  it('rejects sla.dueAtIso before createdAtIso', () => {
+    expect(() =>
+      parseWorkItemV1({
+        schemaVersion: 1,
+        workItemId: 'wi-1',
+        workspaceId: 'ws-1',
+        createdAtIso: '2026-02-16T12:00:00.000Z',
+        createdByUserId: 'user-1',
+        title: 't',
+        status: 'Open',
+        sla: { dueAtIso: '2026-02-15T00:00:00.000Z' },
+      }),
+    ).toThrow(/sla\.dueAtIso must not precede createdAtIso/);
+  });
+
   it('rejects invalid SLA shape and values', () => {
     expect(() =>
       parseWorkItemV1({

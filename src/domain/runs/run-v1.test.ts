@@ -128,6 +128,58 @@ describe('parseRunV1: validation', () => {
     ).toThrow(/endedAtIso must be a valid ISO timestamp/);
   });
 
+  it('rejects startedAtIso before createdAtIso', () => {
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Running',
+        createdAtIso: '2026-02-17T01:00:00.000Z',
+        startedAtIso: '2026-02-17T00:00:00.000Z',
+      }),
+    ).toThrow(/startedAtIso must not precede createdAtIso/);
+  });
+
+  it('rejects endedAtIso before startedAtIso', () => {
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Succeeded',
+        createdAtIso: '2026-02-17T00:00:00.000Z',
+        startedAtIso: '2026-02-17T00:01:00.000Z',
+        endedAtIso: '2026-02-17T00:00:30.000Z',
+      }),
+    ).toThrow(/endedAtIso must not precede startedAtIso/);
+  });
+
+  it('rejects endedAtIso before createdAtIso when startedAtIso is absent', () => {
+    expect(() =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'run-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-1',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-1',
+        status: 'Succeeded',
+        createdAtIso: '2026-02-17T02:00:00.000Z',
+        endedAtIso: '2026-02-17T01:00:00.000Z',
+      }),
+    ).toThrow(/endedAtIso must not precede createdAtIso/);
+  });
+
   it('rejects invalid required and optional strings', () => {
     expect(() =>
       parseRunV1({

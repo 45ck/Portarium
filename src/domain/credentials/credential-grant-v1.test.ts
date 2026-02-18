@@ -61,6 +61,26 @@ describe('parseCredentialGrantV1', () => {
     );
   });
 
+  it('rejects expiresAtIso before issuedAtIso', () => {
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        issuedAtIso: '2026-06-01T00:00:00.000Z',
+        expiresAtIso: '2026-01-01T00:00:00.000Z',
+      }),
+    ).toThrow(/expiresAtIso must not precede issuedAtIso/);
+  });
+
+  it('rejects lastRotatedAtIso before issuedAtIso', () => {
+    expect(() =>
+      parseCredentialGrantV1({
+        ...validMinimal,
+        issuedAtIso: '2026-06-01T00:00:00.000Z',
+        lastRotatedAtIso: '2026-01-01T00:00:00.000Z',
+      }),
+    ).toThrow(/lastRotatedAtIso must not precede issuedAtIso/);
+  });
+
   it('rejects revokedAtIso before issuedAtIso', () => {
     expect(() =>
       parseCredentialGrantV1({

@@ -12,6 +12,7 @@ import {
   UserId,
 } from '../primitives/index.js';
 import {
+  assertNotBefore,
   readIsoString,
   readInteger,
   readOptionalIsoString,
@@ -78,6 +79,21 @@ export function parseRunV1(value: unknown): RunV1 {
   const createdAtIso = readIsoString(record, 'createdAtIso', RunParseError);
   const startedAtIso = readOptionalIsoString(record, 'startedAtIso', RunParseError);
   const endedAtIso = readOptionalIsoString(record, 'endedAtIso', RunParseError);
+
+  if (startedAtIso !== undefined) {
+    assertNotBefore(createdAtIso, startedAtIso, RunParseError, {
+      anchorLabel: 'createdAtIso',
+      laterLabel: 'startedAtIso',
+    });
+  }
+  if (endedAtIso !== undefined) {
+    const anchor = startedAtIso ?? createdAtIso;
+    const anchorLabel = startedAtIso !== undefined ? 'startedAtIso' : 'createdAtIso';
+    assertNotBefore(anchor, endedAtIso, RunParseError, {
+      anchorLabel,
+      laterLabel: 'endedAtIso',
+    });
+  }
 
   return {
     schemaVersion: 1,
