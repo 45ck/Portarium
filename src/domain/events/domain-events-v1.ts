@@ -1,8 +1,10 @@
 import {
   CorrelationId,
   UserId,
+  WorkspaceId,
   type CorrelationId as CorrelationIdType,
   type UserId as UserIdType,
+  type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
   readInteger,
@@ -101,8 +103,11 @@ export type DomainEventV1 = Readonly<{
   aggregateKind: string;
   aggregateId: string;
   occurredAtIso: string;
+  /** Required: every event must carry workspace/tenant context for multi-tenancy. */
+  workspaceId: WorkspaceIdType;
+  /** Required: every event must carry a correlation ID for distributed tracing. */
+  correlationId: CorrelationIdType;
   actorUserId?: UserIdType;
-  correlationId?: CorrelationIdType;
   payload?: unknown;
 }>;
 
@@ -209,13 +214,11 @@ export function parseDomainEventV1(value: unknown): DomainEventV1 {
   const aggregateKind = readString(record, 'aggregateKind', DomainEventParseError);
   const aggregateId = readString(record, 'aggregateId', DomainEventParseError);
   const occurredAtIso = readIsoString(record, 'occurredAtIso', DomainEventParseError);
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', DomainEventParseError));
+  const correlationId = CorrelationId(readString(record, 'correlationId', DomainEventParseError));
 
   const actorUserIdRaw = readOptionalString(record, 'actorUserId', DomainEventParseError);
   const actorUserId = actorUserIdRaw === undefined ? undefined : UserId(actorUserIdRaw);
-
-  const correlationIdRaw = readOptionalString(record, 'correlationId', DomainEventParseError);
-  const correlationId =
-    correlationIdRaw === undefined ? undefined : CorrelationId(correlationIdRaw);
 
   const payload = readOptionalRecordField(record, 'payload', DomainEventParseError);
 
@@ -226,8 +229,9 @@ export function parseDomainEventV1(value: unknown): DomainEventV1 {
     aggregateKind,
     aggregateId,
     occurredAtIso,
+    workspaceId,
+    correlationId,
     ...(actorUserId ? { actorUserId } : {}),
-    ...(correlationId ? { correlationId } : {}),
     ...(payload !== undefined ? { payload } : {}),
   };
 }

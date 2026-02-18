@@ -161,8 +161,9 @@ function buildDomainEvent(args: EventBuildArgs): DomainEventV1 {
     aggregateKind: 'Approval',
     aggregateId: args.ids.approvalId,
     occurredAtIso: args.decidedAtIso,
-    actorUserId: args.ctx.principalId,
+    workspaceId: args.ctx.tenantId,
     correlationId: args.ctx.correlationId,
+    actorUserId: args.ctx.principalId,
     payload: args.decided,
   };
 }

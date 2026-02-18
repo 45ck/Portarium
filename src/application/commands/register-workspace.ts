@@ -101,8 +101,9 @@ function buildDomainEvent(
     aggregateKind: 'Workspace',
     aggregateId: workspace.workspaceId,
     occurredAtIso: meta.occurredAtIso,
-    actorUserId: ctx.principalId,
+    workspaceId: ctx.tenantId,
     correlationId: ctx.correlationId,
+    actorUserId: ctx.principalId,
     payload: { workspaceId: workspace.workspaceId, workspaceName: workspace.name },
   };
 }
