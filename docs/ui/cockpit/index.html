@@ -2810,6 +2810,126 @@
                   </div>
                 </article>
               </div>
+
+              <!-- RBAC Role Matrix [bead-0465] -->
+              <div style="margin-top:20px">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">RBAC Role Matrix</div>
+                <div class="table-wrap">
+                  <table class="table" aria-label="RBAC role permissions matrix">
+                    <thead>
+                      <tr>
+                        <th scope="col">Permission</th>
+                        <th scope="col">Admin</th>
+                        <th scope="col">Operator</th>
+                        <th scope="col">Approver</th>
+                        <th scope="col">Auditor</th>
+                        <th scope="col">Viewer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">View runs and evidence</th>
+                        <td aria-label="Admin: yes">&#10003;</td>
+                        <td aria-label="Operator: yes">&#10003;</td>
+                        <td aria-label="Approver: yes">&#10003;</td>
+                        <td aria-label="Auditor: yes">&#10003;</td>
+                        <td aria-label="Viewer: yes">&#10003;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Start workflow runs</th>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa" aria-label="Approver: no">&mdash;</td>
+                        <td style="color:#aaa" aria-label="Auditor: no">&mdash;</td>
+                        <td style="color:#aaa" aria-label="Viewer: no">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Approve / deny gates</th>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Edit workflows</th>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Configure adapters</th>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Export evidence bundle</th>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Manage users &amp; roles</th>
+                        <td>&#10003;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color:#aaa">&mdash;</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- OIDC Indicators [bead-0465] -->
+              <div style="margin-top:16px">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Identity Providers</div>
+                <div class="grid grid--2">
+                  <article class="card" aria-label="Okta OIDC provider, active">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                      <div class="card__title" style="margin:0">Okta OIDC</div>
+                      <span class="status status--ok" aria-label="Active"><span class="status__icon">●</span>Active</span>
+                    </div>
+                    <div class="subtle" style="font-size:11px;margin-bottom:6px">
+                      Domain: acme.okta.com &bull; 3 users via OIDC
+                    </div>
+                    <div class="chips">
+                      <span class="chip chip--small">admin@acme.com <span class="status status--ok" style="font-size:10px;padding:1px 4px">Okta</span></span>
+                      <span class="chip chip--small">operator@acme.com <span class="status status--ok" style="font-size:10px;padding:1px 4px">Okta</span></span>
+                    </div>
+                    <div style="margin-top:8px;display:flex;gap:6px">
+                      <button class="btn btn--small" type="button">Configure</button>
+                      <button class="btn btn--small" type="button">Test OIDC &#8635;</button>
+                    </div>
+                  </article>
+                  <article class="card card--subtle" aria-label="Local auth, fallback only">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                      <div class="card__title" style="margin:0">Local Auth</div>
+                      <span class="status status--warn" aria-label="Fallback only"><span class="status__icon">◐</span>Fallback only</span>
+                    </div>
+                    <div class="subtle" style="font-size:11px;margin-bottom:6px">
+                      1 local user (auditor@acme.com) &mdash; recommend migrating to OIDC
+                    </div>
+                    <div style="display:flex;gap:6px">
+                      <button class="btn btn--small" type="button">Migrate to OIDC</button>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+                <strong>Nielsen Review (bead-0465):</strong>
+                RBAC matrix uses scope/col headers (table accessibility). OIDC providers have aria-labels.
+                Checkmarks use ✓ text not colour alone. Missing permission uses — not empty cell
+                (recognition over recall). Credential expiry badges use role="alert" when imminent.
+              </div>
             </div>
 
             <!-- Integrations tab -->
@@ -3727,6 +3847,108 @@
               </div>
             </div>
           </details>
+
+          <!-- Run Lifecycle State Machine Visualization [bead-0467] -->
+          <details style="margin-top:16px">
+            <summary style="cursor:pointer;font-size:13px;font-weight:600;padding:8px 0">
+              Run Lifecycle &amp; State Machine
+            </summary>
+            <div style="margin-top:12px">
+              <div style="font-size:11px;color:#888;margin-bottom:8px">
+                Current state highlighted &bull; Arrows show valid transitions &bull; Dashed = compensation path
+              </div>
+
+              <!-- State machine diagram using wf-graph classes -->
+              <div style="overflow-x:auto;padding-bottom:8px">
+                <div style="display:flex;align-items:flex-start;gap:0;min-width:700px">
+
+                  <!-- Pending -->
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <div class="wf-node" aria-label="State: Pending" style="min-width:90px;text-align:center">
+                      <div class="wf-node__header"><span class="wf-node__status status--warn">◷</span></div>
+                      <div class="wf-node__name">Pending</div>
+                      <div class="wf-node__meta subtle" style="font-size:10px">Planning</div>
+                    </div>
+                  </div>
+
+                  <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
+
+                  <!-- Running -->
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <div class="wf-node wf-node--selected" aria-label="State: Running (current)" style="min-width:90px;text-align:center">
+                      <div class="wf-node__header"><span class="wf-node__status status--info">&#9654;</span></div>
+                      <div class="wf-node__name">Running</div>
+                      <div class="wf-node__meta subtle" style="font-size:10px">Active &bull; 2 retries</div>
+                    </div>
+                  </div>
+
+                  <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
+
+                  <!-- Pending Approval -->
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <div class="wf-node wf-node--approval" aria-label="State: PendingApproval" style="min-width:90px;text-align:center">
+                      <div class="wf-node__header"><span class="wf-node__status status--warn">&#9208;</span></div>
+                      <div class="wf-node__name">Approval</div>
+                      <div class="wf-node__meta subtle" style="font-size:10px">SLA: 3h 48m</div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;align-items:center">
+                    <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
+                  </div>
+
+                  <!-- Executing -->
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                    <div class="wf-node wf-node--action" aria-label="State: Executing" style="min-width:90px;text-align:center">
+                      <div class="wf-node__header"><span class="wf-node__status status--info">&#9658;</span></div>
+                      <div class="wf-node__name">Executing</div>
+                      <div class="wf-node__meta subtle" style="font-size:10px">Effects live</div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div style="display:flex;align-items:center">
+                      <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
+                      <!-- Completed -->
+                      <div class="wf-node wf-node--end" aria-label="State: Completed" style="min-width:90px;text-align:center">
+                        <div class="wf-node__header"><span class="wf-node__status status--ok">&#10003;</span></div>
+                        <div class="wf-node__name">Completed</div>
+                        <div class="wf-node__meta subtle" style="font-size:10px">Evidence logged</div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Terminal states row -->
+                <div style="display:flex;gap:16px;margin-top:12px;padding-top:8px;border-top:1px solid rgba(0,0,0,.06)">
+                  <div style="font-size:11px;color:#888;margin-right:8px">Terminal states:</div>
+                  <div class="wf-node" aria-label="State: Failed" style="min-width:80px;text-align:center;border-color:rgba(192,57,43,.3)">
+                    <div class="wf-node__name" style="color:#c0392b">&#10005; Failed</div>
+                    <div class="wf-node__meta subtle" style="font-size:10px">Retry available</div>
+                  </div>
+                  <div class="wf-node" aria-label="State: Cancelled" style="min-width:80px;text-align:center;border-color:rgba(0,0,0,.15)">
+                    <div class="wf-node__name" style="color:#888">&#9633; Cancelled</div>
+                    <div class="wf-node__meta subtle" style="font-size:10px">By user or policy</div>
+                  </div>
+                  <div class="wf-node" aria-label="State: Compensating (rollback)" style="min-width:110px;text-align:center;border:1px dashed rgba(192,57,43,.5)">
+                    <div class="wf-node__name" style="color:#c0392b">&#8617; Compensating</div>
+                    <div class="wf-node__meta subtle" style="font-size:10px">Rollback in progress</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+                <strong>Nielsen Review (bead-0467):</strong>
+                Current state highlighted with wf-node--selected (visibility of system status).
+                Compensation path uses dashed border (consistent with branching conventions).
+                Retry counter shown on Running node. SLA on Approval gate.
+                All states have aria-label for screen readers.
+                Terminal states are visually separated and labelled (not colour-only).
+              </div>
+            </div>
+          </details>
+
         </section>
 
         <!-- ============================================================
@@ -6100,6 +6322,22 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <span class="statusbar__item">
           <span class="statusbar__dot statusbar__dot--ok js-status-events"></span>
           <span class="js-status-events-text">Events: connected</span>
+        </span>
+        <!-- Real-time / degraded mode indicators [bead-0463] -->
+        <span class="statusbar__item js-realtime-ok" aria-live="polite">
+          <span class="statusbar__dot statusbar__dot--ok"></span>
+          <span>Live</span>
+        </span>
+        <span class="statusbar__item js-realtime-degraded" hidden aria-live="assertive">
+          <span class="statusbar__dot statusbar__dot--warn"></span>
+          <span>Degraded &mdash; polling 30s &bull; <span class="js-staleness-timer">2m</span> ago</span>
+          <button class="statusbar__hint-btn" type="button" style="margin-left:4px" aria-label="Reconnect to live event stream">Reconnect</button>
+          <button class="statusbar__hint-btn" type="button" aria-label="Manually refresh all data">&#8635;</button>
+        </span>
+        <span class="statusbar__item js-realtime-offline" hidden aria-live="assertive">
+          <span class="statusbar__dot statusbar__dot--danger"></span>
+          <span>Offline &mdash; data unavailable</span>
+          <button class="statusbar__hint-btn" type="button" style="margin-left:4px">Retry</button>
         </span>
         <span class="statusbar__item statusbar__toast js-kbd-toast" hidden></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
