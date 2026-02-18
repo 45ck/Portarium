@@ -64,6 +64,27 @@ services:
     networks:
       - portarium-control
 
+  evidence-store-init:
+    image: minio/mc:latest
+    container_name: portarium-evidence-store-init
+    depends_on:
+      evidence-store:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        mc alias set portarium http://evidence-store:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
+        mc mb --ignore-existing --with-lock portarium/portarium-evidence
+        mc retention set --default COMPLIANCE 365d portarium/portarium-evidence || true
+        exit 0
+    environment:
+      MINIO_ROOT_USER: portarium
+      MINIO_ROOT_PASSWORD: portarium123
+    networks:
+      - portarium-control
+
   vault:
     image: hashicorp/vault:latest
     container_name: portarium-vault

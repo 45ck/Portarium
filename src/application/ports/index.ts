@@ -14,3 +14,4 @@ export * from './event-publisher.js';
 export * from './machine-invoker.js';
 export * from './action-runner.js';
 export * from './outbox.js';
+export * from './evidence-payload-store.js';

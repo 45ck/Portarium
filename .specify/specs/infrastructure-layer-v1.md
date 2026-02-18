@@ -55,6 +55,10 @@ ADR-0056 and existing domain invariants:
     access patterns.
 - **Evidence immutability**
   - Evidence Artifacts must be written to an immutable or retention-governed store.
+  - In production, the evidence object store must support WORM-style controls:
+    - Object Lock (or equivalent) with **COMPLIANCE** mode for regulated retention classes.
+    - Retention windows (retain-until timestamps) enforced by the storage backend.
+    - Legal holds that block deletion regardless of retention expiry.
   - Hash chain and metadata integrity checks remain authoritative.
 - **Execution containment**
   - Workers execute outside direct control-plane privileges.
