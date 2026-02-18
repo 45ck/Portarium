@@ -59,6 +59,7 @@ ApprovalId
 EvidenceId
 ArtifactId
 MachineId
+AgentId
 
 # Branded IDs (canonical objects — new)
 PartyId
@@ -697,6 +698,9 @@ TTFB
 
 # URL-encoding artifacts (from test assertions with %2F-encoded path segments)
 Fwith
+
+# Floating-point algorithm names (RFC 8785 / canonical-json docs)
+Grisu
 
 # US spelling variants
 Fulfills
