@@ -15,9 +15,9 @@ afterEach(async () => {
 describe('control-plane runtime main', () => {
   it('uses PORTARIUM_CONTAINER_ROLE and serves health', async () => {
     process.env['PORTARIUM_CONTAINER_ROLE'] = 'control-plane';
-    process.env['PORTARIUM_HTTP_PORT'] = '0'; // ignored (invalid) when opts.port provided
+    process.env['PORTARIUM_HTTP_PORT'] = '0';
 
-    handle = await main({ host: '127.0.0.1', port: 0 });
+    handle = await main({ host: '127.0.0.1' });
     const res = await fetch(`http://${handle.host}:${handle.port}/healthz`);
     expect(res.status).toBe(200);
     const json = (await res.json()) as { service: string };

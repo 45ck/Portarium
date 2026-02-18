@@ -14,7 +14,8 @@ afterEach(async () => {
 
 describe('worker runtime main', () => {
   it('defaults role to execution-plane and serves readiness', async () => {
-    handle = await main({ host: '127.0.0.1', port: 0 });
+    process.env['PORTARIUM_HTTP_PORT'] = '0';
+    handle = await main({ host: '127.0.0.1' });
     const res = await fetch(`http://${handle.host}:${handle.port}/readyz`);
     expect(res.status).toBe(200);
     const json = (await res.json()) as { service: string };

@@ -63,4 +63,3 @@ describe('createTemporalWorker', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 });
-

@@ -118,5 +118,105 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as { detail: string };
     expect(body.detail).toBe('Route not found.');
   });
-});
 
+  it('maps ValidationFailed to 400 and preserves x-correlation-id when provided', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx()),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/%20`, {
+      headers: { 'x-correlation-id': 'corr-fixed' },
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers.get('x-correlation-id')).toBe('corr-fixed');
+    const body = (await res.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/validation-failed/);
+    expect(body.status).toBe(400);
+  });
+
+  it('maps Forbidden to 403', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx()),
+      },
+      authorization: {
+        isAllowed: async () => false,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/forbidden/);
+    expect(body.status).toBe(403);
+  });
+
+  it('returns 500 Problem Details when a dependency throws', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => {
+          throw new Error('boom');
+        },
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/internal/);
+    expect(body.status).toBe(500);
+  });
+});

@@ -20,4 +20,3 @@ describe('portariumRun workflow', () => {
     ).resolves.toBeUndefined();
   });
 });
-

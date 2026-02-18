@@ -12,7 +12,8 @@ function readPort(defaultPort: number): number {
   const raw = process.env['PORTARIUM_HTTP_PORT'] ?? process.env['PORTARIUM_PORT'];
   if (!raw) return defaultPort;
   const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultPort;
+  // Allow port 0 for tests/local usage (OS-assigned ephemeral port).
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : defaultPort;
 }
 
 export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthServerHandle> {
