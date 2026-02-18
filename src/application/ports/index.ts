@@ -10,3 +10,5 @@ export * from './policy-store.js';
 export * from './unit-of-work.js';
 export * from './workspace-store.js';
 export * from './event-publisher.js';
+export * from './machine-invoker.js';
+export * from './action-runner.js';
