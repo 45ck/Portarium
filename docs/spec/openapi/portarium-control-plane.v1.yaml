@@ -2000,6 +2000,53 @@ components:
         expiresAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
     # ---- Adapter Registration schemas ----
+    CapabilityClaimV1:
+      type: object
+      additionalProperties: false
+      description: >-
+        A single capability claim declared by an adapter.  The capability field
+        uses the portFamily:operation pattern (e.g. FinanceAccounting:invoice:read).
+      properties:
+        capability:
+          type: string
+          pattern: '^[A-Za-z]+:[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$'
+          description: Port-family capability string (portFamily:noun:verb).
+        operation:
+          type: string
+          minLength: 1
+          description: Human-readable operation name (may differ from capability slug).
+        requiresAuth:
+          type: boolean
+          description: Whether invoking this capability requires credential injection.
+        inputKind:
+          type: string
+          minLength: 1
+          description: Optional canonical input object kind.
+        outputKind:
+          type: string
+          minLength: 1
+          description: Optional canonical output object kind.
+      required: [operation, requiresAuth]
+    AdapterMachineEntryV1:
+      type: object
+      additionalProperties: false
+      description: A machine runtime registered under an adapter.
+      properties:
+        machineId:
+          $ref: '#/components/schemas/MachineId'
+        endpointUrl:
+          type: string
+          format: uri
+        active:
+          type: boolean
+        displayName:
+          type: string
+          minLength: 1
+        authHint:
+          type: string
+          minLength: 1
+          description: Optional hint for credential lookup (vault path or grant reference).
+      required: [machineId, endpointUrl, active]
     AdapterRegistrationV1:
       type: object
       additionalProperties: false
@@ -2011,29 +2058,37 @@ components:
           $ref: '#/components/schemas/AdapterId'
         workspaceId:
           $ref: '#/components/schemas/WorkspaceId'
-        name:
+        providerSlug:
           type: string
           minLength: 1
+          description: Unique provider identifier slug (e.g. 'quickbooks', 'netsuite').
         portFamily:
           $ref: '#/components/schemas/PortFamily'
-        baseUrl:
-          type: string
-          format: uri
-        active:
+        enabled:
           type: boolean
-        createdAtIso:
-          $ref: '#/components/schemas/IsoTimestamp'
-        updatedAtIso:
-          $ref: '#/components/schemas/IsoTimestamp'
+        capabilityMatrix:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapabilityClaimV1'
+          description: >-
+            Declared capabilities for this adapter.  Must contain at least one
+            entry; controls which operations the adapter may perform within the
+            port family.
+        machineRegistrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdapterMachineEntryV1'
+          description: >-
+            Machine runtimes associated with this adapter (optional).
+            Populated when the adapter delegates execution to an agent runtime.
       required:
         - schemaVersion
         - adapterId
         - workspaceId
-        - name
+        - providerSlug
         - portFamily
-        - baseUrl
-        - active
-        - createdAtIso
+        - enabled
+        - capabilityMatrix
     AdapterRegistrationListResponse:
       type: object
       additionalProperties: false
@@ -2050,31 +2105,35 @@ components:
       type: object
       additionalProperties: false
       properties:
-        name:
+        providerSlug:
           type: string
           minLength: 1
         portFamily:
           $ref: '#/components/schemas/PortFamily'
-        baseUrl:
-          type: string
-          format: uri
-        active:
+        enabled:
           type: boolean
           default: true
-      required: [name, portFamily, baseUrl]
+        capabilityMatrix:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapabilityClaimV1'
+          minItems: 1
+      required: [providerSlug, portFamily, capabilityMatrix]
     UpdateAdapterRegistrationRequest:
       type: object
       additionalProperties: false
       minProperties: 1
       properties:
-        name:
+        providerSlug:
           type: string
           minLength: 1
-        baseUrl:
-          type: string
-          format: uri
-        active:
+        enabled:
           type: boolean
+        capabilityMatrix:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapabilityClaimV1'
+          minItems: 1
     AgentId:
       type: string
       minLength: 1
