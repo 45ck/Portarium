@@ -37,8 +37,8 @@ const { startRunActivity, completeRunActivity }: TemporalRunActivities =
     retry: {
       // Conservative default: quick retries with capped exponential backoff.
       // Per-activity policy will become explicit when actions are implemented.
-    initialInterval: '1 second',
-    backoffCoefficient: 2,
+      initialInterval: '1 second',
+      backoffCoefficient: 2,
       maximumInterval: '30 seconds',
       maximumAttempts: 5,
     },

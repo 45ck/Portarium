@@ -8,7 +8,10 @@ import type { PlanV1, PlannedEffectV1 } from '../../domain/plan/plan-v1.js';
 import type { EffectDiffResultV1 } from '../../domain/services/diff.js';
 import type { WorkflowActionV1, WorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
-import { appendEvidenceEntryV1, verifyEvidenceChainV1 } from '../../domain/evidence/evidence-chain-v1.js';
+import {
+  appendEvidenceEntryV1,
+  verifyEvidenceChainV1,
+} from '../../domain/evidence/evidence-chain-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import {
   CorrelationId,
@@ -98,13 +101,15 @@ export function completeRunActivity(input: CompleteRunActivityInput): Promise<vo
   });
 
   // Execute actions (placeholder): treat each planned effect as verified success.
-  const verified = plan.plannedEffects.map((p): VerifiedEffectV1 => ({
-    effectId: p.effectId,
-    operation: p.operation,
-    target: p.target,
-    summary: `Verified: ${p.summary}`,
-    verifiedAtIso: nowIso,
-  }));
+  const verified = plan.plannedEffects.map(
+    (p): VerifiedEffectV1 => ({
+      effectId: p.effectId,
+      operation: p.operation,
+      target: p.target,
+      summary: `Verified: ${p.summary}`,
+      verifiedAtIso: nowIso,
+    }),
+  );
 
   const diff = diffEffects({ planned: plan.plannedEffects, verified });
   setRunDiff(input.tenantId, input.runId, diff);
