@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "zenoh",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "Query",
+      "fieldMappings": {
+        "displayName": "key_expr",
+        "input": "parameters"
+      },
+      "notes": "A Zenoh get() query against a queryable (e.g., mission planner) maps to a read Task in Portarium when issued as part of an automation workflow."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "Publisher",
+      "fieldMappings": {
+        "displayName": "key_expr",
+        "input": "encoding"
+      },
+      "notes": "A declared Publisher used to send robot commands maps to a Task (command issuance). Safety: HumanApprove for motion keyspaces."
+    },
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "Session",
+      "fieldMappings": {
+        "assetId": "zid",
+        "displayName": "zid",
+        "status": "info"
+      },
+      "notes": "A Zenoh Session represents a robot peer in the fleet network. Map to Asset for connectivity and identity tracking."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "KeyExpr",
+      "fieldMappings": {
+        "externalId": "expr",
+        "externalType": "expr",
+        "displayLabel": "expr"
+      },
+      "notes": "KeyExpressions are the addressing primitives; ExternalObjectRef used to anchor topic paths in task parameters and cockpit filters."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Sample",
+      "fieldMappings": {
+        "externalType": "kind",
+        "displayLabel": "key_expr"
+      },
+      "notes": "Individual telemetry samples are streaming data; ExternalObjectRef for cockpit telemetry panels."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Reply",
+      "fieldMappings": {
+        "externalType": "replier_id",
+        "displayLabel": "result_ok"
+      },
+      "notes": "Query replies are response artefacts linked as ExternalObjectRefs from their parent Task."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Subscriber",
+      "fieldMappings": {
+        "externalType": "allowed_origin",
+        "displayLabel": "key_expr"
+      },
+      "notes": "Active subscribers are telemetry channel refs linked from robot Asset records for inventory."
+    }
+  ]
+}

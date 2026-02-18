@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "nav2",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "NavigateToPose.Goal",
+      "fieldMappings": {
+        "displayName": "behavior_tree",
+        "input": "pose"
+      },
+      "notes": "A NavigateToPose goal is a Portarium Task: the robot is commanded to navigate to a target pose. The Task lifecycle mirrors the action goal lifecycle."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "NavigateThroughPoses.Goal",
+      "fieldMappings": {
+        "input": "poses"
+      },
+      "notes": "NavigateThroughPoses mission maps to a Task; poses array is the ordered waypoint list."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "FollowWaypoints.Goal",
+      "fieldMappings": {
+        "input": "poses"
+      },
+      "notes": "FollowWaypoints maps to a Task; each waypoint may have an associated task executor run at arrival."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "DockRobot.Goal",
+      "fieldMappings": {
+        "displayName": "dock_id",
+        "input": "dock_pose"
+      },
+      "notes": "Dock mission is a Task; represents a physical docking manoeuvre as a Portarium workflow step."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "NavigateToPose.Feedback",
+      "fieldMappings": {
+        "externalType": "current_pose",
+        "displayLabel": "distance_remaining"
+      },
+      "notes": "Navigation feedback is a real-time telemetry stream; surfaced as ExternalObjectRef in cockpit progress widgets."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "NavigateToPose.Result",
+      "fieldMappings": {
+        "externalType": "error_code",
+        "displayLabel": "error_msg"
+      },
+      "notes": "Navigation result carries error code on failure; linked to the Task as its completion evidence."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "ComputePathToPose.Goal",
+      "fieldMappings": {
+        "externalType": "planner_id",
+        "displayLabel": "goal"
+      },
+      "notes": "Path planning requests are pre-execution read-only ops; no canonical Task needed."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Spin.Goal",
+      "fieldMappings": {
+        "externalType": "target_yaw"
+      },
+      "notes": "In-place rotation primitive; treated as a sub-task ExternalObjectRef within a larger mission Task."
+    }
+  ]
+}

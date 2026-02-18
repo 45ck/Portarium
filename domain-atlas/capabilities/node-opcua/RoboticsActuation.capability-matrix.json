@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "node-opcua",
+  "providerName": "node-opcua",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other", "basic"],
+    "notes": "OPC UA supports Anonymous, Username/Password, and X.509 certificate authentication. Portarium adapter uses Username/Password or certificate auth depending on PLC configuration."
+  },
+  "limits": {
+    "concurrency": {
+      "notes": "OPC UA session concurrency is bounded by the server's MaxSessionCount. Each Portarium connection consumes one session."
+    }
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "OPC UA Subscriptions push DataChangeNotifications and EventNotifications to the client via the Publish service."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "OPC UA write operations are not idempotent — they have physical effects. Browse and Read are safe to repeat."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium can plan Read/Write sequences. Verified effects: re-read the attribute after write to confirm new value."
+  },
+  "capabilities": [
+    {
+      "capability": "node:read",
+      "supported": true,
+      "operations": ["browse", "read"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Browse the OPC UA address space and read variable node values (sensor readings, PLC registers)."
+    },
+    {
+      "capability": "node:write",
+      "supported": true,
+      "operations": ["write"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Write PLC variable or robot parameter nodes. High safety: may directly actuate hardware."
+    },
+    {
+      "capability": "method:write",
+      "supported": true,
+      "operations": ["callMethod"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Invoke OPC UA Method nodes (e.g., Start, Stop, Reset on a robot controller). Physical side effects."
+    },
+    {
+      "capability": "subscription:write",
+      "supported": true,
+      "operations": ["createSubscription", "createMonitoredItems", "deleteSubscription"],
+      "safety": {
+        "defaultTier": "Assisted",
+        "requiresApproval": false,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Manage OPC UA subscriptions for real-time telemetry streams. Rollback = deleteSubscription."
+    },
+    {
+      "capability": "telemetry:read",
+      "supported": true,
+      "operations": ["subscribeDataChange"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Stream OPC UA DataChangeNotifications for monitored variable nodes (temperatures, positions, torques)."
+    },
+    {
+      "capability": "alarm:read",
+      "supported": true,
+      "operations": ["subscribeEvents"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Stream OPC UA Alarm & Condition event notifications for fault detection."
+    }
+  ]
+}

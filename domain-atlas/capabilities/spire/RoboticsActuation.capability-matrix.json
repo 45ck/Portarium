@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "spire",
+  "providerName": "SPIFFE/SPIRE",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other"],
+    "notes": "SPIRE itself is the identity provider. Portarium authenticates to the SPIRE Workload API via the agent Unix domain socket (no API key needed; identity is attested)."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": true,
+    "supportsEventStream": true,
+    "notes": "SPIRE Workload API streams SVID rotation events via gRPC server-streaming. Bundle updates can be polled or federated."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "SPIRE server API uses revision_number for optimistic concurrency on registration entries. No external idempotency key header."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": true,
+    "supportsVerifiedEffects": true,
+    "notes": "Registration entry CRUD operations are fully deterministic. Portarium can plan and verify entry state via GetRegistrationEntry."
+  },
+  "capabilities": [
+    {
+      "capability": "svid:read",
+      "supported": true,
+      "operations": ["fetchX509SVID", "fetchJWTSVID"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Fetch X.509 or JWT SVIDs for robot workload identities. Read-only from Portarium's perspective."
+    },
+    {
+      "capability": "bundle:read",
+      "supported": true,
+      "operations": ["fetchBundle", "fetchBundles"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Read trust bundles for federated trust domains (multi-cluster robot fleet scenarios)."
+    },
+    {
+      "capability": "registration-entry:write",
+      "supported": true,
+      "operations": [
+        "createRegistrationEntry",
+        "updateRegistrationEntry",
+        "deleteRegistrationEntry"
+      ],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": true,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Manage SPIFFE registration entries for robot workloads. Rollback = delete or revert entry. Requires approval — wrong selectors allow unauthorised identity claim."
+    },
+    {
+      "capability": "attested-node:read",
+      "supported": true,
+      "operations": ["listAgents", "getAgent"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Read attested SPIRE agent (robot node) records for fleet identity inventory."
+    },
+    {
+      "capability": "svid-rotation:read",
+      "supported": true,
+      "operations": ["watchX509SVID"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Stream SVID rotation events to detect certificate renewals and trigger adapter re-auth."
+    }
+  ]
+}

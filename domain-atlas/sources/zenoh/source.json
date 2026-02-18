@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "zenoh",
+  "providerName": "Eclipse Zenoh",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/eclipse-zenoh/zenoh",
+    "commit": "ccbf047725f144373398735897830f015147bfac",
+    "version": "main",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "EPL-2.0",
+    "classification": "study_only",
+    "notes": "EPL-2.0 / Apache-2.0 dual (Rust core is EPL-2.0). Study-only for CIF extraction. Zenoh is the preferred WAN bridge for ROS 2 DDS traffic (via zenoh-bridge-ros2dds). The Rust API types define the pub/sub/query model."
+  },
+  "extraction": {
+    "modelSources": [
+      "zenoh/src/api/session.rs",
+      "zenoh/src/api/publisher.rs",
+      "zenoh/src/api/subscriber.rs",
+      "zenoh/src/api/querier.rs",
+      "zenoh/src/api/sample.rs",
+      "zenoh/src/api/key_expr.rs"
+    ],
+    "command": "node scripts/domain-atlas/extract-zenoh-cif.mjs",
+    "notes": "Extract Zenoh API types from Rust source: KeyExpr, Sample, Publisher, Subscriber, Query, Reply, Session. Map to CIF entities for the telemetry streaming model."
+  }
+}

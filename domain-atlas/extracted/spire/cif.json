@@ -1,0 +1,422 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "spire",
+    "providerName": "SPIFFE/SPIRE",
+    "upstream": {
+      "repoUrl": "https://github.com/spiffe/spire",
+      "commit": "c3b8f176fc494a1ddaec5813cdc30c8f5d1c0e15",
+      "version": "main"
+    }
+  },
+  "extractedAt": "2026-02-18T04:44:43.563Z",
+  "entities": [
+    {
+      "name": "AttestationData",
+      "description": "SPIRE proto3 message spire.common.AttestationData",
+      "fields": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestationData.type"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "required": true,
+          "description": "proto3 bytes AttestationData.data"
+        }
+      ]
+    },
+    {
+      "name": "Selector",
+      "description": "SPIRE proto3 message spire.common.Selector",
+      "fields": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string Selector.type"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string Selector.value"
+        }
+      ]
+    },
+    {
+      "name": "AttestedNode",
+      "description": "SPIRE proto3 message spire.common.AttestedNode",
+      "primaryKeys": ["spiffe_id"],
+      "fields": [
+        {
+          "name": "spiffe_id",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestedNode.spiffe_id"
+        },
+        {
+          "name": "attestation_data_type",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestedNode.attestation_data_type"
+        },
+        {
+          "name": "cert_serial_number",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestedNode.cert_serial_number"
+        },
+        {
+          "name": "cert_not_after",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 AttestedNode.cert_not_after"
+        },
+        {
+          "name": "new_cert_serial_number",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestedNode.new_cert_serial_number"
+        },
+        {
+          "name": "new_cert_not_after",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 AttestedNode.new_cert_not_after"
+        },
+        {
+          "name": "selectors",
+          "type": "array<Selector>",
+          "required": false,
+          "description": "proto3 repeated Selector AttestedNode.selectors"
+        },
+        {
+          "name": "can_reattest",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool AttestedNode.can_reattest"
+        },
+        {
+          "name": "agent_version",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string AttestedNode.agent_version"
+        }
+      ]
+    },
+    {
+      "name": "RegistrationEntry",
+      "description": "SPIRE proto3 message spire.common.RegistrationEntry",
+      "primaryKeys": ["entry_id"],
+      "fields": [
+        {
+          "name": "selectors",
+          "type": "array<Selector>",
+          "required": false,
+          "description": "proto3 repeated Selector RegistrationEntry.selectors"
+        },
+        {
+          "name": "parent_id",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string RegistrationEntry.parent_id"
+        },
+        {
+          "name": "spiffe_id",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string RegistrationEntry.spiffe_id"
+        },
+        {
+          "name": "x509_svid_ttl",
+          "type": "int32",
+          "required": true,
+          "description": "proto3 int32 RegistrationEntry.x509_svid_ttl"
+        },
+        {
+          "name": "federates_with",
+          "type": "array<string>",
+          "required": false,
+          "description": "proto3 repeated string RegistrationEntry.federates_with"
+        },
+        {
+          "name": "entry_id",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string RegistrationEntry.entry_id"
+        },
+        {
+          "name": "admin",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool RegistrationEntry.admin"
+        },
+        {
+          "name": "downstream",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool RegistrationEntry.downstream"
+        },
+        {
+          "name": "entryExpiry",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 RegistrationEntry.entryExpiry"
+        },
+        {
+          "name": "dns_names",
+          "type": "array<string>",
+          "required": false,
+          "description": "proto3 repeated string RegistrationEntry.dns_names"
+        },
+        {
+          "name": "revision_number",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 RegistrationEntry.revision_number"
+        },
+        {
+          "name": "store_svid",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool RegistrationEntry.store_svid"
+        },
+        {
+          "name": "jwt_svid_ttl",
+          "type": "int32",
+          "required": true,
+          "description": "proto3 int32 RegistrationEntry.jwt_svid_ttl"
+        },
+        {
+          "name": "hint",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string RegistrationEntry.hint"
+        },
+        {
+          "name": "created_at",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 RegistrationEntry.created_at"
+        }
+      ]
+    },
+    {
+      "name": "Certificate",
+      "description": "SPIRE proto3 message spire.common.Certificate",
+      "fields": [
+        {
+          "name": "der_bytes",
+          "type": "bytes",
+          "required": true,
+          "description": "proto3 bytes Certificate.der_bytes"
+        },
+        {
+          "name": "tainted_key",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool Certificate.tainted_key"
+        }
+      ]
+    },
+    {
+      "name": "PublicKey",
+      "description": "SPIRE proto3 message spire.common.PublicKey",
+      "fields": [
+        {
+          "name": "pkix_bytes",
+          "type": "bytes",
+          "required": true,
+          "description": "proto3 bytes PublicKey.pkix_bytes"
+        },
+        {
+          "name": "kid",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string PublicKey.kid"
+        },
+        {
+          "name": "not_after",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 PublicKey.not_after"
+        },
+        {
+          "name": "tainted_key",
+          "type": "boolean",
+          "required": true,
+          "description": "proto3 bool PublicKey.tainted_key"
+        }
+      ]
+    },
+    {
+      "name": "Bundle",
+      "description": "SPIRE proto3 message spire.common.Bundle",
+      "fields": [
+        {
+          "name": "trust_domain_id",
+          "type": "string",
+          "required": true,
+          "description": "proto3 string Bundle.trust_domain_id"
+        },
+        {
+          "name": "root_cas",
+          "type": "array<Certificate>",
+          "required": false,
+          "description": "proto3 repeated Certificate Bundle.root_cas"
+        },
+        {
+          "name": "jwt_signing_keys",
+          "type": "array<PublicKey>",
+          "required": false,
+          "description": "proto3 repeated PublicKey Bundle.jwt_signing_keys"
+        },
+        {
+          "name": "refresh_hint",
+          "type": "int64",
+          "required": true,
+          "description": "proto3 int64 Bundle.refresh_hint"
+        },
+        {
+          "name": "sequence_number",
+          "type": "uint64",
+          "required": true,
+          "description": "proto3 uint64 Bundle.sequence_number"
+        },
+        {
+          "name": "wit_signing_keys",
+          "type": "array<PublicKey>",
+          "required": false,
+          "description": "proto3 repeated PublicKey Bundle.wit_signing_keys"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "RegistrationEntry",
+      "toEntity": "Selector",
+      "kind": "one_to_many",
+      "fromField": "selectors",
+      "notes": "A registration entry matches workloads via one or more selectors."
+    },
+    {
+      "fromEntity": "AttestedNode",
+      "toEntity": "Selector",
+      "kind": "one_to_many",
+      "fromField": "selectors",
+      "notes": "An attested SPIRE agent node is described by its selector set."
+    },
+    {
+      "fromEntity": "Bundle",
+      "toEntity": "Certificate",
+      "kind": "one_to_many",
+      "fromField": "root_cas",
+      "notes": "A trust bundle contains one or more root CA certificates."
+    },
+    {
+      "fromEntity": "Bundle",
+      "toEntity": "PublicKey",
+      "kind": "one_to_many",
+      "fromField": "jwt_signing_keys",
+      "notes": "A trust bundle contains the JWT signing keys for JWT-SVID validation."
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "AttestedNode",
+      "statusField": "can_reattest",
+      "states": ["PENDING_ATTESTATION", "ATTESTED", "EXPIRED", "BANNED"],
+      "notes": "SPIRE agent node attestation lifecycle; states derived from cert_not_after and ban mechanisms."
+    },
+    {
+      "entity": "RegistrationEntry",
+      "statusField": "entryExpiry",
+      "states": ["ACTIVE", "EXPIRED"],
+      "notes": "Registration entries expire when entryExpiry (unix epoch) is reached."
+    }
+  ],
+  "actions": [
+    {
+      "name": "createRegistrationEntry",
+      "kind": "create",
+      "entities": ["RegistrationEntry"],
+      "idempotency": {
+        "supported": true,
+        "notes": "SPIRE deduplicates entries by spiffe_id + selector set."
+      }
+    },
+    {
+      "name": "updateRegistrationEntry",
+      "kind": "update",
+      "entities": ["RegistrationEntry"],
+      "idempotency": {
+        "supported": true,
+        "notes": "SPIRE uses revision_number for optimistic concurrency."
+      }
+    },
+    {
+      "name": "deleteRegistrationEntry",
+      "kind": "delete",
+      "entities": ["RegistrationEntry"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Deleting a non-existent entry is a no-op."
+      }
+    },
+    {
+      "name": "attestWorkload",
+      "kind": "workflow",
+      "entities": ["AttestedNode", "RegistrationEntry"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Attestation is a one-shot ceremony; re-attestation replaces the prior certificate."
+      }
+    },
+    {
+      "name": "fetchBundle",
+      "kind": "other",
+      "entities": ["Bundle"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Read-only; safe to call repeatedly."
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "svid.rotated",
+      "delivery": "stream",
+      "entities": ["Certificate", "PublicKey"],
+      "notes": "SPIRE agents stream SVID rotation events to workloads via the Workload API."
+    },
+    {
+      "name": "bundle.updated",
+      "delivery": "stream",
+      "entities": ["Bundle"],
+      "notes": "SPIRE federates bundle updates via the Bundle API (poll or push depending on federation config)."
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false,
+      "notes": "SPIRE proto3 schemas are fixed; extension via plugins (not fields)."
+    },
+    "tags": {
+      "supported": false
+    },
+    "attachments": {
+      "supported": false
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

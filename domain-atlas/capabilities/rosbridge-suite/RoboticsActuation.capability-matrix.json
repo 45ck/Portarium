@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "rosbridge-suite",
+  "providerName": "rosbridge_suite",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other"],
+    "notes": "rosbridge WebSocket transport supports TLS (WSS). Application-layer token auth is achieved via a custom ROS 2 authentication plugin or a reverse proxy. Portarium uses WSS + token header."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "rosbridge delivers topic messages as server-sent WebSocket frames; push-based streaming."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "rosbridge mirrors ROS 2 semantics — no idempotency key. Service calls correlate via the optional interaction id field."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium can plan subscribe/publish/call_service sequences. Verified effects: read back via topic subscription or service response."
+  },
+  "capabilities": [
+    {
+      "capability": "topic:read",
+      "supported": true,
+      "operations": ["subscribe", "unsubscribe"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to any ROS 2 topic (telemetry, status, feedback) via WebSocket."
+    },
+    {
+      "capability": "topic:write",
+      "supported": true,
+      "operations": ["advertise", "publish", "unadvertise"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Publish messages to ROS 2 topics (e.g., cmd_vel for motion). Motion commands are high-safety."
+    },
+    {
+      "capability": "service:write",
+      "supported": true,
+      "operations": ["callService"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Call ROS 2 services (e.g., SetMode, ClearCostmap). Service idempotency is service-specific."
+    },
+    {
+      "capability": "action:write",
+      "supported": true,
+      "operations": ["callService"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "ROS 2 actions are exposed via rosbridge as combined service calls (send_goal + cancel_goal). Rollback = cancel goal."
+    },
+    {
+      "capability": "telemetry:read",
+      "supported": true,
+      "operations": ["subscribe"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Stream any sensor_msgs or nav_msgs telemetry topic via throttled WebSocket subscription."
+    }
+  ]
+}

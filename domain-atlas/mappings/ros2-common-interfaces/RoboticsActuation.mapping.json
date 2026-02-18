@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "ros2-common-interfaces",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "sensor_msgs.JointState",
+      "fieldMappings": {
+        "assetId": "name",
+        "displayName": "name",
+        "status": "position"
+      },
+      "notes": "JointState represents a named joint (robot component). Map to Asset as a robot sub-component with live position data."
+    },
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "sensor_msgs.BatteryState",
+      "fieldMappings": {
+        "status": "power_supply_status",
+        "displayName": "serial_number"
+      },
+      "notes": "BatteryState maps to Asset for battery health tracking in the Portarium cockpit."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "action_msgs.GoalStatus",
+      "fieldMappings": {
+        "status": "status",
+        "taskId": "goal_info"
+      },
+      "notes": "ROS 2 action goal status maps to a Portarium Task lifecycle (ACCEPTED→EXECUTING→SUCCEEDED/ABORTED/CANCELED)."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "nav_msgs.Odometry",
+      "fieldMappings": {
+        "externalType": "child_frame_id",
+        "displayLabel": "header"
+      },
+      "notes": "Odometry is a telemetry stream; no canonical object match. Reference externally for cockpit display."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "nav_msgs.OccupancyGrid",
+      "fieldMappings": {
+        "externalType": "header",
+        "displayLabel": "info"
+      },
+      "notes": "OccupancyGrid (map) is a domain-specific artefact; treated as an ExternalObjectRef linked from a mission Task."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "nav_msgs.Path",
+      "fieldMappings": {
+        "externalType": "header",
+        "displayLabel": "poses"
+      },
+      "notes": "Planned path is a transient planning artefact. Surfaced in the cockpit as an ExternalObjectRef for visualisation."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "geometry_msgs.PoseStamped",
+      "fieldMappings": {
+        "externalType": "header",
+        "displayLabel": "pose"
+      },
+      "notes": "A timestamped pose (current robot location). Used as a reference in Task goals and telemetry."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "diagnostic_msgs.DiagnosticStatus",
+      "fieldMappings": {
+        "externalType": "name",
+        "displayLabel": "message"
+      },
+      "notes": "Diagnostic status items are hardware health records; surfaced as ExternalObjectRef for alert aggregation."
+    }
+  ]
+}

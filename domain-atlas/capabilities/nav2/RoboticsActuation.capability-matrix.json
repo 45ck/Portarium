@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "nav2",
+  "providerName": "Nav2 (Navigation2)",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other"],
+    "notes": "Nav2 uses SROS2/DDS:Security. Portarium accesses via action client over rosbridge WebSocket with TLS."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "Nav2 action servers stream feedback continuously until a goal reaches a terminal state."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "ROS 2 action goals are identified by UUID generated at send time; no external idempotency key."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium plans the goal submission. Verified effects: check goal terminal state (SUCCEEDED/ABORTED). Physical path outcome is not predictable."
+  },
+  "capabilities": [
+    {
+      "capability": "navigate-to-pose:write",
+      "supported": true,
+      "operations": ["sendNavigateToPoseGoal", "cancelNavigateToPoseGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Sends a NavigateToPose action goal. Rollback = cancel the active goal. High safety: robot physically moves to target pose."
+    },
+    {
+      "capability": "navigate-through-poses:write",
+      "supported": true,
+      "operations": ["sendNavigateThroughPosesGoal", "cancelNavigateThroughPosesGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Navigate through an ordered sequence of waypoints. Higher complexity than NavigateToPose."
+    },
+    {
+      "capability": "follow-waypoints:write",
+      "supported": true,
+      "operations": ["sendFollowWaypointsGoal", "cancelFollowWaypointsGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Execute a mission as a list of GPS or pose waypoints with optional task executors at each."
+    },
+    {
+      "capability": "follow-path:write",
+      "supported": true,
+      "operations": ["sendFollowPathGoal", "cancelFollowPathGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Send a pre-computed nav_msgs/Path to the controller server for execution."
+    },
+    {
+      "capability": "dock-robot:write",
+      "supported": true,
+      "operations": ["sendDockRobotGoal", "cancelDockRobotGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Command robot to dock at a charging station. Very high safety: precision physical docking manoeuvre."
+    },
+    {
+      "capability": "undock-robot:write",
+      "supported": true,
+      "operations": ["sendUndockRobotGoal"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Command robot to leave the docking station."
+    },
+    {
+      "capability": "spin:write",
+      "supported": true,
+      "operations": ["sendSpinGoal", "cancelSpinGoal"],
+      "safety": {
+        "defaultTier": "Assisted",
+        "requiresApproval": false,
+        "idempotent": false,
+        "supportsRollback": true,
+        "supportsCompensation": false
+      },
+      "notes": "Rotate in place by a target angle. Lower risk than translational motion."
+    },
+    {
+      "capability": "compute-path:read",
+      "supported": true,
+      "operations": ["sendComputePathToPoseGoal", "sendComputePathThroughPosesGoal"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Request a path plan without executing it. Read-only planning call."
+    },
+    {
+      "capability": "navigation-feedback:read",
+      "supported": true,
+      "operations": ["subscribeNavigationFeedback"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Stream of NavigateToPose/NavigateThroughPoses feedback: current pose, distance remaining, recovery count."
+    }
+  ]
+}

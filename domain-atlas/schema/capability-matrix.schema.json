@@ -40,7 +40,8 @@
         "DocumentsEsign",
         "AnalyticsBi",
         "MonitoringIncident",
-        "ComplianceGrc"
+        "ComplianceGrc",
+        "RoboticsActuation"
       ]
     },
     "adapterVersion": {

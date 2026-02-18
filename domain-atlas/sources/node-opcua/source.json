@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "node-opcua",
+  "providerName": "node-opcua",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/node-opcua/node-opcua",
+    "commit": "ab3bd98e69a7d365a40094d35122c4e879d04460",
+    "version": "master",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "MIT",
+    "classification": "safe_to_reuse",
+    "notes": "MIT licence; direct dependency candidate for the OPC UA adapter (bead-0518). The TypeScript type definitions are the model source for OPC UA address space entities."
+  },
+  "extraction": {
+    "modelSources": [
+      "packages/node-opcua-data-model/source/",
+      "packages/node-opcua-address-space/source/address_space_ts.ts",
+      "packages/node-opcua-variant/source/",
+      "packages/node-opcua-nodeid/source/"
+    ],
+    "command": "node scripts/domain-atlas/extract-node-opcua-cif.mjs",
+    "notes": "Extract OPC UA core types from TypeScript source: NodeId, DataValue, Variant, BrowseDescription, WriteValue, ReadValueId, StatusCode, NodeClass enum. Map to CIF entities for PLC/industrial actuator modelling."
+  }
+}

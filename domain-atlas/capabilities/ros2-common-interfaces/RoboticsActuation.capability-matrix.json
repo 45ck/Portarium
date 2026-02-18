@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "ros2-common-interfaces",
+  "providerName": "ROS 2 Common Interfaces",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other"],
+    "notes": "ROS 2 uses DDS transport security (SROS2/DDS:Security) rather than API-level auth. Portarium wraps via the rosbridge WebSocket layer which supports TLS + token auth."
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "ROS 2 topics deliver data as a continuous DDS pub/sub stream; telemetry arrives in real time."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "ROS 2 DDS publish is fire-and-forget. No idempotency key at the message layer."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium can plan topic subscriptions and verify telemetry was received (verified effects), but cannot predict physical robot state outcomes."
+  },
+  "capabilities": [
+    {
+      "capability": "telemetry:read",
+      "supported": true,
+      "operations": ["subscribeTopic", "getTopic"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Read-only subscription to sensor_msgs, nav_msgs, diagnostic_msgs topics."
+    },
+    {
+      "capability": "odometry:read",
+      "supported": true,
+      "operations": ["subscribeOdometry"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to nav_msgs/Odometry for robot pose and velocity estimation."
+    },
+    {
+      "capability": "battery:read",
+      "supported": true,
+      "operations": ["subscribeBatteryState"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to sensor_msgs/BatteryState for battery level and health."
+    },
+    {
+      "capability": "joint-state:read",
+      "supported": true,
+      "operations": ["subscribeJointState"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to sensor_msgs/JointState for manipulator or mobile base joint positions."
+    },
+    {
+      "capability": "laser-scan:read",
+      "supported": true,
+      "operations": ["subscribeLaserScan"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to sensor_msgs/LaserScan for 2D LiDAR obstacle data."
+    },
+    {
+      "capability": "velocity-command:write",
+      "supported": true,
+      "operations": ["publishTwist"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Publish geometry_msgs/Twist to cmd_vel. High safety risk: direct robot motion. Requires human approval in Portarium."
+    },
+    {
+      "capability": "path:read",
+      "supported": true,
+      "operations": ["subscribePath"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to nav_msgs/Path for planned path visualisation."
+    },
+    {
+      "capability": "imu:read",
+      "supported": true,
+      "operations": ["subscribeImu"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to sensor_msgs/Imu for accelerometer and gyroscope data."
+    },
+    {
+      "capability": "diagnostic:read",
+      "supported": true,
+      "operations": ["subscribeDiagnostics"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to diagnostic_msgs/DiagnosticArray for hardware health monitoring."
+    }
+  ]
+}

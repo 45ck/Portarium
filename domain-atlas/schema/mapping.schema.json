@@ -31,7 +31,8 @@
         "DocumentsEsign",
         "AnalyticsBi",
         "MonitoringIncident",
-        "ComplianceGrc"
+        "ComplianceGrc",
+        "RoboticsActuation"
       ]
     },
     "mappings": {

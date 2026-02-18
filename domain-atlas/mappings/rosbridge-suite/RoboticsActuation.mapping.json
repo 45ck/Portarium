@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "rosbridge-suite",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "ServiceCallRequest",
+      "fieldMappings": {
+        "displayName": "service",
+        "input": "args"
+      },
+      "notes": "ROS 2 service calls (via rosbridge) are Portarium Tasks — synchronous request/response with a result. The service name is the task type."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "PublishRequest",
+      "fieldMappings": {
+        "displayName": "topic",
+        "input": "msg"
+      },
+      "notes": "Command publishes to robot topics (e.g., cmd_vel) are Tasks when issued by Portarium automation. Safety: HumanApprove for motion topics."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "SubscribeRequest",
+      "fieldMappings": {
+        "externalType": "type",
+        "displayLabel": "topic"
+      },
+      "notes": "Active topic subscriptions are telemetry channel ExternalObjectRefs, linked from Fleet/Robot asset records."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "TopicMessage",
+      "fieldMappings": {
+        "externalType": "topic",
+        "displayLabel": "msg"
+      },
+      "notes": "Individual topic messages are streaming telemetry; surfaced as ExternalObjectRefs in cockpit panels."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "ServiceResponse",
+      "fieldMappings": {
+        "externalType": "service",
+        "displayLabel": "result"
+      },
+      "notes": "Service response is the evidence artefact for a completed Task; linked as ExternalObjectRef."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "FragmentMessage",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "num",
+        "displayLabel": "total"
+      },
+      "notes": "Fragment messages are transport-layer artefacts; ExternalObjectRef if large payload logging is required."
+    }
+  ]
+}

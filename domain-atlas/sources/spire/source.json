@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "spire",
+  "providerName": "SPIFFE/SPIRE",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "other",
+    "repoUrl": "https://github.com/spiffe/spire",
+    "commit": "c3b8f176fc494a1ddaec5813cdc30c8f5d1c0e15",
+    "version": "main",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "SPIFFE/SPIRE is Apache-2.0. CNCF graduated. The Workload API proto definitions are the model source for workload identity entities. Portarium uses SPIRE as a deployment dependency for zero-trust mTLS between execution plane and edge gateways."
+  },
+  "extraction": {
+    "modelSources": [
+      "proto/spire/api/workload/workload.proto",
+      "proto/spire/api/types/svid.proto",
+      "proto/spire/api/types/bundle.proto",
+      "proto/spire/api/types/x509svid.proto"
+    ],
+    "command": "node scripts/domain-atlas/extract-spire-cif.mjs",
+    "notes": "Parse protobuf definitions to extract SVID, Bundle, JWTSVIDRequest entities. The Workload API (workload.proto) is the primary integration surface."
+  }
+}

@@ -1,0 +1,433 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "zenoh",
+    "providerName": "Eclipse Zenoh",
+    "upstream": {
+      "repoUrl": "https://github.com/eclipse-zenoh/zenoh",
+      "commit": "ccbf047725f144373398735897830f015147bfac",
+      "version": "main"
+    }
+  },
+  "extractedAt": "2026-02-18T04:44:43.882Z",
+  "entities": [
+    {
+      "name": "KeyExpr",
+      "description": "Zenoh KeyExpression — a hierarchical resource name with optional wildcards, used as the addressing primitive.",
+      "fields": [
+        {
+          "name": "expr",
+          "type": "string",
+          "required": true,
+          "description": "The key expression string (e.g., \"robot/arm/joint/1\")."
+        },
+        {
+          "name": "autocanonize",
+          "type": "boolean",
+          "required": false,
+          "description": "Whether the expression is auto-canonicalized on construction."
+        }
+      ]
+    },
+    {
+      "name": "Sample",
+      "description": "Zenoh Sample — the data unit received by Subscribers or Queriers. Contains payload, key expression, and metadata.",
+      "fields": [
+        {
+          "name": "key_expr",
+          "type": "KeyExpr<'static>",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.key_expr: KeyExpr<'static>"
+        },
+        {
+          "name": "payload",
+          "type": "ZBytes",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.payload: ZBytes"
+        },
+        {
+          "name": "kind",
+          "type": "SampleKind",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.kind: SampleKind"
+        },
+        {
+          "name": "encoding",
+          "type": "Encoding",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.encoding: Encoding"
+        },
+        {
+          "name": "timestamp",
+          "type": "Timestamp",
+          "required": false,
+          "description": "Zenoh Rust field SampleFields.timestamp: Option<Timestamp>"
+        },
+        {
+          "name": "express",
+          "type": "boolean",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.express: bool"
+        },
+        {
+          "name": "priority",
+          "type": "Priority",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.priority: Priority"
+        },
+        {
+          "name": "congestion_control",
+          "type": "CongestionControl",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.congestion_control: CongestionControl"
+        },
+        {
+          "name": "reliability",
+          "type": "Reliability",
+          "required": true,
+          "description": "Zenoh Rust field SampleFields.reliability: Reliability"
+        },
+        {
+          "name": "source_info",
+          "type": "SourceInfo",
+          "required": false,
+          "description": "Zenoh Rust field SampleFields.source_info: Option<SourceInfo>"
+        },
+        {
+          "name": "attachment",
+          "type": "ZBytes",
+          "required": false,
+          "description": "Zenoh Rust field SampleFields.attachment: Option<ZBytes>"
+        }
+      ]
+    },
+    {
+      "name": "SampleKind",
+      "description": "Zenoh SampleKind enum. Variants: Put = 0, Delete = 1.",
+      "fields": [
+        {
+          "name": "value",
+          "type": "enum",
+          "required": true,
+          "description": "Put = 0 | Delete = 1: Put(0) is a data publication; Delete(1) is a removal notification."
+        }
+      ]
+    },
+    {
+      "name": "Locality",
+      "description": "Zenoh Locality — controls whether pub/sub/query targets local-session, remote, or both. Variants: SessionLocal, Remote, Any.",
+      "fields": [
+        {
+          "name": "value",
+          "type": "enum",
+          "required": true,
+          "description": "SessionLocal | Remote | Any."
+        }
+      ]
+    },
+    {
+      "name": "Publisher",
+      "description": "Zenoh Publisher — declares intent to publish data on a KeyExpr; enables QoS and matching subscriber queries.",
+      "fields": [
+        {
+          "name": "key_expr",
+          "type": "string",
+          "required": true,
+          "description": "The KeyExpr this publisher targets."
+        },
+        {
+          "name": "encoding",
+          "type": "string",
+          "required": false,
+          "description": "Default encoding for published payloads."
+        },
+        {
+          "name": "congestion_control",
+          "type": "enum",
+          "required": false,
+          "description": "Drop or Block on network congestion."
+        },
+        {
+          "name": "priority",
+          "type": "enum",
+          "required": false,
+          "description": "QoS priority level."
+        },
+        {
+          "name": "express",
+          "type": "boolean",
+          "required": false,
+          "description": "Skip batching for lower latency."
+        },
+        {
+          "name": "allowed_destination",
+          "type": "enum",
+          "required": false,
+          "description": "Locality filter for published samples."
+        }
+      ]
+    },
+    {
+      "name": "Subscriber",
+      "description": "Zenoh Subscriber — receives Sample stream for a KeyExpr. Supports wildcard expressions.",
+      "fields": [
+        {
+          "name": "key_expr",
+          "type": "string",
+          "required": true,
+          "description": "The KeyExpr (may include wildcards) to subscribe to."
+        },
+        {
+          "name": "allowed_origin",
+          "type": "enum",
+          "required": false,
+          "description": "Locality filter: SessionLocal, Remote, or Any."
+        },
+        {
+          "name": "callback",
+          "type": "function",
+          "required": true,
+          "description": "Handler invoked for each received Sample."
+        }
+      ]
+    },
+    {
+      "name": "Query",
+      "description": "Zenoh Query — a get() request targeting a KeyExpr for stored or computed data (queryable pattern).",
+      "fields": [
+        {
+          "name": "key_expr",
+          "type": "string",
+          "required": true,
+          "description": "Target KeyExpr for the query."
+        },
+        {
+          "name": "parameters",
+          "type": "string",
+          "required": false,
+          "description": "Optional query parameters string."
+        },
+        {
+          "name": "target",
+          "type": "enum",
+          "required": false,
+          "description": "QueryTarget: BestMatching, All, AllComplete."
+        },
+        {
+          "name": "consolidation",
+          "type": "enum",
+          "required": false,
+          "description": "ConsolidationMode: Auto, None, Monotonic, Latest."
+        },
+        {
+          "name": "timeout",
+          "type": "uint64",
+          "required": false,
+          "description": "Query timeout in milliseconds."
+        },
+        {
+          "name": "payload",
+          "type": "bytes",
+          "required": false,
+          "description": "Optional payload attached to the query."
+        },
+        {
+          "name": "encoding",
+          "type": "string",
+          "required": false,
+          "description": "Encoding of the query payload."
+        }
+      ]
+    },
+    {
+      "name": "Reply",
+      "description": "Zenoh Reply — a response to a Query, delivered to the querier.",
+      "fields": [
+        {
+          "name": "result_ok",
+          "type": "Sample",
+          "required": false,
+          "description": "The Sample if the reply succeeded."
+        },
+        {
+          "name": "result_err",
+          "type": "bytes",
+          "required": false,
+          "description": "Error payload if the reply is an error."
+        },
+        {
+          "name": "replier_id",
+          "type": "string",
+          "required": false,
+          "description": "Unstable: ZenohId of the replying entity."
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "description": "Zenoh Session — the top-level API handle that owns all publishers, subscribers, queryables, and peer connections.",
+      "fields": [
+        {
+          "name": "zid",
+          "type": "string",
+          "required": true,
+          "description": "ZenohId assigned to this session."
+        },
+        {
+          "name": "config",
+          "type": "object",
+          "required": true,
+          "description": "Session configuration (peers, scouting, transport, etc.)."
+        },
+        {
+          "name": "info",
+          "type": "object",
+          "required": false,
+          "description": "Runtime session info (peers, routers, timestamp)."
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "Sample",
+      "toEntity": "KeyExpr",
+      "kind": "many_to_one",
+      "fromField": "key_expr",
+      "notes": "Every Sample is addressed to a specific key expression."
+    },
+    {
+      "fromEntity": "Publisher",
+      "toEntity": "KeyExpr",
+      "kind": "many_to_one",
+      "fromField": "key_expr",
+      "notes": "A Publisher is bound to a KeyExpr for its lifetime."
+    },
+    {
+      "fromEntity": "Subscriber",
+      "toEntity": "KeyExpr",
+      "kind": "many_to_one",
+      "fromField": "key_expr",
+      "notes": "A Subscriber matches incoming Samples by KeyExpr (wildcards supported)."
+    },
+    {
+      "fromEntity": "Query",
+      "toEntity": "KeyExpr",
+      "kind": "many_to_one",
+      "fromField": "key_expr",
+      "notes": "A Query targets queryables that match a KeyExpr."
+    },
+    {
+      "fromEntity": "Reply",
+      "toEntity": "Query",
+      "kind": "many_to_one",
+      "notes": "Zero or more Replies are returned for each Query."
+    },
+    {
+      "fromEntity": "Publisher",
+      "toEntity": "Session",
+      "kind": "many_to_one",
+      "notes": "Publishers are declared on a Session and live within its lifetime."
+    },
+    {
+      "fromEntity": "Subscriber",
+      "toEntity": "Session",
+      "kind": "many_to_one",
+      "notes": "Subscribers are declared on a Session."
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "Session",
+      "statusField": "state",
+      "states": ["OPENING", "OPEN", "CLOSING", "CLOSED"],
+      "notes": "Zenoh session lifecycle; opened via zenoh::open() and closed explicitly or on drop."
+    },
+    {
+      "entity": "Sample",
+      "statusField": "kind",
+      "states": ["Put = 0", "Delete = 1"],
+      "notes": "SampleKind differentiates data publications (Put) from resource deletions (Delete)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "put",
+      "kind": "create",
+      "entities": ["Sample", "Publisher"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Put is fire-and-forget; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "delete",
+      "kind": "delete",
+      "entities": ["Sample"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Delete marks a key as removed; re-deleting is harmless in practice."
+      }
+    },
+    {
+      "name": "get",
+      "kind": "other",
+      "entities": ["Query", "Reply"],
+      "idempotency": {
+        "supported": true,
+        "notes": "Get is read-only against stored data; repeatable."
+      }
+    },
+    {
+      "name": "declarePublisher",
+      "kind": "create",
+      "entities": ["Publisher"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Each declaration creates a distinct publisher object."
+      }
+    },
+    {
+      "name": "declareSubscriber",
+      "kind": "create",
+      "entities": ["Subscriber"],
+      "idempotency": {
+        "supported": false,
+        "notes": "Each declaration creates a distinct subscriber object."
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "sample.received",
+      "delivery": "stream",
+      "entities": ["Sample"],
+      "notes": "Zenoh Subscriber callback fires for every matching incoming Sample (pub/sub stream)."
+    },
+    {
+      "name": "reply.received",
+      "delivery": "stream",
+      "entities": ["Reply"],
+      "notes": "Zenoh get() yields a stream of Replies from matching Queryables."
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false,
+      "notes": "Zenoh payload is opaque bytes; schema is application-layer concern."
+    },
+    "tags": {
+      "supported": false
+    },
+    "attachments": {
+      "supported": true,
+      "notes": "Samples support an opaque binary attachment field for side-channel metadata."
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

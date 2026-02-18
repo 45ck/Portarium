@@ -1,4 +1,7 @@
 # Portarium / VAOP domain terms (allowed)
+opencontrol
+oscal
+OSCAL
 VAOP
 vaop
 Portarium

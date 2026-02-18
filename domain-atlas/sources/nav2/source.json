@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "nav2",
+  "providerName": "Nav2 (Navigation2)",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/ros-navigation/navigation2",
+    "commit": "8ae7103c89b842d01fcbb59a4112b5fdb0059202",
+    "version": "main",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "Nav2 navigation stack; Apache-2.0. Action interface definitions (.action files) are the model source for mission-level robot control."
+  },
+  "extraction": {
+    "modelSources": ["nav2_msgs/action/*.action", "nav2_msgs/msg/*.msg", "nav2_msgs/srv/*.srv"],
+    "command": "node scripts/domain-atlas/extract-nav2-cif.mjs",
+    "notes": "Parse .action files to extract Goal/Result/Feedback entity definitions. Each .action file becomes a workflow-kind action in CIF. NavigateToPose is the primary action; NavigateThroughPoses and FollowWaypoints are secondary."
+  }
+}

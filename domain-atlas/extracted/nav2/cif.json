@@ -1,0 +1,1893 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "nav2",
+    "providerName": "Nav2 (Navigation2)",
+    "upstream": {
+      "repoUrl": "https://github.com/ros-navigation/navigation2",
+      "commit": "8ae7103c89b842d01fcbb59a4112b5fdb0059202",
+      "version": "main"
+    }
+  },
+  "extractedAt": "2026-02-18T04:44:43.452Z",
+  "entities": [
+    {
+      "name": "AssistedTeleop.Goal",
+      "description": "Goal parameters for the AssistedTeleop Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "time_allowance",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "AssistedTeleop.Result",
+      "description": "Result returned by the AssistedTeleop Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "AssistedTeleop.Feedback",
+      "description": "Streaming feedback from the AssistedTeleop Nav2 action.",
+      "fields": [
+        {
+          "name": "current_teleop_duration",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BackUp.Goal",
+      "description": "Goal parameters for the BackUp Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "geometry_msgs.Point",
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "time_allowance",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "disable_collision_checks",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BackUp.Result",
+      "description": "Result returned by the BackUp Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BackUp.Feedback",
+      "description": "Streaming feedback from the BackUp Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "distance_traveled",
+          "type": "float32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeAndTrackRoute.Goal",
+      "description": "Goal parameters for the ComputeAndTrackRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "start_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "goal_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "goal",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "use_start",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "use_poses",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeAndTrackRoute.Result",
+      "description": "Result returned by the ComputeAndTrackRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "execution_duration",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeAndTrackRoute.Feedback",
+      "description": "Streaming feedback from the ComputeAndTrackRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "last_node_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "next_node_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "current_edge_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "route",
+          "type": "Route",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "operations_triggered",
+          "type": "array<string>",
+          "required": true
+        },
+        {
+          "name": "rerouted",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathThroughPoses.Goal",
+      "description": "Goal parameters for the ComputePathThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "goals",
+          "type": "nav_msgs.Goals",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "planner_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "use_start",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathThroughPoses.Result",
+      "description": "Result returned by the ComputePathThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "last",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "last_reached_index",
+          "type": "int16",
+          "required": true
+        },
+        {
+          "name": "planning_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathThroughPoses.Feedback",
+      "description": "Streaming feedback from the ComputePathThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathToPose.Goal",
+      "description": "Goal parameters for the ComputePathToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "goal",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "planner_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "use_start",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathToPose.Result",
+      "description": "Result returned by the ComputePathToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "planning_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputePathToPose.Feedback",
+      "description": "Streaming feedback from the ComputePathToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeRoute.Goal",
+      "description": "Goal parameters for the ComputeRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "start_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "goal_id",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "goal",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "use_start",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "use_poses",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeRoute.Result",
+      "description": "Result returned by the ComputeRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "planning_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "route",
+          "type": "Route",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeRoute.Feedback",
+      "description": "Streaming feedback from the ComputeRoute Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DockRobot.Goal",
+      "description": "Goal parameters for the DockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "use_dock_id",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "dock_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "dock_pose",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "dock_type",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "max_staging_time",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "navigate_to_staging_pose",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DockRobot.Result",
+      "description": "Result returned by the DockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "success",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "num_retries",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DockRobot.Feedback",
+      "description": "Streaming feedback from the DockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "docking_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "num_retries",
+          "type": "uint16",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DriveOnHeading.Goal",
+      "description": "Goal parameters for the DriveOnHeading Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "geometry_msgs.Point",
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "time_allowance",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "disable_collision_checks",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DriveOnHeading.Result",
+      "description": "Result returned by the DriveOnHeading Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DriveOnHeading.Feedback",
+      "description": "Streaming feedback from the DriveOnHeading Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "distance_traveled",
+          "type": "float32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DummyBehavior.Goal",
+      "description": "Goal parameters for the DummyBehavior Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "command",
+          "type": "std_msgs.String",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DummyBehavior.Result",
+      "description": "Result returned by the DummyBehavior Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "DummyBehavior.Feedback",
+      "description": "Streaming feedback from the DummyBehavior Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowGPSWaypoints.Goal",
+      "description": "Goal parameters for the FollowGPSWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "number_of_loops",
+          "type": "uint32",
+          "required": true
+        },
+        {
+          "name": "goal_index",
+          "type": "uint32",
+          "required": true
+        },
+        {
+          "name": "gps_poses",
+          "type": "array<geographic_msgs.GeoPose>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowGPSWaypoints.Result",
+      "description": "Result returned by the FollowGPSWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "missed_waypoints",
+          "type": "array<WaypointStatus>",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "int16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowGPSWaypoints.Feedback",
+      "description": "Streaming feedback from the FollowGPSWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "current_waypoint",
+          "type": "uint32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowObject.Goal",
+      "description": "Goal parameters for the FollowObject Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "pose_topic",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "tracked_frame",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "max_duration",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowObject.Result",
+      "description": "Result returned by the FollowObject Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "num_retries",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowObject.Feedback",
+      "description": "Streaming feedback from the FollowObject Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "following_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "num_retries",
+          "type": "uint16",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowPath.Goal",
+      "description": "Goal parameters for the FollowPath Nav2 action.",
+      "fields": [
+        {
+          "name": "goal",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "controller_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "goal_checker_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "progress_checker_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "path_handler_id",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowPath.Result",
+      "description": "Result returned by the FollowPath Nav2 action.",
+      "fields": [
+        {
+          "name": "result",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "result",
+          "type": "std_msgs.Empty",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowPath.Feedback",
+      "description": "Streaming feedback from the FollowPath Nav2 action.",
+      "fields": [
+        {
+          "name": "feedback",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Real-time",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "If",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "If",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "tracking_feedback",
+          "type": "nav2_msgs.TrackingFeedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowWaypoints.Goal",
+      "description": "Goal parameters for the FollowWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "number_of_loops",
+          "type": "uint32",
+          "required": true
+        },
+        {
+          "name": "goal_index",
+          "type": "uint32",
+          "required": true
+        },
+        {
+          "name": "poses",
+          "type": "array<geometry_msgs.PoseStamped>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowWaypoints.Result",
+      "description": "Result returned by the FollowWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "missed_waypoints",
+          "type": "array<WaypointStatus>",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "FollowWaypoints.Feedback",
+      "description": "Streaming feedback from the FollowWaypoints Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "current_waypoint",
+          "type": "uint32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateThroughPoses.Goal",
+      "description": "Goal parameters for the NavigateThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "poses",
+          "type": "nav_msgs.Goals",
+          "required": true
+        },
+        {
+          "name": "behavior_tree",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateThroughPoses.Result",
+      "description": "Result returned by the NavigateThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "waypoint_statuses",
+          "type": "array<WaypointStatus>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateThroughPoses.Feedback",
+      "description": "Streaming feedback from the NavigateThroughPoses Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "current_pose",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "navigation_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "estimated_time_remaining",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "number_of_recoveries",
+          "type": "int16",
+          "required": true
+        },
+        {
+          "name": "distance_remaining",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "position_tracking_error",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "heading_tracking_error",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "number_of_poses_remaining",
+          "type": "int16",
+          "required": true
+        },
+        {
+          "name": "waypoint_statuses",
+          "type": "array<WaypointStatus>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateToPose.Goal",
+      "description": "Goal parameters for the NavigateToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "pose",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "behavior_tree",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateToPose.Result",
+      "description": "Result returned by the NavigateToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "NavigateToPose.Feedback",
+      "description": "Streaming feedback from the NavigateToPose Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "current_pose",
+          "type": "geometry_msgs.PoseStamped",
+          "required": true
+        },
+        {
+          "name": "navigation_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "estimated_time_remaining",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "number_of_recoveries",
+          "type": "int16",
+          "required": true
+        },
+        {
+          "name": "distance_remaining",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "position_tracking_error",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "heading_tracking_error",
+          "type": "float32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SmoothPath.Goal",
+      "description": "Goal parameters for the SmoothPath Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "smoother_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "max_smoothing_duration",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "check_for_collisions",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SmoothPath.Result",
+      "description": "Result returned by the SmoothPath Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "nav_msgs.Path",
+          "required": true
+        },
+        {
+          "name": "smoothing_duration",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "was_completed",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SmoothPath.Feedback",
+      "description": "Streaming feedback from the SmoothPath Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Spin.Goal",
+      "description": "Goal parameters for the Spin Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "target_yaw",
+          "type": "float32",
+          "required": true
+        },
+        {
+          "name": "time_allowance",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "disable_collision_checks",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Spin.Result",
+      "description": "Result returned by the Spin Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Spin.Feedback",
+      "description": "Streaming feedback from the Spin Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "angular_distance_traveled",
+          "type": "float32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "UndockRobot.Goal",
+      "description": "Goal parameters for the UndockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "If",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "you",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "If",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "If",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "dock_type",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "max_undocking_time",
+          "type": "float32",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "UndockRobot.Result",
+      "description": "Result returned by the UndockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "Error",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "Note:",
+          "type": "#",
+          "required": true
+        },
+        {
+          "name": "success",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "UndockRobot.Feedback",
+      "description": "Streaming feedback from the UndockRobot Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Wait.Goal",
+      "description": "Goal parameters for the Wait Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#goal",
+          "required": true
+        },
+        {
+          "name": "time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Wait.Result",
+      "description": "Result returned by the Wait Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#result",
+          "required": true
+        },
+        {
+          "name": "total_elapsed_time",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        },
+        {
+          "name": "error_code",
+          "type": "uint16",
+          "required": true
+        },
+        {
+          "name": "error_msg",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Wait.Feedback",
+      "description": "Streaming feedback from the Wait Nav2 action.",
+      "fields": [
+        {
+          "name": "definition",
+          "type": "#feedback",
+          "required": true
+        },
+        {
+          "name": "time_left",
+          "type": "builtin_interfaces.Duration",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "NavigateToPose.Feedback",
+      "toEntity": "NavigateToPose.Goal",
+      "kind": "many_to_one",
+      "notes": "Feedback messages stream while a NavigateToPose goal is active."
+    },
+    {
+      "fromEntity": "NavigateThroughPoses.Feedback",
+      "toEntity": "NavigateThroughPoses.Goal",
+      "kind": "many_to_one",
+      "notes": "Feedback messages stream while a NavigateThroughPoses goal is active."
+    }
+  ],
+  "lifecycles": [
+    {
+      "entity": "NavigateToPose.Goal",
+      "statusField": "status",
+      "states": ["ACCEPTED", "EXECUTING", "CANCELING", "SUCCEEDED", "CANCELED", "ABORTED"],
+      "notes": "ROS 2 action goal lifecycle; state machine is managed by the action server."
+    }
+  ],
+  "actions": [
+    {
+      "name": "sendAssistedTeleopGoal",
+      "kind": "workflow",
+      "entities": ["AssistedTeleop.Goal", "AssistedTeleop.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendBackUpGoal",
+      "kind": "workflow",
+      "entities": ["BackUp.Goal", "BackUp.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendComputeAndTrackRouteGoal",
+      "kind": "workflow",
+      "entities": ["ComputeAndTrackRoute.Goal", "ComputeAndTrackRoute.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendComputePathThroughPosesGoal",
+      "kind": "workflow",
+      "entities": ["ComputePathThroughPoses.Goal", "ComputePathThroughPoses.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendComputePathToPoseGoal",
+      "kind": "workflow",
+      "entities": ["ComputePathToPose.Goal", "ComputePathToPose.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendComputeRouteGoal",
+      "kind": "workflow",
+      "entities": ["ComputeRoute.Goal", "ComputeRoute.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendDockRobotGoal",
+      "kind": "workflow",
+      "entities": ["DockRobot.Goal", "DockRobot.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendDriveOnHeadingGoal",
+      "kind": "workflow",
+      "entities": ["DriveOnHeading.Goal", "DriveOnHeading.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendDummyBehaviorGoal",
+      "kind": "workflow",
+      "entities": ["DummyBehavior.Goal", "DummyBehavior.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendFollowGPSWaypointsGoal",
+      "kind": "workflow",
+      "entities": ["FollowGPSWaypoints.Goal", "FollowGPSWaypoints.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendFollowObjectGoal",
+      "kind": "workflow",
+      "entities": ["FollowObject.Goal", "FollowObject.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendFollowPathGoal",
+      "kind": "workflow",
+      "entities": ["FollowPath.Goal", "FollowPath.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendFollowWaypointsGoal",
+      "kind": "workflow",
+      "entities": ["FollowWaypoints.Goal", "FollowWaypoints.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendNavigateThroughPosesGoal",
+      "kind": "workflow",
+      "entities": ["NavigateThroughPoses.Goal", "NavigateThroughPoses.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendNavigateToPoseGoal",
+      "kind": "workflow",
+      "entities": ["NavigateToPose.Goal", "NavigateToPose.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendSmoothPathGoal",
+      "kind": "workflow",
+      "entities": ["SmoothPath.Goal", "SmoothPath.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendSpinGoal",
+      "kind": "workflow",
+      "entities": ["Spin.Goal", "Spin.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendUndockRobotGoal",
+      "kind": "workflow",
+      "entities": ["UndockRobot.Goal", "UndockRobot.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    },
+    {
+      "name": "sendWaitGoal",
+      "kind": "workflow",
+      "entities": ["Wait.Goal", "Wait.Result"],
+      "idempotency": {
+        "supported": false,
+        "notes": "ROS 2 action goals are identified by UUID; no built-in idempotency key."
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "action.feedback_received",
+      "delivery": "stream",
+      "entities": [
+        "NavigateToPose.Feedback",
+        "NavigateThroughPoses.Feedback",
+        "FollowPath.Feedback"
+      ],
+      "notes": "Nav2 action servers stream feedback until goal is terminal."
+    },
+    {
+      "name": "action.goal_completed",
+      "delivery": "stream",
+      "entities": ["NavigateToPose.Result", "NavigateThroughPoses.Result"],
+      "notes": "Emitted once when a goal reaches a terminal state (succeeded/canceled/aborted)."
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false,
+      "notes": "Nav2 action interfaces are schema-fixed .action files."
+    },
+    "tags": {
+      "supported": false
+    },
+    "attachments": {
+      "supported": false
+    },
+    "comments": {
+      "supported": false
+    },
+    "activities": {
+      "supported": false
+    }
+  }
+}

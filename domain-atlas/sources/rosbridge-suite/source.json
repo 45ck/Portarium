@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "rosbridge-suite",
+  "providerName": "rosbridge_suite",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/RobotWebTools/rosbridge_suite",
+    "commit": "9c7064176d61414f20e26fba879cec7dc544971d",
+    "version": "ros2",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "BSD-3-Clause",
+    "classification": "safe_to_reuse",
+    "notes": "BSD-3-Clause. The rosbridge v2.0 protocol spec (ROSBRIDGE_PROTOCOL.md) is the model source for the WebSocket/JSON bridge message types. Portarium's ROS 2 adapter connects via rosbridge when direct DDS bridging (Zenoh) is not available."
+  },
+  "extraction": {
+    "modelSources": ["ROSBRIDGE_PROTOCOL.md"],
+    "command": "node scripts/domain-atlas/extract-rosbridge-suite-cif.mjs",
+    "notes": "Parse ROSBRIDGE_PROTOCOL.md to extract protocol operation entities: subscribe, unsubscribe, publish, advertise, unadvertise, call_service, service_response, set_level, status. Map to CIF entities/actions."
+  }
+}

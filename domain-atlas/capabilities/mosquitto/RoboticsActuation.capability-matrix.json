@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "mosquitto",
+  "providerName": "Eclipse Mosquitto",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other", "basic"],
+    "notes": "Mosquitto supports username/password auth (basic) plus TLS client certificates. Portarium adapter uses TLS + password file auth."
+  },
+  "limits": {
+    "rateLimit": {
+      "notes": "Mosquitto rate limits are configured per-listener via max_inflight_messages and max_queued_messages in mosquitto.conf."
+    },
+    "concurrency": {
+      "notes": "Concurrent connections controlled by max_connections in mosquitto.conf."
+    }
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "MQTT is inherently a streaming protocol; messages are pushed to subscribers in real time."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "MQTT QoS 2 guarantees exactly-once delivery but does not provide an application-level idempotency key."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium can plan publish operations. Verified effects: confirm receipt via retained message or response topic pattern."
+  },
+  "capabilities": [
+    {
+      "capability": "telemetry:read",
+      "supported": true,
+      "operations": ["subscribe"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to robot telemetry topics (battery, pose, sensors) using MQTT wildcard filters."
+    },
+    {
+      "capability": "command:write",
+      "supported": true,
+      "operations": ["publish"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Publish command messages to robot command topics. Safety level depends on topic — motion commands are high risk."
+    },
+    {
+      "capability": "alert:read",
+      "supported": true,
+      "operations": ["subscribe"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to alert/error topics for robot fault notifications."
+    },
+    {
+      "capability": "fleet-status:read",
+      "supported": true,
+      "operations": ["subscribe"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Subscribe to fleet-wide status topics using MQTT wildcard (e.g., robots/+/status)."
+    },
+    {
+      "capability": "session:write",
+      "supported": true,
+      "operations": ["connect", "disconnect"],
+      "safety": {
+        "defaultTier": "Assisted",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Establish or terminate MQTT broker connections. Reconnection is idempotent."
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "zenoh",
+  "providerName": "Eclipse Zenoh",
+  "portFamily": "RoboticsActuation",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["other"],
+    "notes": "Zenoh uses TLS with optional client certificate auth. Access control is configured via zenoh-plugin-access-control. Portarium connects as an authenticated peer or client."
+  },
+  "limits": {
+    "concurrency": {
+      "notes": "Zenoh scales to thousands of publishers/subscribers via peer-to-peer DDS-over-IP. Session concurrency is bounded by router configuration."
+    }
+  },
+  "events": {
+    "supportsWebhooks": false,
+    "supportsPolling": false,
+    "supportsEventStream": true,
+    "notes": "Zenoh delivers samples as a push stream to subscribers. get() returns a reply stream for queryables."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "Zenoh put() is fire-and-forget. No idempotency key. get() is read-only and repeatable."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Portarium can plan pub/sub declarations. Verified effects: confirm via get() against a queryable that mirrors state."
+  },
+  "capabilities": [
+    {
+      "capability": "telemetry:read",
+      "supported": true,
+      "operations": ["declareSubscriber"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Declare a subscriber on a KeyExpr to receive robot telemetry samples (sensor data, status)."
+    },
+    {
+      "capability": "command:write",
+      "supported": true,
+      "operations": ["put", "declarePublisher"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": false
+      },
+      "notes": "Publish robot commands as Zenoh samples. High safety if used for motion control (e.g., ROS 2 bridge topics)."
+    },
+    {
+      "capability": "state:read",
+      "supported": true,
+      "operations": ["get"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Query stored robot state from a Zenoh queryable (e.g., last known position, mission status)."
+    },
+    {
+      "capability": "resource:delete",
+      "supported": true,
+      "operations": ["delete"],
+      "safety": {
+        "defaultTier": "Assisted",
+        "requiresApproval": false,
+        "idempotent": true,
+        "supportsRollback": false
+      },
+      "notes": "Delete a keyed resource from the Zenoh storage layer (e.g., remove a stale mission record)."
+    },
+    {
+      "capability": "fleet-multicast:read",
+      "supported": true,
+      "operations": ["declareSubscriber"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Wildcard subscriptions (robots/**) aggregate fleet-wide telemetry from multiple robots simultaneously."
+    }
+  ]
+}

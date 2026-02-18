@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "mosquitto",
+  "providerName": "Eclipse Mosquitto",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/eclipse/mosquitto",
+    "commit": "66486e47485412ec5d6d2c7a4466b2bf9405462f",
+    "version": "master",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "EPL-2.0",
+    "classification": "study_only",
+    "notes": "EPL-2.0 / EDL-1.0 dual. Study-only for CIF extraction: the broker config/ACL model defines how MQTT topics and clients are structured. Portarium uses Mosquitto as a deployment dependency (not vendored into core)."
+  },
+  "extraction": {
+    "modelSources": ["mosquitto.conf", "man/mosquitto.conf.5.xml", "include/mosquitto.h"],
+    "command": "node scripts/domain-atlas/extract-mosquitto-cif.mjs",
+    "notes": "Extract entity model from mosquitto.conf documented options and the C header. Entities: BrokerConfig, Listener, Client, Topic, ACLEntry, Bridge, TLSConfig. Actions: publish, subscribe, connect, disconnect."
+  }
+}

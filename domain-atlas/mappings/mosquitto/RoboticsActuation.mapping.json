@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "mosquitto",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "MqttSession",
+      "fieldMappings": {
+        "assetId": "clientId",
+        "displayName": "clientId",
+        "status": "connected"
+      },
+      "notes": "Each MQTT client session represents a robot connection. Map to Asset with connected=true/false as availability status."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "MqttMessage",
+      "fieldMappings": {
+        "input": "payload",
+        "displayName": "topic"
+      },
+      "notes": "Command messages published to robot command topics are Portarium Tasks (fire-and-forget actuation tasks)."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "MqttSubscription",
+      "fieldMappings": {
+        "externalType": "topicFilter",
+        "displayLabel": "qos"
+      },
+      "notes": "Active subscriptions are infrastructure refs — surfaced as ExternalObjectRef for telemetry channel inventory."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "MqttBrokerConfig",
+      "fieldMappings": {
+        "externalType": "listenPort",
+        "displayLabel": "persistenceFile"
+      },
+      "notes": "Broker configuration is an infrastructure concern; tracked as ExternalObjectRef for audit."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "MqttConnectOptions",
+      "fieldMappings": {
+        "externalType": "protocol",
+        "displayLabel": "clientId"
+      },
+      "notes": "Connection parameters are referenced from the robot Asset record for connectivity audit."
+    }
+  ]
+}

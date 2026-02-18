@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0497"
+  },
+  "providerId": "ros2-common-interfaces",
+  "providerName": "ROS 2 Common Interfaces",
+  "portFamilies": ["RoboticsActuation"],
+  "upstream": {
+    "kind": "git",
+    "repoUrl": "https://github.com/ros2/common_interfaces",
+    "commit": "b610accb10a25af0478a03f2cfc9aa52a403ff8c",
+    "version": "rolling",
+    "retrievedAt": "2026-02-18T00:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "Apache-2.0",
+    "classification": "safe_to_reuse",
+    "notes": "ROS 2 core message definitions; Apache-2.0. Study and reference for CIF extraction. Do not vendor compiled artefacts into Portarium core — use message definitions as domain model reference only."
+  },
+  "extraction": {
+    "modelSources": [
+      "geometry_msgs/msg/*.msg",
+      "sensor_msgs/msg/*.msg",
+      "nav_msgs/msg/*.msg",
+      "action_msgs/msg/*.msg",
+      "std_msgs/msg/*.msg",
+      "diagnostic_msgs/msg/*.msg"
+    ],
+    "command": "node scripts/domain-atlas/extract-ros2-common-interfaces-cif.mjs",
+    "notes": "Parse .msg files to extract entity/field definitions. Map ROS 2 primitive types to CIF field types. Each package/message becomes a CIF entity."
+  }
+}

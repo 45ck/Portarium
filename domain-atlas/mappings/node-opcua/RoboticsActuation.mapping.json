@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "node-opcua",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "Subscription",
+      "fieldMappings": {
+        "assetId": "subscriptionId",
+        "status": "publishingEnabled"
+      },
+      "notes": "An OPC UA Subscription represents an active monitoring channel to a PLC/robot controller; mapped to Asset for lifecycle tracking."
+    },
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "WriteValue",
+      "fieldMappings": {
+        "input": "value",
+        "displayName": "nodeId"
+      },
+      "notes": "A WriteValue operation is a Portarium Task — it actuates a robot controller register and requires approval."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "NodeId",
+      "fieldMappings": {
+        "externalId": "value",
+        "externalType": "namespace",
+        "displayLabel": "identifierType"
+      },
+      "notes": "OPC UA NodeIds are address-space references; ExternalObjectRef links to specific PLC nodes in task parameters."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "DataValue",
+      "fieldMappings": {
+        "externalType": "statusCode",
+        "displayLabel": "sourceTimestamp"
+      },
+      "notes": "DataValues are telemetry readings; surfaced as ExternalObjectRef in cockpit sensor panels."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "BrowseResult",
+      "fieldMappings": {
+        "externalType": "statusCode",
+        "displayLabel": "references"
+      },
+      "notes": "Browse results enumerate available nodes; ExternalObjectRef for address-space discovery artefacts."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "MonitoredItemCreateRequest",
+      "fieldMappings": {
+        "externalType": "monitoringMode",
+        "displayLabel": "itemToMonitor"
+      },
+      "notes": "Monitored item configuration is an infrastructure ExternalObjectRef linked from the Asset (Subscription)."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "spire",
+  "portFamily": "RoboticsActuation",
+  "mappings": [
+    {
+      "canonicalObject": "Asset",
+      "vendorEntity": "AttestedNode",
+      "fieldMappings": {
+        "assetId": "spiffe_id",
+        "displayName": "spiffe_id",
+        "status": "cert_not_after"
+      },
+      "notes": "Each attested SPIRE agent (robot node) maps to a Portarium Asset representing the robot's identity and certificate health."
+    },
+    {
+      "canonicalObject": "Document",
+      "vendorEntity": "Certificate",
+      "fieldMappings": {
+        "content": "der_bytes"
+      },
+      "notes": "X.509 certificates (X509-SVIDs) are identity documents — map to the Document canonical object for auditability."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "RegistrationEntry",
+      "fieldMappings": {
+        "externalId": "entry_id",
+        "externalType": "spiffe_id",
+        "displayLabel": "hint"
+      },
+      "notes": "Registration entries define workload identity rules; treated as ExternalObjectRef (policy documents) linked from the robot Asset."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Bundle",
+      "fieldMappings": {
+        "externalId": "trust_domain_id",
+        "externalType": "trust_domain_id",
+        "displayLabel": "sequence_number"
+      },
+      "notes": "Trust bundles are federation artefacts; ExternalObjectRef linking trust domains across robot fleet boundaries."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Selector",
+      "fieldMappings": {
+        "externalType": "type",
+        "displayLabel": "value"
+      },
+      "notes": "Selectors are attestation predicates; referenced from RegistrationEntry ExternalObjectRefs."
+    }
+  ]
+}
