@@ -30,6 +30,7 @@ export default tseslint.config(
       'tmp_*.{js,cjs,mjs,py}',
       'gen*.{js,cjs,mjs,py}',
       'gb*.{js,cjs,mjs}',
+      'build_gen*.{js,cjs,mjs}',
     ],
   },
 

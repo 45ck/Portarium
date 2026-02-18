@@ -36,11 +36,36 @@ export function unbrand<T>(branded: Branded<T, string>): T {
 // VAOP domain primitives
 // ---------------------------------------------------------------------------
 
-/** Unique identifier for a tenant / workspace. */
+/**
+ * Unique identifier for a tenant / workspace.
+ *
+ * Policy (bead-0304): In v1 a "tenant" and a "workspace" are the same
+ * identity. `WorkspaceId` is a pure type alias for `TenantId` — they share
+ * one brand, one factory, and are structurally identical at compile time.
+ *
+ * Operational domain objects (Run, Approval, CredentialGrant …) use the
+ * field name `workspaceId` and the `WorkspaceId()` factory.
+ * Canonical data objects (AccountV1, InvoiceV1 …) use the field name
+ * `tenantId` and the `TenantId()` factory, mirroring SoR semantics.
+ */
 export type TenantId = Branded<string, 'TenantId'>;
 
-/** Unique identifier for a workspace (alias for TenantId in v1). */
+/** Unique identifier for a workspace (exact alias for TenantId in v1). */
 export type WorkspaceId = TenantId;
+
+// Compile-time guard: WorkspaceId must remain a bidirectional alias for TenantId.
+// This type evaluates to `true`; a change to either type will cause this to
+// resolve to `never`, which will then produce a TS error at any use site.
+export type WorkspaceIdEqualsTenantId = [WorkspaceId] extends [TenantId]
+  ? [TenantId] extends [WorkspaceId]
+    ? true
+    : never
+  : never;
+
+// Exported value-level guard — assignment to WorkspaceIdEqualsTenantId becomes a
+// compile-time error (cannot assign `true` to `never`) if the alias breaks.
+// Exporting prevents noUnusedLocals from flagging it.
+export const WORKSPACE_ID_ALIAS_GUARD: WorkspaceIdEqualsTenantId = true;
 
 /** Unique identifier for a workflow definition. */
 export type WorkflowId = Branded<string, 'WorkflowId'>;

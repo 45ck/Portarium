@@ -26,9 +26,16 @@ import {
   isWorkspaceUserRole,
   unbrand,
   WorkItemId,
+  WORKSPACE_ID_ALIAS_GUARD,
 } from './index.js';
 
+// Compile-time assertion: WORKSPACE_ID_ALIAS_GUARD is typed as WorkspaceIdEqualsTenantId.
+// If the alias breaks, the assignment in index.ts (true as WorkspaceIdEqualsTenantId) becomes a TS error.
 describe('domain primitives', () => {
+  it('WorkspaceId is a compile-time alias for TenantId (guard is true at runtime)', () => {
+    expect(WORKSPACE_ID_ALIAS_GUARD).toBe(true);
+  });
+
   it('brand is an identity function at runtime', () => {
     expect(brand('abc')).toBe('abc');
   });

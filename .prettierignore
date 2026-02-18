@@ -8,3 +8,16 @@ domain-atlas/upstreams
 vendor
 _tmp_bd
 package
+# Scratch/generator scripts left from interactive sessions
+tmp_*.js
+tmp_*.cjs
+tmp_*.mjs
+gen*.js
+gen*.cjs
+gen*.mjs
+gb*.js
+gb*.cjs
+gb*.mjs
+build_gen*.js
+build_gen*.cjs
+build_gen*.mjs
