@@ -5,6 +5,14 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readOptionalIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled'] as const;
 type TaskStatus = (typeof TASK_STATUSES)[number];
@@ -29,21 +37,20 @@ export class TaskParseError extends Error {
 }
 
 export function parseCanonicalTaskV1(value: unknown): CanonicalTaskV1 {
-  if (!isRecord(value)) {
-    throw new TaskParseError('Task must be an object.');
-  }
+  const record = readRecord(value, 'Task', TaskParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', TaskParseError);
+  if (schemaVersion !== 1) {
     throw new TaskParseError('schemaVersion must be 1.');
   }
 
-  const canonicalTaskId = CanonicalTaskId(readString(value, 'canonicalTaskId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const title = readString(value, 'title');
-  const status = readEnum(value, 'status', TASK_STATUSES);
-  const assigneeId = readOptionalString(value, 'assigneeId');
-  const dueAtIso = readOptionalString(value, 'dueAtIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const canonicalTaskId = CanonicalTaskId(readString(record, 'canonicalTaskId', TaskParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', TaskParseError));
+  const title = readString(record, 'title', TaskParseError);
+  const status = readEnum(record, 'status', TASK_STATUSES, TaskParseError);
+  const assigneeId = readOptionalString(record, 'assigneeId', TaskParseError);
+  const dueAtIso = readOptionalIsoString(record, 'dueAtIso', TaskParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     canonicalTaskId,
@@ -57,35 +64,6 @@ export function parseCanonicalTaskV1(value: unknown): CanonicalTaskV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TaskParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TaskParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new TaskParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -95,8 +73,4 @@ function readOptionalExternalRefs(
     throw new TaskParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -10,6 +10,14 @@ import {
 } from '../primitives/index.js';
 import type { SemVer } from '../versioning/semver.js';
 import { parseSemVer } from '../versioning/semver.js';
+import {
+  parseBoolean,
+  parseNonEmptyString,
+  parseRecord,
+  readInteger,
+  readIsoString,
+  readRecord,
+} from '../validation/parse-utils.js';
 
 export type EnabledPackV1 = Readonly<{
   packId: PackIdType;
@@ -41,23 +49,28 @@ export class TenantConfigParseError extends Error {
 }
 
 export function parseTenantConfigV1(value: unknown): TenantConfigV1 {
-  if (!isRecord(value)) throw new TenantConfigParseError('TenantConfig must be an object.');
+  const record = readRecord(value, 'TenantConfig', TenantConfigParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', TenantConfigParseError);
   if (schemaVersion !== 1) {
     throw new TenantConfigParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const tenantConfigId = TenantConfigId(readString(value, 'tenantConfigId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
+  const tenantConfigId = TenantConfigId(
+    parseNonEmptyString(record['tenantConfigId'], 'tenantConfigId', TenantConfigParseError),
+  );
+  const tenantId = TenantId(
+    parseNonEmptyString(record['tenantId'], 'tenantId', TenantConfigParseError),
+  );
+  const workspaceId = WorkspaceId(
+    parseNonEmptyString(record['workspaceId'], 'workspaceId', TenantConfigParseError),
+  );
 
-  const enabledPacks = parseEnabledPacks(value['enabledPacks']);
-  const featureFlags = parseFeatureFlags(value['featureFlags']);
-  const complianceProfiles = parseComplianceProfiles(value['complianceProfiles']);
+  const enabledPacks = parseEnabledPacks(record['enabledPacks']);
+  const featureFlags = parseFeatureFlags(record['featureFlags']);
+  const complianceProfiles = parseComplianceProfiles(record['complianceProfiles']);
 
-  const updatedAtIso = readString(value, 'updatedAtIso');
-  parseIsoString(updatedAtIso, 'updatedAtIso');
+  const updatedAtIso = readIsoString(record, 'updatedAtIso', TenantConfigParseError);
 
   return {
     schemaVersion: 1,
@@ -77,12 +90,16 @@ function parseEnabledPacks(raw: unknown): readonly EnabledPackV1[] {
   }
 
   return raw.map((item: unknown, i: number) => {
-    if (!isRecord(item)) {
-      throw new TenantConfigParseError(`enabledPacks[${i}] must be an object.`);
-    }
+    const record = parseRecord(item, `enabledPacks[${i}]`, TenantConfigParseError);
 
-    const packId = PackId(readPackString(item, 'packId', i));
-    const versionRaw = readPackString(item, 'version', i);
+    const packId = PackId(
+      parseNonEmptyString(record['packId'], `enabledPacks[${i}].packId`, TenantConfigParseError),
+    );
+    const versionRaw = parseNonEmptyString(
+      record['version'],
+      `enabledPacks[${i}].version`,
+      TenantConfigParseError,
+    );
 
     let version: SemVer;
     try {
@@ -101,16 +118,18 @@ function parseFeatureFlags(raw: unknown): readonly FeatureFlagV1[] {
   }
 
   return raw.map((item: unknown, i: number) => {
-    if (!isRecord(item)) {
-      throw new TenantConfigParseError(`featureFlags[${i}] must be an object.`);
-    }
+    const record = parseRecord(item, `featureFlags[${i}]`, TenantConfigParseError);
 
-    const flagName = readFlagString(item, 'flagName', i);
-
-    if (typeof item['enabled'] !== 'boolean') {
-      throw new TenantConfigParseError(`featureFlags[${i}].enabled must be a boolean.`);
-    }
-    const enabled: boolean = item['enabled'];
+    const flagName = parseNonEmptyString(
+      record['flagName'],
+      `featureFlags[${i}].flagName`,
+      TenantConfigParseError,
+    );
+    const enabled = parseBoolean(
+      record['enabled'],
+      `featureFlags[${i}].enabled`,
+      TenantConfigParseError,
+    );
 
     return { flagName, enabled };
   });
@@ -124,56 +143,6 @@ function parseComplianceProfiles(raw: unknown): readonly string[] | undefined {
   }
 
   return raw.map((item: unknown, i: number) => {
-    if (typeof item !== 'string' || item.trim() === '') {
-      throw new TenantConfigParseError(`complianceProfiles[${i}] must be a non-empty string.`);
-    }
-    return item;
+    return parseNonEmptyString(item, `complianceProfiles[${i}]`, TenantConfigParseError);
   });
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TenantConfigParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new TenantConfigParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readPackString(obj: Record<string, unknown>, key: string, index: number): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TenantConfigParseError(`enabledPacks[${index}].${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readFlagString(obj: Record<string, unknown>, key: string, index: number): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TenantConfigParseError(`featureFlags[${index}].${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function parseIsoString(value: string, label: string): void {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new TenantConfigParseError(`${label} must be a valid ISO timestamp.`);
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

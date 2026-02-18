@@ -165,7 +165,7 @@ describe('parsePolicyV1: validation', () => {
         ...VALID_POLICY,
         rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }],
       }),
-    ).toThrow(/effect must be "Allow" or "Deny"/i);
+    ).toThrow(/effect must be one of: Allow, Deny/i);
   });
 
   it('rejects invalid ISO timestamp for createdAtIso', () => {

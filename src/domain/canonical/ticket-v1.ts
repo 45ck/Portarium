@@ -5,6 +5,15 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readIsoString,
+  readOptionalEnum,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const TICKET_STATUSES = ['open', 'pending', 'resolved', 'closed'] as const;
 type TicketStatus = (typeof TICKET_STATUSES)[number];
@@ -33,22 +42,21 @@ export class TicketParseError extends Error {
 }
 
 export function parseTicketV1(value: unknown): TicketV1 {
-  if (!isRecord(value)) {
-    throw new TicketParseError('Ticket must be an object.');
-  }
+  const record = readRecord(value, 'Ticket', TicketParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', TicketParseError);
+  if (schemaVersion !== 1) {
     throw new TicketParseError('schemaVersion must be 1.');
   }
 
-  const ticketId = TicketId(readString(value, 'ticketId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const subject = readString(value, 'subject');
-  const status = readEnum(value, 'status', TICKET_STATUSES);
-  const priority = readOptionalEnum(value, 'priority', TICKET_PRIORITIES);
-  const assigneeId = readOptionalString(value, 'assigneeId');
-  const createdAtIso = readString(value, 'createdAtIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const ticketId = TicketId(readString(record, 'ticketId', TicketParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', TicketParseError));
+  const subject = readString(record, 'subject', TicketParseError);
+  const status = readEnum(record, 'status', TICKET_STATUSES, TicketParseError);
+  const priority = readOptionalEnum(record, 'priority', TICKET_PRIORITIES, TicketParseError);
+  const assigneeId = readOptionalString(record, 'assigneeId', TicketParseError);
+  const createdAtIso = readIsoString(record, 'createdAtIso', TicketParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     ticketId,
@@ -63,48 +71,6 @@ export function parseTicketV1(value: unknown): TicketV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TicketParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new TicketParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new TicketParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
-}
-
-function readOptionalEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new TicketParseError(`${key} must be one of: ${allowed.join(', ')} when provided.`);
-  }
-  return v as T;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -114,8 +80,4 @@ function readOptionalExternalRefs(
     throw new TicketParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

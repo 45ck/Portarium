@@ -6,6 +6,15 @@ import {
   type WorkflowId as WorkflowIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import {
+  parseNonEmptyString,
+  readBoolean,
+  readInteger,
+  readIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type TriggerKind = 'Cron' | 'Webhook' | 'DomainEvent' | 'Manual';
 
@@ -40,33 +49,29 @@ export class WorkflowTriggerParseError extends Error {
 }
 
 export function parseWorkflowTriggerV1(value: unknown): WorkflowTriggerV1 {
-  if (!isRecord(value)) {
-    throw new WorkflowTriggerParseError('WorkflowTrigger must be an object.');
-  }
+  const record = readRecord(value, 'WorkflowTrigger', WorkflowTriggerParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', WorkflowTriggerParseError);
   if (schemaVersion !== 1) {
     throw new WorkflowTriggerParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const triggerDefinitionId = TriggerDefinitionId(readString(value, 'triggerDefinitionId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const workflowId = WorkflowId(readString(value, 'workflowId'));
+  const triggerDefinitionId = TriggerDefinitionId(
+    readString(record, 'triggerDefinitionId', WorkflowTriggerParseError),
+  );
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', WorkflowTriggerParseError));
+  const workflowId = WorkflowId(readString(record, 'workflowId', WorkflowTriggerParseError));
 
-  const kindRaw = readString(value, 'kind');
+  const kindRaw = readString(record, 'kind', WorkflowTriggerParseError);
   if (!isTriggerKind(kindRaw)) {
     throw new WorkflowTriggerParseError('kind must be one of: Cron, Webhook, DomainEvent, Manual.');
   }
 
-  if (typeof value['active'] !== 'boolean') {
-    throw new WorkflowTriggerParseError('active must be a boolean.');
-  }
-  const active: boolean = value['active'];
+  const active = readBoolean(record, 'active', WorkflowTriggerParseError);
 
-  const config = parseTriggerConfig(value['config'], kindRaw);
+  const config = parseTriggerConfig(record['config'], kindRaw);
 
-  const createdAtIso = readString(value, 'createdAtIso');
-  parseIsoString(createdAtIso, 'createdAtIso');
+  const createdAtIso = readIsoString(record, 'createdAtIso', WorkflowTriggerParseError);
 
   return {
     schemaVersion: 1,
@@ -81,25 +86,35 @@ export function parseWorkflowTriggerV1(value: unknown): WorkflowTriggerV1 {
 }
 
 function parseTriggerConfig(raw: unknown, kind: TriggerKind): TriggerConfig {
-  if (!isRecord(raw)) {
-    throw new WorkflowTriggerParseError('config must be an object.');
-  }
+  const record = readRecord(raw, 'config', WorkflowTriggerParseError);
 
   switch (kind) {
     case 'Cron': {
-      const expression = readConfigString(raw, 'expression');
+      const expression = parseNonEmptyString(
+        record['expression'],
+        'config.expression',
+        WorkflowTriggerParseError,
+      );
       return { expression };
     }
     case 'Webhook': {
-      const endpointPath = readConfigString(raw, 'endpointPath');
+      const endpointPath = parseNonEmptyString(
+        record['endpointPath'],
+        'config.endpointPath',
+        WorkflowTriggerParseError,
+      );
       return { endpointPath };
     }
     case 'DomainEvent': {
-      const eventType = readConfigString(raw, 'eventType');
+      const eventType = parseNonEmptyString(
+        record['eventType'],
+        'config.eventType',
+        WorkflowTriggerParseError,
+      );
       return { eventType };
     }
     case 'Manual': {
-      const label = readOptionalString(raw, 'label');
+      const label = readOptionalString(record, 'label', WorkflowTriggerParseError);
       return {
         ...(label !== undefined ? { label } : {}),
       };
@@ -109,52 +124,4 @@ function parseTriggerConfig(raw: unknown, kind: TriggerKind): TriggerConfig {
 
 function isTriggerKind(value: string): value is TriggerKind {
   return value === 'Cron' || value === 'Webhook' || value === 'DomainEvent' || value === 'Manual';
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkflowTriggerParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkflowTriggerParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readConfigString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkflowTriggerParseError(`config.${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new WorkflowTriggerParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function parseIsoString(value: string, label: string): void {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new WorkflowTriggerParseError(`${label} must be a valid ISO timestamp.`);
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

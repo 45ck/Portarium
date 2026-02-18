@@ -152,4 +152,22 @@ describe('deriveCredentialGrantStatus', () => {
       'Active',
     );
   });
+
+  it('returns PendingRotation when near expiry and lastRotatedAtIso is set', () => {
+    const grant = parseCredentialGrantV1({
+      schemaVersion: 1,
+      credentialGrantId: 'cg-rot',
+      workspaceId: 'ws-1',
+      adapterId: 'adapter-1',
+      credentialsRef: 'vault://secrets/cg-rot',
+      scope: 'read:invoices',
+      issuedAtIso: '2026-01-01T00:00:00.000Z',
+      lastRotatedAtIso: '2026-06-01T00:00:00.000Z',
+      expiresAtIso: '2026-12-31T00:00:00.000Z',
+    });
+    // 1 day before expiry — well within the last 10%
+    expect(deriveCredentialGrantStatus(grant, new Date('2026-12-30T00:00:00.000Z'))).toBe(
+      'PendingRotation',
+    );
+  });
 });

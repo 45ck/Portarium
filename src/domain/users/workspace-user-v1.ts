@@ -6,6 +6,13 @@ import {
   type WorkspaceId as WorkspaceIdType,
   type WorkspaceUserRole,
 } from '../primitives/index.js';
+import {
+  readBoolean,
+  readIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type WorkspaceUserV1 = Readonly<{
   userId: UserIdType;
@@ -26,25 +33,23 @@ export class WorkspaceUserParseError extends Error {
 }
 
 export function parseWorkspaceUserV1(value: unknown): WorkspaceUserV1 {
-  if (!isRecord(value)) {
-    throw new WorkspaceUserParseError('User must be an object.');
-  }
+  const record = readRecord(value, 'User', WorkspaceUserParseError);
 
-  const userId = UserId(readString(value, 'userId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
+  const userId = UserId(readString(record, 'userId', WorkspaceUserParseError));
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', WorkspaceUserParseError));
 
-  const email = readString(value, 'email');
+  const email = readString(record, 'email', WorkspaceUserParseError);
   if (!isEmailLike(email)) {
     throw new WorkspaceUserParseError('email must be a valid email address.');
   }
 
-  const displayName = readOptionalString(value, 'displayName');
+  const displayName = readOptionalString(record, 'displayName', WorkspaceUserParseError);
 
-  const rolesRaw = value['roles'];
+  const rolesRaw = record['roles'];
   const roles = parseRolesV1(rolesRaw);
 
-  const active = readBoolean(value, 'active');
-  const createdAtIso = readString(value, 'createdAtIso');
+  const active = readBoolean(record, 'active', WorkspaceUserParseError);
+  const createdAtIso = readIsoString(record, 'createdAtIso', WorkspaceUserParseError);
 
   return {
     userId,
@@ -85,41 +90,12 @@ function parseRolesV1(value: unknown): readonly WorkspaceUserRole[] {
   return out;
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkspaceUserParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkspaceUserParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readBoolean(obj: Record<string, unknown>, key: string): boolean {
-  const v = obj[key];
-  if (typeof v !== 'boolean') {
-    throw new WorkspaceUserParseError(`${key} must be a boolean.`);
-  }
-  return v;
-}
-
 function isEmailLike(value: string): boolean {
   const s = value.trim();
   const at = s.indexOf('@');
   if (at <= 0 || at >= s.length - 1) return false;
   const dot = s.lastIndexOf('.');
   return dot > at + 1 && dot < s.length - 1;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isNonEmptyArray(value: unknown): value is readonly unknown[] {

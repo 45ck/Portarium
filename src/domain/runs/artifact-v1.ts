@@ -10,6 +10,14 @@ import {
 } from '../primitives/index.js';
 import type { RetentionScheduleV1 } from '../evidence/retention-schedule-v1.js';
 import { parseRetentionScheduleV1 } from '../evidence/retention-schedule-v1.js';
+import {
+  readInteger,
+  readIsoString,
+  readNonNegativeInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type ArtifactV1 = Readonly<{
   schemaVersion: 1;
@@ -33,23 +41,23 @@ export class ArtifactParseError extends Error {
 }
 
 export function parseArtifactV1(value: unknown): ArtifactV1 {
-  if (!isRecord(value)) throw new ArtifactParseError('Artifact must be an object.');
+  const record = readRecord(value, 'Artifact', ArtifactParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', ArtifactParseError);
   if (schemaVersion !== 1) {
     throw new ArtifactParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const artifactId = ArtifactId(readString(value, 'artifactId'));
-  const runId = RunId(readString(value, 'runId'));
-  const evidenceId = parseOptionalId(value, 'evidenceId', EvidenceId);
-  const mimeType = readString(value, 'mimeType');
-  const sizeBytes = readNonNegativeInteger(value, 'sizeBytes');
-  const storageRef = readString(value, 'storageRef');
-  const hashSha256 = HashSha256(readString(value, 'hashSha256'));
-  const createdAtIso = readString(value, 'createdAtIso');
+  const artifactId = ArtifactId(readString(record, 'artifactId', ArtifactParseError));
+  const runId = RunId(readString(record, 'runId', ArtifactParseError));
+  const evidenceId = parseOptionalId(record, 'evidenceId', EvidenceId);
+  const mimeType = readString(record, 'mimeType', ArtifactParseError);
+  const sizeBytes = readNonNegativeInteger(record, 'sizeBytes', ArtifactParseError);
+  const storageRef = readString(record, 'storageRef', ArtifactParseError);
+  const hashSha256 = HashSha256(readString(record, 'hashSha256', ArtifactParseError));
+  const createdAtIso = readIsoString(record, 'createdAtIso', ArtifactParseError);
 
-  const retentionScheduleRaw = value['retentionSchedule'];
+  const retentionScheduleRaw = record['retentionSchedule'];
   let retentionSchedule: RetentionScheduleV1 | undefined;
   if (retentionScheduleRaw !== undefined) {
     try {
@@ -78,43 +86,6 @@ function parseOptionalId<T>(
   key: string,
   ctor: (raw: string) => T,
 ): T | undefined {
-  const raw = readOptionalString(obj, key);
+  const raw = readOptionalString(obj, key, ArtifactParseError);
   return raw === undefined ? undefined : ctor(raw);
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ArtifactParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ArtifactParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new ArtifactParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readNonNegativeInteger(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < 0) {
-    throw new ArtifactParseError(`${key} must be a non-negative integer.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

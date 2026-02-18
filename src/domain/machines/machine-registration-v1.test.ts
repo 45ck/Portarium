@@ -105,7 +105,7 @@ describe('parseMachineRegistrationV1: validation', () => {
   it('rejects non-array capabilities', () => {
     expect(() =>
       parseMachineRegistrationV1({ ...VALID_MACHINE_REGISTRATION, capabilities: 'bad' }),
-    ).toThrow(/capabilities must be a non-empty array/i);
+    ).toThrow(/capabilities must be an array/i);
   });
 
   it('rejects invalid capability entries', () => {

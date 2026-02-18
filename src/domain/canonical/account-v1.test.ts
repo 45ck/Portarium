@@ -69,4 +69,12 @@ describe('parseAccountV1', () => {
   it('rejects non-boolean isActive', () => {
     expect(() => parseAccountV1({ ...valid, isActive: 'yes' })).toThrow(/isActive/);
   });
+
+  it('rejects unsupported schemaVersion', () => {
+    expect(() => parseAccountV1({ ...valid, schemaVersion: 2 })).toThrow(/schemaVersion must be 1/);
+  });
+
+  it('rejects non-array externalRefs', () => {
+    expect(() => parseAccountV1({ ...valid, externalRefs: 'bad' })).toThrow(AccountParseError);
+  });
 });

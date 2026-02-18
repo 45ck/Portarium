@@ -5,6 +5,15 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readIsoString,
+  readNonNegativeNumber,
+  readOptionalNonNegativeInteger,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const ORDER_STATUSES = ['draft', 'confirmed', 'fulfilled', 'cancelled'] as const;
 type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -31,23 +40,22 @@ export class OrderParseError extends Error {
 }
 
 export function parseOrderV1(value: unknown): OrderV1 {
-  if (!isRecord(value)) {
-    throw new OrderParseError('Order must be an object.');
-  }
+  const record = readRecord(value, 'Order', OrderParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', OrderParseError);
+  if (schemaVersion !== 1) {
     throw new OrderParseError('schemaVersion must be 1.');
   }
 
-  const orderId = OrderId(readString(value, 'orderId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const orderNumber = readString(value, 'orderNumber');
-  const status = readEnum(value, 'status', ORDER_STATUSES);
-  const totalAmount = readNonNegativeNumber(value, 'totalAmount');
-  const currencyCode = readCurrencyCode(value, 'currencyCode');
-  const lineItemCount = readOptionalNonNegativeInteger(value, 'lineItemCount');
-  const createdAtIso = readString(value, 'createdAtIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const orderId = OrderId(readString(record, 'orderId', OrderParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', OrderParseError));
+  const orderNumber = readString(record, 'orderNumber', OrderParseError);
+  const status = readEnum(record, 'status', ORDER_STATUSES, OrderParseError);
+  const totalAmount = readNonNegativeNumber(record, 'totalAmount', OrderParseError);
+  const currencyCode = readCurrencyCode(record, 'currencyCode');
+  const lineItemCount = readOptionalNonNegativeInteger(record, 'lineItemCount', OrderParseError);
+  const createdAtIso = readIsoString(record, 'createdAtIso', OrderParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     orderId,
@@ -63,52 +71,12 @@ export function parseOrderV1(value: unknown): OrderV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new OrderParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
 function readCurrencyCode(obj: Record<string, unknown>, key: string): string {
   const v = obj[key];
   if (typeof v !== 'string' || !/^[A-Z]{3}$/.test(v)) {
     throw new OrderParseError(`${key} must be a 3-letter uppercase currency code.`);
   }
   return v;
-}
-
-function readNonNegativeNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
-    throw new OrderParseError(`${key} must be a non-negative number.`);
-  }
-  return v;
-}
-
-function readOptionalNonNegativeInteger(
-  obj: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0) {
-    throw new OrderParseError(`${key} must be a non-negative integer when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new OrderParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
 }
 
 function readOptionalExternalRefs(
@@ -120,8 +88,4 @@ function readOptionalExternalRefs(
     throw new OrderParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

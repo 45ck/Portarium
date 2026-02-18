@@ -147,19 +147,76 @@ describe('parseApprovalV1: validation', () => {
   });
 
   it('rejects decision fields on pending approvals', () => {
+    const base = {
+      schemaVersion: 1,
+      approvalId: 'approval-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve Plan',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-1',
+      status: 'Pending',
+    };
+
+    expect(() => parseApprovalV1({ ...base, decidedAtIso: '2026-02-17T00:01:00.000Z' })).toThrow(
+      /decision fields/i,
+    );
+
+    expect(() => parseApprovalV1({ ...base, decidedByUserId: 'user-2' })).toThrow(
+      /decision fields/i,
+    );
+
+    expect(() => parseApprovalV1({ ...base, rationale: 'should not be here' })).toThrow(
+      /decision fields/i,
+    );
+  });
+
+  it('parses an approval with escalation chain', () => {
+    const approval = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-5',
+      workspaceId: 'ws-1',
+      runId: 'run-5',
+      planId: 'plan-5',
+      prompt: 'Approve Plan',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-1',
+      status: 'Pending',
+      escalationChain: [{ stepOrder: 1, escalateToUserId: 'mgr-1', afterHours: 24 }],
+    });
+    expect(approval.escalationChain).toHaveLength(1);
+  });
+
+  it('rejects invalid escalation chain entries', () => {
     expect(() =>
       parseApprovalV1({
         schemaVersion: 1,
-        approvalId: 'approval-1',
+        approvalId: 'approval-6',
         workspaceId: 'ws-1',
-        runId: 'run-1',
-        planId: 'plan-1',
+        runId: 'run-6',
+        planId: 'plan-6',
         prompt: 'Approve Plan',
         requestedAtIso: '2026-02-17T00:00:00.000Z',
         requestedByUserId: 'user-1',
         status: 'Pending',
-        decidedAtIso: '2026-02-17T00:01:00.000Z',
+        escalationChain: ['bad-step'],
       }),
-    ).toThrow(/decision fields/i);
+    ).toThrow(/escalationChain\[0\] must be an object/i);
+
+    expect(() =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-7',
+        workspaceId: 'ws-1',
+        runId: 'run-7',
+        planId: 'plan-7',
+        prompt: 'Approve Plan',
+        requestedAtIso: '2026-02-17T00:00:00.000Z',
+        requestedByUserId: 'user-1',
+        status: 'Pending',
+        escalationChain: 'not-an-array',
+      }),
+    ).toThrow(/escalationChain must be an array/i);
   });
 });

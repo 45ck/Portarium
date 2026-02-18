@@ -1,5 +1,6 @@
 import type { UserId } from '../primitives/index.js';
 import type { UserId as UserIdType } from '../primitives/index.js';
+import { readInteger, readRecord, readString, readStringArray } from '../validation/parse-utils.js';
 
 export type SodConstraintKind = 'MakerChecker' | 'DistinctApprovers' | 'IncompatibleDuties';
 
@@ -154,11 +155,9 @@ function evaluateIncompatibleDutiesConstraintV1(
 }
 
 function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV1 {
-  if (!isRecord(value)) {
-    throw new SodConstraintParseError(`${pathLabel} must be an object.`);
-  }
+  const record = readRecord(value, pathLabel, SodConstraintParseError);
 
-  const kind = readString(value, 'kind');
+  const kind = readString(record, 'kind', SodConstraintParseError);
   if (!isSodConstraintKind(kind)) {
     throw new SodConstraintParseError(
       `${pathLabel}.kind must be one of: MakerChecker, DistinctApprovers, IncompatibleDuties.`,
@@ -170,14 +169,14 @@ function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV
   }
 
   if (kind === 'DistinctApprovers') {
-    const minimumApprovers = readNumber(value, 'minimumApprovers');
+    const minimumApprovers = readInteger(record, 'minimumApprovers', SodConstraintParseError);
     if (minimumApprovers < 1) {
       throw new SodConstraintParseError(`${pathLabel}.minimumApprovers must be >= 1.`);
     }
     return { kind: 'DistinctApprovers', minimumApprovers };
   }
 
-  const dutyKeys = readStringArray(value, 'dutyKeys');
+  const dutyKeys = readStringArray(record, 'dutyKeys', SodConstraintParseError);
   if (dutyKeys.length < 2) {
     throw new SodConstraintParseError(`${pathLabel}.dutyKeys must have length >= 2.`);
   }
@@ -188,34 +187,6 @@ function isSodConstraintKind(value: string): value is SodConstraintKind {
   return (
     value === 'MakerChecker' || value === 'DistinctApprovers' || value === 'IncompatibleDuties'
   );
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new SodConstraintParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new SodConstraintParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readStringArray(obj: Record<string, unknown>, key: string): readonly string[] {
-  const v = obj[key];
-  if (!Array.isArray(v) || v.some((x) => typeof x !== 'string' || x.trim() === '')) {
-    throw new SodConstraintParseError(`${key} must be an array of non-empty strings.`);
-  }
-  return v as readonly string[];
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function uniqStrings(values: readonly string[]): string[] {

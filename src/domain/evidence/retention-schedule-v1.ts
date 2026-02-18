@@ -1,4 +1,13 @@
+import {
+  readEnum,
+  readOptionalBoolean,
+  readOptionalIsoString,
+  readRecord,
+} from '../validation/parse-utils.js';
+
 export type RetentionClass = 'Operational' | 'Compliance' | 'Forensic';
+
+const RETENTION_CLASSES = ['Operational', 'Compliance', 'Forensic'] as const;
 
 export type RetentionScheduleV1 = Readonly<{
   retentionClass: RetentionClass;
@@ -15,57 +24,24 @@ export class RetentionScheduleParseError extends Error {
 }
 
 export function parseRetentionScheduleV1(value: unknown): RetentionScheduleV1 {
-  if (!isRecord(value)) {
-    throw new RetentionScheduleParseError('RetentionSchedule must be an object.');
-  }
+  const record = readRecord(value, 'RetentionSchedule', RetentionScheduleParseError);
 
-  const retentionClassRaw = readString(value, 'retentionClass');
-  if (!isRetentionClass(retentionClassRaw)) {
-    throw new RetentionScheduleParseError(
-      'retentionClass must be one of: Operational, Compliance, Forensic.',
-    );
-  }
-
-  const retainUntilIso = readOptionalString(value, 'retainUntilIso');
-  const legalHold = readOptionalBoolean(value, 'legalHold');
+  const retentionClassRaw = readEnum(
+    record,
+    'retentionClass',
+    RETENTION_CLASSES,
+    RetentionScheduleParseError,
+  );
+  const retainUntilIso = readOptionalIsoString(
+    record,
+    'retainUntilIso',
+    RetentionScheduleParseError,
+  );
+  const legalHold = readOptionalBoolean(record, 'legalHold', RetentionScheduleParseError);
 
   return {
     retentionClass: retentionClassRaw,
     ...(retainUntilIso !== undefined ? { retainUntilIso } : {}),
     ...(legalHold !== undefined ? { legalHold } : {}),
   };
-}
-
-function isRetentionClass(value: string): value is RetentionClass {
-  return value === 'Operational' || value === 'Compliance' || value === 'Forensic';
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new RetentionScheduleParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new RetentionScheduleParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readOptionalBoolean(obj: Record<string, unknown>, key: string): boolean | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'boolean') {
-    throw new RetentionScheduleParseError(`${key} must be a boolean when provided.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

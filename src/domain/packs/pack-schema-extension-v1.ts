@@ -6,6 +6,13 @@ import {
 } from '../primitives/index.js';
 import type { CoreExtensionPoint } from './core-extension-points.js';
 import { isCoreExtensionPoint } from './core-extension-points.js';
+import {
+  readBoolean,
+  readInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,27 +51,25 @@ export class PackSchemaExtensionParseError extends Error {
 // ---------------------------------------------------------------------------
 
 export function parsePackSchemaExtensionV1(value: unknown): PackSchemaExtensionV1 {
-  if (!isRecord(value)) {
-    throw new PackSchemaExtensionParseError('Pack schema extension must be an object.');
-  }
+  const record = readRecord(value, 'Pack schema extension', PackSchemaExtensionParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', PackSchemaExtensionParseError);
   if (schemaVersion !== 1) {
     throw new PackSchemaExtensionParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const extensionId = readString(value, 'extensionId');
-  const packId = readString(value, 'packId');
-  const namespace = readString(value, 'namespace');
+  const extensionId = readString(record, 'extensionId', PackSchemaExtensionParseError);
+  const packId = readString(record, 'packId', PackSchemaExtensionParseError);
+  const namespace = readString(record, 'namespace', PackSchemaExtensionParseError);
 
-  const extendsCore = readString(value, 'extendsCore');
+  const extendsCore = readString(record, 'extendsCore', PackSchemaExtensionParseError);
   if (!isCoreExtensionPoint(extendsCore)) {
     throw new PackSchemaExtensionParseError(
       `Invalid extendsCore value: "${extendsCore}". Must be a core extension point.`,
     );
   }
 
-  const fieldsRaw = value['fields'];
+  const fieldsRaw = record['fields'];
   if (!Array.isArray(fieldsRaw)) {
     throw new PackSchemaExtensionParseError('fields must be an array.');
   }
@@ -85,14 +90,12 @@ export function parsePackSchemaExtensionV1(value: unknown): PackSchemaExtensionV
 // ---------------------------------------------------------------------------
 
 function parseSchemaField(value: unknown, index: number): SchemaFieldV1 {
-  if (!isRecord(value)) {
-    throw new PackSchemaExtensionParseError(`fields[${index}] must be an object.`);
-  }
+  const record = readRecord(value, `fields[${index}]`, PackSchemaExtensionParseError);
 
-  const fieldName = readString(value, 'fieldName');
-  const fieldType = readString(value, 'fieldType');
-  const required = readBoolean(value, 'required');
-  const description = readOptionalString(value, 'description');
+  const fieldName = readString(record, 'fieldName', PackSchemaExtensionParseError);
+  const fieldType = readString(record, 'fieldType', PackSchemaExtensionParseError);
+  const required = readBoolean(record, 'required', PackSchemaExtensionParseError);
+  const description = readOptionalString(record, 'description', PackSchemaExtensionParseError);
 
   return {
     fieldName,
@@ -100,41 +103,4 @@ function parseSchemaField(value: unknown, index: number): SchemaFieldV1 {
     required,
     ...(description !== undefined ? { description } : {}),
   };
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackSchemaExtensionParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackSchemaExtensionParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new PackSchemaExtensionParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readBoolean(obj: Record<string, unknown>, key: string): boolean {
-  const v = obj[key];
-  if (typeof v !== 'boolean') {
-    throw new PackSchemaExtensionParseError(`${key} must be a boolean.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

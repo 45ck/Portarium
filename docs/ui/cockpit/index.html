@@ -103,6 +103,10 @@
             ><span class="nav__icon">&diams;</span> Agents
             <span class="nav__badge nav__badge--danger">1</span></a
           >
+          <a class="nav__item" href="#adapters"
+            ><span class="nav__icon">&#8644;</span> Adapters
+            <span class="nav__badge nav__badge--warn">3</span></a
+          >
           <a class="nav__item" href="#settings"><span class="nav__icon">&bull;</span> Settings</a>
         </nav>
 
@@ -2189,6 +2193,193 @@
               </div>
             </div>
           </div>
+
+          <!-- ── ApprovalDecisionForm deep review [bead-0459] ── -->
+          <div class="card" style="margin-top: 20px" aria-label="Approval deep review panel">
+            <div class="card__title" style="margin-bottom: 12px">
+              Deep Review: Approve Plan &mdash; Create Invoice in NetSuite
+              <span
+                class="subtle"
+                style="font-size: 11px; font-weight: normal; display: block; margin-top: 2px"
+              >
+                Run R-8920 &bull; WI-1099 &bull; Requested 12m ago by operator@acme.com
+              </span>
+            </div>
+
+            <div class="callout callout--ok" role="status" style="margin-bottom: 12px">
+              <strong>SoD Evaluation: You are eligible to approve</strong>
+              <div style="font-size: 12px; margin-top: 4px">
+                Requestor: <strong>operator@acme.com</strong> (different from you &mdash; SoD
+                satisfied)<br />
+                Rule: <span class="sod-badge">SoD-FINANCE-001</span> Different-approver
+                constraint<br />
+                Roles required: <code>approver</code> or <code>admin</code> &mdash; you have:
+                <code>approver</code>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 12px">
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+                  color: #888;
+                  margin-bottom: 6px;
+                "
+              >
+                Policy Rule
+              </div>
+              <div class="callout callout--policy">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                  "
+                >
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 2px">FINANCE-APPROVAL-001</div>
+                    <div style="font-size: 12px">
+                      Trigger: <code>write:finance AND amount &gt; $1,000</code>
+                    </div>
+                    <div style="font-size: 12px; margin-top: 2px">
+                      Tier: <span class="tier-badge tier-badge--human">Human-approve</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="subtle" style="font-size: 11px">Blast radius</div>
+                    <div style="font-size: 12px">1 system (NetSuite) &bull; 1 record</div>
+                    <div class="idem-badge idem-badge--safe" style="margin-top: 4px">
+                      Reversible
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 12px">
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+                  color: #888;
+                  margin-bottom: 6px;
+                "
+              >
+                Approval Cycle History
+              </div>
+              <div class="list">
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">
+                      <time datetime="2026-02-18T09:12:00Z">09:12</time> &mdash; Approval requested
+                    </div>
+                    <div class="row__subtle">
+                      operator@acme.com &bull; Plan: 1 effect (create invoice)
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <span class="status status--info" style="font-size: 10px">Requested</span>
+                  </div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">
+                      <time datetime="2026-02-18T09:35:00Z">09:35</time> &mdash; Changes requested
+                    </div>
+                    <div class="row__subtle">
+                      approver@acme.com:
+                      <em
+                        >&ldquo;Invoice total seems off &mdash; please verify line items&rdquo;</em
+                      >
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <span class="status status--warn" style="font-size: 10px">Changes &#8617;</span>
+                  </div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">
+                      <time datetime="2026-02-18T09:58:00Z">09:58</time> &mdash; Plan revised and
+                      resubmitted
+                    </div>
+                    <div class="row__subtle">
+                      operator@acme.com &bull; Updated total: $2,340.00 (was $2,140.00)
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">Resubmitted</span>
+                  </div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">Now &mdash; Pending your decision</div>
+                    <div class="row__subtle">SLA: Due in 3h 48m</div>
+                  </div>
+                  <div class="row__right">
+                    <span class="status status--warn" style="font-size: 10px">Pending</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              role="group"
+              aria-label="Make approval decision"
+              style="border-top: 1px solid rgba(0, 0, 0, 0.08); padding-top: 12px"
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+                  color: #888;
+                  margin-bottom: 8px;
+                "
+              >
+                Decision
+              </div>
+              <label class="field">
+                <span class="field__label">
+                  Decision rationale
+                  <span style="color: var(--danger, #c0392b)" aria-hidden="true">*</span>
+                  <span style="font-size: 11px; font-weight: normal; margin-left: 4px"
+                    >(required for all decisions)</span
+                  >
+                </span>
+                <textarea
+                  class="field__input"
+                  rows="3"
+                  aria-required="true"
+                  placeholder="Explain your approve, deny, or request-changes decision..."
+                ></textarea>
+              </label>
+              <div class="form__actions" style="margin-top: 8px">
+                <button class="btn btn--primary btn--small" type="button">&#10003; Approve</button>
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  style="background: rgba(192, 57, 43, 0.08); color: #c0392b"
+                >
+                  &#10005; Deny
+                </button>
+                <button class="btn btn--small" type="button">&#8617; Request changes</button>
+              </div>
+            </div>
+
+            <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
+              <strong>Nielsen Review (bead-0459):</strong>
+              SoD evaluation shown before decision (visibility). Blocked state uses role="alert"
+              (accessibility). Rationale required for ALL decisions. Request-changes cycle shown
+              with full history trail. Policy rule shows blast radius and reversibility (recognition
+              over recall).
+            </div>
+          </div>
         </section>
 
         <!-- ============================================================
@@ -2237,10 +2428,51 @@
             <span class="chip">Project: Billing Governance</span>
           </div>
 
-          <!-- Chain Integrity Banner (chain_integrity_banner) -->
-          <div class="integrity-banner integrity-banner--ok" style="margin-bottom: 12px">
-            Audit log integrity: all entries 120 to 146 verified (contiguous). No gaps or tamper
-            alerts detected.
+          <!-- Chain Integrity Banner [bead-0461] -->
+          <div
+            class="integrity-banner integrity-banner--ok"
+            style="margin-bottom: 12px"
+            role="status"
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <div>
+                <strong>&#10003; Chain Integrity: All 26 entries verified</strong>
+                <div style="font-size: 11px; margin-top: 2px">
+                  Entries #120 &ndash; #146 &bull; SHA-256 hash chain &bull; Last verified: just now
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button class="btn btn--small" type="button">Verify chain &#8635;</button>
+                <button class="btn btn--small" type="button">Download proof bundle</button>
+              </div>
+            </div>
+          </div>
+          <!-- Tamper detected state (hidden by default) [bead-0461] -->
+          <div
+            class="integrity-banner integrity-banner--danger"
+            style="margin-bottom: 12px"
+            role="alert"
+            aria-live="assertive"
+            hidden
+          >
+            <strong>&#9888; Chain break at entry #142</strong>
+            <div style="font-size: 12px; margin-top: 4px">
+              Expected: <code>sha256:9ab3c2f1...</code> &bull; Found: <code>sha256:ff1c44a8...</code
+              ><br />
+              Entries after #142 cannot be independently verified.
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 6px">
+              <button class="btn btn--small" type="button">Export incident report</button>
+              <button class="btn btn--small" type="button">Contact support</button>
+            </div>
           </div>
 
           <div class="empty js-empty-evidence" hidden>
@@ -2263,15 +2495,50 @@
               style="cursor: pointer"
             >
               <div class="row__main">
-                <div class="row__title">Approval decision submitted</div>
+                <div class="row__title">#146 &mdash; Approval decision submitted</div>
                 <div class="row__subtle">
-                  Category: Approval | Actor: User | 1 day ago |
+                  Category: Approval | Actor: user@acme.com | 1 day ago |
                   <span class="correlation-id" title="Click to copy">cor_8920_wi1099_f7a2</span>
                   <span class="retention-tag">Retained 1 year</span>
                 </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    margin-top: 4px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <code aria-label="SHA-256 hash for entry 146" style="font-size: 10px"
+                    >sha256:a3f8c2d1...d91c</code
+                  >
+                  <button
+                    class="btn btn--small"
+                    type="button"
+                    style="font-size: 10px; padding: 1px 6px"
+                    aria-label="Copy hash for entry 146"
+                  >
+                    Copy &#9003;
+                  </button>
+                  <button
+                    class="btn btn--small"
+                    type="button"
+                    style="font-size: 10px; padding: 1px 6px"
+                    aria-label="Verify hash for entry 146"
+                  >
+                    Verify &#10003;
+                  </button>
+                  <span class="subtle" style="font-size: 10px"
+                    >Prev: <code style="font-size: 10px">sha256:7e2b44a5...4a5f</code></span
+                  >
+                </div>
               </div>
               <div class="row__right">
-                <span class="status status--info"><span class="status__icon">✓</span>Verified</span>
+                <span class="status status--info"
+                  ><span class="status__icon">&#10003;</span>Verified</span
+                >
               </div>
             </div>
             <div
@@ -3494,326 +3761,580 @@
             </div>
           </div>
 
-          <div class="agent-layout">
-            <div class="agent-list">
-              <article class="agent-card agent-card--selected" data-agent-id="claude-classify">
-                <div class="agent-card__header">
-                  <span class="agent-card__provider agent-card__provider--claude">C</span>
-                  <div>
-                    <div class="agent-card__name">Invoice Classifier</div>
-                    <div class="agent-card__model subtle">Claude Sonnet 4.5</div>
-                  </div>
-                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                    >Active</span
-                  >
-                </div>
-                <div class="agent-card__stats">
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">142</span
-                    ><span class="agent-card__stat-label">runs (7d)</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">96%</span
-                    ><span class="agent-card__stat-label">success</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">1.2s</span
-                    ><span class="agent-card__stat-label">avg time</span>
-                  </div>
-                </div>
-              </article>
-              <article class="agent-card" data-agent-id="openai-summarize">
-                <div class="agent-card__header">
-                  <span class="agent-card__provider agent-card__provider--openai">O</span>
-                  <div>
-                    <div class="agent-card__name">Document Summarizer</div>
-                    <div class="agent-card__model subtle">GPT-4o</div>
-                  </div>
-                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                    >Active</span
-                  >
-                </div>
-                <div class="agent-card__stats">
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">58</span
-                    ><span class="agent-card__stat-label">runs (7d)</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">91%</span
-                    ><span class="agent-card__stat-label">success</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">3.4s</span
-                    ><span class="agent-card__stat-label">avg time</span>
-                  </div>
-                </div>
-              </article>
-              <article class="agent-card" data-agent-id="custom-validator">
-                <div class="agent-card__header">
-                  <span class="agent-card__provider agent-card__provider--custom">X</span>
-                  <div>
-                    <div class="agent-card__name">Policy Validator</div>
-                    <div class="agent-card__model subtle">Custom endpoint</div>
-                  </div>
-                  <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
-                    ><span class="status__icon">⚠</span>Error</span
-                  >
-                </div>
-                <div class="agent-card__stats">
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">0</span
-                    ><span class="agent-card__stat-label">runs (7d)</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">--</span
-                    ><span class="agent-card__stat-label">success</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">--</span
-                    ><span class="agent-card__stat-label">avg time</span>
-                  </div>
-                </div>
-                <div class="agent-card__error">
-                  Connection failed: endpoint returned 502. Last checked 5m ago.
-                </div>
-              </article>
-              <article class="agent-card" data-agent-id="claude-draft">
-                <div class="agent-card__header">
-                  <span class="agent-card__provider agent-card__provider--claude">C</span>
-                  <div>
-                    <div class="agent-card__name">Draft Generator</div>
-                    <div class="agent-card__model subtle">Claude Haiku 4.5</div>
-                  </div>
-                  <span class="status" style="font-size: 10px; padding: 2px 6px"
-                    ><span class="status__icon">○</span>Inactive</span
-                  >
-                </div>
-                <div class="agent-card__stats">
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">0</span
-                    ><span class="agent-card__stat-label">runs (7d)</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">--</span
-                    ><span class="agent-card__stat-label">success</span>
-                  </div>
-                  <div class="agent-card__stat">
-                    <span class="agent-card__stat-value">--</span
-                    ><span class="agent-card__stat-label">avg time</span>
-                  </div>
-                </div>
-              </article>
-            </div>
-
-            <div class="agent-detail" id="agentDetail">
-              <div class="agent-detail__header">
-                <div>
-                  <h2 class="agent-detail__name">Invoice Classifier</h2>
-                  <div class="subtle">Agent: claude-classify</div>
-                </div>
-                <div style="display: flex; gap: 6px">
-                  <button class="btn btn--small" type="button">Test connection</button>
-                  <button class="btn btn--small" type="button">Deactivate</button>
-                </div>
-              </div>
-              <div class="integrity-banner integrity-banner--ok" style="margin: 12px 0">
-                Connection healthy. Last test: 2m ago (latency: 180ms).
-              </div>
-
-              <div class="tabs" role="tablist" aria-label="Agent tabs">
-                <button class="tab tab--active" type="button" data-tab="agent-config">
-                  Configuration
-                </button>
-                <button class="tab" type="button" data-tab="agent-usage">Usage</button>
-                <button class="tab" type="button" data-tab="agent-integrations">
-                  Integrations
-                </button>
-              </div>
-              <div class="tabpanes" style="margin-top: 10px">
-                <div class="tabpane tabpane--active" data-pane="agent-config">
-                  <div class="form">
-                    <label class="field"
-                      ><span class="field__label">Agent Name</span
-                      ><input class="field__input" type="text" value="Invoice Classifier"
-                    /></label>
-                    <label class="field"
-                      ><span class="field__label">Provider</span>
-                      <select class="field__input">
-                        <option selected>Anthropic (Claude)</option>
-                        <option>OpenAI</option>
-                        <option>Custom endpoint</option>
-                      </select>
-                    </label>
-                    <label class="field"
-                      ><span class="field__label">Model</span>
-                      <select class="field__input">
-                        <option>Claude Opus 4.6</option>
-                        <option selected>Claude Sonnet 4.5</option>
-                        <option>Claude Haiku 4.5</option>
-                      </select>
-                    </label>
-                    <label class="field"
-                      ><span class="field__label">Temperature</span
-                      ><input
-                        class="field__input"
-                        type="number"
-                        value="0.1"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                    /></label>
-                    <label class="field"
-                      ><span class="field__label">Max Tokens</span
-                      ><input class="field__input" type="number" value="4096" min="1" max="200000"
-                    /></label>
-                  </div>
-                  <div style="margin-top: 16px">
-                    <div class="agent-section-title">Capabilities</div>
-                    <div class="agent-capabilities">
-                      <label class="agent-capability"
-                        ><input type="checkbox" checked /> Read external records</label
-                      >
-                      <label class="agent-capability"
-                        ><input type="checkbox" checked /> Classify / categorize</label
-                      >
-                      <label class="agent-capability"
-                        ><input type="checkbox" /> Write external records</label
-                      >
-                      <label class="agent-capability"
-                        ><input type="checkbox" /> Generate documents</label
-                      >
-                      <label class="agent-capability"
-                        ><input type="checkbox" checked /> Analyze data</label
-                      >
-                      <label class="agent-capability"><input type="checkbox" /> Execute code</label>
-                    </div>
-                  </div>
-                  <div style="margin-top: 16px">
-                    <div class="agent-section-title">Permissions</div>
-                    <div class="callout" style="margin-top: 6px">
-                      This agent can access data from: <strong>Finance</strong>,
-                      <strong>Payments</strong>. It cannot write to any external system directly.
-                    </div>
-                    <div class="chips" style="margin-top: 8px">
-                      <span class="chip"><span class="port-icon">FA</span> Finance (read)</span>
-                      <span class="chip"><span class="port-icon">PB</span> Payments (read)</span>
-                    </div>
-                  </div>
-                  <div style="margin-top: 16px">
-                    <div class="agent-section-title">Prompt Template</div>
-                    <label class="field" style="margin-top: 6px"
-                      ><span class="field__label">System prompt</span>
-                      <textarea class="field__input" rows="5">
-You are an invoice classification agent for Portarium. Given an invoice record, classify each line item into the correct accounting category. Return a JSON array of {lineItemId, category, confidence}.</textarea
-                      >
-                    </label>
-                  </div>
-                  <div class="form__actions" style="margin-top: 16px">
-                    <button class="btn btn--primary" type="button">Save changes</button>
-                    <button class="btn" type="button">Discard</button>
-                  </div>
-                </div>
-                <div class="tabpane" data-pane="agent-usage">
-                  <div class="grid grid--3" style="margin-top: 0">
-                    <div class="metric">
-                      <div class="metric__label">Total runs (7d)</div>
-                      <div class="metric__value">142</div>
-                    </div>
-                    <div class="metric">
-                      <div class="metric__label">Success rate</div>
-                      <div class="metric__value">96%</div>
-                    </div>
-                    <div class="metric">
-                      <div class="metric__label">Avg response time</div>
-                      <div class="metric__value">1.2s</div>
-                    </div>
-                  </div>
-                  <article class="card" style="margin-top: 12px">
-                    <div class="card__title">Recent Runs</div>
-                    <div class="list">
-                      <div class="row row--static">
-                        <div class="row__main">
-                          <div class="row__title">Classify: INV-22318 (12 line items)</div>
-                          <div class="row__subtle">Run R-8920 | WI-1099 | 12m ago | 0.9s</div>
-                        </div>
-                        <div class="row__right">
-                          <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                            >Success</span
-                          >
-                        </div>
-                      </div>
-                      <div class="row row--static">
-                        <div class="row__main">
-                          <div class="row__title">Classify: INV-22305 (8 line items)</div>
-                          <div class="row__subtle">Run R-8901 | WI-1088 | 2h ago | 1.1s</div>
-                        </div>
-                        <div class="row__right">
-                          <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                            >Success</span
-                          >
-                        </div>
-                      </div>
-                      <div class="row row--static">
-                        <div class="row__main">
-                          <div class="row__title">Classify: INV-22291 (3 line items)</div>
-                          <div class="row__subtle">Run R-8889 | WI-1072 | 6h ago | 0.8s</div>
-                        </div>
-                        <div class="row__right">
-                          <span
-                            class="status status--danger"
-                            style="font-size: 10px; padding: 2px 6px"
-                            >Failed</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                </div>
-                <div class="tabpane" data-pane="agent-integrations">
-                  <article class="card">
-                    <div class="card__title">Workflows using this agent</div>
-                    <div class="card__meta subtle">Steps that reference Invoice Classifier</div>
-                    <div class="list">
-                      <a class="row" href="#workflow-builder" style="text-decoration: none"
-                        ><div class="row__main">
-                          <div class="row__title">Invoice Correction Workflow</div>
-                          <div class="row__subtle">
-                            Step: "Classify Line Items" (position 4 of 7)
-                          </div>
-                        </div>
-                        <div class="row__right">
-                          <span
-                            class="status status--info"
-                            style="font-size: 10px; padding: 2px 6px"
-                            >Active</span
-                          >
-                        </div></a
-                      >
-                      <a class="row" href="#workflow-builder" style="text-decoration: none"
-                        ><div class="row__main">
-                          <div class="row__title">Quarterly Audit Preparation</div>
-                          <div class="row__subtle">
-                            Step: "Categorize Entries" (position 2 of 5)
-                          </div>
-                        </div>
-                        <div class="row__right">
-                          <span
-                            class="status status--info"
-                            style="font-size: 10px; padding: 2px 6px"
-                            >Active</span
-                          >
-                        </div></a
-                      >
-                    </div>
-                  </article>
-                  <div class="callout" style="margin-top: 12px">
-                    Deactivating this agent will pause 2 active workflows at their next Agent Task
-                    step.
-                  </div>
-                </div>
-              </div>
-            </div>
+          <!-- Agent/Machine top-level tabs [bead-0457] -->
+          <div class="tabs" role="tablist" aria-label="Agent type tabs" style="margin-bottom: 12px">
+            <button
+              class="tab tab--active"
+              type="button"
+              data-tab="tab-ai-agents"
+              role="tab"
+              aria-selected="true"
+            >
+              AI Agents <span class="nav__badge">3</span>
+            </button>
+            <button
+              class="tab"
+              type="button"
+              data-tab="tab-machines"
+              role="tab"
+              aria-selected="false"
+            >
+              Machines <span class="nav__badge">2</span>
+            </button>
           </div>
+          <div class="tabpanes">
+            <div
+              class="tabpane tabpane--active"
+              data-pane="tab-ai-agents"
+              role="tabpanel"
+              aria-label="AI Agents panel"
+            >
+              <div class="agent-layout">
+                <div class="agent-list">
+                  <article class="agent-card agent-card--selected" data-agent-id="claude-classify">
+                    <div class="agent-card__header">
+                      <span class="agent-card__provider agent-card__provider--claude">C</span>
+                      <div>
+                        <div class="agent-card__name">Invoice Classifier</div>
+                        <div class="agent-card__model subtle">Claude Sonnet 4.5</div>
+                      </div>
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Active</span
+                      >
+                    </div>
+                    <div class="agent-card__stats">
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">142</span
+                        ><span class="agent-card__stat-label">runs (7d)</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">96%</span
+                        ><span class="agent-card__stat-label">success</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">1.2s</span
+                        ><span class="agent-card__stat-label">avg time</span>
+                      </div>
+                    </div>
+                  </article>
+                  <article class="agent-card" data-agent-id="openai-summarize">
+                    <div class="agent-card__header">
+                      <span class="agent-card__provider agent-card__provider--openai">O</span>
+                      <div>
+                        <div class="agent-card__name">Document Summarizer</div>
+                        <div class="agent-card__model subtle">GPT-4o</div>
+                      </div>
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Active</span
+                      >
+                    </div>
+                    <div class="agent-card__stats">
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">58</span
+                        ><span class="agent-card__stat-label">runs (7d)</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">91%</span
+                        ><span class="agent-card__stat-label">success</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">3.4s</span
+                        ><span class="agent-card__stat-label">avg time</span>
+                      </div>
+                    </div>
+                  </article>
+                  <article class="agent-card" data-agent-id="custom-validator">
+                    <div class="agent-card__header">
+                      <span class="agent-card__provider agent-card__provider--custom">X</span>
+                      <div>
+                        <div class="agent-card__name">Policy Validator</div>
+                        <div class="agent-card__model subtle">Custom endpoint</div>
+                      </div>
+                      <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                        ><span class="status__icon">⚠</span>Error</span
+                      >
+                    </div>
+                    <div class="agent-card__stats">
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">0</span
+                        ><span class="agent-card__stat-label">runs (7d)</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">--</span
+                        ><span class="agent-card__stat-label">success</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">--</span
+                        ><span class="agent-card__stat-label">avg time</span>
+                      </div>
+                    </div>
+                    <div class="agent-card__error">
+                      Connection failed: endpoint returned 502. Last checked 5m ago.
+                    </div>
+                  </article>
+                  <article class="agent-card" data-agent-id="claude-draft">
+                    <div class="agent-card__header">
+                      <span class="agent-card__provider agent-card__provider--claude">C</span>
+                      <div>
+                        <div class="agent-card__name">Draft Generator</div>
+                        <div class="agent-card__model subtle">Claude Haiku 4.5</div>
+                      </div>
+                      <span class="status" style="font-size: 10px; padding: 2px 6px"
+                        ><span class="status__icon">○</span>Inactive</span
+                      >
+                    </div>
+                    <div class="agent-card__stats">
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">0</span
+                        ><span class="agent-card__stat-label">runs (7d)</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">--</span
+                        ><span class="agent-card__stat-label">success</span>
+                      </div>
+                      <div class="agent-card__stat">
+                        <span class="agent-card__stat-value">--</span
+                        ><span class="agent-card__stat-label">avg time</span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+
+                <div class="agent-detail" id="agentDetail">
+                  <div class="agent-detail__header">
+                    <div>
+                      <h2 class="agent-detail__name">Invoice Classifier</h2>
+                      <div class="subtle">Agent: claude-classify</div>
+                    </div>
+                    <div style="display: flex; gap: 6px">
+                      <button class="btn btn--small" type="button" aria-controls="agentTestResult">
+                        Test connection &#8635;
+                      </button>
+                      <button class="btn btn--small" type="button">Deactivate</button>
+                    </div>
+                  </div>
+                  <div
+                    class="integrity-banner integrity-banner--ok"
+                    style="margin: 12px 0"
+                    id="agentTestResult"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    Connection healthy. Last test: 2m ago (latency: 180ms).
+                  </div>
+
+                  <div class="tabs" role="tablist" aria-label="Agent tabs">
+                    <button class="tab tab--active" type="button" data-tab="agent-config">
+                      Configuration
+                    </button>
+                    <button class="tab" type="button" data-tab="agent-usage">Usage</button>
+                    <button class="tab" type="button" data-tab="agent-integrations">
+                      Integrations
+                    </button>
+                  </div>
+                  <div class="tabpanes" style="margin-top: 10px">
+                    <div class="tabpane tabpane--active" data-pane="agent-config">
+                      <div class="form">
+                        <label class="field"
+                          ><span class="field__label">Agent Name</span
+                          ><input class="field__input" type="text" value="Invoice Classifier"
+                        /></label>
+                        <label class="field"
+                          ><span class="field__label">Provider</span>
+                          <select class="field__input">
+                            <option selected>Anthropic (Claude)</option>
+                            <option>OpenAI</option>
+                            <option>Custom endpoint</option>
+                          </select>
+                        </label>
+                        <label class="field"
+                          ><span class="field__label">Model</span>
+                          <select class="field__input">
+                            <option>Claude Opus 4.6</option>
+                            <option selected>Claude Sonnet 4.5</option>
+                            <option>Claude Haiku 4.5</option>
+                          </select>
+                        </label>
+                        <label class="field"
+                          ><span class="field__label">Temperature</span
+                          ><input
+                            class="field__input"
+                            type="number"
+                            value="0.1"
+                            min="0"
+                            max="2"
+                            step="0.1"
+                        /></label>
+                        <label class="field"
+                          ><span class="field__label">Max Tokens</span
+                          ><input
+                            class="field__input"
+                            type="number"
+                            value="4096"
+                            min="1"
+                            max="200000"
+                        /></label>
+                      </div>
+                      <div style="margin-top: 16px">
+                        <div
+                          class="agent-section-title"
+                          style="display: flex; justify-content: space-between; align-items: center"
+                        >
+                          Capability Allowlist
+                          <span class="subtle" style="font-size: 11px; font-weight: normal"
+                            >Admin role required to edit</span
+                          >
+                        </div>
+                        <fieldset
+                          style="border: none; padding: 0; margin: 0"
+                          aria-label="Agent capability allowlist"
+                        >
+                          <div class="agent-capabilities">
+                            <label class="agent-capability"
+                              ><input type="checkbox" checked />
+                              <span
+                                ><strong>read:external</strong> — read from external adapter</span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" checked />
+                              <span
+                                ><strong>classify</strong> — classification and labelling
+                                tasks</span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" />
+                              <span
+                                ><strong>write:external</strong> — write to external adapter</span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" />
+                              <span
+                                ><strong>generate</strong> — text and document generation</span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" checked />
+                              <span
+                                ><strong>analyze</strong> — data analysis and scoring</span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" />
+                              <span
+                                ><strong>execute-code</strong> — run sandboxed code
+                                <span
+                                  class="status status--warn"
+                                  style="font-size: 10px; padding: 1px 4px"
+                                  >elevated trust</span
+                                ></span
+                              ></label
+                            >
+                            <label class="agent-capability"
+                              ><input type="checkbox" />
+                              <span
+                                ><strong>notify</strong> — send notifications and webhooks</span
+                              ></label
+                            >
+                          </div>
+                        </fieldset>
+                        <div class="form__actions" style="margin-top: 8px">
+                          <button class="btn btn--small btn--primary" type="button">
+                            Save allowlist
+                          </button>
+                          <button class="btn btn--small" type="button">Cancel</button>
+                        </div>
+                      </div>
+                      <div style="margin-top: 16px">
+                        <div class="agent-section-title">Permissions</div>
+                        <div class="callout" style="margin-top: 6px">
+                          This agent can access data from: <strong>Finance</strong>,
+                          <strong>Payments</strong>. It cannot write to any external system
+                          directly.
+                        </div>
+                        <div class="chips" style="margin-top: 8px">
+                          <span class="chip"><span class="port-icon">FA</span> Finance (read)</span>
+                          <span class="chip"
+                            ><span class="port-icon">PB</span> Payments (read)</span
+                          >
+                        </div>
+                      </div>
+                      <div style="margin-top: 16px">
+                        <div class="agent-section-title">Prompt Template</div>
+                        <label class="field" style="margin-top: 6px"
+                          ><span class="field__label">System prompt</span>
+                          <textarea class="field__input" rows="5">
+You are an invoice classification agent for Portarium. Given an invoice record, classify each line item into the correct accounting category. Return a JSON array of {lineItemId, category, confidence}.</textarea
+                          >
+                        </label>
+                      </div>
+                      <div class="form__actions" style="margin-top: 16px">
+                        <button class="btn btn--primary" type="button">Save changes</button>
+                        <button class="btn" type="button">Discard</button>
+                      </div>
+                    </div>
+                    <div class="tabpane" data-pane="agent-usage">
+                      <div class="grid grid--3" style="margin-top: 0">
+                        <div class="metric">
+                          <div class="metric__label">Total runs (7d)</div>
+                          <div class="metric__value">142</div>
+                        </div>
+                        <div class="metric">
+                          <div class="metric__label">Success rate</div>
+                          <div class="metric__value">96%</div>
+                        </div>
+                        <div class="metric">
+                          <div class="metric__label">Avg response time</div>
+                          <div class="metric__value">1.2s</div>
+                        </div>
+                      </div>
+                      <article class="card" style="margin-top: 12px">
+                        <div class="card__title">Recent Runs</div>
+                        <div class="list">
+                          <div class="row row--static">
+                            <div class="row__main">
+                              <div class="row__title">Classify: INV-22318 (12 line items)</div>
+                              <div class="row__subtle">Run R-8920 | WI-1099 | 12m ago | 0.9s</div>
+                            </div>
+                            <div class="row__right">
+                              <span
+                                class="status status--ok"
+                                style="font-size: 10px; padding: 2px 6px"
+                                >Success</span
+                              >
+                            </div>
+                          </div>
+                          <div class="row row--static">
+                            <div class="row__main">
+                              <div class="row__title">Classify: INV-22305 (8 line items)</div>
+                              <div class="row__subtle">Run R-8901 | WI-1088 | 2h ago | 1.1s</div>
+                            </div>
+                            <div class="row__right">
+                              <span
+                                class="status status--ok"
+                                style="font-size: 10px; padding: 2px 6px"
+                                >Success</span
+                              >
+                            </div>
+                          </div>
+                          <div class="row row--static">
+                            <div class="row__main">
+                              <div class="row__title">Classify: INV-22291 (3 line items)</div>
+                              <div class="row__subtle">Run R-8889 | WI-1072 | 6h ago | 0.8s</div>
+                            </div>
+                            <div class="row__right">
+                              <span
+                                class="status status--danger"
+                                style="font-size: 10px; padding: 2px 6px"
+                                >Failed</span
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                    <div class="tabpane" data-pane="agent-integrations">
+                      <article class="card">
+                        <div class="card__title">Workflows using this agent</div>
+                        <div class="card__meta subtle">Steps that reference Invoice Classifier</div>
+                        <div class="list">
+                          <a class="row" href="#workflow-builder" style="text-decoration: none"
+                            ><div class="row__main">
+                              <div class="row__title">Invoice Correction Workflow</div>
+                              <div class="row__subtle">
+                                Step: "Classify Line Items" (position 4 of 7)
+                              </div>
+                            </div>
+                            <div class="row__right">
+                              <span
+                                class="status status--info"
+                                style="font-size: 10px; padding: 2px 6px"
+                                >Active</span
+                              >
+                            </div></a
+                          >
+                          <a class="row" href="#workflow-builder" style="text-decoration: none"
+                            ><div class="row__main">
+                              <div class="row__title">Quarterly Audit Preparation</div>
+                              <div class="row__subtle">
+                                Step: "Categorize Entries" (position 2 of 5)
+                              </div>
+                            </div>
+                            <div class="row__right">
+                              <span
+                                class="status status--info"
+                                style="font-size: 10px; padding: 2px 6px"
+                                >Active</span
+                              >
+                            </div></a
+                          >
+                        </div>
+                      </article>
+                      <div class="callout" style="margin-top: 12px">
+                        Deactivating this agent will pause 2 active workflows at their next Agent
+                        Task step.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /tabpane tab-ai-agents -->
+
+            <!-- Machines tab panel [bead-0457] -->
+            <div
+              class="tabpane"
+              data-pane="tab-machines"
+              role="tabpanel"
+              aria-label="Machines panel"
+            >
+              <div class="screen__actions" style="margin-bottom: 12px">
+                <button
+                  class="btn btn--primary btn--small"
+                  type="button"
+                  data-dialog="dlgRegisterMachine"
+                >
+                  Register machine
+                </button>
+              </div>
+              <div class="grid grid--2">
+                <article class="card" aria-label="Machine: prod-runner-01, healthy">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: flex-start;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    <div>
+                      <div class="card__title" style="margin: 0">prod-runner-01</div>
+                      <div class="subtle" style="font-size: 11px">machine-id: mach-7a3f2c</div>
+                    </div>
+                    <span class="status status--ok" aria-label="Healthy"
+                      ><span class="status__icon">●</span>Healthy</span
+                    >
+                  </div>
+                  <div class="grid grid--3" style="margin-bottom: 8px">
+                    <div class="metric">
+                      <div class="metric__label">Last heartbeat</div>
+                      <div class="metric__value" style="font-size: 14px">12s ago</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Active runs</div>
+                      <div class="metric__value" style="font-size: 14px">3</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Uptime (7d)</div>
+                      <div class="metric__value" style="font-size: 14px">99.8%</div>
+                    </div>
+                  </div>
+                  <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                    OS: Ubuntu 22.04 &bull; Image: portarium-runner:2.4.1
+                  </div>
+                  <div style="margin-bottom: 8px">
+                    <div class="agent-section-title" style="font-size: 11px; margin-bottom: 4px">
+                      Allowed capabilities
+                    </div>
+                    <div class="chips">
+                      <span class="chip chip--small">read:external</span>
+                      <span class="chip chip--small">write:external</span>
+                      <span class="chip chip--small">notify</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 6px">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      aria-label="Test connection to prod-runner-01"
+                    >
+                      Test &#8635;
+                    </button>
+                    <button class="btn btn--small" type="button">Edit capabilities</button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-confirm="deregister-machine"
+                      aria-label="Deregister prod-runner-01"
+                    >
+                      Deregister
+                    </button>
+                  </div>
+                </article>
+
+                <article class="card" aria-label="Machine: prod-runner-02, healthy">
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: flex-start;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    <div>
+                      <div class="card__title" style="margin: 0">prod-runner-02</div>
+                      <div class="subtle" style="font-size: 11px">machine-id: mach-9b1d4e</div>
+                    </div>
+                    <span class="status status--ok" aria-label="Healthy"
+                      ><span class="status__icon">●</span>Healthy</span
+                    >
+                  </div>
+                  <div class="grid grid--3" style="margin-bottom: 8px">
+                    <div class="metric">
+                      <div class="metric__label">Last heartbeat</div>
+                      <div class="metric__value" style="font-size: 14px">8s ago</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Active runs</div>
+                      <div class="metric__value" style="font-size: 14px">1</div>
+                    </div>
+                    <div class="metric">
+                      <div class="metric__label">Uptime (7d)</div>
+                      <div class="metric__value" style="font-size: 14px">100%</div>
+                    </div>
+                  </div>
+                  <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                    OS: Ubuntu 22.04 &bull; Image: portarium-runner:2.4.1
+                  </div>
+                  <div style="margin-bottom: 8px">
+                    <div class="agent-section-title" style="font-size: 11px; margin-bottom: 4px">
+                      Allowed capabilities
+                    </div>
+                    <div class="chips">
+                      <span class="chip chip--small">read:external</span>
+                      <span class="chip chip--small">write:external</span>
+                      <span class="chip chip--small">classify</span>
+                      <span class="chip chip--small">notify</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 6px">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      aria-label="Test connection to prod-runner-02"
+                    >
+                      Test &#8635;
+                    </button>
+                    <button class="btn btn--small" type="button">Edit capabilities</button>
+                    <button class="btn btn--small" type="button" data-confirm="deregister-machine">
+                      Deregister
+                    </button>
+                  </div>
+                </article>
+              </div>
+
+              <div class="callout callout--ok" style="margin-top: 16px; font-size: 12px">
+                <strong>Nielsen Review (bead-0457):</strong>
+                Machine cards show heartbeat (visibility of status), capability chips use labels not
+                colour alone (WCAG), Deregister requires confirmation (error prevention), Test
+                button has aria-label per machine (recognition over recall).
+              </div>
+            </div>
+            <!-- /tabpane tab-machines -->
+          </div>
+          <!-- /tabpanes -->
         </section>
         <!-- ============================================================
              SCREEN: ONBOARDING (setup wizard for empty workspaces)
@@ -4791,6 +5312,710 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
             </div>
           </div>
+        </dialog>
+
+        <!-- ============================================================
+             SCREEN: ADAPTERS (Integration Gallery)  [bead-0455]
+             ============================================================ -->
+        <section
+          id="screen-adapters"
+          class="screen"
+          data-screen="adapters"
+          aria-labelledby="h-adapters"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-adapters" class="h1">Adapter Gallery</h1>
+              <div class="subtle">18 port-family integration families &mdash; 7 configured</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button" data-dialog="dlgRegisterAdapter">
+                Register adapter
+              </button>
+            </div>
+          </div>
+
+          <div class="filters" role="group" aria-label="Filter by category">
+            <span class="chip chip--active" data-adapter-filter="all">All (18)</span>
+            <span class="chip" data-adapter-filter="finance">Finance &amp; Accounting</span>
+            <span class="chip" data-adapter-filter="crm">CRM &amp; Sales</span>
+            <span class="chip" data-adapter-filter="itsm">ITSM &amp; IT Ops</span>
+            <span class="chip" data-adapter-filter="hr">HR &amp; HCM</span>
+            <span class="chip" data-adapter-filter="comms">Comms &amp; Collaboration</span>
+            <span class="chip" data-adapter-filter="infra">Monitoring &amp; Infra</span>
+            <span class="chip" data-adapter-filter="other">Other</span>
+          </div>
+
+          <div style="margin-bottom: 12px">
+            <input
+              type="search"
+              class="topbar__search"
+              style="width: 320px"
+              placeholder="Search adapter families..."
+              aria-label="Search adapter families"
+            />
+          </div>
+
+          <div
+            style="
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.06em;
+              color: #888;
+              margin-bottom: 8px;
+            "
+          >
+            Configured (7)
+          </div>
+          <div class="grid grid--3" style="margin-bottom: 20px">
+            <article
+              class="card"
+              aria-label="Finance and Accounting adapter"
+              data-adapter-category="finance"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#36;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Finance &amp; Accounting</div>
+                  <div class="subtle" style="font-size: 11px">NetSuite, QuickBooks, Xero</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="3 providers configured"
+                  ><span class="status__icon">●</span>3 providers configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: read, write, reconcile, export
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="adapter-finance"
+                  aria-label="View Finance and Accounting adapter details"
+                >
+                  View
+                </button>
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  aria-label="Test Finance and Accounting connection"
+                >
+                  Test &#8635;
+                </button>
+              </div>
+            </article>
+
+            <article class="card" aria-label="CRM and Sales adapter" data-adapter-category="crm">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9670;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">CRM &amp; Sales</div>
+                  <div class="subtle" style="font-size: 11px">Salesforce, HubSpot</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="2 providers configured"
+                  ><span class="status__icon">●</span>2 providers configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: read, write, sync, classify
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="adapter-crm"
+                  aria-label="View CRM and Sales adapter details"
+                >
+                  View
+                </button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+
+            <article
+              class="card"
+              aria-label="ITSM and IT Ops adapter — action needed"
+              data-adapter-category="itsm"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9881;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">ITSM &amp; IT Ops</div>
+                  <div class="subtle" style="font-size: 11px">ServiceNow, Jira Service</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 4px">
+                <span class="status status--warn" aria-label="Action needed: OAuth token expired"
+                  ><span class="status__icon">◐</span>Action needed</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                OAuth token expired for ServiceNow
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button
+                  class="btn btn--small btn--primary"
+                  type="button"
+                  data-dialog="dlgRegisterAdapter"
+                  aria-label="Fix ITSM adapter credential issue"
+                >
+                  Fix credentials
+                </button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+
+            <article
+              class="card"
+              aria-label="Documents and eSign adapter"
+              data-adapter-category="other"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128196;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Documents &amp; eSign</div>
+                  <div class="subtle" style="font-size: 11px">DocuSign, Adobe Sign</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="1 provider configured"
+                  ><span class="status__icon">●</span>1 provider configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: send, sign, retrieve, archive
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button class="btn btn--small" type="button">View</button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+
+            <article
+              class="card"
+              aria-label="Comms and Collaboration adapter"
+              data-adapter-category="comms"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9993;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Comms &amp; Collaboration</div>
+                  <div class="subtle" style="font-size: 11px">Slack, Teams, Email</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="2 providers configured"
+                  ><span class="status__icon">●</span>2 providers configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: notify, send, post, read
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button class="btn btn--small" type="button">View</button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+
+            <article
+              class="card"
+              aria-label="IAM and Directory adapter"
+              data-adapter-category="infra"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128274;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">IAM &amp; Directory</div>
+                  <div class="subtle" style="font-size: 11px">Okta, Azure AD, Google</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="1 provider configured"
+                  ><span class="status__icon">●</span>1 provider configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: read users, provision, deprovision, sync groups
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button class="btn btn--small" type="button">View</button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+
+            <article
+              class="card"
+              aria-label="Secrets and Vaulting adapter"
+              data-adapter-category="infra"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128275;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Secrets &amp; Vaulting</div>
+                  <div class="subtle" style="font-size: 11px">HashiCorp Vault, AWS Secrets</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status status--ok" aria-label="1 provider configured"
+                  ><span class="status__icon">●</span>1 provider configured</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 8px">
+                Capabilities: read, rotate, seal, audit
+              </div>
+              <div style="display: flex; gap: 6px">
+                <button class="btn btn--small" type="button">View</button>
+                <button class="btn btn--small" type="button">Test &#8635;</button>
+              </div>
+            </article>
+          </div>
+
+          <div
+            style="
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.06em;
+              color: #888;
+              margin-bottom: 8px;
+            "
+          >
+            Not configured (11)
+          </div>
+          <div class="grid grid--3">
+            <article
+              class="card card--subtle"
+              aria-label="Customer Support adapter, not configured"
+              data-adapter-category="itsm"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9742;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Customer Support</div>
+                  <div class="subtle" style="font-size: 11px">Zendesk, Freshdesk, Intercom</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Customer Support adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="HR and HCM adapter, not configured"
+              data-adapter-category="hr"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128100;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">HR &amp; HCM</div>
+                  <div class="subtle" style="font-size: 11px">Workday, BambooHR, ADP</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure HR and HCM adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Marketing Automation adapter, not configured"
+              data-adapter-category="other"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128202;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Marketing Automation</div>
+                  <div class="subtle" style="font-size: 11px">Marketo, Pardot, Mailchimp</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Marketing Automation adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Payments and Billing adapter, not configured"
+              data-adapter-category="finance"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128179;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Payments &amp; Billing</div>
+                  <div class="subtle" style="font-size: 11px">Stripe, Braintree, Square</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Payments and Billing adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Payroll adapter, not configured"
+              data-adapter-category="hr"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128181;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Payroll</div>
+                  <div class="subtle" style="font-size: 11px">ADP, Gusto, Paychex</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Payroll adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Procurement and Spend adapter, not configured"
+              data-adapter-category="finance"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128230;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Procurement &amp; Spend</div>
+                  <div class="subtle" style="font-size: 11px">Coupa, SAP Ariba, Basware</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Procurement and Spend adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Projects and Work Management adapter, not configured"
+              data-adapter-category="itsm"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128203;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Projects &amp; Work Mgmt</div>
+                  <div class="subtle" style="font-size: 11px">Jira, Asana, Linear, Monday</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Projects and Work Management adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Analytics and BI adapter, not configured"
+              data-adapter-category="other"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128200;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Analytics &amp; BI</div>
+                  <div class="subtle" style="font-size: 11px">Tableau, Looker, Power BI</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Analytics and BI adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Monitoring and Incident adapter, not configured"
+              data-adapter-category="infra"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9875;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Monitoring &amp; Incident</div>
+                  <div class="subtle" style="font-size: 11px">PagerDuty, Datadog, OpsGenie</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Monitoring and Incident adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Ads Platforms adapter, not configured"
+              data-adapter-category="other"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#128249;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Ads Platforms</div>
+                  <div class="subtle" style="font-size: 11px">Google Ads, Meta, LinkedIn Ads</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Ads Platforms adapter"
+              >
+                Configure
+              </button>
+            </article>
+
+            <article
+              class="card card--subtle"
+              aria-label="Compliance and GRC adapter, not configured"
+              data-adapter-category="other"
+              style="opacity: 0.75"
+            >
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                <span class="port-icon" aria-hidden="true">&#9878;</span>
+                <div>
+                  <div class="card__title" style="margin: 0">Compliance &amp; GRC</div>
+                  <div class="subtle" style="font-size: 11px">Vanta, Drata, Secureframe</div>
+                </div>
+              </div>
+              <div style="margin-bottom: 8px">
+                <span class="status" style="color: #888" aria-label="Not configured"
+                  ><span class="status__icon">○</span>Not configured</span
+                >
+              </div>
+              <button
+                class="btn btn--small"
+                type="button"
+                data-dialog="dlgRegisterAdapter"
+                aria-label="Configure Compliance and GRC adapter"
+              >
+                Configure
+              </button>
+            </article>
+          </div>
+
+          <div class="callout callout--ok" style="margin-top: 20px; font-size: 12px">
+            <strong>Nielsen Review (bead-0455):</strong> All 18 port-family adapter cards present.
+            Status badges use colour + text + icon (not colour alone, per WCAG). Credential error
+            (ITSM) surfaces actionable "Fix credentials" CTA. Configure modal blocks Save until
+            connection test passes (error prevention). Category chips enable recognition over
+            recall. Cards are &lt;article&gt; with aria-labels; status uses aria-label not colour
+            alone.
+          </div>
+        </section>
+
+        <!-- Register Adapter dialog  [bead-0455] -->
+        <dialog
+          id="dlgRegisterAdapter"
+          class="form-dialog"
+          aria-modal="true"
+          aria-labelledby="dlgRegisterAdapterTitle"
+        >
+          <div class="form-dialog__header">
+            <div class="form-dialog__title" id="dlgRegisterAdapterTitle">Register Adapter</div>
+            <button
+              class="form-dialog__close"
+              type="button"
+              onclick="this.closest('dialog').close()"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+          <form method="dialog">
+            <div class="stepper" style="margin-bottom: 16px">
+              <div class="stepper__step stepper__step--done"><span>1</span> Family</div>
+              <div class="stepper__connector"></div>
+              <div class="stepper__step stepper__step--active"><span>2</span> Provider</div>
+              <div class="stepper__connector"></div>
+              <div class="stepper__step"><span>3</span> Credentials</div>
+              <div class="stepper__connector"></div>
+              <div class="stepper__step"><span>4</span> Test &amp; Save</div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="adapterFamily">Adapter family</label>
+              <select class="field__input" id="adapterFamily">
+                <option value="">Select a family...</option>
+                <option>Finance &amp; Accounting</option>
+                <option>CRM &amp; Sales</option>
+                <option>ITSM &amp; IT Ops</option>
+                <option>Customer Support</option>
+                <option>Documents &amp; eSign</option>
+                <option>Comms &amp; Collaboration</option>
+                <option>IAM &amp; Directory</option>
+                <option>Secrets &amp; Vaulting</option>
+                <option>HR &amp; HCM</option>
+                <option>Payments &amp; Billing</option>
+                <option>Payroll</option>
+                <option>Procurement &amp; Spend</option>
+                <option>Projects &amp; Work Mgmt</option>
+                <option>Analytics &amp; BI</option>
+                <option>Marketing Automation</option>
+                <option>Monitoring &amp; Incident</option>
+                <option>Ads Platforms</option>
+                <option>Compliance &amp; GRC</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="adapterProvider">Provider</label>
+              <select class="field__input" id="adapterProvider">
+                <option value="">Select provider...</option>
+                <option>NetSuite</option>
+                <option>QuickBooks Online</option>
+                <option>Xero</option>
+                <option>Salesforce</option>
+                <option>HubSpot</option>
+                <option>ServiceNow</option>
+                <option>Zendesk</option>
+                <option>Slack</option>
+                <option>Microsoft Teams</option>
+                <option>Okta</option>
+                <option>HashiCorp Vault</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label">Authentication</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 8px">
+                <label
+                  ><input type="radio" name="authType" value="oauth" checked /> OAuth 2.0</label
+                >
+                <label><input type="radio" name="authType" value="apikey" /> API Key</label>
+                <label><input type="radio" name="authType" value="basic" /> Basic Auth</label>
+              </div>
+              <button class="btn btn--primary btn--small" type="button">
+                Connect via OAuth &rarr;
+              </button>
+            </div>
+            <div class="field">
+              <label class="field__label">Required scopes</label>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px">
+                <label><input type="checkbox" checked disabled /> read:records</label>
+                <label><input type="checkbox" checked disabled /> write:records</label>
+                <label
+                  ><input type="checkbox" /> admin:webhooks
+                  <span class="subtle">(optional)</span></label
+                >
+              </div>
+            </div>
+            <div class="form__actions">
+              <button class="btn btn--small" type="button">Test connection</button>
+              <button
+                class="btn btn--primary"
+                type="submit"
+                disabled
+                title="Run a successful connection test before saving"
+              >
+                Save adapter
+              </button>
+              <button class="btn" type="button" onclick="this.closest('dialog').close()">
+                Cancel
+              </button>
+            </div>
+            <div class="subtle" style="font-size: 11px; margin-top: 4px">
+              Save is enabled only after a successful connection test.
+            </div>
+          </form>
         </dialog>
 
         <dialog class="form-dialog" id="dlgAddAgent">

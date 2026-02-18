@@ -5,6 +5,14 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readOptionalIsoString,
+  readOptionalNonNegativeNumber,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due', 'cancelled', 'expired'] as const;
 type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
@@ -31,23 +39,36 @@ export class SubscriptionParseError extends Error {
 }
 
 export function parseSubscriptionV1(value: unknown): SubscriptionV1 {
-  if (!isRecord(value)) {
-    throw new SubscriptionParseError('Subscription must be an object.');
-  }
+  const record = readRecord(value, 'Subscription', SubscriptionParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', SubscriptionParseError);
+  if (schemaVersion !== 1) {
     throw new SubscriptionParseError('schemaVersion must be 1.');
   }
 
-  const subscriptionId = SubscriptionId(readString(value, 'subscriptionId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const planName = readString(value, 'planName');
-  const status = readEnum(value, 'status', SUBSCRIPTION_STATUSES);
-  const currencyCode = readOptionalCurrencyCode(value, 'currencyCode');
-  const recurringAmount = readOptionalNonNegativeNumber(value, 'recurringAmount');
-  const currentPeriodStartIso = readOptionalString(value, 'currentPeriodStartIso');
-  const currentPeriodEndIso = readOptionalString(value, 'currentPeriodEndIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const subscriptionId = SubscriptionId(
+    readString(record, 'subscriptionId', SubscriptionParseError),
+  );
+  const tenantId = TenantId(readString(record, 'tenantId', SubscriptionParseError));
+  const planName = readString(record, 'planName', SubscriptionParseError);
+  const status = readEnum(record, 'status', SUBSCRIPTION_STATUSES, SubscriptionParseError);
+  const currencyCode = readOptionalCurrencyCode(record, 'currencyCode');
+  const recurringAmount = readOptionalNonNegativeNumber(
+    record,
+    'recurringAmount',
+    SubscriptionParseError,
+  );
+  const currentPeriodStartIso = readOptionalIsoString(
+    record,
+    'currentPeriodStartIso',
+    SubscriptionParseError,
+  );
+  const currentPeriodEndIso = readOptionalIsoString(
+    record,
+    'currentPeriodEndIso',
+    SubscriptionParseError,
+  );
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     subscriptionId,
@@ -63,23 +84,6 @@ export function parseSubscriptionV1(value: unknown): SubscriptionV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new SubscriptionParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new SubscriptionParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
 function readOptionalCurrencyCode(obj: Record<string, unknown>, key: string): string | undefined {
   const v = obj[key];
   if (v === undefined) return undefined;
@@ -91,30 +95,6 @@ function readOptionalCurrencyCode(obj: Record<string, unknown>, key: string): st
   return v;
 }
 
-function readOptionalNonNegativeNumber(
-  obj: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
-    throw new SubscriptionParseError(`${key} must be a non-negative number when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new SubscriptionParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -124,8 +104,4 @@ function readOptionalExternalRefs(
     throw new SubscriptionParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

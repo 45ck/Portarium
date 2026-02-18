@@ -5,6 +5,14 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readInteger,
+  readIsoString,
+  readOptionalNonNegativeNumber,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type DocumentV1 = Readonly<{
   documentId: DocumentIdType;
@@ -27,22 +35,21 @@ export class DocumentParseError extends Error {
 }
 
 export function parseDocumentV1(value: unknown): DocumentV1 {
-  if (!isRecord(value)) {
-    throw new DocumentParseError('Document must be an object.');
-  }
+  const record = readRecord(value, 'Document', DocumentParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', DocumentParseError);
+  if (schemaVersion !== 1) {
     throw new DocumentParseError('schemaVersion must be 1.');
   }
 
-  const documentId = DocumentId(readString(value, 'documentId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const title = readString(value, 'title');
-  const mimeType = readString(value, 'mimeType');
-  const sizeBytes = readOptionalNonNegativeNumber(value, 'sizeBytes');
-  const storagePath = readOptionalString(value, 'storagePath');
-  const createdAtIso = readString(value, 'createdAtIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const documentId = DocumentId(readString(record, 'documentId', DocumentParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', DocumentParseError));
+  const title = readString(record, 'title', DocumentParseError);
+  const mimeType = readString(record, 'mimeType', DocumentParseError);
+  const sizeBytes = readOptionalNonNegativeNumber(record, 'sizeBytes', DocumentParseError);
+  const storagePath = readOptionalString(record, 'storagePath', DocumentParseError);
+  const createdAtIso = readIsoString(record, 'createdAtIso', DocumentParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     documentId,
@@ -57,35 +64,6 @@ export function parseDocumentV1(value: unknown): DocumentV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new DocumentParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new DocumentParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readOptionalNonNegativeNumber(
-  obj: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
-    throw new DocumentParseError(`${key} must be a non-negative number when provided.`);
-  }
-  return v;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -95,8 +73,4 @@ function readOptionalExternalRefs(
     throw new DocumentParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -5,6 +5,14 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readOptionalIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const CAMPAIGN_STATUSES = ['draft', 'active', 'paused', 'completed'] as const;
 type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
@@ -30,22 +38,21 @@ export class CampaignParseError extends Error {
 }
 
 export function parseCampaignV1(value: unknown): CampaignV1 {
-  if (!isRecord(value)) {
-    throw new CampaignParseError('Campaign must be an object.');
-  }
+  const record = readRecord(value, 'Campaign', CampaignParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', CampaignParseError);
+  if (schemaVersion !== 1) {
     throw new CampaignParseError('schemaVersion must be 1.');
   }
 
-  const campaignId = CampaignId(readString(value, 'campaignId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const name = readString(value, 'name');
-  const status = readEnum(value, 'status', CAMPAIGN_STATUSES);
-  const channelType = readOptionalString(value, 'channelType');
-  const startDateIso = readOptionalString(value, 'startDateIso');
-  const endDateIso = readOptionalString(value, 'endDateIso');
-  const externalRefs = readOptionalExternalRefs(value);
+  const campaignId = CampaignId(readString(record, 'campaignId', CampaignParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', CampaignParseError));
+  const name = readString(record, 'name', CampaignParseError);
+  const status = readEnum(record, 'status', CAMPAIGN_STATUSES, CampaignParseError);
+  const channelType = readOptionalString(record, 'channelType', CampaignParseError);
+  const startDateIso = readOptionalIsoString(record, 'startDateIso', CampaignParseError);
+  const endDateIso = readOptionalIsoString(record, 'endDateIso', CampaignParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     campaignId,
@@ -60,35 +67,6 @@ export function parseCampaignV1(value: unknown): CampaignV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new CampaignParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new CampaignParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new CampaignParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -98,8 +76,4 @@ function readOptionalExternalRefs(
     throw new CampaignParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

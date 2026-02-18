@@ -5,6 +5,13 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readEnum,
+  readInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 const ASSET_STATUSES = ['active', 'inactive', 'retired', 'maintenance'] as const;
 type AssetStatus = (typeof ASSET_STATUSES)[number];
@@ -29,21 +36,20 @@ export class AssetParseError extends Error {
 }
 
 export function parseAssetV1(value: unknown): AssetV1 {
-  if (!isRecord(value)) {
-    throw new AssetParseError('Asset must be an object.');
-  }
+  const record = readRecord(value, 'Asset', AssetParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', AssetParseError);
+  if (schemaVersion !== 1) {
     throw new AssetParseError('schemaVersion must be 1.');
   }
 
-  const assetId = AssetId(readString(value, 'assetId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const name = readString(value, 'name');
-  const assetType = readString(value, 'assetType');
-  const serialNumber = readOptionalString(value, 'serialNumber');
-  const status = readEnum(value, 'status', ASSET_STATUSES);
-  const externalRefs = readOptionalExternalRefs(value);
+  const assetId = AssetId(readString(record, 'assetId', AssetParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', AssetParseError));
+  const name = readString(record, 'name', AssetParseError);
+  const assetType = readString(record, 'assetType', AssetParseError);
+  const serialNumber = readOptionalString(record, 'serialNumber', AssetParseError);
+  const status = readEnum(record, 'status', ASSET_STATUSES, AssetParseError);
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     assetId,
@@ -57,35 +63,6 @@ export function parseAssetV1(value: unknown): AssetV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AssetParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new AssetParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readEnum<T extends string>(
-  obj: Record<string, unknown>,
-  key: string,
-  allowed: readonly T[],
-): T {
-  const v = obj[key];
-  if (typeof v !== 'string' || !(allowed as readonly string[]).includes(v)) {
-    throw new AssetParseError(`${key} must be one of: ${allowed.join(', ')}.`);
-  }
-  return v as T;
-}
-
 function readOptionalExternalRefs(
   obj: Record<string, unknown>,
 ): readonly ExternalObjectRef[] | undefined {
@@ -95,8 +72,4 @@ function readOptionalExternalRefs(
     throw new AssetParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

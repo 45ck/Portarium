@@ -4,6 +4,12 @@ import {
   type ConnectorMappingId as ConnectorMappingIdType,
   type PackId as PackIdType,
 } from '../primitives/index.js';
+import {
+  readInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,22 +48,20 @@ export class PackConnectorMappingParseError extends Error {
 // ---------------------------------------------------------------------------
 
 export function parsePackConnectorMappingV1(value: unknown): PackConnectorMappingV1 {
-  if (!isRecord(value)) {
-    throw new PackConnectorMappingParseError('Pack connector mapping must be an object.');
-  }
+  const record = readRecord(value, 'Pack connector mapping', PackConnectorMappingParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', PackConnectorMappingParseError);
   if (schemaVersion !== 1) {
     throw new PackConnectorMappingParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const mappingId = readString(value, 'mappingId');
-  const packId = readString(value, 'packId');
-  const namespace = readString(value, 'namespace');
-  const protocol = readString(value, 'protocol');
-  const authModel = readString(value, 'authModel');
+  const mappingId = readString(record, 'mappingId', PackConnectorMappingParseError);
+  const packId = readString(record, 'packId', PackConnectorMappingParseError);
+  const namespace = readString(record, 'namespace', PackConnectorMappingParseError);
+  const protocol = readString(record, 'protocol', PackConnectorMappingParseError);
+  const authModel = readString(record, 'authModel', PackConnectorMappingParseError);
 
-  const fieldMappingsRaw = value['fieldMappings'];
+  const fieldMappingsRaw = record['fieldMappings'];
   if (!Array.isArray(fieldMappingsRaw)) {
     throw new PackConnectorMappingParseError('fieldMappings must be an array.');
   }
@@ -79,46 +83,15 @@ export function parsePackConnectorMappingV1(value: unknown): PackConnectorMappin
 // ---------------------------------------------------------------------------
 
 function parseFieldMapping(value: unknown, index: number): FieldMappingV1 {
-  if (!isRecord(value)) {
-    throw new PackConnectorMappingParseError(`fieldMappings[${index}] must be an object.`);
-  }
+  const record = readRecord(value, `fieldMappings[${index}]`, PackConnectorMappingParseError);
 
-  const sourceField = readString(value, 'sourceField');
-  const targetField = readString(value, 'targetField');
-  const transform = readOptionalString(value, 'transform');
+  const sourceField = readString(record, 'sourceField', PackConnectorMappingParseError);
+  const targetField = readString(record, 'targetField', PackConnectorMappingParseError);
+  const transform = readOptionalString(record, 'transform', PackConnectorMappingParseError);
 
   return {
     sourceField,
     targetField,
     ...(transform !== undefined ? { transform } : {}),
   };
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackConnectorMappingParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackConnectorMappingParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new PackConnectorMappingParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

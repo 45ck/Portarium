@@ -10,8 +10,18 @@ import {
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import {
+  readInteger,
+  readIsoString,
+  readOptionalFiniteNumber,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type EffectOperation = 'Create' | 'Update' | 'Delete' | 'Upsert';
+
+const EFFECT_OPERATIONS = ['Create', 'Update', 'Delete', 'Upsert'] as const;
 
 export type PlannedEffectV1 = Readonly<{
   effectId: EffectIdType;
@@ -46,17 +56,17 @@ export class PlanParseError extends Error {
 }
 
 export function parsePlanV1(value: unknown): PlanV1 {
-  if (!isRecord(value)) throw new PlanParseError('Plan must be an object.');
+  const record = readRecord(value, 'Plan', PlanParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', PlanParseError);
   if (schemaVersion !== 1) throw new PlanParseError(`Unsupported schemaVersion: ${schemaVersion}`);
 
-  const planId = PlanId(readString(value, 'planId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const createdAtIso = readString(value, 'createdAtIso');
-  const createdByUserId = UserId(readString(value, 'createdByUserId'));
+  const planId = PlanId(readString(record, 'planId', PlanParseError));
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', PlanParseError));
+  const createdAtIso = readIsoString(record, 'createdAtIso', PlanParseError);
+  const createdByUserId = UserId(readString(record, 'createdByUserId', PlanParseError));
 
-  const plannedEffectsRaw = value['plannedEffects'];
+  const plannedEffectsRaw = record['plannedEffects'];
   if (!Array.isArray(plannedEffectsRaw)) {
     throw new PlanParseError('plannedEffects must be an array.');
   }
@@ -65,7 +75,7 @@ export function parsePlanV1(value: unknown): PlanV1 {
     parsePlannedEffect(e, `plannedEffects[${idx}]`),
   );
 
-  const predictedEffectsRaw = value['predictedEffects'];
+  const predictedEffectsRaw = record['predictedEffects'];
   const predictedEffects =
     predictedEffectsRaw === undefined ? undefined : parsePredictedEffects(predictedEffectsRaw);
 
@@ -86,19 +96,19 @@ function parsePredictedEffects(value: unknown): readonly PredictedEffectV1[] {
 }
 
 function parsePlannedEffect(value: unknown, pathLabel: string): PlannedEffectV1 {
-  if (!isRecord(value)) throw new PlanParseError(`${pathLabel} must be an object.`);
+  const record = readRecord(value, pathLabel, PlanParseError);
 
-  const effectId = EffectId(readString(value, 'effectId'));
-  const operationRaw = readString(value, 'operation');
+  const effectId = EffectId(readString(record, 'effectId', PlanParseError));
+  const operationRaw = readString(record, 'operation', PlanParseError);
   if (!isEffectOperation(operationRaw)) {
     throw new PlanParseError(
       `${pathLabel}.operation must be one of: Create, Update, Delete, Upsert.`,
     );
   }
 
-  const target = parseExternalObjectRef(value['target']);
-  const summary = readString(value, 'summary');
-  const idempotencyKey = readOptionalString(value, 'idempotencyKey');
+  const target = parseExternalObjectRef(record['target']);
+  const summary = readString(record, 'summary', PlanParseError);
+  const idempotencyKey = readOptionalString(record, 'idempotencyKey', PlanParseError);
 
   return {
     effectId,
@@ -111,12 +121,9 @@ function parsePlannedEffect(value: unknown, pathLabel: string): PlannedEffectV1 
 
 function parsePredictedEffect(value: unknown, pathLabel: string): PredictedEffectV1 {
   const base = parsePlannedEffect(value, pathLabel);
-  if (!isRecord(value)) {
-    // Unreachable due to parsePlannedEffect, but keeps TS honest.
-    throw new PlanParseError(`${pathLabel} must be an object.`);
-  }
+  const record = readRecord(value, pathLabel, PlanParseError);
 
-  const confidence = readOptionalNumber(value, 'confidence');
+  const confidence = readOptionalFiniteNumber(record, 'confidence', PlanParseError);
   if (confidence !== undefined) {
     if (confidence < 0 || confidence > 1) {
       throw new PlanParseError(`${pathLabel}.confidence must be between 0 and 1.`);
@@ -128,42 +135,5 @@ function parsePredictedEffect(value: unknown, pathLabel: string): PredictedEffec
 }
 
 function isEffectOperation(value: string): value is EffectOperation {
-  return value === 'Create' || value === 'Update' || value === 'Delete' || value === 'Upsert';
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '')
-    throw new PlanParseError(`${key} must be a string.`);
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PlanParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new PlanParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readOptionalNumber(obj: Record<string, unknown>, key: string): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || Number.isNaN(v) || !Number.isFinite(v)) {
-    throw new PlanParseError(`${key} must be a finite number when provided.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return (EFFECT_OPERATIONS as readonly string[]).includes(value);
 }

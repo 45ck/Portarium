@@ -14,6 +14,15 @@ import {
   type WorkItemId as WorkItemIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import {
+  parseNonEmptyString,
+  readInteger,
+  readIsoString,
+  readOptionalIsoString,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type WorkItemStatus = 'Open' | 'InProgress' | 'Blocked' | 'Resolved' | 'Closed';
 
@@ -50,34 +59,34 @@ export class WorkItemParseError extends Error {
 }
 
 export function parseWorkItemV1(value: unknown): WorkItemV1 {
-  if (!isRecord(value)) throw new WorkItemParseError('WorkItem must be an object.');
+  const record = readRecord(value, 'WorkItem', WorkItemParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', WorkItemParseError);
   if (schemaVersion !== 1) {
     throw new WorkItemParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const workItemId = WorkItemId(readString(value, 'workItemId'));
-  const workspaceId = WorkspaceId(readString(value, 'workspaceId'));
-  const createdAtIso = readString(value, 'createdAtIso');
-  const createdByUserId = UserId(readString(value, 'createdByUserId'));
+  const workItemId = WorkItemId(readString(record, 'workItemId', WorkItemParseError));
+  const workspaceId = WorkspaceId(readString(record, 'workspaceId', WorkItemParseError));
+  const createdAtIso = readIsoString(record, 'createdAtIso', WorkItemParseError);
+  const createdByUserId = UserId(readString(record, 'createdByUserId', WorkItemParseError));
 
-  const title = readString(value, 'title');
+  const title = readString(record, 'title', WorkItemParseError);
 
-  const statusRaw = readString(value, 'status');
+  const statusRaw = readString(record, 'status', WorkItemParseError);
   if (!isWorkItemStatus(statusRaw)) {
     throw new WorkItemParseError(
       'status must be one of: Open, InProgress, Blocked, Resolved, Closed.',
     );
   }
 
-  const ownerUserIdRaw = readOptionalString(value, 'ownerUserId');
+  const ownerUserIdRaw = readOptionalString(record, 'ownerUserId', WorkItemParseError);
   const ownerUserId = ownerUserIdRaw === undefined ? undefined : UserId(ownerUserIdRaw);
 
-  const slaRaw = value['sla'];
+  const slaRaw = record['sla'];
   const sla = slaRaw === undefined ? undefined : parseWorkItemSlaV1(slaRaw);
 
-  const linksRaw = value['links'];
+  const linksRaw = record['links'];
   const links = linksRaw === undefined ? undefined : parseWorkItemLinksV1(linksRaw);
 
   return {
@@ -95,28 +104,28 @@ export function parseWorkItemV1(value: unknown): WorkItemV1 {
 }
 
 function parseWorkItemSlaV1(value: unknown): WorkItemSlaV1 {
-  if (!isRecord(value)) throw new WorkItemParseError('sla must be an object.');
-  const dueAtIso = readOptionalString(value, 'dueAtIso');
+  const record = readRecord(value, 'sla', WorkItemParseError);
+  const dueAtIso = readOptionalIsoString(record, 'dueAtIso', WorkItemParseError);
   return {
     ...(dueAtIso ? { dueAtIso } : {}),
   };
 }
 
 function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
-  if (!isRecord(value)) throw new WorkItemParseError('links must be an object.');
+  const record = readRecord(value, 'links', WorkItemParseError);
 
-  const externalRefsRaw = value['externalRefs'];
+  const externalRefsRaw = record['externalRefs'];
   const externalRefs =
     externalRefsRaw === undefined ? undefined : parseExternalRefs(externalRefsRaw);
 
-  const runIdsRaw = value['runIds'];
+  const runIdsRaw = record['runIds'];
   const runIds = runIdsRaw === undefined ? undefined : parseIds(runIdsRaw, 'runIds', RunId);
 
-  const approvalIdsRaw = value['approvalIds'];
+  const approvalIdsRaw = record['approvalIds'];
   const approvalIds =
     approvalIdsRaw === undefined ? undefined : parseIds(approvalIdsRaw, 'approvalIds', ApprovalId);
 
-  const evidenceIdsRaw = value['evidenceIds'];
+  const evidenceIdsRaw = record['evidenceIds'];
   const evidenceIds =
     evidenceIdsRaw === undefined ? undefined : parseIds(evidenceIdsRaw, 'evidenceIds', EvidenceId);
 
@@ -149,10 +158,8 @@ function parseIds<T>(value: unknown, label: string, ctor: (id: string) => T): re
   }
 
   return value.map((v, idx) => {
-    if (typeof v !== 'string' || v.trim() === '') {
-      throw new WorkItemParseError(`links.${label}[${idx}] must be a non-empty string.`);
-    }
-    return ctor(v);
+    const raw = parseNonEmptyString(v, `links.${label}[${idx}]`, WorkItemParseError);
+    return ctor(raw);
   });
 }
 
@@ -164,33 +171,4 @@ function isWorkItemStatus(value: string): value is WorkItemStatus {
     value === 'Resolved' ||
     value === 'Closed'
   );
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkItemParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new WorkItemParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new WorkItemParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -127,7 +127,7 @@ describe('pack-manifest: dependencies and assets validation', () => {
         displayName: 'Bad Pack',
         assets: { workflows: [1] },
       }),
-    ).toThrow(/workflows must be an array/);
+    ).toThrow(/workflows\[0\] must be a non-empty string/);
 
     expect(() =>
       parsePackManifestV1({

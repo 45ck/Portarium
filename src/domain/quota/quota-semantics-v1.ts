@@ -1,3 +1,11 @@
+import {
+  readInteger,
+  readOptionalInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
+
 export type RateLimitV1 = Readonly<{
   requestsPerMinute: number;
 }>;
@@ -35,9 +43,9 @@ export class QuotaSemanticsParseError extends Error {
 }
 
 export function parseQuotaSemanticsV1(value: unknown): QuotaSemanticsV1 {
-  if (!isRecord(value)) throw new QuotaSemanticsParseError('QuotaSemantics must be an object.');
+  const record = readRecord(value, 'QuotaSemantics', QuotaSemanticsParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', QuotaSemanticsParseError);
   if (schemaVersion !== 1) {
     throw new QuotaSemanticsParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
@@ -51,36 +59,36 @@ export function parseQuotaSemanticsV1(value: unknown): QuotaSemanticsV1 {
     notes?: string;
   } = { schemaVersion: 1 };
 
-  const rateLimitRaw = value['rateLimit'];
+  const rateLimitRaw = record['rateLimit'];
   if (rateLimitRaw !== undefined) out.rateLimit = parseRateLimitV1(rateLimitRaw);
 
-  const dailyCapRaw = value['dailyCap'];
+  const dailyCapRaw = record['dailyCap'];
   if (dailyCapRaw !== undefined) out.dailyCap = parseDailyCapV1(dailyCapRaw);
 
-  const batchingRaw = value['batching'];
+  const batchingRaw = record['batching'];
   if (batchingRaw !== undefined) out.batching = parseBatchingV1(batchingRaw);
 
-  const retryAfterRaw = value['retryAfter'];
+  const retryAfterRaw = record['retryAfter'];
   if (retryAfterRaw !== undefined) out.retryAfter = parseRetryAfterV1(retryAfterRaw);
 
-  const notes = readOptionalString(value, 'notes');
+  const notes = readOptionalString(record, 'notes', QuotaSemanticsParseError);
   if (notes !== undefined) out.notes = notes;
 
   return out;
 }
 
 function parseRateLimitV1(value: unknown): RateLimitV1 {
-  if (!isRecord(value)) throw new QuotaSemanticsParseError('rateLimit must be an object.');
-  const requestsPerMinute = readNumberMin(value, 'requestsPerMinute', 1);
+  const record = readRecord(value, 'rateLimit', QuotaSemanticsParseError);
+  const requestsPerMinute = readIntegerMin(record, 'requestsPerMinute', 1);
   return { requestsPerMinute };
 }
 
 function parseDailyCapV1(value: unknown): DailyCapV1 {
-  if (!isRecord(value)) throw new QuotaSemanticsParseError('dailyCap must be an object.');
+  const record = readRecord(value, 'dailyCap', QuotaSemanticsParseError);
 
-  const requestsPerDay = readNumberMin(value, 'requestsPerDay', 1);
+  const requestsPerDay = readIntegerMin(record, 'requestsPerDay', 1);
 
-  const resetAtUtcHourRaw = readOptionalNumber(value, 'resetAtUtcHour');
+  const resetAtUtcHourRaw = readOptionalInteger(record, 'resetAtUtcHour', QuotaSemanticsParseError);
   if (resetAtUtcHourRaw !== undefined) {
     if (resetAtUtcHourRaw < 0 || resetAtUtcHourRaw > 23) {
       throw new QuotaSemanticsParseError('dailyCap.resetAtUtcHour must be between 0 and 23.');
@@ -94,15 +102,15 @@ function parseDailyCapV1(value: unknown): DailyCapV1 {
 }
 
 function parseBatchingV1(value: unknown): BatchingV1 {
-  if (!isRecord(value)) throw new QuotaSemanticsParseError('batching must be an object.');
-  const maxBatchSize = readNumberMin(value, 'maxBatchSize', 1);
+  const record = readRecord(value, 'batching', QuotaSemanticsParseError);
+  const maxBatchSize = readIntegerMin(record, 'maxBatchSize', 1);
   return { maxBatchSize };
 }
 
 function parseRetryAfterV1(value: unknown): RetryAfterSemanticsV1 {
-  if (!isRecord(value)) throw new QuotaSemanticsParseError('retryAfter must be an object.');
+  const record = readRecord(value, 'retryAfter', QuotaSemanticsParseError);
 
-  const kindRaw = readString(value, 'kind');
+  const kindRaw = readString(record, 'kind', QuotaSemanticsParseError);
 
   if (kindRaw === 'None') return { kind: 'None' };
 
@@ -116,50 +124,12 @@ function parseRetryAfterV1(value: unknown): RetryAfterSemanticsV1 {
     );
   }
 
-  const headerName = readString(value, 'headerName');
+  const headerName = readString(record, 'headerName', QuotaSemanticsParseError);
   return { kind: kindRaw, headerName };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new QuotaSemanticsParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new QuotaSemanticsParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new QuotaSemanticsParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function readOptionalNumber(obj: Record<string, unknown>, key: string): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new QuotaSemanticsParseError(`${key} must be an integer when provided.`);
-  }
-  return v;
-}
-
-function readNumberMin(obj: Record<string, unknown>, key: string, min: number): number {
-  const v = readNumber(obj, key);
+function readIntegerMin(obj: Record<string, unknown>, key: string, min: number): number {
+  const v = readInteger(obj, key, QuotaSemanticsParseError);
   if (v < min) throw new QuotaSemanticsParseError(`${key} must be >= ${min}.`);
   return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

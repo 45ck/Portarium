@@ -4,6 +4,7 @@ import {
   type ComplianceProfileId as ComplianceProfileIdType,
   type PackId as PackIdType,
 } from '../primitives/index.js';
+import { readInteger, readRecord, readString } from '../validation/parse-utils.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,21 +42,19 @@ export class PackComplianceProfileParseError extends Error {
 // ---------------------------------------------------------------------------
 
 export function parsePackComplianceProfileV1(value: unknown): PackComplianceProfileV1 {
-  if (!isRecord(value)) {
-    throw new PackComplianceProfileParseError('Pack compliance profile must be an object.');
-  }
+  const record = readRecord(value, 'Pack compliance profile', PackComplianceProfileParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', PackComplianceProfileParseError);
   if (schemaVersion !== 1) {
     throw new PackComplianceProfileParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const profileId = readString(value, 'profileId');
-  const packId = readString(value, 'packId');
-  const namespace = readString(value, 'namespace');
-  const jurisdiction = readString(value, 'jurisdiction');
+  const profileId = readString(record, 'profileId', PackComplianceProfileParseError);
+  const packId = readString(record, 'packId', PackComplianceProfileParseError);
+  const namespace = readString(record, 'namespace', PackComplianceProfileParseError);
+  const jurisdiction = readString(record, 'jurisdiction', PackComplianceProfileParseError);
 
-  const constraintsRaw = value['constraints'];
+  const constraintsRaw = record['constraints'];
   if (!Array.isArray(constraintsRaw)) {
     throw new PackComplianceProfileParseError('constraints must be an array.');
   }
@@ -76,33 +75,11 @@ export function parsePackComplianceProfileV1(value: unknown): PackComplianceProf
 // ---------------------------------------------------------------------------
 
 function parseConstraint(value: unknown, index: number): ComplianceConstraintV1 {
-  if (!isRecord(value)) {
-    throw new PackComplianceProfileParseError(`constraints[${index}] must be an object.`);
-  }
+  const record = readRecord(value, `constraints[${index}]`, PackComplianceProfileParseError);
 
-  const constraintId = readString(value, 'constraintId');
-  const rule = readString(value, 'rule');
-  const severity = readString(value, 'severity');
+  const constraintId = readString(record, 'constraintId', PackComplianceProfileParseError);
+  const rule = readString(record, 'rule', PackComplianceProfileParseError);
+  const severity = readString(record, 'severity', PackComplianceProfileParseError);
 
   return { constraintId, rule, severity };
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackComplianceProfileParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new PackComplianceProfileParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

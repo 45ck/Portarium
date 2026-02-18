@@ -5,6 +5,14 @@ import {
   type TenantId as TenantIdType,
 } from '../primitives/index.js';
 import { type ExternalObjectRef, parseExternalObjectRef } from './external-object-ref.js';
+import {
+  readBoolean,
+  readInteger,
+  readOptionalNonNegativeNumber,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 export type ProductV1 = Readonly<{
   productId: ProductIdType;
@@ -27,22 +35,21 @@ export class ProductParseError extends Error {
 }
 
 export function parseProductV1(value: unknown): ProductV1 {
-  if (!isRecord(value)) {
-    throw new ProductParseError('Product must be an object.');
-  }
+  const record = readRecord(value, 'Product', ProductParseError);
 
-  if (value['schemaVersion'] !== 1) {
+  const schemaVersion = readInteger(record, 'schemaVersion', ProductParseError);
+  if (schemaVersion !== 1) {
     throw new ProductParseError('schemaVersion must be 1.');
   }
 
-  const productId = ProductId(readString(value, 'productId'));
-  const tenantId = TenantId(readString(value, 'tenantId'));
-  const name = readString(value, 'name');
-  const sku = readOptionalString(value, 'sku');
-  const active = readBoolean(value, 'active');
-  const unitPrice = readOptionalNonNegativeNumber(value, 'unitPrice');
-  const currencyCode = readOptionalCurrencyCode(value, 'currencyCode');
-  const externalRefs = readOptionalExternalRefs(value);
+  const productId = ProductId(readString(record, 'productId', ProductParseError));
+  const tenantId = TenantId(readString(record, 'tenantId', ProductParseError));
+  const name = readString(record, 'name', ProductParseError);
+  const sku = readOptionalString(record, 'sku', ProductParseError);
+  const active = readBoolean(record, 'active', ProductParseError);
+  const unitPrice = readOptionalNonNegativeNumber(record, 'unitPrice', ProductParseError);
+  const currencyCode = readOptionalCurrencyCode(record, 'currencyCode');
+  const externalRefs = readOptionalExternalRefs(record);
 
   return {
     productId,
@@ -57,48 +64,11 @@ export function parseProductV1(value: unknown): ProductV1 {
   };
 }
 
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ProductParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new ProductParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readBoolean(obj: Record<string, unknown>, key: string): boolean {
-  const v = obj[key];
-  if (typeof v !== 'boolean') {
-    throw new ProductParseError(`${key} must be a boolean.`);
-  }
-  return v;
-}
-
 function readOptionalCurrencyCode(obj: Record<string, unknown>, key: string): string | undefined {
   const v = obj[key];
   if (v === undefined) return undefined;
   if (typeof v !== 'string' || !/^[A-Z]{3}$/.test(v)) {
     throw new ProductParseError(`${key} must be a 3-letter uppercase currency code when provided.`);
-  }
-  return v;
-}
-
-function readOptionalNonNegativeNumber(
-  obj: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
-    throw new ProductParseError(`${key} must be a non-negative number when provided.`);
   }
   return v;
 }
@@ -112,8 +82,4 @@ function readOptionalExternalRefs(
     throw new ProductParseError('externalRefs must be an array when provided.');
   }
   return v.map((item) => parseExternalObjectRef(item));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

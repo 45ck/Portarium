@@ -4,6 +4,12 @@ import {
   type PackId as PackIdType,
   type UiTemplateId as UiTemplateIdType,
 } from '../primitives/index.js';
+import {
+  readInteger,
+  readOptionalString,
+  readRecord,
+  readString,
+} from '../validation/parse-utils.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,21 +47,19 @@ export class PackUiTemplateParseError extends Error {
 // ---------------------------------------------------------------------------
 
 export function parsePackUiTemplateV1(value: unknown): PackUiTemplateV1 {
-  if (!isRecord(value)) {
-    throw new PackUiTemplateParseError('Pack UI template must be an object.');
-  }
+  const record = readRecord(value, 'Pack UI template', PackUiTemplateParseError);
 
-  const schemaVersion = readNumber(value, 'schemaVersion');
+  const schemaVersion = readInteger(record, 'schemaVersion', PackUiTemplateParseError);
   if (schemaVersion !== 1) {
     throw new PackUiTemplateParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const templateId = readString(value, 'templateId');
-  const packId = readString(value, 'packId');
-  const namespace = readString(value, 'namespace');
-  const schemaRef = readString(value, 'schemaRef');
+  const templateId = readString(record, 'templateId', PackUiTemplateParseError);
+  const packId = readString(record, 'packId', PackUiTemplateParseError);
+  const namespace = readString(record, 'namespace', PackUiTemplateParseError);
+  const schemaRef = readString(record, 'schemaRef', PackUiTemplateParseError);
 
-  const fieldsRaw = value['fields'];
+  const fieldsRaw = record['fields'];
   if (!Array.isArray(fieldsRaw)) {
     throw new PackUiTemplateParseError('fields must be an array.');
   }
@@ -76,46 +80,15 @@ export function parsePackUiTemplateV1(value: unknown): PackUiTemplateV1 {
 // ---------------------------------------------------------------------------
 
 function parseUiFieldHint(value: unknown, index: number): UiFieldHintV1 {
-  if (!isRecord(value)) {
-    throw new PackUiTemplateParseError(`fields[${index}] must be an object.`);
-  }
+  const record = readRecord(value, `fields[${index}]`, PackUiTemplateParseError);
 
-  const fieldName = readString(value, 'fieldName');
-  const widget = readString(value, 'widget');
-  const label = readOptionalString(value, 'label');
+  const fieldName = readString(record, 'fieldName', PackUiTemplateParseError);
+  const widget = readString(record, 'widget', PackUiTemplateParseError);
+  const label = readOptionalString(record, 'label', PackUiTemplateParseError);
 
   return {
     fieldName,
     widget,
     ...(label !== undefined ? { label } : {}),
   };
-}
-
-function readString(obj: Record<string, unknown>, key: string): string {
-  const v = obj[key];
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackUiTemplateParseError(`${key} must be a non-empty string.`);
-  }
-  return v;
-}
-
-function readOptionalString(obj: Record<string, unknown>, key: string): string | undefined {
-  const v = obj[key];
-  if (v === undefined) return undefined;
-  if (typeof v !== 'string' || v.trim() === '') {
-    throw new PackUiTemplateParseError(`${key} must be a non-empty string when provided.`);
-  }
-  return v;
-}
-
-function readNumber(obj: Record<string, unknown>, key: string): number {
-  const v = obj[key];
-  if (typeof v !== 'number' || !Number.isSafeInteger(v)) {
-    throw new PackUiTemplateParseError(`${key} must be an integer.`);
-  }
-  return v;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

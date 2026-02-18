@@ -676,3 +676,11 @@ deserialisation
 subheaders
 colorblind
 fulfillment
+
+# UI / adapter catalog terms
+unconfigured
+Unconfigured
+analyzes
+Pardot
+Basware
+apikey
