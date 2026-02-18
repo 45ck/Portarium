@@ -237,6 +237,17 @@ const Keyboard = (function () {
         goto('safety');
       },
     },
+    {
+      id: 'nav-gateways',
+      label: 'Go to Gateways',
+      category: 'Navigate',
+      keywords: 'gateways edge gateway grpc ros opcua robot connection',
+      shortcut: 'g g',
+      icon: '\u2194',
+      action: function () {
+        goto('gateways');
+      },
+    },
 
     // Actions
     {
@@ -684,6 +695,18 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>g y</kbd> <span>Go to Safety</span></div>' +
         '</div>',
+      robot:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Backspace</kbd> <span>Back to Robots</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>e</kbd> <span>Send E-Stop to this robot</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>c</kbd> <span>Open context drawer</span></div>' +
+        '</div>',
+      gateways:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Backspace</kbd> <span>Back to Robots</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate gateways</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Test gateway connection</span></div>' +
+        '</div>',
     };
     return map[screen] || null;
   }
@@ -769,6 +792,7 @@ const Keyboard = (function () {
     t: 'onboarding',
     m: 'missions',
     y: 'safety',
+    g: 'gateways',
   };
 
   function startChord(key) {
@@ -808,6 +832,8 @@ const Keyboard = (function () {
     'work-item': 'work-items',
     run: 'runs',
     mission: 'missions',
+    robot: 'robots',
+    gateways: 'robots',
   };
 
   function goBack() {

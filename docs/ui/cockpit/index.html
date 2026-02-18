@@ -131,6 +131,7 @@
           <a class="nav__item" href="#robots"><span class="nav__icon">&#9632;</span> Robots</a>
           <a class="nav__item" href="#missions"><span class="nav__icon">&#9654;</span> Missions</a>
           <a class="nav__item" href="#safety"><span class="nav__icon">&#9888;</span> Safety</a>
+          <a class="nav__item" href="#gateways"><span class="nav__icon">&#8644;</span> Gateways</a>
         </nav>
 
         <div class="sidebar__section-title">Quick Actions</div>
@@ -5758,6 +5759,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <span class="chip">Evidence</span>
             <span class="chip">Adapter</span>
             <span class="chip">Policy</span>
+            <span class="chip">Robot</span>
+            <span class="chip">Mission</span>
           </div>
 
           <div style="display: flex; gap: 8px; margin-bottom: 12px">
@@ -5918,9 +5921,79 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </div>
           </div>
 
+            <div class="row row--static" style="border-left: 3px solid var(--danger)">
+              <div class="row__main">
+                <div class="row__title">
+                  <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                    >RobotEStopSent</span
+                  >
+                  robot-007 &#8212; operator@acme triggered E-Stop
+                </div>
+                <div class="row__subtle">
+                  Aggregate: Robot | Source: safety-controller |
+                  <span class="correlation-id">cor_estop_007_f9c3</span> | 14m ago
+                </div>
+              </div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_009</span>
+              </div>
+            </div>
+            <div class="row row--static" style="border-left: 3px solid var(--info)">
+              <div class="row__main">
+                <div class="row__title">
+                  <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
+                    >MissionDispatched</span
+                  >
+                  mis-0094 &#8212; Navigate to bay 3 dispatched to robot-001
+                </div>
+                <div class="row__subtle">
+                  Aggregate: Mission | Source: mission-dispatcher |
+                  <span class="correlation-id">cor_mis0094_r001_a1b2</span> | 14m ago
+                </div>
+              </div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_010</span>
+              </div>
+            </div>
+            <div class="row row--static" style="border-left: 3px solid var(--ok)">
+              <div class="row__main">
+                <div class="row__title">
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >RobotHeartbeat</span
+                  >
+                  robot-001 &#8212; AMR heartbeat nominal (battery 87%)
+                </div>
+                <div class="row__subtle">
+                  Aggregate: Robot | Source: edge-gateway-grpc |
+                  <span class="correlation-id">cor_hb_001_2s</span> | 2s ago
+                </div>
+              </div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_011</span>
+              </div>
+            </div>
+            <div class="row row--static" style="border-left: 3px solid var(--ok)">
+              <div class="row__main">
+                <div class="row__title">
+                  <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                    >RobotEStopCleared</span
+                  >
+                  robot-007 &#8212; safety_admin cleared E-Stop (rationale: charged + verified)
+                </div>
+                <div class="row__subtle">
+                  Aggregate: Robot | Source: safety-controller |
+                  <span class="correlation-id">cor_estop_007_f9c3</span> | 5m ago
+                </div>
+              </div>
+              <div class="row__right">
+                <span class="subtle" style="font-size: 10px">ce_012</span>
+              </div>
+            </div>
+          </div>
+
           <div class="pagination" style="margin-top: 12px">
             <button class="btn btn--small" type="button" disabled>&laquo; Previous</button>
-            <span class="pagination__info">Showing latest 8 of 146 events</span>
+            <span class="pagination__info">Showing latest 12 of 158 events</span>
             <button class="btn btn--small" type="button">Load more</button>
           </div>
 
@@ -8418,6 +8491,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             >
           </div>
 
+          <!-- View toggle tabs -->
+          <div class="tabs" role="tablist" aria-label="Robots view" style="margin-bottom: 12px">
+            <button class="tab tab--active" type="button" data-tab="robots-grid">All Robots</button>
+            <button class="tab" type="button" data-tab="robots-fleet">By Fleet</button>
+          </div>
+
+          <div class="tabpanes">
+            <div class="tabpane tabpane--active" data-pane="robots-grid" role="tabpanel" aria-label="All robots grid">
+
           <!-- Robot card grid -->
           <div
             id="robotGrid"
@@ -8463,14 +8545,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 >
                   Test &#8635;
                 </button>
-                <button
-                  class="btn btn--small js-drawer-trigger"
-                  type="button"
-                  data-drawer="robot-001-detail"
-                  aria-label="Open detail for robot-001"
+                <a
+                  class="btn btn--small"
+                  href="#robot"
+                  aria-label="Open detail page for robot-001"
                 >
                   Detail &#8594;
-                </button>
+                </a>
               </div>
             </article>
             <article
@@ -8513,14 +8594,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 >
                   Test &#8635;
                 </button>
-                <button
-                  class="btn btn--small js-drawer-trigger"
-                  type="button"
-                  data-drawer="robot-007-detail"
-                  aria-label="Open detail for robot-007"
+                <a
+                  class="btn btn--small"
+                  href="#robot"
+                  aria-label="Open detail page for robot-007"
                 >
                   Detail &#8594;
-                </button>
+                </a>
                 <button
                   class="btn btn--small js-estop-robot"
                   type="button"
@@ -8563,14 +8643,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 >
                   Test &#8635;
                 </button>
-                <button
-                  class="btn btn--small js-drawer-trigger"
-                  type="button"
-                  data-drawer="robot-003-detail"
-                  aria-label="Open detail for robot-003"
+                <a
+                  class="btn btn--small"
+                  href="#robot"
+                  aria-label="Open detail page for robot-003"
                 >
                   Detail &#8594;
-                </button>
+                </a>
               </div>
             </article>
             <article
@@ -8604,14 +8683,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 >
                   Test &#8635;
                 </button>
-                <button
-                  class="btn btn--small js-drawer-trigger"
-                  type="button"
-                  data-drawer="robot-009-detail"
-                  aria-label="Open detail for robot-009"
+                <a
+                  class="btn btn--small"
+                  href="#robot"
+                  aria-label="Open detail page for robot-009"
                 >
                   Detail &#8594;
-                </button>
+                </a>
                 <!-- H5: Clear E-Stop gated to admin only; label clarifies rationale required -->
                 <button
                   class="btn btn--small btn--primary js-clear-estop"
@@ -8625,6 +8703,77 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
             </article>
           </div>
+            </div><!-- /tabpane robots-grid -->
+
+            <!-- Fleet grouping view (bead-0509 Fleet aggregate) -->
+            <div class="tabpane" data-pane="robots-fleet" role="tabpanel" aria-label="Robots grouped by fleet" hidden>
+              <div class="callout" style="margin-bottom: 12px">
+                Fleet groupings reflect the <strong>Fleet</strong> aggregate — each fleet has a shared
+                safety profile, dispatch policy, and enrolment scope.
+              </div>
+
+              <!-- Fleet: warehouse-alpha -->
+              <details open style="margin-bottom: 12px">
+                <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
+                  fleet-warehouse-alpha
+                  <span class="chip chip--small" style="margin-left: 6px">12 robots</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 10 online</span>
+                  <span class="status status--warn" style="font-size: 11px">&#9888; 2 degraded</span>
+                </summary>
+                <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
+                  <a class="btn btn--small" href="#robot">robot-001 (AMR)</a>
+                  <a class="btn btn--small" href="#robot">robot-003 (AGV)</a>
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-004 (AMR)</span>
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-006 (AGV)</span>
+                  <span class="subtle" style="font-size: 11px; align-self: center">+ 8 more</span>
+                </div>
+                <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
+                  Safety profile: max_speed 0.5 m/s (block) &bull; Dispatch policy: Auto for AMR/AGV
+                </div>
+              </details>
+
+              <!-- Fleet: yard-uav -->
+              <details style="margin-bottom: 12px">
+                <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
+                  fleet-yard-uav
+                  <span class="chip chip--small" style="margin-left: 6px">6 robots</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 5 online</span>
+                  <span class="status status--danger" style="font-size: 11px">&#8856; 1 E-Stopped</span>
+                </summary>
+                <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
+                  <a class="btn btn--small" href="#robot" style="color: #ef4444; border-color: #ef4444">robot-007 (UAV) &#8856;</a>
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-011 (UAV)</span>
+                  <span class="subtle" style="font-size: 11px; align-self: center">+ 4 more</span>
+                </div>
+                <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
+                  Safety profile: outdoor_uav_permit required (block) &bull; Dispatch policy: HumanApprove for outdoor_flight
+                </div>
+              </details>
+
+              <!-- Fleet: assembly-manipulators -->
+              <details style="margin-bottom: 12px">
+                <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
+                  fleet-assembly-manipulators
+                  <span class="chip chip--small" style="margin-left: 6px">4 robots</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 2 online</span>
+                  <span class="status status--danger" style="font-size: 11px">&#8856; 1 E-Stopped</span>
+                  <span class="status status--warn" style="font-size: 11px">&#9888; 1 degraded</span>
+                </summary>
+                <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
+                  <a class="btn btn--small" href="#robot" style="color: #ef4444; border-color: #ef4444">robot-009 (Manipulator) &#8856;</a>
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-013 (Manipulator)</span>
+                  <span class="subtle" style="font-size: 11px; align-self: center">+ 2 more</span>
+                </div>
+                <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
+                  Safety profile: pick &gt;10kg → HumanApprove &bull; no_lift_zone in bay-3 (warn)
+                </div>
+              </details>
+
+              <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin">
+                + Create Fleet
+              </button>
+            </div><!-- /tabpane robots-fleet -->
+          </div><!-- /tabpanes -->
         </section>
 
         <!-- ============================================================
