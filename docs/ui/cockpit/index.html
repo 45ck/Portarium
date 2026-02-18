@@ -8368,12 +8368,54 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             role="group"
             aria-label="Filter by robot class"
           >
-            <span class="chip chip--active" data-robot-class="all" role="button" tabindex="0" aria-pressed="true">All &#9679;</span>
-            <span class="chip" data-robot-class="AMR" role="button" tabindex="0" aria-pressed="false">AMR</span>
-            <span class="chip" data-robot-class="AGV" role="button" tabindex="0" aria-pressed="false">AGV</span>
-            <span class="chip" data-robot-class="Manipulator" role="button" tabindex="0" aria-pressed="false">Manipulator</span>
-            <span class="chip" data-robot-class="UAV" role="button" tabindex="0" aria-pressed="false">UAV</span>
-            <span class="chip" data-robot-class="PLC" role="button" tabindex="0" aria-pressed="false">PLC</span>
+            <span
+              class="chip chip--active"
+              data-robot-class="all"
+              role="button"
+              tabindex="0"
+              aria-pressed="true"
+              >All &#9679;</span
+            >
+            <span
+              class="chip"
+              data-robot-class="AMR"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              >AMR</span
+            >
+            <span
+              class="chip"
+              data-robot-class="AGV"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              >AGV</span
+            >
+            <span
+              class="chip"
+              data-robot-class="Manipulator"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              >Manipulator</span
+            >
+            <span
+              class="chip"
+              data-robot-class="UAV"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              >UAV</span
+            >
+            <span
+              class="chip"
+              data-robot-class="PLC"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              >PLC</span
+            >
           </div>
 
           <!-- Robot card grid -->
@@ -8387,7 +8429,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             "
           >
             <!-- H4: card uses <article> with aria-label for screen reader identity -->
-            <article class="card" data-robot-id="robot-001" data-robot-class="AMR" aria-label="robot-001, AMR, Online">
+            <article
+              class="card"
+              data-robot-id="robot-001"
+              data-robot-class="AMR"
+              aria-label="robot-001, AMR, Online"
+            >
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-001</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">AMR</span>
@@ -8395,7 +8442,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div style="margin: 4px 0">
                 <span class="status status--ok">&#9679; Online</span>
                 <!-- H1: heartbeat age visible; title explains abbreviation -->
-                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 2 seconds ago">Heartbeat: 2s ago</span>
+                <span
+                  class="subtle"
+                  style="margin-left: 8px; font-size: 11px"
+                  title="Last heartbeat received 2 seconds ago"
+                  >Heartbeat: 2s ago</span
+                >
               </div>
               <div class="subtle" style="font-size: 12px">
                 <!-- H1: battery % shown with plain text; no warning needed at 87% -->
@@ -8403,7 +8455,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
                 <!-- H6: descriptive aria-label on test button (not just "Test ↺") -->
-                <button class="btn btn--small" type="button" data-robot-test="robot-001" aria-label="Test connection for robot-001">
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-robot-test="robot-001"
+                  aria-label="Test connection for robot-001"
+                >
                   Test &#8635;
                 </button>
                 <button
@@ -8416,21 +8473,44 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-007" data-robot-class="UAV" aria-label="robot-007, UAV, Degraded — action needed">
+            <article
+              class="card"
+              data-robot-id="robot-007"
+              data-robot-class="UAV"
+              aria-label="robot-007, UAV, Degraded — action needed"
+            >
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-007</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">UAV</span>
               </div>
               <div style="margin: 4px 0">
-                <span class="status status--warn"><span class="status__icon">&#9888;</span>Degraded</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 45 seconds ago — response time elevated">Heartbeat: 45s ago</span>
+                <span class="status status--warn"
+                  ><span class="status__icon">&#9888;</span>Degraded</span
+                >
+                <span
+                  class="subtle"
+                  style="margin-left: 8px; font-size: 11px"
+                  title="Last heartbeat received 45 seconds ago — response time elevated"
+                  >Heartbeat: 45s ago</span
+                >
               </div>
               <div class="subtle" style="font-size: 12px">
                 <!-- H1: battery critical (<20%) highlighted in danger colour -->
-                Battery: <span style="color: #ef4444; font-weight: 600" title="Battery critically low — consider charging">12% &#9888;</span> &nbsp;|&nbsp; Mission: none
+                Battery:
+                <span
+                  style="color: #ef4444; font-weight: 600"
+                  title="Battery critically low — consider charging"
+                  >12% &#9888;</span
+                >
+                &nbsp;|&nbsp; Mission: none
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-007" aria-label="Test connection for robot-007">
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-robot-test="robot-007"
+                  aria-label="Test connection for robot-007"
+                >
                   Test &#8635;
                 </button>
                 <button
@@ -8452,20 +8532,35 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-003" data-robot-class="AGV" aria-label="robot-003, AGV, Online">
+            <article
+              class="card"
+              data-robot-id="robot-003"
+              data-robot-class="AGV"
+              aria-label="robot-003, AGV, Online"
+            >
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-003</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">AGV</span>
               </div>
               <div style="margin: 4px 0">
                 <span class="status status--ok">&#9679; Online</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 1 second ago">Heartbeat: 1s ago</span>
+                <span
+                  class="subtle"
+                  style="margin-left: 8px; font-size: 11px"
+                  title="Last heartbeat received 1 second ago"
+                  >Heartbeat: 1s ago</span
+                >
               </div>
               <div class="subtle" style="font-size: 12px">
                 Battery: 74% &nbsp;|&nbsp; Mission: <a href="#mission">pick-mission-0211</a>
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-003" aria-label="Test connection for robot-003">
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-robot-test="robot-003"
+                  aria-label="Test connection for robot-003"
+                >
                   Test &#8635;
                 </button>
                 <button
@@ -8478,20 +8573,35 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-009" data-robot-class="Manipulator" aria-label="robot-009, Manipulator, E-Stopped — requires safety admin to clear">
+            <article
+              class="card"
+              data-robot-id="robot-009"
+              data-robot-class="Manipulator"
+              aria-label="robot-009, Manipulator, E-Stopped — requires safety admin to clear"
+            >
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-009</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">Manipulator</span>
               </div>
               <div style="margin: 4px 0">
                 <span class="status status--danger">&#8856; E-Stopped</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 120 seconds ago — robot may be unreachable">Heartbeat: 120s ago</span>
+                <span
+                  class="subtle"
+                  style="margin-left: 8px; font-size: 11px"
+                  title="Last heartbeat received 120 seconds ago — robot may be unreachable"
+                  >Heartbeat: 120s ago</span
+                >
               </div>
               <div class="subtle" style="font-size: 12px">
                 Battery: 55% &nbsp;|&nbsp; Mission: none
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-009" aria-label="Test connection for robot-009">
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-robot-test="robot-009"
+                  aria-label="Test connection for robot-009"
+                >
                   Test &#8635;
                 </button>
                 <button
@@ -8571,11 +8681,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tbody>
                   <tr>
                     <!-- H4: link to detail page (not a drawer-trigger button) -->
-                    <td><a href="#mission" aria-label="View mission mis-0094 detail">mis-0094</a></td>
+                    <td>
+                      <a href="#mission" aria-label="View mission mis-0094 detail">mis-0094</a>
+                    </td>
                     <td>robot-001</td>
                     <td>Navigate to bay 3</td>
                     <td>
-                      <span class="status status--info"><span class="status__icon">&#8635;</span>Executing</span>
+                      <span class="status status--info"
+                        ><span class="status__icon">&#8635;</span>Executing</span
+                      >
                     </td>
                     <td>14:02</td>
                     <td>
@@ -8590,7 +8704,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     </td>
                   </tr>
                   <tr>
-                    <td><a href="#mission" aria-label="View mission mis-0095 detail">mis-0095</a></td>
+                    <td>
+                      <a href="#mission" aria-label="View mission mis-0095 detail">mis-0095</a>
+                    </td>
                     <td>robot-003</td>
                     <td>Pick SKU-8821</td>
                     <td><span class="status">&#9675; Pending</span></td>
@@ -8607,7 +8723,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     </td>
                   </tr>
                   <tr>
-                    <td><a href="#mission" aria-label="View mission mis-0087 detail">mis-0087</a></td>
+                    <td>
+                      <a href="#mission" aria-label="View mission mis-0087 detail">mis-0087</a>
+                    </td>
                     <td>robot-002</td>
                     <td>Charge station</td>
                     <td><span class="status status--ok">&#10003; Completed</span></td>
@@ -8616,7 +8734,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <td></td>
                   </tr>
                   <tr>
-                    <td><a href="#mission" aria-label="View mission mis-0091 detail">mis-0091</a></td>
+                    <td>
+                      <a href="#mission" aria-label="View mission mis-0091 detail">mis-0091</a>
+                    </td>
                     <td>robot-005</td>
                     <td>Dock</td>
                     <!-- H1: failed status shown prominently with both icon and text -->
@@ -8645,7 +8765,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="card">
                 <div class="card__title">Executing <span class="nav__badge">1</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><a href="#mission"><strong>mis-0094</strong></a></div>
+                  <div>
+                    <a href="#mission"><strong>mis-0094</strong></a>
+                  </div>
                   <div class="subtle" style="font-size: 12px">
                     robot-001 &#8212; Navigate to bay 3
                   </div>
@@ -8654,14 +8776,18 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="card">
                 <div class="card__title">Pending <span class="nav__badge">1</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><a href="#mission"><strong>mis-0095</strong></a></div>
+                  <div>
+                    <a href="#mission"><strong>mis-0095</strong></a>
+                  </div>
                   <div class="subtle" style="font-size: 12px">robot-003 &#8212; Pick SKU-8821</div>
                 </div>
               </div>
               <div class="card">
                 <div class="card__title">Completed <span class="nav__badge">24</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><a href="#mission"><strong>mis-0087</strong></a></div>
+                  <div>
+                    <a href="#mission"><strong>mis-0087</strong></a>
+                  </div>
                   <div class="subtle" style="font-size: 12px">robot-002 &#8212; Charge station</div>
                 </div>
               </div>
@@ -8671,7 +8797,10 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </div>
                 <div class="card" style="margin-top: 8px">
                   <!-- H1: failed card has a visual indicator beyond just the column label -->
-                  <div><a href="#mission"><strong>mis-0091</strong></a> <span class="status status--danger" style="font-size: 11px">&#10007;</span></div>
+                  <div>
+                    <a href="#mission"><strong>mis-0091</strong></a>
+                    <span class="status status--danger" style="font-size: 11px">&#10007;</span>
+                  </div>
                   <div class="subtle" style="font-size: 12px">robot-005 &#8212; Dock (timeout)</div>
                 </div>
               </div>
@@ -8684,27 +8813,51 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
              Not in sidebar nav — accessed by clicking a mission row.
              Follows the #work-item / #run detail page pattern.
              ============================================================ -->
-        <section id="screen-mission" class="screen" data-screen="mission" aria-labelledby="h-mission">
+        <section
+          id="screen-mission"
+          class="screen"
+          data-screen="mission"
+          aria-labelledby="h-mission"
+        >
           <div class="screen__header">
             <div>
               <!-- H4: breadcrumb matches work-item/run pattern (crumbs subtle) -->
-              <div class="crumbs subtle">
-                <a href="#missions">Missions</a> /
-              </div>
+              <div class="crumbs subtle"><a href="#missions">Missions</a> /</div>
               <h1 id="h-mission" class="h1">
                 mis-0094 &#8212; Navigate to bay 3
-                <span class="status status--info"><span class="status__icon">&#8635;</span> Executing</span>
+                <span class="status status--info"
+                  ><span class="status__icon">&#8635;</span> Executing</span
+                >
               </h1>
               <div class="subtle">
                 Robot: <strong>robot-001</strong> (AMR) &nbsp;|&nbsp; Priority: Normal &nbsp;|&nbsp;
-                Tier: <span class="tier-badge" data-tooltip="This action runs automatically — no human approval required">Auto</span>
+                Tier:
+                <span
+                  class="tier-badge"
+                  data-tooltip="This action runs automatically — no human approval required"
+                  >Auto</span
+                >
                 &nbsp;|&nbsp; Dispatched: 2026-02-18 14:02
               </div>
             </div>
             <div class="screen__actions">
               <!-- H3: operator controls grouped in header; destructive action (cancel) distinct from pre-empt -->
-              <button class="btn" type="button" data-confirm="preempt-mission" data-requires-persona="operator admin">Pre-empt</button>
-              <button class="btn" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+              <button
+                class="btn"
+                type="button"
+                data-confirm="preempt-mission"
+                data-requires-persona="operator admin"
+              >
+                Pre-empt
+              </button>
+              <button
+                class="btn"
+                type="button"
+                data-confirm="cancel-mission"
+                data-requires-persona="operator admin"
+              >
+                Cancel
+              </button>
               <a class="btn" href="#missions">&#8592; Back to Missions</a>
             </div>
           </div>
@@ -8726,7 +8879,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <!-- Mission identity card -->
             <article class="card card--hero">
               <div class="card__title">Mission Details</div>
-              <dl style="font-size: 13px; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0">
+              <dl
+                style="
+                  font-size: 13px;
+                  display: grid;
+                  grid-template-columns: max-content 1fr;
+                  gap: 6px 16px;
+                  margin: 0;
+                "
+              >
                 <dt class="subtle">ID</dt>
                 <dd>mis-0094</dd>
                 <dt class="subtle">Action</dt>
@@ -8740,7 +8901,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <dt class="subtle">Execution Tier</dt>
                 <dd>Auto</dd>
                 <!-- H10: SPIFFE SVID has tooltip for operators unfamiliar with the term -->
-                <dt class="subtle" title="Secure Production Identity Framework for Everyone — cryptographic identity for this robot">SPIFFE SVID</dt>
+                <dt
+                  class="subtle"
+                  title="Secure Production Identity Framework for Everyone — cryptographic identity for this robot"
+                >
+                  SPIFFE SVID
+                </dt>
                 <dd style="font-size: 11px; word-break: break-all">spiffe://portarium/robot-001</dd>
                 <dt class="subtle">Dispatched</dt>
                 <dd>2026-02-18 14:02:01</dd>
@@ -8764,14 +8930,30 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <div class="row__subtle">2026-02-18 14:02:03 (in progress)</div>
                   </div>
                   <div class="row__right">
-                    <span class="status status--info"><span class="status__icon">&#8635;</span></span>
+                    <span class="status status--info"
+                      ><span class="status__icon">&#8635;</span></span
+                    >
                   </div>
                 </div>
               </div>
               <!-- H7: Pre-empt / Cancel also available from the detail view -->
               <div style="margin-top: 12px; display: flex; gap: 8px">
-                <button class="btn btn--small" type="button" data-confirm="preempt-mission" data-requires-persona="operator admin">Pre-empt</button>
-                <button class="btn btn--small" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-confirm="preempt-mission"
+                  data-requires-persona="operator admin"
+                >
+                  Pre-empt
+                </button>
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  data-confirm="cancel-mission"
+                  data-requires-persona="operator admin"
+                >
+                  Cancel
+                </button>
               </div>
             </article>
           </div>
@@ -8833,7 +9015,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- H1: status banner uses consistent callout class + role=status for live region -->
-          <div class="callout js-safety-status-banner" role="status" aria-live="polite" style="background: #f0fdf4; border-color: #22c55e; color: #166534; margin-bottom: 16px">
+          <div
+            class="callout js-safety-status-banner"
+            role="status"
+            aria-live="polite"
+            style="background: #f0fdf4; border-color: #22c55e; color: #166534; margin-bottom: 16px"
+          >
             &#9679; System NOMINAL &#8212; 0 robots in E-Stop state
           </div>
 
@@ -8857,7 +9044,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <td>warehouse-a</td>
                   <td>max_speed &#8804; 0.5 m/s</td>
                   <!-- H10: title tooltip explains enforcement mode semantics -->
-                  <td><span class="status status--danger" title="block: action is rejected when constraint is violated">block</span></td>
+                  <td>
+                    <span
+                      class="status status--danger"
+                      title="block: action is rejected when constraint is violated"
+                      >block</span
+                    >
+                  </td>
                   <td>12</td>
                   <td>
                     <button
@@ -8873,7 +9066,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tr>
                   <td>bay-3</td>
                   <td>no_lift_zone</td>
-                  <td><span class="status status--warn" title="warn: action proceeds but a safety warning is logged">warn</span></td>
+                  <td>
+                    <span
+                      class="status status--warn"
+                      title="warn: action proceeds but a safety warning is logged"
+                      >warn</span
+                    >
+                  </td>
                   <td>4</td>
                   <td>
                     <button
@@ -8889,7 +9088,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tr>
                   <td>yard</td>
                   <td>outdoor_uav_permit required</td>
-                  <td><span class="status status--danger" title="block: action is rejected when constraint is violated">block</span></td>
+                  <td>
+                    <span
+                      class="status status--danger"
+                      title="block: action is rejected when constraint is violated"
+                      >block</span
+                    >
+                  </td>
                   <td>6</td>
                   <td>
                     <button
