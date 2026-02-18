@@ -9302,6 +9302,67 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </table>
           </div>
 
+          <!-- Safety Cases (bead-0512 SafetyCase value object — formal hazard assessments) -->
+          <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">Safety Cases</h2>
+          <div class="callout" style="margin-bottom: 8px; font-size: 12px">
+            A <strong>Safety Case</strong> is a structured argument that the system is safe for a
+            specific operational context. Each case links hazards, mitigations, and evidence artefacts.
+          </div>
+          <div class="table-wrap" style="margin-bottom: 24px">
+            <table class="table" aria-label="Safety cases">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Context</th>
+                  <th>Status</th>
+                  <th>Hazards</th>
+                  <th>Evidence</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>SC-001</strong></td>
+                  <td>Indoor AMR navigation — warehouse-alpha</td>
+                  <td><span class="status status--ok">Accepted</span></td>
+                  <td>3 hazards identified, 3 mitigated</td>
+                  <td><a href="#evidence">4 artefacts</a></td>
+                  <td>
+                    <button class="btn btn--small" type="button" data-requires-persona="admin"
+                      aria-label="View Safety Case SC-001">View</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>SC-002</strong></td>
+                  <td>Outdoor UAV flight — yard perimeter</td>
+                  <td><span class="status status--warn">Pending review</span></td>
+                  <td>5 hazards identified, 3 mitigated, 2 open</td>
+                  <td><a href="#evidence">2 artefacts</a></td>
+                  <td>
+                    <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin"
+                      aria-label="Review Safety Case SC-002">Review</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>SC-003</strong></td>
+                  <td>Heavy pick — assembly bay-3 (&gt;10 kg)</td>
+                  <td><span class="status status--danger">Draft</span></td>
+                  <td>2 hazards identified, 0 mitigated</td>
+                  <td>None</td>
+                  <td>
+                    <button class="btn btn--small" type="button" data-requires-persona="admin"
+                      aria-label="Edit Safety Case SC-003">Edit</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 8px">
+              <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin">
+                + New Safety Case
+              </button>
+            </div>
+          </div>
+
           <!-- E-Stop audit log -->
           <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">
             E-Stop Audit Log <span class="subtle" style="font-weight: 400">(last 5)</span>
