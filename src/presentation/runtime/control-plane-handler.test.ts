@@ -60,7 +60,7 @@ describe('createControlPlaneHandler', () => {
     const deps = {
       authentication: {
         authenticateBearerToken: async () =>
-          err({ kind: 'Unauthorized', message: 'Missing token.' }),
+          err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
       },
       authorization: {
         isAllowed: async () => true,
