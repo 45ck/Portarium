@@ -44,3 +44,9 @@ package/
 # Domain Atlas upstream clones (local-only; do not commit upstream code)
 domain-atlas/upstreams/*
 !domain-atlas/upstreams/.gitkeep
+
+# Local tool outputs (generated during ad-hoc runs)
+knip_debug.txt
+lint_out.txt
+vitest_*.txt
+nul
