@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ActionId,
   AdapterId,
+  AgentId,
   ApprovalId,
   ArtifactId,
   CorrelationId,
@@ -64,6 +65,7 @@ describe('domain primitives', () => {
       ArtifactId,
       HashSha256,
       MachineId,
+      AgentId,
       PackId,
       UserId,
     ];

@@ -187,6 +187,9 @@ export type TriggerDefinitionId = Branded<string, 'TriggerDefinitionId'>;
 /** Unique identifier for a provider catalog entry. */
 export type CatalogEntryId = Branded<string, 'CatalogEntryId'>;
 
+/** Unique identifier for an AI agent configuration. */
+export type AgentId = Branded<string, 'AgentId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -246,6 +249,7 @@ export const TriggerDefinitionId = (value: string): TriggerDefinitionId =>
   brand<string, 'TriggerDefinitionId'>(value);
 export const CatalogEntryId = (value: string): CatalogEntryId =>
   brand<string, 'CatalogEntryId'>(value);
+export const AgentId = (value: string): AgentId => brand<string, 'AgentId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families
