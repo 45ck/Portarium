@@ -5919,7 +5919,6 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <span class="subtle" style="font-size: 10px">ce_008</span>
               </div>
             </div>
-          </div>
 
             <div class="row row--static" style="border-left: 3px solid var(--danger)">
               <div class="row__main">
@@ -8498,218 +8497,229 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <div class="tabpanes">
-            <div class="tabpane tabpane--active" data-pane="robots-grid" role="tabpanel" aria-label="All robots grid">
-
-          <!-- Robot card grid -->
-          <div
-            id="robotGrid"
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-              gap: 12px;
-              margin-top: 12px;
-            "
-          >
-            <!-- H4: card uses <article> with aria-label for screen reader identity -->
-            <article
-              class="card"
-              data-robot-id="robot-001"
-              data-robot-class="AMR"
-              aria-label="robot-001, AMR, Online"
+            <div
+              class="tabpane tabpane--active"
+              data-pane="robots-grid"
+              role="tabpanel"
+              aria-label="All robots grid"
             >
-              <div style="display: flex; justify-content: space-between; align-items: center">
-                <strong>robot-001</strong>
-                <span class="chip chip--small" style="background: #f0f4ff">AMR</span>
-              </div>
-              <div style="margin: 4px 0">
-                <span class="status status--ok">&#9679; Online</span>
-                <!-- H1: heartbeat age visible; title explains abbreviation -->
-                <span
-                  class="subtle"
-                  style="margin-left: 8px; font-size: 11px"
-                  title="Last heartbeat received 2 seconds ago"
-                  >Heartbeat: 2s ago</span
+              <!-- Robot card grid -->
+              <div
+                id="robotGrid"
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                  gap: 12px;
+                  margin-top: 12px;
+                "
+              >
+                <!-- H4: card uses <article> with aria-label for screen reader identity -->
+                <article
+                  class="card"
+                  data-robot-id="robot-001"
+                  data-robot-class="AMR"
+                  aria-label="robot-001, AMR, Online"
                 >
-              </div>
-              <div class="subtle" style="font-size: 12px">
-                <!-- H1: battery % shown with plain text; no warning needed at 87% -->
-                Battery: 87% &nbsp;|&nbsp; Mission: <a href="#mission">nav-mission-0094</a>
-              </div>
-              <div style="margin-top: 8px; display: flex; gap: 6px">
-                <!-- H6: descriptive aria-label on test button (not just "Test ↺") -->
-                <button
-                  class="btn btn--small"
-                  type="button"
-                  data-robot-test="robot-001"
-                  aria-label="Test connection for robot-001"
-                >
-                  Test &#8635;
-                </button>
-                <a
-                  class="btn btn--small"
-                  href="#robot"
-                  aria-label="Open detail page for robot-001"
-                >
-                  Detail &#8594;
-                </a>
-              </div>
-            </article>
-            <article
-              class="card"
-              data-robot-id="robot-007"
-              data-robot-class="UAV"
-              aria-label="robot-007, UAV, Degraded — action needed"
-            >
-              <div style="display: flex; justify-content: space-between; align-items: center">
-                <strong>robot-007</strong>
-                <span class="chip chip--small" style="background: #f0f4ff">UAV</span>
-              </div>
-              <div style="margin: 4px 0">
-                <span class="status status--warn"
-                  ><span class="status__icon">&#9888;</span>Degraded</span
-                >
-                <span
-                  class="subtle"
-                  style="margin-left: 8px; font-size: 11px"
-                  title="Last heartbeat received 45 seconds ago — response time elevated"
-                  >Heartbeat: 45s ago</span
-                >
-              </div>
-              <div class="subtle" style="font-size: 12px">
-                <!-- H1: battery critical (<20%) highlighted in danger colour -->
-                Battery:
-                <span
-                  style="color: #ef4444; font-weight: 600"
-                  title="Battery critically low — consider charging"
-                  >12% &#9888;</span
-                >
-                &nbsp;|&nbsp; Mission: none
-              </div>
-              <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button
-                  class="btn btn--small"
-                  type="button"
-                  data-robot-test="robot-007"
-                  aria-label="Test connection for robot-007"
-                >
-                  Test &#8635;
-                </button>
-                <a
-                  class="btn btn--small"
-                  href="#robot"
-                  aria-label="Open detail page for robot-007"
-                >
-                  Detail &#8594;
-                </a>
-                <button
-                  class="btn btn--small js-estop-robot"
-                  type="button"
+                  <div style="display: flex; justify-content: space-between; align-items: center">
+                    <strong>robot-001</strong>
+                    <span class="chip chip--small" style="background: #f0f4ff">AMR</span>
+                  </div>
+                  <div style="margin: 4px 0">
+                    <span class="status status--ok">&#9679; Online</span>
+                    <!-- H1: heartbeat age visible; title explains abbreviation -->
+                    <span
+                      class="subtle"
+                      style="margin-left: 8px; font-size: 11px"
+                      title="Last heartbeat received 2 seconds ago"
+                      >Heartbeat: 2s ago</span
+                    >
+                  </div>
+                  <div class="subtle" style="font-size: 12px">
+                    <!-- H1: battery % shown with plain text; no warning needed at 87% -->
+                    Battery: 87% &nbsp;|&nbsp; Mission: <a href="#mission">nav-mission-0094</a>
+                  </div>
+                  <div style="margin-top: 8px; display: flex; gap: 6px">
+                    <!-- H6: descriptive aria-label on test button (not just "Test ↺") -->
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-robot-test="robot-001"
+                      aria-label="Test connection for robot-001"
+                    >
+                      Test &#8635;
+                    </button>
+                    <a
+                      class="btn btn--small"
+                      href="#robot"
+                      aria-label="Open detail page for robot-001"
+                    >
+                      Detail &#8594;
+                    </a>
+                  </div>
+                </article>
+                <article
+                  class="card"
                   data-robot-id="robot-007"
-                  data-requires-persona="operator admin"
-                  aria-label="Send E-Stop to robot-007"
+                  data-robot-class="UAV"
+                  aria-label="robot-007, UAV, Degraded — action needed"
                 >
-                  Send E-Stop
-                </button>
-              </div>
-            </article>
-            <article
-              class="card"
-              data-robot-id="robot-003"
-              data-robot-class="AGV"
-              aria-label="robot-003, AGV, Online"
-            >
-              <div style="display: flex; justify-content: space-between; align-items: center">
-                <strong>robot-003</strong>
-                <span class="chip chip--small" style="background: #f0f4ff">AGV</span>
-              </div>
-              <div style="margin: 4px 0">
-                <span class="status status--ok">&#9679; Online</span>
-                <span
-                  class="subtle"
-                  style="margin-left: 8px; font-size: 11px"
-                  title="Last heartbeat received 1 second ago"
-                  >Heartbeat: 1s ago</span
+                  <div style="display: flex; justify-content: space-between; align-items: center">
+                    <strong>robot-007</strong>
+                    <span class="chip chip--small" style="background: #f0f4ff">UAV</span>
+                  </div>
+                  <div style="margin: 4px 0">
+                    <span class="status status--warn"
+                      ><span class="status__icon">&#9888;</span>Degraded</span
+                    >
+                    <span
+                      class="subtle"
+                      style="margin-left: 8px; font-size: 11px"
+                      title="Last heartbeat received 45 seconds ago — response time elevated"
+                      >Heartbeat: 45s ago</span
+                    >
+                  </div>
+                  <div class="subtle" style="font-size: 12px">
+                    <!-- H1: battery critical (<20%) highlighted in danger colour -->
+                    Battery:
+                    <span
+                      style="color: #ef4444; font-weight: 600"
+                      title="Battery critically low — consider charging"
+                      >12% &#9888;</span
+                    >
+                    &nbsp;|&nbsp; Mission: none
+                  </div>
+                  <div style="margin-top: 8px; display: flex; gap: 6px">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-robot-test="robot-007"
+                      aria-label="Test connection for robot-007"
+                    >
+                      Test &#8635;
+                    </button>
+                    <a
+                      class="btn btn--small"
+                      href="#robot"
+                      aria-label="Open detail page for robot-007"
+                    >
+                      Detail &#8594;
+                    </a>
+                    <button
+                      class="btn btn--small js-estop-robot"
+                      type="button"
+                      data-robot-id="robot-007"
+                      data-requires-persona="operator admin"
+                      aria-label="Send E-Stop to robot-007"
+                    >
+                      Send E-Stop
+                    </button>
+                  </div>
+                </article>
+                <article
+                  class="card"
+                  data-robot-id="robot-003"
+                  data-robot-class="AGV"
+                  aria-label="robot-003, AGV, Online"
                 >
-              </div>
-              <div class="subtle" style="font-size: 12px">
-                Battery: 74% &nbsp;|&nbsp; Mission: <a href="#mission">pick-mission-0211</a>
-              </div>
-              <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button
-                  class="btn btn--small"
-                  type="button"
-                  data-robot-test="robot-003"
-                  aria-label="Test connection for robot-003"
-                >
-                  Test &#8635;
-                </button>
-                <a
-                  class="btn btn--small"
-                  href="#robot"
-                  aria-label="Open detail page for robot-003"
-                >
-                  Detail &#8594;
-                </a>
-              </div>
-            </article>
-            <article
-              class="card"
-              data-robot-id="robot-009"
-              data-robot-class="Manipulator"
-              aria-label="robot-009, Manipulator, E-Stopped — requires safety admin to clear"
-            >
-              <div style="display: flex; justify-content: space-between; align-items: center">
-                <strong>robot-009</strong>
-                <span class="chip chip--small" style="background: #f0f4ff">Manipulator</span>
-              </div>
-              <div style="margin: 4px 0">
-                <span class="status status--danger">&#8856; E-Stopped</span>
-                <span
-                  class="subtle"
-                  style="margin-left: 8px; font-size: 11px"
-                  title="Last heartbeat received 120 seconds ago — robot may be unreachable"
-                  >Heartbeat: 120s ago</span
-                >
-              </div>
-              <div class="subtle" style="font-size: 12px">
-                Battery: 55% &nbsp;|&nbsp; Mission: none
-              </div>
-              <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button
-                  class="btn btn--small"
-                  type="button"
-                  data-robot-test="robot-009"
-                  aria-label="Test connection for robot-009"
-                >
-                  Test &#8635;
-                </button>
-                <a
-                  class="btn btn--small"
-                  href="#robot"
-                  aria-label="Open detail page for robot-009"
-                >
-                  Detail &#8594;
-                </a>
-                <!-- H5: Clear E-Stop gated to admin only; label clarifies rationale required -->
-                <button
-                  class="btn btn--small btn--primary js-clear-estop"
-                  type="button"
+                  <div style="display: flex; justify-content: space-between; align-items: center">
+                    <strong>robot-003</strong>
+                    <span class="chip chip--small" style="background: #f0f4ff">AGV</span>
+                  </div>
+                  <div style="margin: 4px 0">
+                    <span class="status status--ok">&#9679; Online</span>
+                    <span
+                      class="subtle"
+                      style="margin-left: 8px; font-size: 11px"
+                      title="Last heartbeat received 1 second ago"
+                      >Heartbeat: 1s ago</span
+                    >
+                  </div>
+                  <div class="subtle" style="font-size: 12px">
+                    Battery: 74% &nbsp;|&nbsp; Mission: <a href="#mission">pick-mission-0211</a>
+                  </div>
+                  <div style="margin-top: 8px; display: flex; gap: 6px">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-robot-test="robot-003"
+                      aria-label="Test connection for robot-003"
+                    >
+                      Test &#8635;
+                    </button>
+                    <a
+                      class="btn btn--small"
+                      href="#robot"
+                      aria-label="Open detail page for robot-003"
+                    >
+                      Detail &#8594;
+                    </a>
+                  </div>
+                </article>
+                <article
+                  class="card"
                   data-robot-id="robot-009"
-                  data-requires-persona="admin"
-                  aria-label="Clear E-Stop for robot-009 (safety admin only — rationale required)"
+                  data-robot-class="Manipulator"
+                  aria-label="robot-009, Manipulator, E-Stopped — requires safety admin to clear"
                 >
-                  Clear E-Stop
-                </button>
+                  <div style="display: flex; justify-content: space-between; align-items: center">
+                    <strong>robot-009</strong>
+                    <span class="chip chip--small" style="background: #f0f4ff">Manipulator</span>
+                  </div>
+                  <div style="margin: 4px 0">
+                    <span class="status status--danger">&#8856; E-Stopped</span>
+                    <span
+                      class="subtle"
+                      style="margin-left: 8px; font-size: 11px"
+                      title="Last heartbeat received 120 seconds ago — robot may be unreachable"
+                      >Heartbeat: 120s ago</span
+                    >
+                  </div>
+                  <div class="subtle" style="font-size: 12px">
+                    Battery: 55% &nbsp;|&nbsp; Mission: none
+                  </div>
+                  <div style="margin-top: 8px; display: flex; gap: 6px">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-robot-test="robot-009"
+                      aria-label="Test connection for robot-009"
+                    >
+                      Test &#8635;
+                    </button>
+                    <a
+                      class="btn btn--small"
+                      href="#robot"
+                      aria-label="Open detail page for robot-009"
+                    >
+                      Detail &#8594;
+                    </a>
+                    <!-- H5: Clear E-Stop gated to admin only; label clarifies rationale required -->
+                    <button
+                      class="btn btn--small btn--primary js-clear-estop"
+                      type="button"
+                      data-robot-id="robot-009"
+                      data-requires-persona="admin"
+                      aria-label="Clear E-Stop for robot-009 (safety admin only — rationale required)"
+                    >
+                      Clear E-Stop
+                    </button>
+                  </div>
+                </article>
               </div>
-            </article>
-          </div>
-            </div><!-- /tabpane robots-grid -->
+            </div>
+            <!-- /tabpane robots-grid -->
 
             <!-- Fleet grouping view (bead-0509 Fleet aggregate) -->
-            <div class="tabpane" data-pane="robots-fleet" role="tabpanel" aria-label="Robots grouped by fleet" hidden>
+            <div
+              class="tabpane"
+              data-pane="robots-fleet"
+              role="tabpanel"
+              aria-label="Robots grouped by fleet"
+              hidden
+            >
               <div class="callout" style="margin-bottom: 12px">
-                Fleet groupings reflect the <strong>Fleet</strong> aggregate — each fleet has a shared
-                safety profile, dispatch policy, and enrolment scope.
+                Fleet groupings reflect the <strong>Fleet</strong> aggregate — each fleet has a
+                shared safety profile, dispatch policy, and enrolment scope.
               </div>
 
               <!-- Fleet: warehouse-alpha -->
@@ -8717,14 +8727,22 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
                   fleet-warehouse-alpha
                   <span class="chip chip--small" style="margin-left: 6px">12 robots</span>
-                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 10 online</span>
-                  <span class="status status--warn" style="font-size: 11px">&#9888; 2 degraded</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px"
+                    >&#9679; 10 online</span
+                  >
+                  <span class="status status--warn" style="font-size: 11px"
+                    >&#9888; 2 degraded</span
+                  >
                 </summary>
                 <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
                   <a class="btn btn--small" href="#robot">robot-001 (AMR)</a>
                   <a class="btn btn--small" href="#robot">robot-003 (AGV)</a>
-                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-004 (AMR)</span>
-                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-006 (AGV)</span>
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default"
+                    >robot-004 (AMR)</span
+                  >
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default"
+                    >robot-006 (AGV)</span
+                  >
                   <span class="subtle" style="font-size: 11px; align-self: center">+ 8 more</span>
                 </div>
                 <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
@@ -8737,16 +8755,28 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
                   fleet-yard-uav
                   <span class="chip chip--small" style="margin-left: 6px">6 robots</span>
-                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 5 online</span>
-                  <span class="status status--danger" style="font-size: 11px">&#8856; 1 E-Stopped</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px"
+                    >&#9679; 5 online</span
+                  >
+                  <span class="status status--danger" style="font-size: 11px"
+                    >&#8856; 1 E-Stopped</span
+                  >
                 </summary>
                 <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
-                  <a class="btn btn--small" href="#robot" style="color: #ef4444; border-color: #ef4444">robot-007 (UAV) &#8856;</a>
-                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-011 (UAV)</span>
+                  <a
+                    class="btn btn--small"
+                    href="#robot"
+                    style="color: #ef4444; border-color: #ef4444"
+                    >robot-007 (UAV) &#8856;</a
+                  >
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default"
+                    >robot-011 (UAV)</span
+                  >
                   <span class="subtle" style="font-size: 11px; align-self: center">+ 4 more</span>
                 </div>
                 <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
-                  Safety profile: outdoor_uav_permit required (block) &bull; Dispatch policy: HumanApprove for outdoor_flight
+                  Safety profile: outdoor_uav_permit required (block) &bull; Dispatch policy:
+                  HumanApprove for outdoor_flight
                 </div>
               </details>
 
@@ -8755,13 +8785,26 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <summary style="font-weight: 700; cursor: pointer; padding: 8px 0">
                   fleet-assembly-manipulators
                   <span class="chip chip--small" style="margin-left: 6px">4 robots</span>
-                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px">&#9679; 2 online</span>
-                  <span class="status status--danger" style="font-size: 11px">&#8856; 1 E-Stopped</span>
-                  <span class="status status--warn" style="font-size: 11px">&#9888; 1 degraded</span>
+                  <span class="status status--ok" style="font-size: 11px; margin-left: 6px"
+                    >&#9679; 2 online</span
+                  >
+                  <span class="status status--danger" style="font-size: 11px"
+                    >&#8856; 1 E-Stopped</span
+                  >
+                  <span class="status status--warn" style="font-size: 11px"
+                    >&#9888; 1 degraded</span
+                  >
                 </summary>
                 <div style="padding: 8px 0 0 12px; display: flex; gap: 8px; flex-wrap: wrap">
-                  <a class="btn btn--small" href="#robot" style="color: #ef4444; border-color: #ef4444">robot-009 (Manipulator) &#8856;</a>
-                  <span class="btn btn--small" style="opacity: 0.6; cursor: default">robot-013 (Manipulator)</span>
+                  <a
+                    class="btn btn--small"
+                    href="#robot"
+                    style="color: #ef4444; border-color: #ef4444"
+                    >robot-009 (Manipulator) &#8856;</a
+                  >
+                  <span class="btn btn--small" style="opacity: 0.6; cursor: default"
+                    >robot-013 (Manipulator)</span
+                  >
                   <span class="subtle" style="font-size: 11px; align-self: center">+ 2 more</span>
                 </div>
                 <div class="subtle" style="font-size: 11px; padding: 4px 0 0 12px">
@@ -8769,11 +8812,248 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </div>
               </details>
 
-              <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin">
+              <button
+                class="btn btn--small btn--primary"
+                type="button"
+                data-requires-persona="admin"
+              >
                 + Create Fleet
               </button>
-            </div><!-- /tabpane robots-fleet -->
-          </div><!-- /tabpanes -->
+            </div>
+            <!-- /tabpane robots-fleet -->
+          </div>
+          <!-- /tabpanes -->
+        </section>
+
+        <!-- ============================================================
+             SCREEN: ROBOT DETAIL
+             ============================================================ -->
+        <section id="screen-robot" class="screen" data-screen="robot" aria-labelledby="h-robot">
+          <div class="screen__header">
+            <div>
+              <div class="crumbs subtle"><a href="#robots">Robots</a> /</div>
+              <h1 id="h-robot" class="h1">
+                robot-001 &#8212; AMR
+                <span class="status status--ok">&#9679; Online</span>
+              </h1>
+              <div class="subtle">
+                Fleet: <strong>fleet-warehouse-alpha</strong> &nbsp;|&nbsp; SPIFFE SVID:
+                <code
+                  class="subtle"
+                  style="font-size: 11px"
+                  title="Cryptographic workload identity issued by SPIRE — used for mTLS with edge gateway"
+                  >spiffe://portarium.local/robot/robot-001</code
+                >
+                &nbsp;|&nbsp; Gateway: <a href="#gateways">gw-warehouse-a</a>
+              </div>
+            </div>
+            <div class="screen__actions">
+              <button
+                class="btn"
+                type="button"
+                data-confirm="estop-robot-001"
+                data-requires-persona="operator admin"
+                aria-label="Send E-Stop to robot-001"
+              >
+                &#9888; Send E-Stop
+              </button>
+              <button
+                class="btn btn--primary js-clear-estop"
+                type="button"
+                data-robot-id="robot-001"
+                data-requires-persona="admin"
+                style="display: none"
+                aria-label="Clear E-Stop for robot-001 (safety admin only — rationale required)"
+              >
+                Clear E-Stop
+              </button>
+              <a class="btn" href="#robots">&#8592; Back to Robots</a>
+            </div>
+          </div>
+
+          <div class="grid grid--2">
+            <!-- Robot details card -->
+            <article class="card card--hero" aria-label="Robot identity and status">
+              <div
+                class="card__title"
+                style="font-size: 13px; font-weight: 700; margin-bottom: 12px"
+              >
+                Identity &amp; Status
+              </div>
+              <dl
+                style="
+                  display: grid;
+                  grid-template-columns: 140px 1fr;
+                  gap: 6px 12px;
+                  font-size: 13px;
+                "
+              >
+                <dt class="subtle">Robot ID</dt>
+                <dd><strong>robot-001</strong></dd>
+                <dt class="subtle">Class</dt>
+                <dd>AMR (Autonomous Mobile Robot)</dd>
+                <dt class="subtle">Fleet</dt>
+                <dd><a href="#robots">fleet-warehouse-alpha</a></dd>
+                <dt class="subtle">Status</dt>
+                <dd><span class="status status--ok">&#9679; Online</span></dd>
+                <dt class="subtle">Last heartbeat</dt>
+                <dd title="Last heartbeat received 2 seconds ago">2s ago</dd>
+                <dt class="subtle">Battery</dt>
+                <dd>87%</dd>
+                <dt class="subtle">Current mission</dt>
+                <dd><a href="#mission">nav-mission-0094</a></dd>
+                <dt class="subtle">Gateway</dt>
+                <dd><a href="#gateways">gw-warehouse-a (gRPC)</a></dd>
+                <dt class="subtle">Enrolled</dt>
+                <dd>2026-01-15 09:41</dd>
+              </dl>
+
+              <!-- Telemetry sparklines (bead-0509 telemetry stub) -->
+              <div style="margin-top: 16px">
+                <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px">
+                  Telemetry (last 60s)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11px">
+                    <span class="subtle" style="width: 80px">Battery %</span>
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 120 24"
+                      aria-label="Battery sparkline — 88 to 87 percent over 60 seconds"
+                    >
+                      <polyline
+                        points="0,4 20,5 40,5 60,6 80,6 100,7 120,7"
+                        fill="none"
+                        stroke="var(--ok)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                    <span>87%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11px">
+                    <span class="subtle" style="width: 80px">Speed (m/s)</span>
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 120 24"
+                      aria-label="Speed sparkline — 0 to 0.4 m/s"
+                    >
+                      <polyline
+                        points="0,20 20,10 40,8 60,12 80,9 100,11 120,10"
+                        fill="none"
+                        stroke="var(--info)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                    <span>0.38 m/s</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11px">
+                    <span class="subtle" style="width: 80px">CPU load</span>
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 120 24"
+                      aria-label="CPU load sparkline — stable around 40 percent"
+                    >
+                      <polyline
+                        points="0,14 20,13 40,15 60,14 80,13 100,14 120,14"
+                        fill="none"
+                        stroke="var(--muted)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                    <span>42%</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Capability matrix -->
+            <article class="card card--hero" aria-label="Robot capability matrix">
+              <div
+                class="card__title"
+                style="font-size: 13px; font-weight: 700; margin-bottom: 12px"
+              >
+                Capability Matrix
+              </div>
+              <div class="table-wrap">
+                <table
+                  class="table"
+                  style="font-size: 12px"
+                  aria-label="Capability matrix for robot-001"
+                >
+                  <thead>
+                    <tr>
+                      <th>Capability</th>
+                      <th>Supported</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>navigate_to</td>
+                      <td><span class="status status--ok">&#10003;</span></td>
+                      <td>Nav2 stack via ROS 2</td>
+                    </tr>
+                    <tr>
+                      <td>pick</td>
+                      <td><span class="status status--warn">&#9888;</span></td>
+                      <td>Limited to &lt;5 kg payload</td>
+                    </tr>
+                    <tr>
+                      <td>place</td>
+                      <td><span class="status status--ok">&#10003;</span></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td>dock</td>
+                      <td><span class="status status--ok">&#10003;</span></td>
+                      <td>Charging station B1</td>
+                    </tr>
+                    <tr>
+                      <td>outdoor_flight</td>
+                      <td><span class="status status--danger">&#10007;</span></td>
+                      <td>Not applicable for AMR</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Used-by missions -->
+              <div style="margin-top: 16px">
+                <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px">
+                  Recent Missions
+                </div>
+                <div class="list" style="font-size: 12px">
+                  <a class="row" href="#mission" style="text-decoration: none">
+                    <div class="row__main">
+                      <div class="row__title">mis-0094 &#8212; Navigate to bay 3</div>
+                      <div class="row__subtle">
+                        <span class="status status--info" style="font-size: 10px">Executing</span>
+                        dispatched 14:02
+                      </div>
+                    </div>
+                  </a>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">mis-0087 &#8212; Charge station</div>
+                      <div class="row__subtle">
+                        <span class="status status--ok" style="font-size: 10px">Completed</span>
+                        13:41
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">mis-0078 &#8212; Pick SKU-3201</div>
+                      <div class="row__subtle">
+                        <span class="status status--ok" style="font-size: 10px">Completed</span>
+                        11:20
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
         </section>
 
         <!-- ============================================================
@@ -9306,7 +9586,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">Safety Cases</h2>
           <div class="callout" style="margin-bottom: 8px; font-size: 12px">
             A <strong>Safety Case</strong> is a structured argument that the system is safe for a
-            specific operational context. Each case links hazards, mitigations, and evidence artefacts.
+            specific operational context. Each case links hazards, mitigations, and evidence
+            artefacts.
           </div>
           <div class="table-wrap" style="margin-bottom: 24px">
             <table class="table" aria-label="Safety cases">
@@ -9328,8 +9609,14 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <td>3 hazards identified, 3 mitigated</td>
                   <td><a href="#evidence">4 artefacts</a></td>
                   <td>
-                    <button class="btn btn--small" type="button" data-requires-persona="admin"
-                      aria-label="View Safety Case SC-001">View</button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="View Safety Case SC-001"
+                    >
+                      View
+                    </button>
                   </td>
                 </tr>
                 <tr>
@@ -9339,8 +9626,14 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <td>5 hazards identified, 3 mitigated, 2 open</td>
                   <td><a href="#evidence">2 artefacts</a></td>
                   <td>
-                    <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin"
-                      aria-label="Review Safety Case SC-002">Review</button>
+                    <button
+                      class="btn btn--small btn--primary"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Review Safety Case SC-002"
+                    >
+                      Review
+                    </button>
                   </td>
                 </tr>
                 <tr>
@@ -9350,14 +9643,24 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <td>2 hazards identified, 0 mitigated</td>
                   <td>None</td>
                   <td>
-                    <button class="btn btn--small" type="button" data-requires-persona="admin"
-                      aria-label="Edit Safety Case SC-003">Edit</button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit Safety Case SC-003"
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               </tbody>
             </table>
             <div style="margin-top: 8px">
-              <button class="btn btn--small btn--primary" type="button" data-requires-persona="admin">
+              <button
+                class="btn btn--small btn--primary"
+                type="button"
+                data-requires-persona="admin"
+              >
                 + New Safety Case
               </button>
             </div>
@@ -9395,6 +9698,231 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: GATEWAYS (edge gateways — bead-0435, bead-0515)
+             ============================================================ -->
+        <section
+          id="screen-gateways"
+          class="screen"
+          data-screen="gateways"
+          aria-labelledby="h-gateways"
+        >
+          <div class="screen__header">
+            <div>
+              <div class="crumbs subtle"><a href="#robots">Robots</a> /</div>
+              <h1 id="h-gateways" class="h1">Edge Gateways</h1>
+              <div class="subtle">
+                Protocol bridges between Portarium and robot fleets &#8212; gRPC, ROS 2, OPC UA
+              </div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button" data-requires-persona="admin">
+                + Register gateway
+              </button>
+            </div>
+          </div>
+
+          <!-- Gateway health summary -->
+          <div
+            class="filters"
+            role="group"
+            aria-label="Gateway summary"
+            style="gap: 8px; margin-bottom: 16px"
+          >
+            <span class="chip chip--active" aria-label="3 gateways total">3 Total</span>
+            <span class="chip" style="border-color: #22c55e" aria-label="2 online">2 Online</span>
+            <span class="chip" style="border-color: #f59e0b" aria-label="1 degraded"
+              >1 Degraded</span
+            >
+          </div>
+
+          <!-- Gateway table -->
+          <div class="table-wrap" style="margin-bottom: 24px">
+            <table class="table" aria-label="Edge gateways">
+              <thead>
+                <tr>
+                  <th scope="col">Gateway ID</th>
+                  <th scope="col">Protocol</th>
+                  <th scope="col">Robots</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Latency</th>
+                  <th scope="col">SPIFFE SVID</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>gw-warehouse-a</strong></td>
+                  <td>
+                    <span class="chip chip--small" title="gRPC edge gateway — OpenClaw protocol"
+                      >gRPC</span
+                    >
+                  </td>
+                  <td>12</td>
+                  <td><span class="status status--ok">&#9679; Online</span></td>
+                  <td>
+                    <span title="Round-trip latency to gateway">8 ms</span>
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 60 16"
+                      aria-label="Latency sparkline — stable 7–9 ms"
+                      style="vertical-align: middle; margin-left: 4px"
+                    >
+                      <polyline
+                        points="0,8 12,7 24,9 36,8 48,8 60,8"
+                        fill="none"
+                        stroke="var(--ok)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                  </td>
+                  <td>
+                    <code
+                      class="subtle"
+                      style="font-size: 10px"
+                      title="Cryptographic workload identity issued by SPIRE"
+                      >spiffe://portarium.local/gateway/gw-warehouse-a</code
+                    >
+                  </td>
+                  <td style="display: flex; gap: 4px; flex-wrap: wrap">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      aria-label="Test connection to gw-warehouse-a"
+                    >
+                      Test &#8635;
+                    </button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit gw-warehouse-a"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>gw-yard-uav</strong></td>
+                  <td>
+                    <span
+                      class="chip chip--small"
+                      title="ROS 2 Action bridge — Nav2 and drone actions"
+                      >ROS 2</span
+                    >
+                  </td>
+                  <td>6</td>
+                  <td><span class="status status--warn">&#9888; Degraded</span></td>
+                  <td>
+                    <span title="Elevated latency — check network path" style="color: #f59e0b"
+                      >142 ms &#9888;</span
+                    >
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 60 16"
+                      aria-label="Latency sparkline — spiking to 142 ms"
+                      style="vertical-align: middle; margin-left: 4px"
+                    >
+                      <polyline
+                        points="0,12 12,10 24,6 36,2 48,3 60,2"
+                        fill="none"
+                        stroke="var(--warn)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                  </td>
+                  <td>
+                    <code
+                      class="subtle"
+                      style="font-size: 10px"
+                      title="Cryptographic workload identity issued by SPIRE"
+                      >spiffe://portarium.local/gateway/gw-yard-uav</code
+                    >
+                  </td>
+                  <td style="display: flex; gap: 4px; flex-wrap: wrap">
+                    <button
+                      class="btn btn--small btn--primary"
+                      type="button"
+                      aria-label="Test connection to gw-yard-uav"
+                    >
+                      Test &#8635;
+                    </button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit gw-yard-uav"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>gw-assembly-plc</strong></td>
+                  <td>
+                    <span
+                      class="chip chip--small"
+                      title="OPC UA connector — industrial PLC actuation via node-opcua"
+                      >OPC UA</span
+                    >
+                  </td>
+                  <td>4</td>
+                  <td><span class="status status--ok">&#9679; Online</span></td>
+                  <td>
+                    <span title="Round-trip latency to gateway">22 ms</span>
+                    <svg
+                      class="sparkline"
+                      viewBox="0 0 60 16"
+                      aria-label="Latency sparkline — stable 20–24 ms"
+                      style="vertical-align: middle; margin-left: 4px"
+                    >
+                      <polyline
+                        points="0,9 12,8 24,10 36,9 48,9 60,8"
+                        fill="none"
+                        stroke="var(--ok)"
+                        stroke-width="1.5"
+                      />
+                    </svg>
+                  </td>
+                  <td>
+                    <code
+                      class="subtle"
+                      style="font-size: 10px"
+                      title="Cryptographic workload identity issued by SPIRE"
+                      >spiffe://portarium.local/gateway/gw-assembly-plc</code
+                    >
+                  </td>
+                  <td style="display: flex; gap: 4px; flex-wrap: wrap">
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      aria-label="Test connection to gw-assembly-plc"
+                    >
+                      Test &#8635;
+                    </button>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit gw-assembly-plc"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Protocol notes -->
+          <div class="callout" style="font-size: 12px">
+            <strong>Protocol guide:</strong> gRPC gateways use the OpenClaw MachineInvokerPort
+            contract. ROS 2 bridges expose Nav2 action servers over rosbridge_suite or DDS. OPC UA
+            connectors use node-opcua with certificate-based auth. All gateways require a SPIFFE
+            SVID issued by the cluster SPIRE agent.
           </div>
         </section>
       </main>
