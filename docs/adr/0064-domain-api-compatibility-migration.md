@@ -15,7 +15,7 @@ Two overlapping representations now exist in `CapabilityClaimV1`:
 ```typescript
 type CapabilityClaimV1 = {
   capability?: PortCapability; // canonical — validated against PORT_FAMILY_CAPABILITIES
-  operation: string;           // legacy — free-form entity:verb string
+  operation: string; // legacy — free-form entity:verb string
   requiresAuth: boolean;
 };
 ```
@@ -55,7 +55,7 @@ copies `capability` into `operation` automatically).
 ```typescript
 // Parser always writes operation — old consumers can still read it
 return {
-  capability,          // new canonical field
+  capability, // new canonical field
   operation: capability, // mirrored for backward compat
   requiresAuth,
 };
@@ -63,11 +63,11 @@ return {
 
 ### 3. Deprecation timeline for `operation` (legacy path)
 
-| Phase | Trigger | Action |
-|-------|---------|--------|
-| **Current (migration)** | `capability` field introduced | Both fields accepted; canonical preferred |
-| **Enforcement** | All active adapter registrations migrated | Warn on `operation`-only claims at parse time |
-| **Removal** | Domain major version bump (`schemaVersion: 2`) | `operation` field removed; `capability` required |
+| Phase                   | Trigger                                        | Action                                           |
+| ----------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| **Current (migration)** | `capability` field introduced                  | Both fields accepted; canonical preferred        |
+| **Enforcement**         | All active adapter registrations migrated      | Warn on `operation`-only claims at parse time    |
+| **Removal**             | Domain major version bump (`schemaVersion: 2`) | `operation` field removed; `capability` required |
 
 Schema version gates the removal: `schemaVersion: 2` parsers may reject `operation`-only
 claims. Until then, `schemaVersion: 1` parsers must accept both forms.
@@ -98,12 +98,14 @@ a precise signal even when no adapters are registered.
 ## Consequences
 
 **Positive:**
+
 - Zero breaking changes for existing adapter registrations or workflow definitions.
 - Clear, mechanically enforced migration path from `operation` to `capability`.
 - `schemaVersion` field on all domain types provides a future removal gate.
 - Rollback to pre-`capability` deployments is safe without data migration.
 
 **Negative:**
+
 - Both fields must be maintained until schema v2 — slight parser complexity.
 - Consumers reading `operation` miss the family-level validation that `capability` provides.
 - Removal of `operation` requires a coordinated schema version bump across all adapters.
