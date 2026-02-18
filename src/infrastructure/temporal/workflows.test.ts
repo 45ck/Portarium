@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
+
 const hoisted = vi.hoisted(() => ({
   logInfo: vi.fn<(...args: unknown[]) => unknown>(),
   startRunActivity: vi.fn<(input: unknown) => Promise<void>>(async () => undefined),
@@ -31,6 +33,42 @@ vi.mock('@temporalio/workflow', () => ({
 
 import { portariumRun } from './workflows.js';
 
+const STUB_WORKFLOW_AUTO = parseWorkflowV1({
+  schemaVersion: 1,
+  workflowId: 'wf-1',
+  workspaceId: 'tenant-1',
+  name: 'stub',
+  version: 1,
+  active: true,
+  executionTier: 'Auto',
+  actions: [
+    {
+      actionId: 'act-1',
+      order: 1,
+      portFamily: 'ItsmItOps',
+      operation: 'workflow:noop',
+    },
+  ],
+});
+
+const STUB_WORKFLOW_HUMAN = parseWorkflowV1({
+  schemaVersion: 1,
+  workflowId: 'wf-2',
+  workspaceId: 'tenant-1',
+  name: 'stub',
+  version: 1,
+  active: true,
+  executionTier: 'HumanApprove',
+  actions: [
+    {
+      actionId: 'act-1',
+      order: 1,
+      portFamily: 'ItsmItOps',
+      operation: 'workflow:noop',
+    },
+  ],
+});
+
 describe('portariumRun workflow', () => {
   it('runs start/complete activities for Auto tier', async () => {
     hoisted.startRunActivity.mockClear();
@@ -42,6 +80,7 @@ describe('portariumRun workflow', () => {
         runId: 'run-1',
         tenantId: 'tenant-1',
         workflowId: 'wf-1',
+        workflow: STUB_WORKFLOW_AUTO,
         initiatedByUserId: 'user-1',
         correlationId: 'corr-1',
         executionTier: 'Auto',
@@ -63,6 +102,7 @@ describe('portariumRun workflow', () => {
         runId: 'run-2',
         tenantId: 'tenant-1',
         workflowId: 'wf-2',
+        workflow: STUB_WORKFLOW_HUMAN,
         initiatedByUserId: 'user-1',
         correlationId: 'corr-2',
         executionTier: 'HumanApprove',
@@ -84,6 +124,7 @@ describe('portariumRun workflow', () => {
         runId: 'run-3',
         tenantId: 'tenant-1',
         workflowId: 'wf-3',
+        workflow: STUB_WORKFLOW_HUMAN,
         initiatedByUserId: 'user-1',
         correlationId: 'corr-3',
         executionTier: 'HumanApprove',

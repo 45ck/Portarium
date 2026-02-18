@@ -1,11 +1,13 @@
 import { condition, defineSignal, log, proxyActivities, setHandler } from '@temporalio/workflow';
 
 import type * as activities from './activities.js';
+import type { WorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 
 export type PortariumRunWorkflowInput = Readonly<{
   runId: string;
   tenantId: string;
   workflowId: string;
+  workflow: WorkflowV1;
   initiatedByUserId: string;
   correlationId: string;
   executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
@@ -48,6 +50,7 @@ export async function portariumRun(input: PortariumRunWorkflowInput): Promise<vo
     runId: input.runId,
     tenantId: input.tenantId,
     workflowId: input.workflowId,
+    workflow: input.workflow,
     initiatedByUserId: input.initiatedByUserId,
     correlationId: input.correlationId,
     executionTier: input.executionTier,
@@ -76,6 +79,8 @@ export async function portariumRun(input: PortariumRunWorkflowInput): Promise<vo
     runId: input.runId,
     tenantId: input.tenantId,
     workflowId: input.workflowId,
+    workflow: input.workflow,
+    initiatedByUserId: input.initiatedByUserId,
     correlationId: input.correlationId,
   });
 }

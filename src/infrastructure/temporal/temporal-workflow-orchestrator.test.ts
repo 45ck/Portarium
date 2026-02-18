@@ -13,6 +13,25 @@ import {
   UserId,
   WorkflowId,
 } from '../../domain/primitives/index.js';
+import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
+
+const WORKFLOW_DEF = parseWorkflowV1({
+  schemaVersion: 1,
+  workflowId: 'wf-1',
+  workspaceId: 'ws-1',
+  name: 'stub',
+  version: 1,
+  active: true,
+  executionTier: 'Auto',
+  actions: [
+    {
+      actionId: 'act-1',
+      order: 1,
+      portFamily: 'ItsmItOps',
+      operation: 'workflow:noop',
+    },
+  ],
+});
 
 // ---------------------------------------------------------------------------
 // Stubs
@@ -68,6 +87,7 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
         runId: RunId('run-1'),
         tenantId: TenantId('tenant-1'),
         workflowId: WorkflowId('wf-1'),
+        workflow: WORKFLOW_DEF,
         initiatedByUserId: UserId('user-1'),
         correlationId: CorrelationId('corr-1'),
         executionTier: 'Auto',
@@ -89,6 +109,7 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
       runId: RunId('run-42'),
       tenantId: TenantId('tenant-acme'),
       workflowId: WorkflowId('wf-onboard'),
+      workflow: WORKFLOW_DEF,
       initiatedByUserId: UserId('user-7'),
       correlationId: CorrelationId('corr-xyz'),
       executionTier: 'HumanApprove',
@@ -105,6 +126,7 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
             runId: 'run-42',
             tenantId: 'tenant-acme',
             workflowId: 'wf-onboard',
+            workflow: WORKFLOW_DEF,
             initiatedByUserId: 'user-7',
             correlationId: 'corr-xyz',
             executionTier: 'HumanApprove',
@@ -134,6 +156,7 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
         runId: RunId('run-1'),
         tenantId: TenantId('tenant-1'),
         workflowId: WorkflowId('wf-1'),
+        workflow: WORKFLOW_DEF,
         initiatedByUserId: UserId('user-1'),
         correlationId: CorrelationId('corr-1'),
         executionTier: 'Auto',
@@ -159,6 +182,7 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
         runId: RunId('run-1'),
         tenantId: TenantId('tenant-1'),
         workflowId: WorkflowId('wf-1'),
+        workflow: WORKFLOW_DEF,
         initiatedByUserId: UserId('user-1'),
         correlationId: CorrelationId('corr-1'),
         executionTier: 'Auto',
@@ -203,6 +227,7 @@ describe('TemporalWorkflowOrchestrator.close', () => {
         runId: RunId('run-1'),
         tenantId: TenantId('t-1'),
         workflowId: WorkflowId('wf-1'),
+        workflow: WORKFLOW_DEF,
         initiatedByUserId: UserId('u-1'),
         correlationId: CorrelationId('c-1'),
         executionTier: 'Auto',

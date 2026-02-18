@@ -238,6 +238,7 @@ async function executeTransaction(
         runId: plan.run.runId,
         tenantId: ctx.tenantId,
         workflowId: plan.ids.workflowId,
+        workflow: plan.workflow,
         initiatedByUserId: ctx.principalId,
         correlationId: ctx.correlationId,
         executionTier: plan.workflow.executionTier,

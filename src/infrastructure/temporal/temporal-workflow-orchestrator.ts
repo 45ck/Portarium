@@ -90,6 +90,7 @@ export class TemporalWorkflowOrchestrator implements WorkflowOrchestrator {
             runId: input.runId.toString(),
             tenantId: input.tenantId.toString(),
             workflowId: input.workflowId.toString(),
+            workflow: input.workflow,
             initiatedByUserId: input.initiatedByUserId.toString(),
             correlationId: input.correlationId.toString(),
             executionTier: input.executionTier,
