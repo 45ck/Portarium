@@ -1222,6 +1222,16 @@ ABToggle.register(
 let triageIndex = 0;
 const triageResults = { approved: 0, denied: 0, changes: 0, skipped: 0 };
 
+/* Ordered list of triage card element IDs — must match the approvals table order */
+var TRIAGE_CARD_IDS = ['triageCard', 'triageCardZendesk', 'triageCardRobot', 'triageCardAgent'];
+/* Label shown in the next-preview strip after each card is swiped */
+var TRIAGE_NEXT_LABELS = [
+  'Approve Plan: Update Ticket priority in Zendesk',
+  'Approve Mission: outdoor_flight \u2014 robot-007',
+  'Approve Agent Action: Document Summarizer',
+  null,
+];
+
 function triageAction(action) {
   var requiresRationale = action === 'deny' || action === 'changes';
   var rationaleEl = document.getElementById('triageRationale');
@@ -1239,7 +1249,8 @@ function triageAction(action) {
     return;
   }
 
-  var card = document.getElementById('triageCard');
+  if (triageIndex >= TRIAGE_CARD_IDS.length) return;
+  var card = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
   if (!card) return;
   var exitClass = {
     approve: 'triage-card--exit-right',
@@ -1253,6 +1264,7 @@ function triageAction(action) {
   ];
   triageResults[resultKey]++;
   setTimeout(function () {
+    card.hidden = true;
     card.classList.remove(exitClass);
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
@@ -1264,6 +1276,14 @@ function triageAction(action) {
       var completeEl = document.getElementById('triageComplete');
       if (triageEl) triageEl.hidden = true;
       if (completeEl) completeEl.hidden = false;
+    } else {
+      var nextCard = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
+      if (nextCard) nextCard.hidden = false;
+      var nextLabel = TRIAGE_NEXT_LABELS[triageIndex];
+      var nextPreviewWrap = document.querySelector('.triage__next-preview');
+      var nextTitle = document.querySelector('.triage__next-title');
+      if (nextTitle) nextTitle.textContent = nextLabel ? 'Next: ' + nextLabel : '';
+      if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
     }
   }, 350);
 }

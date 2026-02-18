@@ -2158,7 +2158,188 @@
                   Next: Approve Plan: Update Ticket priority in Zendesk
                 </div>
               </div>
-              <!-- AG-443: Robot mission approval (card 2) -->
+              <!-- Zendesk ticket priority approval (card 2) -->
+              <article class="triage-card" id="triageCardZendesk" hidden>
+                <div class="triage-card__front">
+                  <div class="triage-card__header">
+                    <div class="triage-card__id">AG-445</div>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Requires explicit human approval before execution"
+                      >Human-approve</span
+                    >
+                  </div>
+                  <h2 class="triage-card__title">
+                    Approve Plan: Update Ticket priority in Zendesk
+                  </h2>
+                  <div class="triage-card__meta">
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Work Item</span>
+                      <span>WI-1042 Customer escalation triage</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Run</span>
+                      <span>R-8892 (waiting for approval)</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requester</span>
+                      <span>Unassigned</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requested</span>
+                      <span>1 hour ago</span>
+                    </div>
+                  </div>
+                  <div class="triage-card__effects-summary">
+                    <div class="triage-card__label">Planned Effects (1)</div>
+                    <div class="triage-card__effect-row">
+                      <span class="pill">Update</span>
+                      <span>Zendesk | Ticket | ZD-84521 priority &#8594; High</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Retrying this action won't create duplicates"
+                        >Safe to retry</span
+                      >
+                    </div>
+                  </div>
+                  <div class="ai-summary" data-ai-gate="AG-445">
+                    <div class="ai-summary__header">
+                      <div class="ai-summary__badge">
+                        <span class="ai-summary__icon">&#9670;</span>
+                        <span class="ai-summary__label">AI Summary</span>
+                      </div>
+                      <div class="ai-summary__header-right">
+                        <span
+                          class="ai-summary__confidence"
+                          data-confidence="high"
+                          title="Confidence: 88%"
+                        >
+                          <span class="ai-summary__confidence-dot"></span>
+                          88%
+                        </span>
+                        <button
+                          class="ai-summary__toggle js-ai-summary-toggle"
+                          type="button"
+                          aria-expanded="false"
+                          aria-controls="aiDetailAG445"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                    <div class="ai-summary__quick">
+                      <p class="ai-summary__action">
+                        Updates ticket ZD-84521 priority from Normal to High in Zendesk. No
+                        financial data touched; fully reversible.
+                      </p>
+                      <div class="ai-summary__tags">
+                        <span class="ai-summary__risk ai-summary__risk--low">Low risk</span>
+                        <span class="ai-summary__compliance ai-summary__compliance--pass"
+                          >Compliance: pass</span
+                        >
+                        <span class="ai-summary__reversibility ai-summary__reversibility--full"
+                          >Fully reversible</span
+                        >
+                      </div>
+                    </div>
+                    <div class="ai-summary__detail" id="aiDetailAG445" hidden>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Risk Assessment</span>
+                          <span class="ai-summary__risk ai-summary__risk--low">Low</span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          Single field update (priority enum). No financial impact. Ticket is
+                          customer-visible but priority change is reversible at any time.
+                        </p>
+                      </div>
+                      <div class="ai-summary__section">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">Affected Systems</span>
+                        </div>
+                        <div class="ai-summary__systems">
+                          <div class="ai-summary__system">
+                            <span class="pill">Update</span>
+                            <span>Zendesk | Ticket | ZD-84521</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="ai-summary__section ai-summary__section--confidence">
+                        <div class="ai-summary__section-header">
+                          <span class="ai-summary__section-title">AI Confidence</span>
+                          <span class="ai-summary__confidence" data-confidence="high">
+                            <span class="ai-summary__confidence-dot"></span>
+                            88%
+                          </span>
+                        </div>
+                        <p class="ai-summary__section-body">
+                          High confidence. Routine priority escalation with clear SLA context and
+                          healthy Zendesk adapter connection.
+                        </p>
+                      </div>
+                      <div class="ai-summary__footer">Generated 4 minutes ago</div>
+                    </div>
+                  </div>
+                  <div class="callout callout--policy">
+                    Tier: <strong>Human-approve</strong> | Rule: ITSM writes require approval |
+                    Scopes: zendesk.tickets.write
+                  </div>
+                  <button
+                    class="btn btn--small triage-card__expand-btn js-triage-expand"
+                    type="button"
+                  >
+                    Show full details (Space)
+                  </button>
+                </div>
+                <div class="triage-card__back" hidden>
+                  <button
+                    class="btn btn--small triage-card__collapse-btn js-triage-collapse"
+                    type="button"
+                  >
+                    Collapse details (Space)
+                  </button>
+                  <div class="effects">
+                    <div class="effects__section">
+                      <div class="effects__title">Planned Effects</div>
+                      <div class="effects__hint subtle">This workflow will...</div>
+                      <div class="effects__list">
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill">Update</span>
+                            <span class="effect__target">Zendesk | Ticket | ZD-84521</span>
+                            <span
+                              class="idem-badge idem-badge--safe"
+                              data-tooltip="Retrying this action won't create duplicates"
+                              >Safe to retry</span
+                            >
+                          </div>
+                          <div class="effect__subtle">Set priority field from Normal to High.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Linked External Records</div>
+                    <div class="chips" style="margin-top: 6px">
+                      <span class="chip"
+                        ><span class="port-icon">IT</span> Zendesk | Ticket | ZD-84521</span
+                      >
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Recent Evidence (1 entry)</div>
+                    <div class="list" style="margin-top: 6px">
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Approval Gate opened</div>
+                          <div class="row__subtle">Category: Approval | Actor: System</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <!-- AG-443: Robot mission approval (card 3, was card 2) -->
               <article class="triage-card" id="triageCardRobot" hidden>
                 <div class="triage-card__front">
                   <div class="triage-card__header">
