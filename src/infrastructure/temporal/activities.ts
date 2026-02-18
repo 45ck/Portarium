@@ -147,12 +147,12 @@ export function completeRunActivity(input: CompleteRunActivityInput): Promise<vo
 // In-memory state (temporary scaffolding until persistence beads land)
 // ---------------------------------------------------------------------------
 
-type RunExecutionState = {
+interface RunExecutionState {
   status: RunStatus;
   evidence: EvidenceEntryV1[];
   plan?: PlanV1;
   diff?: EffectDiffResultV1;
-};
+}
 
 const hasher = new NodeCryptoEvidenceHasher();
 const runs = new Map<string, RunExecutionState>();
