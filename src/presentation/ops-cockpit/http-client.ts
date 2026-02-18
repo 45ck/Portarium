@@ -259,11 +259,11 @@ export class ControlPlaneClient {
     return query;
   }
 
-  private buildCursorQuery(request: CursorPaginationRequest): URLSearchParams {
+  protected buildCursorQuery(request: CursorPaginationRequest): URLSearchParams {
     return buildCursorQuery(request).query;
   }
 
-  private async request<T>(
+  protected async request<T>(
     path: string,
     method: HttpMethod,
     options: ApiRequestOptions<T> = {},

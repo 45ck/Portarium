@@ -224,3 +224,77 @@ export interface StartRunCommand {
   workflowId: string;
   parameters?: Record<string, unknown>;
 }
+
+// ---------------------------------------------------------------------------
+// Machines (bead-0438)
+// ---------------------------------------------------------------------------
+
+export type AgentCapability =
+  | 'read:external'
+  | 'write:external'
+  | 'classify'
+  | 'generate'
+  | 'analyze'
+  | 'execute-code'
+  | 'notify';
+
+export type ConnectionTestStatus = 'ok' | 'slow' | 'unreachable';
+
+export interface ConnectionTestResult {
+  status: ConnectionTestStatus;
+  latencyMs: number;
+  errorMessage?: string;
+}
+
+export type MachineStatus = 'Online' | 'Degraded' | 'Offline';
+
+export interface MachineV1 {
+  schemaVersion: 1;
+  machineId: string;
+  workspaceId: string;
+  hostname: string;
+  osImage?: string;
+  registeredAtIso: string;
+  lastHeartbeatAtIso?: string;
+  status: MachineStatus;
+  activeRunCount?: number;
+  allowedCapabilities?: AgentCapability[];
+}
+
+export interface RegisterMachineRequest {
+  hostname: string;
+  osImage?: string;
+  allowedCapabilities?: AgentCapability[];
+}
+
+export type ListMachinesRequest = CursorPaginationRequest;
+
+// ---------------------------------------------------------------------------
+// Agents (bead-0439)
+// ---------------------------------------------------------------------------
+
+export interface AgentV1 {
+  schemaVersion: 1;
+  agentId: string;
+  workspaceId: string;
+  name: string;
+  modelId?: string;
+  endpoint: string;
+  allowedCapabilities: AgentCapability[];
+  usedByWorkflowIds?: string[];
+}
+
+export interface RegisterAgentRequest {
+  name: string;
+  modelId?: string;
+  endpoint: string;
+  allowedCapabilities?: AgentCapability[];
+}
+
+export interface UpdateAgentRequest {
+  name?: string;
+  endpoint?: string;
+  allowedCapabilities?: AgentCapability[];
+}
+
+export type ListAgentsRequest = CursorPaginationRequest;
