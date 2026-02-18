@@ -705,3 +705,27 @@ Grisu
 # US spelling variants
 Fulfills
 fulfills
+
+# Robotics / IoT domain terms (domain-atlas taxonomy)
+EASA
+Modbus
+baselining
+rosbridge
+Rosbridge
+zenoh
+Zenoh
+Mosquitto
+EMQX
+SPIFFE
+Flowstate
+opcua
+Beckhoff
+Dockerized
+amcl
+Signoffs
+Webots
+Jalisco
+Clearpath
+Prosima
+eProsima
+SVID
