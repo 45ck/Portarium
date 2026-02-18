@@ -114,9 +114,15 @@
         <nav class="nav" aria-label="Explore navigation">
           <a class="nav__item" href="#objects"><span class="nav__icon">&#9633;</span> Objects</a>
           <a class="nav__item" href="#events"><span class="nav__icon">&#8644;</span> Events</a>
-          <a class="nav__item" href="#observability"><span class="nav__icon">&#9875;</span> Observability</a>
-          <a class="nav__item" href="#governance"><span class="nav__icon">&#9878;</span> Governance</a>
-          <a class="nav__item" href="#components"><span class="nav__icon">&#9636;</span> Components</a>
+          <a class="nav__item" href="#observability"
+            ><span class="nav__icon">&#9875;</span> Observability</a
+          >
+          <a class="nav__item" href="#governance"
+            ><span class="nav__icon">&#9878;</span> Governance</a
+          >
+          <a class="nav__item" href="#components"
+            ><span class="nav__icon">&#9636;</span> Components</a
+          >
           <a class="nav__item" href="#loading"><span class="nav__icon">&#9680;</span> Loading</a>
         </nav>
 
@@ -2816,8 +2822,18 @@
               </div>
 
               <!-- RBAC Role Matrix [bead-0465] -->
-              <div style="margin-top:20px">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">RBAC Role Matrix</div>
+              <div style="margin-top: 20px">
+                <div
+                  style="
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #888;
+                    margin-bottom: 8px;
+                  "
+                >
+                  RBAC Role Matrix
+                </div>
                 <div class="table-wrap">
                   <table class="table" aria-label="RBAC role permissions matrix">
                     <thead>
@@ -2843,49 +2859,49 @@
                         <th scope="row">Start workflow runs</th>
                         <td>&#10003;</td>
                         <td>&#10003;</td>
-                        <td style="color:#aaa" aria-label="Approver: no">&mdash;</td>
-                        <td style="color:#aaa" aria-label="Auditor: no">&mdash;</td>
-                        <td style="color:#aaa" aria-label="Viewer: no">&mdash;</td>
+                        <td style="color: #aaa" aria-label="Approver: no">&mdash;</td>
+                        <td style="color: #aaa" aria-label="Auditor: no">&mdash;</td>
+                        <td style="color: #aaa" aria-label="Viewer: no">&mdash;</td>
                       </tr>
                       <tr>
                         <th scope="row">Approve / deny gates</th>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                       </tr>
                       <tr>
                         <th scope="row">Edit workflows</th>
                         <td>&#10003;</td>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                       </tr>
                       <tr>
                         <th scope="row">Configure adapters</th>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                       </tr>
                       <tr>
                         <th scope="row">Export evidence bundle</th>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                       </tr>
                       <tr>
                         <th scope="row">Manage users &amp; roles</th>
                         <td>&#10003;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
-                        <td style="color:#aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
+                        <td style="color: #aaa">&mdash;</td>
                       </tr>
                     </tbody>
                   </table>
@@ -2893,46 +2909,85 @@
               </div>
 
               <!-- OIDC Indicators [bead-0465] -->
-              <div style="margin-top:16px">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Identity Providers</div>
+              <div style="margin-top: 16px">
+                <div
+                  style="
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #888;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Identity Providers
+                </div>
                 <div class="grid grid--2">
                   <article class="card" aria-label="Okta OIDC provider, active">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                      <div class="card__title" style="margin:0">Okta OIDC</div>
-                      <span class="status status--ok" aria-label="Active"><span class="status__icon">●</span>Active</span>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <div class="card__title" style="margin: 0">Okta OIDC</div>
+                      <span class="status status--ok" aria-label="Active"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
-                    <div class="subtle" style="font-size:11px;margin-bottom:6px">
+                    <div class="subtle" style="font-size: 11px; margin-bottom: 6px">
                       Domain: acme.okta.com &bull; 3 users via OIDC
                     </div>
                     <div class="chips">
-                      <span class="chip chip--small">admin@acme.com <span class="status status--ok" style="font-size:10px;padding:1px 4px">Okta</span></span>
-                      <span class="chip chip--small">operator@acme.com <span class="status status--ok" style="font-size:10px;padding:1px 4px">Okta</span></span>
+                      <span class="chip chip--small"
+                        >admin@acme.com
+                        <span class="status status--ok" style="font-size: 10px; padding: 1px 4px"
+                          >Okta</span
+                        ></span
+                      >
+                      <span class="chip chip--small"
+                        >operator@acme.com
+                        <span class="status status--ok" style="font-size: 10px; padding: 1px 4px"
+                          >Okta</span
+                        ></span
+                      >
                     </div>
-                    <div style="margin-top:8px;display:flex;gap:6px">
+                    <div style="margin-top: 8px; display: flex; gap: 6px">
                       <button class="btn btn--small" type="button">Configure</button>
                       <button class="btn btn--small" type="button">Test OIDC &#8635;</button>
                     </div>
                   </article>
                   <article class="card card--subtle" aria-label="Local auth, fallback only">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                      <div class="card__title" style="margin:0">Local Auth</div>
-                      <span class="status status--warn" aria-label="Fallback only"><span class="status__icon">◐</span>Fallback only</span>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <div class="card__title" style="margin: 0">Local Auth</div>
+                      <span class="status status--warn" aria-label="Fallback only"
+                        ><span class="status__icon">◐</span>Fallback only</span
+                      >
                     </div>
-                    <div class="subtle" style="font-size:11px;margin-bottom:6px">
+                    <div class="subtle" style="font-size: 11px; margin-bottom: 6px">
                       1 local user (auditor@acme.com) &mdash; recommend migrating to OIDC
                     </div>
-                    <div style="display:flex;gap:6px">
+                    <div style="display: flex; gap: 6px">
                       <button class="btn btn--small" type="button">Migrate to OIDC</button>
                     </div>
                   </article>
                 </div>
               </div>
 
-              <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+              <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
                 <strong>Nielsen Review (bead-0465):</strong>
-                RBAC matrix uses scope/col headers (table accessibility). OIDC providers have aria-labels.
-                Checkmarks use ✓ text not colour alone. Missing permission uses — not empty cell
-                (recognition over recall). Credential expiry badges use role="alert" when imminent.
+                RBAC matrix uses scope/col headers (table accessibility). OIDC providers have
+                aria-labels. Checkmarks use ✓ text not colour alone. Missing permission uses — not
+                empty cell (recognition over recall). Credential expiry badges use role="alert" when
+                imminent.
               </div>
             </div>
 
@@ -3853,106 +3908,184 @@
           </details>
 
           <!-- Run Lifecycle State Machine Visualization [bead-0467] -->
-          <details style="margin-top:16px">
-            <summary style="cursor:pointer;font-size:13px;font-weight:600;padding:8px 0">
+          <details style="margin-top: 16px">
+            <summary style="cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 0">
               Run Lifecycle &amp; State Machine
             </summary>
-            <div style="margin-top:12px">
-              <div style="font-size:11px;color:#888;margin-bottom:8px">
-                Current state highlighted &bull; Arrows show valid transitions &bull; Dashed = compensation path
+            <div style="margin-top: 12px">
+              <div style="font-size: 11px; color: #888; margin-bottom: 8px">
+                Current state highlighted &bull; Arrows show valid transitions &bull; Dashed =
+                compensation path
               </div>
 
               <!-- State machine diagram using wf-graph classes -->
-              <div style="overflow-x:auto;padding-bottom:8px">
-                <div style="display:flex;align-items:flex-start;gap:0;min-width:700px">
-
+              <div style="overflow-x: auto; padding-bottom: 8px">
+                <div style="display: flex; align-items: flex-start; gap: 0; min-width: 700px">
                   <!-- Pending -->
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                    <div class="wf-node" aria-label="State: Pending" style="min-width:90px;text-align:center">
-                      <div class="wf-node__header"><span class="wf-node__status status--warn">◷</span></div>
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                    <div
+                      class="wf-node"
+                      aria-label="State: Pending"
+                      style="min-width: 90px; text-align: center"
+                    >
+                      <div class="wf-node__header">
+                        <span class="wf-node__status status--warn">◷</span>
+                      </div>
                       <div class="wf-node__name">Pending</div>
-                      <div class="wf-node__meta subtle" style="font-size:10px">Planning</div>
+                      <div class="wf-node__meta subtle" style="font-size: 10px">Planning</div>
                     </div>
                   </div>
 
-                  <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&rsaquo;</div>
+                  </div>
 
                   <!-- Running -->
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                    <div class="wf-node wf-node--selected" aria-label="State: Running (current)" style="min-width:90px;text-align:center">
-                      <div class="wf-node__header"><span class="wf-node__status status--info">&#9654;</span></div>
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                    <div
+                      class="wf-node wf-node--selected"
+                      aria-label="State: Running (current)"
+                      style="min-width: 90px; text-align: center"
+                    >
+                      <div class="wf-node__header">
+                        <span class="wf-node__status status--info">&#9654;</span>
+                      </div>
                       <div class="wf-node__name">Running</div>
-                      <div class="wf-node__meta subtle" style="font-size:10px">Active &bull; 2 retries</div>
-                    </div>
-                  </div>
-
-                  <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
-
-                  <!-- Pending Approval -->
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                    <div class="wf-node wf-node--approval" aria-label="State: PendingApproval" style="min-width:90px;text-align:center">
-                      <div class="wf-node__header"><span class="wf-node__status status--warn">&#9208;</span></div>
-                      <div class="wf-node__name">Approval</div>
-                      <div class="wf-node__meta subtle" style="font-size:10px">SLA: 3h 48m</div>
-                    </div>
-                  </div>
-
-                  <div style="display:flex;flex-direction:column;align-items:center">
-                    <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
-                  </div>
-
-                  <!-- Executing -->
-                  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                    <div class="wf-node wf-node--action" aria-label="State: Executing" style="min-width:90px;text-align:center">
-                      <div class="wf-node__header"><span class="wf-node__status status--info">&#9658;</span></div>
-                      <div class="wf-node__name">Executing</div>
-                      <div class="wf-node__meta subtle" style="font-size:10px">Effects live</div>
-                    </div>
-                  </div>
-
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <div style="display:flex;align-items:center">
-                      <div class="wf-connector"><div class="wf-connector__line"></div><div class="wf-connector__arrow">&rsaquo;</div></div>
-                      <!-- Completed -->
-                      <div class="wf-node wf-node--end" aria-label="State: Completed" style="min-width:90px;text-align:center">
-                        <div class="wf-node__header"><span class="wf-node__status status--ok">&#10003;</span></div>
-                        <div class="wf-node__name">Completed</div>
-                        <div class="wf-node__meta subtle" style="font-size:10px">Evidence logged</div>
+                      <div class="wf-node__meta subtle" style="font-size: 10px">
+                        Active &bull; 2 retries
                       </div>
                     </div>
                   </div>
 
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&rsaquo;</div>
+                  </div>
+
+                  <!-- Pending Approval -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                    <div
+                      class="wf-node wf-node--approval"
+                      aria-label="State: PendingApproval"
+                      style="min-width: 90px; text-align: center"
+                    >
+                      <div class="wf-node__header">
+                        <span class="wf-node__status status--warn">&#9208;</span>
+                      </div>
+                      <div class="wf-node__name">Approval</div>
+                      <div class="wf-node__meta subtle" style="font-size: 10px">SLA: 3h 48m</div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; align-items: center">
+                    <div class="wf-connector">
+                      <div class="wf-connector__line"></div>
+                      <div class="wf-connector__arrow">&rsaquo;</div>
+                    </div>
+                  </div>
+
+                  <!-- Executing -->
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                    <div
+                      class="wf-node wf-node--action"
+                      aria-label="State: Executing"
+                      style="min-width: 90px; text-align: center"
+                    >
+                      <div class="wf-node__header">
+                        <span class="wf-node__status status--info">&#9658;</span>
+                      </div>
+                      <div class="wf-node__name">Executing</div>
+                      <div class="wf-node__meta subtle" style="font-size: 10px">Effects live</div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 4px">
+                    <div style="display: flex; align-items: center">
+                      <div class="wf-connector">
+                        <div class="wf-connector__line"></div>
+                        <div class="wf-connector__arrow">&rsaquo;</div>
+                      </div>
+                      <!-- Completed -->
+                      <div
+                        class="wf-node wf-node--end"
+                        aria-label="State: Completed"
+                        style="min-width: 90px; text-align: center"
+                      >
+                        <div class="wf-node__header">
+                          <span class="wf-node__status status--ok">&#10003;</span>
+                        </div>
+                        <div class="wf-node__name">Completed</div>
+                        <div class="wf-node__meta subtle" style="font-size: 10px">
+                          Evidence logged
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Terminal states row -->
-                <div style="display:flex;gap:16px;margin-top:12px;padding-top:8px;border-top:1px solid rgba(0,0,0,.06)">
-                  <div style="font-size:11px;color:#888;margin-right:8px">Terminal states:</div>
-                  <div class="wf-node" aria-label="State: Failed" style="min-width:80px;text-align:center;border-color:rgba(192,57,43,.3)">
-                    <div class="wf-node__name" style="color:#c0392b">&#10005; Failed</div>
-                    <div class="wf-node__meta subtle" style="font-size:10px">Retry available</div>
+                <div
+                  style="
+                    display: flex;
+                    gap: 16px;
+                    margin-top: 12px;
+                    padding-top: 8px;
+                    border-top: 1px solid rgba(0, 0, 0, 0.06);
+                  "
+                >
+                  <div style="font-size: 11px; color: #888; margin-right: 8px">
+                    Terminal states:
                   </div>
-                  <div class="wf-node" aria-label="State: Cancelled" style="min-width:80px;text-align:center;border-color:rgba(0,0,0,.15)">
-                    <div class="wf-node__name" style="color:#888">&#9633; Cancelled</div>
-                    <div class="wf-node__meta subtle" style="font-size:10px">By user or policy</div>
+                  <div
+                    class="wf-node"
+                    aria-label="State: Failed"
+                    style="
+                      min-width: 80px;
+                      text-align: center;
+                      border-color: rgba(192, 57, 43, 0.3);
+                    "
+                  >
+                    <div class="wf-node__name" style="color: #c0392b">&#10005; Failed</div>
+                    <div class="wf-node__meta subtle" style="font-size: 10px">Retry available</div>
                   </div>
-                  <div class="wf-node" aria-label="State: Compensating (rollback)" style="min-width:110px;text-align:center;border:1px dashed rgba(192,57,43,.5)">
-                    <div class="wf-node__name" style="color:#c0392b">&#8617; Compensating</div>
-                    <div class="wf-node__meta subtle" style="font-size:10px">Rollback in progress</div>
+                  <div
+                    class="wf-node"
+                    aria-label="State: Cancelled"
+                    style="min-width: 80px; text-align: center; border-color: rgba(0, 0, 0, 0.15)"
+                  >
+                    <div class="wf-node__name" style="color: #888">&#9633; Cancelled</div>
+                    <div class="wf-node__meta subtle" style="font-size: 10px">
+                      By user or policy
+                    </div>
+                  </div>
+                  <div
+                    class="wf-node"
+                    aria-label="State: Compensating (rollback)"
+                    style="
+                      min-width: 110px;
+                      text-align: center;
+                      border: 1px dashed rgba(192, 57, 43, 0.5);
+                    "
+                  >
+                    <div class="wf-node__name" style="color: #c0392b">&#8617; Compensating</div>
+                    <div class="wf-node__meta subtle" style="font-size: 10px">
+                      Rollback in progress
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+              <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
                 <strong>Nielsen Review (bead-0467):</strong>
                 Current state highlighted with wf-node--selected (visibility of system status).
-                Compensation path uses dashed border (consistent with branching conventions).
-                Retry counter shown on Running node. SLA on Approval gate.
-                All states have aria-label for screen readers.
-                Terminal states are visually separated and labelled (not colour-only).
+                Compensation path uses dashed border (consistent with branching conventions). Retry
+                counter shown on Running node. SLA on Approval gate. All states have aria-label for
+                screen readers. Terminal states are visually separated and labelled (not
+                colour-only).
               </div>
             </div>
           </details>
-
         </section>
 
         <!-- ============================================================
@@ -4680,98 +4813,162 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </div>
 
             <!-- Progressive disclosure: 5-step guided setup [bead-0475] -->
-            <div style="margin-top:20px">
-              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:12px">Guided Setup — 5 Steps</div>
+            <div style="margin-top: 20px">
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+                  color: #888;
+                  margin-bottom: 12px;
+                "
+              >
+                Guided Setup — 5 Steps
+              </div>
               <div class="onboarding-steps" role="list" aria-label="Setup wizard steps">
-
-                <div class="onboarding-step onboarding-step--done" role="listitem" aria-label="Step 1: Create workspace — completed">
+                <div
+                  class="onboarding-step onboarding-step--done"
+                  role="listitem"
+                  aria-label="Step 1: Create workspace — completed"
+                >
                   <div class="onboarding-step__number" aria-hidden="true">1</div>
                   <div class="onboarding-step__content">
                     <div class="onboarding-step__title">Create workspace</div>
                     <div class="onboarding-step__desc">Name, timezone, and billing plan</div>
                     <div class="onboarding-step__status">
-                      <span class="status status--ok" style="font-size:11px"><span class="status__icon">&#10003;</span>Done</span>
+                      <span class="status status--ok" style="font-size: 11px"
+                        ><span class="status__icon">&#10003;</span>Done</span
+                      >
                     </div>
                   </div>
                 </div>
 
-                <div class="onboarding-step onboarding-step--done" role="listitem" aria-label="Step 2: Invite users — completed">
+                <div
+                  class="onboarding-step onboarding-step--done"
+                  role="listitem"
+                  aria-label="Step 2: Invite users — completed"
+                >
                   <div class="onboarding-step__number" aria-hidden="true">2</div>
                   <div class="onboarding-step__content">
                     <div class="onboarding-step__title">Invite users</div>
                     <div class="onboarding-step__desc">Add operators, approvers, and auditors</div>
                     <div class="onboarding-step__status">
-                      <span class="status status--ok" style="font-size:11px"><span class="status__icon">&#10003;</span>Done &mdash; 3 users</span>
+                      <span class="status status--ok" style="font-size: 11px"
+                        ><span class="status__icon">&#10003;</span>Done &mdash; 3 users</span
+                      >
                     </div>
                   </div>
                 </div>
 
-                <div class="onboarding-step onboarding-step--active" role="listitem" aria-label="Step 3: Configure first adapter — in progress" aria-current="step">
+                <div
+                  class="onboarding-step onboarding-step--active"
+                  role="listitem"
+                  aria-label="Step 3: Configure first adapter — in progress"
+                  aria-current="step"
+                >
                   <div class="onboarding-step__number" aria-hidden="true">3</div>
                   <div class="onboarding-step__content">
                     <div class="onboarding-step__title">Configure first adapter</div>
                     <div class="onboarding-step__desc">Connect to your first external system</div>
                     <div class="onboarding-step__actions">
-                      <a class="btn btn--primary btn--small" href="#adapters">Open Adapter Gallery</a>
+                      <a class="btn btn--primary btn--small" href="#adapters"
+                        >Open Adapter Gallery</a
+                      >
                     </div>
-                    <div class="callout" style="margin-top:8px;font-size:11px">
-                      <strong>Why?</strong> Workflows need adapter access to read and write external records.
-                      Start with Finance &amp; Accounting or CRM.
+                    <div class="callout" style="margin-top: 8px; font-size: 11px">
+                      <strong>Why?</strong> Workflows need adapter access to read and write external
+                      records. Start with Finance &amp; Accounting or CRM.
                     </div>
                   </div>
                 </div>
 
-                <div class="onboarding-step" role="listitem" aria-label="Step 4: Create first workflow — not started">
+                <div
+                  class="onboarding-step"
+                  role="listitem"
+                  aria-label="Step 4: Create first workflow — not started"
+                >
                   <div class="onboarding-step__number" aria-hidden="true">4</div>
                   <div class="onboarding-step__content">
                     <div class="onboarding-step__title">Create first workflow</div>
-                    <div class="onboarding-step__desc">Use the Workflow Builder to define steps and approval gates</div>
+                    <div class="onboarding-step__desc">
+                      Use the Workflow Builder to define steps and approval gates
+                    </div>
                     <div class="onboarding-step__status">
-                      <span class="subtle" style="font-size:11px">Waiting on step 3</span>
+                      <span class="subtle" style="font-size: 11px">Waiting on step 3</span>
                     </div>
                   </div>
                 </div>
 
-                <div class="onboarding-step" role="listitem" aria-label="Step 5: Run it — not started">
+                <div
+                  class="onboarding-step"
+                  role="listitem"
+                  aria-label="Step 5: Run it — not started"
+                >
                   <div class="onboarding-step__number" aria-hidden="true">5</div>
                   <div class="onboarding-step__content">
                     <div class="onboarding-step__title">Run it</div>
-                    <div class="onboarding-step__desc">Start your first workflow run and approve the plan</div>
+                    <div class="onboarding-step__desc">
+                      Start your first workflow run and approve the plan
+                    </div>
                     <div class="onboarding-step__status">
-                      <span class="subtle" style="font-size:11px">Waiting on step 4</span>
+                      <span class="subtle" style="font-size: 11px">Waiting on step 4</span>
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
 
             <!-- Empty state transitions: what you'll see as you complete each step [bead-0475] -->
-            <div style="margin-top:20px">
-              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">What happens next</div>
+            <div style="margin-top: 20px">
+              <div
+                style="
+                  font-size: 11px;
+                  text-transform: uppercase;
+                  letter-spacing: 0.06em;
+                  color: #888;
+                  margin-bottom: 8px;
+                "
+              >
+                What happens next
+              </div>
               <div class="grid grid--3">
-                <div class="card card--subtle" aria-label="After step 3: Adapters screen will show configured adapter">
-                  <div class="card__title" style="font-size:12px">After step 3</div>
-                  <div class="subtle" style="font-size:11px">Adapter Gallery shows your first configured adapter (green dot)</div>
+                <div
+                  class="card card--subtle"
+                  aria-label="After step 3: Adapters screen will show configured adapter"
+                >
+                  <div class="card__title" style="font-size: 12px">After step 3</div>
+                  <div class="subtle" style="font-size: 11px">
+                    Adapter Gallery shows your first configured adapter (green dot)
+                  </div>
                 </div>
-                <div class="card card--subtle" aria-label="After step 4: Workflow Builder has your first workflow">
-                  <div class="card__title" style="font-size:12px">After step 4</div>
-                  <div class="subtle" style="font-size:11px">Workflow Builder shows your first workflow with steps and gates</div>
+                <div
+                  class="card card--subtle"
+                  aria-label="After step 4: Workflow Builder has your first workflow"
+                >
+                  <div class="card__title" style="font-size: 12px">After step 4</div>
+                  <div class="subtle" style="font-size: 11px">
+                    Workflow Builder shows your first workflow with steps and gates
+                  </div>
                 </div>
-                <div class="card card--subtle" aria-label="After step 5: Runs and Evidence are populated">
-                  <div class="card__title" style="font-size:12px">After step 5</div>
-                  <div class="subtle" style="font-size:11px">Runs screen shows your first run; Evidence log has its first entries</div>
+                <div
+                  class="card card--subtle"
+                  aria-label="After step 5: Runs and Evidence are populated"
+                >
+                  <div class="card__title" style="font-size: 12px">After step 5</div>
+                  <div class="subtle" style="font-size: 11px">
+                    Runs screen shows your first run; Evidence log has its first entries
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+            <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
               <strong>Nielsen Review (bead-0475):</strong>
-              5-step wizard uses role="list" + aria-current="step" for screen readers.
-              Completed steps show text "Done" not colour alone. Current step has explicit CTA.
-              Blocked steps show "Waiting on step N" (not disabled with no explanation).
-              "What happens next" cards set expectations (visibility of system status).
-              Progressive disclosure: advanced setup hidden until basics complete.
+              5-step wizard uses role="list" + aria-current="step" for screen readers. Completed
+              steps show text "Done" not colour alone. Current step has explicit CTA. Blocked steps
+              show "Waiting on step N" (not disabled with no explanation). "What happens next" cards
+              set expectations (visibility of system status). Progressive disclosure: advanced setup
+              hidden until basics complete.
             </div>
           </div>
         </section>
@@ -5288,7 +5485,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              FORM DIALOGS
              ============================================================ -->
-        <dialog class="form-dialog" id="dlgCreateWorkItem" aria-modal="true" aria-label="Create Work Item">
+        <dialog
+          class="form-dialog"
+          id="dlgCreateWorkItem"
+          aria-modal="true"
+          aria-label="Create Work Item"
+        >
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Create Work Item</h2>
             <button
@@ -5345,7 +5547,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </form>
         </dialog>
 
-        <dialog class="form-dialog" id="dlgStartWorkflow" aria-modal="true" aria-label="Start Workflow">
+        <dialog
+          class="form-dialog"
+          id="dlgStartWorkflow"
+          aria-modal="true"
+          aria-label="Start Workflow"
+        >
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Start Workflow</h2>
             <button
@@ -5397,7 +5604,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </form>
         </dialog>
 
-        <dialog class="form-dialog" id="dlgCreatePolicy" aria-modal="true" aria-label="Create Policy Rule">
+        <dialog
+          class="form-dialog"
+          id="dlgCreatePolicy"
+          aria-modal="true"
+          aria-label="Create Policy Rule"
+        >
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Create Policy Rule</h2>
             <button
@@ -5501,7 +5713,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </form>
         </dialog>
 
-        <dialog class="form-dialog" id="dlgAddCredential" aria-modal="true" aria-label="Add Credential">
+        <dialog
+          class="form-dialog"
+          id="dlgAddCredential"
+          aria-modal="true"
+          aria-label="Add Credential"
+        >
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Add Credential</h2>
             <button
@@ -5552,7 +5769,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </form>
         </dialog>
 
-        <dialog class="form-dialog" id="dlgPackCatalog" aria-modal="true" aria-label="Pack Catalog" style="max-width: 640px">
+        <dialog
+          class="form-dialog"
+          id="dlgPackCatalog"
+          aria-modal="true"
+          aria-label="Pack Catalog"
+          style="max-width: 640px"
+        >
           <div class="form-dialog__header">
             <h2 class="form-dialog__title">Pack Catalog</h2>
             <button
@@ -6229,52 +6452,89 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: DOMAIN PRIMITIVE COMPONENTS SHOWCASE  [bead-0469]
              ============================================================ -->
-        <section id="screen-components" class="screen" data-screen="components" aria-labelledby="h-components">
+        <section
+          id="screen-components"
+          class="screen"
+          data-screen="components"
+          aria-labelledby="h-components"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-components" class="h1">Component Library</h1>
-              <div class="subtle">Domain primitive components — RunStatusChip, EffectsList, EvidenceTimeline, ApprovalForm, ErrorUX</div>
+              <div class="subtle">
+                Domain primitive components — RunStatusChip, EffectsList, EvidenceTimeline,
+                ApprovalForm, ErrorUX
+              </div>
             </div>
           </div>
 
-          <div class="grid grid--2" style="margin-bottom:20px">
-
+          <div class="grid grid--2" style="margin-bottom: 20px">
             <!-- RunStatusChip -->
             <article class="card" aria-label="RunStatusChip component">
               <div class="card__title">RunStatusChip</div>
-              <div class="subtle" style="font-size:11px;margin-bottom:10px">Inline run status with phase + ETA tooltip</div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <span class="status status--warn" title="Phase: PendingApproval — SLA: 3h 48m"><span class="status__icon">◷</span>Pending Approval</span>
-                <span class="status status--info" title="Phase: Running — Started 2m ago"><span class="status__icon">&#9654;</span>Running</span>
-                <span class="status status--ok" title="Phase: Completed — Finished 4m ago"><span class="status__icon">&#10003;</span>Completed</span>
-                <span class="status status--danger" title="Phase: Failed — Error: adapter timeout"><span class="status__icon">&#10005;</span>Failed</span>
-                <span class="status" title="Phase: Cancelled — By operator"><span class="status__icon">&#9633;</span>Cancelled</span>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 10px">
+                Inline run status with phase + ETA tooltip
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                <span class="status status--warn" title="Phase: PendingApproval — SLA: 3h 48m"
+                  ><span class="status__icon">◷</span>Pending Approval</span
+                >
+                <span class="status status--info" title="Phase: Running — Started 2m ago"
+                  ><span class="status__icon">&#9654;</span>Running</span
+                >
+                <span class="status status--ok" title="Phase: Completed — Finished 4m ago"
+                  ><span class="status__icon">&#10003;</span>Completed</span
+                >
+                <span class="status status--danger" title="Phase: Failed — Error: adapter timeout"
+                  ><span class="status__icon">&#10005;</span>Failed</span
+                >
+                <span class="status" title="Phase: Cancelled — By operator"
+                  ><span class="status__icon">&#9633;</span>Cancelled</span
+                >
               </div>
             </article>
 
             <!-- ErrorUX — Problem Details RFC 9457 -->
             <article class="card" aria-label="ErrorUX component — Problem Details RFC 9457">
               <div class="card__title">ErrorUX — Problem Details</div>
-              <div class="subtle" style="font-size:11px;margin-bottom:10px">RFC 9457 error mapping to actionable banners</div>
-              <div class="banner banner--danger" role="alert" style="margin-bottom:6px;border-radius:4px;font-size:12px">
-                <strong>Rate limit exceeded (429)</strong><br/>
-                Adapter: CRM/Salesforce &bull; Retry after: 60s<br/>
-                <span class="correlation-id" style="font-size:10px">instance: /errors/run/R-8920/step/3</span>
-                <button class="btn btn--small" type="button" style="font-size:10px;margin-left:8px" aria-label="Copy error instance ID">Copy ID &#9003;</button>
+              <div class="subtle" style="font-size: 11px; margin-bottom: 10px">
+                RFC 9457 error mapping to actionable banners
               </div>
-              <div class="callout callout--danger" style="font-size:12px">
-                <strong>Validation failed (422)</strong><br/>
-                Field: invoice.totalAmount &bull; Rule: must be &gt; 0<br/>
-                <a href="#" onclick="return false;" style="font-size:11px">View Problem Details &rarr;</a>
+              <div
+                class="banner banner--danger"
+                role="alert"
+                style="margin-bottom: 6px; border-radius: 4px; font-size: 12px"
+              >
+                <strong>Rate limit exceeded (429)</strong><br />
+                Adapter: CRM/Salesforce &bull; Retry after: 60s<br />
+                <span class="correlation-id" style="font-size: 10px"
+                  >instance: /errors/run/R-8920/step/3</span
+                >
+                <button
+                  class="btn btn--small"
+                  type="button"
+                  style="font-size: 10px; margin-left: 8px"
+                  aria-label="Copy error instance ID"
+                >
+                  Copy ID &#9003;
+                </button>
+              </div>
+              <div class="callout callout--danger" style="font-size: 12px">
+                <strong>Validation failed (422)</strong><br />
+                Field: invoice.totalAmount &bull; Rule: must be &gt; 0<br />
+                <a href="#" onclick="return false;" style="font-size: 11px"
+                  >View Problem Details &rarr;</a
+                >
               </div>
             </article>
-
           </div>
 
           <!-- EffectsList -->
-          <article class="card" style="margin-bottom:16px" aria-label="EffectsList component">
+          <article class="card" style="margin-bottom: 16px" aria-label="EffectsList component">
             <div class="card__title">EffectsList</div>
-            <div class="subtle" style="font-size:11px;margin-bottom:10px">Planned and verified effects with confidence, reversibility, and drift badges</div>
+            <div class="subtle" style="font-size: 11px; margin-bottom: 10px">
+              Planned and verified effects with confidence, reversibility, and drift badges
+            </div>
             <div class="effects">
               <div class="effects__title">Planned (3 effects)</div>
               <div class="effects__list">
@@ -6284,10 +6544,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <span class="effect__target">NetSuite / Invoice</span>
                     <span class="effect__subtle">INV-22318 &bull; Total: $2,340.00</span>
                   </div>
-                  <div style="display:flex;gap:6px;align-items:center">
+                  <div style="display: flex; gap: 6px; align-items: center">
                     <span class="confidence">98%</span>
                     <span class="idem-badge idem-badge--safe" title="Idempotent">Idem</span>
-                    <span class="drift-badge" title="No drift detected" style="font-size:10px;color:#27ae60">&#10003; Verified</span>
+                    <span
+                      class="drift-badge"
+                      title="No drift detected"
+                      style="font-size: 10px; color: #27ae60"
+                      >&#10003; Verified</span
+                    >
                   </div>
                 </div>
                 <div class="effect">
@@ -6296,18 +6561,22 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <span class="effect__target">Slack / #finance-ops</span>
                     <span class="effect__subtle">Invoice created confirmation</span>
                   </div>
-                  <div style="display:flex;gap:6px;align-items:center">
+                  <div style="display: flex; gap: 6px; align-items: center">
                     <span class="confidence">99%</span>
-                    <span class="idem-badge idem-badge--unsafe" title="Not idempotent — do not retry">Non-idem</span>
+                    <span
+                      class="idem-badge idem-badge--unsafe"
+                      title="Not idempotent — do not retry"
+                      >Non-idem</span
+                    >
                   </div>
                 </div>
                 <div class="effect effect--muted">
                   <div class="effect__main">
-                    <span class="pill" style="opacity:.5">read</span>
+                    <span class="pill" style="opacity: 0.5">read</span>
                     <span class="effect__target">Stripe / Charge</span>
                     <span class="effect__subtle">ch_9d2a &bull; read-only, no side effects</span>
                   </div>
-                  <div><span class="drift-badge" style="font-size:10px">Read-only</span></div>
+                  <div><span class="drift-badge" style="font-size: 10px">Read-only</span></div>
                 </div>
               </div>
             </div>
@@ -6316,119 +6585,248 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <!-- EvidenceTimeline -->
           <article class="card" aria-label="EvidenceTimeline component">
             <div class="card__title">EvidenceTimeline</div>
-            <div class="subtle" style="font-size:11px;margin-bottom:10px">Vertical timeline with hash-verified entries and tamper indicator</div>
+            <div class="subtle" style="font-size: 11px; margin-bottom: 10px">
+              Vertical timeline with hash-verified entries and tamper indicator
+            </div>
             <div class="list">
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">
-                    <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-right:4px"><span class="status__icon">&#10003;</span>Verified</span>
+                    <span
+                      class="status status--ok"
+                      style="font-size: 10px; padding: 1px 4px; margin-right: 4px"
+                      ><span class="status__icon">&#10003;</span>Verified</span
+                    >
                     #146 &mdash; Approval decision submitted
                   </div>
                   <div class="row__subtle">
                     <time datetime="2026-02-18T09:58:00Z">09:58</time> &bull; approver@acme.com
-                    &bull; <code style="font-size:10px">sha256:a3f8...d91c</code>
+                    &bull; <code style="font-size: 10px">sha256:a3f8...d91c</code>
                   </div>
                 </div>
               </div>
               <div class="row row--static">
                 <div class="row__main">
                   <div class="row__title">
-                    <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-right:4px"><span class="status__icon">&#10003;</span>Verified</span>
+                    <span
+                      class="status status--ok"
+                      style="font-size: 10px; padding: 1px 4px; margin-right: 4px"
+                      ><span class="status__icon">&#10003;</span>Verified</span
+                    >
                     #145 &mdash; Plan evaluated
                   </div>
                   <div class="row__subtle">
-                    <time datetime="2026-02-18T09:12:00Z">09:12</time> &bull; system
-                    &bull; <code style="font-size:10px">sha256:7e2b...4a5f</code>
+                    <time datetime="2026-02-18T09:12:00Z">09:12</time> &bull; system &bull;
+                    <code style="font-size: 10px">sha256:7e2b...4a5f</code>
                   </div>
                 </div>
               </div>
-              <div class="row row--static" style="opacity:.5">
+              <div class="row row--static" style="opacity: 0.5">
                 <div class="row__main">
                   <div class="row__title">
-                    <span class="status status--danger" style="font-size:10px;padding:1px 4px;margin-right:4px">&#9888; Tamper?</span>
+                    <span
+                      class="status status--danger"
+                      style="font-size: 10px; padding: 1px 4px; margin-right: 4px"
+                      >&#9888; Tamper?</span
+                    >
                     #144 &mdash; (hash mismatch — entry suspect)
                   </div>
-                  <div class="row__subtle">Expected: <code style="font-size:10px">sha256:9ab3...</code> &bull; Found: <code style="font-size:10px">sha256:ff1c...</code></div>
+                  <div class="row__subtle">
+                    Expected: <code style="font-size: 10px">sha256:9ab3...</code> &bull; Found:
+                    <code style="font-size: 10px">sha256:ff1c...</code>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+            <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
               <strong>Nielsen Review (bead-0469):</strong>
-              All 5 components present. RunStatusChip uses text + icon not colour alone.
-              EffectsList shows confidence, idempotency, drift. EvidenceTimeline shows hashes inline.
-              ErrorUX maps RFC 9457 to copyable instance IDs. ApprovalForm in approvals screen.
-              All aria-labelled. Components are semantically structured with &lt;article&gt; and &lt;time&gt;.
+              All 5 components present. RunStatusChip uses text + icon not colour alone. EffectsList
+              shows confidence, idempotency, drift. EvidenceTimeline shows hashes inline. ErrorUX
+              maps RFC 9457 to copyable instance IDs. ApprovalForm in approvals screen. All
+              aria-labelled. Components are semantically structured with &lt;article&gt; and
+              &lt;time&gt;.
             </div>
           </article>
 
           <!-- Accessibility Layer Summary [bead-0477] -->
           <article class="card" aria-label="Accessibility implementation summary for bead-0477">
             <div class="card__title">Accessibility Layer &mdash; WCAG 2.2 AA Checklist</div>
-            <div class="subtle" style="font-size:11px;margin-bottom:12px">bead-0477: implemented across all cockpit screens</div>
+            <div class="subtle" style="font-size: 11px; margin-bottom: 12px">
+              bead-0477: implemented across all cockpit screens
+            </div>
 
             <div class="list" role="list" aria-label="Accessibility checklist">
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Skip to main content link</div><div class="row__subtle">Present at top of page, visible on focus</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Skip to main content link</div>
+                  <div class="row__subtle">Present at top of page, visible on focus</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">All modals/dialogs have aria-modal + aria-label</div><div class="row__subtle">8 dialogs fixed</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">All modals/dialogs have aria-modal + aria-label</div>
+                  <div class="row__subtle">8 dialogs fixed</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Dismiss buttons have aria-label="Dismiss"</div><div class="row__subtle">12 hero-prompt dismiss buttons</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Dismiss buttons have aria-label="Dismiss"</div>
+                  <div class="row__subtle">12 hero-prompt dismiss buttons</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Filter chip groups have role=group + aria-label</div><div class="row__subtle">7 filter divs updated</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Filter chip groups have role=group + aria-label</div>
+                  <div class="row__subtle">7 filter divs updated</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Status badges use icon + text (not colour alone)</div><div class="row__subtle">All status--ok/warn/danger badges</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Status badges use icon + text (not colour alone)</div>
+                  <div class="row__subtle">All status--ok/warn/danger badges</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">SoD blocked state uses role="alert"</div><div class="row__subtle">Approval deep review panel</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">SoD blocked state uses role="alert"</div>
+                  <div class="row__subtle">Approval deep review panel</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Tamper detection banner uses role="alert" + aria-live="assertive"</div><div class="row__subtle">Evidence screen</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">
+                    Tamper detection banner uses role="alert" + aria-live="assertive"
+                  </div>
+                  <div class="row__subtle">Evidence screen</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Connection test result has aria-live="polite"</div><div class="row__subtle">Agent detail panel</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Connection test result has aria-live="polite"</div>
+                  <div class="row__subtle">Agent detail panel</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Degraded mode statusbar uses aria-live="assertive"</div><div class="row__subtle">Global statusbar</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Degraded mode statusbar uses aria-live="assertive"</div>
+                  <div class="row__subtle">Global statusbar</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">RBAC matrix uses scope=col/row headers</div><div class="row__subtle">Settings &gt; IAM screen</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">RBAC matrix uses scope=col/row headers</div>
+                  <div class="row__subtle">Settings &gt; IAM screen</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Sparklines have descriptive aria-label</div><div class="row__subtle">Observability metrics</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Sparklines have descriptive aria-label</div>
+                  <div class="row__subtle">Observability metrics</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Log viewer has role="log" + aria-live="polite"</div><div class="row__subtle">Observability log viewer</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Log viewer has role="log" + aria-live="polite"</div>
+                  <div class="row__subtle">Observability log viewer</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Onboarding steps use role="list" + aria-current="step"</div><div class="row__subtle">Onboarding wizard</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">
+                    Onboarding steps use role="list" + aria-current="step"
+                  </div>
+                  <div class="row__subtle">Onboarding wizard</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
-                <div class="row__main"><div class="row__title">Decision rationale textarea has aria-required="true"</div><div class="row__subtle">Approval decision form</div></div>
-                <div class="row__right"><span class="status status--ok"><span class="status__icon">&#10003;</span>Done</span></div>
+                <div class="row__main">
+                  <div class="row__title">Decision rationale textarea has aria-required="true"</div>
+                  <div class="row__subtle">Approval decision form</div>
+                </div>
+                <div class="row__right">
+                  <span class="status status--ok"
+                    ><span class="status__icon">&#10003;</span>Done</span
+                  >
+                </div>
               </div>
               <div class="row row--static" role="listitem">
                 <div class="row__main">
                   <div class="row__title">Filter chips: upgrade to &lt;button&gt; elements</div>
-                  <div class="row__subtle">85 &lt;span class="chip"&gt; elements need role=button + tabindex=0 (JS implementation required)</div>
+                  <div class="row__subtle">
+                    85 &lt;span class="chip"&gt; elements need role=button + tabindex=0 (JS
+                    implementation required)
+                  </div>
                 </div>
-                <div class="row__right"><span class="status status--warn"><span class="status__icon">&#9873;</span>Pending JS</span></div>
+                <div class="row__right">
+                  <span class="status status--warn"
+                    ><span class="status__icon">&#9873;</span>Pending JS</span
+                  >
+                </div>
               </div>
             </div>
           </article>
@@ -6437,7 +6835,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: OBSERVABILITY AND HEALTH  [bead-0471]
              ============================================================ -->
-        <section id="screen-observability" class="screen" data-screen="observability" aria-labelledby="h-observability">
+        <section
+          id="screen-observability"
+          class="screen"
+          data-screen="observability"
+          aria-labelledby="h-observability"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-observability" class="h1">Observability</h1>
@@ -6450,23 +6853,28 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- Health Metrics Row -->
-          <div class="grid grid--3" style="margin-bottom:16px" aria-label="Health metrics">
+          <div class="grid grid--3" style="margin-bottom: 16px" aria-label="Health metrics">
             <article class="card" aria-label="API latency metric">
               <div class="card__title">API Latency (p99)</div>
               <div class="metric">
                 <div class="metric__value">142 ms</div>
                 <div class="metric__label">7-day trend</div>
               </div>
-              <div class="sparkline" aria-label="Sparkline: API latency trending down, min 80ms max 340ms current 142ms">
-                <div class="sparkline__bar" style="height:40%"></div>
-                <div class="sparkline__bar" style="height:60%"></div>
-                <div class="sparkline__bar" style="height:80%"></div>
-                <div class="sparkline__bar" style="height:100%"></div>
-                <div class="sparkline__bar" style="height:70%"></div>
-                <div class="sparkline__bar" style="height:50%"></div>
-                <div class="sparkline__bar sparkline__bar--accent" style="height:42%"></div>
+              <div
+                class="sparkline"
+                aria-label="Sparkline: API latency trending down, min 80ms max 340ms current 142ms"
+              >
+                <div class="sparkline__bar" style="height: 40%"></div>
+                <div class="sparkline__bar" style="height: 60%"></div>
+                <div class="sparkline__bar" style="height: 80%"></div>
+                <div class="sparkline__bar" style="height: 100%"></div>
+                <div class="sparkline__bar" style="height: 70%"></div>
+                <div class="sparkline__bar" style="height: 50%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height: 42%"></div>
               </div>
-              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Within SLO (&lt;500ms)</div>
+              <div class="status status--ok" style="margin-top: 6px">
+                <span class="status__icon">&#10003;</span>Within SLO (&lt;500ms)
+              </div>
             </article>
 
             <article class="card" aria-label="Error rate metric">
@@ -6475,16 +6883,21 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <div class="metric__value">0.8%</div>
                 <div class="metric__label">7-day trend</div>
               </div>
-              <div class="sparkline" aria-label="Sparkline: Error rate stable, min 0.2% max 1.4% current 0.8%">
-                <div class="sparkline__bar" style="height:20%"></div>
-                <div class="sparkline__bar" style="height:30%"></div>
-                <div class="sparkline__bar" style="height:25%"></div>
-                <div class="sparkline__bar" style="height:60%"></div>
-                <div class="sparkline__bar" style="height:45%"></div>
-                <div class="sparkline__bar" style="height:35%"></div>
-                <div class="sparkline__bar sparkline__bar--accent" style="height:30%"></div>
+              <div
+                class="sparkline"
+                aria-label="Sparkline: Error rate stable, min 0.2% max 1.4% current 0.8%"
+              >
+                <div class="sparkline__bar" style="height: 20%"></div>
+                <div class="sparkline__bar" style="height: 30%"></div>
+                <div class="sparkline__bar" style="height: 25%"></div>
+                <div class="sparkline__bar" style="height: 60%"></div>
+                <div class="sparkline__bar" style="height: 45%"></div>
+                <div class="sparkline__bar" style="height: 35%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height: 30%"></div>
               </div>
-              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Within SLO (&lt;1%)</div>
+              <div class="status status--ok" style="margin-top: 6px">
+                <span class="status__icon">&#10003;</span>Within SLO (&lt;1%)
+              </div>
             </article>
 
             <article class="card" aria-label="Worker queue depth metric">
@@ -6494,55 +6907,82 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <div class="metric__label">7-day trend</div>
               </div>
               <div class="sparkline" aria-label="Sparkline: Queue depth low, max 12 current 3">
-                <div class="sparkline__bar" style="height:15%"></div>
-                <div class="sparkline__bar" style="height:30%"></div>
-                <div class="sparkline__bar" style="height:100%"></div>
-                <div class="sparkline__bar" style="height:60%"></div>
-                <div class="sparkline__bar" style="height:20%"></div>
-                <div class="sparkline__bar" style="height:10%"></div>
-                <div class="sparkline__bar sparkline__bar--accent" style="height:25%"></div>
+                <div class="sparkline__bar" style="height: 15%"></div>
+                <div class="sparkline__bar" style="height: 30%"></div>
+                <div class="sparkline__bar" style="height: 100%"></div>
+                <div class="sparkline__bar" style="height: 60%"></div>
+                <div class="sparkline__bar" style="height: 20%"></div>
+                <div class="sparkline__bar" style="height: 10%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height: 25%"></div>
               </div>
-              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Healthy (&lt;50)</div>
+              <div class="status status--ok" style="margin-top: 6px">
+                <span class="status__icon">&#10003;</span>Healthy (&lt;50)
+              </div>
             </article>
           </div>
 
           <!-- Trace List + Log Viewer -->
           <div class="grid grid--2">
-
             <!-- OTel Trace List -->
             <article class="card" aria-label="Recent OTel traces">
               <div class="card__title">Recent Traces</div>
-              <div class="filters" style="margin-bottom:8px">
-                <input type="search" class="topbar__search" style="width:180px;font-size:11px" placeholder="Search traces..." aria-label="Search traces" />
+              <div class="filters" style="margin-bottom: 8px">
+                <input
+                  type="search"
+                  class="topbar__search"
+                  style="width: 180px; font-size: 11px"
+                  placeholder="Search traces..."
+                  aria-label="Search traces"
+                />
               </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">POST /runs — R-8920</div>
-                    <div class="row__subtle">trace: <code style="font-size:10px">7f2a3c...e9b1</code> &bull; 2m ago &bull; 4 spans</div>
+                    <div class="row__subtle">
+                      trace: <code style="font-size: 10px">7f2a3c...e9b1</code> &bull; 2m ago &bull;
+                      4 spans
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">142ms</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">142ms</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">POST /approvals/decide — AG-441</div>
-                    <div class="row__subtle">trace: <code style="font-size:10px">3e8b9a...f210</code> &bull; 5m ago &bull; 2 spans</div>
+                    <div class="row__subtle">
+                      trace: <code style="font-size: 10px">3e8b9a...f210</code> &bull; 5m ago &bull;
+                      2 spans
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">88ms</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">88ms</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">GET /evidence — chain verify</div>
-                    <div class="row__subtle">trace: <code style="font-size:10px">1c4f2d...8a33</code> &bull; 8m ago &bull; 26 spans</div>
+                    <div class="row__subtle">
+                      trace: <code style="font-size: 10px">1c4f2d...8a33</code> &bull; 8m ago &bull;
+                      26 spans
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--warn" style="font-size:10px">1,240ms</span></div>
+                  <div class="row__right">
+                    <span class="status status--warn" style="font-size: 10px">1,240ms</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">POST /adapter/netsuite/write</div>
-                    <div class="row__subtle">trace: <code style="font-size:10px">9d0e1b...4c55</code> &bull; 12m ago &bull; 6 spans</div>
+                    <div class="row__subtle">
+                      trace: <code style="font-size: 10px">9d0e1b...4c55</code> &bull; 12m ago
+                      &bull; 6 spans
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--danger" style="font-size:10px">Err 429</span></div>
+                  <div class="row__right">
+                    <span class="status status--danger" style="font-size: 10px">Err 429</span>
+                  </div>
                 </div>
               </div>
             </article>
@@ -6550,32 +6990,73 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <!-- Structured Log Viewer -->
             <article class="card" aria-label="Structured log viewer">
               <div class="card__title">Log Viewer</div>
-              <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+              <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap">
                 <span class="chip chip--active chip--small" data-log-level="all">All</span>
-                <span class="chip chip--small" data-log-level="error" style="color:#c0392b">ERROR</span>
+                <span class="chip chip--small" data-log-level="error" style="color: #c0392b"
+                  >ERROR</span
+                >
                 <span class="chip chip--small" data-log-level="warn">WARN</span>
                 <span class="chip chip--small" data-log-level="info">INFO</span>
-                <input type="search" class="topbar__search" style="width:130px;font-size:10px" placeholder="grep logs..." aria-label="Filter logs" />
+                <input
+                  type="search"
+                  class="topbar__search"
+                  style="width: 130px; font-size: 10px"
+                  placeholder="grep logs..."
+                  aria-label="Filter logs"
+                />
                 <label><input type="checkbox" /> Tail</label>
               </div>
-              <div style="font-family:monospace;font-size:10px;line-height:1.6;max-height:200px;overflow-y:auto;background:rgba(0,0,0,.03);padding:8px;border-radius:4px" role="log" aria-label="Log output" aria-live="polite">
-                <div><span style="color:#888">2026-02-18T10:02:11Z</span> <span style="color:#27ae60">INFO</span>  run.started run_id=R-8920 tenant=acme</div>
-                <div><span style="color:#888">2026-02-18T10:02:12Z</span> <span style="color:#27ae60">INFO</span>  plan.evaluated effects=3 confidence=0.98</div>
-                <div><span style="color:#888">2026-02-18T10:02:13Z</span> <span style="color:#f39c12">WARN</span>  adapter.rate_limit adapter=netsuite retry_after=60s</div>
-                <div><span style="color:#888">2026-02-18T10:02:14Z</span> <span style="color:#c0392b">ERROR</span> adapter.write.failed status=429 correlation=cor_8920</div>
-                <div><span style="color:#888">2026-02-18T10:03:20Z</span> <span style="color:#27ae60">INFO</span>  approval.requested gate=AG-441 sla=4h</div>
-                <div><span style="color:#888">2026-02-18T10:03:22Z</span> <span style="color:#27ae60">INFO</span>  evidence.entry.written seq=146 hash=a3f8...d91c</div>
+              <div
+                style="
+                  font-family: monospace;
+                  font-size: 10px;
+                  line-height: 1.6;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  background: rgba(0, 0, 0, 0.03);
+                  padding: 8px;
+                  border-radius: 4px;
+                "
+                role="log"
+                aria-label="Log output"
+                aria-live="polite"
+              >
+                <div>
+                  <span style="color: #888">2026-02-18T10:02:11Z</span>
+                  <span style="color: #27ae60">INFO</span> run.started run_id=R-8920 tenant=acme
+                </div>
+                <div>
+                  <span style="color: #888">2026-02-18T10:02:12Z</span>
+                  <span style="color: #27ae60">INFO</span> plan.evaluated effects=3 confidence=0.98
+                </div>
+                <div>
+                  <span style="color: #888">2026-02-18T10:02:13Z</span>
+                  <span style="color: #f39c12">WARN</span> adapter.rate_limit adapter=netsuite
+                  retry_after=60s
+                </div>
+                <div>
+                  <span style="color: #888">2026-02-18T10:02:14Z</span>
+                  <span style="color: #c0392b">ERROR</span> adapter.write.failed status=429
+                  correlation=cor_8920
+                </div>
+                <div>
+                  <span style="color: #888">2026-02-18T10:03:20Z</span>
+                  <span style="color: #27ae60">INFO</span> approval.requested gate=AG-441 sla=4h
+                </div>
+                <div>
+                  <span style="color: #888">2026-02-18T10:03:22Z</span>
+                  <span style="color: #27ae60">INFO</span> evidence.entry.written seq=146
+                  hash=a3f8...d91c
+                </div>
               </div>
             </article>
-
           </div>
 
-          <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+          <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
             <strong>Nielsen Review (bead-0471):</strong>
-            Sparklines have aria-label with min/max/current values (not colour-only).
-            Log viewer has role="log" + aria-live="polite" for tail mode.
-            Error trace row uses text "Err 429" not just colour.
-            Trace IDs are copyable code elements. Health metric cards have aria-label.
+            Sparklines have aria-label with min/max/current values (not colour-only). Log viewer has
+            role="log" + aria-live="polite" for tail mode. Error trace row uses text "Err 429" not
+            just colour. Trace IDs are copyable code elements. Health metric cards have aria-label.
             Grafana link is labelled (not just an icon).
           </div>
         </section>
@@ -6583,11 +7064,18 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: GOVERNANCE AND POLICY  [bead-0473]
              ============================================================ -->
-        <section id="screen-governance" class="screen" data-screen="governance" aria-labelledby="h-governance">
+        <section
+          id="screen-governance"
+          class="screen"
+          data-screen="governance"
+          aria-labelledby="h-governance"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-governance" class="h1">Governance &amp; Policy</h1>
-              <div class="subtle">Policy rules, SoD constraints, blast-radius visualization, tenant isolation</div>
+              <div class="subtle">
+                Policy rules, SoD constraints, blast-radius visualization, tenant isolation
+              </div>
             </div>
             <div class="screen__actions">
               <button class="btn btn--primary" type="button">Add rule</button>
@@ -6601,86 +7089,134 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <button class="tab" type="button" data-tab="gov-tenant">Tenant Isolation</button>
           </div>
 
-          <div class="tabpanes" style="margin-top:12px">
+          <div class="tabpanes" style="margin-top: 12px">
             <!-- Policy Rules -->
-            <div class="tabpane tabpane--active" data-pane="gov-rules" role="tabpanel" aria-label="Policy rules">
+            <div
+              class="tabpane tabpane--active"
+              data-pane="gov-rules"
+              role="tabpanel"
+              aria-label="Policy rules"
+            >
               <div class="list" aria-label="Policy rule list">
-
-                <div class="row" style="cursor:pointer">
+                <div class="row" style="cursor: pointer">
                   <div class="row__main">
                     <div class="row__title">
                       FINANCE-APPROVAL-001
-                      <span class="tier-badge tier-badge--human" style="margin-left:6px">Human-approve</span>
-                      <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-left:6px">Enabled</span>
+                      <span class="tier-badge tier-badge--human" style="margin-left: 6px"
+                        >Human-approve</span
+                      >
+                      <span
+                        class="status status--ok"
+                        style="font-size: 10px; padding: 1px 4px; margin-left: 6px"
+                        >Enabled</span
+                      >
                     </div>
                     <div class="row__subtle">
-                      Trigger: <code>write:finance AND amount &gt; $1,000</code><br/>
+                      Trigger: <code>write:finance AND amount &gt; $1,000</code><br />
                       Blast radius: Finance (NetSuite, QuickBooks) &bull; Reversibility: Full
                     </div>
                   </div>
                   <div class="row__right">
-                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle FINANCE-APPROVAL-001">
-                      <input type="checkbox" checked style="display:none"/>
+                    <label
+                      class="toggle"
+                      title="Enable/disable rule"
+                      aria-label="Toggle FINANCE-APPROVAL-001"
+                    >
+                      <input type="checkbox" checked style="display: none" />
                       <span class="toggle__slider"></span>
                     </label>
                   </div>
                 </div>
 
-                <div class="row" style="cursor:pointer">
+                <div class="row" style="cursor: pointer">
                   <div class="row__main">
                     <div class="row__title">
                       ITSM-ASSISTED-001
-                      <span class="tier-badge tier-badge--assisted" style="margin-left:6px">Assisted</span>
-                      <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-left:6px">Enabled</span>
+                      <span class="tier-badge tier-badge--assisted" style="margin-left: 6px"
+                        >Assisted</span
+                      >
+                      <span
+                        class="status status--ok"
+                        style="font-size: 10px; padding: 1px 4px; margin-left: 6px"
+                        >Enabled</span
+                      >
                     </div>
                     <div class="row__subtle">
-                      Trigger: <code>write:itsm AND priority IN [P1, P2]</code><br/>
+                      Trigger: <code>write:itsm AND priority IN [P1, P2]</code><br />
                       Blast radius: ITSM (ServiceNow, Jira) &bull; Reversibility: Partial
                     </div>
                   </div>
                   <div class="row__right">
-                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle ITSM-ASSISTED-001">
-                      <input type="checkbox" checked style="display:none"/>
+                    <label
+                      class="toggle"
+                      title="Enable/disable rule"
+                      aria-label="Toggle ITSM-ASSISTED-001"
+                    >
+                      <input type="checkbox" checked style="display: none" />
                       <span class="toggle__slider"></span>
                     </label>
                   </div>
                 </div>
 
-                <div class="row" style="cursor:pointer;opacity:.6">
+                <div class="row" style="cursor: pointer; opacity: 0.6">
                   <div class="row__main">
                     <div class="row__title">
                       PAYROLL-MANUAL-001
-                      <span class="tier-badge tier-badge--manual" style="margin-left:6px">Manual-only</span>
-                      <span class="status" style="font-size:10px;padding:1px 4px;margin-left:6px;color:#888">Disabled</span>
+                      <span class="tier-badge tier-badge--manual" style="margin-left: 6px"
+                        >Manual-only</span
+                      >
+                      <span
+                        class="status"
+                        style="font-size: 10px; padding: 1px 4px; margin-left: 6px; color: #888"
+                        >Disabled</span
+                      >
                     </div>
                     <div class="row__subtle">
-                      Trigger: <code>write:payroll</code><br/>
+                      Trigger: <code>write:payroll</code><br />
                       Blast radius: Payroll (ADP, Gusto) &bull; Reversibility: None
                     </div>
                   </div>
                   <div class="row__right">
-                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle PAYROLL-MANUAL-001">
-                      <input type="checkbox" style="display:none"/>
+                    <label
+                      class="toggle"
+                      title="Enable/disable rule"
+                      aria-label="Toggle PAYROLL-MANUAL-001"
+                    >
+                      <input type="checkbox" style="display: none" />
                       <span class="toggle__slider"></span>
                     </label>
                   </div>
                 </div>
-
               </div>
 
               <!-- Blast-radius visualization -->
-              <div style="margin-top:16px">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Blast-Radius Map (FINANCE-APPROVAL-001)</div>
-                <div class="cap-grid" aria-label="Blast radius: Finance and Accounting adapter affects NetSuite, QuickBooks, Xero">
-                  <div class="card card--featured" style="text-align:center;padding:12px">
-                    <div class="port-icon" style="font-size:20px">&#36;</div>
-                    <div style="font-weight:600;margin:4px 0">Finance</div>
-                    <div class="chips" style="justify-content:center">
+              <div style="margin-top: 16px">
+                <div
+                  style="
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #888;
+                    margin-bottom: 8px;
+                  "
+                >
+                  Blast-Radius Map (FINANCE-APPROVAL-001)
+                </div>
+                <div
+                  class="cap-grid"
+                  aria-label="Blast radius: Finance and Accounting adapter affects NetSuite, QuickBooks, Xero"
+                >
+                  <div class="card card--featured" style="text-align: center; padding: 12px">
+                    <div class="port-icon" style="font-size: 20px">&#36;</div>
+                    <div style="font-weight: 600; margin: 4px 0">Finance</div>
+                    <div class="chips" style="justify-content: center">
                       <span class="chip chip--small">NetSuite</span>
                       <span class="chip chip--small">QuickBooks</span>
                       <span class="chip chip--small">Xero</span>
                     </div>
-                    <div class="subtle" style="font-size:10px;margin-top:4px">3 providers &bull; write scope</div>
+                    <div class="subtle" style="font-size: 10px; margin-top: 4px">
+                      3 providers &bull; write scope
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6691,62 +7227,90 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
-                    <div class="row__title"><span class="sod-badge">SoD-FINANCE-001</span> Different-approver constraint</div>
-                    <div class="row__subtle">The person who initiates a run cannot approve it. Applies to: FINANCE-APPROVAL-001</div>
+                    <div class="row__title">
+                      <span class="sod-badge">SoD-FINANCE-001</span> Different-approver constraint
+                    </div>
+                    <div class="row__subtle">
+                      The person who initiates a run cannot approve it. Applies to:
+                      FINANCE-APPROVAL-001
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">Enforced</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">Enforced</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
-                    <div class="row__title"><span class="sod-badge">SoD-PAYROLL-001</span> N-of-2 approval</div>
-                    <div class="row__subtle">Any payroll write requires 2 independent approvers. Applies to: PAYROLL-MANUAL-001</div>
+                    <div class="row__title">
+                      <span class="sod-badge">SoD-PAYROLL-001</span> N-of-2 approval
+                    </div>
+                    <div class="row__subtle">
+                      Any payroll write requires 2 independent approvers. Applies to:
+                      PAYROLL-MANUAL-001
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">Enforced</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">Enforced</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Tenant Isolation -->
-            <div class="tabpane" data-pane="gov-tenant" role="tabpanel" aria-label="Tenant isolation">
-              <div class="callout callout--ok" style="margin-bottom:12px">
+            <div
+              class="tabpane"
+              data-pane="gov-tenant"
+              role="tabpanel"
+              aria-label="Tenant isolation"
+            >
+              <div class="callout callout--ok" style="margin-bottom: 12px">
                 <strong>Workspace boundary: acme.portarium.io</strong>
-                <div style="font-size:12px;margin-top:4px">
-                  Cross-tenant access: <strong>Denied</strong> &bull;
-                  Credential scope: per-workspace &bull;
-                  Evidence isolation: workspace-scoped WORM storage
+                <div style="font-size: 12px; margin-top: 4px">
+                  Cross-tenant access: <strong>Denied</strong> &bull; Credential scope:
+                  per-workspace &bull; Evidence isolation: workspace-scoped WORM storage
                 </div>
               </div>
               <div class="list">
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">Cross-workspace data access</div>
-                    <div class="row__subtle">Adapters cannot read/write across workspace boundaries</div>
+                    <div class="row__subtle">
+                      Adapters cannot read/write across workspace boundaries
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Enforced</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">&#10003; Enforced</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">Credential scoping</div>
                     <div class="row__subtle">All credentials are scoped to this workspace only</div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Enforced</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">&#10003; Enforced</span>
+                  </div>
                 </div>
                 <div class="row row--static">
                   <div class="row__main">
                     <div class="row__title">Evidence WORM isolation</div>
-                    <div class="row__subtle">Evidence log is isolated per workspace with WORM controls</div>
+                    <div class="row__subtle">
+                      Evidence log is isolated per workspace with WORM controls
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Active</span></div>
+                  <div class="row__right">
+                    <span class="status status--ok" style="font-size: 10px">&#10003; Active</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+          <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
             <strong>Nielsen Review (bead-0473):</strong>
-            Policy rules show trigger conditions in code elements (recognition over recall).
-            Toggles have aria-label per rule. Blast-radius map shows affected systems (not just counts).
-            SoD constraints show human-readable explanation. Tenant isolation shows positive assertions.
+            Policy rules show trigger conditions in code elements (recognition over recall). Toggles
+            have aria-label per rule. Blast-radius map shows affected systems (not just counts). SoD
+            constraints show human-readable explanation. Tenant isolation shows positive assertions.
             Disabled rules visually muted + text "Disabled" (not colour-only).
           </div>
         </section>
@@ -6754,7 +7318,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: PERFORMANCE / LOADING PATTERNS  [bead-0479]
              ============================================================ -->
-        <section id="screen-loading" class="screen" data-screen="loading" aria-labelledby="h-loading">
+        <section
+          id="screen-loading"
+          class="screen"
+          data-screen="loading"
+          aria-labelledby="h-loading"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-loading" class="h1">Loading &amp; Performance Patterns</h1>
@@ -6763,72 +7332,268 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- Skeleton screens -->
-          <div style="margin-bottom:20px">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Skeleton Screens (loading state)</div>
+          <div style="margin-bottom: 20px">
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #888;
+                margin-bottom: 8px;
+              "
+            >
+              Skeleton Screens (loading state)
+            </div>
             <div class="grid grid--3" aria-label="Skeleton screen examples" aria-busy="true">
-
               <!-- Skeleton card -->
               <div class="card" aria-label="Loading..." role="status">
-                <div style="height:12px;background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.06) 75%);background-size:400px 100%;border-radius:4px;margin-bottom:8px;animation:skeleton-pulse 1.5s ease-in-out infinite;width:60%"></div>
-                <div style="height:10px;background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.06) 75%);background-size:400px 100%;border-radius:4px;margin-bottom:6px;animation:skeleton-pulse 1.5s ease-in-out infinite;width:90%"></div>
-                <div style="height:10px;background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.06) 75%);background-size:400px 100%;border-radius:4px;animation:skeleton-pulse 1.5s ease-in-out infinite;width:75%"></div>
-                <span class="subtle" style="font-size:10px;display:block;margin-top:8px">Card skeleton (runs list)</span>
+                <div
+                  style="
+                    height: 12px;
+                    background: linear-gradient(
+                      90deg,
+                      rgba(0, 0, 0, 0.06) 25%,
+                      rgba(0, 0, 0, 0.1) 50%,
+                      rgba(0, 0, 0, 0.06) 75%
+                    );
+                    background-size: 400px 100%;
+                    border-radius: 4px;
+                    margin-bottom: 8px;
+                    animation: skeleton-pulse 1.5s ease-in-out infinite;
+                    width: 60%;
+                  "
+                ></div>
+                <div
+                  style="
+                    height: 10px;
+                    background: linear-gradient(
+                      90deg,
+                      rgba(0, 0, 0, 0.06) 25%,
+                      rgba(0, 0, 0, 0.1) 50%,
+                      rgba(0, 0, 0, 0.06) 75%
+                    );
+                    background-size: 400px 100%;
+                    border-radius: 4px;
+                    margin-bottom: 6px;
+                    animation: skeleton-pulse 1.5s ease-in-out infinite;
+                    width: 90%;
+                  "
+                ></div>
+                <div
+                  style="
+                    height: 10px;
+                    background: linear-gradient(
+                      90deg,
+                      rgba(0, 0, 0, 0.06) 25%,
+                      rgba(0, 0, 0, 0.1) 50%,
+                      rgba(0, 0, 0, 0.06) 75%
+                    );
+                    background-size: 400px 100%;
+                    border-radius: 4px;
+                    animation: skeleton-pulse 1.5s ease-in-out infinite;
+                    width: 75%;
+                  "
+                ></div>
+                <span class="subtle" style="font-size: 10px; display: block; margin-top: 8px"
+                  >Card skeleton (runs list)</span
+                >
               </div>
 
               <div class="card" aria-label="Loading..." role="status">
-                <div style="height:12px;background:linear-gradient(90deg,rgba(0,0,0,.06) 25%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.06) 75%);border-radius:4px;margin-bottom:8px;width:40%"></div>
-                <div style="display:flex;gap:8px;margin-bottom:6px">
-                  <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.08)"></div>
-                  <div style="flex:1">
-                    <div style="height:10px;background:rgba(0,0,0,.07);border-radius:4px;margin-bottom:4px;width:80%"></div>
-                    <div style="height:8px;background:rgba(0,0,0,.05);border-radius:4px;width:50%"></div>
+                <div
+                  style="
+                    height: 12px;
+                    background: linear-gradient(
+                      90deg,
+                      rgba(0, 0, 0, 0.06) 25%,
+                      rgba(0, 0, 0, 0.1) 50%,
+                      rgba(0, 0, 0, 0.06) 75%
+                    );
+                    border-radius: 4px;
+                    margin-bottom: 8px;
+                    width: 40%;
+                  "
+                ></div>
+                <div style="display: flex; gap: 8px; margin-bottom: 6px">
+                  <div
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      border-radius: 50%;
+                      background: rgba(0, 0, 0, 0.08);
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div
+                      style="
+                        height: 10px;
+                        background: rgba(0, 0, 0, 0.07);
+                        border-radius: 4px;
+                        margin-bottom: 4px;
+                        width: 80%;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        height: 8px;
+                        background: rgba(0, 0, 0, 0.05);
+                        border-radius: 4px;
+                        width: 50%;
+                      "
+                    ></div>
                   </div>
                 </div>
-                <div style="height:8px;background:rgba(0,0,0,.05);border-radius:4px;width:95%"></div>
-                <span class="subtle" style="font-size:10px;display:block;margin-top:8px">Agent card skeleton</span>
+                <div
+                  style="
+                    height: 8px;
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 4px;
+                    width: 95%;
+                  "
+                ></div>
+                <span class="subtle" style="font-size: 10px; display: block; margin-top: 8px"
+                  >Agent card skeleton</span
+                >
               </div>
 
               <div class="card" aria-label="Loading..." role="status">
-                <div style="height:12px;background:rgba(0,0,0,.07);border-radius:4px;margin-bottom:10px;width:55%"></div>
-                <div style="height:8px;background:rgba(0,0,0,.05);border-radius:4px;margin-bottom:6px"></div>
-                <div style="height:8px;background:rgba(0,0,0,.05);border-radius:4px;margin-bottom:6px;width:90%"></div>
-                <div style="height:8px;background:rgba(0,0,0,.05);border-radius:4px;margin-bottom:6px;width:70%"></div>
-                <span class="subtle" style="font-size:10px;display:block;margin-top:8px">Evidence row skeleton</span>
+                <div
+                  style="
+                    height: 12px;
+                    background: rgba(0, 0, 0, 0.07);
+                    border-radius: 4px;
+                    margin-bottom: 10px;
+                    width: 55%;
+                  "
+                ></div>
+                <div
+                  style="
+                    height: 8px;
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 4px;
+                    margin-bottom: 6px;
+                  "
+                ></div>
+                <div
+                  style="
+                    height: 8px;
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 4px;
+                    margin-bottom: 6px;
+                    width: 90%;
+                  "
+                ></div>
+                <div
+                  style="
+                    height: 8px;
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 4px;
+                    margin-bottom: 6px;
+                    width: 70%;
+                  "
+                ></div>
+                <span class="subtle" style="font-size: 10px; display: block; margin-top: 8px"
+                  >Evidence row skeleton</span
+                >
               </div>
             </div>
           </div>
 
           <!-- Button loading states -->
-          <div style="margin-bottom:20px">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Button Loading States</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <button class="btn btn--primary btn--loading" type="button" disabled aria-label="Approving... please wait" aria-busy="true">
+          <div style="margin-bottom: 20px">
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #888;
+                margin-bottom: 8px;
+              "
+            >
+              Button Loading States
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+              <button
+                class="btn btn--primary btn--loading"
+                type="button"
+                disabled
+                aria-label="Approving... please wait"
+                aria-busy="true"
+              >
                 Approving&hellip;
               </button>
-              <button class="btn btn--small btn--loading" type="button" disabled aria-label="Testing connection, please wait" aria-busy="true">
+              <button
+                class="btn btn--small btn--loading"
+                type="button"
+                disabled
+                aria-label="Testing connection, please wait"
+                aria-busy="true"
+              >
                 Testing&hellip;
               </button>
-              <button class="btn btn--small btn--loading" type="button" disabled aria-label="Verifying chain, please wait" aria-busy="true">
+              <button
+                class="btn btn--small btn--loading"
+                type="button"
+                disabled
+                aria-label="Verifying chain, please wait"
+                aria-busy="true"
+              >
                 Verifying chain&hellip;
               </button>
-              <span class="subtle" style="font-size:11px">Disabled + aria-busy="true" during async operations</span>
+              <span class="subtle" style="font-size: 11px"
+                >Disabled + aria-busy="true" during async operations</span
+              >
             </div>
           </div>
 
           <!-- Cursor pagination -->
-          <div style="margin-bottom:20px">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Cursor-based Pagination</div>
+          <div style="margin-bottom: 20px">
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #888;
+                margin-bottom: 8px;
+              "
+            >
+              Cursor-based Pagination
+            </div>
             <div class="card">
-              <div class="card__title" style="margin-bottom:8px">Runs &mdash; Page 2 of ~15</div>
+              <div class="card__title" style="margin-bottom: 8px">Runs &mdash; Page 2 of ~15</div>
               <div class="list" aria-label="Paginated runs list">
-                <div class="row row--static"><div class="row__main"><div class="row__title">R-8920 &mdash; Invoice correction</div><div class="row__subtle">Started 2m ago &bull; Running</div></div><div class="row__right"><span class="status status--info">Running</span></div></div>
-                <div class="row row--static"><div class="row__main"><div class="row__title">R-8892 &mdash; Ticket priority update</div><div class="row__subtle">Completed 1h ago</div></div><div class="row__right"><span class="status status--ok">Done</span></div></div>
-                <div class="row row--static"><div class="row__main"><div class="row__title">R-8850 &mdash; CRM sync</div><div class="row__subtle">Failed 2h ago &bull; Rate limit</div></div><div class="row__right"><span class="status status--danger">Failed</span></div></div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">R-8920 &mdash; Invoice correction</div>
+                    <div class="row__subtle">Started 2m ago &bull; Running</div>
+                  </div>
+                  <div class="row__right"><span class="status status--info">Running</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">R-8892 &mdash; Ticket priority update</div>
+                    <div class="row__subtle">Completed 1h ago</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok">Done</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">R-8850 &mdash; CRM sync</div>
+                    <div class="row__subtle">Failed 2h ago &bull; Rate limit</div>
+                  </div>
+                  <div class="row__right"><span class="status status--danger">Failed</span></div>
+                </div>
               </div>
-              <div class="pagination" style="margin-top:10px">
-                <button class="btn btn--small" type="button" aria-label="Previous page">&laquo; Prev</button>
-                <span class="pagination__info" aria-live="polite">Page 2 &bull; Cursor: after R-8921</span>
-                <button class="btn btn--small" type="button" aria-label="Next page">Next &raquo;</button>
+              <div class="pagination" style="margin-top: 10px">
+                <button class="btn btn--small" type="button" aria-label="Previous page">
+                  &laquo; Prev
+                </button>
+                <span class="pagination__info" aria-live="polite"
+                  >Page 2 &bull; Cursor: after R-8921</span
+                >
+                <button class="btn btn--small" type="button" aria-label="Next page">
+                  Next &raquo;
+                </button>
                 <select class="pagination__size" aria-label="Items per page">
                   <option>10 / page</option>
                   <option>25 / page</option>
@@ -6839,30 +7604,53 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- Optimistic UI -->
-          <div style="margin-bottom:16px">
-            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Optimistic UI Pattern</div>
+          <div style="margin-bottom: 16px">
+            <div
+              style="
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #888;
+                margin-bottom: 8px;
+              "
+            >
+              Optimistic UI Pattern
+            </div>
             <div class="card">
-              <div class="card__title" style="margin-bottom:6px">Example: Approval decision (optimistic)</div>
+              <div class="card__title" style="margin-bottom: 6px">
+                Example: Approval decision (optimistic)
+              </div>
               <div class="list">
-                <div class="row row--static" style="opacity:.7">
+                <div class="row row--static" style="opacity: 0.7">
                   <div class="row__main">
-                    <div class="row__title">AG-441 &mdash; Approve Plan: Create Invoice <span class="subtle" style="font-size:11px">(showing immediately, confirming&hellip;)</span></div>
+                    <div class="row__title">
+                      AG-441 &mdash; Approve Plan: Create Invoice
+                      <span class="subtle" style="font-size: 11px"
+                        >(showing immediately, confirming&hellip;)</span
+                      >
+                    </div>
                   </div>
-                  <div class="row__right"><span class="status status--ok" aria-label="Optimistic: approved, confirming with server"><span class="status__icon">&#10003;</span>Approved</span></div>
+                  <div class="row__right">
+                    <span
+                      class="status status--ok"
+                      aria-label="Optimistic: approved, confirming with server"
+                      ><span class="status__icon">&#10003;</span>Approved</span
+                    >
+                  </div>
                 </div>
               </div>
-              <div class="subtle" style="font-size:11px;margin-top:8px">
+              <div class="subtle" style="font-size: 11px; margin-top: 8px">
                 Decision shown immediately. On server error: revert to Pending + show error banner
                 with RFC 9457 Problem Details. On success: confirmed silently.
               </div>
             </div>
           </div>
 
-          <div class="callout callout--ok" style="font-size:12px">
+          <div class="callout callout--ok" style="font-size: 12px">
             <strong>Nielsen Review (bead-0479):</strong>
             Skeleton screens use role="status" + aria-busy="true" (screen reader announces loading).
-            Loading buttons are disabled + aria-busy so double-submit is prevented (error prevention).
-            Pagination info uses aria-live="polite" so page change is announced.
+            Loading buttons are disabled + aria-busy so double-submit is prevented (error
+            prevention). Pagination info uses aria-live="polite" so page change is announced.
             Optimistic UI revert uses error banner (user control and freedom — undo the action).
             Lazy loading: workflow-builder and evidence-explorer load on demand (route-level).
           </div>
@@ -7071,14 +7859,26 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         </span>
         <span class="statusbar__item js-realtime-degraded" hidden aria-live="assertive">
           <span class="statusbar__dot statusbar__dot--warn"></span>
-          <span>Degraded &mdash; polling 30s &bull; <span class="js-staleness-timer">2m</span> ago</span>
-          <button class="statusbar__hint-btn" type="button" style="margin-left:4px" aria-label="Reconnect to live event stream">Reconnect</button>
-          <button class="statusbar__hint-btn" type="button" aria-label="Manually refresh all data">&#8635;</button>
+          <span
+            >Degraded &mdash; polling 30s &bull;
+            <span class="js-staleness-timer">2m</span> ago</span
+          >
+          <button
+            class="statusbar__hint-btn"
+            type="button"
+            style="margin-left: 4px"
+            aria-label="Reconnect to live event stream"
+          >
+            Reconnect
+          </button>
+          <button class="statusbar__hint-btn" type="button" aria-label="Manually refresh all data">
+            &#8635;
+          </button>
         </span>
         <span class="statusbar__item js-realtime-offline" hidden aria-live="assertive">
           <span class="statusbar__dot statusbar__dot--danger"></span>
           <span>Offline &mdash; data unavailable</span>
-          <button class="statusbar__hint-btn" type="button" style="margin-left:4px">Retry</button>
+          <button class="statusbar__hint-btn" type="button" style="margin-left: 4px">Retry</button>
         </span>
         <span class="statusbar__item statusbar__toast js-kbd-toast" hidden></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
