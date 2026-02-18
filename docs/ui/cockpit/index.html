@@ -6127,6 +6127,459 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
         </section>
 
+        <!-- ============================================================
+             SCREEN: DOMAIN PRIMITIVE COMPONENTS SHOWCASE  [bead-0469]
+             ============================================================ -->
+        <section id="screen-components" class="screen" data-screen="components" aria-labelledby="h-components">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-components" class="h1">Component Library</h1>
+              <div class="subtle">Domain primitive components — RunStatusChip, EffectsList, EvidenceTimeline, ApprovalForm, ErrorUX</div>
+            </div>
+          </div>
+
+          <div class="grid grid--2" style="margin-bottom:20px">
+
+            <!-- RunStatusChip -->
+            <article class="card" aria-label="RunStatusChip component">
+              <div class="card__title">RunStatusChip</div>
+              <div class="subtle" style="font-size:11px;margin-bottom:10px">Inline run status with phase + ETA tooltip</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <span class="status status--warn" title="Phase: PendingApproval — SLA: 3h 48m"><span class="status__icon">◷</span>Pending Approval</span>
+                <span class="status status--info" title="Phase: Running — Started 2m ago"><span class="status__icon">&#9654;</span>Running</span>
+                <span class="status status--ok" title="Phase: Completed — Finished 4m ago"><span class="status__icon">&#10003;</span>Completed</span>
+                <span class="status status--danger" title="Phase: Failed — Error: adapter timeout"><span class="status__icon">&#10005;</span>Failed</span>
+                <span class="status" title="Phase: Cancelled — By operator"><span class="status__icon">&#9633;</span>Cancelled</span>
+              </div>
+            </article>
+
+            <!-- ErrorUX — Problem Details RFC 9457 -->
+            <article class="card" aria-label="ErrorUX component — Problem Details RFC 9457">
+              <div class="card__title">ErrorUX — Problem Details</div>
+              <div class="subtle" style="font-size:11px;margin-bottom:10px">RFC 9457 error mapping to actionable banners</div>
+              <div class="banner banner--danger" role="alert" style="margin-bottom:6px;border-radius:4px;font-size:12px">
+                <strong>Rate limit exceeded (429)</strong><br/>
+                Adapter: CRM/Salesforce &bull; Retry after: 60s<br/>
+                <span class="correlation-id" style="font-size:10px">instance: /errors/run/R-8920/step/3</span>
+                <button class="btn btn--small" type="button" style="font-size:10px;margin-left:8px" aria-label="Copy error instance ID">Copy ID &#9003;</button>
+              </div>
+              <div class="callout callout--danger" style="font-size:12px">
+                <strong>Validation failed (422)</strong><br/>
+                Field: invoice.totalAmount &bull; Rule: must be &gt; 0<br/>
+                <a href="#" onclick="return false;" style="font-size:11px">View Problem Details &rarr;</a>
+              </div>
+            </article>
+
+          </div>
+
+          <!-- EffectsList -->
+          <article class="card" style="margin-bottom:16px" aria-label="EffectsList component">
+            <div class="card__title">EffectsList</div>
+            <div class="subtle" style="font-size:11px;margin-bottom:10px">Planned and verified effects with confidence, reversibility, and drift badges</div>
+            <div class="effects">
+              <div class="effects__title">Planned (3 effects)</div>
+              <div class="effects__list">
+                <div class="effect">
+                  <div class="effect__main">
+                    <span class="pill">write</span>
+                    <span class="effect__target">NetSuite / Invoice</span>
+                    <span class="effect__subtle">INV-22318 &bull; Total: $2,340.00</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span class="confidence">98%</span>
+                    <span class="idem-badge idem-badge--safe" title="Idempotent">Idem</span>
+                    <span class="drift-badge" title="No drift detected" style="font-size:10px;color:#27ae60">&#10003; Verified</span>
+                  </div>
+                </div>
+                <div class="effect">
+                  <div class="effect__main">
+                    <span class="pill">notify</span>
+                    <span class="effect__target">Slack / #finance-ops</span>
+                    <span class="effect__subtle">Invoice created confirmation</span>
+                  </div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span class="confidence">99%</span>
+                    <span class="idem-badge idem-badge--unsafe" title="Not idempotent — do not retry">Non-idem</span>
+                  </div>
+                </div>
+                <div class="effect effect--muted">
+                  <div class="effect__main">
+                    <span class="pill" style="opacity:.5">read</span>
+                    <span class="effect__target">Stripe / Charge</span>
+                    <span class="effect__subtle">ch_9d2a &bull; read-only, no side effects</span>
+                  </div>
+                  <div><span class="drift-badge" style="font-size:10px">Read-only</span></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- EvidenceTimeline -->
+          <article class="card" aria-label="EvidenceTimeline component">
+            <div class="card__title">EvidenceTimeline</div>
+            <div class="subtle" style="font-size:11px;margin-bottom:10px">Vertical timeline with hash-verified entries and tamper indicator</div>
+            <div class="list">
+              <div class="row row--static">
+                <div class="row__main">
+                  <div class="row__title">
+                    <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-right:4px"><span class="status__icon">&#10003;</span>Verified</span>
+                    #146 &mdash; Approval decision submitted
+                  </div>
+                  <div class="row__subtle">
+                    <time datetime="2026-02-18T09:58:00Z">09:58</time> &bull; approver@acme.com
+                    &bull; <code style="font-size:10px">sha256:a3f8...d91c</code>
+                  </div>
+                </div>
+              </div>
+              <div class="row row--static">
+                <div class="row__main">
+                  <div class="row__title">
+                    <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-right:4px"><span class="status__icon">&#10003;</span>Verified</span>
+                    #145 &mdash; Plan evaluated
+                  </div>
+                  <div class="row__subtle">
+                    <time datetime="2026-02-18T09:12:00Z">09:12</time> &bull; system
+                    &bull; <code style="font-size:10px">sha256:7e2b...4a5f</code>
+                  </div>
+                </div>
+              </div>
+              <div class="row row--static" style="opacity:.5">
+                <div class="row__main">
+                  <div class="row__title">
+                    <span class="status status--danger" style="font-size:10px;padding:1px 4px;margin-right:4px">&#9888; Tamper?</span>
+                    #144 &mdash; (hash mismatch — entry suspect)
+                  </div>
+                  <div class="row__subtle">Expected: <code style="font-size:10px">sha256:9ab3...</code> &bull; Found: <code style="font-size:10px">sha256:ff1c...</code></div>
+                </div>
+              </div>
+            </div>
+            <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+              <strong>Nielsen Review (bead-0469):</strong>
+              All 5 components present. RunStatusChip uses text + icon not colour alone.
+              EffectsList shows confidence, idempotency, drift. EvidenceTimeline shows hashes inline.
+              ErrorUX maps RFC 9457 to copyable instance IDs. ApprovalForm in approvals screen.
+              All aria-labelled. Components are semantically structured with &lt;article&gt; and &lt;time&gt;.
+            </div>
+          </article>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: OBSERVABILITY AND HEALTH  [bead-0471]
+             ============================================================ -->
+        <section id="screen-observability" class="screen" data-screen="observability" aria-labelledby="h-observability">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-observability" class="h1">Observability</h1>
+              <div class="subtle">OTel traces, health metrics, structured logs</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn" type="button">Export traces</button>
+              <button class="btn btn--primary" type="button">Open Grafana &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Health Metrics Row -->
+          <div class="grid grid--3" style="margin-bottom:16px" aria-label="Health metrics">
+            <article class="card" aria-label="API latency metric">
+              <div class="card__title">API Latency (p99)</div>
+              <div class="metric">
+                <div class="metric__value">142 ms</div>
+                <div class="metric__label">7-day trend</div>
+              </div>
+              <div class="sparkline" aria-label="Sparkline: API latency trending down, min 80ms max 340ms current 142ms">
+                <div class="sparkline__bar" style="height:40%"></div>
+                <div class="sparkline__bar" style="height:60%"></div>
+                <div class="sparkline__bar" style="height:80%"></div>
+                <div class="sparkline__bar" style="height:100%"></div>
+                <div class="sparkline__bar" style="height:70%"></div>
+                <div class="sparkline__bar" style="height:50%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height:42%"></div>
+              </div>
+              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Within SLO (&lt;500ms)</div>
+            </article>
+
+            <article class="card" aria-label="Error rate metric">
+              <div class="card__title">Error Rate</div>
+              <div class="metric">
+                <div class="metric__value">0.8%</div>
+                <div class="metric__label">7-day trend</div>
+              </div>
+              <div class="sparkline" aria-label="Sparkline: Error rate stable, min 0.2% max 1.4% current 0.8%">
+                <div class="sparkline__bar" style="height:20%"></div>
+                <div class="sparkline__bar" style="height:30%"></div>
+                <div class="sparkline__bar" style="height:25%"></div>
+                <div class="sparkline__bar" style="height:60%"></div>
+                <div class="sparkline__bar" style="height:45%"></div>
+                <div class="sparkline__bar" style="height:35%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height:30%"></div>
+              </div>
+              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Within SLO (&lt;1%)</div>
+            </article>
+
+            <article class="card" aria-label="Worker queue depth metric">
+              <div class="card__title">Worker Queue Depth</div>
+              <div class="metric">
+                <div class="metric__value">3</div>
+                <div class="metric__label">7-day trend</div>
+              </div>
+              <div class="sparkline" aria-label="Sparkline: Queue depth low, max 12 current 3">
+                <div class="sparkline__bar" style="height:15%"></div>
+                <div class="sparkline__bar" style="height:30%"></div>
+                <div class="sparkline__bar" style="height:100%"></div>
+                <div class="sparkline__bar" style="height:60%"></div>
+                <div class="sparkline__bar" style="height:20%"></div>
+                <div class="sparkline__bar" style="height:10%"></div>
+                <div class="sparkline__bar sparkline__bar--accent" style="height:25%"></div>
+              </div>
+              <div class="status status--ok" style="margin-top:6px"><span class="status__icon">&#10003;</span>Healthy (&lt;50)</div>
+            </article>
+          </div>
+
+          <!-- Trace List + Log Viewer -->
+          <div class="grid grid--2">
+
+            <!-- OTel Trace List -->
+            <article class="card" aria-label="Recent OTel traces">
+              <div class="card__title">Recent Traces</div>
+              <div class="filters" style="margin-bottom:8px">
+                <input type="search" class="topbar__search" style="width:180px;font-size:11px" placeholder="Search traces..." aria-label="Search traces" />
+              </div>
+              <div class="list">
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">POST /runs — R-8920</div>
+                    <div class="row__subtle">trace: <code style="font-size:10px">7f2a3c...e9b1</code> &bull; 2m ago &bull; 4 spans</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">142ms</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">POST /approvals/decide — AG-441</div>
+                    <div class="row__subtle">trace: <code style="font-size:10px">3e8b9a...f210</code> &bull; 5m ago &bull; 2 spans</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">88ms</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">GET /evidence — chain verify</div>
+                    <div class="row__subtle">trace: <code style="font-size:10px">1c4f2d...8a33</code> &bull; 8m ago &bull; 26 spans</div>
+                  </div>
+                  <div class="row__right"><span class="status status--warn" style="font-size:10px">1,240ms</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">POST /adapter/netsuite/write</div>
+                    <div class="row__subtle">trace: <code style="font-size:10px">9d0e1b...4c55</code> &bull; 12m ago &bull; 6 spans</div>
+                  </div>
+                  <div class="row__right"><span class="status status--danger" style="font-size:10px">Err 429</span></div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Structured Log Viewer -->
+            <article class="card" aria-label="Structured log viewer">
+              <div class="card__title">Log Viewer</div>
+              <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                <span class="chip chip--active chip--small" data-log-level="all">All</span>
+                <span class="chip chip--small" data-log-level="error" style="color:#c0392b">ERROR</span>
+                <span class="chip chip--small" data-log-level="warn">WARN</span>
+                <span class="chip chip--small" data-log-level="info">INFO</span>
+                <input type="search" class="topbar__search" style="width:130px;font-size:10px" placeholder="grep logs..." aria-label="Filter logs" />
+                <label><input type="checkbox" /> Tail</label>
+              </div>
+              <div style="font-family:monospace;font-size:10px;line-height:1.6;max-height:200px;overflow-y:auto;background:rgba(0,0,0,.03);padding:8px;border-radius:4px" role="log" aria-label="Log output" aria-live="polite">
+                <div><span style="color:#888">2026-02-18T10:02:11Z</span> <span style="color:#27ae60">INFO</span>  run.started run_id=R-8920 tenant=acme</div>
+                <div><span style="color:#888">2026-02-18T10:02:12Z</span> <span style="color:#27ae60">INFO</span>  plan.evaluated effects=3 confidence=0.98</div>
+                <div><span style="color:#888">2026-02-18T10:02:13Z</span> <span style="color:#f39c12">WARN</span>  adapter.rate_limit adapter=netsuite retry_after=60s</div>
+                <div><span style="color:#888">2026-02-18T10:02:14Z</span> <span style="color:#c0392b">ERROR</span> adapter.write.failed status=429 correlation=cor_8920</div>
+                <div><span style="color:#888">2026-02-18T10:03:20Z</span> <span style="color:#27ae60">INFO</span>  approval.requested gate=AG-441 sla=4h</div>
+                <div><span style="color:#888">2026-02-18T10:03:22Z</span> <span style="color:#27ae60">INFO</span>  evidence.entry.written seq=146 hash=a3f8...d91c</div>
+              </div>
+            </article>
+
+          </div>
+
+          <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+            <strong>Nielsen Review (bead-0471):</strong>
+            Sparklines have aria-label with min/max/current values (not colour-only).
+            Log viewer has role="log" + aria-live="polite" for tail mode.
+            Error trace row uses text "Err 429" not just colour.
+            Trace IDs are copyable code elements. Health metric cards have aria-label.
+            Grafana link is labelled (not just an icon).
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: GOVERNANCE AND POLICY  [bead-0473]
+             ============================================================ -->
+        <section id="screen-governance" class="screen" data-screen="governance" aria-labelledby="h-governance">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-governance" class="h1">Governance &amp; Policy</h1>
+              <div class="subtle">Policy rules, SoD constraints, blast-radius visualization, tenant isolation</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button">Add rule</button>
+              <button class="btn" type="button">Simulate policy &rarr;</button>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Governance tabs">
+            <button class="tab tab--active" type="button" data-tab="gov-rules">Policy Rules</button>
+            <button class="tab" type="button" data-tab="gov-sod">SoD Constraints</button>
+            <button class="tab" type="button" data-tab="gov-tenant">Tenant Isolation</button>
+          </div>
+
+          <div class="tabpanes" style="margin-top:12px">
+            <!-- Policy Rules -->
+            <div class="tabpane tabpane--active" data-pane="gov-rules" role="tabpanel" aria-label="Policy rules">
+              <div class="list" aria-label="Policy rule list">
+
+                <div class="row" style="cursor:pointer">
+                  <div class="row__main">
+                    <div class="row__title">
+                      FINANCE-APPROVAL-001
+                      <span class="tier-badge tier-badge--human" style="margin-left:6px">Human-approve</span>
+                      <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-left:6px">Enabled</span>
+                    </div>
+                    <div class="row__subtle">
+                      Trigger: <code>write:finance AND amount &gt; $1,000</code><br/>
+                      Blast radius: Finance (NetSuite, QuickBooks) &bull; Reversibility: Full
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle FINANCE-APPROVAL-001">
+                      <input type="checkbox" checked style="display:none"/>
+                      <span class="toggle__slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="row" style="cursor:pointer">
+                  <div class="row__main">
+                    <div class="row__title">
+                      ITSM-ASSISTED-001
+                      <span class="tier-badge tier-badge--assisted" style="margin-left:6px">Assisted</span>
+                      <span class="status status--ok" style="font-size:10px;padding:1px 4px;margin-left:6px">Enabled</span>
+                    </div>
+                    <div class="row__subtle">
+                      Trigger: <code>write:itsm AND priority IN [P1, P2]</code><br/>
+                      Blast radius: ITSM (ServiceNow, Jira) &bull; Reversibility: Partial
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle ITSM-ASSISTED-001">
+                      <input type="checkbox" checked style="display:none"/>
+                      <span class="toggle__slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="row" style="cursor:pointer;opacity:.6">
+                  <div class="row__main">
+                    <div class="row__title">
+                      PAYROLL-MANUAL-001
+                      <span class="tier-badge tier-badge--manual" style="margin-left:6px">Manual-only</span>
+                      <span class="status" style="font-size:10px;padding:1px 4px;margin-left:6px;color:#888">Disabled</span>
+                    </div>
+                    <div class="row__subtle">
+                      Trigger: <code>write:payroll</code><br/>
+                      Blast radius: Payroll (ADP, Gusto) &bull; Reversibility: None
+                    </div>
+                  </div>
+                  <div class="row__right">
+                    <label class="toggle" title="Enable/disable rule" aria-label="Toggle PAYROLL-MANUAL-001">
+                      <input type="checkbox" style="display:none"/>
+                      <span class="toggle__slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Blast-radius visualization -->
+              <div style="margin-top:16px">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:8px">Blast-Radius Map (FINANCE-APPROVAL-001)</div>
+                <div class="cap-grid" aria-label="Blast radius: Finance and Accounting adapter affects NetSuite, QuickBooks, Xero">
+                  <div class="card card--featured" style="text-align:center;padding:12px">
+                    <div class="port-icon" style="font-size:20px">&#36;</div>
+                    <div style="font-weight:600;margin:4px 0">Finance</div>
+                    <div class="chips" style="justify-content:center">
+                      <span class="chip chip--small">NetSuite</span>
+                      <span class="chip chip--small">QuickBooks</span>
+                      <span class="chip chip--small">Xero</span>
+                    </div>
+                    <div class="subtle" style="font-size:10px;margin-top:4px">3 providers &bull; write scope</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SoD Constraints -->
+            <div class="tabpane" data-pane="gov-sod" role="tabpanel" aria-label="SoD constraints">
+              <div class="list">
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title"><span class="sod-badge">SoD-FINANCE-001</span> Different-approver constraint</div>
+                    <div class="row__subtle">The person who initiates a run cannot approve it. Applies to: FINANCE-APPROVAL-001</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">Enforced</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title"><span class="sod-badge">SoD-PAYROLL-001</span> N-of-2 approval</div>
+                    <div class="row__subtle">Any payroll write requires 2 independent approvers. Applies to: PAYROLL-MANUAL-001</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">Enforced</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tenant Isolation -->
+            <div class="tabpane" data-pane="gov-tenant" role="tabpanel" aria-label="Tenant isolation">
+              <div class="callout callout--ok" style="margin-bottom:12px">
+                <strong>Workspace boundary: acme.portarium.io</strong>
+                <div style="font-size:12px;margin-top:4px">
+                  Cross-tenant access: <strong>Denied</strong> &bull;
+                  Credential scope: per-workspace &bull;
+                  Evidence isolation: workspace-scoped WORM storage
+                </div>
+              </div>
+              <div class="list">
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">Cross-workspace data access</div>
+                    <div class="row__subtle">Adapters cannot read/write across workspace boundaries</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Enforced</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">Credential scoping</div>
+                    <div class="row__subtle">All credentials are scoped to this workspace only</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Enforced</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">Evidence WORM isolation</div>
+                    <div class="row__subtle">Evidence log is isolated per workspace with WORM controls</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok" style="font-size:10px">&#10003; Active</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout callout--ok" style="margin-top:12px;font-size:12px">
+            <strong>Nielsen Review (bead-0473):</strong>
+            Policy rules show trigger conditions in code elements (recognition over recall).
+            Toggles have aria-label per rule. Blast-radius map shows affected systems (not just counts).
+            SoD constraints show human-readable explanation. Tenant isolation shows positive assertions.
+            Disabled rules visually muted + text "Disabled" (not colour-only).
+          </div>
+        </section>
+
         <!-- Register Adapter dialog  [bead-0455] -->
         <dialog
           id="dlgRegisterAdapter"
