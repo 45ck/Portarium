@@ -241,6 +241,7 @@ async function executeTransaction(
         initiatedByUserId: ctx.principalId,
         correlationId: ctx.correlationId,
         executionTier: plan.workflow.executionTier,
+        idempotencyKey: plan.commandKey.requestKey,
       });
       await deps.eventPublisher.publish(
         domainEventToPortariumCloudEvent(domainEvent, START_WORKFLOW_SOURCE),

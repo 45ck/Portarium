@@ -291,4 +291,36 @@ describe('startWorkflow', () => {
     }
     expect(result.error.kind).toBe('DependencyFailure');
   });
+
+  it('passes idempotencyKey to orchestrator for Temporal-level deduplication', async () => {
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-concurrent',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(orchestrator.startRun).toHaveBeenCalledWith(
+      expect.objectContaining({ idempotencyKey: 'req-concurrent' }),
+    );
+  });
 });

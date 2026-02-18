@@ -14,6 +14,13 @@ export interface WorkflowExecutionInput {
   readonly initiatedByUserId: UserId;
   readonly correlationId: CorrelationId;
   readonly executionTier: ExecutionTier;
+  /**
+   * Caller-supplied idempotency key scoped to the tenant.
+   * Used as the Temporal workflowId (`${tenantId}/${idempotencyKey}`) so that
+   * concurrent retries with the same key hit the same Temporal execution rather
+   * than spawning duplicates.
+   */
+  readonly idempotencyKey: string;
 }
 
 export interface WorkflowOrchestrator {

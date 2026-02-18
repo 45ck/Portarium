@@ -71,18 +71,18 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
         initiatedByUserId: UserId('user-1'),
         correlationId: CorrelationId('corr-1'),
         executionTier: 'Auto',
+        idempotencyKey: 'req-1',
       }),
     ).rejects.toThrow(/connect\(\) must be called before startRun/i);
   });
 
-  it('calls workflow.start with correct arguments after manual client injection', async () => {
+  it('uses tenantId/idempotencyKey as Temporal workflowId', async () => {
     const stubClient = makeStubClient();
     const orchestrator = new TemporalWorkflowOrchestrator({
       namespace: 'test-ns',
       taskQueue: 'test-queue',
     });
 
-    // Inject stub client without real connection
     (orchestrator as unknown as Record<string, unknown>)['client'] = stubClient;
 
     await orchestrator.startRun({
@@ -92,12 +92,13 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
       initiatedByUserId: UserId('user-7'),
       correlationId: CorrelationId('corr-xyz'),
       executionTier: 'HumanApprove',
+      idempotencyKey: 'req-abc',
     });
 
     expect(stubClient.workflow.start).toHaveBeenCalledWith(
       PORTARIUM_WORKFLOW_TYPE,
       expect.objectContaining({
-        workflowId: 'tenant-acme/run-42',
+        workflowId: 'tenant-acme/req-abc',
         taskQueue: 'test-queue',
         args: [
           expect.objectContaining({
@@ -111,6 +112,59 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
         ],
       }),
     );
+  });
+
+  it('treats WorkflowExecutionAlreadyStartedError as idempotent success', async () => {
+    const alreadyStartedError = Object.assign(new Error('already started'), {
+      name: 'WorkflowExecutionAlreadyStartedError',
+    });
+    const stubClient = makeStubClient({
+      workflow: {
+        start: vi.fn(async () => {
+          throw alreadyStartedError;
+        }),
+      },
+    });
+    const orchestrator = new TemporalWorkflowOrchestrator();
+    (orchestrator as unknown as Record<string, unknown>)['client'] = stubClient;
+
+    // Should resolve, not reject
+    await expect(
+      orchestrator.startRun({
+        runId: RunId('run-1'),
+        tenantId: TenantId('tenant-1'),
+        workflowId: WorkflowId('wf-1'),
+        initiatedByUserId: UserId('user-1'),
+        correlationId: CorrelationId('corr-1'),
+        executionTier: 'Auto',
+        idempotencyKey: 'req-1',
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('re-throws non-AlreadyStarted errors from workflow.start', async () => {
+    const networkError = new Error('connection refused');
+    const stubClient = makeStubClient({
+      workflow: {
+        start: vi.fn(async () => {
+          throw networkError;
+        }),
+      },
+    });
+    const orchestrator = new TemporalWorkflowOrchestrator();
+    (orchestrator as unknown as Record<string, unknown>)['client'] = stubClient;
+
+    await expect(
+      orchestrator.startRun({
+        runId: RunId('run-1'),
+        tenantId: TenantId('tenant-1'),
+        workflowId: WorkflowId('wf-1'),
+        initiatedByUserId: UserId('user-1'),
+        correlationId: CorrelationId('corr-1'),
+        executionTier: 'Auto',
+        idempotencyKey: 'req-1',
+      }),
+    ).rejects.toThrow('connection refused');
   });
 });
 
@@ -152,6 +206,7 @@ describe('TemporalWorkflowOrchestrator.close', () => {
         initiatedByUserId: UserId('u-1'),
         correlationId: CorrelationId('c-1'),
         executionTier: 'Auto',
+        idempotencyKey: 'req-1',
       }),
     ).rejects.toThrow(/connect\(\) must be called before startRun/i);
   });

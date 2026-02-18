@@ -65,26 +65,46 @@ export class TemporalWorkflowOrchestrator implements WorkflowOrchestrator {
     return this;
   }
 
-  /** Dispatches a new Temporal workflow execution for the given run. */
+  /**
+   * Dispatches a Temporal workflow execution for the given run.
+   *
+   * The Temporal workflowId is `${tenantId}/${idempotencyKey}` so that
+   * concurrent retries with the same idempotency key resolve to the same
+   * Temporal execution — preventing duplicate runs even when the application-layer
+   * idempotency cache is not yet populated (concurrent window).
+   *
+   * `WorkflowExecutionAlreadyStartedError` is treated as idempotent success:
+   * the existing execution continues uninterrupted.
+   */
   public async startRun(input: WorkflowExecutionInput): Promise<void> {
     if (this.client === null) {
       throw new Error('TemporalWorkflowOrchestrator: connect() must be called before startRun().');
     }
 
-    await this.client.workflow.start(PORTARIUM_WORKFLOW_TYPE, {
-      taskQueue: this.taskQueue,
-      workflowId: `${input.tenantId}/${input.runId}`,
-      args: [
-        {
-          runId: input.runId.toString(),
-          tenantId: input.tenantId.toString(),
-          workflowId: input.workflowId.toString(),
-          initiatedByUserId: input.initiatedByUserId.toString(),
-          correlationId: input.correlationId.toString(),
-          executionTier: input.executionTier,
-        },
-      ],
-    });
+    try {
+      await this.client.workflow.start(PORTARIUM_WORKFLOW_TYPE, {
+        taskQueue: this.taskQueue,
+        workflowId: `${input.tenantId}/${input.idempotencyKey}`,
+        args: [
+          {
+            runId: input.runId.toString(),
+            tenantId: input.tenantId.toString(),
+            workflowId: input.workflowId.toString(),
+            initiatedByUserId: input.initiatedByUserId.toString(),
+            correlationId: input.correlationId.toString(),
+            executionTier: input.executionTier,
+          },
+        ],
+      });
+    } catch (error) {
+      // Temporal throws WorkflowExecutionAlreadyStartedError when a workflow
+      // with the same workflowId is already running.  This is idempotent
+      // success — the existing execution carries the same idempotency key.
+      if (error instanceof Error && error.name === 'WorkflowExecutionAlreadyStartedError') {
+        return;
+      }
+      throw error;
+    }
   }
 
   /**
