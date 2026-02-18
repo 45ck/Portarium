@@ -26,19 +26,23 @@ export type ApprovalDecisionSignalPayload = Readonly<{
 export const approvalDecisionSignal =
   defineSignal<[ApprovalDecisionSignalPayload]>('approvalDecision');
 
-const { startRunActivity, completeRunActivity }: typeof activities = proxyActivities<
-  typeof activities
->({
-  startToCloseTimeout: '30 seconds',
-  retry: {
-    // Conservative default: quick retries with capped exponential backoff.
-    // Per-activity policy will become explicit when actions are implemented.
+type TemporalRunActivities = Readonly<{
+  startRunActivity: typeof activities.startRunActivity;
+  completeRunActivity: typeof activities.completeRunActivity;
+}>;
+
+const { startRunActivity, completeRunActivity }: TemporalRunActivities =
+  proxyActivities<TemporalRunActivities>({
+    startToCloseTimeout: '30 seconds',
+    retry: {
+      // Conservative default: quick retries with capped exponential backoff.
+      // Per-activity policy will become explicit when actions are implemented.
     initialInterval: '1 second',
     backoffCoefficient: 2,
-    maximumInterval: '30 seconds',
-    maximumAttempts: 5,
-  },
-});
+      maximumInterval: '30 seconds',
+      maximumAttempts: 5,
+    },
+  });
 
 export async function portariumRun(input: PortariumRunWorkflowInput): Promise<void> {
   // Deterministic workflow boundary:

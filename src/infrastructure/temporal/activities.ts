@@ -137,7 +137,7 @@ export function completeRunActivity(input: CompleteRunActivityInput): Promise<vo
   const chain = getEvidenceChain(input.tenantId, input.runId);
   const verify = verifyEvidenceChainV1(chain, hasher);
   if (!verify.ok) {
-    throw new Error(`Evidence chain invalid: ${verify.error.kind}`);
+    throw new Error(`Evidence chain invalid: ${verify.reason} (index=${verify.index})`);
   }
 
   return Promise.resolve();
