@@ -57,4 +57,3 @@ export async function createTemporalWorker(
     run: () => worker.run(),
   };
 }
-

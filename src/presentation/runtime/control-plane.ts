@@ -21,7 +21,12 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
   const port = options.port ?? readPort(8080);
   const host = options.host ?? '0.0.0.0';
 
-  const handle = await startHealthServer({ role, host, port, handler: createControlPlaneHandler() });
+  const handle = await startHealthServer({
+    role,
+    host,
+    port,
+    handler: createControlPlaneHandler(),
+  });
 
   console.log(`Portarium ${role} listening on ${handle.host}:${handle.port}`);
 

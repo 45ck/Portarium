@@ -2,9 +2,19 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
-import type { AuthenticationPort, AuthorizationPort, RunStore, WorkspaceStore } from '../../application/ports/index.js';
+import type {
+  AuthenticationPort,
+  AuthorizationPort,
+  RunStore,
+  WorkspaceStore,
+} from '../../application/ports/index.js';
 import type { AppContext } from '../../application/common/context.js';
-import type { Forbidden, NotFound, Unauthorized, ValidationFailed } from '../../application/common/errors.js';
+import type {
+  Forbidden,
+  NotFound,
+  Unauthorized,
+  ValidationFailed,
+} from '../../application/common/errors.js';
 import { err } from '../../application/common/result.js';
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
@@ -47,7 +57,12 @@ function normalizeCorrelationId(req: IncomingMessage): string {
   return randomUUID();
 }
 
-function respondJson(res: ServerResponse, statusCode: number, correlationId: string, body: unknown): void {
+function respondJson(
+  res: ServerResponse,
+  statusCode: number,
+  correlationId: string,
+  body: unknown,
+): void {
   res.statusCode = statusCode;
   res.setHeader('content-type', 'application/json');
   res.setHeader('x-correlation-id', correlationId);
@@ -106,8 +121,8 @@ function buildAuthentication(): AuthenticationPort {
   if (jwksUri) {
     return new JoseJwtAuthentication({
       jwksUri,
-      issuer: issuer && issuer !== '' ? issuer : undefined,
-      audience: audience && audience !== '' ? audience : undefined,
+      ...(issuer && issuer !== '' ? { issuer } : {}),
+      ...(audience && audience !== '' ? { audience } : {}),
     });
   }
 
@@ -146,7 +161,7 @@ async function authenticate(
   const auth = await deps.authentication.authenticateBearerToken({
     authorizationHeader: readAuthorizationHeader(req),
     correlationId,
-    expectedWorkspaceId,
+    ...(expectedWorkspaceId ? { expectedWorkspaceId } : {}),
   });
 
   if (auth.ok) return { ok: true, ctx: auth.value };
@@ -218,7 +233,11 @@ async function handleGetRun(
   respondProblem(res, problemFromError(result.error, pathname), correlationId);
 }
 
-async function handleRequest(deps: ControlPlaneDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
+async function handleRequest(
+  deps: ControlPlaneDeps,
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> {
   const correlationId = normalizeCorrelationId(req);
   const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
 
