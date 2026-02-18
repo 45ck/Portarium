@@ -1,9 +1,13 @@
 import http, { type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 
+export type RequestHandler = (req: IncomingMessage, res: ServerResponse) => void;
+
 export type HealthServerOptions = Readonly<{
   role: string;
   host?: string;
   port: number;
+  /** Optional handler for non-health paths. When omitted, a plain text response is returned. */
+  handler?: RequestHandler;
 }>;
 
 export type HealthServerHandle = Readonly<{
@@ -31,10 +35,15 @@ function isHealthPath(url: string | undefined): boolean {
   return url === '/healthz' || url === '/readyz' || url === '/ready' || url === '/health';
 }
 
-function createHandler(role: string, startedAt: string) {
+function createHandler(role: string, startedAt: string, handler?: RequestHandler) {
   return (req: IncomingMessage, res: ServerResponse) => {
     if (isHealthPath(req.url)) {
       respondJson(res, 200, { service: role, status: 'ok', startedAt });
+      return;
+    }
+
+    if (handler) {
+      handler(req, res);
       return;
     }
 
@@ -54,7 +63,7 @@ export async function startHealthServer(options: HealthServerOptions): Promise<H
   const host = options.host ?? '0.0.0.0';
   const startedAt = new Date().toISOString();
 
-  const server = http.createServer(createHandler(role, startedAt));
+  const server = http.createServer(createHandler(role, startedAt, options.handler));
   await listen(server, options.port, host);
 
   const address = server.address();

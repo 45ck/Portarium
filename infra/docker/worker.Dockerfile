@@ -15,7 +15,11 @@ WORKDIR /app
 ENV NODE_ENV=production \
   PORTARIUM_CONTAINER_ROLE=execution-plane \
   PORTARIUM_HTTP_PORT=8081 \
-  PORTARIUM_OTEL_PORT=4317
+  PORTARIUM_OTEL_PORT=4317 \
+  PORTARIUM_ENABLE_TEMPORAL_WORKER=true \
+  PORTARIUM_TEMPORAL_ADDRESS=temporal:7233 \
+  PORTARIUM_TEMPORAL_NAMESPACE=default \
+  PORTARIUM_TEMPORAL_TASK_QUEUE=portarium-runs
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts

@@ -1,6 +1,7 @@
 import { startHealthServer, type HealthServerHandle } from './health-server.js';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createControlPlaneHandler } from './control-plane-handler.js';
 
 export type ControlPlaneRuntimeOptions = Readonly<{
   port?: number;
@@ -20,9 +21,8 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
   const port = options.port ?? readPort(8080);
   const host = options.host ?? '0.0.0.0';
 
-  const handle = await startHealthServer({ role, host, port });
+  const handle = await startHealthServer({ role, host, port, handler: createControlPlaneHandler() });
 
-  // Keep the runtime boundary predictable for k8s/compose; actual API wiring lands in later beads.
   console.log(`Portarium ${role} listening on ${handle.host}:${handle.port}`);
 
   const shutdown = async () => {
