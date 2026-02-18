@@ -11,13 +11,24 @@ interface JsonObject {
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 
 /**
- * Canonical JSON stringification for hashing.
+ * Canonical JSON stringification for hashing — aligned to RFC 8785 JCS
+ * (JSON Canonicalization Scheme, https://www.rfc-editor.org/rfc/rfc8785).
  *
- * Rules:
- * - Objects are stringified with lexicographically sorted keys.
- * - `undefined` fields are omitted (like JSON.stringify does).
- * - Arrays keep their order.
- * - Values must be JSON-compatible (no functions, symbols, bigint, NaN, Infinity, Date, Map, etc).
+ * Compliance notes:
+ * - Object keys are sorted by Unicode code point order of their UTF-16 representation
+ *   (equivalent to the `<`/`>` operator on JS strings for all BMP characters).
+ *   Domain key names are ASCII identifiers, so this is identical to byte order.
+ * - `undefined` fields are omitted (like JSON.stringify; not permitted in JCS input).
+ * - Arrays preserve insertion order (JCS requirement).
+ * - Numbers are serialized using the ECMAScript `Number::toString` algorithm, which
+ *   produces the shortest round-trip representation — compatible with JCS §3.2.2.3.
+ *   Non-finite values (NaN, Infinity) are rejected as they are not valid JSON.
+ * - Only plain objects, arrays, and JSON primitives are accepted.
+ *   Dates, Maps, class instances, BigInt, Symbol, and functions are rejected.
+ *
+ * Cross-language compatibility: any JCS-compliant implementation (Python, Java, Go, etc.)
+ * operating on the same JSON-compatible data will produce a byte-identical output,
+ * enabling deterministic hash verification of evidence chains outside TypeScript.
  */
 export function canonicalizeJson(value: unknown): string {
   const normalized = normalizeJson(value);

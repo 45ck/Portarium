@@ -50,12 +50,26 @@ Fields:
 
 `hashSha256` is computed as SHA-256 hex over a canonical JSON encoding of the entry **excluding** `hashSha256` itself.
 
-Canonical JSON rules:
+Canonical JSON is aligned to **RFC 8785 JCS** (JSON Canonicalization Scheme,
+<https://www.rfc-editor.org/rfc/rfc8785>) for deterministic cross-language verification.
 
-- Object keys are sorted lexicographically (recursive).
+Rules:
+
+- Object keys are sorted by **Unicode code point order** (equivalent to JS `<`/`>` for
+  all BMP characters; domain key names are ASCII so byte order applies).
 - `undefined` fields are omitted.
-- Arrays preserve order.
-- Only JSON-compatible values are allowed (no `Date`, `Map`, `NaN`, `Infinity`, functions, etc).
+- Arrays preserve insertion order.
+- Numbers are serialized using the shortest round-trip form (ECMAScript `Number::toString`,
+  equivalent to IEEE 754 binary-to-decimal via Ryū/Grisu — JCS §3.2.2.3).
+- Non-finite numbers (`NaN`, `Infinity`) are rejected.
+- Only JSON-compatible values are accepted (no `Date`, `Map`, class instances, `BigInt`,
+  `Symbol`, or functions).
+
+Implementation: `src/domain/evidence/canonical-json.ts` — `canonicalizeJson()`.
+
+Cross-language verification: any RFC 8785 JCS-compliant implementation will produce a
+byte-identical output for the same input, enabling hash chain verification in Python,
+Java, Go, or other runtimes without a TypeScript dependency.
 
 Chain rule:
 
@@ -63,7 +77,8 @@ Chain rule:
 
 ## Verification
 
-Verification must detect:
+Verification (`verifyEvidenceChainV1`) must detect:
 
-- Any content modification to an entry (hash mismatch)
-- Any re-ordering, insertion, or deletion (previousHash mismatch)
+- Any content modification to an entry (hash mismatch — `hash_mismatch`)
+- Any re-ordering, insertion, or deletion (previousHash chain break — `chain_break`)
+- Out-of-order timestamps (`entries[i].occurredAtIso < entries[i-1].occurredAtIso` — `timestamp_not_monotonic`)

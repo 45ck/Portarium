@@ -29,4 +29,30 @@ describe('canonicalizeJson', () => {
     expect(() => canonicalizeJson(BigInt(1))).toThrow(/Unsupported value type/i);
     expect(() => canonicalizeJson(() => 1)).toThrow(/Unsupported value type/i);
   });
+
+  // RFC 8785 JCS compliance — cross-language determinism test vectors
+  it('RFC 8785: empty object produces {}', () => {
+    expect(canonicalizeJson({})).toBe('{}');
+  });
+
+  it('RFC 8785: nested objects have inner keys sorted independently', () => {
+    const input = { b: { d: 2, c: 3 }, a: 1 };
+    expect(canonicalizeJson(input)).toBe('{"a":1,"b":{"c":3,"d":2}}');
+  });
+
+  it('RFC 8785: Unicode key ordering uses code point order (U+00E9 > U+0061)', () => {
+    // 'é' is U+00E9 (> 'a' U+0061 and 'z' U+007A) — must sort after ASCII chars
+    const input = { é: 1, z: 2, a: 3 };
+    expect(canonicalizeJson(input)).toBe('{"a":3,"z":2,"\u00e9":1}');
+  });
+
+  it('RFC 8785: integer numbers serialized without decimal point', () => {
+    expect(canonicalizeJson({ n: 1.0 })).toBe('{"n":1}');
+    expect(canonicalizeJson({ n: -42.0 })).toBe('{"n":-42}');
+  });
+
+  it('RFC 8785: non-integer numbers use shortest round-trip form', () => {
+    expect(canonicalizeJson({ n: 1.5 })).toBe('{"n":1.5}');
+    expect(canonicalizeJson({ n: 0.1 })).toBe('{"n":0.1}');
+  });
 });
