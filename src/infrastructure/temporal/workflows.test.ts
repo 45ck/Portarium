@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 // NOTE: vi.mock(...) is hoisted above runtime initializers in ESM.
 // Use `var` so the mock factory can safely assign mocks before tests run.
 // eslint-disable-next-line no-var
-var logInfo: ReturnType<typeof vi.fn>;
+var logInfo: ReturnType<typeof vi.fn<(...args: unknown[]) => unknown>> | undefined;
 // eslint-disable-next-line no-var
-var startRunActivity: ReturnType<typeof vi.fn>;
+var startRunActivity: ReturnType<typeof vi.fn<(input: unknown) => Promise<void>>> | undefined;
 // eslint-disable-next-line no-var
-var completeRunActivity: ReturnType<typeof vi.fn>;
+var completeRunActivity: ReturnType<typeof vi.fn<(input: unknown) => Promise<void>>> | undefined;
 // eslint-disable-next-line no-var
 var approvalHandler: ((payload: unknown) => void) | undefined;
 // eslint-disable-next-line no-var
@@ -16,7 +16,7 @@ var nextDecision: 'Approved' | 'Denied' | 'RequestChanges' = 'Approved';
 vi.mock('@temporalio/workflow', () => ({
   log: {
     info: (...args: unknown[]) => {
-      if (!logInfo) logInfo = vi.fn();
+      if (!logInfo) logInfo = vi.fn<(...args: unknown[]) => unknown>();
       return logInfo(...args);
     },
   },
@@ -41,8 +41,8 @@ import { portariumRun } from './workflows.js';
 
 describe('portariumRun workflow', () => {
   it('runs start/complete activities for Auto tier', async () => {
-    startRunActivity.mockClear();
-    completeRunActivity.mockClear();
+    startRunActivity!.mockClear();
+    completeRunActivity!.mockClear();
     nextDecision = 'Approved';
     await expect(
       portariumRun({
@@ -60,8 +60,8 @@ describe('portariumRun workflow', () => {
   });
 
   it('waits for approval decision signal for HumanApprove tier', async () => {
-    startRunActivity.mockClear();
-    completeRunActivity.mockClear();
+    startRunActivity!.mockClear();
+    completeRunActivity!.mockClear();
     approvalHandler = undefined;
     nextDecision = 'Approved';
 
@@ -81,8 +81,8 @@ describe('portariumRun workflow', () => {
   });
 
   it('returns early for Denied decision (does not execute completeRunActivity)', async () => {
-    startRunActivity.mockClear();
-    completeRunActivity.mockClear();
+    startRunActivity!.mockClear();
+    completeRunActivity!.mockClear();
     approvalHandler = undefined;
     nextDecision = 'Denied';
 
