@@ -19,7 +19,8 @@ export type EvidenceChainVerificationResult =
         | 'hash_mismatch'
         | 'previous_hash_mismatch'
         | 'unexpected_previous_hash'
-        | 'signature_invalid';
+        | 'signature_invalid'
+        | 'timestamp_not_monotonic';
       expected?: string;
       actual?: string;
     }>;
@@ -68,6 +69,9 @@ export function verifyEvidenceChainV1(
   for (let i = 0; i < entries.length; i += 1) {
     const entry = entries[i]!;
 
+    const tsIssue = verifyTimestampMonotonicity({ entries, index: i });
+    if (tsIssue) return tsIssue;
+
     const prevHashIssue = verifyPreviousHashLink({ entries, index: i });
     if (prevHashIssue) return prevHashIssue;
 
@@ -81,6 +85,25 @@ export function verifyEvidenceChainV1(
   }
 
   return { ok: true };
+}
+
+function verifyTimestampMonotonicity(params: {
+  entries: readonly EvidenceEntryV1[];
+  index: number;
+}): EvidenceChainVerificationResult | undefined {
+  if (params.index === 0) return undefined;
+  const prev = params.entries[params.index - 1]!;
+  const curr = params.entries[params.index]!;
+  if (curr.occurredAtIso < prev.occurredAtIso) {
+    return {
+      ok: false,
+      index: params.index,
+      reason: 'timestamp_not_monotonic',
+      expected: `>= ${prev.occurredAtIso}`,
+      actual: curr.occurredAtIso,
+    };
+  }
+  return undefined;
 }
 
 function verifyPreviousHashLink(params: {

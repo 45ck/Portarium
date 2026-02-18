@@ -22,6 +22,8 @@ tags:
   - name: Runs
   - name: CredentialGrants
   - name: AdapterRegistrations
+  - name: Machines
+  - name: Agents
 paths:
   /v1/workspaces:
     get:
@@ -795,6 +797,206 @@ paths:
                 $ref: '#/components/schemas/AdapterRegistrationV1'
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines:
+    get:
+      tags: [Machines]
+      summary: List registered machine runtimes
+      operationId: listMachines
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Machines]
+      summary: Register a machine runtime
+      operationId: registerMachine
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterMachineRequest'
+      responses:
+        '201':
+          description: Machine registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines/{machineId}:
+    get:
+      tags: [Machines]
+      summary: Get a machine runtime
+      operationId: getMachine
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Machines]
+      summary: Deregister a machine runtime
+      operationId: deregisterMachine
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+      responses:
+        '204':
+          description: Deregistered
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines/{machineId}/test:
+    post:
+      tags: [Machines]
+      summary: Smoke-test machine connectivity
+      operationId: testMachineConnection
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+      responses:
+        '200':
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionTestResult'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/agents:
+    get:
+      tags: [Agents]
+      summary: List AI agent configurations
+      operationId: listAgents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Agents]
+      summary: Register an AI agent configuration
+      operationId: registerAgent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAgentRequest'
+      responses:
+        '201':
+          description: Agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/agents/{agentId}:
+    get:
+      tags: [Agents]
+      summary: Get an AI agent configuration
+      operationId: getAgent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/AgentIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Agents]
+      summary: Update an AI agent configuration (capability allowlist, endpoint)
+      operationId: updateAgent
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/AgentIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAgentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/agents/{agentId}/test:
+    post:
+      tags: [Agents]
+      summary: Smoke-test AI agent endpoint connectivity
+      operationId: testAgentConnection
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/AgentIdPath'
+      responses:
+        '200':
+          description: Connection test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionTestResult'
+        default:
+          $ref: '#/components/responses/Problem'
 components:
   securitySchemes:
     bearerAuth:
@@ -856,6 +1058,18 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/AdapterId'
+    MachineIdPath:
+      name: machineId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/MachineId'
+    AgentIdPath:
+      name: agentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/AgentId'
     LimitQuery:
       name: limit
       in: query
@@ -1406,6 +1620,8 @@ components:
           $ref: '#/components/schemas/EvidenceId'
         workspaceId:
           $ref: '#/components/schemas/WorkspaceId'
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
         occurredAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
         category:
@@ -1429,6 +1645,7 @@ components:
         - schemaVersion
         - evidenceId
         - workspaceId
+        - correlationId
         - occurredAtIso
         - category
         - summary
@@ -1858,3 +2075,162 @@ components:
           format: uri
         active:
           type: boolean
+    AgentId:
+      type: string
+      minLength: 1
+    AgentCapability:
+      type: string
+      enum:
+        - read:external
+        - write:external
+        - classify
+        - generate
+        - analyze
+        - execute-code
+        - notify
+    ConnectionTestStatus:
+      type: string
+      enum: [ok, slow, unreachable]
+    ConnectionTestResult:
+      type: object
+      additionalProperties: false
+      required: [status, latencyMs]
+      properties:
+        status:
+          $ref: '#/components/schemas/ConnectionTestStatus'
+        latencyMs:
+          type: integer
+          minimum: 0
+        errorMessage:
+          type: string
+    MachineStatus:
+      type: string
+      enum: [Online, Degraded, Offline]
+    MachineV1:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, machineId, workspaceId, hostname, registeredAtIso, status]
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        machineId:
+          $ref: '#/components/schemas/MachineId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        hostname:
+          type: string
+          minLength: 1
+        osImage:
+          type: string
+        registeredAtIso:
+          type: string
+          format: date-time
+        lastHeartbeatAtIso:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/MachineStatus'
+        activeRunCount:
+          type: integer
+          minimum: 0
+        allowedCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'
+    MachineListResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MachineV1'
+        nextCursor:
+          type: string
+    RegisterMachineRequest:
+      type: object
+      additionalProperties: false
+      required: [hostname]
+      properties:
+        hostname:
+          type: string
+          minLength: 1
+        osImage:
+          type: string
+        allowedCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'
+    AgentV1:
+      type: object
+      additionalProperties: false
+      required: [schemaVersion, agentId, workspaceId, name, endpoint, allowedCapabilities]
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        agentId:
+          $ref: '#/components/schemas/AgentId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        name:
+          type: string
+          minLength: 1
+        modelId:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        allowedCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'
+        usedByWorkflowIds:
+          type: array
+          items:
+            type: string
+    AgentListResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentV1'
+        nextCursor:
+          type: string
+    RegisterAgentRequest:
+      type: object
+      additionalProperties: false
+      required: [name, endpoint]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        modelId:
+          type: string
+        endpoint:
+          type: string
+          format: uri
+        allowedCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'
+    UpdateAgentRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+        endpoint:
+          type: string
+          format: uri
+        allowedCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentCapability'

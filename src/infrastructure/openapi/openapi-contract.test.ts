@@ -12,6 +12,7 @@ import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
 import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
 import {
+  CorrelationId,
   EvidenceId,
   HashSha256,
   PlanId,
@@ -255,6 +256,7 @@ describe('OpenAPI contract', () => {
       schemaVersion: 1,
       evidenceId: EvidenceId('evi-1'),
       workspaceId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
       occurredAtIso: '2026-02-16T00:00:00.000Z',
       category: 'Plan',
       summary: 'Plan generated',

@@ -1,6 +1,7 @@
 import type { ExternalObjectRef } from '../canonical/external-object-ref.js';
 import type {
   AdapterId,
+  CorrelationId,
   EvidenceId,
   HashSha256,
   MachineId,
@@ -37,6 +38,8 @@ export type EvidenceEntryV1 = Readonly<{
   schemaVersion: 1;
   evidenceId: EvidenceId;
   workspaceId: WorkspaceId;
+  /** Required: correlation ID for distributed tracing (matches the originating run/request). */
+  correlationId: CorrelationId;
   occurredAtIso: string;
   category: EvidenceCategory;
   summary: string;

@@ -694,3 +694,6 @@ appr
 
 # Web performance terms
 TTFB
+
+# URL-encoding artifacts (from test assertions with %2F-encoded path segments)
+Fwith

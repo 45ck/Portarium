@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EvidenceId, HashSha256, WorkspaceId } from '../primitives/index.js';
+import { CorrelationId, EvidenceId, HashSha256, WorkspaceId } from '../primitives/index.js';
 import {
   appendEvidenceEntryV1,
   canonicalizeEvidenceEntryV1,
@@ -52,6 +52,7 @@ describe('Evidence chain v1', () => {
       schemaVersion: 1,
       evidenceId: EvidenceId('ev-1'),
       workspaceId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
       occurredAtIso: '2026-02-16T00:00:00.000Z',
       category: 'System',
       summary: 'hello',
@@ -63,6 +64,7 @@ describe('Evidence chain v1', () => {
       summary: 'hello',
       category: 'System',
       occurredAtIso: '2026-02-16T00:00:00.000Z',
+      correlationId: CorrelationId('corr-1'),
       workspaceId: WorkspaceId('ws-1'),
       evidenceId: EvidenceId('ev-1'),
       schemaVersion: 1,
@@ -79,6 +81,7 @@ describe('Evidence chain v1', () => {
         schemaVersion: 1,
         evidenceId: EvidenceId('ev-1'),
         workspaceId: WorkspaceId('ws-1'),
+        correlationId: CorrelationId('corr-1'),
         occurredAtIso: '2026-02-16T00:00:00.000Z',
         category: 'System',
         summary: 'first',
@@ -93,6 +96,7 @@ describe('Evidence chain v1', () => {
         schemaVersion: 1,
         evidenceId: EvidenceId('ev-2'),
         workspaceId: WorkspaceId('ws-1'),
+        correlationId: CorrelationId('corr-1'),
         occurredAtIso: '2026-02-16T00:00:01.000Z',
         category: 'System',
         summary: 'second',
@@ -139,6 +143,7 @@ describe('Evidence chain v1', () => {
         schemaVersion: 1,
         evidenceId: EvidenceId('ev-1'),
         workspaceId: WorkspaceId('ws-1'),
+        correlationId: CorrelationId('corr-1'),
         occurredAtIso: '2026-02-16T00:00:00.000Z',
         category: 'System',
         summary: 'first',
@@ -153,6 +158,57 @@ describe('Evidence chain v1', () => {
       expect(res.index).toBe(0);
       expect(res.reason).toBe('unexpected_previous_hash');
     }
+  });
+
+  it('detects timestamp monotonicity violation', () => {
+    const chain = buildChain();
+    // Swap e2 with a version whose timestamp is earlier than e1
+    const outOfOrder: EvidenceEntryV1 = {
+      ...chain[1]!,
+      occurredAtIso: '2026-02-15T23:59:59.000Z',
+    };
+
+    const res = verifyEvidenceChainV1([chain[0]!, outOfOrder, chain[2]!], testHasher);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.index).toBe(1);
+      expect(res.reason).toBe('timestamp_not_monotonic');
+    }
+  });
+
+  it('allows equal timestamps in the chain', () => {
+    const e1 = appendEvidenceEntryV1({
+      previous: undefined,
+      hasher: testHasher,
+      next: {
+        schemaVersion: 1,
+        evidenceId: EvidenceId('ev-1'),
+        workspaceId: WorkspaceId('ws-1'),
+        correlationId: CorrelationId('corr-1'),
+        occurredAtIso: '2026-02-16T00:00:00.000Z',
+        category: 'System',
+        summary: 'first',
+        actor: { kind: 'System' },
+      },
+    });
+
+    const e2 = appendEvidenceEntryV1({
+      previous: e1,
+      hasher: testHasher,
+      next: {
+        schemaVersion: 1,
+        evidenceId: EvidenceId('ev-2'),
+        workspaceId: WorkspaceId('ws-1'),
+        correlationId: CorrelationId('corr-1'),
+        // same timestamp as e1 — allowed (monotonic, not strictly increasing)
+        occurredAtIso: '2026-02-16T00:00:00.000Z',
+        category: 'System',
+        summary: 'second',
+        actor: { kind: 'System' },
+      },
+    });
+
+    expect(verifyEvidenceChainV1([e1, e2], testHasher)).toEqual({ ok: true });
   });
 });
 
@@ -212,6 +268,7 @@ function buildChain(): readonly EvidenceEntryV1[] {
       schemaVersion: 1,
       evidenceId: EvidenceId('ev-1'),
       workspaceId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
       occurredAtIso: '2026-02-16T00:00:00.000Z',
       category: 'System',
       summary: 'first',
@@ -226,6 +283,7 @@ function buildChain(): readonly EvidenceEntryV1[] {
       schemaVersion: 1,
       evidenceId: EvidenceId('ev-2'),
       workspaceId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
       occurredAtIso: '2026-02-16T00:00:01.000Z',
       category: 'System',
       summary: 'second',
@@ -240,6 +298,7 @@ function buildChain(): readonly EvidenceEntryV1[] {
       schemaVersion: 1,
       evidenceId: EvidenceId('ev-3'),
       workspaceId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
       occurredAtIso: '2026-02-16T00:00:02.000Z',
       category: 'System',
       summary: 'third',
