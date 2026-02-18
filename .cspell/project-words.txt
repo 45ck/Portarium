@@ -697,3 +697,7 @@ TTFB
 
 # URL-encoding artifacts (from test assertions with %2F-encoded path segments)
 Fwith
+
+# US spelling variants
+Fulfills
+fulfills
