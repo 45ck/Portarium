@@ -8,12 +8,11 @@ They provide a minimal runtime boundary for infrastructure validation:
 - each process is non-interactive and ready for readiness/liveness validation;
 - entrypoints are explicit to support deployment and compose parity checks.
 
-When Portarium ships production runtime binaries, replace `/usr/local/bin/portarium-runtime.sh`
-with the real application image layer (binary or node entrypoint) and keep the same probe contract.
+When Portarium ships production runtime binaries, keep the same probe contract and replace
+the current minimal HTTP runtimes in `src/presentation/runtime/` with the real service(s).
 
 ## Components
 
 - `control-plane.Dockerfile` — builds the API/control-plane container image.
 - `worker.Dockerfile` — builds the execution worker container image.
-- `bootstrap.sh` — temporary guarded startup script while runnable service binaries are not
-  wired in this repository milestone.
+  (This worker currently exposes HTTP health endpoints and does not yet run the Temporal worker loop.)

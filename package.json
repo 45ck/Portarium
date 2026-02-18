@@ -9,6 +9,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "typecheck:slow": "tsc -p tsconfig.json --noEmit --skipLibCheck false",
     "lint": "eslint . --max-warnings=0",

@@ -695,6 +695,7 @@ dagre
 # UI / approval domain terms
 Checkmarks
 appr
+resumable
 
 # Web performance terms
 TTFB
