@@ -21,14 +21,12 @@ export type ApprovalDecisionSignalPayload = Readonly<{
   rationale?: string;
 }>;
 
-export const approvalDecisionSignal = defineSignal<[ApprovalDecisionSignalPayload]>(
-  'approvalDecision',
-);
+export const approvalDecisionSignal =
+  defineSignal<[ApprovalDecisionSignalPayload]>('approvalDecision');
 
-const {
-  startRunActivity,
-  completeRunActivity,
-}: typeof activities = proxyActivities<typeof activities>({
+const { startRunActivity, completeRunActivity }: typeof activities = proxyActivities<
+  typeof activities
+>({
   startToCloseTimeout: '30 seconds',
   retry: {
     // Conservative default: quick retries with capped exponential backoff.

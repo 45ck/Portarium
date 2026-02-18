@@ -7,10 +7,10 @@ export type StartRunActivityInput = Readonly<{
   executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 }>;
 
-export function startRunActivity(_input: StartRunActivityInput): Promise<void> {
+export function startRunActivity(input: StartRunActivityInput): Promise<void> {
   // Placeholder activity: real implementation will persist state/evidence.
   // Non-deterministic I/O belongs here, not in the workflow function.
-  void _input;
+  void input;
   return Promise.resolve();
 }
 
@@ -21,8 +21,8 @@ export type CompleteRunActivityInput = Readonly<{
   correlationId: string;
 }>;
 
-export function completeRunActivity(_input: CompleteRunActivityInput): Promise<void> {
+export function completeRunActivity(input: CompleteRunActivityInput): Promise<void> {
   // Placeholder activity: real implementation will execute actions and persist outcomes.
-  void _input;
+  void input;
   return Promise.resolve();
 }

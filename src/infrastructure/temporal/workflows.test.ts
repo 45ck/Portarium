@@ -94,4 +94,3 @@ describe('portariumRun workflow', () => {
     expect(hoisted.completeRunActivity).toHaveBeenCalledTimes(0);
   });
 });
-
