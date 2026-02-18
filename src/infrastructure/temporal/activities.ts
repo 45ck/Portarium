@@ -10,6 +10,7 @@ export type StartRunActivityInput = Readonly<{
 export async function startRunActivity(_input: StartRunActivityInput): Promise<void> {
   // Placeholder activity: real implementation will persist state/evidence.
   // Non-deterministic I/O belongs here, not in the workflow function.
+  void _input;
 }
 
 export type CompleteRunActivityInput = Readonly<{
@@ -21,5 +22,5 @@ export type CompleteRunActivityInput = Readonly<{
 
 export async function completeRunActivity(_input: CompleteRunActivityInput): Promise<void> {
   // Placeholder activity: real implementation will execute actions and persist outcomes.
+  void _input;
 }
-

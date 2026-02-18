@@ -1,39 +1,31 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// NOTE: vi.mock(...) is hoisted above runtime initializers in ESM.
-// Use `var` so the mock factory can safely assign mocks before tests run.
-// eslint-disable-next-line no-var
-var logInfo: ReturnType<typeof vi.fn<(...args: unknown[]) => unknown>> | undefined;
-// eslint-disable-next-line no-var
-var startRunActivity: ReturnType<typeof vi.fn<(input: unknown) => Promise<void>>> | undefined;
-// eslint-disable-next-line no-var
-var completeRunActivity: ReturnType<typeof vi.fn<(input: unknown) => Promise<void>>> | undefined;
-// eslint-disable-next-line no-var
-var approvalHandler: ((payload: unknown) => void) | undefined;
-// eslint-disable-next-line no-var
-var nextDecision: 'Approved' | 'Denied' | 'RequestChanges' = 'Approved';
+const hoisted = vi.hoisted(() => ({
+  logInfo: vi.fn<(...args: unknown[]) => unknown>(),
+  startRunActivity: vi.fn<(input: unknown) => Promise<void>>(async () => undefined),
+  completeRunActivity: vi.fn<(input: unknown) => Promise<void>>(async () => undefined),
+  approvalHandler: undefined as ((payload: unknown) => void) | undefined,
+  nextDecision: 'Approved' as 'Approved' | 'Denied' | 'RequestChanges',
+}));
 
 vi.mock('@temporalio/workflow', () => ({
   log: {
-    info: (...args: unknown[]) => {
-      if (!logInfo) logInfo = vi.fn<(...args: unknown[]) => unknown>();
-      return logInfo(...args);
-    },
+    info: (...args: unknown[]) => hoisted.logInfo(...args),
   },
   defineSignal: (name: string) => ({ name }),
   setHandler: (_signal: unknown, handler: (payload: unknown) => void) => {
-    approvalHandler = handler;
+    hoisted.approvalHandler = handler;
   },
   condition: async (predicate: () => boolean) => {
     // Simulate an external signal arriving after the workflow begins waiting.
-    if (approvalHandler) {
-      approvalHandler({ decision: nextDecision, approvalId: 'approval-1' });
+    if (hoisted.approvalHandler) {
+      hoisted.approvalHandler({ decision: hoisted.nextDecision, approvalId: 'approval-1' });
     }
     if (!predicate()) throw new Error('condition predicate did not become true');
   },
   proxyActivities: () => ({
-    startRunActivity: (startRunActivity ??= vi.fn(async () => undefined)),
-    completeRunActivity: (completeRunActivity ??= vi.fn(async () => undefined)),
+    startRunActivity: hoisted.startRunActivity,
+    completeRunActivity: hoisted.completeRunActivity,
   }),
 }));
 
@@ -41,9 +33,10 @@ import { portariumRun } from './workflows.js';
 
 describe('portariumRun workflow', () => {
   it('runs start/complete activities for Auto tier', async () => {
-    startRunActivity!.mockClear();
-    completeRunActivity!.mockClear();
-    nextDecision = 'Approved';
+    hoisted.startRunActivity.mockClear();
+    hoisted.completeRunActivity.mockClear();
+    hoisted.nextDecision = 'Approved';
+
     await expect(
       portariumRun({
         runId: 'run-1',
@@ -55,15 +48,15 @@ describe('portariumRun workflow', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(startRunActivity).toHaveBeenCalledTimes(1);
-    expect(completeRunActivity).toHaveBeenCalledTimes(1);
+    expect(hoisted.startRunActivity).toHaveBeenCalledTimes(1);
+    expect(hoisted.completeRunActivity).toHaveBeenCalledTimes(1);
   });
 
   it('waits for approval decision signal for HumanApprove tier', async () => {
-    startRunActivity!.mockClear();
-    completeRunActivity!.mockClear();
-    approvalHandler = undefined;
-    nextDecision = 'Approved';
+    hoisted.startRunActivity.mockClear();
+    hoisted.completeRunActivity.mockClear();
+    hoisted.approvalHandler = undefined;
+    hoisted.nextDecision = 'Approved';
 
     await expect(
       portariumRun({
@@ -76,15 +69,15 @@ describe('portariumRun workflow', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(startRunActivity).toHaveBeenCalledTimes(1);
-    expect(completeRunActivity).toHaveBeenCalledTimes(1);
+    expect(hoisted.startRunActivity).toHaveBeenCalledTimes(1);
+    expect(hoisted.completeRunActivity).toHaveBeenCalledTimes(1);
   });
 
   it('returns early for Denied decision (does not execute completeRunActivity)', async () => {
-    startRunActivity!.mockClear();
-    completeRunActivity!.mockClear();
-    approvalHandler = undefined;
-    nextDecision = 'Denied';
+    hoisted.startRunActivity.mockClear();
+    hoisted.completeRunActivity.mockClear();
+    hoisted.approvalHandler = undefined;
+    hoisted.nextDecision = 'Denied';
 
     await expect(
       portariumRun({
@@ -97,7 +90,8 @@ describe('portariumRun workflow', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(startRunActivity).toHaveBeenCalledTimes(1);
-    expect(completeRunActivity).toHaveBeenCalledTimes(0);
+    expect(hoisted.startRunActivity).toHaveBeenCalledTimes(1);
+    expect(hoisted.completeRunActivity).toHaveBeenCalledTimes(0);
   });
 });
+
