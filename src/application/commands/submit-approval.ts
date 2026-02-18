@@ -6,7 +6,15 @@ import {
   type ApprovalId as ApprovalIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
-import { parseApprovalV1, type ApprovalDecidedV1 } from '../../domain/approvals/index.js';
+import {
+  parseApprovalV1,
+  type ApprovalDecidedV1,
+  type ApprovalPendingV1,
+} from '../../domain/approvals/index.js';
+import {
+  evaluateApprovalRoutingSodV1,
+  type SodConstraintV1,
+} from '../../domain/policy/sod-constraints-v1.js';
 import {
   type AppContext,
   type Conflict,
@@ -19,7 +27,7 @@ import {
   type ValidationFailed,
   type NotFound,
 } from '../common/index.js';
-import { createPortariumCloudEvent } from '../events/cloudevent.js';
+import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
 import { type DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type {
   ApprovalStore,
@@ -37,6 +45,9 @@ export type SubmitApprovalInput = Readonly<{
   approvalId: string;
   decision: ApprovalDecision;
   rationale: string;
+  /** SoD constraints to enforce before accepting the decision.  Sourced from the policy
+   *  attached to the run.  When absent, no SoD check is performed. */
+  sodConstraints?: readonly SodConstraintV1[];
 }>;
 
 export type SubmitApprovalOutput = Readonly<{
@@ -128,6 +139,29 @@ function guardPendingState(
   return null;
 }
 
+function guardSodConstraints(
+  approval: ApprovalPendingV1,
+  proposedApproverId: string,
+  sodConstraints: readonly SodConstraintV1[] | undefined,
+): Err<SubmitApprovalError> | null {
+  if (!sodConstraints || sodConstraints.length === 0) return null;
+
+  const violations = evaluateApprovalRoutingSodV1({
+    approval,
+    proposedApproverId: UserId(proposedApproverId),
+    constraints: sodConstraints,
+  });
+
+  if (violations.length === 0) return null;
+
+  const firstViolation = violations[0]!;
+  return err({
+    kind: 'Forbidden',
+    action: APP_ACTIONS.approvalSubmit,
+    message: `SoD violation: ${firstViolation.kind}`,
+  });
+}
+
 function buildDecidedApproval(
   current: ReturnType<typeof parseApprovalV1>,
   input: SubmitApprovalInput,
@@ -174,28 +208,17 @@ type PersistArgs = Readonly<{
   ids: ParsedIds;
   decided: ApprovalDecidedV1;
   domainEvent: DomainEventV1;
-  eventId: string;
-  decidedAtIso: string;
 }>;
 
 async function persistDecision(
   args: PersistArgs,
 ): Promise<Result<SubmitApprovalOutput, DependencyFailure>> {
-  const { deps, ctx, ids, decided, domainEvent, eventId, decidedAtIso } = args;
+  const { deps, ctx, ids, decided, domainEvent } = args;
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.approvalStore.saveApproval(ctx.tenantId, decided);
       await deps.eventPublisher.publish(
-        createPortariumCloudEvent({
-          source: SUBMIT_APPROVAL_SOURCE,
-          eventType: `com.portarium.approval.${domainEvent.eventType}`,
-          eventId,
-          tenantId: ctx.tenantId,
-          correlationId: ctx.correlationId,
-          subject: `approvals/${ids.approvalId}`,
-          occurredAtIso: decidedAtIso,
-          data: domainEvent,
-        }),
+        domainEventToPortariumCloudEvent(domainEvent, SUBMIT_APPROVAL_SOURCE),
       );
       return ok({ approvalId: ids.approvalId, status: decided.status });
     });
@@ -248,6 +271,14 @@ export async function submitApproval(
   const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
   if (stateError) return stateError;
 
+  // current.status === 'Pending' is guaranteed after guardPendingState
+  const sodError = guardSodConstraints(
+    current as ApprovalPendingV1,
+    ctx.principalId.toString(),
+    input.sodConstraints,
+  );
+  if (sodError) return sodError;
+
   const decidedAtIso = deps.clock.nowIso();
   if (decidedAtIso.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
@@ -268,5 +299,5 @@ export async function submitApproval(
     decided,
   });
 
-  return persistDecision({ deps, ctx, ids, decided, domainEvent, eventId, decidedAtIso });
+  return persistDecision({ deps, ctx, ids, decided, domainEvent });
 }

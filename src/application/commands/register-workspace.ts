@@ -1,5 +1,5 @@
 import { type WorkspaceV1, parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
-import { createPortariumCloudEvent } from '../events/cloudevent.js';
+import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
 import {
   type AppContext,
   type Conflict,
@@ -125,20 +125,12 @@ async function persistWorkspace(
   ctx: AppContext,
   { workspace, domainEvent, commandKey }: PersistInput,
 ): Promise<Result<RegisterWorkspaceOutput, DependencyFailure>> {
+  void ctx; // tenantId is now embedded in domainEvent.workspaceId
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.workspaceStore.saveWorkspace(workspace);
       await deps.eventPublisher.publish(
-        createPortariumCloudEvent({
-          source: WORKSPACE_CLOUD_EVENT_SOURCE,
-          eventType: `com.portarium.workspace.${domainEvent.eventType}`,
-          eventId: domainEvent.eventId,
-          tenantId: ctx.tenantId,
-          correlationId: ctx.correlationId,
-          subject: `workspaces/${workspace.workspaceId}`,
-          occurredAtIso: domainEvent.occurredAtIso,
-          data: domainEvent,
-        }),
+        domainEventToPortariumCloudEvent(domainEvent, WORKSPACE_CLOUD_EVENT_SOURCE),
       );
       const output: RegisterWorkspaceOutput = { workspaceId: workspace.workspaceId };
       await deps.idempotency.set(commandKey, output);

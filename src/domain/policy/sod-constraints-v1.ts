@@ -1,5 +1,6 @@
 import type { UserId } from '../primitives/index.js';
 import type { UserId as UserIdType } from '../primitives/index.js';
+import type { ApprovalPendingV1 } from '../approvals/approval-v1.js';
 import { readInteger, readRecord, readString, readStringArray } from '../validation/parse-utils.js';
 
 export type SodConstraintKind = 'MakerChecker' | 'DistinctApprovers' | 'IncompatibleDuties';
@@ -227,4 +228,32 @@ function groupPerformedDutiesByUser(performed: readonly PerformedDutyV1[]): Map<
 
 function assertNever(value: never): never {
   throw new Error(`Unhandled SoD constraint variant: ${JSON.stringify(value)}`);
+}
+
+/**
+ * Evaluate SoD constraints in the context of an approval decision.
+ *
+ * Builds the SodEvaluationContextV1 from:
+ * - `initiatorUserId`: the user who originally requested the approval
+ * - `approverUserIds`: all users who have already approved (previousApprovers) plus
+ *   the proposed new approver
+ *
+ * Returns any violations.  If violations is empty, the approval decision is SoD-clean.
+ */
+export function evaluateApprovalRoutingSodV1(params: {
+  approval: ApprovalPendingV1;
+  proposedApproverId: UserIdType;
+  previousApproverIds?: readonly UserIdType[];
+  constraints: readonly SodConstraintV1[];
+}): readonly SodViolationV1[] {
+  const { approval, proposedApproverId, previousApproverIds = [], constraints } = params;
+  const allApprovers = [...previousApproverIds, proposedApproverId];
+
+  return evaluateSodConstraintsV1({
+    constraints,
+    context: {
+      initiatorUserId: approval.requestedByUserId,
+      approverUserIds: allApprovers,
+    },
+  });
 }

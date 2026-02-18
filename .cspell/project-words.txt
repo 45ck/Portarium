@@ -687,3 +687,10 @@ apikey
 
 # Graph layout / visualization libraries
 dagre
+
+# UI / approval domain terms
+Checkmarks
+appr
+
+# Web performance terms
+TTFB

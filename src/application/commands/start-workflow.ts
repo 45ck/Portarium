@@ -20,7 +20,8 @@ import {
   type ValidationFailed,
   type NotFound,
 } from '../common/index.js';
-import { createPortariumCloudEvent } from '../events/cloudevent.js';
+import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
+import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type {
   AuthorizationPort,
   Clock,
@@ -213,15 +214,16 @@ async function executeTransaction(
   ctx: AppContext,
   plan: NewStartWorkflowPlan,
 ): Promise<Result<StartWorkflowOutput, DependencyFailure>> {
-  const domainEvent = {
+  const domainEvent: DomainEventV1 = {
     schemaVersion: 1,
     eventId: plan.generated.eventIdValue,
     eventType: 'RunStarted',
     aggregateKind: 'Run',
     aggregateId: plan.run.runId,
     occurredAtIso: plan.generated.createdAtIso,
-    actorUserId: ctx.principalId,
+    workspaceId: ctx.tenantId,
     correlationId: ctx.correlationId,
+    actorUserId: ctx.principalId,
     payload: {
       runId: plan.run.runId,
       workflowId: plan.ids.workflowId.toString(),
@@ -241,16 +243,7 @@ async function executeTransaction(
         executionTier: plan.workflow.executionTier,
       });
       await deps.eventPublisher.publish(
-        createPortariumCloudEvent({
-          source: START_WORKFLOW_SOURCE,
-          eventType: `com.portarium.run.${domainEvent.eventType}`,
-          eventId: plan.generated.eventIdValue,
-          tenantId: ctx.tenantId,
-          correlationId: ctx.correlationId,
-          subject: `runs/${plan.run.runId}`,
-          occurredAtIso: plan.generated.createdAtIso,
-          data: domainEvent,
-        }),
+        domainEventToPortariumCloudEvent(domainEvent, START_WORKFLOW_SOURCE),
       );
       const output: StartWorkflowOutput = { runId: plan.run.runId };
       await deps.idempotency.set(plan.commandKey, output);

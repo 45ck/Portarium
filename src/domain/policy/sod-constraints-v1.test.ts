@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { UserId } from '../primitives/index.js';
+import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../primitives/index.js';
+import type { ApprovalPendingV1 } from '../approvals/approval-v1.js';
 
 import {
+  evaluateApprovalRoutingSodV1,
   evaluateSodConstraintsV1,
   parseSodConstraintsV1,
   type SodConstraintV1,
@@ -125,6 +127,89 @@ describe('evaluateSodConstraintsV1', () => {
           { userId: UserId('user-8'), dutyKey: 'b' },
         ],
       },
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// evaluateApprovalRoutingSodV1
+// ---------------------------------------------------------------------------
+
+const PENDING_APPROVAL: ApprovalPendingV1 = {
+  schemaVersion: 1,
+  approvalId: ApprovalId('appr-1'),
+  workspaceId: WorkspaceId('ws-1'),
+  runId: RunId('run-1'),
+  planId: PlanId('plan-1'),
+  prompt: 'Please approve this change',
+  requestedAtIso: '2026-02-18T00:00:00.000Z',
+  requestedByUserId: UserId('initiator-1'),
+  status: 'Pending',
+};
+
+describe('evaluateApprovalRoutingSodV1', () => {
+  it('rejects when proposed approver is the initiator (MakerChecker)', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('initiator-1'),
+      constraints: [{ kind: 'MakerChecker' }],
+    });
+
+    expect(violations).toEqual([
+      { kind: 'MakerCheckerViolation', initiatorUserId: UserId('initiator-1') },
+    ]);
+  });
+
+  it('passes when proposed approver is different from initiator (MakerChecker)', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('approver-1'),
+      constraints: [{ kind: 'MakerChecker' }],
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('rejects when distinct approver threshold is not met', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('approver-1'),
+      previousApproverIds: [UserId('approver-1')],
+      constraints: [{ kind: 'DistinctApprovers', minimumApprovers: 2 }],
+    });
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]!.kind).toBe('DistinctApproversViolation');
+  });
+
+  it('passes when distinct approver threshold is met', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('approver-2'),
+      previousApproverIds: [UserId('approver-1')],
+      constraints: [{ kind: 'DistinctApprovers', minimumApprovers: 2 }],
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('returns no violations when constraints list is empty', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('initiator-1'),
+      constraints: [],
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('defaults previousApproverIds to empty when omitted', () => {
+    const violations = evaluateApprovalRoutingSodV1({
+      approval: PENDING_APPROVAL,
+      proposedApproverId: UserId('approver-1'),
+      constraints: [{ kind: 'DistinctApprovers', minimumApprovers: 1 }],
     });
 
     expect(violations).toEqual([]);
