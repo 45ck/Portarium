@@ -30,6 +30,11 @@ export type ArtifactV1 = Readonly<{
   hashSha256: HashSha256Type;
   retentionSchedule?: RetentionScheduleV1;
   createdAtIso: string;
+  /**
+   * Optional digital signature over the canonical JSON of this artifact
+   * (all fields except `signatureBase64` itself).  Produced by an EvidenceSigner hook.
+   */
+  signatureBase64?: string;
 }>;
 
 export class ArtifactParseError extends Error {
@@ -56,6 +61,7 @@ export function parseArtifactV1(value: unknown): ArtifactV1 {
   const storageRef = readString(record, 'storageRef', ArtifactParseError);
   const hashSha256 = HashSha256(readString(record, 'hashSha256', ArtifactParseError));
   const createdAtIso = readIsoString(record, 'createdAtIso', ArtifactParseError);
+  const signatureBase64 = readOptionalString(record, 'signatureBase64', ArtifactParseError);
 
   const retentionScheduleRaw = record['retentionSchedule'];
   let retentionSchedule: RetentionScheduleV1 | undefined;
@@ -78,6 +84,7 @@ export function parseArtifactV1(value: unknown): ArtifactV1 {
     hashSha256,
     ...(retentionSchedule !== undefined ? { retentionSchedule } : {}),
     createdAtIso,
+    ...(signatureBase64 !== undefined ? { signatureBase64 } : {}),
   };
 }
 

@@ -684,3 +684,6 @@ analyzes
 Pardot
 Basware
 apikey
+
+# Graph layout / visualization libraries
+dagre

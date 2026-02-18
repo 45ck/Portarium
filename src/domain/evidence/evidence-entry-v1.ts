@@ -45,8 +45,21 @@ export type EvidenceEntryV1 = Readonly<{
   payloadRefs?: readonly EvidencePayloadRef[];
   previousHash?: HashSha256;
   hashSha256: HashSha256;
+  /**
+   * Optional digital signature over the canonical JSON of this entry
+   * (excluding `signatureBase64` itself).  Produced by an EvidenceSigner hook.
+   */
+  signatureBase64?: string;
 }>;
 
-export type EvidenceEntryV1WithoutHash = Omit<EvidenceEntryV1, 'hashSha256'>;
+/**
+ * Entry fields used as input to hash computation.
+ * Excludes both `hashSha256` and `signatureBase64` so that adding a signature
+ * after the fact does not invalidate the stored hash.
+ */
+export type EvidenceEntryV1WithoutHash = Omit<EvidenceEntryV1, 'hashSha256' | 'signatureBase64'>;
+
+/** Entry with hash but without a signature — canonical input for signing. */
+export type EvidenceEntryV1WithoutSignature = Omit<EvidenceEntryV1, 'signatureBase64'>;
 
 export const EVIDENCE_ENTRY_V1_SCHEMA_VERSION = 1 as const;

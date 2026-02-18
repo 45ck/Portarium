@@ -4,10 +4,15 @@ import { EvidenceId, HashSha256, WorkspaceId } from '../primitives/index.js';
 import {
   appendEvidenceEntryV1,
   canonicalizeEvidenceEntryV1,
+  signEvidenceEntryV1,
   verifyEvidenceChainV1,
 } from './evidence-chain-v1.js';
 import type { EvidenceEntryV1, EvidenceEntryV1WithoutHash } from './evidence-entry-v1.js';
-import type { EvidenceHasher } from './evidence-hasher.js';
+import type {
+  EvidenceHasher,
+  EvidenceSigner,
+  EvidenceSignatureVerifier,
+} from './evidence-hasher.js';
 
 const testHasher: EvidenceHasher = {
   sha256Hex(input: string) {
@@ -24,6 +29,22 @@ function fakeSha256Hex(input: string): string {
   }
   return h.toString(16).padStart(8, '0').repeat(8);
 }
+
+const ALWAYS_VALID_SIG = 'valid-sig-stub';
+
+const testSigner: EvidenceSigner = {
+  sign(input: string) {
+    void input;
+    return ALWAYS_VALID_SIG;
+  },
+};
+
+const testVerifier: EvidenceSignatureVerifier = {
+  verify(input: string, signatureBase64: string) {
+    void input;
+    return signatureBase64 === ALWAYS_VALID_SIG;
+  },
+};
 
 describe('Evidence chain v1', () => {
   it('canonicalization is stable across object key order', () => {
@@ -132,6 +153,54 @@ describe('Evidence chain v1', () => {
       expect(res.index).toBe(0);
       expect(res.reason).toBe('unexpected_previous_hash');
     }
+  });
+});
+
+describe('Signature hooks', () => {
+  it('signEvidenceEntryV1 adds signatureBase64 to the entry', () => {
+    const chain = buildChain();
+    const signed = signEvidenceEntryV1(chain[0]!, testSigner);
+    expect(signed.signatureBase64).toBe(ALWAYS_VALID_SIG);
+    expect(signed.hashSha256).toBe(chain[0]!.hashSha256);
+  });
+
+  it('adding a signature does not change the entry hash', () => {
+    const chain = buildChain();
+    const signed = signEvidenceEntryV1(chain[0]!, testSigner);
+    // Hash must remain stable after signing
+    expect(signed.hashSha256).toBe(chain[0]!.hashSha256);
+  });
+
+  it('verifyEvidenceChainV1 passes with valid signatures', () => {
+    const chain = buildChain().map((e) => signEvidenceEntryV1(e, testSigner));
+    const res = verifyEvidenceChainV1(chain, testHasher, { verifier: testVerifier });
+    expect(res).toEqual({ ok: true });
+  });
+
+  it('verifyEvidenceChainV1 skips signature check when verifier is absent', () => {
+    // Even an invalid signature should be ignored when no verifier is supplied
+    const chain = buildChain().map((e) => ({ ...e, signatureBase64: 'bad-sig' }));
+    const res = verifyEvidenceChainV1(chain, testHasher);
+    expect(res).toEqual({ ok: true });
+  });
+
+  it('verifyEvidenceChainV1 detects invalid signature', () => {
+    const chain = buildChain().map((e) => signEvidenceEntryV1(e, testSigner));
+    // Tamper one signature
+    const tampered = chain.map((e, i) => (i === 1 ? { ...e, signatureBase64: 'bad-sig' } : e));
+    const res = verifyEvidenceChainV1(tampered, testHasher, { verifier: testVerifier });
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.index).toBe(1);
+      expect(res.reason).toBe('signature_invalid');
+    }
+  });
+
+  it('verifyEvidenceChainV1 skips signature check for unsigned entries', () => {
+    // Entries without signatureBase64 should pass even when a verifier is supplied
+    const chain = buildChain(); // unsigned
+    const res = verifyEvidenceChainV1(chain, testHasher, { verifier: testVerifier });
+    expect(res).toEqual({ ok: true });
   });
 });
 
