@@ -105,7 +105,7 @@ describe('submitApproval', () => {
     );
   });
 
-  it('rejects request-changes decision at command boundary', async () => {
+  it('accepts RequestChanges decision and emits ApprovalChangesRequested event', async () => {
     const result = await submitApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
       toAppContext({
@@ -122,11 +122,17 @@ describe('submitApproval', () => {
       },
     );
 
-    expect(result.ok).toBe(false);
-    if (result.ok) {
-      throw new Error('Expected validation-failed response.');
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      throw new Error('Expected success response.');
     }
-    expect(result.error.kind).toBe('ValidationFailed');
+    expect(result.value.status).toBe('RequestChanges');
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+
+    const published = (eventPublisher.publish as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0] as Record<string, unknown>;
+    expect(published['type']).toBe('com.portarium.approval.ApprovalChangesRequested');
   });
 
   it('rejects empty timestamp from clock', async () => {

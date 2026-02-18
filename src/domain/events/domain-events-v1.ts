@@ -54,6 +54,7 @@ export type DomainEventType =
   | 'ApprovalRequested'
   | 'ApprovalGranted'
   | 'ApprovalDenied'
+  | 'ApprovalChangesRequested'
   // Policy aggregate
   | 'PolicyCreated'
   | 'PolicyUpdated'
@@ -158,6 +159,7 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'ApprovalRequested',
   'ApprovalGranted',
   'ApprovalDenied',
+  'ApprovalChangesRequested',
   // Policy aggregate
   'PolicyCreated',
   'PolicyUpdated',

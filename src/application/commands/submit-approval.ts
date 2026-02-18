@@ -79,12 +79,6 @@ type ParsedIds = Readonly<{
 type Err<E> = Readonly<{ ok: false; error: E }>;
 
 function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | null {
-  if (input.decision === 'RequestChanges') {
-    return err({
-      kind: 'ValidationFailed',
-      message: 'RequestChanges is currently not supported in command execution.',
-    });
-  }
   if (typeof input.rationale !== 'string' || input.rationale.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'rationale must be a non-empty string.' });
   }
@@ -186,8 +180,16 @@ type EventBuildArgs = Readonly<{
   decided: ApprovalDecidedV1;
 }>;
 
+function decisionToEventType(
+  decision: ApprovalDecision,
+): 'ApprovalGranted' | 'ApprovalDenied' | 'ApprovalChangesRequested' {
+  if (decision === 'Approved') return 'ApprovalGranted';
+  if (decision === 'RequestChanges') return 'ApprovalChangesRequested';
+  return 'ApprovalDenied';
+}
+
 function buildDomainEvent(args: EventBuildArgs): DomainEventV1 {
-  const eventType = args.decision === 'Approved' ? 'ApprovalGranted' : 'ApprovalDenied';
+  const eventType = decisionToEventType(args.decision);
   return {
     schemaVersion: 1,
     eventId: args.eventId,
