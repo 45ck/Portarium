@@ -4,6 +4,10 @@ receivers:
       grpc:
       http:
 
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
 exporters:
   logging:
     verbosity: basic
@@ -13,6 +17,8 @@ processors:
     timeout: 1s
 
 service:
+  extensions:
+    - health_check
   pipelines:
     metrics:
       receivers:
