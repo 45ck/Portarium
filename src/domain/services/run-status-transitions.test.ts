@@ -3,60 +3,83 @@ import { describe, expect, it } from 'vitest';
 import type { RunStatus } from '../runs/run-v1.js';
 
 import {
+  RUN_NON_TERMINAL_GUARD,
+  RUN_STATUS_TRANSITIONS,
+  RUN_TRANSITION_TABLE_GUARD,
   RunStatusTransitionError,
   assertValidRunStatusTransition,
   isTerminalRunStatus,
   isValidRunStatusTransition,
   terminalRunStatuses,
+  type ValidRunStatusTransition,
 } from './run-status-transitions.js';
 
-describe('isValidRunStatusTransition', () => {
-  it('allows Pending -> Running', () => {
-    expect(isValidRunStatusTransition('Pending', 'Running')).toBe(true);
+// Compile-time: these should be `true`, not `never`.
+type _GuardCheck1 = typeof RUN_TRANSITION_TABLE_GUARD;
+type _GuardCheck2 = typeof RUN_NON_TERMINAL_GUARD;
+// Compile-time: Succeeded has no valid successors (resolves to never).
+type _SucceededHasNoSuccessors = ValidRunStatusTransition<'Succeeded'> extends never ? true : never;
+// Compile-time: Pending can only go to Running.
+type _PendingOnlyToRunning =
+  ValidRunStatusTransition<'Pending'> extends 'Running'
+    ? 'Running' extends ValidRunStatusTransition<'Pending'>
+      ? true
+      : never
+    : never;
+
+describe('compile-time guards are runtime-true', () => {
+  it('RUN_TRANSITION_TABLE_GUARD is true', () => {
+    expect(RUN_TRANSITION_TABLE_GUARD).toBe(true);
   });
 
-  it('allows Running -> Succeeded', () => {
-    expect(isValidRunStatusTransition('Running', 'Succeeded')).toBe(true);
+  it('RUN_NON_TERMINAL_GUARD is true', () => {
+    expect(RUN_NON_TERMINAL_GUARD).toBe(true);
   });
+});
 
-  it('allows Running -> Failed', () => {
-    expect(isValidRunStatusTransition('Running', 'Failed')).toBe(true);
+describe('isValidRunStatusTransition — valid transitions', () => {
+  it.each<[RunStatus, RunStatus]>([
+    ['Pending', 'Running'],
+    ['Running', 'Succeeded'],
+    ['Running', 'Failed'],
+    ['Running', 'Cancelled'],
+    ['Running', 'WaitingForApproval'],
+    ['Running', 'Paused'],
+    ['WaitingForApproval', 'Running'],
+    ['Paused', 'Running'],
+  ])('allows %s -> %s', (from, to) => {
+    expect(isValidRunStatusTransition(from, to)).toBe(true);
   });
+});
 
-  it('allows Running -> Cancelled', () => {
-    expect(isValidRunStatusTransition('Running', 'Cancelled')).toBe(true);
-  });
-
-  it('allows Running -> WaitingForApproval', () => {
-    expect(isValidRunStatusTransition('Running', 'WaitingForApproval')).toBe(true);
-  });
-
-  it('allows Running -> Paused', () => {
-    expect(isValidRunStatusTransition('Running', 'Paused')).toBe(true);
-  });
-
-  it('allows WaitingForApproval -> Running', () => {
-    expect(isValidRunStatusTransition('WaitingForApproval', 'Running')).toBe(true);
-  });
-
-  it('allows Paused -> Running', () => {
-    expect(isValidRunStatusTransition('Paused', 'Running')).toBe(true);
-  });
-
-  it('rejects Pending -> Succeeded (skip)', () => {
-    expect(isValidRunStatusTransition('Pending', 'Succeeded')).toBe(false);
-  });
-
-  it('rejects Succeeded -> Running (terminal)', () => {
-    expect(isValidRunStatusTransition('Succeeded', 'Running')).toBe(false);
-  });
-
-  it('rejects Failed -> Running (terminal)', () => {
-    expect(isValidRunStatusTransition('Failed', 'Running')).toBe(false);
-  });
-
-  it('rejects Cancelled -> Running (terminal)', () => {
-    expect(isValidRunStatusTransition('Cancelled', 'Running')).toBe(false);
+describe('isValidRunStatusTransition — invalid transitions', () => {
+  it.each<[RunStatus, RunStatus]>([
+    // Terminal states have no outgoing transitions
+    ['Succeeded', 'Running'],
+    ['Succeeded', 'Pending'],
+    ['Succeeded', 'Failed'],
+    ['Failed', 'Running'],
+    ['Failed', 'Pending'],
+    ['Cancelled', 'Running'],
+    ['Cancelled', 'Pending'],
+    // Pending can't skip intermediate states
+    ['Pending', 'Succeeded'],
+    ['Pending', 'Failed'],
+    ['Pending', 'Cancelled'],
+    ['Pending', 'WaitingForApproval'],
+    ['Pending', 'Paused'],
+    // WaitingForApproval can only resume to Running
+    ['WaitingForApproval', 'Succeeded'],
+    ['WaitingForApproval', 'Failed'],
+    ['WaitingForApproval', 'Cancelled'],
+    ['WaitingForApproval', 'Paused'],
+    // Paused can only resume to Running
+    ['Paused', 'Succeeded'],
+    ['Paused', 'Failed'],
+    ['Paused', 'Cancelled'],
+    ['Paused', 'WaitingForApproval'],
+  ])('rejects %s -> %s', (from, to) => {
+    expect(isValidRunStatusTransition(from, to)).toBe(false);
   });
 });
 
@@ -100,3 +123,36 @@ describe('RunStatusTransitionError', () => {
     expect(error.message).toBe('Invalid run status transition: Succeeded -> Running');
   });
 });
+
+describe('RUN_STATUS_TRANSITIONS table completeness', () => {
+  it('has an entry for every RunStatus', () => {
+    const allStatuses: readonly RunStatus[] = [
+      'Pending',
+      'Running',
+      'WaitingForApproval',
+      'Paused',
+      'Succeeded',
+      'Failed',
+      'Cancelled',
+    ];
+    for (const s of allStatuses) {
+      expect(RUN_STATUS_TRANSITIONS).toHaveProperty(s);
+    }
+  });
+
+  it('terminal states have empty transition lists', () => {
+    expect(RUN_STATUS_TRANSITIONS.Succeeded).toHaveLength(0);
+    expect(RUN_STATUS_TRANSITIONS.Failed).toHaveLength(0);
+    expect(RUN_STATUS_TRANSITIONS.Cancelled).toHaveLength(0);
+  });
+});
+
+// Compile-time narrowing types (not executed, checked by tsc)
+const _check1: _GuardCheck1 = true;
+const _check2: _GuardCheck2 = true;
+const _check3: _SucceededHasNoSuccessors = true;
+const _check4: _PendingOnlyToRunning = true;
+void _check1;
+void _check2;
+void _check3;
+void _check4;
