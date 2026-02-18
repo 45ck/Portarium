@@ -5,6 +5,7 @@ import {
   DEFAULT_TEMPORAL_NAMESPACE,
   DEFAULT_TEMPORAL_TASK_QUEUE,
 } from './temporal-workflow-orchestrator.js';
+import { completeRunActivity, startRunActivity } from './activities.js';
 
 export type TemporalWorkerConfig = Readonly<{
   address: string;
@@ -53,6 +54,10 @@ export async function createTemporalWorker(
     namespace: config.namespace,
     taskQueue: config.taskQueue,
     workflowsPath,
+    activities: {
+      startRunActivity,
+      completeRunActivity,
+    },
   });
 
   return {

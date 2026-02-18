@@ -55,6 +55,13 @@ describe('createTemporalWorker', () => {
       taskQueue: 'portarium-runs',
     });
 
+    expect(vi.mocked(sdk.Worker.create)).toHaveBeenCalledTimes(1);
+    const createArgs = vi.mocked(sdk.Worker.create).mock.calls[0]![0] as unknown as Record<
+      string,
+      unknown
+    >;
+    expect(createArgs['activities']).toBeTypeOf('object');
+
     await handle.run();
     expect(run).toHaveBeenCalledTimes(1);
 
