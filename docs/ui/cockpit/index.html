@@ -8362,18 +8362,18 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             >
           </div>
 
-          <!-- Class filter chips -->
+          <!-- Class filter chips (H4: role=button so keyboard users can activate) -->
           <div
             class="filters js-robot-filter-chips"
             role="group"
             aria-label="Filter by robot class"
           >
-            <span class="chip chip--active" data-robot-class="all">All &#9679;</span>
-            <span class="chip" data-robot-class="AMR">AMR</span>
-            <span class="chip" data-robot-class="AGV">AGV</span>
-            <span class="chip" data-robot-class="Manipulator">Manipulator</span>
-            <span class="chip" data-robot-class="UAV">UAV</span>
-            <span class="chip" data-robot-class="PLC">PLC</span>
+            <span class="chip chip--active" data-robot-class="all" role="button" tabindex="0" aria-pressed="true">All &#9679;</span>
+            <span class="chip" data-robot-class="AMR" role="button" tabindex="0" aria-pressed="false">AMR</span>
+            <span class="chip" data-robot-class="AGV" role="button" tabindex="0" aria-pressed="false">AGV</span>
+            <span class="chip" data-robot-class="Manipulator" role="button" tabindex="0" aria-pressed="false">Manipulator</span>
+            <span class="chip" data-robot-class="UAV" role="button" tabindex="0" aria-pressed="false">UAV</span>
+            <span class="chip" data-robot-class="PLC" role="button" tabindex="0" aria-pressed="false">PLC</span>
           </div>
 
           <!-- Robot card grid -->
@@ -8386,57 +8386,58 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               margin-top: 12px;
             "
           >
-            <article class="card" data-robot-id="robot-001" data-robot-class="AMR">
+            <!-- H4: card uses <article> with aria-label for screen reader identity -->
+            <article class="card" data-robot-id="robot-001" data-robot-class="AMR" aria-label="robot-001, AMR, Online">
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-001</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">AMR</span>
               </div>
               <div style="margin: 4px 0">
                 <span class="status status--ok">&#9679; Online</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px"
-                  >Heartbeat: 2s ago</span
-                >
+                <!-- H1: heartbeat age visible; title explains abbreviation -->
+                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 2 seconds ago">Heartbeat: 2s ago</span>
               </div>
               <div class="subtle" style="font-size: 12px">
-                Battery: 87% &nbsp;|&nbsp; Mission: nav-mission-0094
+                <!-- H1: battery % shown with plain text; no warning needed at 87% -->
+                Battery: 87% &nbsp;|&nbsp; Mission: <a href="#mission">nav-mission-0094</a>
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-001">
+                <!-- H6: descriptive aria-label on test button (not just "Test ↺") -->
+                <button class="btn btn--small" type="button" data-robot-test="robot-001" aria-label="Test connection for robot-001">
                   Test &#8635;
                 </button>
                 <button
                   class="btn btn--small js-drawer-trigger"
                   type="button"
                   data-drawer="robot-001-detail"
+                  aria-label="Open detail for robot-001"
                 >
                   Detail &#8594;
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-007" data-robot-class="UAV">
+            <article class="card" data-robot-id="robot-007" data-robot-class="UAV" aria-label="robot-007, UAV, Degraded — action needed">
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-007</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">UAV</span>
               </div>
               <div style="margin: 4px 0">
-                <span class="status status--warn"
-                  ><span class="status__icon">&#9888;</span>Degraded</span
-                >
-                <span class="subtle" style="margin-left: 8px; font-size: 11px"
-                  >Heartbeat: 45s ago</span
-                >
+                <span class="status status--warn"><span class="status__icon">&#9888;</span>Degraded</span>
+                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 45 seconds ago — response time elevated">Heartbeat: 45s ago</span>
               </div>
               <div class="subtle" style="font-size: 12px">
-                Battery: 12% &nbsp;|&nbsp; Mission: none
+                <!-- H1: battery critical (<20%) highlighted in danger colour -->
+                Battery: <span style="color: #ef4444; font-weight: 600" title="Battery critically low — consider charging">12% &#9888;</span> &nbsp;|&nbsp; Mission: none
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-007">
+                <button class="btn btn--small" type="button" data-robot-test="robot-007" aria-label="Test connection for robot-007">
                   Test &#8635;
                 </button>
                 <button
                   class="btn btn--small js-drawer-trigger"
                   type="button"
                   data-drawer="robot-007-detail"
+                  aria-label="Open detail for robot-007"
                 >
                   Detail &#8594;
                 </button>
@@ -8445,68 +8446,69 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   type="button"
                   data-robot-id="robot-007"
                   data-requires-persona="operator admin"
+                  aria-label="Send E-Stop to robot-007"
                 >
                   Send E-Stop
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-003" data-robot-class="AGV">
+            <article class="card" data-robot-id="robot-003" data-robot-class="AGV" aria-label="robot-003, AGV, Online">
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-003</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">AGV</span>
               </div>
               <div style="margin: 4px 0">
                 <span class="status status--ok">&#9679; Online</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px"
-                  >Heartbeat: 1s ago</span
-                >
+                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 1 second ago">Heartbeat: 1s ago</span>
               </div>
               <div class="subtle" style="font-size: 12px">
-                Battery: 74% &nbsp;|&nbsp; Mission: pick-mission-0211
+                Battery: 74% &nbsp;|&nbsp; Mission: <a href="#mission">pick-mission-0211</a>
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-003">
+                <button class="btn btn--small" type="button" data-robot-test="robot-003" aria-label="Test connection for robot-003">
                   Test &#8635;
                 </button>
                 <button
                   class="btn btn--small js-drawer-trigger"
                   type="button"
                   data-drawer="robot-003-detail"
+                  aria-label="Open detail for robot-003"
                 >
                   Detail &#8594;
                 </button>
               </div>
             </article>
-            <article class="card" data-robot-id="robot-009" data-robot-class="Manipulator">
+            <article class="card" data-robot-id="robot-009" data-robot-class="Manipulator" aria-label="robot-009, Manipulator, E-Stopped — requires safety admin to clear">
               <div style="display: flex; justify-content: space-between; align-items: center">
                 <strong>robot-009</strong>
                 <span class="chip chip--small" style="background: #f0f4ff">Manipulator</span>
               </div>
               <div style="margin: 4px 0">
                 <span class="status status--danger">&#8856; E-Stopped</span>
-                <span class="subtle" style="margin-left: 8px; font-size: 11px"
-                  >Heartbeat: 120s ago</span
-                >
+                <span class="subtle" style="margin-left: 8px; font-size: 11px" title="Last heartbeat received 120 seconds ago — robot may be unreachable">Heartbeat: 120s ago</span>
               </div>
               <div class="subtle" style="font-size: 12px">
                 Battery: 55% &nbsp;|&nbsp; Mission: none
               </div>
               <div style="margin-top: 8px; display: flex; gap: 6px">
-                <button class="btn btn--small" type="button" data-robot-test="robot-009">
+                <button class="btn btn--small" type="button" data-robot-test="robot-009" aria-label="Test connection for robot-009">
                   Test &#8635;
                 </button>
                 <button
                   class="btn btn--small js-drawer-trigger"
                   type="button"
                   data-drawer="robot-009-detail"
+                  aria-label="Open detail for robot-009"
                 >
                   Detail &#8594;
                 </button>
+                <!-- H5: Clear E-Stop gated to admin only; label clarifies rationale required -->
                 <button
                   class="btn btn--small btn--primary js-clear-estop"
                   type="button"
                   data-robot-id="robot-009"
                   data-requires-persona="admin"
+                  aria-label="Clear E-Stop for robot-009 (safety admin only — rationale required)"
                 >
                   Clear E-Stop
                 </button>
@@ -8552,36 +8554,28 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- A/B variant: Table -->
+          <!-- H4: Mission IDs are now <a> links (consistent with work-items / runs pattern) -->
           <div class="ab-variant" data-variant="A" data-variant-screen="missions">
             <div class="table-wrap">
               <table class="table" aria-label="Missions table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Robot(s)</th>
-                    <th>Goal</th>
-                    <th>Status</th>
-                    <th>Dispatched</th>
-                    <th>Actions</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Robot(s)</th>
+                    <th scope="col">Goal</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Dispatched</th>
+                    <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>
-                      <button
-                        class="btn btn--small js-drawer-trigger"
-                        type="button"
-                        data-drawer="mission-0094-detail"
-                      >
-                        mis-0094
-                      </button>
-                    </td>
+                    <!-- H4: link to detail page (not a drawer-trigger button) -->
+                    <td><a href="#mission" aria-label="View mission mis-0094 detail">mis-0094</a></td>
                     <td>robot-001</td>
                     <td>Navigate to bay 3</td>
                     <td>
-                      <span class="status status--info"
-                        ><span class="status__icon">&#8635;</span>Executing</span
-                      >
+                      <span class="status status--info"><span class="status__icon">&#8635;</span>Executing</span>
                     </td>
                     <td>14:02</td>
                     <td>
@@ -8596,15 +8590,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     </td>
                   </tr>
                   <tr>
-                    <td>
-                      <button
-                        class="btn btn--small js-drawer-trigger"
-                        type="button"
-                        data-drawer="mission-0095-detail"
-                      >
-                        mis-0095
-                      </button>
-                    </td>
+                    <td><a href="#mission" aria-label="View mission mis-0095 detail">mis-0095</a></td>
                     <td>robot-003</td>
                     <td>Pick SKU-8821</td>
                     <td><span class="status">&#9675; Pending</span></td>
@@ -8621,33 +8607,19 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     </td>
                   </tr>
                   <tr>
-                    <td>
-                      <button
-                        class="btn btn--small js-drawer-trigger"
-                        type="button"
-                        data-drawer="mission-0087-detail"
-                      >
-                        mis-0087
-                      </button>
-                    </td>
+                    <td><a href="#mission" aria-label="View mission mis-0087 detail">mis-0087</a></td>
                     <td>robot-002</td>
                     <td>Charge station</td>
                     <td><span class="status status--ok">&#10003; Completed</span></td>
                     <td>13:41</td>
+                    <!-- H8: no action needed for completed mission; keep cell empty -->
                     <td></td>
                   </tr>
                   <tr>
-                    <td>
-                      <button
-                        class="btn btn--small js-drawer-trigger"
-                        type="button"
-                        data-drawer="mission-0091-detail"
-                      >
-                        mis-0091
-                      </button>
-                    </td>
+                    <td><a href="#mission" aria-label="View mission mis-0091 detail">mis-0091</a></td>
                     <td>robot-005</td>
                     <td>Dock</td>
+                    <!-- H1: failed status shown prominently with both icon and text -->
                     <td><span class="status status--danger">&#10007; Failed</span></td>
                     <td>12:55</td>
                     <td>
@@ -8667,12 +8639,13 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- A/B variant: Kanban -->
+          <!-- H4: Kanban cards also link to the detail page for consistency -->
           <div class="ab-variant" data-variant="B" data-variant-screen="missions">
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
               <div class="card">
                 <div class="card__title">Executing <span class="nav__badge">1</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><strong>mis-0094</strong></div>
+                  <div><a href="#mission"><strong>mis-0094</strong></a></div>
                   <div class="subtle" style="font-size: 12px">
                     robot-001 &#8212; Navigate to bay 3
                   </div>
@@ -8681,14 +8654,14 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="card">
                 <div class="card__title">Pending <span class="nav__badge">1</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><strong>mis-0095</strong></div>
+                  <div><a href="#mission"><strong>mis-0095</strong></a></div>
                   <div class="subtle" style="font-size: 12px">robot-003 &#8212; Pick SKU-8821</div>
                 </div>
               </div>
               <div class="card">
                 <div class="card__title">Completed <span class="nav__badge">24</span></div>
                 <div class="card" style="margin-top: 8px">
-                  <div><strong>mis-0087</strong></div>
+                  <div><a href="#mission"><strong>mis-0087</strong></a></div>
                   <div class="subtle" style="font-size: 12px">robot-002 &#8212; Charge station</div>
                 </div>
               </div>
@@ -8697,12 +8670,143 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   Failed <span class="nav__badge nav__badge--danger">1</span>
                 </div>
                 <div class="card" style="margin-top: 8px">
-                  <div><strong>mis-0091</strong></div>
-                  <div class="subtle" style="font-size: 12px">robot-005 &#8212; Dock</div>
+                  <!-- H1: failed card has a visual indicator beyond just the column label -->
+                  <div><a href="#mission"><strong>mis-0091</strong></a> <span class="status status--danger" style="font-size: 11px">&#10007;</span></div>
+                  <div class="subtle" style="font-size: 12px">robot-005 &#8212; Dock (timeout)</div>
                 </div>
               </div>
             </div>
           </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: MISSION DETAIL
+             Not in sidebar nav — accessed by clicking a mission row.
+             Follows the #work-item / #run detail page pattern.
+             ============================================================ -->
+        <section id="screen-mission" class="screen" data-screen="mission" aria-labelledby="h-mission">
+          <div class="screen__header">
+            <div>
+              <!-- H4: breadcrumb matches work-item/run pattern (crumbs subtle) -->
+              <div class="crumbs subtle">
+                <a href="#missions">Missions</a> /
+              </div>
+              <h1 id="h-mission" class="h1">
+                mis-0094 &#8212; Navigate to bay 3
+                <span class="status status--info"><span class="status__icon">&#8635;</span> Executing</span>
+              </h1>
+              <div class="subtle">
+                Robot: <strong>robot-001</strong> (AMR) &nbsp;|&nbsp; Priority: Normal &nbsp;|&nbsp;
+                Tier: <span class="tier-badge" data-tooltip="This action runs automatically — no human approval required">Auto</span>
+                &nbsp;|&nbsp; Dispatched: 2026-02-18 14:02
+              </div>
+            </div>
+            <div class="screen__actions">
+              <!-- H3: operator controls grouped in header; destructive action (cancel) distinct from pre-empt -->
+              <button class="btn" type="button" data-confirm="preempt-mission" data-requires-persona="operator admin">Pre-empt</button>
+              <button class="btn" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+              <a class="btn" href="#missions">&#8592; Back to Missions</a>
+            </div>
+          </div>
+
+          <!-- ActionExecution state machine stepper (H1: always visible) -->
+          <div class="stepper">
+            <span class="stepper__step stepper__step--done">QUEUED</span>
+            <span class="stepper__connector">&#8594;</span>
+            <span class="stepper__step stepper__step--done">DISPATCHED</span>
+            <span class="stepper__connector">&#8594;</span>
+            <span class="stepper__step stepper__step--active">EXECUTING</span>
+            <span class="stepper__connector">&#8594;</span>
+            <span class="stepper__step">SUCCEEDED</span>
+            <span class="stepper__connector stepper__connector--alt">or</span>
+            <span class="stepper__step stepper__step--cancelled">CANCELLED</span>
+          </div>
+
+          <div class="grid grid--2">
+            <!-- Mission identity card -->
+            <article class="card card--hero">
+              <div class="card__title">Mission Details</div>
+              <dl style="font-size: 13px; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0">
+                <dt class="subtle">ID</dt>
+                <dd>mis-0094</dd>
+                <dt class="subtle">Action</dt>
+                <dd>navigate_to</dd>
+                <dt class="subtle">Goal</dt>
+                <dd>Navigate to bay 3</dd>
+                <dt class="subtle">Robot</dt>
+                <dd><a href="#robots">robot-001</a> (AMR)</dd>
+                <dt class="subtle">Priority</dt>
+                <dd>Normal</dd>
+                <dt class="subtle">Execution Tier</dt>
+                <dd>Auto</dd>
+                <!-- H10: SPIFFE SVID has tooltip for operators unfamiliar with the term -->
+                <dt class="subtle" title="Secure Production Identity Framework for Everyone — cryptographic identity for this robot">SPIFFE SVID</dt>
+                <dd style="font-size: 11px; word-break: break-all">spiffe://portarium/robot-001</dd>
+                <dt class="subtle">Dispatched</dt>
+                <dd>2026-02-18 14:02:01</dd>
+              </dl>
+            </article>
+
+            <!-- ActionExecution log card -->
+            <article class="card card--hero">
+              <div class="card__title">ActionExecution Log</div>
+              <div class="list">
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">DISPATCHED &#8594; robot-001</div>
+                    <div class="row__subtle">2026-02-18 14:02:01</div>
+                  </div>
+                  <div class="row__right"><span class="status status--ok">&#10003;</span></div>
+                </div>
+                <div class="row row--static">
+                  <div class="row__main">
+                    <div class="row__title">EXECUTING &#8212; navigate_to bay 3</div>
+                    <div class="row__subtle">2026-02-18 14:02:03 (in progress)</div>
+                  </div>
+                  <div class="row__right">
+                    <span class="status status--info"><span class="status__icon">&#8635;</span></span>
+                  </div>
+                </div>
+              </div>
+              <!-- H7: Pre-empt / Cancel also available from the detail view -->
+              <div style="margin-top: 12px; display: flex; gap: 8px">
+                <button class="btn btn--small" type="button" data-confirm="preempt-mission" data-requires-persona="operator admin">Pre-empt</button>
+                <button class="btn btn--small" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+              </div>
+            </article>
+          </div>
+
+          <!-- Evidence (H6: same collapsible pattern as run detail) -->
+          <details class="card card--subtle" style="margin-top: 12px">
+            <summary class="card__title" style="cursor: pointer">
+              Evidence (2 entries)
+              <span class="subtle" style="font-weight: 400; font-size: 12px">
+                &#8212; <a href="#evidence">View full log</a>
+              </span>
+            </summary>
+            <div class="list">
+              <div class="row row--static">
+                <div class="row__main">
+                  <div class="row__title">Mission dispatched (tamper-proof)</div>
+                  <div class="row__subtle">
+                    System | Linked: mis-0094
+                    <span class="retention-tag">Retained 1 year</span>
+                  </div>
+                </div>
+                <div class="row__right"><span class="status status--info">Evidence</span></div>
+              </div>
+              <div class="row row--static">
+                <div class="row__main">
+                  <div class="row__title">Execution started</div>
+                  <div class="row__subtle">
+                    Robot | Linked: robot-001
+                    <span class="retention-tag">Retained 1 year</span>
+                  </div>
+                </div>
+                <div class="row__right"><span class="status status--info">Evidence</span></div>
+              </div>
+            </div>
+          </details>
         </section>
 
         <!-- ============================================================
@@ -8728,19 +8832,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </div>
           </div>
 
-          <!-- System status banner -->
-          <div
-            class="js-safety-status-banner"
-            role="status"
-            style="
-              background: #f0fdf4;
-              border: 1px solid #22c55e;
-              color: #166534;
-              border-radius: 6px;
-              padding: 10px 14px;
-              margin-bottom: 16px;
-            "
-          >
+          <!-- H1: status banner uses consistent callout class + role=status for live region -->
+          <div class="callout js-safety-status-banner" role="status" aria-live="polite" style="background: #f0fdf4; border-color: #22c55e; color: #166534; margin-bottom: 16px">
             &#9679; System NOMINAL &#8212; 0 robots in E-Stop state
           </div>
 
@@ -8763,7 +8856,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tr>
                   <td>warehouse-a</td>
                   <td>max_speed &#8804; 0.5 m/s</td>
-                  <td><span class="status status--danger">block</span></td>
+                  <!-- H10: title tooltip explains enforcement mode semantics -->
+                  <td><span class="status status--danger" title="block: action is rejected when constraint is violated">block</span></td>
                   <td>12</td>
                   <td>
                     <button
@@ -8779,7 +8873,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tr>
                   <td>bay-3</td>
                   <td>no_lift_zone</td>
-                  <td><span class="status status--warn">warn</span></td>
+                  <td><span class="status status--warn" title="warn: action proceeds but a safety warning is logged">warn</span></td>
                   <td>4</td>
                   <td>
                     <button
@@ -8795,7 +8889,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <tr>
                   <td>yard</td>
                   <td>outdoor_uav_permit required</td>
-                  <td><span class="status status--danger">block</span></td>
+                  <td><span class="status status--danger" title="block: action is rejected when constraint is violated">block</span></td>
                   <td>6</td>
                   <td>
                     <button

@@ -675,6 +675,11 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open mission detail</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create new mission</span></div>' +
         '</div>',
+      mission:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>Backspace</kbd> <span>Back to Missions</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>c</kbd> <span>Open context drawer</span></div>' +
+        '</div>',
       safety:
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>g y</kbd> <span>Go to Safety</span></div>' +
@@ -802,6 +807,7 @@ const Keyboard = (function () {
   var BACK_MAP = {
     'work-item': 'work-items',
     run: 'runs',
+    mission: 'missions',
   };
 
   function goBack() {

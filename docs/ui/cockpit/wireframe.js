@@ -617,6 +617,7 @@ const SCREENS = [
   'events',
   'robots',
   'missions',
+  'mission',
   'safety',
 ];
 
@@ -631,7 +632,7 @@ function activateScreen(screen) {
     el.classList.toggle('is-active', el.id === target);
   }
   /* Map detail views to their parent nav item for sidebar highlighting (H6) */
-  const parentMap = { 'work-item': 'work-items', run: 'runs' };
+  const parentMap = { 'work-item': 'work-items', run: 'runs', mission: 'missions' };
   const navScreen = parentMap[screen] || screen;
   for (const link of qsa('.nav__item')) {
     const href = link.getAttribute('href') || '';
