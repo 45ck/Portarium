@@ -37,7 +37,15 @@ export async function createTemporalWorker(
   config: TemporalWorkerConfig = readTemporalWorkerConfig(),
 ): Promise<TemporalWorkerHandle> {
   const require = createRequire(import.meta.url);
-  const workflowsPath = require.resolve('./workflows.js');
+  // In production builds we resolve the compiled JS workflows file.
+  // In tests (running TS directly), the `.js` file is not present.
+  const workflowsPath = (() => {
+    try {
+      return require.resolve('./workflows.js');
+    } catch {
+      return require.resolve('./workflows.ts');
+    }
+  })();
 
   const connection = await NativeConnection.connect({ address: config.address });
   const worker = await Worker.create({
