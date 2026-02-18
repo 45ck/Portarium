@@ -154,4 +154,61 @@ describe('selectProvider', () => {
       expect(result.alternativeCount).toBe(0);
     }
   });
+
+  it('returns operation_not_in_family for completely unknown operations', () => {
+    const result = selectProvider({
+      adapters: [makeAdapter()],
+      portFamily: 'FinanceAccounting',
+      operation: 'unknown:operation',
+    });
+
+    expect(result).toEqual({ ok: false, reason: 'operation_not_in_family' });
+  });
+
+  it('returns operation_not_in_family for cross-family operations (party:read on FinanceAccounting)', () => {
+    // party:read is valid for CrmSales but NOT for FinanceAccounting
+    const result = selectProvider({
+      adapters: [makeAdapter()],
+      portFamily: 'FinanceAccounting',
+      operation: 'party:read',
+    });
+
+    expect(result).toEqual({ ok: false, reason: 'operation_not_in_family' });
+  });
+
+  it('operation_not_in_family is checked before adapter availability', () => {
+    // Even with no adapters, operation_not_in_family takes priority over no_matching_adapter
+    const result = selectProvider({
+      adapters: [],
+      portFamily: 'FinanceAccounting',
+      operation: 'party:write',
+    });
+
+    expect(result).toEqual({ ok: false, reason: 'operation_not_in_family' });
+  });
+
+  it('tie-break is deterministic (alphabetical by adapterId)', () => {
+    const adapters = [
+      makeAdapter({ adapterId: 'zeta-adapter' }),
+      makeAdapter({ adapterId: 'alpha-adapter' }),
+      makeAdapter({ adapterId: 'mu-adapter' }),
+    ];
+    const r1 = selectProvider({
+      adapters,
+      portFamily: 'FinanceAccounting',
+      operation: 'account:read',
+    });
+    const r2 = selectProvider({
+      adapters: [...adapters].reverse(),
+      portFamily: 'FinanceAccounting',
+      operation: 'account:read',
+    });
+
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+    if (r1.ok && r2.ok) {
+      expect(r1.adapter.adapterId).toBe('alpha-adapter');
+      expect(r2.adapter.adapterId).toBe('alpha-adapter');
+    }
+  });
 });
