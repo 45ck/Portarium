@@ -62,7 +62,7 @@
 {"id":"bead-0062","title":"Provider decision logs: verify each source decision includes license, extraction constraints, and capability hypotheses","status":"closed","createdAt":"2026-02-17T03:48:00.740Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0063","title":"Code review: Scaffold domain model structure (aggregates, ports, events, canonical objects)","status":"closed","createdAt":"2026-02-17T03:48:18.099Z","updatedAt":"2026-02-18T06:02:44.899Z"}
 {"id":"bead-0064","title":"Code review: IAM MVP: workspace users + RBAC roles + auth integration","status":"closed","createdAt":"2026-02-17T03:48:18.406Z","updatedAt":"2026-02-18T05:41:51.474Z"}
-{"id":"bead-0065","title":"Code review: Control plane API v1: approvals/workflows/runs OpenAPI","status":"open","createdAt":"2026-02-17T03:48:18.674Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0065","title":"Code review: Control plane API v1: approvals/workflows/runs OpenAPI","status":"closed","createdAt":"2026-02-17T03:48:18.674Z","updatedAt":"2026-02-18T06:04:31.418Z"}
 {"id":"bead-0066","title":"Code review: ADR-029: implement tamper-evident hash chain + signature hooks on EvidenceEntry and Artifact lineage","status":"open","createdAt":"2026-02-17T03:48:18.936Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0067","title":"Code review: ADR-030: implement quota-aware execution primitives in orchestration scheduling and adapter call wrapper","status":"open","createdAt":"2026-02-17T03:48:19.198Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0068","title":"Code review: ADR-031: implement SoD model evaluation, incompatible role graph, and threshold counters on approval routing","status":"open","createdAt":"2026-02-17T03:48:19.455Z","updatedAt":"2026-02-17T20:18:23.090Z"}
