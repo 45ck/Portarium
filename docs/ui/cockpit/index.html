@@ -126,6 +126,13 @@
           <a class="nav__item" href="#loading"><span class="nav__icon">&#9680;</span> Loading</a>
         </nav>
 
+        <div class="sidebar__section-title">Robotics</div>
+        <nav class="nav" aria-label="Robotics navigation">
+          <a class="nav__item" href="#robots"><span class="nav__icon">&#9632;</span> Robots</a>
+          <a class="nav__item" href="#missions"><span class="nav__icon">&#9654;</span> Missions</a>
+          <a class="nav__item" href="#safety"><span class="nav__icon">&#9888;</span> Safety</a>
+        </nav>
+
         <div class="sidebar__section-title">Quick Actions</div>
         <nav class="nav" aria-label="Quick actions">
           <a class="nav__item js-persona-action-1" href="#work-items"
@@ -7819,6 +7826,564 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             </div>
           </form>
         </dialog>
+
+        <!-- ============================================================
+             SCREEN: ROBOTS / FLEET
+             ============================================================ -->
+        <section id="screen-robots" class="screen" data-screen="robots" aria-labelledby="h-robots">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-robots" class="h1">Robots</h1>
+              <div class="subtle">Fleet health and enrolment</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button">Enrol robot</button>
+            </div>
+          </div>
+
+          <!-- Fleet stat tiles -->
+          <div
+            class="filters"
+            role="group"
+            aria-label="Fleet summary"
+            style="gap: 8px; margin-bottom: 12px"
+          >
+            <span class="chip chip--active" aria-label="48 robots total">48 Total</span>
+            <span class="chip" style="border-color: #22c55e" aria-label="42 online">42 Online</span>
+            <span class="chip" style="border-color: #f59e0b" aria-label="4 degraded"
+              >4 Degraded</span
+            >
+            <span class="chip" style="border-color: #ef4444" aria-label="2 E-Stopped"
+              >2 E-Stopped</span
+            >
+          </div>
+
+          <!-- Class filter chips -->
+          <div
+            class="filters js-robot-filter-chips"
+            role="group"
+            aria-label="Filter by robot class"
+          >
+            <span class="chip chip--active" data-robot-class="all">All &#9679;</span>
+            <span class="chip" data-robot-class="AMR">AMR</span>
+            <span class="chip" data-robot-class="AGV">AGV</span>
+            <span class="chip" data-robot-class="Manipulator">Manipulator</span>
+            <span class="chip" data-robot-class="UAV">UAV</span>
+            <span class="chip" data-robot-class="PLC">PLC</span>
+          </div>
+
+          <!-- Robot card grid -->
+          <div
+            id="robotGrid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+              gap: 12px;
+              margin-top: 12px;
+            "
+          >
+            <article class="card" data-robot-id="robot-001" data-robot-class="AMR">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <strong>robot-001</strong>
+                <span class="chip chip--small" style="background: #f0f4ff">AMR</span>
+              </div>
+              <div style="margin: 4px 0">
+                <span class="status status--ok">&#9679; Online</span>
+                <span class="subtle" style="margin-left: 8px; font-size: 11px"
+                  >Heartbeat: 2s ago</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 12px">
+                Battery: 87% &nbsp;|&nbsp; Mission: nav-mission-0094
+              </div>
+              <div style="margin-top: 8px; display: flex; gap: 6px">
+                <button class="btn btn--small" type="button" data-robot-test="robot-001">
+                  Test &#8635;
+                </button>
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="robot-001-detail"
+                >
+                  Detail &#8594;
+                </button>
+              </div>
+            </article>
+            <article class="card" data-robot-id="robot-007" data-robot-class="UAV">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <strong>robot-007</strong>
+                <span class="chip chip--small" style="background: #f0f4ff">UAV</span>
+              </div>
+              <div style="margin: 4px 0">
+                <span class="status status--warn"
+                  ><span class="status__icon">&#9888;</span>Degraded</span
+                >
+                <span class="subtle" style="margin-left: 8px; font-size: 11px"
+                  >Heartbeat: 45s ago</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 12px">
+                Battery: 12% &nbsp;|&nbsp; Mission: none
+              </div>
+              <div style="margin-top: 8px; display: flex; gap: 6px">
+                <button class="btn btn--small" type="button" data-robot-test="robot-007">
+                  Test &#8635;
+                </button>
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="robot-007-detail"
+                >
+                  Detail &#8594;
+                </button>
+                <button
+                  class="btn btn--small js-estop-robot"
+                  type="button"
+                  data-robot-id="robot-007"
+                  data-requires-persona="operator admin"
+                >
+                  Send E-Stop
+                </button>
+              </div>
+            </article>
+            <article class="card" data-robot-id="robot-003" data-robot-class="AGV">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <strong>robot-003</strong>
+                <span class="chip chip--small" style="background: #f0f4ff">AGV</span>
+              </div>
+              <div style="margin: 4px 0">
+                <span class="status status--ok">&#9679; Online</span>
+                <span class="subtle" style="margin-left: 8px; font-size: 11px"
+                  >Heartbeat: 1s ago</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 12px">
+                Battery: 74% &nbsp;|&nbsp; Mission: pick-mission-0211
+              </div>
+              <div style="margin-top: 8px; display: flex; gap: 6px">
+                <button class="btn btn--small" type="button" data-robot-test="robot-003">
+                  Test &#8635;
+                </button>
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="robot-003-detail"
+                >
+                  Detail &#8594;
+                </button>
+              </div>
+            </article>
+            <article class="card" data-robot-id="robot-009" data-robot-class="Manipulator">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <strong>robot-009</strong>
+                <span class="chip chip--small" style="background: #f0f4ff">Manipulator</span>
+              </div>
+              <div style="margin: 4px 0">
+                <span class="status status--danger">&#8856; E-Stopped</span>
+                <span class="subtle" style="margin-left: 8px; font-size: 11px"
+                  >Heartbeat: 120s ago</span
+                >
+              </div>
+              <div class="subtle" style="font-size: 12px">
+                Battery: 55% &nbsp;|&nbsp; Mission: none
+              </div>
+              <div style="margin-top: 8px; display: flex; gap: 6px">
+                <button class="btn btn--small" type="button" data-robot-test="robot-009">
+                  Test &#8635;
+                </button>
+                <button
+                  class="btn btn--small js-drawer-trigger"
+                  type="button"
+                  data-drawer="robot-009-detail"
+                >
+                  Detail &#8594;
+                </button>
+                <button
+                  class="btn btn--small btn--primary js-clear-estop"
+                  type="button"
+                  data-robot-id="robot-009"
+                  data-requires-persona="admin"
+                >
+                  Clear E-Stop
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: MISSIONS
+             ============================================================ -->
+        <section
+          id="screen-missions"
+          class="screen"
+          data-screen="missions"
+          aria-labelledby="h-missions"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-missions" class="h1">Missions</h1>
+              <div class="subtle">Robot mission dispatch and monitoring</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button" data-requires-persona="operator admin">
+                + New Mission
+              </button>
+            </div>
+          </div>
+
+          <!-- Mission stat tiles -->
+          <div
+            class="filters"
+            role="group"
+            aria-label="Mission summary"
+            style="gap: 8px; margin-bottom: 12px"
+          >
+            <span class="chip chip--active" aria-label="3 active missions">3 Active</span>
+            <span class="chip" aria-label="7 pending missions">7 Pending</span>
+            <span class="chip" style="border-color: #22c55e" aria-label="24 completed today"
+              >24 Done Today</span
+            >
+            <span class="chip" style="border-color: #ef4444" aria-label="1 failed">1 Failed</span>
+          </div>
+
+          <!-- A/B variant: Table -->
+          <div class="ab-variant" data-variant="A" data-variant-screen="missions">
+            <div class="table-wrap">
+              <table class="table" aria-label="Missions table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Robot(s)</th>
+                    <th>Goal</th>
+                    <th>Status</th>
+                    <th>Dispatched</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <button
+                        class="btn btn--small js-drawer-trigger"
+                        type="button"
+                        data-drawer="mission-0094-detail"
+                      >
+                        mis-0094
+                      </button>
+                    </td>
+                    <td>robot-001</td>
+                    <td>Navigate to bay 3</td>
+                    <td>
+                      <span class="status status--info"
+                        ><span class="status__icon">&#8635;</span>Executing</span
+                      >
+                    </td>
+                    <td>14:02</td>
+                    <td>
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        data-confirm="preempt-mission"
+                        data-requires-persona="operator admin"
+                      >
+                        Pre-empt
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <button
+                        class="btn btn--small js-drawer-trigger"
+                        type="button"
+                        data-drawer="mission-0095-detail"
+                      >
+                        mis-0095
+                      </button>
+                    </td>
+                    <td>robot-003</td>
+                    <td>Pick SKU-8821</td>
+                    <td><span class="status">&#9675; Pending</span></td>
+                    <td>&#8212;</td>
+                    <td>
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        data-confirm="cancel-mission"
+                        data-requires-persona="operator admin"
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <button
+                        class="btn btn--small js-drawer-trigger"
+                        type="button"
+                        data-drawer="mission-0087-detail"
+                      >
+                        mis-0087
+                      </button>
+                    </td>
+                    <td>robot-002</td>
+                    <td>Charge station</td>
+                    <td><span class="status status--ok">&#10003; Completed</span></td>
+                    <td>13:41</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <button
+                        class="btn btn--small js-drawer-trigger"
+                        type="button"
+                        data-drawer="mission-0091-detail"
+                      >
+                        mis-0091
+                      </button>
+                    </td>
+                    <td>robot-005</td>
+                    <td>Dock</td>
+                    <td><span class="status status--danger">&#10007; Failed</span></td>
+                    <td>12:55</td>
+                    <td>
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        data-confirm="retry-mission"
+                        data-requires-persona="operator admin"
+                      >
+                        Retry
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- A/B variant: Kanban -->
+          <div class="ab-variant" data-variant="B" data-variant-screen="missions">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+              <div class="card">
+                <div class="card__title">Executing <span class="nav__badge">1</span></div>
+                <div class="card" style="margin-top: 8px">
+                  <div><strong>mis-0094</strong></div>
+                  <div class="subtle" style="font-size: 12px">
+                    robot-001 &#8212; Navigate to bay 3
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card__title">Pending <span class="nav__badge">1</span></div>
+                <div class="card" style="margin-top: 8px">
+                  <div><strong>mis-0095</strong></div>
+                  <div class="subtle" style="font-size: 12px">robot-003 &#8212; Pick SKU-8821</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card__title">Completed <span class="nav__badge">24</span></div>
+                <div class="card" style="margin-top: 8px">
+                  <div><strong>mis-0087</strong></div>
+                  <div class="subtle" style="font-size: 12px">robot-002 &#8212; Charge station</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card__title">
+                  Failed <span class="nav__badge nav__badge--danger">1</span>
+                </div>
+                <div class="card" style="margin-top: 8px">
+                  <div><strong>mis-0091</strong></div>
+                  <div class="subtle" style="font-size: 12px">robot-005 &#8212; Dock</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: SAFETY & E-STOP
+             ============================================================ -->
+        <section id="screen-safety" class="screen" data-screen="safety" aria-labelledby="h-safety">
+          <div class="screen__header">
+            <div>
+              <h1 id="h-safety" class="h1">Safety &amp; E-Stop</h1>
+              <div class="subtle">Fleet-wide safety controls and constraints</div>
+            </div>
+            <div class="screen__actions">
+              <button
+                id="btnGlobalEstop"
+                class="btn"
+                type="button"
+                style="background: #ef4444; color: #fff; border-color: #ef4444; font-weight: 700"
+                data-requires-persona="operator admin"
+                aria-label="Activate global E-Stop for all robots"
+              >
+                &#9888; Global E-Stop
+              </button>
+            </div>
+          </div>
+
+          <!-- System status banner -->
+          <div
+            class="js-safety-status-banner"
+            role="status"
+            style="
+              background: #f0fdf4;
+              border: 1px solid #22c55e;
+              color: #166534;
+              border-radius: 6px;
+              padding: 10px 14px;
+              margin-bottom: 16px;
+            "
+          >
+            &#9679; System NOMINAL &#8212; 0 robots in E-Stop state
+          </div>
+
+          <!-- Per-site constraints -->
+          <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">
+            Per-Site Constraints
+          </h2>
+          <div class="table-wrap" style="margin-bottom: 24px">
+            <table class="table" aria-label="Per-site safety constraints">
+              <thead>
+                <tr>
+                  <th>Site</th>
+                  <th>Constraint</th>
+                  <th>Enforcement</th>
+                  <th>Robots</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>warehouse-a</td>
+                  <td>max_speed &#8804; 0.5 m/s</td>
+                  <td><span class="status status--danger">block</span></td>
+                  <td>12</td>
+                  <td>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit constraint for warehouse-a"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>bay-3</td>
+                  <td>no_lift_zone</td>
+                  <td><span class="status status--warn">warn</span></td>
+                  <td>4</td>
+                  <td>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit constraint for bay-3"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>yard</td>
+                  <td>outdoor_uav_permit required</td>
+                  <td><span class="status status--danger">block</span></td>
+                  <td>6</td>
+                  <td>
+                    <button
+                      class="btn btn--small"
+                      type="button"
+                      data-requires-persona="admin"
+                      aria-label="Edit constraint for yard"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 8px">
+              <button
+                class="btn btn--small btn--primary"
+                type="button"
+                data-requires-persona="admin"
+              >
+                + Add Constraint
+              </button>
+            </div>
+          </div>
+
+          <!-- Approval policy thresholds -->
+          <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">
+            Approval Policy Thresholds
+          </h2>
+          <div class="table-wrap" style="margin-bottom: 24px">
+            <table class="table" aria-label="Approval policy thresholds">
+              <thead>
+                <tr>
+                  <th>Action Class</th>
+                  <th>Tier</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>navigate_to</td>
+                  <td><span class="status status--ok">Auto</span></td>
+                  <td>Normal environments</td>
+                </tr>
+                <tr>
+                  <td>outdoor_flight</td>
+                  <td><span class="status status--warn">HumanApprove</span></td>
+                  <td>Requires safety_admin sign-off</td>
+                </tr>
+                <tr>
+                  <td>pick (&gt;10kg)</td>
+                  <td><span class="status status--warn">HumanApprove</span></td>
+                  <td>Weight threshold gate</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- E-Stop audit log -->
+          <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 8px">
+            E-Stop Audit Log <span class="subtle" style="font-weight: 400">(last 5)</span>
+          </h2>
+          <div class="table-wrap">
+            <table class="table" aria-label="E-Stop audit log">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Actor</th>
+                  <th>Robot</th>
+                  <th>Event</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2026-02-18 14:01</td>
+                  <td>operator@acme</td>
+                  <td>robot-007</td>
+                  <td><span class="status status--danger">Sent</span></td>
+                  <td>reason: low battery drift</td>
+                </tr>
+                <tr>
+                  <td>2026-02-18 13:55</td>
+                  <td>safety_admin</td>
+                  <td>robot-007</td>
+                  <td><span class="status status--ok">Cleared</span></td>
+                  <td>rationale: charged + verified</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
 
       <!-- ============================================================

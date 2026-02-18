@@ -110,7 +110,7 @@ const Keyboard = (function () {
       label: 'Go to Runs',
       category: 'Navigate',
       keywords: 'runs executions',
-      shortcut: 'g r',
+      shortcut: 'g u',
       icon: '\u203A',
       action: function () {
         goto('runs');
@@ -202,6 +202,39 @@ const Keyboard = (function () {
       icon: '\u2605',
       action: function () {
         goto('onboarding');
+      },
+    },
+    {
+      id: 'nav-robots',
+      label: 'Go to Robots',
+      category: 'Navigate',
+      keywords: 'robots fleet AMR AGV UAV manipulator PLC enrolment health',
+      shortcut: 'g r',
+      icon: '\u25A0',
+      action: function () {
+        goto('robots');
+      },
+    },
+    {
+      id: 'nav-missions',
+      label: 'Go to Missions',
+      category: 'Navigate',
+      keywords: 'missions dispatch execute robot task',
+      shortcut: 'g m',
+      icon: '\u25B6',
+      action: function () {
+        goto('missions');
+      },
+    },
+    {
+      id: 'nav-safety',
+      label: 'Go to Safety',
+      category: 'Navigate',
+      keywords: 'safety estop e-stop constraints fleet emergency',
+      shortcut: 'g y',
+      icon: '\u26A0',
+      action: function () {
+        goto('safety');
       },
     },
 
@@ -630,6 +663,22 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__list">' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate steps</span></div>' +
         '</div>',
+      robots:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate robot cards</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>e</kbd> <span>Send E-Stop to selected robot</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open robot detail</span></div>' +
+        '</div>',
+      missions:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate missions</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open mission detail</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create new mission</span></div>' +
+        '</div>',
+      safety:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>g y</kbd> <span>Go to Safety</span></div>' +
+        '</div>',
     };
     return map[screen] || null;
   }
@@ -703,7 +752,8 @@ const Keyboard = (function () {
     i: 'inbox',
     p: 'project',
     w: 'work-items',
-    r: 'runs',
+    r: 'robots',
+    u: 'runs',
     b: 'workflow-builder',
     a: 'approvals',
     e: 'evidence',
@@ -712,6 +762,8 @@ const Keyboard = (function () {
     o: 'objects',
     v: 'events',
     t: 'onboarding',
+    m: 'missions',
+    y: 'safety',
   };
 
   function startChord(key) {
@@ -857,6 +909,18 @@ const Keyboard = (function () {
       showToast('Create Work Item');
       e.preventDefault();
       return;
+    }
+
+    // e -- E-Stop selected robot (only on robots screen)
+    if (key === 'e') {
+      if (getActiveScreenId() === 'robots') {
+        var estopBtn =
+          document.querySelector('#robotGrid .is-kbd-selected .js-estop-robot') ||
+          document.querySelector('#robotGrid .js-estop-robot');
+        if (estopBtn) estopBtn.click();
+        e.preventDefault();
+        return;
+      }
     }
 
     // c -- toggle context drawer

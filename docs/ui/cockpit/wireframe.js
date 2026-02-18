@@ -364,6 +364,237 @@ const DRAWER_CONTENT = {
       </div>
     `,
   },
+
+  /* ---- Robot detail drawers ---- */
+  'robot-001-detail': {
+    title: 'robot-001 Detail',
+    body: `
+      <div>
+        <div class="drawer-section__title">Identity</div>
+        <div class="callout callout--policy">
+          Robot ID: <strong>robot-001</strong><br>
+          Class: AMR<br>
+          SPIFFE SVID: spiffe://portarium/robot-001<br>
+          Gateway: ws://gw-wh-a.local:9090
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Telemetry (stubs)</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="subtle" style="font-size:11px">Battery %</div>
+            <svg viewBox="0 0 80 24" width="80" height="24" aria-hidden="true">
+              <polyline points="0,20 16,16 32,12 48,8 64,10 80,6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="subtle" style="font-size:11px">Speed m/s</div>
+            <svg viewBox="0 0 80 24" width="80" height="24" aria-hidden="true">
+              <polyline points="0,12 16,8 32,16 48,10 64,14 80,6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Capabilities</div>
+        <div class="chips">
+          <span class="chip chip--small">navigate_to</span>
+          <span class="chip chip--small">pick</span>
+          <span class="chip chip--small">dock</span>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Used by Missions</div>
+        <div class="list">
+          <div class="row row--static">
+            <div class="row__main">
+              <div class="row__title">mis-0094 &mdash; Navigate to bay 3</div>
+              <div class="row__subtle">Status: Executing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn--small js-estop-robot" type="button" data-robot-id="robot-001" data-requires-persona="operator admin">Send E-Stop</button>
+        <button class="btn btn--small btn--primary js-clear-estop" type="button" data-robot-id="robot-001" data-requires-persona="admin">Clear E-Stop</button>
+      </div>
+    `,
+  },
+  'robot-007-detail': {
+    title: 'robot-007 Detail',
+    body: `
+      <div>
+        <div class="drawer-section__title">Identity</div>
+        <div class="callout callout--policy">
+          Robot ID: <strong>robot-007</strong><br>
+          Class: UAV<br>
+          SPIFFE SVID: spiffe://portarium/robot-007<br>
+          Gateway: ws://gw-yard.local:9090
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Telemetry (stubs)</div>
+        <div>
+          <div class="subtle" style="font-size:11px">Battery % (critical)</div>
+          <svg viewBox="0 0 80 24" width="80" height="24" aria-hidden="true">
+            <polyline points="0,4 16,8 32,12 48,16 64,20 80,22" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Capabilities</div>
+        <div class="chips">
+          <span class="chip chip--small">navigate_to</span>
+          <span class="chip chip--small">outdoor_flight</span>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn--small js-estop-robot" type="button" data-robot-id="robot-007" data-requires-persona="operator admin">Send E-Stop</button>
+        <button class="btn btn--small btn--primary js-clear-estop" type="button" data-robot-id="robot-007" data-requires-persona="admin">Clear E-Stop</button>
+      </div>
+    `,
+  },
+  'robot-003-detail': {
+    title: 'robot-003 Detail',
+    body: `
+      <div>
+        <div class="drawer-section__title">Identity</div>
+        <div class="callout callout--policy">
+          Robot ID: <strong>robot-003</strong><br>
+          Class: AGV<br>
+          SPIFFE SVID: spiffe://portarium/robot-003<br>
+          Gateway: ws://gw-wh-a.local:9091
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Capabilities</div>
+        <div class="chips">
+          <span class="chip chip--small">pick</span>
+          <span class="chip chip--small">place</span>
+          <span class="chip chip--small">dock</span>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Used by Missions</div>
+        <div class="list">
+          <div class="row row--static">
+            <div class="row__main">
+              <div class="row__title">mis-0095 &mdash; Pick SKU-8821</div>
+              <div class="row__subtle">Status: Pending</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn--small js-estop-robot" type="button" data-robot-id="robot-003" data-requires-persona="operator admin">Send E-Stop</button>
+      </div>
+    `,
+  },
+  'robot-009-detail': {
+    title: 'robot-009 Detail',
+    body: `
+      <div>
+        <div class="drawer-section__title">Identity</div>
+        <div class="callout callout--policy">
+          Robot ID: <strong>robot-009</strong><br>
+          Class: Manipulator<br>
+          SPIFFE SVID: spiffe://portarium/robot-009<br>
+          Gateway: ws://gw-floor.local:9092
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">E-Stop Status</div>
+        <div class="callout" style="background:#fef2f2;border-color:#fca5a5;color:#991b1b">
+          &#8856; E-Stopped &mdash; sent by operator@acme at 14:01<br>
+          Reason: low battery drift
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn--small btn--primary js-clear-estop" type="button" data-robot-id="robot-009" data-requires-persona="admin">Clear E-Stop (rationale required)</button>
+      </div>
+    `,
+  },
+
+  /* ---- Mission detail drawers ---- */
+  'mission-0094-detail': {
+    title: 'Mission mis-0094',
+    body: `
+      <div>
+        <div class="drawer-section__title">ActionExecution Timeline</div>
+        <div class="list">
+          <div class="row row--static"><div class="row__main"><div class="row__title">DISPATCHED &#8594; robot-001</div><div class="row__subtle">14:02:01</div></div></div>
+          <div class="row row--static"><div class="row__main"><div class="row__title">EXECUTING &mdash; navigate_to bay 3</div><div class="row__subtle">14:02:03 (in progress)</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Controls</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn--small" type="button" data-confirm="preempt-mission" data-requires-persona="operator admin">Pre-empt</button>
+          <button class="btn btn--small" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Evidence</div>
+        <a class="btn btn--small" href="#evidence">View Evidence Timeline</a>
+      </div>
+    `,
+  },
+  'mission-0095-detail': {
+    title: 'Mission mis-0095',
+    body: `
+      <div>
+        <div class="drawer-section__title">ActionExecution Timeline</div>
+        <div class="list">
+          <div class="row row--static"><div class="row__main"><div class="row__title">PENDING &mdash; awaiting dispatch</div><div class="row__subtle">Queued</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Controls</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn--small" type="button" data-confirm="cancel-mission" data-requires-persona="operator admin">Cancel</button>
+        </div>
+      </div>
+    `,
+  },
+  'mission-0087-detail': {
+    title: 'Mission mis-0087',
+    body: `
+      <div>
+        <div class="drawer-section__title">ActionExecution Timeline</div>
+        <div class="list">
+          <div class="row row--static"><div class="row__main"><div class="row__title">DISPATCHED &#8594; robot-002</div><div class="row__subtle">13:41:00</div></div></div>
+          <div class="row row--static"><div class="row__main"><div class="row__title">EXECUTING &mdash; dock at charge-01</div><div class="row__subtle">13:41:05</div></div></div>
+          <div class="row row--static"><div class="row__main"><div class="row__title">SUCCEEDED</div><div class="row__subtle">13:47:22</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Evidence</div>
+        <a class="btn btn--small" href="#evidence">View Evidence Timeline</a>
+      </div>
+    `,
+  },
+  'mission-0091-detail': {
+    title: 'Mission mis-0091',
+    body: `
+      <div>
+        <div class="drawer-section__title">ActionExecution Timeline</div>
+        <div class="list">
+          <div class="row row--static"><div class="row__main"><div class="row__title">DISPATCHED &#8594; robot-005</div><div class="row__subtle">12:55:00</div></div></div>
+          <div class="row row--static"><div class="row__main"><div class="row__title">FAILED &mdash; dock timeout</div><div class="row__subtle">12:58:44</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Controls</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn--small" type="button" data-confirm="retry-mission" data-requires-persona="operator admin">Retry</button>
+        </div>
+      </div>
+      <div>
+        <div class="drawer-section__title">Evidence</div>
+        <a class="btn btn--small" href="#evidence">View Evidence Timeline</a>
+      </div>
+    `,
+  },
 };
 
 /* ============================================================
@@ -384,6 +615,9 @@ const SCREENS = [
   'onboarding',
   'objects',
   'events',
+  'robots',
+  'missions',
+  'safety',
 ];
 
 function getScreenFromHash() {
@@ -605,6 +839,12 @@ function setPersona(persona) {
       hintBody.textContent = hints.body;
     }
   }
+
+  /* Robotics persona gating — show/hide CTAs based on data-requires-persona */
+  document.querySelectorAll('[data-requires-persona]').forEach(function (el) {
+    var allowed = el.getAttribute('data-requires-persona').split(' ');
+    el.style.display = allowed.includes(persona) ? '' : 'none';
+  });
 }
 
 /* ============================================================
@@ -959,6 +1199,21 @@ ABToggle.register(
     },
   },
   { A: 'Summary', B: 'Dashboard' },
+);
+
+ABToggle.register(
+  'missions',
+  ['A', 'B'],
+  {
+    A: function (el) {
+      showVariant(el, 'A');
+    },
+    B: function (el) {
+      showVariant(el, 'B');
+    },
+  },
+  { A: 'Table', B: 'Kanban' },
+  'A',
 );
 
 /* ============================================================
@@ -1383,6 +1638,24 @@ function initActionConfirmations() {
           body: 'The agent will be removed from all workflow steps that reference it. Running workflows will fail at the agent step.',
           okText: 'Deregister',
         },
+        'preempt-mission': {
+          icon: '\u2298',
+          title: 'Pre-empt this mission?',
+          body: 'The mission will be interrupted. The robot will halt and await further instructions.',
+          okText: 'Pre-empt mission',
+        },
+        'cancel-mission': {
+          icon: '\u2298',
+          title: 'Cancel this mission?',
+          body: 'The mission will be cancelled and removed from the queue. This cannot be undone.',
+          okText: 'Cancel mission',
+        },
+        'retry-mission': {
+          icon: '\u21BB',
+          title: 'Retry this mission?',
+          body: 'The mission will be re-dispatched to the same robot. Idempotency is not guaranteed.',
+          okText: 'Retry mission',
+        },
       };
       var cfg = CONFIRM_MAP[confirmKey];
       if (cfg) {
@@ -1674,6 +1947,92 @@ function main() {
   });
 
   /* Initial render */
+  /* ---- Robotics: class filter chips ---- */
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('[data-robot-class]');
+    if (!chip) return;
+    var cls = chip.dataset.robotClass;
+    document.querySelectorAll('[data-robot-class]').forEach(function (c) {
+      c.classList.toggle('chip--active', c.dataset.robotClass === cls);
+    });
+    document.querySelectorAll('[data-robot-id]').forEach(function (card) {
+      card.hidden = cls !== 'all' && card.dataset.robotClass !== cls;
+    });
+  });
+
+  /* ---- Robotics: Test connection button ---- */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-robot-test]');
+    if (!btn) return;
+    withLoadingState(btn, 1200);
+  });
+
+  /* ---- Robotics: E-Stop send ---- */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-estop-robot');
+    if (!btn) return;
+    var robotId = btn.dataset.robotId || 'selected robot';
+    ConfirmModal.show({
+      icon: '\u26A0',
+      title: 'Send E-Stop to ' + robotId + '?',
+      body: 'This will immediately halt the robot. All active missions will be suspended.',
+      okText: 'Send E-Stop',
+      onConfirm: function () {
+        var banner = document.querySelector('.js-safety-status-banner');
+        if (banner) {
+          banner.textContent = '\u26A0 E-Stop Active \u2014 ' + robotId + ' halted';
+          banner.style.background = '#fef2f2';
+          banner.style.borderColor = '#fca5a5';
+          banner.style.color = '#991b1b';
+        }
+      },
+    });
+  });
+
+  /* ---- Robotics: E-Stop clear ---- */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.js-clear-estop');
+    if (!btn) return;
+    var robotId = btn.dataset.robotId || 'robot';
+    ConfirmModal.show({
+      icon: '\u2713',
+      title: 'Clear E-Stop for ' + robotId + '?',
+      body: 'Confirm the robot has been physically verified safe. A rationale will be recorded in the audit log.',
+      okText: 'Clear E-Stop',
+      onConfirm: function () {
+        var banner = document.querySelector('.js-safety-status-banner');
+        if (banner) {
+          banner.textContent = '\u25CF System NOMINAL \u2014 0 robots in E-Stop state';
+          banner.style.background = '#f0fdf4';
+          banner.style.borderColor = '#22c55e';
+          banner.style.color = '#166534';
+        }
+      },
+    });
+  });
+
+  /* ---- Robotics: Global E-Stop ---- */
+  var globalEstopBtn = document.getElementById('btnGlobalEstop');
+  if (globalEstopBtn) {
+    globalEstopBtn.addEventListener('click', function () {
+      ConfirmModal.show({
+        icon: '\u26A0',
+        title: 'Activate Global E-Stop?',
+        body: 'ALL robots in the fleet will be immediately halted. This action is logged and requires an admin to clear.',
+        okText: 'ACTIVATE GLOBAL E-STOP',
+        onConfirm: function () {
+          var banner = document.querySelector('.js-safety-status-banner');
+          if (banner) {
+            banner.textContent = '\u26A0 GLOBAL E-Stop ACTIVE \u2014 All robots halted';
+            banner.style.background = '#fef2f2';
+            banner.style.borderColor = '#fca5a5';
+            banner.style.color = '#991b1b';
+          }
+        },
+      });
+    });
+  }
+
   render(initial);
 }
 
