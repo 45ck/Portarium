@@ -12,7 +12,7 @@ import type {
  * All Portarium runs share a single workflow type; the runId and workspaceId carried
  * in the input distinguish individual executions.
  */
-export const PORTARIUM_WORKFLOW_TYPE = 'portarium-run' as const;
+export const PORTARIUM_WORKFLOW_TYPE = 'portariumRun' as const;
 
 /**
  * Temporal namespace used for all Portarium workflow executions.

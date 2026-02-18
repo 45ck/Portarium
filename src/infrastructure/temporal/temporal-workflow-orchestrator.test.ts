@@ -44,7 +44,7 @@ function makeStubConnection() {
 
 describe('module constants', () => {
   it('PORTARIUM_WORKFLOW_TYPE is correct', () => {
-    expect(PORTARIUM_WORKFLOW_TYPE).toBe('portarium-run');
+    expect(PORTARIUM_WORKFLOW_TYPE).toBe('portariumRun');
   });
 
   it('DEFAULT_TEMPORAL_NAMESPACE is correct', () => {
