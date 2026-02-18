@@ -1,0 +1,79 @@
+# Temporal server configuration for local development.
+# Uses SQLite persistence — no external database required for the workflow engine.
+# To use PostgreSQL instead, replace the datastores section and set the DB env vars.
+
+persistence:
+  defaultStore: sqlite-default
+  visibilityStore: sqlite-visibility
+  numHistoryShards: 1
+  datastores:
+    sqlite-default:
+      sql:
+        pluginName: sqlite
+        databaseName: /var/lib/temporal/default.db
+        connectAddr: localhost
+        connectProtocol: tcp
+    sqlite-visibility:
+      sql:
+        pluginName: sqlite
+        databaseName: /var/lib/temporal/visibility.db
+        connectAddr: localhost
+        connectProtocol: tcp
+
+global:
+  membership:
+    maxJoinDuration: 30s
+    broadcastAddress: '0.0.0.0'
+
+services:
+  frontend:
+    rpc:
+      grpcPort: 7233
+      membershipPort: 6933
+      bindOnIP: '0.0.0.0'
+  matching:
+    rpc:
+      grpcPort: 7235
+      membershipPort: 6935
+      bindOnIP: '0.0.0.0'
+  history:
+    rpc:
+      grpcPort: 7234
+      membershipPort: 6934
+      bindOnIP: '0.0.0.0'
+  worker:
+    rpc:
+      grpcPort: 7239
+      membershipPort: 6939
+      bindOnIP: '0.0.0.0'
+
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: 'active'
+  currentClusterName: 'active'
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 1
+      rpcName: 'frontend'
+      rpcAddress: '127.0.0.1:7233'
+
+dcRedirectionPolicy:
+  policy: 'noop'
+
+archival:
+  history:
+    state: 'disabled'
+  visibility:
+    state: 'disabled'
+
+publicClient:
+  hostPort: '127.0.0.1:7233'
+
+namespaceDefaults:
+  archival:
+    history:
+      state: 'disabled'
+    visibility:
+      state: 'disabled'

@@ -21,22 +21,17 @@ services:
       - portarium-control
 
   temporal:
-    image: temporalio/auto-setup:latest
+    # Migrated from deprecated temporalio/auto-setup to temporalio/server (bead-0400).
+    # Uses SQLite persistence so Temporal no longer depends on the Postgres instance.
+    image: temporalio/server:latest
     container_name: portarium-temporal
     environment:
-      # Local durable workflow plane for testing with a shared database.
-      # Replace with provider-grade managed Temporal if required.
-      DB: postgres12
-      POSTGRES_USER: temporal
-      POSTGRES_PWD: temporal
-      POSTGRES_SEEDS: evidence-db
-      TEMPORAL_SQL_CONNECTION: postgresql://temporal:temporal@evidence-db:5432/temporal
-      TEMPORAL_VISIBILITY_DB: temporal_visibility
+      TEMPORAL_CONFIG: /etc/temporal/config/development.yaml
+    volumes:
+      - temporal-data:/var/lib/temporal
+      - ./infra/temporal/development.yaml:/etc/temporal/config/development.yaml:ro
     ports:
       - '7233:7233'
-    depends_on:
-      evidence-db:
-        condition: service_healthy
     networks:
       - portarium-control
 
@@ -92,6 +87,7 @@ services:
 volumes:
   evidence-db-data:
   evidence-store-data:
+  temporal-data:
 
 networks:
   portarium-control:
