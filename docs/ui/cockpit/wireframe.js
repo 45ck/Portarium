@@ -1257,9 +1257,9 @@ function triageAction(action) {
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
     var currentSpan = document.querySelector('.triage__current');
-    if (progressFill) progressFill.style.width = (triageIndex / 2) * 100 + '%';
-    if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 2);
-    if (triageIndex >= 2) {
+    if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
+    if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 4);
+    if (triageIndex >= 4) {
       var triageEl = document.getElementById('triage');
       var completeEl = document.getElementById('triageComplete');
       if (triageEl) triageEl.hidden = true;

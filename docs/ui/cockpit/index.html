@@ -92,7 +92,7 @@
           >
           <a class="nav__item" href="#approvals"
             ><span class="nav__icon">&check;</span> Approvals
-            <span class="nav__badge nav__badge--warn">2</span></a
+            <span class="nav__badge nav__badge--warn">4</span></a
           >
           <a class="nav__item" href="#evidence"><span class="nav__icon">&sect;</span> Evidence</a>
         </nav>
@@ -1735,7 +1735,8 @@
               ✕
             </button>
             <div class="hero-prompt__text">
-              You have 2 approvals waiting for your decision. Review each plan and decide.
+              You have 4 approvals waiting for your decision — including 1 robot mission and 1 agent
+              action. Review each and decide.
             </div>
             <div class="triage-toggle">
               <button class="btn btn--small js-triage-mode" type="button" data-mode="table">
@@ -1811,6 +1812,44 @@
                   <td><span class="sla-badge" data-tooltip="Due in 23h">Due 23h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
+                <tr>
+                  <td>Approve Mission: outdoor_flight — robot-007 yard survey</td>
+                  <td><a href="#missions">mis-0096</a></td>
+                  <td>&#8212;</td>
+                  <td>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="outdoor_flight policy requires safety_admin sign-off"
+                      >Human-approve</span
+                    >
+                  </td>
+                  <td><span class="sod-badge">Safety constraint: outdoor_uav_permit</span></td>
+                  <td>safety_admin@acme.com</td>
+                  <td>5m</td>
+                  <td>
+                    <span class="sla-badge sla-badge--warn" data-tooltip="Due in 55m">Due 55m</span>
+                  </td>
+                  <td>
+                    <a class="btn btn--primary btn--small" href="#missions">Review + decide</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Approve Agent Action: Document Summarizer — write to Salesforce</td>
+                  <td><a href="#work-item">WI-1101</a></td>
+                  <td><a href="#run">R-8930</a></td>
+                  <td>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Agent CRM writes above confidence threshold require human approval"
+                      >Human-approve</span
+                    >
+                  </td>
+                  <td></td>
+                  <td>approver@acme.com</td>
+                  <td>22m</td>
+                  <td><span class="sla-badge" data-tooltip="Due in 2h">Due 2h</span></td>
+                  <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1827,7 +1866,7 @@
               </div>
               <div class="triage__progress-text">
                 <span class="triage__current">1</span> of
-                <span class="triage__total">2</span> pending
+                <span class="triage__total">4</span> pending
               </div>
             </div>
 
@@ -2119,6 +2158,290 @@
                   Next: Approve Plan: Update Ticket priority in Zendesk
                 </div>
               </div>
+              <!-- AG-443: Robot mission approval (card 2) -->
+              <article class="triage-card" id="triageCardRobot" hidden>
+                <div class="triage-card__front">
+                  <div class="triage-card__header">
+                    <div class="triage-card__id">AG-443</div>
+                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                    <span
+                      class="sod-badge"
+                      data-tooltip="outdoor_flight requires safety_admin sign-off per safety policy"
+                      >Safety constraint</span
+                    >
+                  </div>
+                  <h2 class="triage-card__title">
+                    Approve Mission: outdoor_flight &mdash; robot-007 yard survey
+                  </h2>
+                  <div class="triage-card__meta">
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Mission</span>
+                      <span>mis-0096 &mdash; outdoor_flight over yard sector B</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Robot</span>
+                      <span>robot-007 (UAV) &mdash; Battery: 12% &#9888; degraded</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Policy trigger</span>
+                      <span
+                        >outdoor_uav_permit required &mdash; enforcement: block until approved</span
+                      >
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requested</span>
+                      <span>5 minutes ago by operator@acme.com</span>
+                    </div>
+                  </div>
+                  <div class="triage-card__effects-summary">
+                    <div class="triage-card__label">Robot Action Plan (1)</div>
+                    <div class="triage-card__effect-row">
+                      <span class="pill">Execute</span>
+                      <span>outdoor_flight &mdash; yard, sector B, altitude 15m</span>
+                      <span
+                        class="idem-badge"
+                        style="background: #fef3c7; color: #92400e"
+                        data-tooltip="Mission cannot be resumed if interrupted mid-flight"
+                        >Non-resumable</span
+                      >
+                    </div>
+                  </div>
+                  <div class="ai-summary" data-ai-gate="AG-443">
+                    <div class="ai-summary__header">
+                      <div class="ai-summary__badge">
+                        <span class="ai-summary__icon">&#9670;</span>
+                        <span class="ai-summary__label">AI Summary</span>
+                      </div>
+                      <div class="ai-summary__header-right">
+                        <span
+                          class="ai-summary__confidence"
+                          data-confidence="low"
+                          title="Confidence: 41%"
+                        >
+                          <span class="ai-summary__confidence-dot"></span>
+                          41%
+                        </span>
+                      </div>
+                    </div>
+                    <div class="ai-summary__quick">
+                      <p class="ai-summary__action">
+                        UAV robot-007 requests outdoor flight over yard sector B. Battery at 12% —
+                        below recommended 20% flight threshold. Mission is non-resumable if
+                        interrupted.
+                      </p>
+                      <div class="ai-summary__tags">
+                        <span class="ai-summary__risk ai-summary__risk--high">High risk</span>
+                        <span class="ai-summary__compliance ai-summary__compliance--warn"
+                          >Compliance: warning</span
+                        >
+                        <span class="ai-summary__reversibility ai-summary__reversibility--none"
+                          >Not reversible</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="callout callout--policy">
+                    Tier: <strong>Human-approve</strong> | Rule: outdoor_flight policy | Safety
+                    constraint: outdoor_uav_permit | Robot battery: 12% &#9888;
+                  </div>
+                  <button
+                    class="btn btn--small triage-card__expand-btn js-triage-expand"
+                    type="button"
+                  >
+                    Show full details (Space)
+                  </button>
+                </div>
+                <div class="triage-card__back" hidden>
+                  <button
+                    class="btn btn--small triage-card__collapse-btn js-triage-collapse"
+                    type="button"
+                  >
+                    Collapse details (Space)
+                  </button>
+                  <div class="effects">
+                    <div class="effects__section">
+                      <div class="effects__title">Safety Constraints Active</div>
+                      <div class="effects__list">
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill" style="background: #fef2f2; color: #991b1b"
+                              >Block</span
+                            >
+                            <span class="effect__target"
+                              >outdoor_uav_permit — yard zone, enforcement: block</span
+                            >
+                          </div>
+                          <div class="effect__subtle">
+                            Approval clears the enforcement gate for this mission only.
+                          </div>
+                        </div>
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill" style="background: #fef3c7; color: #92400e"
+                              >Warn</span
+                            >
+                            <span class="effect__target"
+                              >Battery below 20% flight threshold (current: 12%)</span
+                            >
+                          </div>
+                          <div class="effect__subtle">
+                            Approval does not override battery warning — pilot judgement required.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Robot</div>
+                    <div class="chips" style="margin-top: 6px">
+                      <span class="chip"
+                        >robot-007 | UAV | SPIFFE: spiffe://portarium/robot-007</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <!-- AG-444: Agent action approval (card 3) -->
+              <article class="triage-card" id="triageCardAgent" hidden>
+                <div class="triage-card__front">
+                  <div class="triage-card__header">
+                    <div class="triage-card__id">AG-444</div>
+                    <span class="tier-badge tier-badge--human">Human-approve</span>
+                  </div>
+                  <h2 class="triage-card__title">
+                    Approve Agent Action: Document Summarizer &mdash; write to Salesforce
+                  </h2>
+                  <div class="triage-card__meta">
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Agent</span>
+                      <span>Document Summarizer (GPT-4o) &mdash; WI-1101 / R-8930</span>
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Action</span>
+                      <span
+                        >Write extracted summary to Salesforce Opportunity OPP-3841 &mdash; field:
+                        Description</span
+                      >
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Policy trigger</span>
+                      <span
+                        >Agent CRM write confidence below threshold (62% &lt; 80% required)</span
+                      >
+                    </div>
+                    <div class="triage-card__meta-item">
+                      <span class="triage-card__label">Requested</span>
+                      <span>22 minutes ago by Document Summarizer agent</span>
+                    </div>
+                  </div>
+                  <div class="triage-card__effects-summary">
+                    <div class="triage-card__label">Planned Effects (1)</div>
+                    <div class="triage-card__effect-row">
+                      <span class="pill">Write</span>
+                      <span>Salesforce | Opportunity | OPP-3841 | field: Description</span>
+                      <span
+                        class="idem-badge idem-badge--safe"
+                        data-tooltip="Write is idempotent — overwrite is safe"
+                        >Safe to retry</span
+                      >
+                    </div>
+                  </div>
+                  <div class="ai-summary" data-ai-gate="AG-444">
+                    <div class="ai-summary__header">
+                      <div class="ai-summary__badge">
+                        <span class="ai-summary__icon">&#9670;</span>
+                        <span class="ai-summary__label">AI Summary</span>
+                      </div>
+                      <div class="ai-summary__header-right">
+                        <span
+                          class="ai-summary__confidence"
+                          data-confidence="medium"
+                          title="Confidence: 62%"
+                        >
+                          <span class="ai-summary__confidence-dot"></span>
+                          62%
+                        </span>
+                      </div>
+                    </div>
+                    <div class="ai-summary__quick">
+                      <p class="ai-summary__action">
+                        Document Summarizer wants to write an AI-extracted summary to a Salesforce
+                        Opportunity. Confidence is below the 80% auto-approve threshold — a human
+                        should verify the extracted content is accurate before it reaches the CRM.
+                      </p>
+                      <div class="ai-summary__tags">
+                        <span class="ai-summary__risk ai-summary__risk--medium">Medium risk</span>
+                        <span class="ai-summary__compliance ai-summary__compliance--pass"
+                          >Compliance: pass</span
+                        >
+                        <span class="ai-summary__reversibility ai-summary__reversibility--partial"
+                          >Partially reversible</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="callout callout--policy">
+                    Tier: <strong>Human-approve</strong> | Rule: Agent write confidence &lt; 80% |
+                    Agent: Document Summarizer | Target: Salesforce OPP-3841
+                  </div>
+                  <button
+                    class="btn btn--small triage-card__expand-btn js-triage-expand"
+                    type="button"
+                  >
+                    Show full details (Space)
+                  </button>
+                </div>
+                <div class="triage-card__back" hidden>
+                  <button
+                    class="btn btn--small triage-card__collapse-btn js-triage-collapse"
+                    type="button"
+                  >
+                    Collapse details (Space)
+                  </button>
+                  <div class="effects">
+                    <div class="effects__section">
+                      <div class="effects__title">Planned Effects</div>
+                      <div class="effects__list">
+                        <div class="effect">
+                          <div class="effect__main">
+                            <span class="pill">Write</span>
+                            <span class="effect__target"
+                              >Salesforce | Opportunity | OPP-3841 | Description field</span
+                            >
+                            <span class="idem-badge idem-badge--safe">Safe to retry</span>
+                          </div>
+                          <div class="effect__subtle">
+                            Overwrites existing Description with AI-extracted summary (227 words).
+                            Previous value is not automatically preserved.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 12px">
+                    <div class="triage-card__label">Agent confidence breakdown</div>
+                    <div class="list" style="margin-top: 6px">
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Entity extraction: 71%</div>
+                          <div class="row__subtle">
+                            Key terms identified with moderate certainty
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row row--static">
+                        <div class="row__main">
+                          <div class="row__title">Field mapping: 58%</div>
+                          <div class="row__subtle">
+                            Description field selected — alternative fields (NextStep, Notes) also
+                            possible
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
             </div>
 
             <div class="triage__rationale" id="triageRationale" hidden>
