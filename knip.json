@@ -1,7 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/index.ts", "src/infrastructure/index.ts", "vitest.config.ts"],
+  "entry": [
+    "src/index.ts",
+    "src/infrastructure/index.ts",
+    "src/infrastructure/auth/jose-jwt-authentication.ts",
+    "vitest.config.ts"
+  ],
   "project": ["src/**/*.ts"],
   "ignore": ["dist/**", "coverage/**", "reports/**", ".specify/**"],
-  "ignoreDependencies": ["@vitest/coverage-v8", "@temporalio/client"]
+  "ignoreDependencies": ["@vitest/coverage-v8", "@temporalio/client", "jose"]
 }

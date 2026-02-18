@@ -98,6 +98,7 @@
     "yaml": "^2.8.2"
   },
   "dependencies": {
-    "@temporalio/client": "^1.14.1"
+    "@temporalio/client": "^1.14.1",
+    "jose": "^6.1.3"
   }
 }

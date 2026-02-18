@@ -1,11 +1,17 @@
 import type { AppAction } from './actions.js';
 
 export type AppErrorKind =
+  | 'Unauthorized'
   | 'Forbidden'
   | 'ValidationFailed'
   | 'Conflict'
   | 'NotFound'
   | 'DependencyFailure';
+
+export type Unauthorized = Readonly<{
+  kind: 'Unauthorized';
+  message: string;
+}>;
 
 export type Forbidden = Readonly<{
   kind: 'Forbidden';
@@ -35,11 +41,19 @@ export type DependencyFailure = Readonly<{
   message: string;
 }>;
 
-export type AppError = Forbidden | ValidationFailed | Conflict | NotFound | DependencyFailure;
+export type AppError =
+  | Unauthorized
+  | Forbidden
+  | ValidationFailed
+  | Conflict
+  | NotFound
+  | DependencyFailure;
 
 /** Map an application error kind to its canonical HTTP status code. */
 export function toHttpStatus(error: AppError): number {
   switch (error.kind) {
+    case 'Unauthorized':
+      return 401;
     case 'Forbidden':
       return 403;
     case 'ValidationFailed':
@@ -58,6 +72,7 @@ export function isAppError(value: unknown): value is AppError {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Record<string, unknown>;
   return (
+    candidate['kind'] === 'Unauthorized' ||
     candidate['kind'] === 'Forbidden' ||
     candidate['kind'] === 'ValidationFailed' ||
     candidate['kind'] === 'Conflict' ||
