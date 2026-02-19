@@ -66,12 +66,8 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
   readonly #formSubmissions: FormSubmissionEntry[];
   readonly #listMemberships: ListMembershipEntry[];
   #contactSequence: number;
-  #listSequence: number;
   #campaignSequence: number;
   #statsSequence: number;
-  #automationSequence: number;
-  #formSequence: number;
-  #submissionSequence: number;
   #triggerSequence: number;
 
   public constructor(params?: InMemoryMarketingAutomationAdapterParams) {
@@ -85,12 +81,8 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
     this.#formSubmissions = [...(params?.seed?.formSubmissions ?? [])];
     this.#listMemberships = [...(params?.seed?.listMemberships ?? [])];
     this.#contactSequence = this.#contacts.length;
-    this.#listSequence = this.#lists.length;
     this.#campaignSequence = this.#campaigns.length;
     this.#statsSequence = this.#campaignStats.length;
-    this.#automationSequence = this.#automations.length;
-    this.#formSequence = this.#forms.length;
-    this.#submissionSequence = this.#formSubmissions.length;
     this.#triggerSequence = 0;
   }
 
