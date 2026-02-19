@@ -7,6 +7,7 @@ export * from './id-generator.js';
 export * from './run-store.js';
 export * from './approval-store.js';
 export * from './workflow-store.js';
+export * from './work-item-store.js';
 export * from './policy-store.js';
 export * from './unit-of-work.js';
 export * from './workspace-store.js';

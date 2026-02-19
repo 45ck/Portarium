@@ -46,6 +46,11 @@ Endpoints (v1):
 - `GET /v1/workspaces/{workspaceId}/work-items/{workItemId}`
 - `PATCH /v1/workspaces/{workspaceId}/work-items/{workItemId}`
 
+List filtering supports linkage-centric query params:
+
+- `status`, `ownerUserId`
+- `runId`, `workflowId`, `approvalId`, `evidenceId`
+
 ## Plan / Evidence Schemas
 
 API surfaces reuse versioned payloads:

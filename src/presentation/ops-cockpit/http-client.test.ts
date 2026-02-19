@@ -67,13 +67,17 @@ function makeClient(fetchImpl: typeof fetch, extra: object = {}): ControlPlaneCl
 // ---------------------------------------------------------------------------
 
 describe('ControlPlaneClient contract-aligned route construction', () => {
-  it('builds listWorkItems with status, owner, and pagination params', async () => {
+  it('builds listWorkItems with linkage filters and pagination params', async () => {
     const { calls, fetchImpl } = createJsonFetch({ items: [], nextCursor: null });
     const client = makeClient(fetchImpl);
 
     await client.listWorkItems('workspace-1', {
       status: 'Open',
       ownerUserId: 'user-1',
+      runId: 'run-1',
+      workflowId: 'wf-1',
+      approvalId: 'approval-1',
+      evidenceId: 'evi-1',
       limit: 120,
       cursor: 'next:abc',
     });
@@ -84,6 +88,10 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect(parsed.pathname).toBe('/v1/workspaces/workspace-1/work-items');
     expect(parsed.searchParams.get('status')).toBe('Open');
     expect(parsed.searchParams.get('ownerUserId')).toBe('user-1');
+    expect(parsed.searchParams.get('runId')).toBe('run-1');
+    expect(parsed.searchParams.get('workflowId')).toBe('wf-1');
+    expect(parsed.searchParams.get('approvalId')).toBe('approval-1');
+    expect(parsed.searchParams.get('evidenceId')).toBe('evi-1');
     expect(parsed.searchParams.get('limit')).toBe('120');
     expect(parsed.searchParams.get('cursor')).toBe('next:abc');
     expect(call.init.method).toBe('GET');

@@ -71,6 +71,7 @@ export interface WorkItemSla {
 export interface WorkItemLinks {
   externalRefs?: ExternalObjectRef[];
   runIds?: string[];
+  workflowIds?: string[];
   approvalIds?: string[];
   evidenceIds?: string[];
 }
@@ -178,6 +179,10 @@ export type ListRunsRequest = CursorPaginationRequest;
 export interface ListWorkItemsRequest extends CursorPaginationRequest {
   status?: WorkItemSummary['status'];
   ownerUserId?: string;
+  runId?: string;
+  workflowId?: string;
+  approvalId?: string;
+  evidenceId?: string;
 }
 
 export type ListApprovalsRequest = CursorPaginationRequest;

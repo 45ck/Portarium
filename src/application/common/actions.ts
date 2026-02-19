@@ -1,6 +1,7 @@
 export const APP_ACTIONS = {
   approvalSubmit: 'approval:submit',
   runRead: 'run:read',
+  workItemRead: 'work-item:read',
   runStart: 'run:start',
   workspaceRegister: 'workspace:register',
   workspaceRead: 'workspace:read',

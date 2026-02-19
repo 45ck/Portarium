@@ -6,12 +6,14 @@ import {
   RunId,
   UserId,
   WorkItemId,
+  WorkflowId,
   WorkspaceId,
   type ApprovalId as ApprovalIdType,
   type EvidenceId as EvidenceIdType,
   type RunId as RunIdType,
   type UserId as UserIdType,
   type WorkItemId as WorkItemIdType,
+  type WorkflowId as WorkflowIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
@@ -34,6 +36,7 @@ export type WorkItemSlaV1 = Readonly<{
 export type WorkItemLinksV1 = Readonly<{
   externalRefs?: readonly ExternalObjectRef[];
   runIds?: readonly RunIdType[];
+  workflowIds?: readonly WorkflowIdType[];
   approvalIds?: readonly ApprovalIdType[];
   evidenceIds?: readonly EvidenceIdType[];
 }>;
@@ -128,6 +131,10 @@ function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
   const runIdsRaw = record['runIds'];
   const runIds = runIdsRaw === undefined ? undefined : parseIds(runIdsRaw, 'runIds', RunId);
 
+  const workflowIdsRaw = record['workflowIds'];
+  const workflowIds =
+    workflowIdsRaw === undefined ? undefined : parseIds(workflowIdsRaw, 'workflowIds', WorkflowId);
+
   const approvalIdsRaw = record['approvalIds'];
   const approvalIds =
     approvalIdsRaw === undefined ? undefined : parseIds(approvalIdsRaw, 'approvalIds', ApprovalId);
@@ -139,6 +146,7 @@ function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
   return {
     ...(externalRefs ? { externalRefs } : {}),
     ...(runIds ? { runIds } : {}),
+    ...(workflowIds ? { workflowIds } : {}),
     ...(approvalIds ? { approvalIds } : {}),
     ...(evidenceIds ? { evidenceIds } : {}),
   };

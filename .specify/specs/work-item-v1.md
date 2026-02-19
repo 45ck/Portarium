@@ -23,8 +23,18 @@ Fields:
 - `links?`: optional bindings to related artefacts
   - `externalRefs?`: `ExternalObjectRef[]` (Jira issues, Zendesk tickets, PRs, CI runs, etc.)
   - `runIds?`: `RunId[]`
+  - `workflowIds?`: `WorkflowId[]`
   - `approvalIds?`: `ApprovalId[]`
   - `evidenceIds?`: `EvidenceId[]`
+
+## Query surfaces (ADR-0038)
+
+- `getWorkItem(workspaceId, workItemId)` returns a single binding object.
+- `listWorkItems(workspaceId, filters)` supports linkage filters:
+  - `runId`
+  - `workflowId`
+  - `approvalId`
+  - `evidenceId`
 
 ## Notes
 

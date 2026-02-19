@@ -239,6 +239,18 @@ export class ControlPlaneClient {
     if (request.ownerUserId) {
       query.set('ownerUserId', request.ownerUserId);
     }
+    if (request.runId) {
+      query.set('runId', request.runId);
+    }
+    if (request.workflowId) {
+      query.set('workflowId', request.workflowId);
+    }
+    if (request.approvalId) {
+      query.set('approvalId', request.approvalId);
+    }
+    if (request.evidenceId) {
+      query.set('evidenceId', request.evidenceId);
+    }
     return query;
   }
 

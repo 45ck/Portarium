@@ -173,6 +173,10 @@ paths:
         - $ref: '#/components/parameters/WorkspaceIdPath'
         - $ref: '#/components/parameters/WorkItemStatusQuery'
         - $ref: '#/components/parameters/WorkItemOwnerUserIdQuery'
+        - $ref: '#/components/parameters/WorkItemRunIdQuery'
+        - $ref: '#/components/parameters/WorkItemWorkflowIdQuery'
+        - $ref: '#/components/parameters/WorkItemApprovalIdQuery'
+        - $ref: '#/components/parameters/WorkItemEvidenceIdQuery'
         - $ref: '#/components/parameters/LimitQuery'
         - $ref: '#/components/parameters/CursorQuery'
       responses:
@@ -1098,6 +1102,30 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/UserId'
+    WorkItemRunIdQuery:
+      name: runId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RunId'
+    WorkItemWorkflowIdQuery:
+      name: workflowId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkflowId'
+    WorkItemApprovalIdQuery:
+      name: approvalId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ApprovalId'
+    WorkItemEvidenceIdQuery:
+      name: evidenceId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/EvidenceId'
     EvidenceRunIdQuery:
       name: runId
       in: query
@@ -1379,6 +1407,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunId'
+        workflowIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowId'
         approvalIds:
           type: array
           items:

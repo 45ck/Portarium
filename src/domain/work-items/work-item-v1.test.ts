@@ -44,6 +44,7 @@ describe('parseWorkItemV1: happy path', () => {
           },
         ],
         runIds: ['run-1', 'run-2'],
+        workflowIds: ['wf-1'],
         approvalIds: ['approval-1'],
         evidenceIds: ['evi-1', 'evi-2'],
       },
@@ -52,6 +53,7 @@ describe('parseWorkItemV1: happy path', () => {
     expect(workItem.ownerUserId).toBe('user-2');
     expect(workItem.sla?.dueAtIso).toBe('2026-02-20T00:00:00.000Z');
     expect(workItem.links?.runIds).toEqual(['run-1', 'run-2']);
+    expect(workItem.links?.workflowIds).toEqual(['wf-1']);
     expect(workItem.links?.approvalIds).toEqual(['approval-1']);
     expect(workItem.links?.evidenceIds).toEqual(['evi-1', 'evi-2']);
     expect(workItem.links?.externalRefs?.[0]).toEqual(
@@ -256,5 +258,18 @@ describe('parseWorkItemV1: validation', () => {
         links: { approvalIds: ['   '] },
       }),
     ).toThrow(/approvalIds\[0\]/i);
+
+    expect(() =>
+      parseWorkItemV1({
+        schemaVersion: 1,
+        workItemId: 'wi-1',
+        workspaceId: 'ws-1',
+        createdAtIso: '2026-02-16T00:00:00.000Z',
+        createdByUserId: 'user-1',
+        title: 't',
+        status: 'Open',
+        links: { workflowIds: ['   '] },
+      }),
+    ).toThrow(/workflowIds\[0\]/i);
   });
 });

@@ -19,6 +19,7 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'workspace:register': ['admin'],
   'workspace:read': ['admin', 'operator', 'approver', 'auditor'],
   'run:read': ['admin', 'operator', 'approver', 'auditor'],
+  'work-item:read': ['admin', 'operator', 'approver', 'auditor'],
   'run:start': ['admin', 'operator'],
   'approval:submit': ['admin', 'approver'],
 };
