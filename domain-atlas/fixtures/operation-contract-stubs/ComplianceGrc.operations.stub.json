@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "ComplianceGrc",
+  "sourceCatalog": "docs/integration-catalog/compliance-grc.md",
+  "operations": [
+    {
+      "operation": "listControls",
+      "description": "Paginated list of controls with optional filters (framework, status, owner, category)",
+      "idempotent": true
+    },
+    {
+      "operation": "getControl",
+      "description": "Retrieve a single control by ID, including test results, evidence links, and framework mappings",
+      "idempotent": true
+    },
+    {
+      "operation": "createControl",
+      "description": "Define a new control with title, description, category, owner, and framework mapping",
+      "idempotent": false
+    },
+    {
+      "operation": "updateControlStatus",
+      "description": "Update the operational status of a control (passing, failing, needs review, not applicable)",
+      "idempotent": false
+    },
+    {
+      "operation": "listRisks",
+      "description": "Paginated list of risks with optional filters (category, rating, owner, treatment status)",
+      "idempotent": true
+    },
+    {
+      "operation": "getRisk",
+      "description": "Retrieve a single risk by ID, including assessments, linked controls, and treatment plan",
+      "idempotent": true
+    },
+    {
+      "operation": "createRisk",
+      "description": "Register a new risk with description, category, inherent rating, and risk owner",
+      "idempotent": false
+    },
+    {
+      "operation": "assessRisk",
+      "description": "Record a risk assessment with likelihood, impact, residual rating, and review date",
+      "idempotent": false
+    },
+    {
+      "operation": "listPolicies",
+      "description": "Paginated list of policies with optional filters (status, category, approver)",
+      "idempotent": true
+    },
+    {
+      "operation": "getPolicy",
+      "description": "Retrieve a single policy by ID, including version history and acknowledgement status",
+      "idempotent": true
+    },
+    {
+      "operation": "createPolicy",
+      "description": "Create a new policy document with title, content, category, and approval workflow",
+      "idempotent": false
+    },
+    {
+      "operation": "publishPolicy",
+      "description": "Publish a draft policy, making it active and triggering acknowledgement requests",
+      "idempotent": false
+    },
+    {
+      "operation": "listAudits",
+      "description": "Paginated list of audit engagements with optional filters (status, type, date range)",
+      "idempotent": true
+    },
+    {
+      "operation": "getAudit",
+      "description": "Retrieve a single audit by ID, including scope, findings, and workpapers",
+      "idempotent": true
+    },
+    {
+      "operation": "createAudit",
+      "description": "Create a new audit engagement with scope, auditor assignments, and timeline",
+      "idempotent": false
+    },
+    {
+      "operation": "listFindings",
+      "description": "Paginated list of findings with optional filters (severity, status, audit, control)",
+      "idempotent": true
+    },
+    {
+      "operation": "createFinding",
+      "description": "Record a new finding with description, severity, affected control, and remediation plan",
+      "idempotent": false
+    },
+    {
+      "operation": "listEvidenceRequests",
+      "description": "List pending evidence requests with associated controls and due dates",
+      "idempotent": true
+    },
+    {
+      "operation": "uploadEvidence",
+      "description": "Upload evidence (document, screenshot, log export) against a specific control or finding",
+      "idempotent": false
+    },
+    {
+      "operation": "listFrameworks",
+      "description": "List all compliance frameworks configured in the platform (SOC 2, ISO 27001, GDPR, etc.)",
+      "idempotent": true
+    },
+    {
+      "operation": "getFramework",
+      "description": "Retrieve a single framework with its requirements, control mappings, and completion status",
+      "idempotent": true
+    },
+    {
+      "operation": "mapControlToFramework",
+      "description": "Create or update a mapping between a control and one or more framework requirements",
+      "idempotent": false
+    },
+    {
+      "operation": "listVendorAssessments",
+      "description": "List third-party/vendor risk assessments with status and risk ratings",
+      "idempotent": true
+    }
+  ]
+}

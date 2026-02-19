@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "Payroll",
+  "sourceCatalog": "docs/integration-catalog/payroll.md",
+  "operations": [
+    {
+      "operation": "runPayroll",
+      "description": "Initiate a payroll run for a given pay period and pay group",
+      "idempotent": false
+    },
+    {
+      "operation": "getPayrollRun",
+      "description": "Retrieve the status and summary of a specific payroll run",
+      "idempotent": true
+    },
+    {
+      "operation": "listPayrollRuns",
+      "description": "Paginated list of payroll runs with optional filters (date range, status, pay group)",
+      "idempotent": true
+    },
+    {
+      "operation": "getPayStub",
+      "description": "Retrieve a single pay stub / pay statement for an employee and pay period",
+      "idempotent": true
+    },
+    {
+      "operation": "listPayStubs",
+      "description": "List pay stubs for an employee or across the company for a pay period",
+      "idempotent": true
+    },
+    {
+      "operation": "calculateTax",
+      "description": "Calculate federal, state, and local tax withholdings for a given compensation amount",
+      "idempotent": true
+    },
+    {
+      "operation": "getPaySchedule",
+      "description": "Retrieve the pay schedule (frequency, next run date, cut-off dates)",
+      "idempotent": true
+    },
+    {
+      "operation": "listDeductions",
+      "description": "List all deduction types and active deductions (pre-tax, post-tax, garnishments)",
+      "idempotent": true
+    },
+    {
+      "operation": "listEarnings",
+      "description": "List all earning types and active earnings (regular, overtime, bonus, commission)",
+      "idempotent": true
+    },
+    {
+      "operation": "submitPayrollForApproval",
+      "description": "Submit a draft payroll run for manager/admin approval",
+      "idempotent": false
+    },
+    {
+      "operation": "approvePayroll",
+      "description": "Approve a submitted payroll run, triggering final processing",
+      "idempotent": false
+    },
+    {
+      "operation": "listContractorPayments",
+      "description": "List payments made to independent contractors / 1099 workers",
+      "idempotent": true
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "IamDirectory",
+  "sourceCatalog": "docs/integration-catalog/iam-directory.md",
+  "operations": [
+    {
+      "operation": "listUsers",
+      "description": "Return directory users filtered by status, group, role, or attribute",
+      "idempotent": true
+    },
+    {
+      "operation": "getUser",
+      "description": "Retrieve a single user by canonical ID, email, or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "createUser",
+      "description": "Provision a new user with profile attributes and group memberships",
+      "idempotent": false
+    },
+    {
+      "operation": "updateUser",
+      "description": "Modify user profile attributes, status, or group memberships",
+      "idempotent": false
+    },
+    {
+      "operation": "deactivateUser",
+      "description": "Suspend or deactivate a user account without deletion",
+      "idempotent": false
+    },
+    {
+      "operation": "listGroups",
+      "description": "Return groups filtered by type, membership count, or name prefix",
+      "idempotent": true
+    },
+    {
+      "operation": "getGroup",
+      "description": "Retrieve a single group with its membership list",
+      "idempotent": true
+    },
+    {
+      "operation": "createGroup",
+      "description": "Create a new group with name, description, and initial members",
+      "idempotent": false
+    },
+    {
+      "operation": "addUserToGroup",
+      "description": "Add a user to a group membership",
+      "idempotent": false
+    },
+    {
+      "operation": "removeUserFromGroup",
+      "description": "Remove a user from a group membership",
+      "idempotent": false
+    },
+    {
+      "operation": "listRoles",
+      "description": "Return available roles filtered by scope or application",
+      "idempotent": true
+    },
+    {
+      "operation": "assignRole",
+      "description": "Grant a role to a user or group with optional scope constraints",
+      "idempotent": false
+    },
+    {
+      "operation": "revokeRole",
+      "description": "Remove a role assignment from a user or group",
+      "idempotent": false
+    },
+    {
+      "operation": "listApplications",
+      "description": "Return registered applications filtered by SSO protocol or status",
+      "idempotent": true
+    },
+    {
+      "operation": "getApplication",
+      "description": "Retrieve application details including SSO configuration",
+      "idempotent": true
+    },
+    {
+      "operation": "authenticateUser",
+      "description": "Validate user credentials and return an authentication assertion",
+      "idempotent": false
+    },
+    {
+      "operation": "verifyMFA",
+      "description": "Verify a multi-factor authentication challenge response",
+      "idempotent": false
+    },
+    {
+      "operation": "listAuditLogs",
+      "description": "Return audit/event logs filtered by user, action, date, or severity",
+      "idempotent": true
+    }
+  ]
+}

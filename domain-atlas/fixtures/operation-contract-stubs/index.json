@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": "docs/integration-catalog/*.md#Port Operations",
+  "families": [
+    {
+      "portFamily": "FinanceAccounting",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/FinanceAccounting.operations.stub.json",
+      "operationCount": 16
+    },
+    {
+      "portFamily": "PaymentsBilling",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/PaymentsBilling.operations.stub.json",
+      "operationCount": 15
+    },
+    {
+      "portFamily": "ProcurementSpend",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/ProcurementSpend.operations.stub.json",
+      "operationCount": 14
+    },
+    {
+      "portFamily": "HrisHcm",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/HrisHcm.operations.stub.json",
+      "operationCount": 12
+    },
+    {
+      "portFamily": "Payroll",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/Payroll.operations.stub.json",
+      "operationCount": 12
+    },
+    {
+      "portFamily": "CrmSales",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/CrmSales.operations.stub.json",
+      "operationCount": 16
+    },
+    {
+      "portFamily": "CustomerSupport",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/CustomerSupport.operations.stub.json",
+      "operationCount": 15
+    },
+    {
+      "portFamily": "ItsmItOps",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/ItsmItOps.operations.stub.json",
+      "operationCount": 17
+    },
+    {
+      "portFamily": "IamDirectory",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/IamDirectory.operations.stub.json",
+      "operationCount": 18
+    },
+    {
+      "portFamily": "SecretsVaulting",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/SecretsVaulting.operations.stub.json",
+      "operationCount": 15
+    },
+    {
+      "portFamily": "MarketingAutomation",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/MarketingAutomation.operations.stub.json",
+      "operationCount": 19
+    },
+    {
+      "portFamily": "AdsPlatforms",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/AdsPlatforms.operations.stub.json",
+      "operationCount": 19
+    },
+    {
+      "portFamily": "CommsCollaboration",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/CommsCollaboration.operations.stub.json",
+      "operationCount": 3
+    },
+    {
+      "portFamily": "ProjectsWorkMgmt",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/ProjectsWorkMgmt.operations.stub.json",
+      "operationCount": 2
+    },
+    {
+      "portFamily": "DocumentsEsign",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/DocumentsEsign.operations.stub.json",
+      "operationCount": 3
+    },
+    {
+      "portFamily": "AnalyticsBi",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/AnalyticsBi.operations.stub.json",
+      "operationCount": 16
+    },
+    {
+      "portFamily": "MonitoringIncident",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/MonitoringIncident.operations.stub.json",
+      "operationCount": 18
+    },
+    {
+      "portFamily": "ComplianceGrc",
+      "file": "domain-atlas/fixtures/operation-contract-stubs/ComplianceGrc.operations.stub.json",
+      "operationCount": 23
+    }
+  ]
+}

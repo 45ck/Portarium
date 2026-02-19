@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "HrisHcm",
+  "sourceCatalog": "docs/integration-catalog/hris-hcm.md",
+  "operations": [
+    {
+      "operation": "listEmployees",
+      "description": "Paginated list of employees with optional filters (status, department, location)",
+      "idempotent": true
+    },
+    {
+      "operation": "getEmployee",
+      "description": "Retrieve a single employee record by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createEmployee",
+      "description": "Create a new employee record (onboarding)",
+      "idempotent": false
+    },
+    {
+      "operation": "updateEmployee",
+      "description": "Update mutable fields on an existing employee",
+      "idempotent": false
+    },
+    {
+      "operation": "terminateEmployee",
+      "description": "Mark an employee as terminated with effective date and reason",
+      "idempotent": false
+    },
+    {
+      "operation": "listDepartments",
+      "description": "List all departments/organisational units",
+      "idempotent": true
+    },
+    {
+      "operation": "getDepartment",
+      "description": "Retrieve a single department by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "listJobPositions",
+      "description": "List job titles, roles, and open positions",
+      "idempotent": true
+    },
+    {
+      "operation": "getTimeOff",
+      "description": "Retrieve a specific time-off request by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "requestTimeOff",
+      "description": "Submit a new time-off / leave request",
+      "idempotent": false
+    },
+    {
+      "operation": "listBenefitEnrolments",
+      "description": "List benefit enrolments for an employee or company-wide",
+      "idempotent": true
+    },
+    {
+      "operation": "getCompanyStructure",
+      "description": "Retrieve the full organisational hierarchy (divisions, departments, cost centres)",
+      "idempotent": true
+    }
+  ]
+}

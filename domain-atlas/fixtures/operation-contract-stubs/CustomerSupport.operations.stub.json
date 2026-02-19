@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "CustomerSupport",
+  "sourceCatalog": "docs/integration-catalog/customer-support.md",
+  "operations": [
+    {
+      "operation": "listTickets",
+      "description": "Return support tickets filtered by status, priority, assignee, or tag",
+      "idempotent": true
+    },
+    {
+      "operation": "getTicket",
+      "description": "Retrieve a single ticket by canonical ID or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "createTicket",
+      "description": "Open a new support ticket with subject, description, and requester",
+      "idempotent": false
+    },
+    {
+      "operation": "updateTicket",
+      "description": "Modify ticket fields (priority, status, custom fields, subject)",
+      "idempotent": false
+    },
+    {
+      "operation": "closeTicket",
+      "description": "Transition a ticket to closed/resolved status",
+      "idempotent": false
+    },
+    {
+      "operation": "listAgents",
+      "description": "Return support agents filtered by group, role, or availability",
+      "idempotent": true
+    },
+    {
+      "operation": "assignTicket",
+      "description": "Assign or reassign a ticket to an agent or group",
+      "idempotent": false
+    },
+    {
+      "operation": "addComment",
+      "description": "Append a public reply or internal note to a ticket",
+      "idempotent": false
+    },
+    {
+      "operation": "listComments",
+      "description": "List all comments/replies on a ticket with pagination",
+      "idempotent": true
+    },
+    {
+      "operation": "listTags",
+      "description": "Return all tags available in the support workspace",
+      "idempotent": true
+    },
+    {
+      "operation": "createTag",
+      "description": "Create a new tag for ticket categorisation",
+      "idempotent": false
+    },
+    {
+      "operation": "getKnowledgeArticle",
+      "description": "Retrieve a single knowledge base article by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "listKnowledgeArticles",
+      "description": "List knowledge base articles filtered by category or search term",
+      "idempotent": true
+    },
+    {
+      "operation": "getSLA",
+      "description": "Retrieve an SLA policy and its target response/resolution times",
+      "idempotent": true
+    },
+    {
+      "operation": "listCustomerSatisfactionRatings",
+      "description": "List CSAT ratings filtered by ticket, date range, or score",
+      "idempotent": true
+    }
+  ]
+}

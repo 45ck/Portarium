@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "AdsPlatforms",
+  "sourceCatalog": "docs/integration-catalog/ads-platforms.md",
+  "operations": [
+    {
+      "operation": "listCampaigns",
+      "description": "List advertising campaigns with filter by status, objective, and date",
+      "idempotent": true
+    },
+    {
+      "operation": "getCampaign",
+      "description": "Retrieve a single campaign with settings, budget, and targeting",
+      "idempotent": true
+    },
+    {
+      "operation": "createCampaign",
+      "description": "Create a new campaign with objective, budget, schedule, and targeting",
+      "idempotent": false
+    },
+    {
+      "operation": "updateCampaign",
+      "description": "Update campaign settings (name, budget, schedule, targeting, status)",
+      "idempotent": false
+    },
+    {
+      "operation": "pauseCampaign",
+      "description": "Pause a running campaign (sets status to paused)",
+      "idempotent": false
+    },
+    {
+      "operation": "listAdGroups",
+      "description": "List ad groups/ad sets within a campaign",
+      "idempotent": true
+    },
+    {
+      "operation": "getAdGroup",
+      "description": "Retrieve a single ad group with targeting and bid settings",
+      "idempotent": true
+    },
+    {
+      "operation": "createAdGroup",
+      "description": "Create a new ad group within a campaign",
+      "idempotent": false
+    },
+    {
+      "operation": "listAds",
+      "description": "List individual ads within an ad group",
+      "idempotent": true
+    },
+    {
+      "operation": "getAd",
+      "description": "Retrieve a single ad with creative, targeting, and status",
+      "idempotent": true
+    },
+    {
+      "operation": "createAd",
+      "description": "Create a new ad with creative content and targeting parameters",
+      "idempotent": false
+    },
+    {
+      "operation": "getCampaignStats",
+      "description": "Retrieve performance metrics for a campaign (impressions, clicks, spend)",
+      "idempotent": true
+    },
+    {
+      "operation": "getAdGroupStats",
+      "description": "Retrieve performance metrics for an ad group",
+      "idempotent": true
+    },
+    {
+      "operation": "getAdStats",
+      "description": "Retrieve performance metrics for an individual ad",
+      "idempotent": true
+    },
+    {
+      "operation": "listAudiences",
+      "description": "List audiences (custom, lookalike, remarketing) available for targeting",
+      "idempotent": true
+    },
+    {
+      "operation": "createAudience",
+      "description": "Create a new custom or lookalike audience from a source",
+      "idempotent": false
+    },
+    {
+      "operation": "getBudget",
+      "description": "Retrieve budget details and spend pacing for a campaign",
+      "idempotent": true
+    },
+    {
+      "operation": "updateBudget",
+      "description": "Update campaign budget amount, type (daily/lifetime), or pacing",
+      "idempotent": false
+    },
+    {
+      "operation": "listKeywords",
+      "description": "List keywords within a search ad group with bids and match types",
+      "idempotent": true
+    }
+  ]
+}

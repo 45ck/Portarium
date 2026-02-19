@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "ProcurementSpend",
+  "sourceCatalog": "docs/integration-catalog/procurement-spend.md",
+  "operations": [
+    {
+      "operation": "createPurchaseOrder",
+      "description": "Create a new purchase order with line items and submit for approval",
+      "idempotent": false
+    },
+    {
+      "operation": "getPurchaseOrder",
+      "description": "Retrieve a purchase order by canonical ID or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "approvePurchaseOrder",
+      "description": "Advance a PO through the approval workflow (approve or reject)",
+      "idempotent": false
+    },
+    {
+      "operation": "listPurchaseOrders",
+      "description": "Query POs by status, vendor, date range, or department",
+      "idempotent": true
+    },
+    {
+      "operation": "createExpenseReport",
+      "description": "Submit a new expense report with line items and receipt references",
+      "idempotent": false
+    },
+    {
+      "operation": "getExpenseReport",
+      "description": "Retrieve an expense report by ID, including line items and status",
+      "idempotent": true
+    },
+    {
+      "operation": "approveExpenseReport",
+      "description": "Advance an expense report through the approval workflow",
+      "idempotent": false
+    },
+    {
+      "operation": "listExpenseReports",
+      "description": "List expense reports filtered by employee, status, or date range",
+      "idempotent": true
+    },
+    {
+      "operation": "createVendor",
+      "description": "Register a new vendor/supplier in the procurement system",
+      "idempotent": false
+    },
+    {
+      "operation": "getVendor",
+      "description": "Retrieve vendor details by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "listVendors",
+      "description": "List vendors with filters (status, category, location)",
+      "idempotent": true
+    },
+    {
+      "operation": "createRFQ",
+      "description": "Create a request for quotation and distribute to selected vendors",
+      "idempotent": false
+    },
+    {
+      "operation": "listContracts",
+      "description": "List procurement contracts filtered by vendor, status, or expiry",
+      "idempotent": true
+    },
+    {
+      "operation": "getContract",
+      "description": "Retrieve a single contract by ID, including terms and line items",
+      "idempotent": true
+    }
+  ]
+}

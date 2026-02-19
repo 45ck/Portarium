@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "CommsCollaboration",
+  "sourceCatalog": "docs/integration-catalog/comms-collaboration.md",
+  "operations": [
+    {
+      "operation": "**Slack**",
+      "description": "S1 — full REST API with OpenAPI spec, sandbox workspaces",
+      "idempotent": false
+    },
+    {
+      "operation": "**Microsoft Teams**",
+      "description": "S1 — Microsoft Graph REST API, developer sandbox tenants",
+      "idempotent": false
+    },
+    {
+      "operation": "**Google Workspace (Gmail / Calendar / Chat)**",
+      "description": "S1 — full REST APIs with discovery docs, OAuth 2.0",
+      "idempotent": false
+    }
+  ]
+}

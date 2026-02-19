@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "ProjectsWorkMgmt",
+  "sourceCatalog": "docs/integration-catalog/projects-work-mgmt.md",
+  "operations": [
+    {
+      "operation": "**Jira (Atlassian)**",
+      "description": "S1 — full REST API v3 with OpenAPI spec, cloud sandbox instances",
+      "idempotent": false
+    },
+    {
+      "operation": "**Asana**",
+      "description": "S1 — REST API with full docs, developer sandbox workspaces",
+      "idempotent": false
+    }
+  ]
+}

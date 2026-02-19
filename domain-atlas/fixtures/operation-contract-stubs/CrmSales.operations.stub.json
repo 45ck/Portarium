@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "CrmSales",
+  "sourceCatalog": "docs/integration-catalog/crm-sales.md",
+  "operations": [
+    {
+      "operation": "listContacts",
+      "description": "Paginated list of contacts with optional filters (company, owner, tag, last modified)",
+      "idempotent": true
+    },
+    {
+      "operation": "getContact",
+      "description": "Retrieve a single contact record by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createContact",
+      "description": "Create a new contact with name, email, phone, and company association",
+      "idempotent": false
+    },
+    {
+      "operation": "updateContact",
+      "description": "Update mutable fields on an existing contact",
+      "idempotent": false
+    },
+    {
+      "operation": "listCompanies",
+      "description": "Paginated list of companies / accounts with optional filters",
+      "idempotent": true
+    },
+    {
+      "operation": "getCompany",
+      "description": "Retrieve a single company / account by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createCompany",
+      "description": "Create a new company / account record",
+      "idempotent": false
+    },
+    {
+      "operation": "listOpportunities",
+      "description": "List opportunities / deals with optional filters (stage, owner, pipeline, date range)",
+      "idempotent": true
+    },
+    {
+      "operation": "getOpportunity",
+      "description": "Retrieve a single opportunity / deal by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createOpportunity",
+      "description": "Create a new opportunity / deal with amount, stage, and associated contacts",
+      "idempotent": false
+    },
+    {
+      "operation": "updateOpportunityStage",
+      "description": "Move an opportunity to a different pipeline stage (e.g., qualification to proposal)",
+      "idempotent": false
+    },
+    {
+      "operation": "listPipelines",
+      "description": "List all sales pipelines and their stages",
+      "idempotent": true
+    },
+    {
+      "operation": "listActivities",
+      "description": "List activities (tasks, calls, meetings, emails) associated with a contact, company, or opportunity",
+      "idempotent": true
+    },
+    {
+      "operation": "createActivity",
+      "description": "Create a new activity (task, call, meeting, or email log)",
+      "idempotent": false
+    },
+    {
+      "operation": "listNotes",
+      "description": "List notes attached to a contact, company, or opportunity",
+      "idempotent": true
+    },
+    {
+      "operation": "createNote",
+      "description": "Create a new note on a contact, company, or opportunity",
+      "idempotent": false
+    }
+  ]
+}

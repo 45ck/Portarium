@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "FinanceAccounting",
+  "sourceCatalog": "docs/integration-catalog/finance-accounting.md",
+  "operations": [
+    {
+      "operation": "listAccounts",
+      "description": "Return chart-of-accounts filtered by type, status, or class",
+      "idempotent": true
+    },
+    {
+      "operation": "getAccount",
+      "description": "Retrieve a single account by canonical ID or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "createJournalEntry",
+      "description": "Post a balanced journal entry (debits = credits)",
+      "idempotent": false
+    },
+    {
+      "operation": "listJournalEntries",
+      "description": "Query journal entries by date range, account, or status",
+      "idempotent": true
+    },
+    {
+      "operation": "getTrialBalance",
+      "description": "Compute trial balance as-of a given date",
+      "idempotent": true
+    },
+    {
+      "operation": "listInvoices",
+      "description": "List accounts-receivable invoices with filter and pagination",
+      "idempotent": true
+    },
+    {
+      "operation": "getInvoice",
+      "description": "Retrieve a single AR invoice by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createInvoice",
+      "description": "Issue a new AR invoice to a customer",
+      "idempotent": false
+    },
+    {
+      "operation": "listBills",
+      "description": "List accounts-payable bills with filter and pagination",
+      "idempotent": true
+    },
+    {
+      "operation": "getBill",
+      "description": "Retrieve a single AP bill by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "createBill",
+      "description": "Record a new AP bill from a vendor",
+      "idempotent": false
+    },
+    {
+      "operation": "listVendors",
+      "description": "List vendor/supplier records",
+      "idempotent": true
+    },
+    {
+      "operation": "getVendor",
+      "description": "Retrieve a single vendor by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "reconcileAccount",
+      "description": "Mark a bank-account statement period as reconciled",
+      "idempotent": false
+    },
+    {
+      "operation": "getBalanceSheet",
+      "description": "Generate balance sheet as-of a given date",
+      "idempotent": true
+    },
+    {
+      "operation": "getProfitAndLoss",
+      "description": "Generate profit-and-loss for a date range",
+      "idempotent": true
+    }
+  ]
+}

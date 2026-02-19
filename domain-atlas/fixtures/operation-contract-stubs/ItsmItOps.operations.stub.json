@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "ItsmItOps",
+  "sourceCatalog": "docs/integration-catalog/itsm-it-ops.md",
+  "operations": [
+    {
+      "operation": "listIncidents",
+      "description": "Return incidents filtered by priority, state, assignment group, or date range",
+      "idempotent": true
+    },
+    {
+      "operation": "getIncident",
+      "description": "Retrieve a single incident by canonical ID or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "createIncident",
+      "description": "Open a new incident with short description, urgency, and impact",
+      "idempotent": false
+    },
+    {
+      "operation": "updateIncident",
+      "description": "Modify incident fields (priority, state, assignment, work notes)",
+      "idempotent": false
+    },
+    {
+      "operation": "resolveIncident",
+      "description": "Transition an incident to resolved state with resolution details",
+      "idempotent": false
+    },
+    {
+      "operation": "listChangeRequests",
+      "description": "Return change requests filtered by type, state, or approval status",
+      "idempotent": true
+    },
+    {
+      "operation": "createChangeRequest",
+      "description": "Submit a new change request with plan, risk assessment, and schedule",
+      "idempotent": false
+    },
+    {
+      "operation": "approveChangeRequest",
+      "description": "Record an approval or rejection on a change request",
+      "idempotent": false
+    },
+    {
+      "operation": "listAssets",
+      "description": "Return IT assets filtered by type, status, location, or owner",
+      "idempotent": true
+    },
+    {
+      "operation": "getAsset",
+      "description": "Retrieve a single asset by canonical ID, asset tag, or serial number",
+      "idempotent": true
+    },
+    {
+      "operation": "createAsset",
+      "description": "Register a new IT asset in the inventory",
+      "idempotent": false
+    },
+    {
+      "operation": "updateAsset",
+      "description": "Modify asset fields (status, owner, location, custom attributes)",
+      "idempotent": false
+    },
+    {
+      "operation": "listCMDBItems",
+      "description": "Return configuration items filtered by class, status, or relationship",
+      "idempotent": true
+    },
+    {
+      "operation": "getCMDBItem",
+      "description": "Retrieve a single CI with its attributes and relationships",
+      "idempotent": true
+    },
+    {
+      "operation": "listProblems",
+      "description": "Return problem records filtered by state, priority, or related incidents",
+      "idempotent": true
+    },
+    {
+      "operation": "createProblem",
+      "description": "Open a new problem record linked to one or more incidents",
+      "idempotent": false
+    },
+    {
+      "operation": "listServiceRequests",
+      "description": "Return service requests filtered by catalog item, state, or requester",
+      "idempotent": true
+    }
+  ]
+}

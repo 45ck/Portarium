@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "MonitoringIncident",
+  "sourceCatalog": "docs/integration-catalog/monitoring-incident.md",
+  "operations": [
+    {
+      "operation": "listAlerts",
+      "description": "Paginated list of alerts with optional filters (status, severity, service, date range)",
+      "idempotent": true
+    },
+    {
+      "operation": "getAlert",
+      "description": "Retrieve a single alert by ID, including trigger details and timeline",
+      "idempotent": true
+    },
+    {
+      "operation": "acknowledgeAlert",
+      "description": "Mark an alert as acknowledged by a responder",
+      "idempotent": false
+    },
+    {
+      "operation": "resolveAlert",
+      "description": "Mark an alert as resolved with optional resolution notes",
+      "idempotent": false
+    },
+    {
+      "operation": "listIncidents",
+      "description": "Paginated list of incidents with optional filters (status, priority, service)",
+      "idempotent": true
+    },
+    {
+      "operation": "getIncident",
+      "description": "Retrieve a single incident by ID, including timeline, responders, and linked alerts",
+      "idempotent": true
+    },
+    {
+      "operation": "createIncident",
+      "description": "Manually create a new incident with title, description, priority, and assigned service",
+      "idempotent": false
+    },
+    {
+      "operation": "updateIncident",
+      "description": "Update mutable fields on an existing incident (status, priority, notes, responders)",
+      "idempotent": false
+    },
+    {
+      "operation": "listOnCallSchedules",
+      "description": "List all on-call schedules with current and next on-call responder information",
+      "idempotent": true
+    },
+    {
+      "operation": "getOnCallSchedule",
+      "description": "Retrieve a single on-call schedule, including rotation layers and overrides",
+      "idempotent": true
+    },
+    {
+      "operation": "createOnCallSchedule",
+      "description": "Create a new on-call schedule with rotation rules and participants",
+      "idempotent": false
+    },
+    {
+      "operation": "listEscalationPolicies",
+      "description": "List all escalation policies with their ordered escalation rules",
+      "idempotent": true
+    },
+    {
+      "operation": "listServices",
+      "description": "List all monitored services with status and integration details",
+      "idempotent": true
+    },
+    {
+      "operation": "getService",
+      "description": "Retrieve a single service, including integrations, dependencies, and current status",
+      "idempotent": true
+    },
+    {
+      "operation": "createStatusPage",
+      "description": "Create a new public or private status page with component definitions",
+      "idempotent": false
+    },
+    {
+      "operation": "updateStatusPage",
+      "description": "Update the status of components, post an incident, or modify page content",
+      "idempotent": false
+    },
+    {
+      "operation": "listMaintenanceWindows",
+      "description": "List scheduled maintenance windows with affected services and time ranges",
+      "idempotent": true
+    },
+    {
+      "operation": "sendNotification",
+      "description": "Dispatch a notification to specified users, teams, or channels about an incident or alert",
+      "idempotent": false
+    }
+  ]
+}

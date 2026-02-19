@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "PaymentsBilling",
+  "sourceCatalog": "docs/integration-catalog/payments-billing.md",
+  "operations": [
+    {
+      "operation": "createCharge",
+      "description": "Initiate a one-time payment charge against a payment method",
+      "idempotent": false
+    },
+    {
+      "operation": "getCharge",
+      "description": "Retrieve a charge/transaction by canonical ID or external ref",
+      "idempotent": true
+    },
+    {
+      "operation": "refundCharge",
+      "description": "Issue a full or partial refund against an existing charge",
+      "idempotent": false
+    },
+    {
+      "operation": "listCharges",
+      "description": "Query charges with filters (status, date range, customer, amount)",
+      "idempotent": true
+    },
+    {
+      "operation": "createSubscription",
+      "description": "Enrol a customer into a recurring billing plan",
+      "idempotent": false
+    },
+    {
+      "operation": "getSubscription",
+      "description": "Retrieve subscription details and current status",
+      "idempotent": true
+    },
+    {
+      "operation": "cancelSubscription",
+      "description": "Cancel an active subscription (immediate or end-of-period)",
+      "idempotent": false
+    },
+    {
+      "operation": "listSubscriptions",
+      "description": "List subscriptions filtered by customer, plan, or status",
+      "idempotent": true
+    },
+    {
+      "operation": "createInvoice",
+      "description": "Generate an invoice (one-time or subscription-triggered)",
+      "idempotent": false
+    },
+    {
+      "operation": "getInvoice",
+      "description": "Retrieve a single invoice by ID",
+      "idempotent": true
+    },
+    {
+      "operation": "listInvoices",
+      "description": "List invoices with filters and pagination",
+      "idempotent": true
+    },
+    {
+      "operation": "getPaymentMethod",
+      "description": "Retrieve a stored payment method (card, bank account, wallet)",
+      "idempotent": true
+    },
+    {
+      "operation": "listPaymentMethods",
+      "description": "List payment methods for a given customer",
+      "idempotent": true
+    },
+    {
+      "operation": "createPayout",
+      "description": "Initiate a payout/transfer to a connected account or bank",
+      "idempotent": false
+    },
+    {
+      "operation": "getBalance",
+      "description": "Retrieve available and pending balance for the merchant account",
+      "idempotent": true
+    }
+  ]
+}

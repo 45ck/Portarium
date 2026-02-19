@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "AnalyticsBi",
+  "sourceCatalog": "docs/integration-catalog/analytics-bi.md",
+  "operations": [
+    {
+      "operation": "listDashboards",
+      "description": "Paginated list of dashboards with optional filters (workspace, owner, tag)",
+      "idempotent": true
+    },
+    {
+      "operation": "getDashboard",
+      "description": "Retrieve a single dashboard by ID, including layout and tile references",
+      "idempotent": true
+    },
+    {
+      "operation": "listReports",
+      "description": "Paginated list of reports with optional filters (folder, type, modified date)",
+      "idempotent": true
+    },
+    {
+      "operation": "getReport",
+      "description": "Retrieve a single report by ID, including embedded query definitions",
+      "idempotent": true
+    },
+    {
+      "operation": "runQuery",
+      "description": "Execute an ad-hoc or saved query against a connected data source",
+      "idempotent": false
+    },
+    {
+      "operation": "getQueryResults",
+      "description": "Retrieve the results of a previously submitted query by job ID",
+      "idempotent": true
+    },
+    {
+      "operation": "listDataSources",
+      "description": "List all configured data source connections",
+      "idempotent": true
+    },
+    {
+      "operation": "getDataSource",
+      "description": "Retrieve connection details and status for a single data source",
+      "idempotent": true
+    },
+    {
+      "operation": "createDataSource",
+      "description": "Register a new data source connection (database, warehouse, API)",
+      "idempotent": false
+    },
+    {
+      "operation": "listDatasets",
+      "description": "List datasets (tables, models, cubes) available within a workspace or project",
+      "idempotent": true
+    },
+    {
+      "operation": "getDataset",
+      "description": "Retrieve schema, refresh schedule, and metadata for a single dataset",
+      "idempotent": true
+    },
+    {
+      "operation": "refreshDataset",
+      "description": "Trigger a manual refresh of a dataset's underlying data",
+      "idempotent": false
+    },
+    {
+      "operation": "listMetrics",
+      "description": "List defined metrics (KPIs, measures) across the BI platform",
+      "idempotent": true
+    },
+    {
+      "operation": "exportReport",
+      "description": "Export a report or dashboard to a file format (PDF, PNG, CSV, XLSX)",
+      "idempotent": false
+    },
+    {
+      "operation": "listUsers",
+      "description": "List users with access to the analytics platform, including role assignments",
+      "idempotent": true
+    },
+    {
+      "operation": "shareReport",
+      "description": "Grant or modify sharing permissions on a report or dashboard",
+      "idempotent": false
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "MarketingAutomation",
+  "sourceCatalog": "docs/integration-catalog/marketing-automation.md",
+  "operations": [
+    {
+      "operation": "listContacts",
+      "description": "List contacts/subscribers with filter by list, tag, segment, or status",
+      "idempotent": true
+    },
+    {
+      "operation": "getContact",
+      "description": "Retrieve a single contact by canonical ID or email address",
+      "idempotent": true
+    },
+    {
+      "operation": "createContact",
+      "description": "Create a new contact with profile fields and list memberships",
+      "idempotent": false
+    },
+    {
+      "operation": "updateContact",
+      "description": "Update contact profile fields, tags, or subscription status",
+      "idempotent": false
+    },
+    {
+      "operation": "listLists",
+      "description": "List all audience lists / subscriber lists",
+      "idempotent": true
+    },
+    {
+      "operation": "getList",
+      "description": "Retrieve a single list with member count and metadata",
+      "idempotent": true
+    },
+    {
+      "operation": "addContactToList",
+      "description": "Subscribe a contact to a list",
+      "idempotent": false
+    },
+    {
+      "operation": "removeContactFromList",
+      "description": "Unsubscribe a contact from a list",
+      "idempotent": false
+    },
+    {
+      "operation": "listCampaigns",
+      "description": "List campaigns with filter by status (draft, sent, scheduled) and type",
+      "idempotent": true
+    },
+    {
+      "operation": "getCampaign",
+      "description": "Retrieve a single campaign with content and settings",
+      "idempotent": true
+    },
+    {
+      "operation": "createCampaign",
+      "description": "Create a new campaign with audience, template, and schedule",
+      "idempotent": false
+    },
+    {
+      "operation": "sendCampaign",
+      "description": "Trigger immediate send or schedule a campaign for delivery",
+      "idempotent": false
+    },
+    {
+      "operation": "getCampaignStats",
+      "description": "Retrieve delivery, open, click, bounce, and unsubscribe statistics",
+      "idempotent": true
+    },
+    {
+      "operation": "listAutomations",
+      "description": "List automation workflows with filter by status",
+      "idempotent": true
+    },
+    {
+      "operation": "getAutomation",
+      "description": "Retrieve an automation workflow with steps and trigger configuration",
+      "idempotent": true
+    },
+    {
+      "operation": "triggerAutomation",
+      "description": "Manually trigger an automation for a specific contact or event",
+      "idempotent": false
+    },
+    {
+      "operation": "listForms",
+      "description": "List signup forms and pop-ups",
+      "idempotent": true
+    },
+    {
+      "operation": "getFormSubmissions",
+      "description": "Retrieve form submission data with pagination",
+      "idempotent": true
+    },
+    {
+      "operation": "listTemplates",
+      "description": "List email templates with filter by type or category",
+      "idempotent": true
+    }
+  ]
+}

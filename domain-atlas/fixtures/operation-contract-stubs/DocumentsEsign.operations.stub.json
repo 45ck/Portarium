@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "portFamily": "DocumentsEsign",
+  "sourceCatalog": "docs/integration-catalog/documents-esign.md",
+  "operations": [
+    {
+      "operation": "**DocuSign**",
+      "description": "S1 — full REST API (eSignature API) with OpenAPI spec, developer sandbox",
+      "idempotent": false
+    },
+    {
+      "operation": "**Google Drive**",
+      "description": "S1 — full REST API v3 with discovery doc, OAuth 2.0",
+      "idempotent": false
+    },
+    {
+      "operation": "**Microsoft SharePoint / OneDrive**",
+      "description": "S1 — Microsoft Graph API with full docs, developer sandbox tenants",
+      "idempotent": false
+    }
+  ]
+}
