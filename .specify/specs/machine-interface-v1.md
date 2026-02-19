@@ -40,6 +40,7 @@ inputs for runs, approvals, and evidence entries.
 ## Transport and security
 
 - Transport MUST be TLS 1.2+ with certificate validation.
+- Active machine registrations MUST declare authenticated control-plane access (`bearer`, `apiKey`, or `mtls`); `none` is only valid for inactive/dev entries.
 - Authorization SHOULD use one of:
   - mTLS with certificate pinning
   - short-lived bearer token
@@ -69,6 +70,10 @@ inputs for runs, approvals, and evidence entries.
 
 - Machines are untrusted runtime inputs/outputs by default.
 - They MUST only connect to approved network destinations defined by platform policy.
+- Machine registrations MUST declare execution containment policy:
+  - `isolationMode: PerTenantWorker`
+  - `egressAllowlist`: non-empty HTTPS URL list
+  - `workloadIdentity: Required`
 - Secrets must be injected via controlled secret stores; secrets must not be logged, returned in payloads, or committed to artifacts.
 
 ## Validation and observability notes

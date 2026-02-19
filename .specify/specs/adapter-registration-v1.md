@@ -18,6 +18,12 @@ Fields:
 - `portFamily`: one of the canonical `PortFamily` values
 - `enabled`: whether the adapter is currently active
 - `capabilityMatrix`: required array covering all required operations for the port family
+- `executionPolicy`: required containment policy declaration
+  - `tenantIsolationMode`: must be `PerTenantWorker`
+  - `egressAllowlist`: non-empty HTTPS URL list
+  - `credentialScope`: must be `capabilityMatrix` (least-privilege by declared operation)
+  - `sandboxVerified`: must be `true` at registration time
+  - `sandboxAvailable`: boolean capability declaration
 - `machineRegistrations?`: optional list of machine bindings
   - `machineId`: branded `MachineId`
   - `endpointUrl`: absolute URL with `http` or `https`
@@ -35,6 +41,13 @@ Fields:
   "providerSlug": "hubspot",
   "portFamily": "CrmSales",
   "enabled": true,
+  "executionPolicy": {
+    "tenantIsolationMode": "PerTenantWorker",
+    "egressAllowlist": ["https://api.hubspot.com"],
+    "credentialScope": "capabilityMatrix",
+    "sandboxVerified": true,
+    "sandboxAvailable": true
+  },
   "capabilityMatrix": [
     {
       "operation": "party:read",
@@ -95,8 +108,11 @@ Fields:
 - Every `capabilityMatrix.operation` must be one of that family’s required operations.
 - `operation` must be in `<entity>:<verb>` format.
 - `inputKind` / `outputKind` must be valid `PortContract` output kinds when supplied.
+- `executionPolicy` is mandatory and enforces containment assumptions from ADR-034.
 
 ## Validation notes
 
 - The parser throws `AdapterRegistrationParseError` for schema/shape errors, unsupported
-  families, missing operations, and malformed machine endpoint URLs.
+  families, missing operations, malformed machine endpoint URLs, and invalid execution policy
+  declarations (non-HTTPS egress entries, missing sandbox verification, or missing per-tenant
+  isolation mode).

@@ -23,6 +23,13 @@ const makeAdapter = (
     operation: op,
     requiresAuth: false,
   })),
+  executionPolicy: {
+    tenantIsolationMode: 'PerTenantWorker',
+    egressAllowlist: ['https://provider.example'],
+    credentialScope: 'capabilityMatrix',
+    sandboxVerified: true,
+    sandboxAvailable: true,
+  },
 });
 
 describe('selectProvider', () => {

@@ -11,6 +11,12 @@ const VALID_MACHINE_REGISTRATION = {
   displayName: 'Production Runner',
   capabilities: ['run:workflow', 'run:sync'],
   registeredAtIso: '2026-02-17T00:00:00.000Z',
+  executionPolicy: {
+    isolationMode: 'PerTenantWorker',
+    egressAllowlist: ['https://gateway.example.com'],
+    workloadIdentity: 'Required',
+  },
+  authConfig: { kind: 'bearer', secretRef: 'grants/cg-1' },
 };
 
 const VALID_AGENT_CONFIG = {
@@ -40,7 +46,8 @@ describe('parseMachineRegistrationV1: happy path', () => {
     expect(reg.displayName).toBe('Production Runner');
     expect(reg.capabilities).toEqual(['run:workflow', 'run:sync']);
     expect(reg.registeredAtIso).toBe('2026-02-17T00:00:00.000Z');
-    expect(reg.authConfig).toBeUndefined();
+    expect(reg.executionPolicy.isolationMode).toBe('PerTenantWorker');
+    expect(reg.authConfig).toEqual({ kind: 'bearer', secretRef: 'grants/cg-1' });
   });
 
   it('parses with inactive status', () => {
@@ -76,6 +83,7 @@ describe('parseMachineRegistrationV1: happy path', () => {
   it('parses authConfig: none kind', () => {
     const reg = parseMachineRegistrationV1({
       ...VALID_MACHINE_REGISTRATION,
+      active: false,
       authConfig: { kind: 'none' },
     });
     expect(reg.authConfig?.kind).toBe('none');
@@ -184,6 +192,44 @@ describe('parseMachineRegistrationV1: validation', () => {
         authConfig: 'bearer',
       }),
     ).toThrow(/authConfig must be an object/i);
+  });
+
+  it('rejects missing executionPolicy', () => {
+    const invalid = { ...VALID_MACHINE_REGISTRATION } as Record<string, unknown>;
+    delete invalid['executionPolicy'];
+    expect(() => parseMachineRegistrationV1(invalid)).toThrow(
+      /executionPolicy must be an object/i,
+    );
+  });
+
+  it('rejects non-https executionPolicy egress entries', () => {
+    expect(() =>
+      parseMachineRegistrationV1({
+        ...VALID_MACHINE_REGISTRATION,
+        executionPolicy: {
+          ...VALID_MACHINE_REGISTRATION.executionPolicy,
+          egressAllowlist: ['http://gateway.internal'],
+        },
+      }),
+    ).toThrow(/egressAllowlist entries must use https urls/i);
+  });
+
+  it('rejects active machine without authConfig', () => {
+    expect(() =>
+      parseMachineRegistrationV1({
+        ...VALID_MACHINE_REGISTRATION,
+        authConfig: undefined,
+      }),
+    ).toThrow(/active machines require authConfig/i);
+  });
+
+  it('rejects active machine with authConfig kind none', () => {
+    expect(() =>
+      parseMachineRegistrationV1({
+        ...VALID_MACHINE_REGISTRATION,
+        authConfig: { kind: 'none' },
+      }),
+    ).toThrow(/active machines require authConfig/i);
   });
 });
 

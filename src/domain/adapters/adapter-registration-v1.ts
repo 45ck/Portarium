@@ -17,8 +17,10 @@ import {
   readBoolean,
   readInteger,
   readOptionalString,
+  readRecordField,
   readRecord,
   readString,
+  readStringArray,
 } from '../validation/parse-utils.js';
 
 export type CapabilityClaimV1 = Readonly<{
@@ -45,7 +47,16 @@ export type AdapterRegistrationV1 = Readonly<{
   portFamily: PortFamily;
   enabled: boolean;
   capabilityMatrix: readonly CapabilityClaimV1[];
+  executionPolicy: AdapterExecutionPolicyV1;
   machineRegistrations?: readonly AdapterMachineEntryV1[];
+}>;
+
+export type AdapterExecutionPolicyV1 = Readonly<{
+  tenantIsolationMode: 'PerTenantWorker';
+  egressAllowlist: readonly string[];
+  credentialScope: 'capabilityMatrix';
+  sandboxVerified: true;
+  sandboxAvailable: boolean;
 }>;
 
 export class AdapterRegistrationParseError extends Error {
@@ -75,6 +86,7 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
 
   const enabled = readBoolean(record, 'enabled', AdapterRegistrationParseError);
   const capabilityMatrix = parseCapabilityMatrix(record['capabilityMatrix'], portFamilyRaw);
+  const executionPolicy = parseExecutionPolicy(record);
   const machineRegistrations = parseMachineRegistrations(record['machineRegistrations']);
 
   return {
@@ -85,6 +97,7 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
     portFamily: portFamilyRaw,
     enabled,
     capabilityMatrix,
+    executionPolicy,
     ...(machineRegistrations !== undefined ? { machineRegistrations } : {}),
   };
 }
@@ -168,6 +181,64 @@ function parseMachineRegistrations(raw: unknown): readonly AdapterMachineEntryV1
   return raw.map((item, i) => parseMachineRegistration(item, `machineRegistrations[${i}]`));
 }
 
+function parseExecutionPolicy(record: Record<string, unknown>): AdapterExecutionPolicyV1 {
+  const executionPolicy = readRecordField(record, 'executionPolicy', AdapterRegistrationParseError);
+  const tenantIsolationMode = readString(
+    executionPolicy,
+    'tenantIsolationMode',
+    AdapterRegistrationParseError,
+  );
+  if (tenantIsolationMode !== 'PerTenantWorker') {
+    throw new AdapterRegistrationParseError(
+      'executionPolicy.tenantIsolationMode must be "PerTenantWorker".',
+    );
+  }
+
+  const egressAllowlist = readStringArray(
+    executionPolicy,
+    'egressAllowlist',
+    AdapterRegistrationParseError,
+    { minLength: 1 },
+  );
+  for (const egress of egressAllowlist) {
+    assertHttpsEndpoint(egress, 'executionPolicy.egressAllowlist');
+  }
+
+  const credentialScope = readString(
+    executionPolicy,
+    'credentialScope',
+    AdapterRegistrationParseError,
+  );
+  if (credentialScope !== 'capabilityMatrix') {
+    throw new AdapterRegistrationParseError(
+      'executionPolicy.credentialScope must be "capabilityMatrix".',
+    );
+  }
+
+  const sandboxVerified = readBoolean(
+    executionPolicy,
+    'sandboxVerified',
+    AdapterRegistrationParseError,
+  );
+  if (!sandboxVerified) {
+    throw new AdapterRegistrationParseError('executionPolicy.sandboxVerified must be true.');
+  }
+
+  const sandboxAvailable = readBoolean(
+    executionPolicy,
+    'sandboxAvailable',
+    AdapterRegistrationParseError,
+  );
+
+  return {
+    tenantIsolationMode,
+    egressAllowlist,
+    credentialScope,
+    sandboxVerified: true,
+    sandboxAvailable,
+  };
+}
+
 function parseMachineRegistration(raw: unknown, path: string): AdapterMachineEntryV1 {
   const record = assertRecord(raw, path);
   const machineId = MachineId(readMachineField(record, `${path}.machineId`, 'machineId'));
@@ -220,4 +291,17 @@ function assertRecord(value: unknown, path: string): Record<string, unknown> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function assertHttpsEndpoint(value: string, fieldName: string): void {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new AdapterRegistrationParseError(`${fieldName} entries must be valid URLs.`);
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new AdapterRegistrationParseError(`${fieldName} entries must use https URLs.`);
+  }
 }

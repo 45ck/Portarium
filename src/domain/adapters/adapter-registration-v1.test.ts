@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { parseAdapterRegistrationV1 } from './adapter-registration-v1.js';
 
 describe('parseAdapterRegistrationV1', () => {
+  const validExecutionPolicy = {
+    tenantIsolationMode: 'PerTenantWorker',
+    egressAllowlist: ['https://api.quickbooks.example'],
+    credentialScope: 'capabilityMatrix',
+    sandboxVerified: true,
+    sandboxAvailable: true,
+  } as const;
+
   const validCapability = {
     operation: 'invoice:list',
     requiresAuth: true,
@@ -23,6 +31,7 @@ describe('parseAdapterRegistrationV1', () => {
     portFamily: 'FinanceAccounting',
     enabled: true,
     capabilityMatrix: [validCapability],
+    executionPolicy: validExecutionPolicy,
     machineRegistrations: [validMachine],
   };
 
@@ -37,6 +46,8 @@ describe('parseAdapterRegistrationV1', () => {
     expect(reg.enabled).toBe(true);
     expect(reg.capabilityMatrix).toHaveLength(1);
     expect(reg.capabilityMatrix[0]!.operation).toBe('invoice:list');
+    expect(reg.executionPolicy.tenantIsolationMode).toBe('PerTenantWorker');
+    expect(reg.executionPolicy.egressAllowlist).toEqual(['https://api.quickbooks.example']);
     expect(reg.machineRegistrations).toBeDefined();
     expect(reg.machineRegistrations).toHaveLength(1);
     expect(reg.machineRegistrations![0]!.machineId).toBe('machine-1');
@@ -116,5 +127,37 @@ describe('parseAdapterRegistrationV1', () => {
         machineRegistrations: [{ ...validMachine, endpointUrl: 'ftp://bad.example.com' }],
       }),
     ).toThrow(/endpointUrl must start with http:\/\/ or https:\/\//);
+  });
+
+  it('rejects missing executionPolicy', () => {
+    const invalid = { ...validFull } as Record<string, unknown>;
+    delete invalid['executionPolicy'];
+    expect(() => parseAdapterRegistrationV1(invalid)).toThrow(
+      /executionPolicy must be an object/i,
+    );
+  });
+
+  it('rejects unverified sandbox policy', () => {
+    expect(() =>
+      parseAdapterRegistrationV1({
+        ...validFull,
+        executionPolicy: {
+          ...validExecutionPolicy,
+          sandboxVerified: false,
+        },
+      }),
+    ).toThrow(/sandboxVerified must be true/i);
+  });
+
+  it('rejects non-https egress entries', () => {
+    expect(() =>
+      parseAdapterRegistrationV1({
+        ...validFull,
+        executionPolicy: {
+          ...validExecutionPolicy,
+          egressAllowlist: ['http://insecure.example'],
+        },
+      }),
+    ).toThrow(/egressAllowlist entries must use https urls/i);
   });
 });

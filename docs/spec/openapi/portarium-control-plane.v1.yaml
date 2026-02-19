@@ -2047,6 +2047,39 @@ components:
           minLength: 1
           description: Optional hint for credential lookup (vault path or grant reference).
       required: [machineId, endpointUrl, active]
+    AdapterExecutionPolicyV1:
+      type: object
+      additionalProperties: false
+      properties:
+        tenantIsolationMode:
+          type: string
+          const: PerTenantWorker
+          description: Enforces per-tenant worker isolation for adapter execution.
+        egressAllowlist:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
+            pattern: '^https://'
+          description: Explicit egress allowlist for adapter runtime outbound calls.
+        credentialScope:
+          type: string
+          const: capabilityMatrix
+          description: Credentials are scoped to declared capability matrix operations.
+        sandboxVerified:
+          type: boolean
+          const: true
+          description: Sandbox availability was verified during registration.
+        sandboxAvailable:
+          type: boolean
+          description: Provider exposes a sandbox/test environment.
+      required:
+        - tenantIsolationMode
+        - egressAllowlist
+        - credentialScope
+        - sandboxVerified
+        - sandboxAvailable
     AdapterRegistrationV1:
       type: object
       additionalProperties: false
@@ -2066,6 +2099,8 @@ components:
           $ref: '#/components/schemas/PortFamily'
         enabled:
           type: boolean
+        executionPolicy:
+          $ref: '#/components/schemas/AdapterExecutionPolicyV1'
         capabilityMatrix:
           type: array
           items:
@@ -2088,6 +2123,7 @@ components:
         - providerSlug
         - portFamily
         - enabled
+        - executionPolicy
         - capabilityMatrix
     AdapterRegistrationListResponse:
       type: object
@@ -2113,12 +2149,14 @@ components:
         enabled:
           type: boolean
           default: true
+        executionPolicy:
+          $ref: '#/components/schemas/AdapterExecutionPolicyV1'
         capabilityMatrix:
           type: array
           items:
             $ref: '#/components/schemas/CapabilityClaimV1'
           minItems: 1
-      required: [providerSlug, portFamily, capabilityMatrix]
+      required: [providerSlug, portFamily, executionPolicy, capabilityMatrix]
     UpdateAdapterRegistrationRequest:
       type: object
       additionalProperties: false
@@ -2129,6 +2167,8 @@ components:
           minLength: 1
         enabled:
           type: boolean
+        executionPolicy:
+          $ref: '#/components/schemas/AdapterExecutionPolicyV1'
         capabilityMatrix:
           type: array
           items:

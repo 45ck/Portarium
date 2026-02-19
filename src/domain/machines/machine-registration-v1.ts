@@ -12,6 +12,7 @@ import {
   readInteger,
   readIsoString,
   readOptionalString,
+  readRecordField,
   readRecord,
   readString,
   readStringArray,
@@ -51,8 +52,15 @@ export type MachineRegistrationV1 = Readonly<{
   /** Capability allowlist — only these capability strings may be invoked on this machine. */
   capabilities: readonly string[];
   registeredAtIso: string;
+  executionPolicy: MachineExecutionPolicyV1;
   /** Authentication configuration for the machine endpoint (absent = no auth required). */
   authConfig?: MachineAuthConfigV1;
+}>;
+
+export type MachineExecutionPolicyV1 = Readonly<{
+  isolationMode: 'PerTenantWorker';
+  egressAllowlist: readonly string[];
+  workloadIdentity: 'Required';
 }>;
 
 export class MachineRegistrationParseError extends Error {
@@ -80,7 +88,9 @@ export function parseMachineRegistrationV1(value: unknown): MachineRegistrationV
     minLength: 1,
   });
   const registeredAtIso = readIsoString(record, 'registeredAtIso', MachineRegistrationParseError);
+  const executionPolicy = parseExecutionPolicy(record);
   const authConfig = parseMachineAuthConfig(record['authConfig']);
+  guardActiveMachineAuth(active, authConfig);
 
   return {
     schemaVersion: 1,
@@ -91,7 +101,38 @@ export function parseMachineRegistrationV1(value: unknown): MachineRegistrationV
     displayName,
     capabilities,
     registeredAtIso,
+    executionPolicy,
     ...(authConfig !== undefined ? { authConfig } : {}),
+  };
+}
+
+function parseExecutionPolicy(record: Record<string, unknown>): MachineExecutionPolicyV1 {
+  const raw = readRecordField(record, 'executionPolicy', MachineRegistrationParseError);
+  const isolationMode = readString(raw, 'isolationMode', MachineRegistrationParseError);
+  if (isolationMode !== 'PerTenantWorker') {
+    throw new MachineRegistrationParseError(
+      'executionPolicy.isolationMode must be "PerTenantWorker".',
+    );
+  }
+
+  const egressAllowlist = readStringArray(raw, 'egressAllowlist', MachineRegistrationParseError, {
+    minLength: 1,
+  });
+  for (const endpoint of egressAllowlist) {
+    assertHttpsEndpoint(endpoint, 'executionPolicy.egressAllowlist');
+  }
+
+  const workloadIdentity = readString(raw, 'workloadIdentity', MachineRegistrationParseError);
+  if (workloadIdentity !== 'Required') {
+    throw new MachineRegistrationParseError(
+      'executionPolicy.workloadIdentity must be "Required".',
+    );
+  }
+
+  return {
+    isolationMode,
+    egressAllowlist,
+    workloadIdentity,
   };
 }
 
@@ -113,6 +154,15 @@ function parseMachineAuthConfig(raw: unknown): MachineAuthConfigV1 | undefined {
     kind,
     ...(secretRef !== undefined ? { secretRef } : {}),
   };
+}
+
+function guardActiveMachineAuth(active: boolean, authConfig?: MachineAuthConfigV1): void {
+  if (!active) return;
+  if (authConfig === undefined || authConfig.kind === 'none') {
+    throw new MachineRegistrationParseError(
+      'active machines require authConfig with kind bearer, apiKey, or mtls.',
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -191,4 +241,17 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
     allowedTools,
     registeredAtIso,
   };
+}
+
+function assertHttpsEndpoint(value: string, fieldName: string): void {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new MachineRegistrationParseError(`${fieldName} entries must be valid URLs.`);
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new MachineRegistrationParseError(`${fieldName} entries must use https URLs.`);
+  }
 }
