@@ -83,7 +83,7 @@
 {"id":"bead-0083","title":"Review: FinanceAccounting port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:29.741Z","updatedAt":"2026-02-19T02:58:01.488Z"}
 {"id":"bead-0084","title":"PaymentsBilling port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:30.016Z","updatedAt":"2026-02-19T03:01:02.962Z"}
 {"id":"bead-0085","title":"Code review: PaymentsBilling port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:30.301Z","updatedAt":"2026-02-19T03:01:54.234Z"}
-{"id":"bead-0086","title":"PaymentsBilling port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:30.666Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0086","title":"PaymentsBilling port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:30.666Z","updatedAt":"2026-02-19T03:03:21.962Z"}
 {"id":"bead-0087","title":"Review: PaymentsBilling port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:30.998Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0088","title":"ProcurementSpend port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:31.274Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0089","title":"Code review: ProcurementSpend port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:31.551Z","updatedAt":"2026-02-17T20:18:23.090Z"}
