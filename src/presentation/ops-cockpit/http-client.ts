@@ -13,10 +13,15 @@ import type {
   ListRunsRequest,
   ListWorkItemsRequest,
   Plan,
+  PatchWorkforceAvailabilityRequest,
   RunDetail,
   RunSummary,
   StartRunCommand,
+  ListWorkforceMembersRequest,
+  ListWorkforceQueuesRequest,
   UpdateWorkItemCommand,
+  WorkforceMemberSummary,
+  WorkforceQueueSummary,
   WorkItemSummary,
 } from './types.js';
 
@@ -227,6 +232,52 @@ export class ControlPlaneClient {
     );
   }
 
+  public async listWorkforceMembers(
+    workspaceId: string,
+    request: ListWorkforceMembersRequest = {},
+  ): Promise<CursorPage<WorkforceMemberSummary>> {
+    const query = this.buildListWorkforceMembersQuery(request);
+    return this.request<CursorPage<WorkforceMemberSummary>>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce`,
+      'GET',
+      { query },
+    );
+  }
+
+  public async getWorkforceMember(
+    workspaceId: string,
+    workforceMemberId: string,
+  ): Promise<WorkforceMemberSummary> {
+    return this.request<WorkforceMemberSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/${normalizeResourceId(workforceMemberId)}`,
+      'GET',
+    );
+  }
+
+  public async patchWorkforceMemberAvailability(
+    workspaceId: string,
+    workforceMemberId: string,
+    request: PatchWorkforceAvailabilityRequest,
+  ): Promise<WorkforceMemberSummary> {
+    return this.request<WorkforceMemberSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/${normalizeResourceId(workforceMemberId)}/availability`,
+      'PATCH',
+      { body: request },
+    );
+  }
+
+  public async listWorkforceQueues(
+    workspaceId: string,
+    request: ListWorkforceQueuesRequest = {},
+  ): Promise<CursorPage<WorkforceQueueSummary>> {
+    const query = this.buildListWorkforceQueuesQuery(request);
+    return this.request<CursorPage<WorkforceQueueSummary>>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/queues`,
+      'GET',
+      { query },
+    );
+  }
+
   private buildListRunsQuery(request: ListRunsRequest): URLSearchParams {
     return this.buildCursorQuery(request);
   }
@@ -267,6 +318,28 @@ export class ControlPlaneClient {
     }
     if (request.category) {
       query.set('category', request.category);
+    }
+    return query;
+  }
+
+  private buildListWorkforceMembersQuery(request: ListWorkforceMembersRequest): URLSearchParams {
+    const query = this.buildCursorQuery(request);
+    if (request.capability) {
+      query.set('capability', request.capability);
+    }
+    if (request.queueId) {
+      query.set('queueId', request.queueId);
+    }
+    if (request.availability) {
+      query.set('availability', request.availability);
+    }
+    return query;
+  }
+
+  private buildListWorkforceQueuesQuery(request: ListWorkforceQueuesRequest): URLSearchParams {
+    const query = this.buildCursorQuery(request);
+    if (request.capability) {
+      query.set('capability', request.capability);
     }
     return query;
   }

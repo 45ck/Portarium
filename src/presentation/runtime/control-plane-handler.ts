@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomBytes, randomUUID } from 'node:crypto';
 
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
+import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
   AuthenticationPort,
   AuthorizationPort,
@@ -42,6 +43,90 @@ type ControlPlaneDeps = Readonly<{
   workspaceStore: WorkspaceStore;
   runStore: RunStore;
 }>;
+
+type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
+
+type WorkforceCapability =
+  | 'operations.dispatch'
+  | 'operations.approval'
+  | 'operations.escalation'
+  | 'robotics.supervision'
+  | 'robotics.safety.override';
+
+type WorkforceMemberRecord = Readonly<{
+  schemaVersion: 1;
+  workforceMemberId: string;
+  linkedUserId: string;
+  displayName: string;
+  capabilities: readonly WorkforceCapability[];
+  availabilityStatus: WorkforceAvailabilityStatus;
+  queueMemberships: readonly string[];
+  tenantId: string;
+  createdAtIso: string;
+  updatedAtIso?: string;
+}>;
+
+type WorkforceQueueRecord = Readonly<{
+  schemaVersion: 1;
+  workforceQueueId: string;
+  name: string;
+  requiredCapabilities: readonly WorkforceCapability[];
+  memberIds: readonly string[];
+  routingStrategy: 'round-robin' | 'least-busy' | 'manual';
+  tenantId: string;
+}>;
+
+const WORKFORCE_FIXTURE: Readonly<{
+  members: readonly WorkforceMemberRecord[];
+  queues: readonly WorkforceQueueRecord[];
+}> = {
+  members: [
+    {
+      schemaVersion: 1,
+      workforceMemberId: 'wm-1',
+      linkedUserId: 'user-1',
+      displayName: 'Alice Martinez',
+      capabilities: ['operations.approval', 'operations.escalation'],
+      availabilityStatus: 'available',
+      queueMemberships: ['queue-finance', 'queue-general'],
+      tenantId: 'workspace-1',
+      createdAtIso: '2026-02-19T00:00:00.000Z',
+      updatedAtIso: '2026-02-19T00:00:00.000Z',
+    },
+    {
+      schemaVersion: 1,
+      workforceMemberId: 'wm-2',
+      linkedUserId: 'user-2',
+      displayName: 'Bob Chen',
+      capabilities: ['operations.dispatch'],
+      availabilityStatus: 'busy',
+      queueMemberships: ['queue-general'],
+      tenantId: 'workspace-1',
+      createdAtIso: '2026-02-19T00:00:00.000Z',
+      updatedAtIso: '2026-02-19T00:00:00.000Z',
+    },
+  ],
+  queues: [
+    {
+      schemaVersion: 1,
+      workforceQueueId: 'queue-finance',
+      name: 'Finance Queue',
+      requiredCapabilities: ['operations.approval'],
+      memberIds: ['wm-1'],
+      routingStrategy: 'least-busy',
+      tenantId: 'workspace-1',
+    },
+    {
+      schemaVersion: 1,
+      workforceQueueId: 'queue-general',
+      name: 'General Queue',
+      requiredCapabilities: ['operations.dispatch'],
+      memberIds: ['wm-1', 'wm-2'],
+      routingStrategy: 'round-robin',
+      tenantId: 'workspace-1',
+    },
+  ],
+};
 
 function normalizeHeader(value: string | string[] | undefined): string | undefined {
   if (typeof value === 'string') return value;
@@ -210,6 +295,90 @@ async function authenticate(
   return { ok: false, error: auth.error };
 }
 
+async function readJsonBody(req: IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+  }
+  if (chunks.length === 0) return null;
+  const raw = Buffer.concat(chunks).toString('utf8').trim();
+  if (raw === '') return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function hasRole(ctx: AppContext, role: 'admin' | 'operator' | 'approver' | 'auditor'): boolean {
+  return ctx.roles.includes(role);
+}
+
+function isWorkforceReadable(ctx: AppContext): boolean {
+  return (
+    hasRole(ctx, 'admin') ||
+    hasRole(ctx, 'operator') ||
+    hasRole(ctx, 'approver') ||
+    hasRole(ctx, 'auditor')
+  );
+}
+
+async function assertReadAccess(
+  deps: ControlPlaneDeps,
+  ctx: AppContext,
+): Promise<{ ok: true } | { ok: false; error: Forbidden }> {
+  if (!isWorkforceReadable(ctx)) {
+    return {
+      ok: false,
+      error: { kind: 'Forbidden', action: APP_ACTIONS.workspaceRead, message: 'Read access denied.' },
+    };
+  }
+
+  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.workspaceRead);
+  if (allowed) return { ok: true };
+  return {
+    ok: false,
+    error: { kind: 'Forbidden', action: APP_ACTIONS.workspaceRead, message: 'Read access denied.' },
+  };
+}
+
+function listFixtureMembers(workspaceId: string): WorkforceMemberRecord[] {
+  return WORKFORCE_FIXTURE.members.filter((m) => m.tenantId === workspaceId);
+}
+
+function listFixtureQueues(workspaceId: string): WorkforceQueueRecord[] {
+  return WORKFORCE_FIXTURE.queues.filter((q) => q.tenantId === workspaceId);
+}
+
+function paginate<T extends Readonly<Record<string, unknown>>>(
+  items: readonly T[],
+  reqUrl: string,
+): { items: readonly T[]; nextCursor?: string } {
+  const url = new URL(reqUrl, 'http://localhost');
+  const limitRaw = url.searchParams.get('limit');
+  const limit = limitRaw ? Math.max(1, Number.parseInt(limitRaw, 10)) : undefined;
+  if (!limit || Number.isNaN(limit) || items.length <= limit) {
+    return { items: [...items] };
+  }
+  const sliced = items.slice(0, limit);
+  return { items: sliced, nextCursor: String(limit) };
+}
+
+function parseAvailabilityPatchBody(
+  value: unknown,
+): { ok: true; availabilityStatus: WorkforceAvailabilityStatus } | { ok: false } {
+  if (typeof value !== 'object' || value === null) return { ok: false };
+  const record = value as { availabilityStatus?: unknown };
+  if (
+    record.availabilityStatus === 'available' ||
+    record.availabilityStatus === 'busy' ||
+    record.availabilityStatus === 'offline'
+  ) {
+    return { ok: true, availabilityStatus: record.availabilityStatus };
+  }
+  return { ok: false };
+}
+
 async function handleGetWorkspace(
   args: Readonly<{
     deps: ControlPlaneDeps;
@@ -277,6 +446,204 @@ async function handleGetRun(
   respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
 }
 
+async function handleListWorkforceMembers(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const capability = url.searchParams.get('capability');
+  const queueId = url.searchParams.get('queueId');
+  const availability = url.searchParams.get('availability');
+
+  let items = listFixtureMembers(workspaceId);
+  if (capability) {
+    items = items.filter((m) => m.capabilities.includes(capability as WorkforceCapability));
+  }
+  if (queueId) {
+    items = items.filter((m) => m.queueMemberships.includes(queueId));
+  }
+  if (availability === 'available' || availability === 'busy' || availability === 'offline') {
+    items = items.filter((m) => m.availabilityStatus === availability);
+  }
+
+  const body = paginate(items, req.url ?? '/');
+  respondJson(res, 200, correlationId, traceContext, body);
+}
+
+async function handleGetWorkforceMember(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    workforceMemberId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const member = listFixtureMembers(workspaceId).find((m) => m.workforceMemberId === workforceMemberId);
+  if (!member) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Workforce member ${workforceMemberId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, 200, correlationId, traceContext, member);
+}
+
+async function handlePatchWorkforceAvailability(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    workforceMemberId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (!hasRole(auth.ctx, 'admin')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admins can update workforce availability in this runtime.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const member = listFixtureMembers(workspaceId).find((m) => m.workforceMemberId === workforceMemberId);
+  if (!member) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Workforce member ${workforceMemberId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const body = parseAvailabilityPatchBody(await readJsonBody(req));
+  if (!body.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: 'availabilityStatus must be one of: available, busy, offline.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const updated: WorkforceMemberRecord = {
+    ...member,
+    availabilityStatus: body.availabilityStatus,
+    updatedAtIso: new Date().toISOString(),
+  };
+  respondJson(res, 200, correlationId, traceContext, updated);
+}
+
+async function handleListWorkforceQueues(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const capability = url.searchParams.get('capability');
+  let items = listFixtureQueues(workspaceId);
+  if (capability) {
+    items = items.filter((queue) =>
+      queue.requiredCapabilities.includes(capability as WorkforceCapability),
+    );
+  }
+  const body = paginate(items, req.url ?? '/');
+  respondJson(res, 200, correlationId, traceContext, body);
+}
+
 async function handleRequest(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
@@ -312,6 +679,68 @@ async function handleRequest(
         pathname,
         workspaceId: decodeURIComponent(mRun[1] ?? ''),
         runId: decodeURIComponent(mRun[2] ?? ''),
+      });
+      return;
+    }
+
+    const mWorkforceList = /^\/v1\/workspaces\/([^/]+)\/workforce$/.exec(pathname);
+    if (mWorkforceList) {
+      await handleListWorkforceMembers({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mWorkforceList[1] ?? ''),
+      });
+      return;
+    }
+
+    const mQueueList = /^\/v1\/workspaces\/([^/]+)\/workforce\/queues$/.exec(pathname);
+    if (mQueueList) {
+      await handleListWorkforceQueues({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mQueueList[1] ?? ''),
+      });
+      return;
+    }
+
+    const mWorkforceMember = /^\/v1\/workspaces\/([^/]+)\/workforce\/([^/]+)$/.exec(pathname);
+    if (mWorkforceMember) {
+      await handleGetWorkforceMember({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mWorkforceMember[1] ?? ''),
+        workforceMemberId: decodeURIComponent(mWorkforceMember[2] ?? ''),
+      });
+      return;
+    }
+  }
+
+  if (req.method === 'PATCH') {
+    const mPatchAvailability = /^\/v1\/workspaces\/([^/]+)\/workforce\/([^/]+)\/availability$/.exec(
+      pathname,
+    );
+    if (mPatchAvailability) {
+      await handlePatchWorkforceAvailability({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mPatchAvailability[1] ?? ''),
+        workforceMemberId: decodeURIComponent(mPatchAvailability[2] ?? ''),
       });
       return;
     }

@@ -163,6 +163,52 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect(planCall.init.method).toBe('GET');
   });
 
+  it('builds workforce list/get/availability/queues routes with contract query params', async () => {
+    const { calls, fetchImpl } = createJsonFetch({ items: [] });
+    const client = makeClient(fetchImpl);
+
+    await client.listWorkforceMembers('workspace-1', {
+      capability: 'operations.approval',
+      queueId: 'queue-1',
+      availability: 'available',
+      limit: 30,
+      cursor: 'next:workforce',
+    });
+    await client.getWorkforceMember('workspace-1', 'wm-1');
+    await client.patchWorkforceMemberAvailability('workspace-1', 'wm-1', {
+      availabilityStatus: 'busy',
+    });
+    await client.listWorkforceQueues('workspace-1', {
+      capability: 'operations.approval',
+      limit: 10,
+    });
+
+    expect(calls).toHaveLength(4);
+    const listMembers = new URL(calls[0]!.input);
+    expect(listMembers.pathname).toBe('/v1/workspaces/workspace-1/workforce');
+    expect(listMembers.searchParams.get('capability')).toBe('operations.approval');
+    expect(listMembers.searchParams.get('queueId')).toBe('queue-1');
+    expect(listMembers.searchParams.get('availability')).toBe('available');
+    expect(listMembers.searchParams.get('limit')).toBe('30');
+    expect(listMembers.searchParams.get('cursor')).toBe('next:workforce');
+    expect(calls[0]!.init.method).toBe('GET');
+
+    expect(new URL(calls[1]!.input).pathname).toBe('/v1/workspaces/workspace-1/workforce/wm-1');
+    expect(calls[1]!.init.method).toBe('GET');
+
+    expect(new URL(calls[2]!.input).pathname).toBe(
+      '/v1/workspaces/workspace-1/workforce/wm-1/availability',
+    );
+    expect(calls[2]!.init.method).toBe('PATCH');
+    expect(JSON.parse(calls[2]!.init.body as string)).toEqual({ availabilityStatus: 'busy' });
+
+    const listQueues = new URL(calls[3]!.input);
+    expect(listQueues.pathname).toBe('/v1/workspaces/workspace-1/workforce/queues');
+    expect(listQueues.searchParams.get('capability')).toBe('operations.approval');
+    expect(listQueues.searchParams.get('limit')).toBe('10');
+    expect(calls[3]!.init.method).toBe('GET');
+  });
+
   it('passes body for createApproval with idempotency key', async () => {
     const { calls, fetchImpl } = createJsonFetch({
       schemaVersion: 1,

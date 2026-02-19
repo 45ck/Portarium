@@ -13,11 +13,11 @@ afterEach(async () => {
   handle = undefined;
 });
 
-function makeCtx() {
+function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['admin']) {
   return toAppContext({
     tenantId: 'tenant-1',
     principalId: 'user-1',
-    roles: ['admin'],
+    roles,
     correlationId: 'corr-1',
   });
 }
@@ -233,5 +233,119 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/internal/);
     expect(body.status).toBe(500);
+  });
+
+  it('lists workforce members with contract query filters', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce?capability=operations.approval&availability=available`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: Array<{ workforceMemberId: string }> };
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0]!.workforceMemberId).toBe('wm-1');
+  });
+
+  it('enforces admin-only update for workforce availability patch', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ availabilityStatus: 'offline' }),
+      },
+    );
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { title: string };
+    expect(body.title).toBe('Forbidden');
+  });
+
+  it('allows admin to patch workforce availability', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['admin'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ availabilityStatus: 'offline' }),
+      },
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { availabilityStatus: string; workforceMemberId: string };
+    expect(body.workforceMemberId).toBe('wm-1');
+    expect(body.availabilityStatus).toBe('offline');
   });
 });

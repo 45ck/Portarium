@@ -164,6 +164,38 @@ export interface ApprovalSummary {
   rationale?: string;
 }
 
+export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
+
+export type WorkforceCapability =
+  | 'operations.dispatch'
+  | 'operations.approval'
+  | 'operations.escalation'
+  | 'robotics.supervision'
+  | 'robotics.safety.override';
+
+export interface WorkforceMemberSummary {
+  schemaVersion: 1;
+  workforceMemberId: string;
+  linkedUserId: string;
+  displayName: string;
+  capabilities: WorkforceCapability[];
+  availabilityStatus: WorkforceAvailabilityStatus;
+  queueMemberships: string[];
+  tenantId: string;
+  createdAtIso: string;
+  updatedAtIso?: string;
+}
+
+export interface WorkforceQueueSummary {
+  schemaVersion: 1;
+  workforceQueueId: string;
+  name: string;
+  requiredCapabilities: WorkforceCapability[];
+  memberIds: string[];
+  routingStrategy: 'round-robin' | 'least-busy' | 'manual';
+  tenantId: string;
+}
+
 export interface CursorPage<T> {
   items: T[];
   nextCursor?: CursorToken;
@@ -192,6 +224,20 @@ export interface ListEvidenceRequest extends CursorPaginationRequest {
   planId?: string;
   workItemId?: string;
   category?: EvidenceCategory;
+}
+
+export interface ListWorkforceMembersRequest extends CursorPaginationRequest {
+  capability?: WorkforceCapability;
+  queueId?: string;
+  availability?: WorkforceAvailabilityStatus;
+}
+
+export interface ListWorkforceQueuesRequest extends CursorPaginationRequest {
+  capability?: WorkforceCapability;
+}
+
+export interface PatchWorkforceAvailabilityRequest {
+  availabilityStatus: WorkforceAvailabilityStatus;
 }
 
 export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';

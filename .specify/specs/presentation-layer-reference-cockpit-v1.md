@@ -34,6 +34,9 @@ The specification uses vocabulary from `docs/glossary.md` without synonyms.
 - Plan
 - Approval Gate
 - Evidence Log
+- Workforce Member
+- Workforce Queue
+- Human Task
 
 ## API contract obligations
 
@@ -116,6 +119,12 @@ For each primary screen, show dedicated state components for:
 - Condition branch labels and connector paths must support explicit low-fidelity editing interactions.
 - A run-readiness panel must show blocking vs non-blocking validation checks and gate `Run workflow` when blocking checks exist.
 - Keyboard flow must support active-graph step navigation and config focus without conflicting with global list navigation shortcuts.
+
+### R10 Workforce and Human Task cockpit surfaces
+
+- Workforce list/profile surfaces must use the control-plane workforce contracts without introducing extra domain semantics in UI.
+- Workforce availability mutation controls must be role-gated; edit controls are admin-only, and non-admin personas are read-only.
+- Inbox must support Human Task visibility and actions using contract routes (`list`, `complete`, `escalate`) and preserve persona defaults.
 
 ## Acceptance signals
 
