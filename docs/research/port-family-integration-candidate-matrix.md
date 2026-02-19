@@ -3,6 +3,7 @@
 This matrix assigns an owner and current blockers for all 18 standard Portarium port families, with required artefact dependencies for family kickoff.
 
 Source of truth for this matrix: `domain-atlas/decisions/port-family-integration-candidate-matrix.json`.
+Verification output: `reports/domain-atlas/port-family-readiness.json` via `npm run domain-atlas:readiness`.
 
 ## Required Artifact Dependencies
 

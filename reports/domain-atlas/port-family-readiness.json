@@ -1,0 +1,675 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-02-19T02:32:46.340Z",
+  "sourceMatrix": "domain-atlas/decisions/port-family-integration-candidate-matrix.json",
+  "familyCount": 18,
+  "readyFamilies": 2,
+  "familyReadiness": [
+    {
+      "portFamily": "FinanceAccounting",
+      "owner": "integration-finance",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 4,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "Select primary MVP provider between odoo and erpnext.",
+        "odoo: missing_evidence_chain",
+        "erpnext: missing_evidence_chain",
+        "xero: missing_operation_mapping, missing_evidence_chain",
+        "openapi-directory: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "odoo",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "erpnext",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "xero",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "openapi-directory",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "PaymentsBilling",
+      "owner": "integration-finance",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 5,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "Resolve primary provider order between stripe and killbill.",
+        "stripe: missing_evidence_chain",
+        "killbill: missing_evidence_chain",
+        "chargebee-openapi: missing_operation_mapping, missing_evidence_chain",
+        "square: missing_operation_mapping, missing_evidence_chain",
+        "openapi-directory: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "stripe",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "killbill",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "chargebee-openapi",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "square",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "openapi-directory",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "ProcurementSpend",
+      "owner": "integration-finance",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "Add at least one safe_to_reuse candidate to reduce GPL/LGPL-only reliance.",
+        "odoo: missing_evidence_chain",
+        "erpnext: missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "odoo",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "erpnext",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "HrisHcm",
+      "owner": "integration-people",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 1,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No ACTIVE or DONE candidate providers yet.",
+        "deputy: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "deputy",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "Payroll",
+      "owner": "integration-people",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 0,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No source manifest candidates defined.",
+        "no_candidates_defined"
+      ],
+      "candidates": []
+    },
+    {
+      "portFamily": "CrmSales",
+      "owner": "integration-growth",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 1,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No ACTIVE or DONE candidate providers yet.",
+        "openapi-directory: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "openapi-directory",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "CustomerSupport",
+      "owner": "integration-service-ops",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 1,
+      "familyReady": false,
+      "blockers": [
+        "Primary DONE candidate is study_only; add safe_to_reuse fallback.",
+        "openapi-directory: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "zammad",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        },
+        {
+          "providerId": "openapi-directory",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "ItsmItOps",
+      "owner": "integration-service-ops",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 0,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No source manifest candidates defined.",
+        "no_candidates_defined"
+      ],
+      "candidates": []
+    },
+    {
+      "portFamily": "IamDirectory",
+      "owner": "integration-security",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 3,
+      "readyCandidateCount": 2,
+      "familyReady": false,
+      "blockers": [
+        "Resolve primary provider order between keycloak and openfga.",
+        "keycloak-openapi: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "keycloak",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        },
+        {
+          "providerId": "openfga",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        },
+        {
+          "providerId": "keycloak-openapi",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "SecretsVaulting",
+      "owner": "integration-security",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 1,
+      "readyCandidateCount": 1,
+      "familyReady": true,
+      "blockers": [
+        "Only DONE candidate is unsafe_dependency; add safe_to_reuse path."
+      ],
+      "candidates": [
+        {
+          "providerId": "vault",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        }
+      ]
+    },
+    {
+      "portFamily": "MarketingAutomation",
+      "owner": "integration-growth",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 1,
+      "readyCandidateCount": 1,
+      "familyReady": true,
+      "blockers": [
+        "Primary DONE candidate is study_only; add safe_to_reuse fallback."
+      ],
+      "candidates": [
+        {
+          "providerId": "mautic",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        }
+      ]
+    },
+    {
+      "portFamily": "AdsPlatforms",
+      "owner": "integration-growth",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 0,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No source manifest candidates defined.",
+        "no_candidates_defined"
+      ],
+      "candidates": []
+    },
+    {
+      "portFamily": "CommsCollaboration",
+      "owner": "integration-collab",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No ACTIVE or DONE candidate providers yet.",
+        "twilio-oai: missing_operation_mapping, missing_evidence_chain",
+        "openapi-directory: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "twilio-oai",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "openapi-directory",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "ProjectsWorkMgmt",
+      "owner": "integration-collab",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No ACTIVE or DONE candidate providers yet.",
+        "canvas-lms: missing_operation_mapping, missing_evidence_chain",
+        "moodle: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "canvas-lms",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "moodle",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "DocumentsEsign",
+      "owner": "integration-collab",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 1,
+      "familyReady": false,
+      "blockers": [
+        "Add safe_to_reuse DONE candidate to reduce GPL-only reliance.",
+        "docusign-openapi: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "paperless-ngx",
+          "sourceIntent": true,
+          "operationMapping": true,
+          "evidenceChain": true,
+          "ready": true,
+          "issues": []
+        },
+        {
+          "providerId": "docusign-openapi",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    },
+    {
+      "portFamily": "AnalyticsBi",
+      "owner": "integration-data",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 0,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No source manifest candidates defined.",
+        "no_candidates_defined"
+      ],
+      "candidates": []
+    },
+    {
+      "portFamily": "MonitoringIncident",
+      "owner": "integration-service-ops",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 0,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No source manifest candidates defined.",
+        "no_candidates_defined"
+      ],
+      "candidates": []
+    },
+    {
+      "portFamily": "ComplianceGrc",
+      "owner": "integration-security",
+      "requiredArtifactDependencies": [
+        "sourceManifest",
+        "providerDecision",
+        "cifExtract",
+        "canonicalMapping",
+        "capabilityMatrix",
+        "contractFixtures"
+      ],
+      "candidateCount": 2,
+      "readyCandidateCount": 0,
+      "familyReady": false,
+      "blockers": [
+        "No ACTIVE or DONE candidate providers yet.",
+        "opencontrol: missing_operation_mapping, missing_evidence_chain",
+        "oscal: missing_operation_mapping, missing_evidence_chain"
+      ],
+      "candidates": [
+        {
+          "providerId": "opencontrol",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        },
+        {
+          "providerId": "oscal",
+          "sourceIntent": true,
+          "operationMapping": false,
+          "evidenceChain": false,
+          "ready": false,
+          "issues": [
+            "missing_operation_mapping",
+            "missing_evidence_chain"
+          ]
+        }
+      ]
+    }
+  ]
+}
