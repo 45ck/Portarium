@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PolicyId, UserId, WorkspaceId } from '../primitives/index.js';
+import { PolicyId, RobotId, UserId, WorkspaceId } from '../primitives/index.js';
 import type { PolicyV1 } from '../policy/policy-v1.js';
 
 import {
@@ -139,6 +139,60 @@ describe('evaluatePolicy', () => {
 
     expect(result.decision).toBe('Allow');
     expect(result.violations).toEqual([]);
+  });
+
+  it('recommends HumanApprove when hazardous safety constraints run in Auto tier', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy(),
+      context: makeContext({
+        executionTier: 'Auto',
+        safetyCase: {
+          schemaVersion: 1,
+          robotId: RobotId('robot-1'),
+          appliedConstraints: [
+            {
+              constraintType: 'SpeedLimit',
+              value: '1.0mps',
+              enforcedBy: 'edge',
+              severity: 'Enforced',
+            },
+          ],
+          riskAssessmentRef: 'risk-1',
+          lastReviewedAt: '2026-02-19T00:00:00.000Z',
+          approvedBy: UserId('user-2'),
+        },
+      }),
+    });
+
+    expect(result.decision).toBe('RequireApproval');
+    expect(result.safetyTierRecommendation).toBe('HumanApprove');
+  });
+
+  it('recommends ManualOnly when OperatorRequired constraint is active', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy(),
+      context: makeContext({
+        executionTier: 'HumanApprove',
+        safetyCase: {
+          schemaVersion: 1,
+          robotId: RobotId('robot-1'),
+          appliedConstraints: [
+            {
+              constraintType: 'OperatorRequired',
+              value: 'true',
+              enforcedBy: 'policy',
+              severity: 'Enforced',
+            },
+          ],
+          riskAssessmentRef: 'risk-2',
+          lastReviewedAt: '2026-02-19T00:00:00.000Z',
+          approvedBy: UserId('user-2'),
+        },
+      }),
+    });
+
+    expect(result.decision).toBe('RequireApproval');
+    expect(result.safetyTierRecommendation).toBe('ManualOnly');
   });
 });
 
