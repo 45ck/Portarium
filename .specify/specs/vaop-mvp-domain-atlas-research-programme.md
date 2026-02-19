@@ -28,6 +28,7 @@ The research programme produces artefacts that become Portarium primitives:
 6. CI produces a machine-readable validation summary report under `reports/domain-atlas/`.
 7. Port-family candidate ownership/blocker matrix exists for all 18 standard families with required artefact dependencies.
 8. Per-family machine-readable operation contract stubs exist for all 18 standard families.
+9. Operation stub verification report exists and checks completeness, canonical mapping consistency, and source-ranking assumptions.
 
 ## Non-Goals (MVP)
 

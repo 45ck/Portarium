@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-02-19T02:36:48.758Z",
+  "verification": {
+    "totalFamilies": 18,
+    "fullyPassingFamilies": 8
+  },
+  "families": [
+    {
+      "portFamily": "FinanceAccounting",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1",
+        "S1",
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "PaymentsBilling",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1",
+        "S1",
+        "S1",
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "ProcurementSpend",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1",
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "HrisHcm",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "Payroll",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "CrmSales",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "CustomerSupport",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "ItsmItOps",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "IamDirectory",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "SecretsVaulting",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1",
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "MarketingAutomation",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "AdsPlatforms",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "CommsCollaboration",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1"
+      ],
+      "issues": [
+        "missing_canonical_mappings_for_candidates"
+      ]
+    },
+    {
+      "portFamily": "ProjectsWorkMgmt",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "DocumentsEsign",
+      "completenessPassed": true,
+      "canonicalMappingPassed": true,
+      "sourceRankingAssumptionPassed": true,
+      "matchedSourceRanks": [
+        "S1"
+      ],
+      "issues": []
+    },
+    {
+      "portFamily": "AnalyticsBi",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "MonitoringIncident",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    },
+    {
+      "portFamily": "ComplianceGrc",
+      "completenessPassed": true,
+      "canonicalMappingPassed": false,
+      "sourceRankingAssumptionPassed": false,
+      "matchedSourceRanks": [],
+      "issues": [
+        "missing_canonical_mappings_for_candidates",
+        "no_s1_s2_candidate_match_in_catalog"
+      ]
+    }
+  ]
+}
