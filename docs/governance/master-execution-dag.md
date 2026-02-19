@@ -1,6 +1,6 @@
 # Master Execution DAG
 
-Generated: 2026-02-19T19:37:25.529Z
+Generated: 2026-02-19T19:44:43.315Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -20,9 +20,9 @@ Source: `.beads/issues.jsonl`
 | governance | 24 | 12 | 0 |
 | infrastructure | 19 | 14 | 0 |
 | integration | 5 | 5 | 0 |
-| presentation | 11 | 7 | 0 |
+| presentation | 12 | 7 | 0 |
 | security | 2 | 2 | 0 |
-| unspecified | 147 | 0 | 0 |
+| unspecified | 146 | 0 | 0 |
 
 ## Critical Path
 
@@ -139,13 +139,13 @@ flowchart TD
     B0554["bead-0554<br/>Presentation/API: live map transport — WebSocket or SSE subscri…"]
     B0557["bead-0557<br/>Cockpit v2: multi-level indoor map support with floor switching…"]
     B0568["bead-0568<br/>Cockpit v2: analytics layers — coverage and dwell heatmaps with…"]
+    B0576["bead-0576<br/>Cockpit: screenshot-audit declutter pass for approvals triage a…"]
   end
   subgraph security[security]
     B0520["bead-0520<br/>Security: SROS2 and DDS-Security hardening for ROS 2 mission tr…"]
     B0521["bead-0521<br/>Security: mTLS workload identity for robot gateways using SPIFF…"]
   end
   subgraph unspecified[unspecified]
-    B0161["bead-0161<br/>Phase gate: Foundation complete — requires gate, security basel…"]
     B0162["bead-0162<br/>Phase gate: Domain complete — requires aggregate invariants, pa…"]
     B0163["bead-0163<br/>Phase gate: Application complete — requires DTOs, use-cases, or…"]
     B0164["bead-0164<br/>Phase gate: Infrastructure complete — requires persistence, out…"]
@@ -398,7 +398,6 @@ flowchart TD
 
 | Bead | Phase | Open Blockers | Review Artifacts |
 | --- | --- | --- | --- |
-| bead-0161 | unspecified | none | none |
 | bead-0162 | unspecified | none | none |
 | bead-0163 | unspecified | none | none |
 | bead-0164 | unspecified | none | none |
@@ -632,6 +631,7 @@ flowchart TD
 | bead-0564 | governance | bead-0552 | none |
 | bead-0567 | integration | bead-0515, bead-0516, bead-0553 | none |
 | bead-0568 | presentation | bead-0557 | none |
+| bead-0576 | presentation | none | none |
 
 ## Notes
 

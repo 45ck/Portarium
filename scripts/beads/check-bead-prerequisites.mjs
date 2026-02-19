@@ -6,6 +6,7 @@ import path from 'node:path';
 const WORKSPACE_ROOT = process.cwd();
 const ISSUES_PATH = path.join(WORKSPACE_ROOT, '.beads', 'issues.jsonl');
 const LINKAGE_MAP_PATH = path.join(WORKSPACE_ROOT, '.beads', 'bead-linkage-map.json');
+const PHASE_GATE_MAP_PATH = path.join(WORKSPACE_ROOT, '.beads', 'phase-gate-map.json');
 
 const SPEC_TITLE_PATTERNS = [/^spec:/i, /^adr:/i];
 const REVIEW_TITLE_PATTERNS = [/^review:/i, /^code review:/i, /^closeout review:/i, /^doc review:/i];
@@ -36,6 +37,7 @@ function parseArgs(argv) {
     json: false,
     next: false,
     cycleGate: false,
+    phaseGate: false,
     beadId: null,
   };
 
@@ -50,6 +52,10 @@ function parseArgs(argv) {
     }
     if (arg === '--cycle-gate') {
       options.cycleGate = true;
+      continue;
+    }
+    if (arg === '--phase-gate') {
+      options.phaseGate = true;
       continue;
     }
     if (options.beadId === null) {
@@ -140,6 +146,112 @@ async function loadLinkageMap() {
   }
 }
 
+async function loadPhaseGateMap() {
+  try {
+    const raw = await fsPromises.readFile(PHASE_GATE_MAP_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizePhaseGateRequirement(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const label = typeof raw.label === 'string' ? raw.label.trim() : '';
+  const beads = Array.isArray(raw.beads) ? raw.beads.filter((value) => typeof value === 'string') : [];
+  if (label.length === 0 || beads.length === 0) return null;
+
+  return {
+    label,
+    beads: uniqueSorted(beads),
+  };
+}
+
+function normalizePhaseGateDefinition(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      name: null,
+      requirements: [],
+    };
+  }
+
+  const name = typeof raw.name === 'string' ? raw.name.trim() : '';
+  const requirements = Array.isArray(raw.requirements)
+    ? raw.requirements.map((entry) => normalizePhaseGateRequirement(entry)).filter((entry) => entry !== null)
+    : [];
+
+  return {
+    name: name.length > 0 ? name : null,
+    requirements,
+  };
+}
+
+function resolvePhaseGate(issue, context) {
+  const { byId, phaseGateMap } = context;
+  const rawDefinition = phaseGateMap[issue.id];
+  if (!rawDefinition || typeof rawDefinition !== 'object') {
+    return {
+      defined: false,
+      name: null,
+      requirements: [],
+      errors: [],
+    };
+  }
+
+  const definition = normalizePhaseGateDefinition(rawDefinition);
+  const requirements = [];
+  const errors = [];
+
+  if (definition.requirements.length === 0) {
+    errors.push({
+      type: 'invalid_phase_gate_definition',
+      message: `phase gate definition has no requirements: ${issue.id}`,
+    });
+  }
+
+  for (const requirement of definition.requirements) {
+    const beads = [];
+
+    for (const beadId of requirement.beads) {
+      const requiredIssue = byId.get(beadId);
+      if (!requiredIssue) {
+        beads.push({
+          beadId,
+          title: null,
+          status: 'missing',
+          closed: false,
+        });
+        errors.push({
+          type: 'invalid_phase_gate_reference',
+          message: `phase gate reference does not exist: ${beadId}`,
+        });
+        continue;
+      }
+
+      beads.push({
+        beadId,
+        title: requiredIssue.title,
+        status: requiredIssue.status,
+        closed: requiredIssue.status === 'closed',
+      });
+    }
+
+    requirements.push({
+      label: requirement.label,
+      beads,
+      satisfied: beads.length > 0 && beads.every((entry) => entry.closed),
+    });
+  }
+
+  return {
+    defined: true,
+    name: definition.name,
+    requirements,
+    errors,
+  };
+}
+
 function resolveLinkage(issue, context) {
   const { byId, issues, linkageMap } = context;
   const entry = normalizeLinkageEntry(linkageMap[issue.id]);
@@ -213,10 +325,11 @@ function resolveLinkage(issue, context) {
 }
 
 function evaluateIssue(issue, context) {
-  const { byId, options } = context;
+  const { byId, options, phaseGateMap } = context;
   const blockers = Array.isArray(issue.blockedBy) ? issue.blockedBy : [];
   const missing = [];
   let linkage = null;
+  let phaseGate = null;
 
   for (const blockerId of blockers) {
     const blocker = byId.get(blockerId);
@@ -256,6 +369,45 @@ function evaluateIssue(issue, context) {
     }
   }
 
+  const isPhaseGateIssue =
+    Object.prototype.hasOwnProperty.call(phaseGateMap, issue.id) || /^phase gate:/i.test(String(issue.title ?? ''));
+  if (options.phaseGate && issue.status === 'open' && isPhaseGateIssue) {
+    phaseGate = resolvePhaseGate(issue, context);
+
+    if (!phaseGate.defined) {
+      missing.push({
+        type: 'missing_phase_gate_definition',
+        message: `no phase gate definition found for ${issue.id} in .beads/phase-gate-map.json`,
+      });
+    } else {
+      for (const requirement of phaseGate.requirements) {
+        for (const required of requirement.beads) {
+          if (required.status === 'missing') {
+            missing.push({
+              type: 'invalid_phase_gate_reference',
+              message: `phase gate requirement references unknown bead ${required.beadId} (${requirement.label})`,
+            });
+            continue;
+          }
+
+          if (required.status !== 'closed') {
+            missing.push({
+              type: 'phase_gate_requirement_open',
+              beadId: required.beadId,
+              title: required.title,
+              status: required.status,
+              requirement: requirement.label,
+            });
+          }
+        }
+      }
+    }
+
+    for (const error of phaseGate.errors) {
+      missing.push(error);
+    }
+  }
+
   return {
     beadId: issue.id,
     title: issue.title,
@@ -264,6 +416,7 @@ function evaluateIssue(issue, context) {
     missingPrerequisites: missing,
     readyToStart: issue.status === 'open' && missing.length === 0,
     ...(linkage !== null ? { linkage } : {}),
+    ...(phaseGate !== null ? { phaseGate } : {}),
   };
 }
 
@@ -288,6 +441,22 @@ function formatHumanReport(report) {
     );
   }
 
+  if (report.phaseGate) {
+    lines.push(`Phase gate definition: ${report.phaseGate.defined ? 'yes' : 'no'}`);
+    if (report.phaseGate.defined) {
+      if (report.phaseGate.name) {
+        lines.push(`Phase gate name: ${report.phaseGate.name}`);
+      }
+      lines.push('Phase gate requirements:');
+      for (const requirement of report.phaseGate.requirements) {
+        const states = requirement.beads
+          .map((required) => `${required.beadId}:${required.status}`)
+          .join(', ');
+        lines.push(`- ${requirement.label} (${requirement.satisfied ? 'closed' : 'incomplete'}): ${states}`);
+      }
+    }
+  }
+
   if (report.missingPrerequisites.length > 0) {
     lines.push('Missing prerequisites:');
     for (const missing of report.missingPrerequisites) {
@@ -295,6 +464,8 @@ function formatHumanReport(report) {
         lines.push(`- missing bead reference: ${missing.beadId}`);
       } else if (missing.type === 'blocked_by_open') {
         lines.push(`- ${missing.beadId} is still ${missing.status}: ${missing.title}`);
+      } else if (missing.type === 'phase_gate_requirement_open') {
+        lines.push(`- [${missing.requirement}] ${missing.beadId} is still ${missing.status}: ${missing.title}`);
       } else if (typeof missing.message === 'string') {
         lines.push(`- ${missing.message}`);
       }
@@ -318,8 +489,9 @@ async function main() {
   const options = parseArgs(process.argv);
   const issues = await loadIssues();
   const linkageMap = await loadLinkageMap();
+  const phaseGateMap = await loadPhaseGateMap();
   const byId = new Map(issues.map((issue) => [issue.id, issue]));
-  const context = { options, issues, byId, linkageMap };
+  const context = { options, issues, byId, linkageMap, phaseGateMap };
 
   if (options.next) {
     const openIssues = issues.filter((issue) => issue.status === 'open');
@@ -343,8 +515,8 @@ async function main() {
   if (options.beadId === null) {
     process.stderr.write(
       'Usage:\n' +
-        '  node scripts/beads/check-bead-prerequisites.mjs <bead-id> [--json] [--cycle-gate]\n' +
-        '  node scripts/beads/check-bead-prerequisites.mjs --next [--json] [--cycle-gate]\n',
+        '  node scripts/beads/check-bead-prerequisites.mjs <bead-id> [--json] [--cycle-gate] [--phase-gate]\n' +
+        '  node scripts/beads/check-bead-prerequisites.mjs --next [--json] [--cycle-gate] [--phase-gate]\n',
     );
     process.exit(2);
   }

@@ -2698,6 +2698,69 @@ const HeroDismiss = (function () {
 })();
 
 /* ============================================================
+   UX REVIEW NOTE TOGGLE
+   ============================================================ */
+const UXNotesToggle = (function () {
+  'use strict';
+  var STORAGE_KEY = 'portarium_show_ux_notes';
+
+  function load() {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function save(show) {
+    try {
+      localStorage.setItem(STORAGE_KEY, show ? '1' : '0');
+    } catch {
+      /* no-op */
+    }
+  }
+
+  function markNotes() {
+    document.querySelectorAll('.callout').forEach(function (note) {
+      var strong = note.querySelector('strong');
+      if (!strong) return;
+      if (strong.textContent.trim().indexOf('Nielsen Review') === 0) {
+        note.classList.add('ui-note--ux');
+      }
+    });
+  }
+
+  function setToggleButton(show) {
+    var btn = document.querySelector('.js-toggle-ux-notes');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+    btn.textContent = show ? 'UX notes: on' : 'UX notes: off';
+  }
+
+  function apply(show) {
+    document.body.classList.toggle('show-ux-notes', show);
+    setToggleButton(show);
+  }
+
+  function toggle() {
+    var next = !document.body.classList.contains('show-ux-notes');
+    apply(next);
+    save(next);
+  }
+
+  function init() {
+    markNotes();
+    apply(load());
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.js-toggle-ux-notes')) return;
+      toggle();
+    });
+  }
+
+  return { init };
+})();
+
+/* ============================================================
    BUTTON LOADING STATE (H1)
    ============================================================ */
 function withLoadingState(btn, duration) {
@@ -3068,6 +3131,9 @@ function main() {
 
   /* Hero Prompt Dismiss */
   HeroDismiss.init();
+
+  /* UX review note toggle */
+  UXNotesToggle.init();
 
   /* Approval Form Validation */
   ApprovalValidation.init();

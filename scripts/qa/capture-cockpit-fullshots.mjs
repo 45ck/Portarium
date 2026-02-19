@@ -74,29 +74,37 @@ try {
 
   await gotoScreen(page, 'approvals');
 
-  const tableBtn = await page.$('#screen-approvals .js-triage-mode[data-mode="table"]');
-  if (tableBtn) {
-    await tableBtn.click();
+  const tableSelector = '#screen-approvals .js-triage-mode[data-mode="table"]';
+  if (await page.$(tableSelector)) {
+    await page.$eval(tableSelector, (el) => {
+      if (el instanceof HTMLElement) el.click();
+    });
     await sleep(120);
     captured.push(await capture(page, 'screen-approvals-table-mode'));
   }
 
-  const triageBtn = await page.$('#screen-approvals .js-triage-mode[data-mode="triage"]');
-  if (triageBtn) {
-    await triageBtn.click();
+  const triageSelector = '#screen-approvals .js-triage-mode[data-mode="triage"]';
+  if (await page.$(triageSelector)) {
+    await page.$eval(triageSelector, (el) => {
+      if (el instanceof HTMLElement) el.click();
+    });
     await sleep(120);
     captured.push(await capture(page, 'screen-approvals-triage-mode'));
 
-    const swipeBtn = await page.$('#screen-approvals .js-triage-layout[data-layout="swipe"]');
-    if (swipeBtn) {
-      await swipeBtn.click();
+    const swipeSelector = '#screen-approvals .js-triage-layout[data-layout="swipe"]';
+    if (await page.$(swipeSelector)) {
+      await page.$eval(swipeSelector, (el) => {
+        if (el instanceof HTMLElement) el.click();
+      });
       await sleep(120);
       captured.push(await capture(page, 'screen-approvals-triage-swipe-mode'));
     }
 
-    const splitBtn = await page.$('#screen-approvals .js-triage-layout[data-layout="split"]');
-    if (splitBtn) {
-      await splitBtn.click();
+    const splitSelector = '#screen-approvals .js-triage-layout[data-layout="split"]';
+    if (await page.$(splitSelector)) {
+      await page.$eval(splitSelector, (el) => {
+        if (el instanceof HTMLElement) el.click();
+      });
       await sleep(120);
       captured.push(await capture(page, 'screen-approvals-triage-split-mode'));
     }

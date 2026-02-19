@@ -1431,6 +1431,9 @@ a {
 #screen-approvals.screen--triage-focus .js-approvals-noise {
   display: none !important;
 }
+#screen-approvals.screen--triage-focus .hero-prompt {
+  display: none !important;
+}
 #screen-approvals.screen--approvals-table .triage__progress-row,
 #screen-approvals.screen--approvals-table .triage__layout,
 #screen-approvals.screen--approvals-table .triage__status,
@@ -1775,10 +1778,20 @@ a {
   margin-top: 8px;
 }
 .triage__actions {
+  position: sticky;
+  bottom: calc(var(--statusbar-height) + 10px);
+  z-index: 5;
+  width: 100%;
+  max-width: 980px;
   display: flex;
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+  padding: 10px;
+  border: 2px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: rgba(245, 245, 245, 0.97);
+  box-shadow: 0 3px 0 rgba(27, 27, 27, 0.12);
 }
 .triage__action {
   display: flex;
@@ -1866,6 +1879,18 @@ a {
   .triage-diff {
     order: 2;
   }
+  .triage__actions {
+    position: static;
+    box-shadow: none;
+  }
+}
+
+/* Hide internal UX review notes by default; expose via status-bar toggle */
+.ui-note--ux {
+  display: none !important;
+}
+body.show-ux-notes .ui-note--ux {
+  display: block !important;
 }
 
 /* ============================================================

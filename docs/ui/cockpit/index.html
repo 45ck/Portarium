@@ -685,7 +685,7 @@
             <span class="chip" style="border-style: dashed; cursor: pointer">+ New project</span>
           </div>
 
-          <div class="hero-prompt hero-prompt--dismissible">
+          <div class="hero-prompt hero-prompt--dismissible js-approvals-noise">
             <button
               class="hero-prompt__dismiss"
               type="button"
@@ -12103,6 +12103,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           hidden
         ></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
+          <button
+            class="statusbar__hint-btn js-toggle-ux-notes"
+            type="button"
+            aria-pressed="false"
+            aria-label="Toggle UX review note visibility"
+          >
+            UX notes: off
+          </button>
+          <span class="statusbar__sep">&middot;</span>
           <button
             class="statusbar__hint-btn js-open-palette"
             type="button"

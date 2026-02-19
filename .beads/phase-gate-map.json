@@ -1,0 +1,170 @@
+{
+  "bead-0161": {
+    "name": "Foundation complete",
+    "requirements": [
+      {
+        "label": "Gate controls",
+        "beads": ["bead-0158", "bead-0159", "bead-0160"]
+      },
+      {
+        "label": "Security baseline",
+        "beads": ["bead-0005"]
+      },
+      {
+        "label": "API contract",
+        "beads": ["bead-0014", "bead-0031", "bead-0447"]
+      }
+    ]
+  },
+  "bead-0162": {
+    "name": "Domain complete",
+    "requirements": [
+      {
+        "label": "Aggregate invariants",
+        "beads": ["bead-0308"]
+      },
+      {
+        "label": "Parser coverage",
+        "beads": ["bead-0302", "bead-0338"]
+      },
+      {
+        "label": "Domain factory",
+        "beads": ["bead-0007"]
+      },
+      {
+        "label": "ADR traceability",
+        "beads": ["bead-0170"]
+      }
+    ]
+  },
+  "bead-0163": {
+    "name": "Application complete",
+    "requirements": [
+      {
+        "label": "DTO contracts",
+        "beads": ["bead-0319", "bead-0320"]
+      },
+      {
+        "label": "Use-case coverage",
+        "beads": ["bead-0340"]
+      },
+      {
+        "label": "Orchestration tests",
+        "beads": ["bead-0300", "bead-0321", "bead-0425"]
+      },
+      {
+        "label": "Approval and run policy mapping",
+        "beads": ["bead-0312", "bead-0419"]
+      }
+    ]
+  },
+  "bead-0164": {
+    "name": "Infrastructure complete",
+    "requirements": [
+      {
+        "label": "Persistence adapters",
+        "beads": ["bead-0335"]
+      },
+      {
+        "label": "Outbox dispatch",
+        "beads": ["bead-0316"]
+      },
+      {
+        "label": "Migration safety",
+        "beads": ["bead-0391"]
+      },
+      {
+        "label": "Observability",
+        "beads": ["bead-0313", "bead-0390"]
+      },
+      {
+        "label": "Security containment",
+        "beads": ["bead-0045", "bead-0389"]
+      }
+    ]
+  },
+  "bead-0165": {
+    "name": "Presentation complete",
+    "requirements": [
+      {
+        "label": "OpenAPI route parity",
+        "beads": ["bead-0415", "bead-0491"]
+      },
+      {
+        "label": "Middleware and authN",
+        "beads": ["bead-0417"]
+      },
+      {
+        "label": "RBAC authZ",
+        "beads": ["bead-0418"]
+      },
+      {
+        "label": "Envelope mapping",
+        "beads": ["bead-0041", "bead-0483"]
+      }
+    ]
+  },
+  "bead-0166": {
+    "name": "Integration complete",
+    "requirements": [
+      {
+        "label": "Per-family readiness",
+        "beads": ["bead-0058"]
+      },
+      {
+        "label": "Contract fixtures",
+        "beads": ["bead-0059", "bead-0060", "bead-0078"]
+      },
+      {
+        "label": "End-to-end smoke",
+        "beads": ["bead-0300", "bead-0528", "bead-0530"]
+      }
+    ]
+  },
+  "bead-0167": {
+    "name": "Security complete",
+    "requirements": [
+      {
+        "label": "Vulnerability baseline",
+        "beads": ["bead-0005", "bead-0380"]
+      },
+      {
+        "label": "Secret hygiene",
+        "beads": ["bead-0380"]
+      },
+      {
+        "label": "Tenant isolation",
+        "beads": ["bead-0304", "bead-0445"]
+      },
+      {
+        "label": "SoD controls",
+        "beads": ["bead-0039", "bead-0523"]
+      },
+      {
+        "label": "Sandboxing",
+        "beads": ["bead-0045", "bead-0046"]
+      }
+    ]
+  },
+  "bead-0168": {
+    "name": "Release complete",
+    "requirements": [
+      {
+        "label": "ci:pr evidence",
+        "beads": ["bead-0301"]
+      },
+      {
+        "label": "Quality gates",
+        "beads": ["bead-0179", "bead-0180", "bead-0181", "bead-0182"]
+      },
+      {
+        "label": "Review audit",
+        "beads": ["bead-0183", "bead-0184", "bead-0259"]
+      },
+      {
+        "label": "QA evidence",
+        "beads": ["bead-0185", "bead-0186", "bead-0190"]
+      }
+    ]
+  }
+}

@@ -29,6 +29,13 @@ Enable cycle-gate linkage checks (implementation beads must have spec + review l
 node scripts/beads/check-bead-prerequisites.mjs bead-0298 --cycle-gate
 ```
 
+Enable phase-gate closure checks (phase transition beads must satisfy required
+closure sets):
+
+```bash
+node scripts/beads/check-bead-prerequisites.mjs bead-0161 --phase-gate
+```
+
 ## Exit Codes
 
 - `0`: ready (or at least one ready bead when using `--next`)
@@ -57,3 +64,18 @@ Linkage sources:
 - `.specify/specs/*` paths referenced in bead body text
 - `Spec:` / `ADR:` blockers from `blockedBy`
 - inferred review beads where review-title issues mention the target bead id
+
+## Phase Gate Mode
+
+When `--phase-gate` is enabled for phase-transition beads, required closure
+sets are loaded from `.beads/phase-gate-map.json`.
+
+Each phase-gate definition declares grouped requirements:
+
+- `name`: human label for the gate
+- `requirements[]`:
+  - `label`: requirement category name
+  - `beads[]`: bead IDs that must all be `closed`
+
+Any required bead that is still open (or missing) is reported as a missing
+prerequisite and returns exit code `1`.
