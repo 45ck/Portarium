@@ -199,7 +199,7 @@ A stable VAOP-defined interface for a business capability (e.g., CRM, Accounting
 
 ### Port Family
 
-A grouping of related ports/adapters by business capability. VAOP defines 18 port families: FinanceAccounting, PaymentsBilling, ProcurementSpend, HrisHcm, Payroll, CrmSales, CustomerSupport, ItsmItOps, IamDirectory, SecretsVaulting, MarketingAutomation, AdsPlatforms, CommsCollaboration, ProjectsWorkMgmt, DocumentsEsign, AnalyticsBi, MonitoringIncident, ComplianceGrc.
+A grouping of related ports/adapters by business capability. VAOP defines 19 port families: FinanceAccounting, PaymentsBilling, ProcurementSpend, HrisHcm, Payroll, CrmSales, CustomerSupport, ItsmItOps, IamDirectory, SecretsVaulting, MarketingAutomation, AdsPlatforms, CommsCollaboration, ProjectsWorkMgmt, DocumentsEsign, AnalyticsBi, MonitoringIncident, ComplianceGrc, RoboticsActuation.
 
 ### Product (Canonical)
 

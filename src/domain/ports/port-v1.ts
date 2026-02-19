@@ -1,6 +1,7 @@
 import {
   AdapterId,
   PortId,
+  PORT_FAMILIES,
   WorkspaceId,
   isPortFamily,
   type AdapterId as AdapterIdType,
@@ -68,9 +69,7 @@ export function parsePortV1(value: unknown): PortV1 {
   const adapterId = AdapterId(readString(record, 'adapterId', PortParseError));
   const portFamilyRaw = readString(record, 'portFamily', PortParseError);
   if (!isPortFamily(portFamilyRaw)) {
-    throw new PortParseError(
-      'portFamily must be one of: FinanceAccounting, PaymentsBilling, ProcurementSpend, HrisHcm, Payroll, CrmSales, CustomerSupport, ItsmItOps, IamDirectory, SecretsVaulting, MarketingAutomation, AdsPlatforms, CommsCollaboration, ProjectsWorkMgmt, DocumentsEsign, AnalyticsBi, MonitoringIncident, ComplianceGrc.',
-    );
+    throw new PortParseError(`portFamily must be one of: ${PORT_FAMILIES.join(', ')}.`);
   }
   const portFamily = portFamilyRaw;
 

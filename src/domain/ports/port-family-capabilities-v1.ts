@@ -242,6 +242,16 @@ export const PORT_FAMILY_CAPABILITIES = {
     'framework:read',
     'framework:write',
   ),
+  RoboticsActuation: cap(
+    'robot:execute_action',
+    'robot:cancel_action',
+    'robot:stop',
+    'robot:estop_request',
+    'robot:get_state',
+    'robot:get_diagnostics',
+    'actuator:set_state',
+    'actuator:get_state',
+  ),
 } as const satisfies Record<PortFamily, readonly PortCapability[]>;
 
 export function portFamilyCapabilities(family: PortFamily): readonly PortCapability[] {

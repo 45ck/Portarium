@@ -17,4 +17,18 @@ describe('portFamilyCapabilities', () => {
     expect(caps.length).toBeGreaterThan(0);
     expect(caps.every((c) => typeof c === 'string')).toBe(true);
   });
+
+  it('includes robotics actuation operations required for v1 mission control', () => {
+    const caps = portFamilyCapabilities('RoboticsActuation');
+    expect(caps).toEqual([
+      'robot:execute_action',
+      'robot:cancel_action',
+      'robot:stop',
+      'robot:estop_request',
+      'robot:get_state',
+      'robot:get_diagnostics',
+      'actuator:set_state',
+      'actuator:get_state',
+    ]);
+  });
 });
