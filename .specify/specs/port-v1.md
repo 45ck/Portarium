@@ -228,3 +228,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/projects-work-mgmt/in-memory-projects-work-mgmt-adapter.ts`.
+
+## DocumentsEsign Adapter Foundation (bead-0136)
+
+- Application port contract now includes `DocumentsEsignAdapterPort` under
+  `src/application/ports/documents-esign-adapter.ts`.
+- The operation set is fixed to the 17 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `DocumentsEsign` family.
+- Execute response contract:
+  - success: canonical `Document`, `Document[]`, `ExternalObjectRef`,
+    `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/documents-esign/in-memory-documents-esign-adapter.ts`.

@@ -17,3 +17,4 @@ export * from './adapters/marketing-automation/in-memory-marketing-automation-ad
 export * from './adapters/ads-platforms/in-memory-ads-platforms-adapter.js';
 export * from './adapters/comms-collaboration/in-memory-comms-collaboration-adapter.js';
 export * from './adapters/projects-work-mgmt/in-memory-projects-work-mgmt-adapter.js';
+export * from './adapters/documents-esign/in-memory-documents-esign-adapter.js';
