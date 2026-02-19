@@ -53,3 +53,18 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/payments-billing/in-memory-payments-billing-adapter.ts`.
+
+## ProcurementSpend Adapter Foundation (bead-0088)
+
+- Application port contract now includes `ProcurementSpendAdapterPort` under
+  `src/application/ports/procurement-spend-adapter.ts`.
+- The operation set is fixed to the 14 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `ProcurementSpend` family.
+- Execute response contract:
+  - success: canonical `Order`, `Order[]`, `Party`, `Party[]`, `Subscription`,
+    `Subscription[]`, `ExternalObjectRef`, `ExternalObjectRef[]`, `accepted`,
+    or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/procurement-spend/in-memory-procurement-spend-adapter.ts`.

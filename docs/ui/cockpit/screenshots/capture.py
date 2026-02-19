@@ -90,11 +90,14 @@ with sync_playwright() as p:
         page.wait_for_timeout(400)
     shot(page, "09-work-item-detail")
 
-    # 10. Owner picker open
-    picker_trigger = page.query_selector(".owner-picker__trigger, [data-action='open-owner-picker'], .js-owner-picker-trigger")
-    if picker_trigger:
-        picker_trigger.click()
-        page.wait_for_timeout(300)
+    # 10. Owner picker open (try to find visible trigger in current drawer/panel)
+    try:
+        picker_trigger = page.query_selector(".owner-picker__trigger, [data-action='open-owner-picker'], .js-owner-picker-trigger")
+        if picker_trigger and picker_trigger.is_visible():
+            picker_trigger.click(timeout=3000)
+            page.wait_for_timeout(300)
+    except Exception:
+        pass
     shot(page, "10-owner-picker-open")
 
     # 11. Approvals table — assignee column
