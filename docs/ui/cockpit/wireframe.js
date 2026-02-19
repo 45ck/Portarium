@@ -1422,6 +1422,46 @@ function triageGetCurrentCardId() {
   return TRIAGE_CARD_IDS[triageIndex];
 }
 
+function triageGetCardDescriptor(cardId) {
+  if (!cardId) return null;
+  var card = document.getElementById(cardId);
+  if (!card) return null;
+  var idEl = card.querySelector('.triage-card__id');
+  var titleEl = card.querySelector('.triage-card__title');
+  return {
+    id: idEl ? idEl.textContent.trim() : cardId,
+    title: titleEl ? titleEl.textContent.trim() : 'Approval',
+  };
+}
+
+function triageUpdateStatus(overrideText) {
+  var statusEl = document.getElementById('triageStatus');
+  if (!statusEl) return;
+  if (overrideText) {
+    statusEl.textContent = overrideText;
+    return;
+  }
+
+  var cardId = triageGetCurrentCardId();
+  var card = triageGetCardDescriptor(cardId);
+  if (!card) {
+    statusEl.textContent =
+      'No pending approvals in triage. View mode: ' + TRIAGE_LAYOUT_LABELS[triageLayout] + '.';
+    return;
+  }
+
+  statusEl.textContent =
+    'Reviewing ' +
+    card.id +
+    ' (' +
+    (triageIndex + 1) +
+    ' of ' +
+    TRIAGE_CARD_IDS.length +
+    ') in ' +
+    TRIAGE_LAYOUT_LABELS[triageLayout] +
+    '.';
+}
+
 function triageUpdateProgress() {
   var total = TRIAGE_CARD_IDS.length;
   var progressFill = document.querySelector('.triage__progress-fill');
@@ -1431,6 +1471,7 @@ function triageUpdateProgress() {
   var currentSpan = document.querySelector('.triage__current');
   if (progressFill) progressFill.style.width = (triageIndex / total) * 100 + '%';
   if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
+  if (progressBar) progressBar.setAttribute('aria-valuetext', triageIndex + ' of ' + total + ' reviewed');
   if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, total);
 }
 
@@ -1504,6 +1545,7 @@ function applyTriageLayout(layout) {
   });
 
   renderTriageDiff(triageGetCurrentCardId());
+  triageUpdateStatus();
 }
 
 function triageAction(action) {
@@ -1520,6 +1562,7 @@ function triageAction(action) {
     document.getElementById('triageRationaleLabel').textContent = label;
     rationaleInput.focus();
     rationaleEl.dataset.pendingAction = action;
+    triageUpdateStatus('Rationale required before submitting ' + action + '.');
     return;
   }
 
@@ -1559,10 +1602,12 @@ function triageAction(action) {
       if (triageEl) triageEl.hidden = true;
       if (completeEl) completeEl.hidden = false;
       renderTriageDiff(null);
+      triageUpdateStatus('Queue complete. All approvals reviewed.');
     } else {
       var nextCard = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
       if (nextCard) nextCard.hidden = false;
       renderTriageDiff(triageGetCurrentCardId());
+      triageUpdateStatus();
     }
   }, 350);
 }
@@ -1593,6 +1638,7 @@ function triageUndo() {
   triageUpdateProgress();
   triageUpdateNextPreview();
   renderTriageDiff(triageGetCurrentCardId());
+  triageUpdateStatus();
 
   /* Disable undo button (single-step only) */
   var undoBtn = document.getElementById('triageUndoBtn');
@@ -1658,6 +1704,17 @@ function decorateWorkflowConnectors(scope) {
   });
 }
 
+function decorateWorkflowNodes(scope) {
+  qsa('.wf-node', scope || document).forEach(function (node) {
+    if (!node.hasAttribute('tabindex')) node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'button');
+    var nameEl = node.querySelector('.wf-node__name');
+    var name = nameEl ? nameEl.textContent.trim() : 'step';
+    var nodeId = node.dataset.nodeId ? ' (' + node.dataset.nodeId + ')' : '';
+    node.setAttribute('aria-label', 'Select step: ' + name + nodeId);
+  });
+}
+
 function syncWorkflowConfigFromNode(node) {
   if (!node) return;
   var configPanel = document.getElementById('wfConfig');
@@ -1697,7 +1754,10 @@ function activateWorkflowTemplate(templateId) {
     n.classList.remove('wf-node--selected');
   });
   var activeGraph = getActiveWorkflowTemplateGraph();
-  if (activeGraph) decorateWorkflowConnectors(activeGraph);
+  if (activeGraph) {
+    decorateWorkflowConnectors(activeGraph);
+    decorateWorkflowNodes(activeGraph);
+  }
   var firstNode = activeGraph
     ? activeGraph.querySelector('.wf-node[data-node-id="approve"]') ||
       activeGraph.querySelector('.wf-node[data-node-id]')
@@ -1816,6 +1876,7 @@ function addWorkflowDraftStep(stepType) {
   var row = buildWorkflowDraftNode(stepType);
   activeGraph.appendChild(row);
   decorateWorkflowConnectors(row);
+  decorateWorkflowNodes(row);
 
   var node = row.querySelector('.wf-node');
   if (node) {
@@ -2039,15 +2100,16 @@ document.addEventListener('click', function (e) {
 });
 
 document.addEventListener('keydown', function (e) {
-  if (!isWorkflowBuilderActiveScreen() || isKeyboardInputFocused()) return;
+  if (isKeyboardInputFocused()) return;
+  var builderActive = isWorkflowBuilderActiveScreen();
   var key = e.key.toLowerCase();
-  if (key === 'j' || e.key === 'ArrowRight') {
+  if ((key === 'j' || e.key === 'ArrowRight') && builderActive) {
     e.preventDefault();
     e.stopImmediatePropagation();
     moveWorkflowNodeSelection(1);
     return;
   }
-  if (key === 'k' || e.key === 'ArrowLeft') {
+  if ((key === 'k' || e.key === 'ArrowLeft') && builderActive) {
     e.preventDefault();
     e.stopImmediatePropagation();
     moveWorkflowNodeSelection(-1);
@@ -2055,18 +2117,20 @@ document.addEventListener('keydown', function (e) {
   }
   if (e.key === 'Enter') {
     var focusedNode = document.activeElement && document.activeElement.closest('.wf-node');
-    if (focusedNode && focusedNode.closest('#wfCanvas')) {
+    if (focusedNode) {
       e.preventDefault();
       e.stopImmediatePropagation();
-      var graph = getActiveWorkflowTemplateGraph();
-      setSelectedNodeInGraph(focusedNode, graph || getWorkflowBuilderCanvas());
-      syncWorkflowConfigFromNode(focusedNode);
-      setWorkflowBuilderMessage('Selected step: ' + (focusedNode.dataset.nodeId || 'step'));
-      updateWorkflowReadiness();
+      var graph = focusedNode.closest('.wf-graph');
+      if (graph) setSelectedNodeInGraph(focusedNode, graph);
+      if (focusedNode.closest('#wfCanvas')) {
+        syncWorkflowConfigFromNode(focusedNode);
+        setWorkflowBuilderMessage('Selected step: ' + (focusedNode.dataset.nodeId || 'step'));
+        updateWorkflowReadiness();
+      }
     }
     return;
   }
-  if (key === 'e') {
+  if (key === 'e' && builderActive) {
     var stepNameInput = document.querySelector('#wfConfig .field__input[type="text"]');
     if (stepNameInput) {
       e.preventDefault();
@@ -3081,7 +3145,22 @@ function main() {
     var triageEl = document.getElementById('triage');
     var rationaleEl = document.getElementById('triageRationale');
     if (!triageEl || triageEl.hidden) return;
-    if (rationaleEl && !rationaleEl.hidden) return;
+    var key = e.key.toLowerCase();
+    if (rationaleEl && !rationaleEl.hidden) {
+      if (key === 'escape') {
+        rationaleEl.hidden = true;
+        document.getElementById('triageRationaleInput').value = '';
+        triageUpdateStatus();
+        e.preventDefault();
+      } else if ((e.ctrlKey || e.metaKey) && key === 'enter') {
+        var action = rationaleEl.dataset.pendingAction;
+        rationaleEl.hidden = true;
+        document.getElementById('triageRationaleInput').value = '';
+        triageAction(action);
+        e.preventDefault();
+      }
+      return;
+    }
     /* Guard: skip when focus is in a text input (prevents firing in forms) */
     var focused = document.activeElement;
     if (focused) {
@@ -3089,7 +3168,6 @@ function main() {
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (focused.isContentEditable) return;
     }
-    var key = e.key.toLowerCase();
     if (key === 'a') triageAction('approve');
     else if (key === 'd') triageAction('deny');
     else if (key === 'r') triageAction('changes');
@@ -3116,6 +3194,7 @@ function main() {
   });
 
   applyTriageLayout(triageLayout);
+  triageUpdateStatus();
 
   /* ---- Form Dialog wiring ---- */
   qsa('[data-dialog]').forEach(function (btn) {
@@ -4154,6 +4233,8 @@ function main() {
   });
 
   /* ---- Workflow builder template default ---- */
+  decorateWorkflowNodes(document);
+  decorateWorkflowConnectors(document);
   activateWorkflowTemplate('finance-invoice');
 
   /* ---- Robotics map initial state ---- */
