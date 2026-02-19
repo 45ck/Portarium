@@ -1311,6 +1311,7 @@ ABToggle.register(
    ============================================================ */
 let triageIndex = 0;
 const triageResults = { approved: 0, denied: 0, changes: 0, skipped: 0 };
+var triageLayout = 'swipe';
 
 /* Undo state — stores the last dismissed card state */
 var triageLastUndo = null; // { index, cardId, action, hiddenState }
@@ -1324,6 +1325,186 @@ var TRIAGE_NEXT_LABELS = [
   'Approve Agent Action: Document Summarizer',
   null,
 ];
+var TRIAGE_DIFF_CONTENT = {
+  triageCard: {
+    title: 'NetSuite invoice plan diff',
+    meta: 'AG-442 | WI-1099 | FinanceAccounting',
+    hunks: [
+      {
+        title: 'NetSuite | Invoice | INV-22318',
+        lines: [
+          { kind: 'context', text: '@@ memo @@' },
+          { kind: 'remove', text: 'memo: Q1 services' },
+          { kind: 'add', text: 'memo: Q1 services (tax class corrected)' },
+          { kind: 'context', text: '@@ line item @@' },
+          { kind: 'remove', text: 'line[2].taxCode: TX-OLD' },
+          { kind: 'add', text: 'line[2].taxCode: TX-NEW' },
+        ],
+      },
+      {
+        title: 'Drive | Document | Receipt bundle',
+        lines: [
+          { kind: 'context', text: '@@ evidence @@' },
+          { kind: 'add', text: 'artifact: receipt-bundle-INV-22318.pdf' },
+        ],
+      },
+    ],
+  },
+  triageCardZendesk: {
+    title: 'Zendesk ticket priority diff',
+    meta: 'AG-445 | WI-1042 | CustomerSupport',
+    hunks: [
+      {
+        title: 'Zendesk | Ticket | ZD-84521',
+        lines: [
+          { kind: 'context', text: '@@ ticket fields @@' },
+          { kind: 'remove', text: 'priority: Normal' },
+          { kind: 'add', text: 'priority: High' },
+          { kind: 'context', text: 'requester impact: SLA escalation enabled' },
+        ],
+      },
+    ],
+  },
+  triageCardRobot: {
+    title: 'Robot mission plan diff',
+    meta: 'AG-443 | mis-0096 | Safety policy gate',
+    hunks: [
+      {
+        title: 'Policy constraints',
+        lines: [
+          { kind: 'context', text: '@@ enforcement @@' },
+          { kind: 'remove', text: 'outdoor_uav_permit: blocked' },
+          { kind: 'add', text: 'outdoor_uav_permit: allowed for mission mis-0096' },
+          { kind: 'context', text: 'battery warning remains active (12%)' },
+        ],
+      },
+      {
+        title: 'Mission execution',
+        lines: [
+          { kind: 'context', text: '@@ route @@' },
+          { kind: 'add', text: 'execute outdoor_flight sector-B altitude-15m' },
+        ],
+      },
+    ],
+  },
+  triageCardAgent: {
+    title: 'Agent write diff',
+    meta: 'AG-444 | WI-1101 | CrmSales',
+    hunks: [
+      {
+        title: 'Salesforce | Opportunity | OPP-3841',
+        lines: [
+          { kind: 'context', text: '@@ Description field @@' },
+          { kind: 'remove', text: 'description: Existing sales notes (143 words)' },
+          { kind: 'add', text: 'description: AI summary draft (227 words)' },
+          { kind: 'context', text: 'confidence: 62% below 80% threshold' },
+        ],
+      },
+    ],
+  },
+};
+var TRIAGE_LAYOUT_LABELS = {
+  swipe: 'A: Swipe only',
+  split: 'B: Swipe + diff',
+};
+
+function triageEscapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function triageGetCurrentCardId() {
+  if (triageIndex >= TRIAGE_CARD_IDS.length) return null;
+  return TRIAGE_CARD_IDS[triageIndex];
+}
+
+function triageUpdateProgress() {
+  var total = TRIAGE_CARD_IDS.length;
+  var progressFill = document.querySelector('.triage__progress-fill');
+  var progressBar = progressFill
+    ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement
+    : null;
+  var currentSpan = document.querySelector('.triage__current');
+  if (progressFill) progressFill.style.width = (triageIndex / total) * 100 + '%';
+  if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
+  if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, total);
+}
+
+function triageUpdateNextPreview() {
+  var nextLabel = TRIAGE_NEXT_LABELS[triageIndex];
+  var nextPreviewWrap = document.querySelector('.triage__next-preview');
+  var nextTitle = document.querySelector('.triage__next-title');
+  if (nextTitle) nextTitle.textContent = nextLabel ? 'Next: ' + nextLabel : '';
+  if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
+}
+
+function renderTriageDiff(cardId) {
+  var titleEl = document.getElementById('triageDiffTitle');
+  var metaEl = document.getElementById('triageDiffMeta');
+  var bodyEl = document.getElementById('triageDiffBody');
+  if (!titleEl || !metaEl || !bodyEl) return;
+
+  var diff = cardId ? TRIAGE_DIFF_CONTENT[cardId] : null;
+  if (!diff) {
+    titleEl.textContent = 'Plan diff';
+    metaEl.textContent = 'No active decision.';
+    bodyEl.innerHTML = '<div class="triage-diff__empty">Select a pending approval to inspect changes.</div>';
+    return;
+  }
+
+  titleEl.textContent = diff.title;
+  metaEl.textContent = diff.meta;
+  bodyEl.innerHTML = diff.hunks
+    .map(function (hunk) {
+      var lines = hunk.lines
+        .map(function (line) {
+          var marker = line.kind === 'add' ? '+' : line.kind === 'remove' ? '-' : '~';
+          return (
+            '<div class="triage-diff__line triage-diff__line--' +
+            line.kind +
+            '">' +
+            marker +
+            ' ' +
+            triageEscapeHtml(line.text) +
+            '</div>'
+          );
+        })
+        .join('');
+      return (
+        '<section class="triage-diff__hunk">' +
+        '<div class="triage-diff__hunk-title">' +
+        triageEscapeHtml(hunk.title) +
+        '</div>' +
+        lines +
+        '</section>'
+      );
+    })
+    .join('');
+}
+
+function applyTriageLayout(layout) {
+  triageLayout = layout === 'split' ? 'split' : 'swipe';
+
+  var workspace = document.getElementById('triageWorkspace');
+  var diffPanel = document.getElementById('triageDiffPanel');
+  if (workspace) {
+    workspace.classList.toggle('triage__workspace--split', triageLayout === 'split');
+    workspace.classList.toggle('triage__workspace--swipe', triageLayout === 'swipe');
+  }
+  if (diffPanel) diffPanel.hidden = triageLayout !== 'split';
+
+  qsa('.js-triage-layout').forEach(function (btn) {
+    var isActive = btn.dataset.layout === triageLayout;
+    btn.classList.toggle('btn--primary', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+
+  renderTriageDiff(triageGetCurrentCardId());
+}
 
 function triageAction(action) {
   var requiresRationale = action === 'deny' || action === 'changes';
@@ -1370,27 +1551,18 @@ function triageAction(action) {
     if (undoBtn) undoBtn.disabled = false;
 
     triageIndex++;
-    var progressFill = document.querySelector('.triage__progress-fill');
-    var progressBar = progressFill
-      ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement
-      : null;
-    var currentSpan = document.querySelector('.triage__current');
-    if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
-    if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
-    if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 4);
-    if (triageIndex >= 4) {
+    triageUpdateProgress();
+    triageUpdateNextPreview();
+    if (triageIndex >= TRIAGE_CARD_IDS.length) {
       var triageEl = document.getElementById('triage');
       var completeEl = document.getElementById('triageComplete');
       if (triageEl) triageEl.hidden = true;
       if (completeEl) completeEl.hidden = false;
+      renderTriageDiff(null);
     } else {
       var nextCard = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
       if (nextCard) nextCard.hidden = false;
-      var nextLabel = TRIAGE_NEXT_LABELS[triageIndex];
-      var nextPreviewWrap = document.querySelector('.triage__next-preview');
-      var nextTitle = document.querySelector('.triage__next-title');
-      if (nextTitle) nextTitle.textContent = nextLabel ? 'Next: ' + nextLabel : '';
-      if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
+      renderTriageDiff(triageGetCurrentCardId());
     }
   }, 350);
 }
@@ -1418,21 +1590,9 @@ function triageUndo() {
     restoredCard.hidden = false;
   }
 
-  var progressFill = document.querySelector('.triage__progress-fill');
-  var progressBar = progressFill
-    ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement
-    : null;
-  var currentSpan = document.querySelector('.triage__current');
-  if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
-  if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
-  if (currentSpan) currentSpan.textContent = triageIndex + 1;
-
-  /* Update next preview */
-  var nextLabel = triageIndex > 0 ? TRIAGE_NEXT_LABELS[triageIndex - 1] : null;
-  var nextPreviewWrap = document.querySelector('.triage__next-preview');
-  var nextTitle = document.querySelector('.triage__next-title');
-  if (nextTitle) nextTitle.textContent = nextLabel ? 'Next: ' + nextLabel : '';
-  if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
+  triageUpdateProgress();
+  triageUpdateNextPreview();
+  renderTriageDiff(triageGetCurrentCardId());
 
   /* Disable undo button (single-step only) */
   var undoBtn = document.getElementById('triageUndoBtn');
@@ -2831,6 +2991,7 @@ function main() {
     if (mode === 'triage') {
       if (tableWrap) tableWrap.hidden = true;
       if (triageEl) triageEl.hidden = false;
+      applyTriageLayout(triageLayout);
     } else {
       if (tableWrap) tableWrap.hidden = false;
       if (triageEl) triageEl.hidden = true;
@@ -2838,6 +2999,13 @@ function main() {
     qsa('.js-triage-mode').forEach(function (btn) {
       btn.classList.toggle('btn--primary', btn.dataset.mode === mode);
     });
+  });
+
+  /* Triage layout toggle (A/B) */
+  document.addEventListener('click', function (e) {
+    var layoutBtn = e.target.closest('.js-triage-layout');
+    if (!layoutBtn) return;
+    applyTriageLayout(layoutBtn.dataset.layout);
   });
 
   /* Triage action button clicks */
@@ -2867,12 +3035,16 @@ function main() {
 
   /* Triage expand/collapse */
   document.addEventListener('click', function (e) {
-    if (e.target.closest('.js-triage-expand')) {
-      var back = document.querySelector('.triage-card__back');
+    var expandBtn = e.target.closest('.js-triage-expand');
+    if (expandBtn) {
+      var card = expandBtn.closest('.triage-card');
+      var back = card ? card.querySelector('.triage-card__back') : null;
       if (back) back.hidden = false;
     }
-    if (e.target.closest('.js-triage-collapse')) {
-      var back2 = document.querySelector('.triage-card__back');
+    var collapseBtn = e.target.closest('.js-triage-collapse');
+    if (collapseBtn) {
+      var card2 = collapseBtn.closest('.triage-card');
+      var back2 = card2 ? card2.querySelector('.triage-card__back') : null;
       if (back2) back2.hidden = true;
     }
   });
@@ -2926,12 +3098,24 @@ function main() {
       triageUndo();
       e.preventDefault();
     } else if (key === 'i') AISummaryToggle.toggle();
+    else if (key === 'v') {
+      var nextLayout = triageLayout === 'swipe' ? 'split' : 'swipe';
+      applyTriageLayout(nextLayout);
+      if (typeof Keyboard !== 'undefined' && Keyboard.showToast) {
+        Keyboard.showToast('View: ' + TRIAGE_LAYOUT_LABELS[nextLayout]);
+      }
+      e.preventDefault();
+    }
     else if (key === ' ') {
       e.preventDefault();
-      var back = document.querySelector('.triage-card__back');
+      var currentCardId = triageGetCurrentCardId();
+      var currentCard = currentCardId ? document.getElementById(currentCardId) : null;
+      var back = currentCard ? currentCard.querySelector('.triage-card__back') : null;
       if (back) back.hidden = !back.hidden;
     }
   });
+
+  applyTriageLayout(triageLayout);
 
   /* ---- Form Dialog wiring ---- */
   qsa('[data-dialog]').forEach(function (btn) {

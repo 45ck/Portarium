@@ -199,3 +199,18 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/ads-platforms/in-memory-ads-platforms-adapter.ts`.
+
+## CommsCollaboration Adapter Foundation (bead-0128)
+
+- Application port contract now includes `CommsCollaborationAdapterPort` under
+  `src/application/ports/comms-collaboration-adapter.ts`.
+- The operation set is fixed to the 19 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `CommsCollaboration` family.
+- Execute response contract:
+  - success: canonical `Party`, `Party[]`, `CanonicalTaskV1`, `CanonicalTaskV1[]`,
+    `Document`, `Document[]`, `ExternalObjectRef`, `ExternalObjectRef[]`,
+    `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/comms-collaboration/in-memory-comms-collaboration-adapter.ts`.

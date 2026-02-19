@@ -2248,7 +2248,28 @@
               </button>
             </div>
 
-            <div class="triage__stack">
+            <div class="triage__layout" role="group" aria-label="Triage layout variants">
+              <span class="triage__layout-label">Review mode</span>
+              <button
+                class="btn btn--small btn--primary js-triage-layout"
+                type="button"
+                data-layout="swipe"
+                aria-pressed="true"
+              >
+                A: Swipe only
+              </button>
+              <button
+                class="btn btn--small js-triage-layout"
+                type="button"
+                data-layout="split"
+                aria-pressed="false"
+              >
+                B: Swipe + diff
+              </button>
+            </div>
+
+            <div class="triage__workspace triage__workspace--swipe" id="triageWorkspace">
+              <div class="triage__stack">
               <article class="triage-card" id="triageCard">
                 <div class="triage-card__front">
                   <div class="triage-card__header">
@@ -3002,6 +3023,29 @@
                 </div>
               </article>
             </div>
+              <aside class="triage-diff" id="triageDiffPanel" hidden aria-live="polite">
+                <div class="triage-diff__header">
+                  <div class="triage-diff__eyebrow">Side-by-side change preview</div>
+                  <h3 class="triage-diff__title" id="triageDiffTitle">Plan diff</h3>
+                  <div class="triage-diff__meta" id="triageDiffMeta">No active decision.</div>
+                </div>
+                <div class="triage-diff__legend subtle">
+                  <span class="triage-diff__legend-item">
+                    <span class="triage-diff__chip triage-diff__chip--add">+</span>
+                    Added
+                  </span>
+                  <span class="triage-diff__legend-item">
+                    <span class="triage-diff__chip triage-diff__chip--remove">-</span>
+                    Removed
+                  </span>
+                  <span class="triage-diff__legend-item">
+                    <span class="triage-diff__chip triage-diff__chip--context">~</span>
+                    Context
+                  </span>
+                </div>
+                <div class="triage-diff__body" id="triageDiffBody"></div>
+              </aside>
+            </div>
 
             <div class="triage__rationale" id="triageRationale" hidden>
               <label class="field">
@@ -3073,7 +3117,7 @@
             </div>
             <div class="triage__hint subtle">
               Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, U = Undo, Space =
-              Toggle details, I = Toggle AI summary
+              Toggle details, I = Toggle AI summary, V = Toggle swipe/diff view
             </div>
           </div>
 

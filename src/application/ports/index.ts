@@ -28,3 +28,4 @@ export * from './iam-directory-adapter.js';
 export * from './secrets-vaulting-adapter.js';
 export * from './marketing-automation-adapter.js';
 export * from './ads-platforms-adapter.js';
+export * from './comms-collaboration-adapter.js';
