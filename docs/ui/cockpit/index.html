@@ -4078,6 +4078,106 @@
                 </div>
               </article>
             </div>
+
+            <!-- Workforce Settings tab -->
+            <div
+              class="tabpane"
+              data-pane="settings-workforce"
+              role="region"
+              aria-label="Workforce pane"
+            >
+              <div class="settings-3panel__section-title">Workforce Administration</div>
+              <div class="settings-3panel__section-desc">
+                Manage the Workforce directory, capability vocabulary, and queue routing rules.
+                Admin-only.
+              </div>
+              <div class="callout callout--policy" style="margin-bottom: 12px">
+                <strong>Directory:</strong>
+                <a href="#workforce">Go to Workforce directory &rarr;</a>
+              </div>
+              <article class="card" style="margin-bottom: 12px" data-requires-persona="admin">
+                <div class="card__title">Capability Vocabulary</div>
+                <div class="card__meta subtle">
+                  Controlled vocab for assigning capabilities to workforce members
+                </div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">finance-review</div>
+                      <div class="row__subtle">Financial document review and approval</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">legal-review</div>
+                      <div class="row__subtle">Legal document and contract review</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">quality-check</div>
+                      <div class="row__subtle">Quality assurance and verification tasks</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">escalation-authority</div>
+                      <div class="row__subtle">Authorised to escalate and override standard flows</div>
+                    </div>
+                    <div class="row__right">
+                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn--small btn--primary" style="margin-top: 8px" type="button">Add capability</button>
+              </article>
+              <article class="card" data-requires-persona="admin">
+                <div class="card__title">Queue Routing Rules</div>
+                <div class="card__meta subtle">Default routing strategy per queue</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Finance Queue</div>
+                      <div class="row__subtle">Strategy: <strong>least-busy</strong> | Requires: finance-review</div>
+                    </div>
+                    <div class="row__right">
+                      <a href="#queues" class="btn btn--small">Edit</a>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Legal Queue</div>
+                      <div class="row__subtle">Strategy: <strong>round-robin</strong> | Requires: legal-review</div>
+                    </div>
+                    <div class="row__right">
+                      <a href="#queues" class="btn btn--small">Edit</a>
+                    </div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">General Queue</div>
+                      <div class="row__subtle">Strategy: <strong>manual</strong> | No capability required</div>
+                    </div>
+                    <div class="row__right">
+                      <a href="#queues" class="btn btn--small">Edit</a>
+                    </div>
+                  </div>
+                </div>
+              </article>
+              <div class="settings-help-callout">
+                <strong>Tip:</strong> Capability assignments on workforce members must match the capabilities required by queues for automatic routing to work. Mismatches are flagged in the Queues screen.
+              </div>
+            </div>
+
           </div>
         </section>
 

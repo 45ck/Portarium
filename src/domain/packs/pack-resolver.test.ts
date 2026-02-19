@@ -167,4 +167,20 @@ describe('resolvePacksV1', () => {
       }),
     ).toThrowError(PackResolutionError);
   });
+
+  it('does not resolve the reference vertical unless explicitly requested (lifecycle gate)', () => {
+    const registry = new InMemoryPackRegistry();
+    registry.add(m({ id: 'core.base', version: '1.0.0', requiresCore: '*' }));
+    registry.add(m({ id: 'scm.change-management', version: '1.0.0', requiresCore: '*' }));
+
+    const lock = resolvePacksV1({
+      coreVersion: parseSemVer('1.0.0'),
+      requests: [{ id: PackId('core.base'), range: parseSemVerRange('*') }],
+      registry,
+      now: new Date('2026-02-16T00:00:00.000Z'),
+    });
+
+    expect(lock.packs).toEqual([{ id: PackId('core.base'), version: parseSemVer('1.0.0') }]);
+    expect(lock.packs.find((p) => p.id === PackId('scm.change-management'))).toBeUndefined();
+  });
 });
