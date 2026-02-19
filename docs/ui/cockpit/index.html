@@ -932,11 +932,11 @@
           </div>
 
           <div class="filters" role="group" aria-label="Filter options">
-            <span class="chip chip--active">Assigned to me</span>
-            <span class="chip js-chip-unassigned">Unassigned</span>
-            <span class="chip">Has pending approvals</span>
-            <span class="chip">Has failed runs</span>
-            <span class="chip">Category: Payments &amp; Billing</span>
+            <span class="chip chip--active" role="button" tabindex="0">Assigned to me</span>
+            <span class="chip js-chip-unassigned" role="button" tabindex="0">Unassigned</span>
+            <span class="chip" role="button" tabindex="0">Has pending approvals</span>
+            <span class="chip" role="button" tabindex="0">Has failed runs</span>
+            <span class="chip" role="button" tabindex="0">Category: Payments &amp; Billing</span>
           </div>
 
           <div class="empty js-empty-workitems" hidden>
@@ -1225,10 +1225,10 @@
           </div>
 
           <div class="filters" role="group" aria-label="Filter options">
-            <span class="chip chip--active">All statuses</span>
-            <span class="chip">Workflow: Invoice correction</span>
-            <span class="chip">Last 24h</span>
-            <span class="chip">Has pending approvals</span>
+            <span class="chip chip--active" role="button" tabindex="0">All statuses</span>
+            <span class="chip" role="button" tabindex="0">Workflow: Invoice correction</span>
+            <span class="chip" role="button" tabindex="0">Last 24h</span>
+            <span class="chip" role="button" tabindex="0">Has pending approvals</span>
           </div>
 
           <div class="empty js-empty-runs" hidden>
@@ -1761,6 +1761,7 @@
                     <option>Deny</option>
                     <option>Request changes</option>
                   </select>
+                  <div class="field__error" role="alert" style="display:none"></div>
                 </label>
                 <label class="field" id="fieldRationale">
                   <span class="field__label">Rationale (required)</span>
@@ -1773,6 +1774,7 @@
                     minlength="10"
                   ></textarea>
                   <span class="field__error">Rationale is required (minimum 10 characters)</span>
+                  <div class="field__error" role="alert" style="display:none"></div>
                 </label>
                 <div class="outcome-preview">
                   After approval the run resumes. 1 more approver needed.
@@ -1946,9 +1948,9 @@
           </div>
 
           <div class="filters" role="group" aria-label="Filter options">
-            <span class="chip chip--active">Assigned to me</span>
-            <span class="chip">Project: Billing Governance</span>
-            <span class="chip">Status: Pending</span>
+            <span class="chip chip--active" role="button" tabindex="0">Assigned to me</span>
+            <span class="chip" role="button" tabindex="0">Project: Billing Governance</span>
+            <span class="chip" role="button" tabindex="0">Status: Pending</span>
           </div>
 
           <div class="table-wrap js-approvals-table">
@@ -4966,7 +4968,7 @@
             >
               <div class="agent-layout">
                 <div class="agent-list">
-                  <article class="agent-card agent-card--selected" data-agent-id="claude-classify">
+                  <article class="agent-card agent-card--selected" data-agent-id="claude-classify" tabindex="0">
                     <div class="agent-card__header">
                       <span class="agent-card__provider agent-card__provider--claude">C</span>
                       <div>
@@ -4992,7 +4994,7 @@
                       </div>
                     </div>
                   </article>
-                  <article class="agent-card" data-agent-id="openai-summarize">
+                  <article class="agent-card" data-agent-id="openai-summarize" tabindex="0">
                     <div class="agent-card__header">
                       <span class="agent-card__provider agent-card__provider--openai">O</span>
                       <div>
@@ -5018,7 +5020,7 @@
                       </div>
                     </div>
                   </article>
-                  <article class="agent-card" data-agent-id="custom-validator">
+                  <article class="agent-card" data-agent-id="custom-validator" tabindex="0">
                     <div class="agent-card__header">
                       <span class="agent-card__provider agent-card__provider--custom">X</span>
                       <div>
@@ -5047,7 +5049,7 @@
                       Connection failed: endpoint returned 502. Last checked 5m ago.
                     </div>
                   </article>
-                  <article class="agent-card" data-agent-id="claude-draft">
+                  <article class="agent-card" data-agent-id="claude-draft" tabindex="0">
                     <div class="agent-card__header">
                       <span class="agent-card__provider agent-card__provider--claude">C</span>
                       <div>
