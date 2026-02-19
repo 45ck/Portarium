@@ -224,4 +224,60 @@ describe('submitApproval', () => {
     }
     expect(result.error.kind).toBe('Forbidden');
   });
+
+  it('blocks maker-checker self-approval before any state transition', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-2', // same as requestedByUserId in PENDING_APPROVAL
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Self-approve attempt.',
+        sodConstraints: [{ kind: 'MakerChecker' }],
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error('Expected forbidden response.');
+    }
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/SoD violation/i);
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('blocks decision when distinct-approver threshold is unmet', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Need two approvers.',
+        sodConstraints: [{ kind: 'DistinctApprovers', minimumApprovers: 2 }],
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error('Expected forbidden response.');
+    }
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/DistinctApproversViolation/i);
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
 });
