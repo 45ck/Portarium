@@ -100,6 +100,7 @@ describe('InMemoryCustomerSupportAdapter', () => {
     });
     expect(createdComment.ok).toBe(true);
     if (!createdComment.ok || createdComment.result.kind !== 'externalRef') return;
+    const commentId = createdComment.result.externalRef.externalId;
 
     const comments = await adapter.execute({
       tenantId: TENANT_A,
@@ -108,7 +109,7 @@ describe('InMemoryCustomerSupportAdapter', () => {
     });
     expect(comments.ok).toBe(true);
     if (!comments.ok || comments.result.kind !== 'externalRefs') return;
-    expect(comments.result.externalRefs.some((ref) => ref.externalId === createdComment.result.externalRef.externalId)).toBe(true);
+    expect(comments.result.externalRefs.some((ref) => ref.externalId === commentId)).toBe(true);
 
     const tags = await adapter.execute({ tenantId: TENANT_A, operation: 'listTags' });
     expect(tags.ok).toBe(true);
