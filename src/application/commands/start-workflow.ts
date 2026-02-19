@@ -23,6 +23,7 @@ import {
 import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type {
+  AdapterRegistrationStore,
   AuthorizationPort,
   Clock,
   EventPublisher,
@@ -34,6 +35,11 @@ import type {
   WorkflowOrchestrator,
   WorkflowStore,
 } from '../ports/index.js';
+import {
+  ensureRunIdIsUnique,
+  ensureSingleActiveAdapterPerPort,
+  ensureSingleActiveWorkflowVersion,
+} from '../services/repository-aggregate-invariants.js';
 
 const START_WORKFLOW_COMMAND = 'StartWorkflow';
 const START_WORKFLOW_SOURCE = 'portarium.control-plane.workflow-runtime';
@@ -62,6 +68,7 @@ export interface StartWorkflowDeps {
   idempotency: IdempotencyStore;
   unitOfWork: UnitOfWork;
   workflowStore: WorkflowStore;
+  adapterRegistrationStore: AdapterRegistrationStore;
   runStore: RunStore;
   orchestrator: WorkflowOrchestrator;
   eventPublisher: EventPublisher;
@@ -306,11 +313,41 @@ async function buildStartWorkflowPlan(
   );
   if (!workflowResult.ok) return workflowResult;
 
+  const workflowVersions = await deps.workflowStore.listWorkflowsByName(
+    ctx.tenantId,
+    idsResult.value.workspaceId,
+    workflowResult.value.name,
+  );
+  const workflowVersionConflict = ensureSingleActiveWorkflowVersion({
+    workflowName: workflowResult.value.name,
+    selectedWorkflowId: workflowResult.value.workflowId,
+    workflowVersions,
+  });
+  if (workflowVersionConflict) return err(workflowVersionConflict);
+
+  const adapterRegistrations = await deps.adapterRegistrationStore.listByWorkspace(
+    ctx.tenantId,
+    idsResult.value.workspaceId,
+  );
+  const adapterConflict = ensureSingleActiveAdapterPerPort({
+    portFamilies: workflowResult.value.actions.map((action) => action.portFamily),
+    adapterRegistrations,
+  });
+  if (adapterConflict) return err(adapterConflict);
+
   const genResult = generateDepsValues(deps.idGenerator, deps.clock);
   if (!genResult.ok) return genResult;
 
   const runResult = buildRun(ctx, idsResult.value, workflowResult.value, genResult.value);
   if (!runResult.ok) return runResult;
+
+  const existingRun = await deps.runStore.getRunById(
+    ctx.tenantId,
+    idsResult.value.workspaceId,
+    runResult.value.runId,
+  );
+  const runConflict = ensureRunIdIsUnique(existingRun, runResult.value.runId);
+  if (runConflict) return err(runConflict);
 
   return ok({
     kind: 'new',

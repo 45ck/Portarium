@@ -1,11 +1,11 @@
 # Master Execution DAG
 
-Generated: 2026-02-19T19:44:43.315Z
+Generated: 2026-02-19T19:55:19.332Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 234
+- Open beads: 232
 - Open dependency edges: 99
 - Open beads currently blocked by open prerequisites: 60
 - Open beads with at least one review artifact in `docs/review/`: 0
@@ -20,9 +20,9 @@ Source: `.beads/issues.jsonl`
 | governance | 24 | 12 | 0 |
 | infrastructure | 19 | 14 | 0 |
 | integration | 5 | 5 | 0 |
-| presentation | 12 | 7 | 0 |
+| presentation | 11 | 7 | 0 |
 | security | 2 | 2 | 0 |
-| unspecified | 146 | 0 | 0 |
+| unspecified | 145 | 0 | 0 |
 
 ## Critical Path
 
@@ -139,7 +139,6 @@ flowchart TD
     B0554["bead-0554<br/>Presentation/API: live map transport — WebSocket or SSE subscri…"]
     B0557["bead-0557<br/>Cockpit v2: multi-level indoor map support with floor switching…"]
     B0568["bead-0568<br/>Cockpit v2: analytics layers — coverage and dwell heatmaps with…"]
-    B0576["bead-0576<br/>Cockpit: screenshot-audit declutter pass for approvals triage a…"]
   end
   subgraph security[security]
     B0520["bead-0520<br/>Security: SROS2 and DDS-Security hardening for ROS 2 mission tr…"]
@@ -241,7 +240,6 @@ flowchart TD
     B0264["bead-0264<br/>Closeout review: Phase gate: Presentation complete — requires O…"]
     B0298["bead-0298<br/>Implement concrete infrastructure execution baseline (Terraform…"]
     B0299["bead-0299<br/>AuthZ: application-layer authorization actions and forbidden-ac…"]
-    B0308["bead-0308<br/>Repository-level aggregate invariants (workspace policy: active…"]
     B0311["bead-0311<br/>Closeout review: Domain hardening release gate must confirm all…"]
     B0312["bead-0312<br/>Application-layer implementation roadmap: scope and acceptance …"]
     B0313["bead-0313<br/>Application-level observability: traces/logs/metrics correlatio…"]
@@ -494,7 +492,6 @@ flowchart TD
 | bead-0298 | unspecified | none | none |
 | bead-0299 | unspecified | none | none |
 | bead-0300 | application | bead-0335 | none |
-| bead-0308 | unspecified | none | none |
 | bead-0311 | unspecified | none | none |
 | bead-0312 | unspecified | none | none |
 | bead-0313 | unspecified | none | none |
@@ -631,7 +628,6 @@ flowchart TD
 | bead-0564 | governance | bead-0552 | none |
 | bead-0567 | integration | bead-0515, bead-0516, bead-0553 | none |
 | bead-0568 | presentation | bead-0557 | none |
-| bead-0576 | presentation | none | none |
 
 ## Notes
 

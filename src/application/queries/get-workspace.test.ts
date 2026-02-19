@@ -22,6 +22,7 @@ describe('getWorkspace', () => {
     };
     const workspaceStore: WorkspaceStore = {
       getWorkspaceById: vi.fn(async () => null),
+      getWorkspaceByName: vi.fn(async () => null),
       saveWorkspace: vi.fn(async () => undefined),
     };
 
@@ -47,6 +48,7 @@ describe('getWorkspace', () => {
     };
     const workspaceStore: WorkspaceStore = {
       getWorkspaceById: vi.fn(async () => WORKSPACE),
+      getWorkspaceByName: vi.fn(async () => WORKSPACE),
       saveWorkspace: vi.fn(async () => undefined),
     };
 
@@ -73,6 +75,7 @@ describe('getWorkspace', () => {
     };
     const workspaceStore: WorkspaceStore = {
       getWorkspaceById: vi.fn(async () => WORKSPACE),
+      getWorkspaceByName: vi.fn(async () => WORKSPACE),
       saveWorkspace: vi.fn(async () => undefined),
     };
 

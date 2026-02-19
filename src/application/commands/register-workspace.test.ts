@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TenantId } from '../../domain/primitives/index.js';
+import { parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
 import { registerWorkspace } from './register-workspace.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
@@ -55,6 +56,7 @@ describe('registerWorkspace', () => {
 
     workspaceStore = {
       getWorkspaceById: vi.fn(async () => null),
+      getWorkspaceByName: vi.fn(async () => null),
       saveWorkspace: vi.fn(async () => undefined),
     };
 
@@ -222,5 +224,45 @@ describe('registerWorkspace', () => {
     expect(output.ok).toBe(false);
     if (output.ok) throw new Error('Expected forbidden response.');
     expect(output.error.kind).toBe('Forbidden');
+  });
+
+  it('rejects duplicate workspace names across ids', async () => {
+    workspaceStore.getWorkspaceByName = vi.fn(async () =>
+      parseWorkspaceV1({
+        schemaVersion: 1,
+        workspaceId: 'ws-existing',
+        tenantId: 'tenant-1',
+        name: WORKSPACE_INPUT.name,
+        createdAtIso: '2026-02-16T00:00:00.000Z',
+      }),
+    );
+
+    const output = await registerWorkspace(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workspaceStore,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['admin'],
+      }),
+      {
+        idempotencyKey: 'request-2',
+        workspace: WORKSPACE_INPUT,
+      },
+    );
+
+    expect(output.ok).toBe(false);
+    if (output.ok) throw new Error('Expected conflict response.');
+    expect(output.error.kind).toBe('Conflict');
+    expect(output.error.message).toContain('already in use');
+    expect(workspaceStore.saveWorkspace).not.toHaveBeenCalled();
   });
 });

@@ -33,6 +33,7 @@ describe('createControlPlaneHandler', () => {
       },
       workspaceStore: {
         getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
         saveWorkspace: async () => undefined,
       },
       runStore: {
@@ -68,6 +69,7 @@ describe('createControlPlaneHandler', () => {
       },
       workspaceStore: {
         getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
         saveWorkspace: async () => undefined,
       },
       runStore: {
@@ -105,6 +107,7 @@ describe('createControlPlaneHandler', () => {
         },
         workspaceStore: {
           getWorkspaceById: async () => null,
+          getWorkspaceByName: async () => null,
           saveWorkspace: async () => undefined,
         },
         runStore: {
@@ -130,6 +133,7 @@ describe('createControlPlaneHandler', () => {
       },
       workspaceStore: {
         getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
         saveWorkspace: async () => undefined,
       },
       runStore: {
@@ -173,6 +177,7 @@ describe('createControlPlaneHandler', () => {
       },
       workspaceStore: {
         getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
         saveWorkspace: async () => undefined,
       },
       runStore: {
@@ -207,6 +212,7 @@ describe('createControlPlaneHandler', () => {
       },
       workspaceStore: {
         getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
         saveWorkspace: async () => undefined,
       },
       runStore: {

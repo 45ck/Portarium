@@ -23,6 +23,7 @@ import type {
 } from '../ports/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type { IdempotencyKey } from '../ports/idempotency.js';
+import { ensureWorkspaceNameIsUnique } from '../services/repository-aggregate-invariants.js';
 
 const REGISTER_WORKSPACE_COMMAND = 'RegisterWorkspace';
 const WORKSPACE_CLOUD_EVENT_SOURCE = 'portarium.control-plane.application';
@@ -173,6 +174,10 @@ export async function registerWorkspace(
   };
   const cached = await deps.idempotency.get<RegisterWorkspaceOutput>(commandKey);
   if (cached) return ok(cached);
+
+  const existingByName = await deps.workspaceStore.getWorkspaceByName(ctx.tenantId, workspace.name);
+  const nameConflict = ensureWorkspaceNameIsUnique(existingByName, workspace);
+  if (nameConflict) return err(nameConflict);
 
   const existing = await deps.workspaceStore.getWorkspaceById(ctx.tenantId, workspace.workspaceId);
   if (existing !== null) {

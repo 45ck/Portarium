@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import { TenantId } from '../../domain/primitives/index.js';
+import { parseRunV1 } from '../../domain/runs/index.js';
 import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
 import {
+  type AdapterRegistrationStore,
   type AuthorizationPort,
   type Clock,
   type EventPublisher,
@@ -35,6 +38,23 @@ const WORKFLOW = parseWorkflowV1({
   ],
 });
 
+const ADAPTER_REGISTRATION = parseAdapterRegistrationV1({
+  schemaVersion: 1,
+  adapterId: 'adapter-itsm-1',
+  workspaceId: 'ws-1',
+  providerSlug: 'service-now',
+  portFamily: 'ItsmItOps',
+  enabled: true,
+  capabilityMatrix: [{ operation: 'workflow:simulate', requiresAuth: true }],
+  executionPolicy: {
+    tenantIsolationMode: 'PerTenantWorker',
+    egressAllowlist: ['https://api.service-now.example'],
+    credentialScope: 'capabilityMatrix',
+    sandboxVerified: true,
+    sandboxAvailable: true,
+  },
+});
+
 describe('startWorkflow', () => {
   let authorization: AuthorizationPort;
   let clock: Clock;
@@ -42,6 +62,7 @@ describe('startWorkflow', () => {
   let idempotency: IdempotencyStore;
   let unitOfWork: UnitOfWork;
   let workflowStore: WorkflowStore;
+  let adapterRegistrationStore: AdapterRegistrationStore;
   let runStore: RunStore;
   let orchestrator: WorkflowOrchestrator;
   let eventPublisher: EventPublisher;
@@ -60,6 +81,10 @@ describe('startWorkflow', () => {
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
     workflowStore = {
       getWorkflowById: vi.fn(async () => WORKFLOW),
+      listWorkflowsByName: vi.fn(async () => [WORKFLOW]),
+    };
+    adapterRegistrationStore = {
+      listByWorkspace: vi.fn(async () => [ADAPTER_REGISTRATION]),
     };
     runStore = {
       getRunById: vi.fn(async () => null),
@@ -86,6 +111,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -133,6 +159,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -169,6 +196,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -207,6 +235,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -241,6 +270,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -276,6 +306,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -309,6 +340,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -341,6 +373,7 @@ describe('startWorkflow', () => {
         idempotency,
         unitOfWork,
         workflowStore,
+        adapterRegistrationStore,
         runStore,
         orchestrator,
         eventPublisher,
@@ -368,4 +401,221 @@ describe('startWorkflow', () => {
       }),
     );
   });
+
+  it('rejects starts when workflow versioning has multiple active versions', async () => {
+    workflowStore.listWorkflowsByName = vi.fn(async () => [
+      WORKFLOW,
+      parseWorkflowV1({
+        ...WORKFLOW,
+        workflowId: 'wf-2',
+        version: 2,
+        active: true,
+      }),
+    ]);
+
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        adapterRegistrationStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-version-conflict',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('multiple active versions');
+  });
+
+  it('rejects starts when selected workflow is not the active head version', async () => {
+    workflowStore.listWorkflowsByName = vi.fn(async () => [
+      parseWorkflowV1({
+        ...WORKFLOW,
+        workflowId: 'wf-1',
+        version: 1,
+        active: false,
+      }),
+      parseWorkflowV1({
+        ...WORKFLOW,
+        workflowId: 'wf-2',
+        version: 2,
+        active: true,
+      }),
+    ]);
+
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        adapterRegistrationStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-stale-workflow',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('not currently active');
+  });
+
+  it('rejects starts when no active adapter exists for a required port family', async () => {
+    adapterRegistrationStore.listByWorkspace = vi.fn(async () => []);
+
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        adapterRegistrationStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-no-adapter',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('no active adapter');
+  });
+
+  it('rejects starts when multiple active adapters exist for the same port family', async () => {
+    adapterRegistrationStore.listByWorkspace = vi.fn(async () => [
+      ADAPTER_REGISTRATION,
+      parseAdapterRegistrationV1({
+        ...ADAPTER_REGISTRATION,
+        adapterId: 'adapter-itsm-2',
+        providerSlug: 'freshservice',
+      }),
+    ]);
+
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        adapterRegistrationStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-multi-adapter',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('multiple active adapters');
+  });
+
+  it('rejects starts when generated run id already exists', async () => {
+    runStore.getRunById = vi.fn(async () =>
+      parseRunV1({
+        schemaVersion: 1,
+        runId: 'id-1',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+        correlationId: 'corr-existing',
+        executionTier: 'Auto',
+        initiatedByUserId: 'user-existing',
+        status: 'Pending',
+        createdAtIso: '2026-02-16T00:00:00.000Z',
+      }),
+    );
+
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        adapterRegistrationStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        idempotencyKey: 'req-run-conflict',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('already exists');
+  });
 });
+
+

@@ -180,6 +180,7 @@ function buildDeps(): ControlPlaneDeps {
   // TODO(beads): replace with real persistence adapters (DB).
   const workspaceStore: WorkspaceStore = {
     getWorkspaceById: () => Promise.resolve(null),
+    getWorkspaceByName: () => Promise.resolve(null),
     saveWorkspace: () => Promise.resolve(),
   };
   const runStore: RunStore = {

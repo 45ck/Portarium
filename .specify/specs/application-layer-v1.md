@@ -19,6 +19,7 @@ independent of transport/framework concerns.
   - `workspace.tenantId` must match `AppContext.tenantId`.
   - Idempotency is enforced by `(tenantId, commandName, idempotencyKey)`.
   - Existing workspace with same `(tenantId, workspaceId)` returns `Conflict`.
+  - Workspace name must be unique per tenant; duplicate names with different IDs return `Conflict`.
 - On success:
   - workspace is persisted within a unit-of-work boundary
   - one outbox/cloud event is emitted for `WorkspaceCreated`
@@ -37,6 +38,9 @@ independent of transport/framework concerns.
   - Caller must be authorized for `run:start`.
   - Workflow must exist and be active.
   - `workspaceId` in command input must match returned workflow workspace scope.
+  - Workflow version policy: exactly one active version per workflow name, and the selected workflow must be the active head version.
+  - Adapter activation policy: every workflow action port family must have exactly one active adapter registration in the workspace.
+  - Generated `runId` must be unique in `(tenantId, workspaceId)` before persistence.
   - A durable execution entry is created as a `RunV1` with initial status `Pending`.
   - One orchestrator start event is emitted plus one `PortariumCloudEventV1` envelope.
   - Idempotency replays return identical `runId`.

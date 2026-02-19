@@ -7,4 +7,9 @@ export interface WorkflowStore {
     workspaceId: WorkspaceId,
     workflowId: WorkflowId,
   ): Promise<WorkflowV1 | null>;
+  listWorkflowsByName(
+    tenantId: TenantId,
+    workspaceId: WorkspaceId,
+    workflowName: string,
+  ): Promise<readonly WorkflowV1[]>;
 }
