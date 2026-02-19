@@ -1483,6 +1483,15 @@ a {
   color: var(--muted);
   margin-right: 4px;
 }
+.triage__status {
+  width: 100%;
+  max-width: 980px;
+  font-size: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  background: rgba(27, 27, 27, 0.02);
+}
 .triage__workspace {
   width: 100%;
   max-width: 980px;

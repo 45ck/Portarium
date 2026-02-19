@@ -2267,6 +2267,9 @@
                 B: Swipe + diff
               </button>
             </div>
+            <div class="triage__status subtle" id="triageStatus" role="status" aria-live="polite">
+              Reviewing AG-442 (1 of 4) in A: Swipe only.
+            </div>
 
             <div class="triage__workspace triage__workspace--swipe" id="triageWorkspace">
               <div class="triage__stack">
@@ -3056,6 +3059,7 @@
                   class="field__input"
                   id="triageRationaleInput"
                   rows="3"
+                  aria-required="true"
                   placeholder="Explain your decision..."
                 ></textarea>
               </label>
@@ -3117,7 +3121,8 @@
             </div>
             <div class="triage__hint subtle">
               Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, U = Undo, Space =
-              Toggle details, I = Toggle AI summary, V = Toggle swipe/diff view
+              Toggle details, I = Toggle AI summary, V = Toggle swipe/diff view, Esc = Cancel
+              rationale, Ctrl+Enter = Confirm rationale
             </div>
           </div>
 

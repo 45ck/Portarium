@@ -391,12 +391,13 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
     }
 
     const message = readString(input.payload, 'message');
+    const displayLabel = message ?? statusPage.externalRef.displayLabel ?? `Status page ${statusPageId}`;
     const externalRef: ExternalObjectRef = {
       sorName: 'OpsMonitor',
       portFamily: 'MonitoringIncident',
       externalId: statusPageId,
       externalType: 'status_page',
-      displayLabel: message ?? statusPage.externalRef.displayLabel,
+      displayLabel,
     };
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
