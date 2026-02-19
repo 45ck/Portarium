@@ -209,6 +209,67 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect(calls[3]!.init.method).toBe('GET');
   });
 
+  it('builds human-task list/get/assign/complete/escalate routes', async () => {
+    const { calls, fetchImpl } = createJsonFetch({ items: [] });
+    const client = makeClient(fetchImpl);
+
+    await client.listHumanTasks('workspace-1', {
+      assigneeId: 'wm-1',
+      status: 'assigned',
+      runId: 'run-1',
+      limit: 20,
+    });
+    await client.getHumanTask('workspace-1', 'ht-1');
+    await client.assignHumanTask(
+      'workspace-1',
+      'ht-1',
+      { workforceQueueId: 'queue-finance' },
+      'idem-assign',
+    );
+    await client.completeHumanTask(
+      'workspace-1',
+      'ht-1',
+      { completionNote: 'Completed from inbox' },
+      'idem-complete',
+    );
+    await client.escalateHumanTask(
+      'workspace-1',
+      'ht-1',
+      { workforceQueueId: 'queue-general', reason: 'Need escalation' },
+      'idem-escalate',
+    );
+
+    expect(calls).toHaveLength(5);
+    const list = new URL(calls[0]!.input);
+    expect(list.pathname).toBe('/v1/workspaces/workspace-1/human-tasks');
+    expect(list.searchParams.get('assigneeId')).toBe('wm-1');
+    expect(list.searchParams.get('status')).toBe('assigned');
+    expect(list.searchParams.get('runId')).toBe('run-1');
+    expect(list.searchParams.get('limit')).toBe('20');
+    expect(calls[0]!.init.method).toBe('GET');
+
+    expect(new URL(calls[1]!.input).pathname).toBe('/v1/workspaces/workspace-1/human-tasks/ht-1');
+    expect(calls[1]!.init.method).toBe('GET');
+
+    expect(new URL(calls[2]!.input).pathname).toBe(
+      '/v1/workspaces/workspace-1/human-tasks/ht-1/assign',
+    );
+    expect((calls[2]!.init.headers as Headers).get('Idempotency-Key')).toBe('idem-assign');
+    expect(calls[2]!.init.method).toBe('POST');
+
+    expect(new URL(calls[3]!.input).pathname).toBe(
+      '/v1/workspaces/workspace-1/human-tasks/ht-1/complete',
+    );
+    expect((calls[3]!.init.headers as Headers).get('Idempotency-Key')).toBe('idem-complete');
+    expect(calls[3]!.init.method).toBe('POST');
+
+    expect(new URL(calls[4]!.input).pathname).toBe(
+      '/v1/workspaces/workspace-1/human-tasks/ht-1/escalate',
+    );
+    expect((calls[4]!.init.headers as Headers).get('Idempotency-Key')).toBe('idem-escalate');
+    expect(calls[4]!.init.method).toBe('POST');
+  });
+
   it('passes body for createApproval with idempotency key', async () => {
     const { calls, fetchImpl } = createJsonFetch({
       schemaVersion: 1,

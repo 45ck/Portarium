@@ -196,6 +196,25 @@ export interface WorkforceQueueSummary {
   tenantId: string;
 }
 
+export type HumanTaskStatus = 'pending' | 'assigned' | 'in-progress' | 'completed' | 'escalated';
+
+export interface HumanTaskSummary {
+  schemaVersion: 1;
+  humanTaskId: string;
+  workItemId: string;
+  runId: string;
+  stepId: string;
+  assigneeId?: string;
+  groupId?: string;
+  description: string;
+  requiredCapabilities: WorkforceCapability[];
+  status: HumanTaskStatus;
+  dueAt?: string;
+  completedAt?: string;
+  completedById?: string;
+  evidenceAnchorId?: string;
+}
+
 export interface CursorPage<T> {
   items: T[];
   nextCursor?: CursorToken;
@@ -238,6 +257,26 @@ export interface ListWorkforceQueuesRequest extends CursorPaginationRequest {
 
 export interface PatchWorkforceAvailabilityRequest {
   availabilityStatus: WorkforceAvailabilityStatus;
+}
+
+export interface ListHumanTasksRequest extends CursorPaginationRequest {
+  assigneeId?: string;
+  status?: HumanTaskStatus;
+  runId?: string;
+}
+
+export interface AssignHumanTaskRequest {
+  workforceMemberId?: string;
+  workforceQueueId?: string;
+}
+
+export interface CompleteHumanTaskRequest {
+  completionNote?: string;
+}
+
+export interface EscalateHumanTaskRequest {
+  workforceQueueId: string;
+  reason?: string;
 }
 
 export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';

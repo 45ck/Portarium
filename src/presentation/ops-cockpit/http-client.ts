@@ -3,13 +3,18 @@ import { buildCursorQuery } from './pagination.js';
 import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
+  AssignHumanTaskRequest,
+  CompleteHumanTaskRequest,
   CursorPage,
   CursorPaginationRequest,
   CreateApprovalRequest,
   CreateWorkItemCommand,
   EvidenceEntry,
+  EscalateHumanTaskRequest,
+  HumanTaskSummary,
   ListApprovalsRequest,
   ListEvidenceRequest,
+  ListHumanTasksRequest,
   ListRunsRequest,
   ListWorkItemsRequest,
   Plan,
@@ -278,6 +283,64 @@ export class ControlPlaneClient {
     );
   }
 
+  public async listHumanTasks(
+    workspaceId: string,
+    request: ListHumanTasksRequest = {},
+  ): Promise<CursorPage<HumanTaskSummary>> {
+    const query = this.buildListHumanTasksQuery(request);
+    return this.request<CursorPage<HumanTaskSummary>>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks`,
+      'GET',
+      { query },
+    );
+  }
+
+  public async getHumanTask(workspaceId: string, humanTaskId: string): Promise<HumanTaskSummary> {
+    return this.request<HumanTaskSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}`,
+      'GET',
+    );
+  }
+
+  public async assignHumanTask(
+    workspaceId: string,
+    humanTaskId: string,
+    request: AssignHumanTaskRequest,
+    idempotencyKey?: string,
+  ): Promise<HumanTaskSummary> {
+    return this.request<HumanTaskSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/assign`,
+      'POST',
+      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    );
+  }
+
+  public async completeHumanTask(
+    workspaceId: string,
+    humanTaskId: string,
+    request: CompleteHumanTaskRequest = {},
+    idempotencyKey?: string,
+  ): Promise<HumanTaskSummary> {
+    return this.request<HumanTaskSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/complete`,
+      'POST',
+      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    );
+  }
+
+  public async escalateHumanTask(
+    workspaceId: string,
+    humanTaskId: string,
+    request: EscalateHumanTaskRequest,
+    idempotencyKey?: string,
+  ): Promise<HumanTaskSummary> {
+    return this.request<HumanTaskSummary>(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/escalate`,
+      'POST',
+      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    );
+  }
+
   private buildListRunsQuery(request: ListRunsRequest): URLSearchParams {
     return this.buildCursorQuery(request);
   }
@@ -340,6 +403,20 @@ export class ControlPlaneClient {
     const query = this.buildCursorQuery(request);
     if (request.capability) {
       query.set('capability', request.capability);
+    }
+    return query;
+  }
+
+  private buildListHumanTasksQuery(request: ListHumanTasksRequest): URLSearchParams {
+    const query = this.buildCursorQuery(request);
+    if (request.assigneeId) {
+      query.set('assigneeId', request.assigneeId);
+    }
+    if (request.status) {
+      query.set('status', request.status);
+    }
+    if (request.runId) {
+      query.set('runId', request.runId);
     }
     return query;
   }

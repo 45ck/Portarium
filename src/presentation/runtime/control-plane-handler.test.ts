@@ -348,4 +348,90 @@ describe('createControlPlaneHandler', () => {
     expect(body.workforceMemberId).toBe('wm-1');
     expect(body.availabilityStatus).toBe('offline');
   });
+
+  it('lists human tasks with assignee/status filters', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/human-tasks?assigneeId=wm-1&status=assigned`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: Array<{ humanTaskId: string }> };
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0]!.humanTaskId).toBe('ht-1');
+  });
+
+  it('completes human task and emits evidence visible in evidence list', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const completeRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/human-tasks/ht-1/complete`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ completionNote: 'Done' }),
+      },
+    );
+    expect(completeRes.status).toBe(200);
+    const completed = (await completeRes.json()) as { status: string; evidenceAnchorId?: string };
+    expect(completed.status).toBe('completed');
+    expect(typeof completed.evidenceAnchorId).toBe('string');
+
+    const evidenceRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/evidence?category=Action`,
+    );
+    expect(evidenceRes.status).toBe(200);
+    const evidenceBody = (await evidenceRes.json()) as {
+      items: Array<{ evidenceId: string; summary: string }>;
+    };
+    expect(evidenceBody.items.some((entry) => entry.evidenceId === completed.evidenceAnchorId)).toBe(
+      true,
+    );
+  });
 });

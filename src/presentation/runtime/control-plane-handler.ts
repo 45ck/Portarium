@@ -76,6 +76,46 @@ type WorkforceQueueRecord = Readonly<{
   tenantId: string;
 }>;
 
+type HumanTaskStatus = 'pending' | 'assigned' | 'in-progress' | 'completed' | 'escalated';
+
+type HumanTaskRecord = Readonly<{
+  schemaVersion: 1;
+  humanTaskId: string;
+  workItemId: string;
+  runId: string;
+  stepId: string;
+  assigneeId?: string;
+  groupId?: string;
+  description: string;
+  requiredCapabilities: readonly WorkforceCapability[];
+  status: HumanTaskStatus;
+  dueAt?: string;
+  completedAt?: string;
+  completedById?: string;
+  evidenceAnchorId?: string;
+  tenantId: string;
+}>;
+
+type EvidenceRecord = Readonly<{
+  schemaVersion: number;
+  evidenceId: string;
+  workspaceId: string;
+  occurredAtIso: string;
+  category: 'Plan' | 'Action' | 'Approval' | 'Policy' | 'System';
+  summary: string;
+  actor:
+    | Readonly<{ kind: 'User'; userId: string }>
+    | Readonly<{ kind: 'System' }>
+    | Readonly<{ kind: 'Machine'; machineId: string }>
+    | Readonly<{ kind: 'Adapter'; adapterId: string }>;
+  links?: Readonly<{
+    runId?: string;
+    planId?: string;
+    workItemId?: string;
+  }>;
+  hashSha256: string;
+}>;
+
 const WORKFORCE_FIXTURE: Readonly<{
   members: readonly WorkforceMemberRecord[];
   queues: readonly WorkforceQueueRecord[];
@@ -127,6 +167,39 @@ const WORKFORCE_FIXTURE: Readonly<{
     },
   ],
 };
+
+const HUMAN_TASK_FIXTURE: readonly HumanTaskRecord[] = [
+  {
+    schemaVersion: 1,
+    humanTaskId: 'ht-1',
+    workItemId: 'wi-101',
+    runId: 'run-101',
+    stepId: 'step-approve',
+    assigneeId: 'wm-1',
+    groupId: 'queue-finance',
+    description: 'Approve invoice correction',
+    requiredCapabilities: ['operations.approval'],
+    status: 'assigned',
+    dueAt: '2026-02-20T12:00:00.000Z',
+    tenantId: 'workspace-1',
+  },
+  {
+    schemaVersion: 1,
+    humanTaskId: 'ht-2',
+    workItemId: 'wi-102',
+    runId: 'run-102',
+    stepId: 'step-review',
+    groupId: 'queue-general',
+    description: 'Quality-check export batch',
+    requiredCapabilities: ['operations.dispatch'],
+    status: 'pending',
+    dueAt: '2026-02-21T12:00:00.000Z',
+    tenantId: 'workspace-1',
+  },
+];
+
+let runtimeHumanTasks: HumanTaskRecord[] = [...HUMAN_TASK_FIXTURE];
+let runtimeEvidence: EvidenceRecord[] = [];
 
 function normalizeHeader(value: string | string[] | undefined): string | undefined {
   if (typeof value === 'string') return value;
@@ -377,6 +450,69 @@ function parseAvailabilityPatchBody(
     return { ok: true, availabilityStatus: record.availabilityStatus };
   }
   return { ok: false };
+}
+
+function parseAssignHumanTaskBody(
+  value: unknown,
+): { ok: true; workforceMemberId?: string; workforceQueueId?: string } | { ok: false } {
+  if (typeof value !== 'object' || value === null) return { ok: false };
+  const record = value as { workforceMemberId?: unknown; workforceQueueId?: unknown };
+  const workforceMemberId =
+    typeof record.workforceMemberId === 'string' && record.workforceMemberId.trim() !== ''
+      ? record.workforceMemberId.trim()
+      : undefined;
+  const workforceQueueId =
+    typeof record.workforceQueueId === 'string' && record.workforceQueueId.trim() !== ''
+      ? record.workforceQueueId.trim()
+      : undefined;
+  if (!workforceMemberId && !workforceQueueId) return { ok: false };
+  return {
+    ok: true,
+    ...(workforceMemberId ? { workforceMemberId } : {}),
+    ...(workforceQueueId ? { workforceQueueId } : {}),
+  };
+}
+
+function parseCompleteHumanTaskBody(value: unknown): { ok: true; completionNote?: string } | { ok: false } {
+  if (value === null) return { ok: true };
+  if (typeof value !== 'object') return { ok: false };
+  const record = value as { completionNote?: unknown };
+  const completionNote =
+    typeof record.completionNote === 'string' && record.completionNote.trim() !== ''
+      ? record.completionNote.trim()
+      : undefined;
+  return { ok: true, ...(completionNote ? { completionNote } : {}) };
+}
+
+function parseEscalateHumanTaskBody(
+  value: unknown,
+): { ok: true; workforceQueueId: string; reason?: string } | { ok: false } {
+  if (typeof value !== 'object' || value === null) return { ok: false };
+  const record = value as { workforceQueueId?: unknown; reason?: unknown };
+  if (typeof record.workforceQueueId !== 'string' || record.workforceQueueId.trim() === '') {
+    return { ok: false };
+  }
+  const reason =
+    typeof record.reason === 'string' && record.reason.trim() !== '' ? record.reason.trim() : undefined;
+  return {
+    ok: true,
+    workforceQueueId: record.workforceQueueId.trim(),
+    ...(reason ? { reason } : {}),
+  };
+}
+
+function listRuntimeHumanTasks(workspaceId: string): HumanTaskRecord[] {
+  return runtimeHumanTasks.filter((task) => task.tenantId === workspaceId);
+}
+
+function updateRuntimeHumanTask(nextTask: HumanTaskRecord): void {
+  runtimeHumanTasks = runtimeHumanTasks.map((task) =>
+    task.humanTaskId === nextTask.humanTaskId && task.tenantId === nextTask.tenantId ? nextTask : task,
+  );
+}
+
+function listRuntimeEvidence(workspaceId: string): EvidenceRecord[] {
+  return runtimeEvidence.filter((entry) => entry.workspaceId === workspaceId);
 }
 
 async function handleGetWorkspace(
@@ -644,6 +780,404 @@ async function handleListWorkforceQueues(
   respondJson(res, 200, correlationId, traceContext, body);
 }
 
+async function handleListHumanTasks(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const assigneeId = url.searchParams.get('assigneeId');
+  const status = url.searchParams.get('status');
+  const runId = url.searchParams.get('runId');
+
+  let items = listRuntimeHumanTasks(workspaceId);
+  if (assigneeId) {
+    items = items.filter((task) => task.assigneeId === assigneeId);
+  }
+  if (
+    status === 'pending' ||
+    status === 'assigned' ||
+    status === 'in-progress' ||
+    status === 'completed' ||
+    status === 'escalated'
+  ) {
+    items = items.filter((task) => task.status === status);
+  }
+  if (runId) {
+    items = items.filter((task) => task.runId === runId);
+  }
+
+  const body = paginate(items, req.url ?? '/');
+  respondJson(res, 200, correlationId, traceContext, body);
+}
+
+async function handleGetHumanTask(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    humanTaskId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, humanTaskId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  if (!task) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Human task ${humanTaskId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  respondJson(res, 200, correlationId, traceContext, task);
+}
+
+async function handleAssignHumanTask(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    humanTaskId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, humanTaskId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (!hasRole(auth.ctx, 'admin') && !hasRole(auth.ctx, 'operator')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admin/operator can assign human tasks.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  if (!task) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Human task ${humanTaskId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const body = parseAssignHumanTaskBody(await readJsonBody(req));
+  if (!body.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: 'workforceMemberId or workforceQueueId is required.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const updated: HumanTaskRecord = {
+    ...task,
+    status: body.workforceMemberId ? 'assigned' : task.status,
+    ...(body.workforceMemberId
+      ? { assigneeId: body.workforceMemberId }
+      : task.assigneeId
+        ? { assigneeId: task.assigneeId }
+        : {}),
+    ...(body.workforceQueueId
+      ? { groupId: body.workforceQueueId }
+      : task.groupId
+        ? { groupId: task.groupId }
+        : {}),
+  };
+  updateRuntimeHumanTask(updated);
+  respondJson(res, 200, correlationId, traceContext, updated);
+}
+
+async function handleCompleteHumanTask(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    humanTaskId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, humanTaskId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (!hasRole(auth.ctx, 'admin') && !hasRole(auth.ctx, 'operator')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admin/operator can complete human tasks.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  if (!task) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Human task ${humanTaskId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const parsed = parseCompleteHumanTaskBody(await readJsonBody(req));
+  if (!parsed.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: 'completionNote must be a string when provided.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const evidenceId = `evi-${randomUUID()}`;
+  const nowIso = new Date().toISOString();
+  const evidence: EvidenceRecord = {
+    schemaVersion: 1,
+    evidenceId,
+    workspaceId,
+    occurredAtIso: nowIso,
+    category: 'Action',
+    summary: parsed.completionNote
+      ? `Human task ${humanTaskId} completed: ${parsed.completionNote}`
+      : `Human task ${humanTaskId} completed.`,
+    actor: { kind: 'User', userId: auth.ctx.principalId },
+    links: { runId: task.runId, workItemId: task.workItemId },
+    hashSha256: randomBytes(32).toString('hex'),
+  };
+  runtimeEvidence = [...runtimeEvidence, evidence];
+
+  const updated: HumanTaskRecord = {
+    ...task,
+    status: 'completed',
+    completedAt: nowIso,
+    completedById: task.assigneeId ?? 'wm-1',
+    evidenceAnchorId: evidenceId,
+  };
+  updateRuntimeHumanTask(updated);
+  respondJson(res, 200, correlationId, traceContext, updated);
+}
+
+async function handleEscalateHumanTask(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    humanTaskId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, humanTaskId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (!hasRole(auth.ctx, 'admin') && !hasRole(auth.ctx, 'operator')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admin/operator can escalate human tasks.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  if (!task) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Human task ${humanTaskId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const parsed = parseEscalateHumanTaskBody(await readJsonBody(req));
+  if (!parsed.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: 'workforceQueueId is required.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const { assigneeId: _dropAssigneeId, ...taskWithoutAssignee } = task;
+  const updated: HumanTaskRecord = {
+    ...taskWithoutAssignee,
+    status: 'escalated',
+    groupId: parsed.workforceQueueId,
+  };
+  updateRuntimeHumanTask(updated);
+  respondJson(res, 200, correlationId, traceContext, updated);
+}
+
+async function handleListEvidence(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const runId = url.searchParams.get('runId');
+  const planId = url.searchParams.get('planId');
+  const workItemId = url.searchParams.get('workItemId');
+  const category = url.searchParams.get('category');
+
+  let items = listRuntimeEvidence(workspaceId);
+  if (runId) {
+    items = items.filter((entry) => entry.links?.runId === runId);
+  }
+  if (planId) {
+    items = items.filter((entry) => entry.links?.planId === planId);
+  }
+  if (workItemId) {
+    items = items.filter((entry) => entry.links?.workItemId === workItemId);
+  }
+  if (
+    category === 'Plan' ||
+    category === 'Action' ||
+    category === 'Approval' ||
+    category === 'Policy' ||
+    category === 'System'
+  ) {
+    items = items.filter((entry) => entry.category === category);
+  }
+
+  const body = paginate(items, req.url ?? '/');
+  respondJson(res, 200, correlationId, traceContext, body);
+}
+
 async function handleRequest(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
@@ -711,6 +1245,34 @@ async function handleRequest(
       return;
     }
 
+    const mHumanTaskList = /^\/v1\/workspaces\/([^/]+)\/human-tasks$/.exec(pathname);
+    if (mHumanTaskList) {
+      await handleListHumanTasks({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mHumanTaskList[1] ?? ''),
+      });
+      return;
+    }
+
+    const mEvidenceList = /^\/v1\/workspaces\/([^/]+)\/evidence$/.exec(pathname);
+    if (mEvidenceList) {
+      await handleListEvidence({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mEvidenceList[1] ?? ''),
+      });
+      return;
+    }
+
     const mWorkforceMember = /^\/v1\/workspaces\/([^/]+)\/workforce\/([^/]+)$/.exec(pathname);
     if (mWorkforceMember) {
       await handleGetWorkforceMember({
@@ -722,6 +1284,21 @@ async function handleRequest(
         pathname,
         workspaceId: decodeURIComponent(mWorkforceMember[1] ?? ''),
         workforceMemberId: decodeURIComponent(mWorkforceMember[2] ?? ''),
+      });
+      return;
+    }
+
+    const mHumanTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)$/.exec(pathname);
+    if (mHumanTask) {
+      await handleGetHumanTask({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mHumanTask[1] ?? ''),
+        humanTaskId: decodeURIComponent(mHumanTask[2] ?? ''),
       });
       return;
     }
@@ -741,6 +1318,53 @@ async function handleRequest(
         pathname,
         workspaceId: decodeURIComponent(mPatchAvailability[1] ?? ''),
         workforceMemberId: decodeURIComponent(mPatchAvailability[2] ?? ''),
+      });
+      return;
+    }
+  }
+
+  if (req.method === 'POST') {
+    const mAssignTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/assign$/.exec(pathname);
+    if (mAssignTask) {
+      await handleAssignHumanTask({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mAssignTask[1] ?? ''),
+        humanTaskId: decodeURIComponent(mAssignTask[2] ?? ''),
+      });
+      return;
+    }
+
+    const mCompleteTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/complete$/.exec(pathname);
+    if (mCompleteTask) {
+      await handleCompleteHumanTask({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mCompleteTask[1] ?? ''),
+        humanTaskId: decodeURIComponent(mCompleteTask[2] ?? ''),
+      });
+      return;
+    }
+
+    const mEscalateTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/escalate$/.exec(pathname);
+    if (mEscalateTask) {
+      await handleEscalateHumanTask({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mEscalateTask[1] ?? ''),
+        humanTaskId: decodeURIComponent(mEscalateTask[2] ?? ''),
       });
       return;
     }
