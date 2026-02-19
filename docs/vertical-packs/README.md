@@ -17,6 +17,14 @@ Packs are **not arbitrary code**. They are configuration artefacts executed by t
 
 Each pack is independently versioned using semantic versioning (ADR-045), independently tested with its own CI pipeline (ADR-051), and independently deployable on a per-tenant basis (ADR-055). Tenants pin pack versions in a lockfile and upgrade on their own schedule.
 
+## Reference Pack
+
+The ADR-0039 reference vertical pack is now materialized under:
+
+- `vertical-packs/software-change-management/`
+
+It provides a concrete software-change-management flow with explicit approval and evidence semantics while remaining fully declarative and governed by core pack contracts.
+
 ---
 
 ## Architecture Layering

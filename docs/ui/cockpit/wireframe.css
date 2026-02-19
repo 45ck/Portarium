@@ -3456,3 +3456,540 @@ tr.is-kbd-selected td {
     background-position: 400px 0;
   }
 }
+
+/* ============================================================
+   HCI POLISH PASS — bead-0534–0537
+   ============================================================ */
+
+/* Focus ring consistency — all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.triage__action:focus-visible,
+.agent-card:focus-visible,
+.row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Motion reduction — wrap animations */
+@media (prefers-reduced-motion: reduce) {
+  .triage-card--exit-right,
+  .triage-card--exit-left,
+  .triage-card--exit-up,
+  .triage-card--exit-down {
+    animation: none;
+    opacity: 0;
+  }
+  .ab-variant--entering {
+    animation: none;
+  }
+  .cmd-palette {
+    animation: none;
+  }
+  .drawer {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   BADGE — IncompatibleDuties SoD (bead-0534)
+   ============================================================ */
+.badge--incompatible {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  background: #f0f0f0;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  cursor: default;
+}
+
+/* ============================================================
+   TIER BADGE — human-task (distinct from human-approve)
+   ============================================================ */
+.tier-badge--human-task {
+  background: #fff3cd;
+  border: 1px solid #f0a500;
+  color: #7a5200;
+}
+
+/* ============================================================
+   PEOPLE / WORKFORCE — sidebar section (bead-0534)
+   ============================================================ */
+
+/* Availability dot */
+.availability-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.availability-dot--available { background: var(--ok); }
+.availability-dot--busy      { background: var(--warn); }
+.availability-dot--offline   { background: #aaa; }
+
+/* Workforce member card list */
+.workforce-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.workforce-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.workforce-card:hover,
+.workforce-card--selected {
+  border-color: var(--line);
+}
+.workforce-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.workforce-card__name {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+.workforce-card__role {
+  font-size: 11px;
+  padding: 1px 6px;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  color: var(--muted);
+}
+.workforce-card__caps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.workforce-card__cap {
+  font-size: 10px;
+  padding: 1px 5px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  color: var(--muted);
+}
+.workforce-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Workforce detail panel */
+.workforce-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  min-height: 300px;
+}
+.workforce-detail--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+}
+.workforce-detail__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.workforce-detail__profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.workforce-detail__profile-info {
+  flex: 1;
+}
+.workforce-detail__name {
+  font-weight: 700;
+  font-size: 16px;
+}
+.workforce-detail__email {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Capability grid */
+.cap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.cap-grid__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.cap-grid__item input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Queue card */
+.queue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.queue-card:hover,
+.queue-card--selected {
+  border-color: var(--line);
+}
+.queue-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.queue-card__name {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+.queue-card__strategy {
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  color: var(--muted);
+  background: var(--bg);
+}
+.queue-card__stats {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.queue-card__pending {
+  font-weight: 600;
+  color: var(--warn);
+}
+
+/* Staleness banner for degraded state */
+.staleness-banner {
+  padding: 8px 12px;
+  background: #fff8e1;
+  border: 1px solid #f0c000;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: #7a5200;
+  margin-bottom: 10px;
+}
+
+/* Workforce owner picker (inline typeahead) */
+.owner-picker {
+  position: absolute;
+  z-index: 50;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  width: 280px;
+  padding: 8px;
+}
+.owner-picker__search {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.owner-picker__list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.owner-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 13px;
+}
+.owner-picker__item:hover {
+  background: var(--bg);
+}
+.owner-picker__name { font-weight: 600; }
+.owner-picker__email { font-size: 11px; color: var(--muted); }
+
+/* HumanTask card in Inbox */
+.human-task-card {
+  border: 1px solid var(--line-soft);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.human-task-card__context {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.human-task-card__title {
+  font-weight: 600;
+  font-size: 14px;
+}
+.human-task-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.human-task-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Run step tier coloring for execution tier visualization */
+.run-step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  position: relative;
+}
+.run-step--human-task {
+  border-left: 4px solid var(--warn);
+}
+.run-step--manual {
+  border-left: 4px solid var(--danger);
+}
+.run-step--done {
+  border-left: 4px solid #ccc;
+  opacity: 0.7;
+}
+.run-step__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.run-step__number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 24px;
+}
+.run-step__title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+.run-step__assignee {
+  font-size: 11px;
+  padding: 1px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+}
+.run-step__meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  padding-left: 32px;
+}
+.run-step__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Triage undo button */
+.triage__undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: border-color 0.15s, color 0.15s;
+}
+.triage__undo:hover {
+  border-color: var(--line);
+  color: var(--ink);
+}
+.triage__undo:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.triage__progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.triage__progress-row .triage__progress-bar {
+  flex: 1;
+}
+
+/* Settings 3-panel layout */
+.settings-3panel {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--panel);
+  min-height: 500px;
+}
+.settings-3panel__rail {
+  border-right: 1px solid var(--line-soft);
+  padding: 8px 0;
+  background: var(--bg);
+}
+.settings-3panel__rail-item {
+  display: flex;
+  align-items: center;
+  padding: 9px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  border-left: 3px solid transparent;
+  transition: background 0.1s;
+}
+.settings-3panel__rail-item:hover {
+  background: rgba(27,27,27,0.05);
+}
+.settings-3panel__rail-item--active {
+  border-left-color: var(--ink);
+  background: rgba(27,27,27,0.08);
+  font-weight: 600;
+}
+.settings-3panel__content {
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+.settings-3panel__section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.settings-3panel__section-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.settings-help-callout {
+  padding: 10px 14px;
+  background: #f0f7ff;
+  border: 1px solid #b0d4ff;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  color: var(--info);
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* RBAC role card */
+.role-card {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  background: var(--bg);
+  margin-bottom: 10px;
+}
+.role-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.role-card__name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.role-card__caps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.role-cap-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--panel);
+}
+.role-cap-chip--active {
+  background: #e8f5e9;
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+/* Credential expiry badge */
+.cred-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.cred-expiry--ok   { background: #e8f5e9; color: var(--ok); }
+.cred-expiry--warn { background: #fff3e0; color: var(--warn); }
+.cred-expiry--danger { background: #fdecea; color: var(--danger); }

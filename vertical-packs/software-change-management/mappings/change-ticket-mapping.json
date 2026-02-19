@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "mappingId": "map-scm-change-ticket",
+  "packId": "scm.change-management",
+  "namespace": "scm",
+  "protocol": "rest",
+  "authModel": "oauth2",
+  "fieldMappings": [
+    {
+      "sourceField": "ticket.id",
+      "targetField": "changeRequest.externalTicketId"
+    },
+    {
+      "sourceField": "pullRequest.url",
+      "targetField": "changeRequest.pullRequestLink"
+    },
+    {
+      "sourceField": "ci.result",
+      "targetField": "changeRequest.ciStatus",
+      "transform": "normalizeCiStatus"
+    }
+  ]
+}

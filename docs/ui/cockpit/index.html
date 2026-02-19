@@ -97,6 +97,17 @@
           <a class="nav__item" href="#evidence"><span class="nav__icon">&sect;</span> Evidence</a>
         </nav>
 
+        <div class="sidebar__section-title">People</div>
+        <nav class="nav" aria-label="People navigation">
+          <a class="nav__item" href="#workforce"
+            ><span class="nav__icon">&#9679;</span> Workforce</a
+          >
+          <a class="nav__item" href="#queues"
+            ><span class="nav__icon">&#9636;</span> Queues
+            <span class="nav__badge nav__badge--warn">3</span></a
+          >
+        </nav>
+
         <div class="sidebar__section-title">Configuration</div>
         <nav class="nav" aria-label="Configuration navigation">
           <a class="nav__item" href="#agents"
@@ -1855,20 +1866,39 @@
             </table>
           </div>
 
+          <div class="pagination" style="margin-top: 10px">
+            <button class="btn btn--small" type="button" disabled>&laquo; Previous</button>
+            <span class="pagination__info">Page 1 of 1 &middot; 4 pending</span>
+            <button class="btn btn--small" type="button" disabled>Next &raquo;</button>
+            <select class="pagination__size" aria-label="Items per page">
+              <option>10 / page</option>
+              <option>25 / page</option>
+              <option>50 / page</option>
+            </select>
+          </div>
+
           <div class="outcome-preview" style="margin-top: 12px">
             After deciding, the queue advances to the next pending gate.
           </div>
 
           <!-- TRIAGE VIEW (hidden by default, toggled via JS) -->
           <div class="triage" id="triage" hidden>
-            <div class="triage__progress">
-              <div class="triage__progress-bar">
+            <div class="triage__progress triage__progress-row">
+              <div class="triage__progress-bar" style="flex: 1">
                 <div class="triage__progress-fill" style="width: 0%"></div>
               </div>
               <div class="triage__progress-text">
                 <span class="triage__current">1</span> of
                 <span class="triage__total">4</span> pending
               </div>
+              <button
+                class="triage__undo"
+                id="triageUndoBtn"
+                type="button"
+                disabled
+                aria-label="Undo last triage decision"
+                title="Undo last decision (U)"
+              >&#8617; Undo</button>
             </div>
 
             <div class="triage__stack">

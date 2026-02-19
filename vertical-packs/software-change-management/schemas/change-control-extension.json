@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "extensionId": "schema-ext-scm-change-control",
+  "packId": "scm.change-management",
+  "namespace": "scm",
+  "extendsCore": "core.record",
+  "fields": [
+    {
+      "fieldName": "changeType",
+      "fieldType": "string",
+      "required": true,
+      "description": "Normal, standard, emergency change classification."
+    },
+    {
+      "fieldName": "rollbackPlanRef",
+      "fieldType": "string",
+      "required": false,
+      "description": "Reference to rollback runbook or PR notes."
+    },
+    {
+      "fieldName": "evidenceBundleRef",
+      "fieldType": "string",
+      "required": false,
+      "description": "Reference to immutable evidence bundle for approval and audit."
+    }
+  ]
+}

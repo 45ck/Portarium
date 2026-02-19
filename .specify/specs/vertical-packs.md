@@ -66,3 +66,9 @@ Example:
 - Inputs: core version, requested packs (id + version range), and a registry.
 - Output: a lockfile listing resolved packs pinned to exact versions.
 - Strategy: greedy “pick highest compatible” per pack; fail fast on conflicts (no backtracking).
+
+## Reference vertical (ADR-0039)
+
+- The software change management reference vertical pack lives at:
+  - `vertical-packs/software-change-management/`
+- It is declarative and validated through domain pack parsers (manifest/schema/workflow/UI/mapping/test-asset).

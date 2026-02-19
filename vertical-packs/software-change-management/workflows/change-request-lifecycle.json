@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "definitionId": "wfdef-scm-change-request-lifecycle",
+  "packId": "scm.change-management",
+  "namespace": "scm",
+  "triggerType": "ticket.updated",
+  "executionTier": "HumanApprove",
+  "steps": [
+    {
+      "stepId": "step-plan",
+      "name": "Generate plan from ticket and diff intent",
+      "actionType": "plan:generate"
+    },
+    {
+      "stepId": "step-approval",
+      "name": "Submit approval gate for change request",
+      "actionType": "approval:submit"
+    },
+    {
+      "stepId": "step-evidence",
+      "name": "Append immutable evidence bundle references",
+      "actionType": "evidence:append"
+    },
+    {
+      "stepId": "step-deploy",
+      "name": "Trigger controlled deployment pipeline",
+      "actionType": "deployment:trigger"
+    }
+  ]
+}

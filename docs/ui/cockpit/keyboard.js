@@ -248,6 +248,27 @@ const Keyboard = (function () {
         goto('gateways');
       },
     },
+    {
+      id: 'nav-workforce',
+      label: 'Go to Workforce',
+      category: 'Navigate',
+      keywords: 'workforce people directory human operators approvers team members',
+      shortcut: 'g f',
+      icon: '\u25CF',
+      action: function () {
+        goto('workforce');
+      },
+    },
+    {
+      id: 'nav-queues',
+      label: 'Go to Queues',
+      category: 'Navigate',
+      keywords: 'queues human task queue routing people',
+      icon: '\u25A4',
+      action: function () {
+        goto('queues');
+      },
+    },
 
     // Actions
     {
@@ -707,6 +728,17 @@ const Keyboard = (function () {
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate gateways</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Test gateway connection</span></div>' +
         '</div>',
+      workforce:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>g f</kbd> <span>Go to Workforce</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate members</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open member detail</span></div>' +
+        '</div>',
+      queues:
+        '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate queues</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open queue detail</span></div>' +
+        '</div>',
     };
     return map[screen] || null;
   }
@@ -793,6 +825,7 @@ const Keyboard = (function () {
     m: 'missions',
     y: 'safety',
     g: 'gateways',
+    f: 'workforce',
   };
 
   function startChord(key) {
@@ -909,6 +942,17 @@ const Keyboard = (function () {
     // Escape -- close overlays (drawer is handled by existing wireframe.js code)
     if (key === 'Escape') {
       return;
+    }
+
+    // u -- undo last triage decision (only in triage mode)
+    if (key === 'u') {
+      var triageUndoBtn = document.getElementById('triageUndoBtn');
+      if (triageUndoBtn && !triageUndoBtn.disabled) {
+        triageUndoBtn.click();
+        showToast('Undo: decision reversed');
+        e.preventDefault();
+        return;
+      }
     }
 
     // ? -- cheatsheet

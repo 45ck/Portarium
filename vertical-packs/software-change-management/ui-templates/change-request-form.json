@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "templateId": "ui-scm-change-request-form",
+  "packId": "scm.change-management",
+  "namespace": "scm",
+  "schemaRef": "schemas/change-control-extension.json",
+  "fields": [
+    {
+      "fieldName": "changeType",
+      "widget": "select",
+      "label": "Change type"
+    },
+    {
+      "fieldName": "rollbackPlanRef",
+      "widget": "text",
+      "label": "Rollback plan reference"
+    },
+    {
+      "fieldName": "evidenceBundleRef",
+      "widget": "text",
+      "label": "Evidence bundle reference"
+    }
+  ]
+}

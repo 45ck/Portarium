@@ -859,6 +859,20 @@ function setPersona(persona) {
     var allowed = el.getAttribute('data-requires-persona').split(' ');
     el.style.display = allowed.includes(persona) ? '' : 'none';
   });
+
+  /* Workforce screen persona adaptation */
+  var workforceEditBtns = document.querySelectorAll('.js-workforce-edit-btn');
+  workforceEditBtns.forEach(function (btn) {
+    btn.hidden = persona !== 'admin';
+  });
+  var capCheckboxes = document.querySelectorAll('.js-cap-checkbox');
+  capCheckboxes.forEach(function (cb) {
+    cb.disabled = persona !== 'admin';
+  });
+  var availToggle = document.querySelector('.js-availability-toggle');
+  if (availToggle) {
+    availToggle.disabled = persona === 'auditor';
+  }
 }
 
 /* ============================================================
@@ -1236,6 +1250,9 @@ ABToggle.register(
 let triageIndex = 0;
 const triageResults = { approved: 0, denied: 0, changes: 0, skipped: 0 };
 
+/* Undo state — stores the last dismissed card state */
+var triageLastUndo = null; // { index, cardId, action, hiddenState }
+
 /* Ordered list of triage card element IDs — must match the approvals table order */
 var TRIAGE_CARD_IDS = ['triageCard', 'triageCardZendesk', 'triageCardRobot', 'triageCardAgent'];
 /* Label shown in the next-preview strip after each card is swiped */
@@ -1277,9 +1294,19 @@ function triageAction(action) {
     action
   ];
   triageResults[resultKey]++;
+  /* Record undo state before dismissing */
+  var undoIndex = triageIndex;
+  var undoCardId = TRIAGE_CARD_IDS[triageIndex];
+
   setTimeout(function () {
     card.hidden = true;
     card.classList.remove(exitClass);
+
+    /* Store undo state */
+    triageLastUndo = { index: undoIndex, cardId: undoCardId, action: action };
+    var undoBtn = document.getElementById('triageUndoBtn');
+    if (undoBtn) undoBtn.disabled = false;
+
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
     var currentSpan = document.querySelector('.triage__current');
@@ -1300,6 +1327,48 @@ function triageAction(action) {
       if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
     }
   }, 350);
+}
+
+function triageUndo() {
+  if (!triageLastUndo) return;
+  var undo = triageLastUndo;
+  triageLastUndo = null;
+
+  /* Reverse the result counter */
+  var resultKey = { approve: 'approved', deny: 'denied', changes: 'changes', skip: 'skipped' }[undo.action];
+  if (resultKey && triageResults[resultKey] > 0) triageResults[resultKey]--;
+
+  /* Hide current card (if any) and restore the undone card */
+  if (triageIndex < TRIAGE_CARD_IDS.length) {
+    var currentCard = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
+    if (currentCard) currentCard.hidden = true;
+  }
+  triageIndex = undo.index;
+
+  var restoredCard = document.getElementById(undo.cardId);
+  if (restoredCard) {
+    restoredCard.hidden = false;
+  }
+
+  var progressFill = document.querySelector('.triage__progress-fill');
+  var currentSpan = document.querySelector('.triage__current');
+  if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
+  if (currentSpan) currentSpan.textContent = triageIndex + 1;
+
+  /* Update next preview */
+  var nextLabel = triageIndex > 0 ? TRIAGE_NEXT_LABELS[triageIndex - 1] : null;
+  var nextPreviewWrap = document.querySelector('.triage__next-preview');
+  var nextTitle = document.querySelector('.triage__next-title');
+  if (nextTitle) nextTitle.textContent = nextLabel ? 'Next: ' + nextLabel : '';
+  if (nextPreviewWrap) nextPreviewWrap.hidden = !nextLabel;
+
+  /* Disable undo button (single-step only) */
+  var undoBtn = document.getElementById('triageUndoBtn');
+  if (undoBtn) undoBtn.disabled = true;
+
+  if (typeof Keyboard !== 'undefined' && Keyboard.showToast) {
+    Keyboard.showToast('Undone: ' + undo.action);
+  }
 }
 
 /* ============================================================
@@ -1819,6 +1888,10 @@ function main() {
   document.addEventListener('click', function (e) {
     var actionBtn = e.target.closest('.triage__action');
     if (actionBtn) triageAction(actionBtn.dataset.action);
+    /* Triage undo button */
+    if (e.target.id === 'triageUndoBtn' || e.target.closest('#triageUndoBtn')) {
+      triageUndo();
+    }
   });
 
   /* Triage rationale submit/cancel */
@@ -1893,6 +1966,7 @@ function main() {
     else if (key === 'd') triageAction('deny');
     else if (key === 'r') triageAction('changes');
     else if (key === 's') triageAction('skip');
+    else if (key === 'u') { triageUndo(); e.preventDefault(); }
     else if (key === 'i') AISummaryToggle.toggle();
     else if (key === ' ') {
       e.preventDefault();

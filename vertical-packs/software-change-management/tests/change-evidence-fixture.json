@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture-scm-change-evidence",
+  "packId": "scm.change-management",
+  "kind": "evidence-fixture",
+  "dataPath": "fixtures/change-evidence-success.json"
+}
