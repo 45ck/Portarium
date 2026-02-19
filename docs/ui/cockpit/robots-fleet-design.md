@@ -118,7 +118,7 @@ CTA: [Enrol robot]
 
 1. `Robots > Operations Map` became the default first view.
 2. Two-pane operations surface:
-   - Left: map with occupancy, geofences, robot markers, trails, uncertainty halos, and cluster badges.
+   - Left: Leaflet-backed map (low-fi) with occupancy, geofences, robot markers, trails, uncertainty halos, and cluster badges.
    - Right: synchronized list equivalent for keyboard/assistive use.
 3. Spatial alert triage panel:
    - geofence violation
@@ -130,6 +130,7 @@ CTA: [Enrol robot]
 5. Playback controls:
    - `Live`, step back, play/pause timeline scrubber, incident bookmarks.
 6. Degraded-state map banner for stale telemetry.
+7. Static renderer fallback retained when Leaflet is unavailable.
 
 ### Nielsen heuristic alignment
 

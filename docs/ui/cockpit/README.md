@@ -32,6 +32,7 @@ Then open `http://localhost:4174`.
 ## Robotics Map Prototype Highlights
 
 - `Robots` now defaults to `Operations Map` (overview-first map + synchronized list).
+- Map renderer now uses `Leaflet` in low-fidelity mode with static fallback when CDN is unavailable.
 - Map controls include:
   - Site/floor filters
   - Status filter chips
@@ -40,6 +41,18 @@ Then open `http://localhost:4174`.
 - Alert triage includes map jump and acknowledge actions.
 - Details-on-demand panel updates from map/list/alert selection.
 - Degraded realtime state shows a map staleness banner.
+
+## Workflow Builder Prototype Highlights
+
+- Example blueprints include finance, robotics, machine maintenance, hybrid incidents, IT major incident, and compliance legal hold.
+- Nodes are selectable in both template graphs and non-template workflow visualizations.
+- Palette step types can append low-fi draft nodes into the active graph.
+- Branch labels and connectors support low-fi editing interactions.
+- Readiness panel blocks `Run workflow` when blocking validation checks remain.
+- Keyboard support in builder:
+  - `j`/`k` cycle active-graph nodes
+  - `Enter` selects the focused step
+  - `E` focuses step-name config input
 
 ## Domain Primitives Rendered
 

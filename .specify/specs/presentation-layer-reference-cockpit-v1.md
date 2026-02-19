@@ -108,6 +108,15 @@ For each primary screen, show dedicated state components for:
 - Timeline controls must support live mode and replay mode with incident bookmarks.
 - Degraded realtime state must show explicit stale-data messaging on the map surface.
 
+### R9 Workflow builder interaction model (prototype scope)
+
+- Workflow Builder must expose multiple concrete blueprint examples across domains (finance, robotics, machine/OT, hybrid, and at least one non-robot operational domain).
+- Node selection must be graph-scoped and must not clear selections in unrelated workflow diagrams on the same screen.
+- Palette step types must support low-fidelity draft-step insertion into the active graph.
+- Condition branch labels and connector paths must support explicit low-fidelity editing interactions.
+- A run-readiness panel must show blocking vs non-blocking validation checks and gate `Run workflow` when blocking checks exist.
+- Keyboard flow must support active-graph step navigation and config focus without conflicting with global list navigation shortcuts.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.
