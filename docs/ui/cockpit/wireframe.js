@@ -697,6 +697,11 @@ function setEmptyStates(systemState) {
   const nonEmptyRuns = document.querySelector('.js-nonempty-runs');
   if (emptyRuns) emptyRuns.hidden = !isEmpty;
   if (nonEmptyRuns) nonEmptyRuns.hidden = isEmpty;
+
+  const emptyQueues = document.querySelector('.js-empty-queues');
+  const nonEmptyQueues = document.querySelector('.js-nonempty-queues');
+  if (emptyQueues) emptyQueues.hidden = !isEmpty;
+  if (nonEmptyQueues) nonEmptyQueues.hidden = isEmpty;
 }
 
 /* ============================================================

@@ -11887,8 +11887,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               </button>
             </div>
           </div>
+          <div
+            class="callout js-empty-queues"
+            role="status"
+            aria-live="polite"
+            hidden
+            style="margin-bottom: 12px"
+          >
+            Queue list is empty. Create a queue to enable human-task routing.
+          </div>
 
-          <div class="grid grid--2" style="gap: 12px; align-items: start">
+          <div class="grid grid--2 js-nonempty-queues" style="gap: 12px; align-items: start">
             <!-- Queue list -->
             <div style="display: flex; flex-direction: column; gap: 8px">
               <div class="queue-card queue-card--selected" tabindex="0" role="button">
@@ -12299,4 +12308,3 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
     <script src="./keyboard.js" defer></script>
   </body>
 </html>
-
