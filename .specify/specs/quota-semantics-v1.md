@@ -11,6 +11,8 @@ This implements ADR-0030: quota-aware execution as a platform concern.
 - Quota semantics are declared **per action** in capability matrices.
 - Under quota pressure, execution should degrade gracefully: throttle, backoff, batch, or reschedule rather than fail.
 - Values are hints that must be accurate enough to prevent predictable rate-limit failures; incorrect declarations reduce reliability.
+- Orchestration scheduling applies `rateLimit` and `dailyCap` before dispatch and can defer execution with an explicit `retryAt`.
+- Adapter call wrappers treat rate-limit responses as retryable and must enforce bounded retry budgets.
 
 ## Schema (QuotaSemanticsV1)
 
@@ -46,3 +48,13 @@ Discriminated union:
 - `{ kind: "ResetEpochSeconds", headerName: string }`
 
 Header names are treated as case-insensitive at the transport boundary, but are stored as provided for diagnostics.
+
+## Runtime primitive expectations
+
+- **Scheduling decision**:
+  - `DispatchNow` increments minute/day counters.
+  - `Deferred` includes reason (`RateLimit` or `DailyCap`) and `retryAtIso`.
+- **Adapter wrapper retry**:
+  - retries only `RateLimited` failures,
+  - uses `Retry-After` when available, else bounded exponential backoff,
+  - exposes retry budget usage (`used`, `remaining`) and backoff history for observability.

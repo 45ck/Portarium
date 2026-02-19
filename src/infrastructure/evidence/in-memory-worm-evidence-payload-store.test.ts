@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  EvidencePayloadAlreadyExistsError,
-  EvidencePayloadDeletionBlockedError,
-} from '../../application/ports/evidence-payload-store.js';
+import { EvidencePayloadAlreadyExistsError } from '../../application/ports/evidence-payload-store.js';
 import { InMemoryWormEvidencePayloadStore } from './in-memory-worm-evidence-payload-store.js';
 
 describe('InMemoryWormEvidencePayloadStore', () => {
@@ -31,9 +28,7 @@ describe('InMemoryWormEvidencePayloadStore', () => {
       },
     });
 
-    await expect(
-      store.delete({ location }),
-    ).rejects.toMatchObject<EvidencePayloadDeletionBlockedError>({
+    await expect(store.delete({ location })).rejects.toMatchObject({
       name: 'EvidencePayloadDeletionBlockedError',
       reason: 'RetentionActive',
     });
@@ -58,11 +53,46 @@ describe('InMemoryWormEvidencePayloadStore', () => {
     });
 
     now = Date.parse('2026-02-20T00:00:00.000Z');
-    await expect(
-      store.delete({ location }),
-    ).rejects.toMatchObject<EvidencePayloadDeletionBlockedError>({
+    await expect(store.delete({ location })).rejects.toMatchObject({
       name: 'EvidencePayloadDeletionBlockedError',
       reason: 'LegalHold',
     });
+  });
+
+  it('falls back to retention blocking after legal hold release', async () => {
+    let now = Date.parse('2026-02-18T00:00:00.000Z');
+    const store = new InMemoryWormEvidencePayloadStore({ clock: () => now });
+    const location = { bucket: 'evidence', key: 'runs/run-1/review.json' } as const;
+
+    await store.put({ location, bytes: new Uint8Array([1]) });
+    await store.applyWormControls({
+      location,
+      retentionSchedule: {
+        retentionClass: 'Compliance',
+        retainUntilIso: '2026-02-20T00:00:00.000Z',
+        legalHold: true,
+      },
+    });
+
+    await expect(store.delete({ location })).rejects.toMatchObject({
+      name: 'EvidencePayloadDeletionBlockedError',
+      reason: 'LegalHold',
+    });
+
+    await store.applyWormControls({
+      location,
+      retentionSchedule: {
+        retentionClass: 'Compliance',
+        legalHold: false,
+      },
+    });
+
+    await expect(store.delete({ location })).rejects.toMatchObject({
+      name: 'EvidencePayloadDeletionBlockedError',
+      reason: 'RetentionActive',
+    });
+
+    now = Date.parse('2026-02-21T00:00:00.000Z');
+    await expect(store.delete({ location })).resolves.toBeUndefined();
   });
 });

@@ -210,6 +210,25 @@ describe('Evidence chain v1', () => {
 
     expect(verifyEvidenceChainV1([e1, e2], testHasher)).toEqual({ ok: true });
   });
+
+  it('rejects appending entries with non-minimised metadata', () => {
+    expect(() =>
+      appendEvidenceEntryV1({
+        previous: undefined,
+        hasher: testHasher,
+        next: {
+          schemaVersion: 1,
+          evidenceId: EvidenceId('ev-1'),
+          workspaceId: WorkspaceId('ws-1'),
+          correlationId: CorrelationId('corr-1'),
+          occurredAtIso: '2026-02-16T00:00:00.000Z',
+          category: 'System',
+          summary: 'Approved by alice@example.com',
+          actor: { kind: 'System' },
+        },
+      }),
+    ).toThrow(/email/i);
+  });
 });
 
 describe('Signature hooks', () => {

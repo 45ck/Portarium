@@ -9,6 +9,7 @@ import type {
   EvidenceSigner,
   EvidenceSignatureVerifier,
 } from './evidence-hasher.js';
+import { assertEvidencePrivacyMinimizationV1 } from './evidence-privacy-v1.js';
 
 export type EvidenceChainVerificationResult =
   | Readonly<{ ok: true }>
@@ -42,6 +43,8 @@ export function appendEvidenceEntryV1(params: {
     ...params.next,
     ...(params.previous ? { previousHash: params.previous.hashSha256 } : {}),
   };
+
+  assertEvidencePrivacyMinimizationV1(base);
 
   const hashSha256 = params.hasher.sha256Hex(canonicalizeEvidenceEntryV1(base));
   return { ...base, hashSha256 };

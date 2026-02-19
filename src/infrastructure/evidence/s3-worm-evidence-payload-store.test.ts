@@ -26,13 +26,13 @@ describe('S3WormEvidencePayloadStore', () => {
 
     expect(send).toHaveBeenCalledTimes(2);
     expect(send.mock.calls[0]?.[0]).toBeInstanceOf(PutObjectRetentionCommand);
-    expect(send.mock.calls[0]?.[0].input).toMatchObject({
+    expect((send.mock.calls[0]?.[0] as PutObjectRetentionCommand).input).toMatchObject({
       Bucket: 'evidence',
       Key: 'runs/run-1/plan.json',
       Retention: { Mode: 'COMPLIANCE' },
     });
     expect(send.mock.calls[1]?.[0]).toBeInstanceOf(PutObjectLegalHoldCommand);
-    expect(send.mock.calls[1]?.[0].input).toMatchObject({
+    expect((send.mock.calls[1]?.[0] as PutObjectLegalHoldCommand).input).toMatchObject({
       Bucket: 'evidence',
       Key: 'runs/run-1/plan.json',
       LegalHold: { Status: 'ON' },

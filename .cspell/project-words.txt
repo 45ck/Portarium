@@ -709,6 +709,7 @@ Grisu
 # US spelling variants
 Fulfills
 fulfills
+defense
 
 # Robotics / IoT domain terms (domain-atlas taxonomy)
 EASA

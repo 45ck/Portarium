@@ -39,6 +39,12 @@ Fields:
 - `previousHash?`: hash of the previous evidence entry (genesis has none)
 - `hashSha256`: SHA-256 hex digest of the canonicalized entry content (see below)
 
+Privacy minimisation invariants for immutable metadata:
+
+- `summary` MUST NOT include direct personal identifiers (for example, email addresses).
+- `links.externalRefs[].externalId` MUST be opaque identifiers, not raw PII values.
+- `payloadRefs[].uri` MUST NOT contain query strings or fragments.
+
 ### EvidencePayloadRef
 
 - `kind`: `Artifact | Snapshot | Diff | Log`

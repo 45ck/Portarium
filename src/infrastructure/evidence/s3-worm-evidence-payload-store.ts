@@ -1,10 +1,10 @@
+import type { S3Client } from '@aws-sdk/client-s3';
 import {
   DeleteObjectCommand,
   PutObjectCommand,
   PutObjectLegalHoldCommand,
   PutObjectRetentionCommand,
   type PutObjectCommandInput,
-  S3Client,
 } from '@aws-sdk/client-s3';
 
 import type { EvidencePayloadStorePort } from '../../application/ports/evidence-payload-store.js';
