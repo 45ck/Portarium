@@ -19,18 +19,17 @@ describe('InMemoryFinanceAccountingAdapter integration', () => {
     });
     expect(created.ok).toBe(true);
     if (!created.ok || created.result.kind !== 'invoice') return;
+    const createdInvoiceId = created.result.invoice.invoiceId;
 
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listInvoices' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'invoices') return;
-    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === created.result.invoice.invoiceId)).toBe(
-      true,
-    );
+    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdInvoiceId)).toBe(true);
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
       operation: 'getInvoice',
-      payload: { invoiceId: created.result.invoice.invoiceId },
+      payload: { invoiceId: createdInvoiceId },
     });
     expect(fetched.ok).toBe(true);
     if (!fetched.ok || fetched.result.kind !== 'invoice') return;
@@ -50,18 +49,17 @@ describe('InMemoryFinanceAccountingAdapter integration', () => {
     });
     expect(created.ok).toBe(true);
     if (!created.ok || created.result.kind !== 'invoice') return;
+    const createdBillId = created.result.invoice.invoiceId;
 
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listBills' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'invoices') return;
-    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === created.result.invoice.invoiceId)).toBe(
-      true,
-    );
+    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdBillId)).toBe(true);
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
       operation: 'getBill',
-      payload: { invoiceId: created.result.invoice.invoiceId },
+      payload: { invoiceId: createdBillId },
     });
     expect(fetched.ok).toBe(true);
     if (!fetched.ok || fetched.result.kind !== 'invoice') return;

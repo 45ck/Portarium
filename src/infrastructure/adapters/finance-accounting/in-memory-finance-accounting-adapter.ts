@@ -6,7 +6,6 @@ import type {
   FinanceAccountingAdapterPort,
   FinanceAccountingExecuteInputV1,
   FinanceAccountingExecuteOutputV1,
-  FinanceAccountingOperationV1,
 } from '../../../application/ports/finance-accounting-adapter.js';
 import { FINANCE_ACCOUNTING_OPERATIONS_V1 } from '../../../application/ports/finance-accounting-adapter.js';
 

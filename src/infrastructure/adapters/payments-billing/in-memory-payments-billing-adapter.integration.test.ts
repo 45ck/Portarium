@@ -37,13 +37,12 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     expect(refunded.ok).toBe(true);
     if (!refunded.ok || refunded.result.kind !== 'payment') return;
     expect(refunded.result.payment.status).toBe('refunded');
+    const createdPaymentId = created.result.payment.paymentId;
 
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listCharges' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'payments') return;
-    expect(listed.result.payments.some((p) => p.paymentId === created.result.payment.paymentId)).toBe(
-      true,
-    );
+    expect(listed.result.payments.some((p) => p.paymentId === createdPaymentId)).toBe(true);
   });
 
   it('supports subscription create/get/cancel/list flow', async () => {
@@ -58,11 +57,12 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     });
     expect(created.ok).toBe(true);
     if (!created.ok || created.result.kind !== 'subscription') return;
+    const createdSubscriptionId = created.result.subscription.subscriptionId;
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
       operation: 'getSubscription',
-      payload: { subscriptionId: created.result.subscription.subscriptionId },
+      payload: { subscriptionId: createdSubscriptionId },
     });
     expect(fetched.ok).toBe(true);
     if (!fetched.ok || fetched.result.kind !== 'subscription') return;
@@ -71,7 +71,7 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     const cancelled = await adapter.execute({
       tenantId: TENANT,
       operation: 'cancelSubscription',
-      payload: { subscriptionId: created.result.subscription.subscriptionId },
+      payload: { subscriptionId: createdSubscriptionId },
     });
     expect(cancelled.ok).toBe(true);
     if (!cancelled.ok || cancelled.result.kind !== 'subscription') return;
@@ -82,7 +82,7 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     if (!listed.ok || listed.result.kind !== 'subscriptions') return;
     expect(
       listed.result.subscriptions.some(
-        (sub) => sub.subscriptionId === created.result.subscription.subscriptionId,
+        (sub) => sub.subscriptionId === createdSubscriptionId,
       ),
     ).toBe(true);
   });
@@ -100,11 +100,12 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     });
     expect(created.ok).toBe(true);
     if (!created.ok || created.result.kind !== 'invoice') return;
+    const createdInvoiceId = created.result.invoice.invoiceId;
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
       operation: 'getInvoice',
-      payload: { invoiceId: created.result.invoice.invoiceId },
+      payload: { invoiceId: createdInvoiceId },
     });
     expect(fetched.ok).toBe(true);
     if (!fetched.ok || fetched.result.kind !== 'invoice') return;
@@ -113,9 +114,7 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listInvoices' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'invoices') return;
-    expect(listed.result.invoices.some((inv) => inv.invoiceId === created.result.invoice.invoiceId)).toBe(
-      true,
-    );
+    expect(listed.result.invoices.some((inv) => inv.invoiceId === createdInvoiceId)).toBe(true);
 
     const balance = await adapter.execute({ tenantId: TENANT, operation: 'getBalance' });
     expect(balance.ok).toBe(true);

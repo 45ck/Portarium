@@ -121,7 +121,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       case 'listPaymentMethods':
         return {
           ok: true,
-          result: { kind: 'paymentMethods', paymentMethods: this.#listPaymentMethods(input) },
+          result: { kind: 'paymentMethods', paymentMethods: this.#listPaymentMethods() },
         };
       case 'createPayout':
         return this.#createPayout(input);
@@ -336,7 +336,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
     return { ok: true, result: { kind: 'paymentMethod', paymentMethod } };
   }
 
-  #listPaymentMethods(input: PaymentsBillingExecuteInputV1): readonly ExternalObjectRef[] {
+  #listPaymentMethods(): readonly ExternalObjectRef[] {
     return this.#paymentMethods.filter((method) => method.portFamily === 'PaymentsBilling');
   }
 
