@@ -242,3 +242,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/documents-esign/in-memory-documents-esign-adapter.ts`.
+
+## AnalyticsBi Adapter Foundation (bead-0140)
+
+- Application port contract now includes `AnalyticsBiAdapterPort` under
+  `src/application/ports/analytics-bi-adapter.ts`.
+- The operation set is fixed to the 16 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `AnalyticsBi` family.
+- Execute response contract:
+  - success: canonical `Party`, `Party[]`, `Document`, `ExternalObjectRef`,
+    `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/analytics-bi/in-memory-analytics-bi-adapter.ts`.

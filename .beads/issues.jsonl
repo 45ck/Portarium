@@ -137,7 +137,7 @@
 {"id":"bead-0137","title":"Code review: DocumentsEsign port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:44.751Z","updatedAt":"2026-02-19T09:52:14.303Z"}
 {"id":"bead-0138","title":"DocumentsEsign port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:45.030Z","updatedAt":"2026-02-19T09:56:19.633Z"}
 {"id":"bead-0139","title":"Review: DocumentsEsign port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:45.301Z","updatedAt":"2026-02-19T09:57:53.888Z"}
-{"id":"bead-0140","title":"AnalyticsBi port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:45.562Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0140","title":"AnalyticsBi port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:45.562Z","updatedAt":"2026-02-19T10:02:39.595Z"}
 {"id":"bead-0141","title":"Code review: AnalyticsBi port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:45.844Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0142","title":"AnalyticsBi port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:46.099Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0143","title":"Review: AnalyticsBi port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:46.350Z","updatedAt":"2026-02-17T20:18:23.090Z"}
