@@ -437,13 +437,14 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       return { ok: false, error: 'not_found', message: `User ${username} was not found.` };
     }
 
+    const issuedAtIso = this.#now().toISOString();
     const externalRef: ExternalObjectRef = {
       sorName: 'DirectorySuite',
       portFamily: 'IamDirectory',
       externalId: `auth-${++this.#authSequence}`,
       externalType: 'auth_session',
-      displayLabel: `${user.displayName} authenticated`,
-      deepLinkUrl: `https://directory.example/sessions/${this.#authSequence}`,
+      displayLabel: `${user.displayName} authenticated at ${issuedAtIso}`,
+      deepLinkUrl: `https://directory.example/sessions/${this.#authSequence}?issuedAt=${encodeURIComponent(issuedAtIso)}`,
     };
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
@@ -471,12 +472,13 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       return { ok: false, error: 'not_found', message: `User ${userId} was not found.` };
     }
 
+    const verifiedAtIso = this.#now().toISOString();
     const externalRef: ExternalObjectRef = {
       sorName: 'DirectorySuite',
       portFamily: 'IamDirectory',
       externalId: `mfa-${++this.#mfaSequence}`,
       externalType: 'mfa_verification',
-      displayLabel: `MFA verified with ${factor}`,
+      displayLabel: `MFA verified with ${factor} at ${verifiedAtIso}`,
     };
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
