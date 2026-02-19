@@ -108,7 +108,7 @@
 {"id":"bead-0108","title":"ItsmItOps port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:36.619Z","updatedAt":"2026-02-19T08:39:30.732Z"}
 {"id":"bead-0109","title":"Code review: ItsmItOps port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:36.902Z","updatedAt":"2026-02-19T08:40:48.289Z"}
 {"id":"bead-0110","title":"ItsmItOps port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:37.179Z","updatedAt":"2026-02-19T08:42:26.789Z"}
-{"id":"bead-0111","title":"Review: ItsmItOps port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:37.460Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0111","title":"Review: ItsmItOps port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:37.460Z","updatedAt":"2026-02-19T08:44:03.615Z"}
 {"id":"bead-0112","title":"IamDirectory port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:37.802Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0113","title":"Code review: IamDirectory port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:38.100Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0114","title":"IamDirectory port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:38.414Z","updatedAt":"2026-02-17T20:18:23.090Z"}
