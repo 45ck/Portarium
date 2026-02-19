@@ -233,7 +233,7 @@
             <a class="btn btn--primary" href="#run">Review failed run</a>
           </div>
 
-          <div class="filters" role="group" aria-label="Filter options">
+          <div class="filters js-approvals-noise" role="group" aria-label="Filter options">
             <span class="chip chip--active js-filter-persona" role="button" tabindex="0"
               >Failures + blocks</span
             >
@@ -2204,7 +2204,7 @@
             </table>
           </div>
 
-          <div class="pagination" style="margin-top: 10px">
+          <div class="pagination js-approvals-noise" style="margin-top: 10px">
             <button class="btn btn--small" type="button" disabled>&laquo; Previous</button>
             <span class="pagination__info">Page 1 of 1 &middot; 4 pending</span>
             <button class="btn btn--small" type="button" disabled>Next &raquo;</button>
@@ -2215,7 +2215,7 @@
             </select>
           </div>
 
-          <div class="outcome-preview" style="margin-top: 12px">
+          <div class="outcome-preview js-approvals-noise" style="margin-top: 12px">
             After deciding, the queue advances to the next pending gate.
           </div>
 
@@ -3143,7 +3143,11 @@
           </div>
 
           <!-- ── ApprovalDecisionForm deep review [bead-0459] ── -->
-          <div class="card" style="margin-top: 20px" aria-label="Approval deep review panel">
+          <div
+            class="card js-approvals-noise"
+            style="margin-top: 20px"
+            aria-label="Approval deep review panel"
+          >
             <div class="card__title" style="margin-bottom: 12px">
               Deep Review: Approve Plan &mdash; Create Invoice in NetSuite
               <span

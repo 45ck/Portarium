@@ -1312,6 +1312,7 @@ ABToggle.register(
 let triageIndex = 0;
 const triageResults = { approved: 0, denied: 0, changes: 0, skipped: 0 };
 var triageLayout = 'swipe';
+var triageCompleted = false;
 
 /* Undo state — stores the last dismissed card state */
 var triageLastUndo = null; // { index, cardId, action, hiddenState }
@@ -1548,6 +1549,33 @@ function applyTriageLayout(layout) {
   triageUpdateStatus();
 }
 
+function applyApprovalsViewMode(mode) {
+  var normalizedMode = mode === 'table' ? 'table' : 'triage';
+  var approvalsScreen = document.getElementById('screen-approvals');
+  var tableWrap = document.querySelector('#screen-approvals .js-approvals-table');
+  var triageEl = document.getElementById('triage');
+  var completeEl = document.getElementById('triageComplete');
+
+  if (tableWrap) tableWrap.hidden = normalizedMode !== 'table';
+
+  if (normalizedMode === 'triage') {
+    if (triageEl) triageEl.hidden = triageCompleted;
+    if (completeEl) completeEl.hidden = !triageCompleted;
+    if (approvalsScreen) approvalsScreen.classList.add('screen--triage-focus');
+    applyTriageLayout(triageLayout);
+  } else {
+    if (triageEl) triageEl.hidden = true;
+    if (completeEl) completeEl.hidden = true;
+    if (approvalsScreen) approvalsScreen.classList.remove('screen--triage-focus');
+  }
+
+  qsa('.js-triage-mode').forEach(function (btn) {
+    var isActive = btn.dataset.mode === normalizedMode;
+    btn.classList.toggle('btn--primary', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+}
+
 function triageAction(action) {
   var requiresRationale = action === 'deny' || action === 'changes';
   var rationaleEl = document.getElementById('triageRationale');
@@ -1597,6 +1625,7 @@ function triageAction(action) {
     triageUpdateProgress();
     triageUpdateNextPreview();
     if (triageIndex >= TRIAGE_CARD_IDS.length) {
+      triageCompleted = true;
       var triageEl = document.getElementById('triage');
       var completeEl = document.getElementById('triageComplete');
       if (triageEl) triageEl.hidden = true;
@@ -1604,6 +1633,7 @@ function triageAction(action) {
       renderTriageDiff(null);
       triageUpdateStatus('Queue complete. All approvals reviewed.');
     } else {
+      triageCompleted = false;
       var nextCard = document.getElementById(TRIAGE_CARD_IDS[triageIndex]);
       if (nextCard) nextCard.hidden = false;
       renderTriageDiff(triageGetCurrentCardId());
@@ -1638,6 +1668,7 @@ function triageUndo() {
   triageUpdateProgress();
   triageUpdateNextPreview();
   renderTriageDiff(triageGetCurrentCardId());
+  triageCompleted = false;
   triageUpdateStatus();
 
   /* Disable undo button (single-step only) */
@@ -3049,20 +3080,7 @@ function main() {
   document.addEventListener('click', function (e) {
     var modeBtn = e.target.closest('.js-triage-mode');
     if (!modeBtn) return;
-    var mode = modeBtn.dataset.mode;
-    var tableWrap = document.querySelector('#screen-approvals .js-approvals-table');
-    var triageEl = document.getElementById('triage');
-    if (mode === 'triage') {
-      if (tableWrap) tableWrap.hidden = true;
-      if (triageEl) triageEl.hidden = false;
-      applyTriageLayout(triageLayout);
-    } else {
-      if (tableWrap) tableWrap.hidden = false;
-      if (triageEl) triageEl.hidden = true;
-    }
-    qsa('.js-triage-mode').forEach(function (btn) {
-      btn.classList.toggle('btn--primary', btn.dataset.mode === mode);
-    });
+    applyApprovalsViewMode(modeBtn.dataset.mode);
   });
 
   /* Triage layout toggle (A/B) */
@@ -3193,8 +3211,10 @@ function main() {
     }
   });
 
-  applyTriageLayout(triageLayout);
-  triageUpdateStatus();
+  var defaultApprovalsModeBtn =
+    document.querySelector('.js-triage-mode.btn--primary') ||
+    document.querySelector('.js-triage-mode[data-mode="table"]');
+  applyApprovalsViewMode(defaultApprovalsModeBtn ? defaultApprovalsModeBtn.dataset.mode : 'table');
 
   /* ---- Form Dialog wiring ---- */
   qsa('[data-dialog]').forEach(function (btn) {

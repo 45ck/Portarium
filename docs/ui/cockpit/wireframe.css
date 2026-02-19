@@ -1428,6 +1428,9 @@ a {
   gap: 6px;
   margin: 12px 0;
 }
+#screen-approvals.screen--triage-focus .js-approvals-noise {
+  display: none !important;
+}
 .triage {
   display: flex;
   flex-direction: column;

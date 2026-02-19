@@ -143,7 +143,7 @@
 {"id":"bead-0143","title":"Review: AnalyticsBi port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:46.350Z","updatedAt":"2026-02-19T10:07:39.098Z"}
 {"id":"bead-0144","title":"MonitoringIncident port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:46.603Z","updatedAt":"2026-02-19T19:06:32.271Z"}
 {"id":"bead-0145","title":"Code review: MonitoringIncident port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:46.863Z","updatedAt":"2026-02-19T19:09:45.311Z"}
-{"id":"bead-0146","title":"MonitoringIncident port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:47.128Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0146","title":"MonitoringIncident port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:47.128Z","updatedAt":"2026-02-19T19:13:01.094Z"}
 {"id":"bead-0147","title":"Review: MonitoringIncident port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:47.402Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0148","title":"ComplianceGrc port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:47.666Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0149","title":"Code review: ComplianceGrc port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:47.923Z","updatedAt":"2026-02-17T20:18:23.090Z"}
