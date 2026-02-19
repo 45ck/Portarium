@@ -1431,6 +1431,16 @@ a {
 #screen-approvals.screen--triage-focus .js-approvals-noise {
   display: none !important;
 }
+#screen-approvals.screen--approvals-table .triage__progress-row,
+#screen-approvals.screen--approvals-table .triage__layout,
+#screen-approvals.screen--approvals-table .triage__status,
+#screen-approvals.screen--approvals-table .triage__workspace,
+#screen-approvals.screen--approvals-table .triage__rationale,
+#screen-approvals.screen--approvals-table .triage__actions,
+#screen-approvals.screen--approvals-table .triage__hint,
+#screen-approvals.screen--approvals-table .triage__complete {
+  display: none !important;
+}
 .triage {
   display: flex;
   flex-direction: column;

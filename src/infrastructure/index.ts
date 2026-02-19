@@ -20,3 +20,4 @@ export * from './adapters/projects-work-mgmt/in-memory-projects-work-mgmt-adapte
 export * from './adapters/documents-esign/in-memory-documents-esign-adapter.js';
 export * from './adapters/analytics-bi/in-memory-analytics-bi-adapter.js';
 export * from './adapters/monitoring-incident/in-memory-monitoring-incident-adapter.js';
+export * from './adapters/compliance-grc/in-memory-compliance-grc-adapter.js';

@@ -1562,11 +1562,13 @@ function applyApprovalsViewMode(mode) {
     if (triageEl) triageEl.hidden = triageCompleted;
     if (completeEl) completeEl.hidden = !triageCompleted;
     if (approvalsScreen) approvalsScreen.classList.add('screen--triage-focus');
+    if (approvalsScreen) approvalsScreen.classList.remove('screen--approvals-table');
     applyTriageLayout(triageLayout);
   } else {
     if (triageEl) triageEl.hidden = true;
     if (completeEl) completeEl.hidden = true;
     if (approvalsScreen) approvalsScreen.classList.remove('screen--triage-focus');
+    if (approvalsScreen) approvalsScreen.classList.add('screen--approvals-table');
   }
 
   qsa('.js-triage-mode').forEach(function (btn) {
