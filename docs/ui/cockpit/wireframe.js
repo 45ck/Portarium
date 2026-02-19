@@ -668,6 +668,10 @@ function setBanners(systemState) {
   /* Workforce staleness banner — show when degraded */
   var workforceBanner = document.querySelector('.js-workforce-stale');
   if (workforceBanner) workforceBanner.hidden = systemState !== 'degraded';
+
+  /* Robotics map staleness banner — show when degraded */
+  var mapBanner = document.querySelector('.js-map-stale');
+  if (mapBanner) mapBanner.hidden = systemState !== 'degraded';
 }
 
 /* ============================================================
@@ -978,18 +982,32 @@ function closeDrawer() {
 function bindTabs() {
   const tabContainers = qsa('.tabs');
   for (const container of tabContainers) {
-    const parent = container.closest('.agent-detail') || container.closest('.screen') || document;
     const tabs = qsa('.tab', container);
-    const panes = qsa('.tabpane', parent);
+    const paneRoot =
+      container.parentElement && container.parentElement.querySelector('.tabpanes')
+        ? container.parentElement.querySelector('.tabpanes')
+        : container.closest('.screen') || document;
+    const panes = qsa('.tabpane', paneRoot);
 
     function setTab(tabId) {
-      for (const t of tabs) t.classList.toggle('tab--active', t.dataset.tab === tabId);
-      for (const p of panes) p.classList.toggle('tabpane--active', p.dataset.pane === tabId);
+      for (const t of tabs) {
+        const isActive = t.dataset.tab === tabId;
+        t.classList.toggle('tab--active', isActive);
+        t.setAttribute('aria-selected', String(isActive));
+      }
+      for (const p of panes) {
+        const isActive = p.dataset.pane === tabId;
+        p.classList.toggle('tabpane--active', isActive);
+        p.hidden = !isActive;
+      }
     }
 
     for (const t of tabs) {
       t.addEventListener('click', () => setTab(t.dataset.tab));
     }
+
+    const defaultTab = tabs.find((t) => t.classList.contains('tab--active')) || tabs[0];
+    if (defaultTab) setTab(defaultTab.dataset.tab);
   }
 }
 
@@ -2684,6 +2702,352 @@ function main() {
     });
   }
 
+  /* ---- Robotics: location map operations ---- */
+  var mapSelectedRobotId = 'robot-001';
+  var mapPlaybackTimer = null;
+  var MAP_ROBOT_STATE = {
+    'robot-001': {
+      robot: 'robot-001',
+      status: 'Normal',
+      location: 'Aisle 3 (x:22.4, y:61.1)',
+      siteFloor: 'warehouse-a / f1',
+      heading: 'NE (42 deg)',
+      speed: '0.38 m/s',
+      uncertainty: 'q=0.92, covariance=small',
+      frame: 'map -> odom -> base_link',
+      mission: 'mis-0094 navigate_to bay-3',
+      freshness: '2s ago',
+      why: 'High confidence pose with recent updates. Safe for auto dispatch.',
+    },
+    'robot-003': {
+      robot: 'robot-003',
+      status: 'Warning',
+      location: 'Crossing (x:46.0, y:48.3)',
+      siteFloor: 'warehouse-a / f1',
+      heading: 'W (272 deg)',
+      speed: '0.22 m/s',
+      uncertainty: 'q=0.46, covariance=medium',
+      frame: 'map -> odom -> base_link',
+      mission: 'mis-0211 pick SKU-8821',
+      freshness: '7s ago',
+      why: 'Covariance expanded after turn. Operator review recommended before zone handoff.',
+    },
+    'robot-007': {
+      robot: 'robot-007',
+      status: 'Critical',
+      location: 'Yard no-fly-2 (x:71.8, y:24.2)',
+      siteFloor: 'yard / yard',
+      heading: 'N (3 deg)',
+      speed: '0.00 m/s',
+      uncertainty: 'q=0.31, covariance=large',
+      frame: 'map -> odom -> base_link',
+      mission: 'none',
+      freshness: '45s ago',
+      why: 'Geofence violation plus stale telemetry. Immediate triage required.',
+    },
+    'robot-009': {
+      robot: 'robot-009',
+      status: 'Critical',
+      location: 'Assembly cell 2 (x:55.8, y:72.5)',
+      siteFloor: 'warehouse-a / f1',
+      heading: 'S (181 deg)',
+      speed: '0.00 m/s',
+      uncertainty: 'q=0.60, covariance=medium',
+      frame: 'map -> odom -> base_link',
+      mission: 'none',
+      freshness: '120s ago',
+      why: 'E-Stop active. Keep in supervised state until physical safety check completes.',
+    },
+    'robot-011': {
+      robot: 'robot-011',
+      status: 'Normal',
+      location: 'Yard cluster',
+      siteFloor: 'yard / yard',
+      heading: 'E (95 deg)',
+      speed: '0.34 m/s',
+      uncertainty: 'q=0.83, covariance=small',
+      frame: 'map -> odom -> base_link',
+      mission: 'yard sweep',
+      freshness: '3s ago',
+      why: 'Clustered normal traffic. Details hidden in overview mode to reduce clutter.',
+    },
+  };
+
+  function isMapLayerEnabled(layer) {
+    var btn = document.querySelector('.js-map-layer[data-map-layer="' + layer + '"]');
+    if (!btn) return true;
+    return btn.classList.contains('chip--active');
+  }
+
+  function setMapLayerVisibility() {
+    document.querySelectorAll('[data-map-layer-target]').forEach(function (el) {
+      var layer = el.dataset.mapLayerTarget;
+      if (layer === 'clusters') return;
+      el.hidden = !isMapLayerEnabled(layer);
+    });
+  }
+
+  function setMapTimeline(value) {
+    var timeline = document.getElementById('mapTimeline');
+    var label = document.getElementById('mapTimelineLabel');
+    var liveBtn = document.querySelector('.js-map-live');
+    if (!timeline || !label) return;
+
+    var next = Number(value);
+    if (Number.isNaN(next)) next = 100;
+    if (next < 0) next = 0;
+    if (next > 100) next = 100;
+    timeline.value = String(next);
+
+    var isLive = next >= 100;
+    var secondsBehind = Math.round(((100 - next) / 100) * 180);
+    label.textContent = isLive ? 'Live now' : 'Replay T-' + secondsBehind + 's';
+    if (liveBtn) {
+      liveBtn.classList.toggle('btn--primary', isLive);
+      liveBtn.setAttribute('aria-pressed', String(isLive));
+    }
+  }
+
+  function stopMapPlayback() {
+    if (mapPlaybackTimer) {
+      clearInterval(mapPlaybackTimer);
+      mapPlaybackTimer = null;
+    }
+    var playBtn = document.querySelector('.js-map-play');
+    if (playBtn) {
+      playBtn.textContent = 'Play';
+      playBtn.classList.remove('btn--primary');
+      playBtn.setAttribute('aria-pressed', 'false');
+    }
+  }
+
+  function startMapPlayback() {
+    var timeline = document.getElementById('mapTimeline');
+    var playBtn = document.querySelector('.js-map-play');
+    if (!timeline || !playBtn) return;
+    if (mapPlaybackTimer) return;
+
+    if (Number(timeline.value) >= 100) {
+      setMapTimeline(60);
+    }
+    playBtn.textContent = 'Pause';
+    playBtn.classList.add('btn--primary');
+    playBtn.setAttribute('aria-pressed', 'true');
+
+    mapPlaybackTimer = setInterval(function () {
+      var next = Number(timeline.value) + 2;
+      setMapTimeline(next);
+      if (next >= 100) stopMapPlayback();
+    }, 320);
+  }
+
+  function updateMapDetail(robotId) {
+    var robot = MAP_ROBOT_STATE[robotId];
+    if (!robot) return;
+
+    var fields = {
+      mapDetailRobot: robot.robot,
+      mapDetailStatus: robot.status,
+      mapDetailLocation: robot.location,
+      mapDetailSiteFloor: robot.siteFloor,
+      mapDetailHeading: robot.heading,
+      mapDetailSpeed: robot.speed,
+      mapDetailUncertainty: robot.uncertainty,
+      mapDetailFrame: robot.frame,
+      mapDetailMission: robot.mission,
+      mapDetailFreshness: robot.freshness,
+    };
+    Object.keys(fields).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = fields[id];
+    });
+    var why = document.getElementById('mapDetailWhy');
+    if (why) why.textContent = robot.why;
+  }
+
+  function selectMapRobot(robotId) {
+    if (!MAP_ROBOT_STATE[robotId]) return;
+    mapSelectedRobotId = robotId;
+
+    document.querySelectorAll('.js-map-marker').forEach(function (marker) {
+      marker.classList.toggle('map-marker--selected', marker.dataset.mapRobotId === robotId);
+    });
+    document.querySelectorAll('.js-map-row').forEach(function (row) {
+      row.classList.toggle('map-row--selected', row.dataset.mapRobotId === robotId);
+    });
+
+    updateMapDetail(robotId);
+  }
+
+  function matchesMapFilters(el, site, floor, status, search) {
+    if (!el) return false;
+    if (site !== 'all' && el.dataset.mapSite !== site) return false;
+    if (floor !== 'all' && el.dataset.mapFloor !== floor) return false;
+    if (status !== 'all' && el.dataset.mapStatus !== status) return false;
+    if (search) {
+      var label = (el.dataset.mapLabel || '').toLowerCase();
+      var text = (el.textContent || '').toLowerCase();
+      if (label.indexOf(search) === -1 && text.indexOf(search) === -1) return false;
+    }
+    return true;
+  }
+
+  function applyMapFilters() {
+    var siteSelect = document.getElementById('mapSite');
+    var floorSelect = document.getElementById('mapFloor');
+    var scaleSelect = document.getElementById('mapScale');
+    var searchInput = document.getElementById('mapSearch');
+
+    var site = siteSelect ? siteSelect.value : 'all';
+    var floor = floorSelect ? floorSelect.value : 'all';
+    var scale = scaleSelect ? scaleSelect.value : 'overview';
+    var search = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    var activeStatusChip = document.querySelector('.js-map-status-filter.chip--active');
+    var status = activeStatusChip ? activeStatusChip.dataset.mapStatus : 'all';
+
+    var visibleRowIds = [];
+    document.querySelectorAll('.js-map-row').forEach(function (row) {
+      var matches = matchesMapFilters(row, site, floor, status, search);
+      row.hidden = !matches;
+      if (matches) visibleRowIds.push(row.dataset.mapRobotId);
+    });
+
+    var clusterEnabled = isMapLayerEnabled('clusters') && scale === 'overview';
+    document.querySelectorAll('.js-map-marker').forEach(function (marker) {
+      var matches = matchesMapFilters(marker, site, floor, status, search);
+      var isNormal = marker.dataset.mapStatus === 'normal';
+      var isSelected = marker.dataset.mapRobotId === mapSelectedRobotId;
+      if (matches && clusterEnabled && isNormal && !isSelected) {
+        matches = false;
+      }
+      marker.hidden = !matches;
+    });
+
+    var cluster = document.querySelector('.js-map-cluster');
+    if (cluster) {
+      cluster.hidden =
+        !clusterEnabled || (status !== 'all' && status !== 'normal') || (site === 'warehouse-a');
+    }
+
+    setMapLayerVisibility();
+
+    if (visibleRowIds.length > 0 && visibleRowIds.indexOf(mapSelectedRobotId) === -1) {
+      selectMapRobot(visibleRowIds[0]);
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    var mapMarker = e.target.closest('.js-map-marker');
+    if (mapMarker) {
+      selectMapRobot(mapMarker.dataset.mapRobotId);
+      return;
+    }
+
+    var mapRow = e.target.closest('.js-map-row');
+    if (mapRow) {
+      selectMapRobot(mapRow.dataset.mapRobotId);
+      return;
+    }
+
+    var statusChip = e.target.closest('.js-map-status-filter');
+    if (statusChip) {
+      document.querySelectorAll('.js-map-status-filter').forEach(function (chip) {
+        chip.classList.toggle('chip--active', chip === statusChip);
+      });
+      applyMapFilters();
+      return;
+    }
+
+    var layerBtn = e.target.closest('.js-map-layer');
+    if (layerBtn) {
+      var isEnabled = !layerBtn.classList.contains('chip--active');
+      layerBtn.classList.toggle('chip--active', isEnabled);
+      layerBtn.setAttribute('aria-pressed', String(isEnabled));
+      applyMapFilters();
+      return;
+    }
+
+    var liveBtn = e.target.closest('.js-map-live');
+    if (liveBtn) {
+      stopMapPlayback();
+      setMapTimeline(100);
+      return;
+    }
+
+    var stepBtn = e.target.closest('.js-map-step');
+    if (stepBtn) {
+      var timeline = document.getElementById('mapTimeline');
+      if (timeline) {
+        stopMapPlayback();
+        setMapTimeline(Number(timeline.value) + Number(stepBtn.dataset.mapStep || 0));
+      }
+      return;
+    }
+
+    var playBtn = e.target.closest('.js-map-play');
+    if (playBtn) {
+      if (mapPlaybackTimer) stopMapPlayback();
+      else startMapPlayback();
+      return;
+    }
+
+    var bookmarkBtn = e.target.closest('.js-map-bookmark');
+    if (bookmarkBtn) {
+      stopMapPlayback();
+      setMapTimeline(Number(bookmarkBtn.dataset.mapTimeline || 100));
+      selectMapRobot(bookmarkBtn.dataset.mapRobotId);
+      return;
+    }
+
+    var alertJump = e.target.closest('.js-map-jump');
+    if (alertJump) {
+      var alertRow = alertJump.closest('.js-map-alert');
+      if (alertRow) {
+        selectMapRobot(alertRow.dataset.mapRobotId);
+      }
+      return;
+    }
+
+    var alertAck = e.target.closest('.js-map-ack');
+    if (alertAck) {
+      var ackRow = alertAck.closest('.js-map-alert');
+      if (ackRow) {
+        ackRow.classList.add('is-acknowledged');
+        alertAck.textContent = 'Acked';
+        alertAck.disabled = true;
+      }
+      return;
+    }
+
+    var clusterBtn = e.target.closest('.js-map-cluster');
+    if (clusterBtn) {
+      var scaleSelect = document.getElementById('mapScale');
+      if (scaleSelect) {
+        scaleSelect.value = 'detail';
+        applyMapFilters();
+      }
+      return;
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'mapSearch') {
+      applyMapFilters();
+      return;
+    }
+
+    if (e.target.id === 'mapTimeline') {
+      stopMapPlayback();
+      setMapTimeline(Number(e.target.value));
+    }
+  });
+
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'mapSite' || e.target.id === 'mapFloor' || e.target.id === 'mapScale') {
+      applyMapFilters();
+    }
+  });
+
   /* ---- WF-2: Owner picker keyboard navigation ---- */
   document.addEventListener('keydown', function (e) {
     var picker = document.getElementById('ownerPicker');
@@ -2857,6 +3221,11 @@ function main() {
       }
     }
   });
+
+  /* ---- Robotics map initial state ---- */
+  setMapTimeline(100);
+  applyMapFilters();
+  selectMapRobot(mapSelectedRobotId);
 
   render(initial);
 }

@@ -697,6 +697,9 @@ const Keyboard = (function () {
         '</div>',
       robots:
         '<div class="kbd-cheatsheet__list">' +
+        '<div class="kbd-cheatsheet__row"><kbd>m</kbd> <span>Focus map search</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>l</kbd> <span>Return to live map mode</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>[</kbd> <span>Step timeline backward</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Navigate robot cards</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>e</kbd> <span>Send E-Stop to selected robot</span></div>' +
         '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Open robot detail</span></div>' +
@@ -983,6 +986,39 @@ const Keyboard = (function () {
           document.querySelector('#robotGrid .is-kbd-selected .js-estop-robot') ||
           document.querySelector('#robotGrid .js-estop-robot');
         if (estopBtn) estopBtn.click();
+        e.preventDefault();
+        return;
+      }
+    }
+
+    // m -- focus map search (robots screen)
+    if (key === 'm' && getActiveScreenId() === 'robots') {
+      var mapSearch = document.getElementById('mapSearch');
+      if (mapSearch) {
+        mapSearch.focus();
+        showToast('Map search focused');
+        e.preventDefault();
+        return;
+      }
+    }
+
+    // l -- switch map timeline to live
+    if (key === 'l' && getActiveScreenId() === 'robots') {
+      var liveBtn = document.querySelector('.js-map-live');
+      if (liveBtn) {
+        liveBtn.click();
+        showToast('Live map mode');
+        e.preventDefault();
+        return;
+      }
+    }
+
+    // [ -- step map timeline backward
+    if (key === '[' && getActiveScreenId() === 'robots') {
+      var stepBtn = document.querySelector('.js-map-step');
+      if (stepBtn) {
+        stepBtn.click();
+        showToast('Playback stepped back');
         e.preventDefault();
         return;
       }
