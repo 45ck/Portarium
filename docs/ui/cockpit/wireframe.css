@@ -1893,6 +1893,8 @@ a {
   padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid var(--line-soft);
+  cursor: pointer;
+  user-select: none;
 }
 .wf-branch-label--yes {
   color: var(--ok);
@@ -1901,11 +1903,17 @@ a {
 .wf-branch-label--no {
   color: var(--muted);
 }
+.wf-branch-label--edited {
+  border-style: dashed;
+  background: rgba(10, 102, 255, 0.08);
+}
 .wf-connector {
   display: flex;
   align-items: center;
   min-width: 40px;
   flex-shrink: 0;
+  border-radius: 999px;
+  cursor: pointer;
 }
 .wf-connector__line {
   flex: 1;
@@ -1933,6 +1941,15 @@ a {
   min-width: 2px;
   min-height: 20px;
   background: var(--line);
+}
+.wf-connector--manual .wf-connector__line,
+.wf-connector--manual .wf-connector__line--vertical {
+  background: transparent;
+  border-top: 2px dashed rgba(37, 87, 167, 0.8);
+  border-left: 2px dashed rgba(37, 87, 167, 0.8);
+}
+.wf-connector--manual .wf-connector__arrow {
+  color: #2557a7;
 }
 .wf-graph__branches {
   display: flex;
@@ -1967,6 +1984,41 @@ a {
 }
 .wf-config__subtitle {
   font-size: 12px;
+}
+.wf-readiness {
+  margin-top: 12px;
+}
+.wf-readiness__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.wf-readiness__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.wf-readiness__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+.wf-readiness__dot--ok {
+  background: var(--ok);
+}
+.wf-readiness__dot--warn {
+  background: var(--warn);
+}
+.wf-readiness__dot--critical {
+  background: var(--danger);
+}
+.wf-readiness__hint {
+  margin-top: 8px;
+  font-size: 11px;
 }
 @media (max-width: 980px) {
   .wf-layout {
@@ -4087,6 +4139,48 @@ tr.is-kbd-selected td {
     linear-gradient(130deg, rgba(255, 255, 255, 0.95), rgba(238, 244, 255, 0.8)),
     radial-gradient(circle at 20% 15%, rgba(37, 87, 167, 0.08), transparent 50%),
     radial-gradient(circle at 82% 75%, rgba(31, 122, 54, 0.08), transparent 48%);
+}
+.map-canvas__leaflet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+}
+.map-canvas--leaflet .map-canvas__leaflet {
+  display: block;
+}
+.map-canvas--leaflet .map-canvas__grid,
+.map-canvas--leaflet .map-canvas__occupancy,
+.map-canvas--leaflet .map-zone,
+.map-canvas--leaflet .map-trail,
+.map-canvas--leaflet .map-marker,
+.map-canvas--leaflet .map-cluster {
+  display: none !important;
+}
+.leaflet-robot-label {
+  border: 0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #1b1b1b !important;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 999px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.16);
+}
+.leaflet-cluster-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #1b1b1b;
+  border-radius: 999px;
+  background: #fff;
+  color: #1b1b1b;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.leaflet-control-attribution {
+  font-size: 9px !important;
 }
 .map-canvas__grid {
   position: absolute;

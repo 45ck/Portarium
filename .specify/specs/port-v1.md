@@ -185,3 +185,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/marketing-automation/in-memory-marketing-automation-adapter.ts`.
+
+## AdsPlatforms Adapter Foundation (bead-0124)
+
+- Application port contract now includes `AdsPlatformsAdapterPort` under
+  `src/application/ports/ads-platforms-adapter.ts`.
+- The operation set is fixed to the 19 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `AdsPlatforms` family.
+- Execute response contract:
+  - success: canonical `Campaign`, `Campaign[]`, `ExternalObjectRef`,
+    `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/ads-platforms/in-memory-ads-platforms-adapter.ts`.

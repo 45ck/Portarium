@@ -1460,11 +1460,39 @@ var WF_TEMPLATE_META = {
     subtitle: 'Hybrid Robot + Machine Incident Workflow (draft)',
     note: 'Template focus: supervisor approval, coordinated stop, and evidence-linked recovery.',
   },
+  'itsm-major-incident': {
+    subtitle: 'Major Incident Workflow (draft)',
+    note: 'Template focus: monitoring alert triage, change gate approval, and comms fan-out.',
+  },
+  'compliance-legal-hold': {
+    subtitle: 'Compliance Legal Hold Workflow (draft)',
+    note: 'Template focus: counsel approval, evidence preservation, and owner notifications.',
+  },
 };
+
+var wfDraftStepSeq = 0;
+
+function getWorkflowBuilderCanvas() {
+  return document.getElementById('wfCanvas');
+}
+
+function getActiveWorkflowTemplateGraph() {
+  var canvas = getWorkflowBuilderCanvas();
+  if (!canvas) return null;
+  return canvas.querySelector('.wf-template-graph:not([hidden])');
+}
 
 function setWorkflowBuilderMessage(message) {
   var el = document.getElementById('wfBuilderMessage');
   if (el) el.textContent = message;
+}
+
+function decorateWorkflowConnectors(scope) {
+  qsa('.wf-connector', scope || document).forEach(function (connector) {
+    if (!connector.hasAttribute('tabindex')) connector.setAttribute('tabindex', '0');
+    connector.setAttribute('role', 'button');
+    connector.setAttribute('aria-label', 'Toggle connector style');
+  });
 }
 
 function syncWorkflowConfigFromNode(node) {
@@ -1501,18 +1529,22 @@ function activateWorkflowTemplate(templateId) {
   var noteEl = document.querySelector('.js-wf-template-note');
   if (noteEl) noteEl.textContent = meta.note;
 
-  var canvas = document.getElementById('wfCanvas');
+  var canvas = getWorkflowBuilderCanvas();
   qsa('.wf-node', canvas || document).forEach(function (n) {
     n.classList.remove('wf-node--selected');
   });
-  var firstNode =
-    document.querySelector('.wf-template-graph:not([hidden]) .wf-node[data-node-id="approve"]') ||
-    document.querySelector('.wf-template-graph:not([hidden]) .wf-node[data-node-id]');
+  var activeGraph = getActiveWorkflowTemplateGraph();
+  if (activeGraph) decorateWorkflowConnectors(activeGraph);
+  var firstNode = activeGraph
+    ? activeGraph.querySelector('.wf-node[data-node-id="approve"]') ||
+      activeGraph.querySelector('.wf-node[data-node-id]')
+    : null;
   if (firstNode) {
     firstNode.classList.add('wf-node--selected');
     syncWorkflowConfigFromNode(firstNode);
     setWorkflowBuilderMessage('Template loaded: ' + meta.subtitle);
   }
+  updateWorkflowReadiness();
 }
 
 function setSelectedNodeInGraph(node, graph) {
@@ -1523,6 +1555,281 @@ function setSelectedNodeInGraph(node, graph) {
   node.classList.add('wf-node--selected');
 }
 
+function buildWorkflowDraftNode(stepType) {
+  var metaByType = {
+    action: {
+      nodeClass: 'wf-node--action',
+      iconClass: 'wf-node-icon--action',
+      icon: '&#9889;',
+      label: 'Draft Action',
+      badge: 'Action',
+    },
+    approval: {
+      nodeClass: 'wf-node--approval',
+      iconClass: 'wf-node-icon--approval',
+      icon: '&#9730;',
+      label: 'Draft Approval',
+      badge: 'Gate',
+    },
+    condition: {
+      nodeClass: 'wf-node--condition',
+      iconClass: 'wf-node-icon--condition',
+      icon: '&#9670;',
+      label: 'Draft Condition',
+      badge: 'Condition',
+      branches: true,
+    },
+    notification: {
+      nodeClass: 'wf-node--notification',
+      iconClass: 'wf-node-icon--notification',
+      icon: '&#128276;',
+      label: 'Draft Notification',
+      badge: 'Notify',
+    },
+    agent: {
+      nodeClass: 'wf-node--agent',
+      iconClass: 'wf-node-icon--agent',
+      icon: '&#129504;',
+      label: 'Draft Agent Task',
+      badge: 'Agent',
+    },
+    'robot-action': {
+      nodeClass: 'wf-node--action',
+      iconClass: 'wf-node-icon--action',
+      icon: '&#9632;',
+      label: 'Draft Robot Action',
+      badge: 'Robot',
+    },
+    'machine-job': {
+      nodeClass: 'wf-node--action',
+      iconClass: 'wf-node-icon--condition',
+      icon: '&#9635;',
+      label: 'Draft Machine Job',
+      badge: 'Machine',
+    },
+  };
+
+  var meta = metaByType[stepType] || metaByType.action;
+  wfDraftStepSeq += 1;
+  var nodeId = 'draft-' + stepType + '-' + wfDraftStepSeq;
+  var branchMarkup = meta.branches
+    ? '<div class="wf-node__branches"><span class="wf-branch-label wf-branch-label--yes">Yes</span><span class="wf-branch-label wf-branch-label--no">No</span></div>'
+    : '';
+
+  var row = document.createElement('div');
+  row.className = 'wf-graph__row wf-graph__row--draft';
+  row.innerHTML =
+    '<div class="wf-connector">' +
+    '<div class="wf-connector__line"></div>' +
+    '<div class="wf-connector__arrow">&#8250;</div>' +
+    '</div>' +
+    '<div class="wf-node ' +
+    meta.nodeClass +
+    '" data-node-id="' +
+    nodeId +
+    '" data-node-draft="true">' +
+    '<div class="wf-node__header">' +
+    '<span class="wf-node-icon ' +
+    meta.iconClass +
+    '">' +
+    meta.icon +
+    '</span>' +
+    '<span class="wf-node__name">' +
+    meta.label +
+    '</span>' +
+    '</div>' +
+    '<div class="wf-node__meta subtle">Queued from palette. Configure details before run.</div>' +
+    '<div class="wf-node__status"><span class="status status--warn" style="font-size: 10px; padding: 2px 6px">' +
+    meta.badge +
+    '</span></div>' +
+    branchMarkup +
+    '</div>';
+  return row;
+}
+
+function addWorkflowDraftStep(stepType) {
+  var activeGraph = getActiveWorkflowTemplateGraph();
+  if (!activeGraph) return;
+  var row = buildWorkflowDraftNode(stepType);
+  activeGraph.appendChild(row);
+  decorateWorkflowConnectors(row);
+
+  var node = row.querySelector('.wf-node');
+  if (node) {
+    setSelectedNodeInGraph(node, activeGraph);
+    syncWorkflowConfigFromNode(node);
+    node.focus();
+  }
+
+  setWorkflowBuilderMessage(
+    'Draft step added. Configure it before running: ' + (node ? node.dataset.nodeId : 'draft'),
+  );
+  updateWorkflowReadiness();
+}
+
+function toggleWorkflowConnector(connector) {
+  if (!connector) return;
+  var isManual = connector.classList.toggle('wf-connector--manual');
+  connector.setAttribute('aria-pressed', String(isManual));
+  setWorkflowBuilderMessage(
+    isManual
+      ? 'Connector switched to manual/alternative path.'
+      : 'Connector switched back to default path.',
+  );
+}
+
+function editWorkflowBranchLabel(labelEl) {
+  if (!labelEl) return;
+  var current = (labelEl.textContent || '').trim() || 'Branch';
+  var next = window.prompt('Edit branch label', current);
+  if (next === null) return;
+  var normalized = next.trim();
+  if (!normalized) return;
+  labelEl.textContent = normalized;
+  labelEl.classList.add('wf-branch-label--edited');
+  setWorkflowBuilderMessage('Branch label updated: ' + normalized);
+  updateWorkflowReadiness();
+}
+
+function evaluateWorkflowReadiness() {
+  var graph = getActiveWorkflowTemplateGraph();
+  if (!graph) return { items: [], blockingCount: 0 };
+
+  var templateId = graph.dataset.wfTemplatePane || 'finance-invoice';
+  var conditionNodes = qsa('.wf-node--condition', graph);
+  var nodesWithoutBranches = conditionNodes.filter(function (node) {
+    return qsa('.wf-branch-label', node).length === 0;
+  }).length;
+  var hasApproval = qsa('.wf-node--approval', graph).length > 0;
+  var hasEnd = qsa('.wf-node--end', graph).length > 0;
+  var hasDraft = qsa('.wf-node[data-node-draft="true"]', graph).length > 0;
+  var hasSafetyAction = qsa('.wf-node--action', graph).some(function (node) {
+    var nameEl = node.querySelector('.wf-node__name');
+    var txt = nameEl ? nameEl.textContent.toLowerCase() : '';
+    return txt.indexOf('stop') >= 0 || txt.indexOf('e-stop') >= 0;
+  });
+  var needsSafetyAction =
+    templateId === 'robot-fleet-triage' || templateId === 'hybrid-incident';
+
+  var items = [
+    {
+      label: hasApproval ? 'Approval gate present' : 'Missing approval gate',
+      severity: hasApproval ? 'ok' : 'critical',
+      blocking: !hasApproval,
+    },
+    {
+      label: hasEnd ? 'End state present' : 'Missing end state',
+      severity: hasEnd ? 'ok' : 'critical',
+      blocking: !hasEnd,
+    },
+    {
+      label:
+        nodesWithoutBranches === 0
+          ? 'Condition branches labeled'
+          : nodesWithoutBranches + ' condition node(s) missing branch labels',
+      severity: nodesWithoutBranches === 0 ? 'ok' : 'warn',
+      blocking: false,
+    },
+    {
+      label: hasDraft ? 'Draft step(s) still unconfigured' : 'No unconfigured draft steps',
+      severity: hasDraft ? 'critical' : 'ok',
+      blocking: hasDraft,
+    },
+  ];
+
+  if (needsSafetyAction) {
+    items.push({
+      label: hasSafetyAction
+        ? 'Safety stop action present'
+        : 'Missing safety stop action for robotics flow',
+      severity: hasSafetyAction ? 'ok' : 'warn',
+      blocking: false,
+    });
+  }
+
+  var blockingCount = items.filter(function (item) {
+    return item.blocking;
+  }).length;
+  return { items: items, blockingCount: blockingCount };
+}
+
+function renderWorkflowReadiness(result) {
+  var listEl = document.querySelector('.js-wf-readiness-list');
+  var summaryEl = document.getElementById('wfReadinessSummary');
+  var runBtn = document.getElementById('wfRunButton');
+  if (!listEl || !summaryEl) return;
+
+  listEl.innerHTML = result.items
+    .map(function (item) {
+      return (
+        '<li class="wf-readiness__item">' +
+        '<span class="wf-readiness__dot wf-readiness__dot--' +
+        item.severity +
+        '" aria-hidden="true"></span>' +
+        item.label +
+        '</li>'
+      );
+    })
+    .join('');
+
+  if (result.blockingCount === 0) {
+    summaryEl.textContent = 'Ready to run. No blocking validation issues.';
+  } else {
+    summaryEl.textContent =
+      result.blockingCount + ' blocking validation issue(s) must be fixed before run.';
+  }
+
+  if (runBtn) {
+    runBtn.disabled = result.blockingCount > 0;
+    runBtn.setAttribute('aria-disabled', String(result.blockingCount > 0));
+  }
+}
+
+function updateWorkflowReadiness() {
+  renderWorkflowReadiness(evaluateWorkflowReadiness());
+}
+
+function isWorkflowBuilderActiveScreen() {
+  var active = document.querySelector('.screen.is-active');
+  return !!(active && active.dataset.screen === 'workflow-builder');
+}
+
+function isKeyboardInputFocused() {
+  var focused = document.activeElement;
+  if (!focused) return false;
+  var tag = focused.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (focused.isContentEditable) return true;
+  return false;
+}
+
+function getActiveWorkflowNodes() {
+  var graph = getActiveWorkflowTemplateGraph();
+  return graph ? qsa('.wf-node', graph) : [];
+}
+
+function moveWorkflowNodeSelection(offset) {
+  var graph = getActiveWorkflowTemplateGraph();
+  if (!graph) return;
+  var nodes = getActiveWorkflowNodes();
+  if (!nodes.length) return;
+
+  var currentIndex = nodes.findIndex(function (node) {
+    return node.classList.contains('wf-node--selected');
+  });
+  if (currentIndex < 0) currentIndex = 0;
+
+  var nextIndex = currentIndex + offset;
+  if (nextIndex < 0) nextIndex = nodes.length - 1;
+  if (nextIndex >= nodes.length) nextIndex = 0;
+
+  var target = nodes[nextIndex];
+  setSelectedNodeInGraph(target, graph);
+  syncWorkflowConfigFromNode(target);
+  target.focus();
+  setWorkflowBuilderMessage('Selected step: ' + (target.dataset.nodeId || 'step'));
+}
+
 document.addEventListener('click', function (e) {
   var templateBtn = e.target.closest('.wf-template');
   if (templateBtn) {
@@ -1531,32 +1838,77 @@ document.addEventListener('click', function (e) {
   }
 
   var stepTypeBtn = e.target.closest('[data-step-type]');
-  if (stepTypeBtn) {
-    var stepNameEl = stepTypeBtn.querySelector('.wf-palette__item-name');
-    var stepName = stepNameEl ? stepNameEl.textContent : 'Step';
-    setWorkflowBuilderMessage(
-      'Draft step queued: ' + stepName + '. Node drag/drop is next for this low-fi prototype.',
-    );
+  if (stepTypeBtn && stepTypeBtn.closest('#screen-workflow-builder')) {
+    addWorkflowDraftStep(stepTypeBtn.dataset.stepType || 'action');
+    return;
+  }
+
+  var branchLabel = e.target.closest('.wf-branch-label');
+  if (branchLabel && branchLabel.closest('#wfCanvas')) {
+    editWorkflowBranchLabel(branchLabel);
+    return;
+  }
+
+  var connector = e.target.closest('.wf-connector');
+  if (connector && connector.closest('#wfCanvas')) {
+    toggleWorkflowConnector(connector);
     return;
   }
 
   var node = e.target.closest('.wf-node');
   if (!node) return;
 
-  var canvas = document.getElementById('wfCanvas');
+  var canvas = getWorkflowBuilderCanvas();
   var inBuilderCanvas = canvas && canvas.contains(node);
   if (inBuilderCanvas) {
-    var activeGraph = canvas.querySelector('.wf-template-graph:not([hidden])');
+    var activeGraph = getActiveWorkflowTemplateGraph();
     if (activeGraph && !activeGraph.contains(node)) return;
     setSelectedNodeInGraph(node, activeGraph || canvas);
     syncWorkflowConfigFromNode(node);
     setWorkflowBuilderMessage('Selected step: ' + (node.dataset.nodeId || 'step'));
+    updateWorkflowReadiness();
     return;
   }
 
   var graph = node.closest('.wf-graph');
   if (!graph) return;
   setSelectedNodeInGraph(node, graph);
+});
+
+document.addEventListener('keydown', function (e) {
+  if (!isWorkflowBuilderActiveScreen() || isKeyboardInputFocused()) return;
+  var key = e.key.toLowerCase();
+  if (key === 'j' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    moveWorkflowNodeSelection(1);
+    return;
+  }
+  if (key === 'k' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    moveWorkflowNodeSelection(-1);
+    return;
+  }
+  if (e.key === 'Enter') {
+    var focusedNode = document.activeElement && document.activeElement.closest('.wf-node');
+    if (focusedNode && focusedNode.closest('#wfCanvas')) {
+      e.preventDefault();
+      var graph = getActiveWorkflowTemplateGraph();
+      setSelectedNodeInGraph(focusedNode, graph || getWorkflowBuilderCanvas());
+      syncWorkflowConfigFromNode(focusedNode);
+      setWorkflowBuilderMessage('Selected step: ' + (focusedNode.dataset.nodeId || 'step'));
+      updateWorkflowReadiness();
+    }
+    return;
+  }
+  if (key === 'e') {
+    var stepNameInput = document.querySelector('#wfConfig .field__input[type="text"]');
+    if (stepNameInput) {
+      e.preventDefault();
+      stepNameInput.focus();
+      stepNameInput.select();
+      setWorkflowBuilderMessage('Focused step name field.');
+    }
+  }
 });
 
 /* ============================================================
@@ -2869,6 +3221,267 @@ function main() {
       why: 'Clustered normal traffic. Details hidden in overview mode to reduce clutter.',
     },
   };
+  var mapLeaflet = null;
+  var mapLeafletEnabled = false;
+  var mapLeafletGroups = null;
+  var mapLastFilterState = null;
+
+  var MAP_ROBOT_GEOMETRY = {
+    'robot-001': { x: 23, y: 61 },
+    'robot-003': { x: 46, y: 48 },
+    'robot-007': { x: 72, y: 24 },
+    'robot-009': { x: 56, y: 72 },
+    'robot-011': { x: 79, y: 37 },
+  };
+
+  var MAP_TRAIL_GEOMETRY = [
+    { robotId: 'robot-001', from: { x: 20, y: 54 }, to: { x: 34, y: 72 } },
+    { robotId: 'robot-003', from: { x: 44, y: 44 }, to: { x: 56, y: 60 } },
+    { robotId: 'robot-007', from: { x: 68, y: 18 }, to: { x: 81, y: 36 } },
+  ];
+
+  var MAP_ZONE_GEOMETRY = [
+    {
+      kind: 'restricted',
+      name: 'no_lift_zone',
+      bounds: {
+        left: 58,
+        top: 16,
+        right: 82,
+        bottom: 44,
+      },
+    },
+    {
+      kind: 'warning',
+      name: 'crossing',
+      bounds: {
+        left: 38,
+        top: 58,
+        right: 56,
+        bottom: 76,
+      },
+    },
+  ];
+
+  var MAP_CLUSTER_GEOMETRY = { x: 79, y: 37, label: '9 robots' };
+
+  function setMapRendererStatus(text) {
+    var status = document.querySelector('.js-map-renderer-status');
+    if (status) status.textContent = text;
+  }
+
+  function mapStatusToColor(status) {
+    var key = String(status || '').toLowerCase();
+    if (key === 'critical') return '#b3261e';
+    if (key === 'warning') return '#a46b00';
+    return '#1f7a36';
+  }
+
+  function refreshLeafletMapLayout() {
+    if (!mapLeafletEnabled || !mapLeaflet) return;
+    mapLeaflet.invalidateSize(false);
+  }
+
+  function initLeafletMap() {
+    var mapHost = document.getElementById('leafletMap');
+    var canvas = document.querySelector('.js-map-canvas');
+    if (!mapHost || !canvas) return;
+
+    if (!window.L || typeof window.L.map !== 'function') {
+      setMapRendererStatus('Renderer: static fallback (Leaflet unavailable)');
+      return;
+    }
+
+    mapLeaflet = window.L.map(mapHost, {
+      crs: window.L.CRS.Simple,
+      zoomControl: false,
+      attributionControl: true,
+      preferCanvas: true,
+    });
+    window.L.control.zoom({ position: 'bottomright' }).addTo(mapLeaflet);
+    mapLeaflet.fitBounds([
+      [0, 0],
+      [100, 100],
+    ]);
+    mapLeaflet.setMaxBounds([
+      [-10, -10],
+      [110, 110],
+    ]);
+
+    mapLeafletGroups = {
+      base: window.L.layerGroup().addTo(mapLeaflet),
+      occupancy: window.L.layerGroup().addTo(mapLeaflet),
+      zones: window.L.layerGroup().addTo(mapLeaflet),
+      trails: window.L.layerGroup().addTo(mapLeaflet),
+      uncertainty: window.L.layerGroup().addTo(mapLeaflet),
+      markers: window.L.layerGroup().addTo(mapLeaflet),
+      cluster: window.L.layerGroup().addTo(mapLeaflet),
+    };
+
+    window.L.rectangle(
+      [
+        [0, 0],
+        [100, 100],
+      ],
+      {
+        color: '#d8deea',
+        weight: 1,
+        fillColor: '#f6f9ff',
+        fillOpacity: 1,
+        interactive: false,
+      },
+    ).addTo(mapLeafletGroups.base);
+
+    mapLeafletEnabled = true;
+    canvas.classList.add('map-canvas--leaflet');
+    setMapRendererStatus('Renderer: Leaflet (lo-fi)');
+    globalThis.__portariumRefreshLeafletMap = refreshLeafletMapLayout;
+    setTimeout(refreshLeafletMapLayout, 80);
+  }
+
+  function renderLeafletMapState(filterState) {
+    if (!mapLeafletEnabled || !mapLeaflet || !mapLeafletGroups || !filterState) return;
+
+    mapLeafletGroups.occupancy.clearLayers();
+    mapLeafletGroups.zones.clearLayers();
+    mapLeafletGroups.trails.clearLayers();
+    mapLeafletGroups.uncertainty.clearLayers();
+    mapLeafletGroups.markers.clearLayers();
+    mapLeafletGroups.cluster.clearLayers();
+
+    if (isMapLayerEnabled('occupancy')) {
+      window.L.rectangle(
+        [
+          [12, 8],
+          [84, 90],
+        ],
+        {
+          color: 'rgba(27, 27, 27, 0.35)',
+          weight: 1,
+          fillColor: 'rgba(27, 27, 27, 0.06)',
+          fillOpacity: 1,
+          interactive: false,
+        },
+      ).addTo(mapLeafletGroups.occupancy);
+    }
+
+    if (isMapLayerEnabled('geofences')) {
+      MAP_ZONE_GEOMETRY.forEach(function (zone) {
+        var color = zone.kind === 'restricted' ? '#b3261e' : '#a46b00';
+        var fill = zone.kind === 'restricted' ? 'rgba(179, 38, 30, 0.1)' : 'rgba(164, 107, 0, 0.1)';
+        window.L.rectangle(
+          [
+            [zone.bounds.top, zone.bounds.left],
+            [zone.bounds.bottom, zone.bounds.right],
+          ],
+          {
+            color: color,
+            dashArray: '6,4',
+            weight: 2,
+            fillColor: fill,
+            fillOpacity: 0.4,
+            interactive: false,
+          },
+        )
+          .bindTooltip(zone.name, {
+            permanent: true,
+            direction: 'center',
+            className: 'leaflet-robot-label',
+            opacity: 1,
+          })
+          .addTo(mapLeafletGroups.zones);
+      });
+    }
+
+    if (isMapLayerEnabled('trails')) {
+      MAP_TRAIL_GEOMETRY.forEach(function (trail) {
+        if (filterState.visibleRowIds.indexOf(trail.robotId) < 0) return;
+        window.L.polyline(
+          [
+            [trail.from.y, trail.from.x],
+            [trail.to.y, trail.to.x],
+          ],
+          {
+            color: '#2557a7',
+            weight: 2,
+            dashArray: '6,5',
+            opacity: 0.85,
+            interactive: false,
+          },
+        ).addTo(mapLeafletGroups.trails);
+      });
+    }
+
+    filterState.visibleRowIds.forEach(function (robotId) {
+      var robot = MAP_ROBOT_STATE[robotId];
+      var point = MAP_ROBOT_GEOMETRY[robotId];
+      if (!robot || !point) return;
+
+      var statusLower = String(robot.status || '').toLowerCase();
+      if (filterState.clusterEnabled && statusLower === 'normal' && robotId !== mapSelectedRobotId) {
+        return;
+      }
+
+      if (isMapLayerEnabled('uncertainty')) {
+        var haloRadius = statusLower === 'critical' ? 16 : statusLower === 'warning' ? 13 : 10;
+        window.L.circleMarker([point.y, point.x], {
+          radius: haloRadius,
+          color: 'rgba(37, 87, 167, 0.36)',
+          weight: 2,
+          fillOpacity: 0,
+          interactive: false,
+        }).addTo(mapLeafletGroups.uncertainty);
+      }
+
+      var isSelected = robotId === mapSelectedRobotId;
+      var marker = window.L.circleMarker([point.y, point.x], {
+        radius: isSelected ? 8 : 6,
+        color: '#1b1b1b',
+        weight: isSelected ? 2 : 1,
+        fillColor: mapStatusToColor(robot.status),
+        fillOpacity: 1,
+      }).addTo(mapLeafletGroups.markers);
+      marker.bindTooltip(robotId, {
+        permanent: true,
+        direction: 'right',
+        className: 'leaflet-robot-label',
+        offset: [8, 0],
+      });
+      marker.on('click', function () {
+        selectMapRobot(robotId, { pan: true });
+      });
+    });
+
+    var showCluster =
+      isMapLayerEnabled('clusters') &&
+      filterState.clusterEnabled &&
+      (filterState.status === 'all' || filterState.status === 'normal') &&
+      filterState.site !== 'warehouse-a';
+    if (showCluster) {
+      var clusterMarker = window.L.marker([MAP_CLUSTER_GEOMETRY.y, MAP_CLUSTER_GEOMETRY.x], {
+        icon: window.L.divIcon({
+          className: '',
+          html: '<span class="leaflet-cluster-pill">' + MAP_CLUSTER_GEOMETRY.label + '</span>',
+          iconSize: [90, 24],
+          iconAnchor: [45, 12],
+        }),
+      }).addTo(mapLeafletGroups.cluster);
+      clusterMarker.on('click', function () {
+        var scaleSelect = document.getElementById('mapScale');
+        if (scaleSelect) {
+          scaleSelect.value = 'detail';
+          applyMapFilters();
+        }
+      });
+    }
+  }
+
+  function focusLeafletRobot(robotId) {
+    if (!mapLeafletEnabled || !mapLeaflet) return;
+    var point = MAP_ROBOT_GEOMETRY[robotId];
+    if (!point) return;
+    mapLeaflet.panTo([point.y, point.x], { animate: false });
+  }
 
   function isMapLayerEnabled(layer) {
     var btn = document.querySelector('.js-map-layer[data-map-layer="' + layer + '"]');
@@ -2882,6 +3495,9 @@ function main() {
       if (layer === 'clusters') return;
       el.hidden = !isMapLayerEnabled(layer);
     });
+    if (mapLeafletEnabled && mapLastFilterState) {
+      renderLeafletMapState(mapLastFilterState);
+    }
   }
 
   function setMapTimeline(value) {
@@ -2962,8 +3578,9 @@ function main() {
     if (why) why.textContent = robot.why;
   }
 
-  function selectMapRobot(robotId) {
+  function selectMapRobot(robotId, options) {
     if (!MAP_ROBOT_STATE[robotId]) return;
+    var opts = options || {};
     mapSelectedRobotId = robotId;
 
     document.querySelectorAll('.js-map-marker').forEach(function (marker) {
@@ -2974,6 +3591,10 @@ function main() {
     });
 
     updateMapDetail(robotId);
+    if (mapLeafletEnabled && mapLastFilterState) {
+      renderLeafletMapState(mapLastFilterState);
+      if (opts.pan) focusLeafletRobot(robotId);
+    }
   }
 
   function matchesMapFilters(el, site, floor, status, search) {
@@ -3026,7 +3647,20 @@ function main() {
         !clusterEnabled || (status !== 'all' && status !== 'normal') || (site === 'warehouse-a');
     }
 
+    mapLastFilterState = {
+      site: site,
+      floor: floor,
+      status: status,
+      scale: scale,
+      search: search,
+      clusterEnabled: clusterEnabled,
+      visibleRowIds: visibleRowIds.slice(),
+    };
+
     setMapLayerVisibility();
+    if (mapLeafletEnabled) {
+      renderLeafletMapState(mapLastFilterState);
+    }
 
     if (visibleRowIds.length > 0 && visibleRowIds.indexOf(mapSelectedRobotId) === -1) {
       selectMapRobot(visibleRowIds[0]);
@@ -3036,13 +3670,13 @@ function main() {
   document.addEventListener('click', function (e) {
     var mapMarker = e.target.closest('.js-map-marker');
     if (mapMarker) {
-      selectMapRobot(mapMarker.dataset.mapRobotId);
+      selectMapRobot(mapMarker.dataset.mapRobotId, { pan: true });
       return;
     }
 
     var mapRow = e.target.closest('.js-map-row');
     if (mapRow) {
-      selectMapRobot(mapRow.dataset.mapRobotId);
+      selectMapRobot(mapRow.dataset.mapRobotId, { pan: true });
       return;
     }
 
@@ -3092,7 +3726,7 @@ function main() {
     if (bookmarkBtn) {
       stopMapPlayback();
       setMapTimeline(Number(bookmarkBtn.dataset.mapTimeline || 100));
-      selectMapRobot(bookmarkBtn.dataset.mapRobotId);
+      selectMapRobot(bookmarkBtn.dataset.mapRobotId, { pan: true });
       return;
     }
 
@@ -3100,7 +3734,7 @@ function main() {
     if (alertJump) {
       var alertRow = alertJump.closest('.js-map-alert');
       if (alertRow) {
-        selectMapRobot(alertRow.dataset.mapRobotId);
+        selectMapRobot(alertRow.dataset.mapRobotId, { pan: true });
       }
       return;
     }
@@ -3143,6 +3777,12 @@ function main() {
     if (e.target.id === 'mapSite' || e.target.id === 'mapFloor' || e.target.id === 'mapScale') {
       applyMapFilters();
     }
+  });
+
+  document.addEventListener('click', function (e) {
+    var robotsMapTab = e.target.closest('.tab[data-tab="robots-map"]');
+    if (!robotsMapTab) return;
+    setTimeout(refreshLeafletMapLayout, 40);
   });
 
   /* ---- WF-2: Owner picker keyboard navigation ---- */
