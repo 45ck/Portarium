@@ -24,6 +24,8 @@ tags:
   - name: AdapterRegistrations
   - name: Machines
   - name: Agents
+  - name: Workforce
+  - name: HumanTasks
 paths:
   /v1/workspaces:
     get:
@@ -252,6 +254,254 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkItemV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/work-items/{workItemId}/assignment:
+    get:
+      tags: [WorkItems]
+      summary: Get current assignment for a work item
+      operationId: getWorkItemAssignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemAssignmentV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    put:
+      tags: [WorkItems]
+      summary: Assign or clear work item owner assignment
+      operationId: putWorkItemAssignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutWorkItemAssignmentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemAssignmentV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/workforce:
+    get:
+      tags: [Workforce]
+      summary: List workforce members
+      operationId: listWorkforceMembers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkforceCapabilityQuery'
+        - $ref: '#/components/parameters/WorkforceQueueIdQuery'
+        - $ref: '#/components/parameters/WorkforceAvailabilityQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkforceMemberListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/workforce/{workforceMemberId}:
+    get:
+      tags: [Workforce]
+      summary: Get workforce member profile
+      operationId: getWorkforceMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkforceMemberIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkforceMemberV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/workforce/{workforceMemberId}/availability:
+    patch:
+      tags: [Workforce]
+      summary: Update workforce member availability
+      operationId: patchWorkforceMemberAvailability
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkforceMemberIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchWorkforceAvailabilityRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkforceMemberV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/workforce/queues:
+    get:
+      tags: [Workforce]
+      summary: List workforce queues
+      operationId: listWorkforceQueues
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkforceCapabilityQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkforceQueueListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/human-tasks:
+    get:
+      tags: [HumanTasks]
+      summary: List human tasks
+      operationId: listHumanTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/HumanTaskAssigneeIdQuery'
+        - $ref: '#/components/parameters/HumanTaskStatusQuery'
+        - $ref: '#/components/parameters/HumanTaskRunIdQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanTaskListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}:
+    get:
+      tags: [HumanTasks]
+      summary: Get a human task
+      operationId: getHumanTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/HumanTaskIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanTaskV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/assign:
+    post:
+      tags: [HumanTasks]
+      summary: Assign a human task to workforce member or queue
+      operationId: assignHumanTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/HumanTaskIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignHumanTaskRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanTaskV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/complete:
+    post:
+      tags: [HumanTasks]
+      summary: Complete a human task
+      operationId: completeHumanTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/HumanTaskIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteHumanTaskRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanTaskV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/escalate:
+    post:
+      tags: [HumanTasks]
+      summary: Escalate a human task to a queue
+      operationId: escalateHumanTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/HumanTaskIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EscalateHumanTaskRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanTaskV1'
         default:
           $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/plans/{planId}:
@@ -1074,6 +1324,18 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/AgentId'
+    WorkforceMemberIdPath:
+      name: workforceMemberId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/WorkforceMemberId'
+    HumanTaskIdPath:
+      name: humanTaskId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/HumanTaskId'
     LimitQuery:
       name: limit
       in: query
@@ -1150,6 +1412,42 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/EvidenceCategory'
+    WorkforceCapabilityQuery:
+      name: capability
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkforceCapability'
+    WorkforceQueueIdQuery:
+      name: queueId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkforceQueueId'
+    WorkforceAvailabilityQuery:
+      name: availability
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkforceAvailabilityStatus'
+    HumanTaskAssigneeIdQuery:
+      name: assigneeId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkforceMemberId'
+    HumanTaskStatusQuery:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/HumanTaskStatus'
+    HumanTaskRunIdQuery:
+      name: runId
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/RunId'
   responses:
     Problem:
       description: Error response
@@ -1239,6 +1537,18 @@ components:
       type: string
       minLength: 1
       description: Opaque credential grant identifier
+    WorkforceMemberId:
+      type: string
+      minLength: 1
+      description: Opaque workforce member identifier
+    WorkforceQueueId:
+      type: string
+      minLength: 1
+      description: Opaque workforce queue identifier
+    HumanTaskId:
+      type: string
+      minLength: 1
+      description: Opaque human task identifier
     HashSha256:
       type: string
       pattern: '^[a-f0-9]{64}$'
@@ -1500,6 +1810,231 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ExternalObjectRef'
+    WorkItemAssignmentV1:
+      type: object
+      additionalProperties: false
+      properties:
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        workforceMemberId:
+          $ref: '#/components/schemas/WorkforceMemberId'
+      required: [workItemId]
+    PutWorkItemAssignmentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        workforceMemberId:
+          oneOf:
+            - $ref: '#/components/schemas/WorkforceMemberId'
+            - type: 'null'
+      required: [workforceMemberId]
+    WorkforceAvailabilityStatus:
+      type: string
+      enum: [available, busy, offline]
+    WorkforceCapability:
+      type: string
+      enum:
+        - operations.dispatch
+        - operations.approval
+        - operations.escalation
+        - robotics.supervision
+        - robotics.safety.override
+    WorkforceMemberV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        workforceMemberId:
+          $ref: '#/components/schemas/WorkforceMemberId'
+        linkedUserId:
+          $ref: '#/components/schemas/UserId'
+        displayName:
+          type: string
+          minLength: 1
+        capabilities:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/WorkforceCapability'
+        availabilityStatus:
+          $ref: '#/components/schemas/WorkforceAvailabilityStatus'
+        queueMemberships:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkforceQueueId'
+        tenantId:
+          $ref: '#/components/schemas/WorkspaceId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        updatedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - workforceMemberId
+        - linkedUserId
+        - displayName
+        - capabilities
+        - availabilityStatus
+        - queueMemberships
+        - tenantId
+        - createdAtIso
+    WorkforceMemberListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkforceMemberV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    PatchWorkforceAvailabilityRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        availabilityStatus:
+          $ref: '#/components/schemas/WorkforceAvailabilityStatus'
+      required: [availabilityStatus]
+    WorkforceQueueV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        workforceQueueId:
+          $ref: '#/components/schemas/WorkforceQueueId'
+        name:
+          type: string
+          minLength: 1
+        requiredCapabilities:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/WorkforceCapability'
+        memberIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkforceMemberId'
+        routingStrategy:
+          type: string
+          enum: [round-robin, least-busy, manual]
+        tenantId:
+          $ref: '#/components/schemas/WorkspaceId'
+      required:
+        - schemaVersion
+        - workforceQueueId
+        - name
+        - requiredCapabilities
+        - memberIds
+        - routingStrategy
+        - tenantId
+    WorkforceQueueListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkforceQueueV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    HumanTaskStatus:
+      type: string
+      enum: [pending, assigned, in-progress, completed, escalated]
+    HumanTaskV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        humanTaskId:
+          $ref: '#/components/schemas/HumanTaskId'
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        runId:
+          $ref: '#/components/schemas/RunId'
+        stepId:
+          $ref: '#/components/schemas/ActionId'
+        assigneeId:
+          $ref: '#/components/schemas/WorkforceMemberId'
+        groupId:
+          $ref: '#/components/schemas/WorkforceQueueId'
+        description:
+          type: string
+          minLength: 1
+        requiredCapabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkforceCapability'
+        status:
+          $ref: '#/components/schemas/HumanTaskStatus'
+        dueAt:
+          $ref: '#/components/schemas/IsoTimestamp'
+        completedAt:
+          $ref: '#/components/schemas/IsoTimestamp'
+        completedById:
+          $ref: '#/components/schemas/WorkforceMemberId'
+        evidenceAnchorId:
+          $ref: '#/components/schemas/EvidenceId'
+      required:
+        - schemaVersion
+        - humanTaskId
+        - workItemId
+        - runId
+        - stepId
+        - description
+        - requiredCapabilities
+        - status
+    HumanTaskListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HumanTaskV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    AssignHumanTaskRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        workforceMemberId:
+          $ref: '#/components/schemas/WorkforceMemberId'
+        workforceQueueId:
+          $ref: '#/components/schemas/WorkforceQueueId'
+      anyOf:
+        - required: [workforceMemberId]
+        - required: [workforceQueueId]
+    CompleteHumanTaskRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        completionNote:
+          type: string
+          minLength: 1
+    EscalateHumanTaskRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        workforceQueueId:
+          $ref: '#/components/schemas/WorkforceQueueId'
+        reason:
+          type: string
+          minLength: 1
+      required: [workforceQueueId]
     EffectOperation:
       type: string
       enum: [Create, Update, Delete, Upsert]
