@@ -8,8 +8,10 @@ import {
   ArtifactId,
   CorrelationId,
   FloorId,
+  FleetId,
   EvidenceId,
   EffectId,
+  GatewayId,
   HashSha256,
   LocationEventId,
   MapLayerId,
@@ -20,6 +22,7 @@ import {
   PolicyId,
   PortId,
   RunId,
+  MissionId,
   TenantId,
   WORKSPACE_USER_ROLES,
   UserId,
@@ -80,6 +83,9 @@ describe('domain primitives', () => {
       SiteId,
       FloorId,
       RobotId,
+      FleetId,
+      MissionId,
+      GatewayId,
     ];
 
     for (const factory of factories) {

@@ -208,6 +208,15 @@ export type FloorId = Branded<string, 'FloorId'>;
 /** Unique identifier for a robot. */
 export type RobotId = Branded<string, 'RobotId'>;
 
+/** Unique identifier for a robot fleet. */
+export type FleetId = Branded<string, 'FleetId'>;
+
+/** Unique identifier for a mission command. */
+export type MissionId = Branded<string, 'MissionId'>;
+
+/** Unique identifier for an edge gateway. */
+export type GatewayId = Branded<string, 'GatewayId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -276,6 +285,9 @@ export const MapLayerId = (value: string): MapLayerId => brand<string, 'MapLayer
 export const SiteId = (value: string): SiteId => brand<string, 'SiteId'>(value);
 export const FloorId = (value: string): FloorId => brand<string, 'FloorId'>(value);
 export const RobotId = (value: string): RobotId => brand<string, 'RobotId'>(value);
+export const FleetId = (value: string): FleetId => brand<string, 'FleetId'>(value);
+export const MissionId = (value: string): MissionId => brand<string, 'MissionId'>(value);
+export const GatewayId = (value: string): GatewayId => brand<string, 'GatewayId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families
