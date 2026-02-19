@@ -22,3 +22,4 @@ export * from './tenancy/index.js';
 export * from './schedule/index.js';
 export * from './machines/index.js';
 export * from './deployment/index.js';
+export * from './location/index.js';

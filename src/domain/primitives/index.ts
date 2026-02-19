@@ -190,6 +190,24 @@ export type CatalogEntryId = Branded<string, 'CatalogEntryId'>;
 /** Unique identifier for an AI agent configuration. */
 export type AgentId = Branded<string, 'AgentId'>;
 
+/** Unique identifier for a location telemetry event. */
+export type LocationEventId = Branded<string, 'LocationEventId'>;
+
+/** Unique identifier for a location telemetry source stream. */
+export type SourceStreamId = Branded<string, 'SourceStreamId'>;
+
+/** Unique identifier for a map layer registration. */
+export type MapLayerId = Branded<string, 'MapLayerId'>;
+
+/** Unique identifier for an operational site/campus. */
+export type SiteId = Branded<string, 'SiteId'>;
+
+/** Unique identifier for a floor/level. */
+export type FloorId = Branded<string, 'FloorId'>;
+
+/** Unique identifier for a robot. */
+export type RobotId = Branded<string, 'RobotId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -250,6 +268,14 @@ export const TriggerDefinitionId = (value: string): TriggerDefinitionId =>
 export const CatalogEntryId = (value: string): CatalogEntryId =>
   brand<string, 'CatalogEntryId'>(value);
 export const AgentId = (value: string): AgentId => brand<string, 'AgentId'>(value);
+export const LocationEventId = (value: string): LocationEventId =>
+  brand<string, 'LocationEventId'>(value);
+export const SourceStreamId = (value: string): SourceStreamId =>
+  brand<string, 'SourceStreamId'>(value);
+export const MapLayerId = (value: string): MapLayerId => brand<string, 'MapLayerId'>(value);
+export const SiteId = (value: string): SiteId => brand<string, 'SiteId'>(value);
+export const FloorId = (value: string): FloorId => brand<string, 'FloorId'>(value);
+export const RobotId = (value: string): RobotId => brand<string, 'RobotId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

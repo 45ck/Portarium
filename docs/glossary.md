@@ -133,6 +133,16 @@ The property that repeating an action produces the same result (or safely no-ops
 
 - **Invariant**: Must be measurable per action via capability matrix fields + tests.
 
+## L
+
+### LocationEvent
+
+A frame-aware telemetry event representing observed asset/robot pose at a point in time, including source metadata, quality/covariance semantics, and trace correlation.
+
+### Location Source Stream
+
+A logical telemetry stream identifier used to enforce monotonic event ordering for observations from the same source path.
+
 ## M
 
 ### Machine Registration
@@ -144,6 +154,10 @@ A registered autonomous agent (machine) within a Workspace. Machines produce art
 A value-producing generator that outputs artifacts (content-machine, demo-machine, poster-machine, etc.); NOT a data sync connector.
 
 - **Synonyms to avoid**: "service", "worker" (use "Machine" for artifact producers)
+
+### MapLayer
+
+A versioned map context object (floorplan, occupancy grid, geofence, semantic zone) bound to a coordinate frame and validity window for rendering and policy checks.
 
 ## O
 
