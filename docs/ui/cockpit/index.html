@@ -268,345 +268,7 @@
               </div>
               <div class="next-action__subtle">
                 Recommended: retry after rate limit window expires
-              </div>
-
-              <div class="wf-graph wf-template-graph" data-wf-template-pane="robot-fleet-triage" hidden>
-                <div class="wf-graph__row">
-                  <div class="wf-node wf-node--start" data-node-id="robot-start">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
-                      ><span class="wf-node__name">Start</span>
-                    </div>
-                    <div class="wf-node__status">
-                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                        >Trigger: Telemetry</span
-                      >
-                    </div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--condition" data-node-id="robot-geofence-check">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
-                      ><span class="wf-node__name">Geofence violated?</span>
-                    </div>
-                    <div class="wf-node__status">
-                      <span class="status" style="font-size: 10px; padding: 2px 6px">Condition</span>
-                    </div>
-                    <div class="wf-node__branches">
-                      <span class="wf-branch-label wf-branch-label--yes">Yes</span
-                      ><span class="wf-branch-label wf-branch-label--no">No</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__branches">
-                  <div class="wf-graph__branch wf-graph__branch--yes">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--approval" data-node-id="robot-safety-approval">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
-                          ><span class="wf-node__name">Supervisor Safety Gate</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Tier: Human-approve | SoD enforced</div>
-                        <div class="wf-node__status">
-                          <span class="status status--warn" style="font-size: 10px; padding: 2px 6px"
-                            >Gate</span
-                          >
-                        </div>
-                      </div>
-                      <div class="wf-connector">
-                        <div class="wf-connector__line"></div>
-                        <div class="wf-connector__arrow">&#8250;</div>
-                      </div>
-                      <div class="wf-node wf-node--action" data-node-id="robot-estop">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                          ><span class="wf-node__name">Send E-Stop</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Target: robot-007 | Zone: yard/no-fly-2</div>
-                        <div class="wf-node__status">
-                          <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
-                            >Critical</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="wf-graph__branch wf-graph__branch--no">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--notification" data-node-id="robot-continue-note">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
-                          ><span class="wf-node__name">Notify: Continue mission</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Channel: #fleet-ops</div>
-                        <div class="wf-node__status">
-                          <span class="status status--info" style="font-size: 10px; padding: 2px 6px"
-                            >Notify</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__row">
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--action" data-node-id="robot-location-event">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                      ><span class="wf-node__name">Write LocationEvent</span>
-                    </div>
-                    <div class="wf-node__meta subtle">Frame aware telemetry snapshot for replay</div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--end" data-node-id="robot-end">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
-                      ><span class="wf-node__name">End</span>
-                    </div>
-                    <div class="wf-node__status">
-                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                        >Complete</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="wf-graph wf-template-graph" data-wf-template-pane="machine-maintenance" hidden>
-                <div class="wf-graph__row">
-                  <div class="wf-node wf-node--start" data-node-id="machine-start">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
-                      ><span class="wf-node__name">Start</span>
-                    </div>
-                    <div class="wf-node__status">
-                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                        >Trigger: Every 5 minutes</span
-                      >
-                    </div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--action" data-node-id="machine-read-plc">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                      ><span class="wf-node__name">Read PLC vibration sensor</span>
-                    </div>
-                    <div class="wf-node__meta subtle">Gateway: OPC UA | Source: cnc-cell-2</div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--condition" data-node-id="machine-threshold">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
-                      ><span class="wf-node__name">Above maintenance threshold?</span>
-                    </div>
-                    <div class="wf-node__branches">
-                      <span class="wf-branch-label wf-branch-label--yes">Yes</span
-                      ><span class="wf-branch-label wf-branch-label--no">No</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__branches">
-                  <div class="wf-graph__branch wf-graph__branch--yes">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--action" data-node-id="machine-create-work-item">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                          ><span class="wf-node__name">Create Work Item</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Type: predictive-maintenance</div>
-                      </div>
-                      <div class="wf-connector">
-                        <div class="wf-connector__line"></div>
-                        <div class="wf-connector__arrow">&#8250;</div>
-                      </div>
-                      <div class="wf-node wf-node--notification" data-node-id="machine-page-tech">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
-                          ><span class="wf-node__name">Page on-call technician</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Queue: facilities-l2</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="wf-graph__branch wf-graph__branch--no">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--action" data-node-id="machine-log-sample">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                          ><span class="wf-node__name">Append healthy sample</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Store: telemetry history</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__row">
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--action" data-node-id="machine-ledger-update">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                      ><span class="wf-node__name">Update maintenance ledger</span>
-                    </div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--end" data-node-id="machine-end">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
-                      ><span class="wf-node__name">End</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="wf-graph wf-template-graph" data-wf-template-pane="hybrid-incident" hidden>
-                <div class="wf-graph__row">
-                  <div class="wf-node wf-node--start" data-node-id="hybrid-start">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
-                      ><span class="wf-node__name">Start</span>
-                    </div>
-                    <div class="wf-node__status">
-                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
-                        >Trigger: Incident event</span
-                      >
-                    </div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--agent" data-node-id="hybrid-correlate">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--agent">&#129504;</span
-                      ><span class="wf-node__name">Correlate robot + machine telemetry</span>
-                    </div>
-                    <div class="wf-node__meta subtle">Agent: anomaly-correlator</div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--condition" data-node-id="hybrid-critical-check">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
-                      ><span class="wf-node__name">Safety critical?</span>
-                    </div>
-                    <div class="wf-node__branches">
-                      <span class="wf-branch-label wf-branch-label--yes">Yes</span
-                      ><span class="wf-branch-label wf-branch-label--no">No</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__branches">
-                  <div class="wf-graph__branch wf-graph__branch--yes">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--approval" data-node-id="hybrid-supervisor-gate">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
-                          ><span class="wf-node__name">Supervisor Gate</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Required approvers: 2</div>
-                      </div>
-                      <div class="wf-connector">
-                        <div class="wf-connector__line"></div>
-                        <div class="wf-connector__arrow">&#8250;</div>
-                      </div>
-                      <div class="wf-node wf-node--action" data-node-id="hybrid-stop-cell">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                          ><span class="wf-node__name">Stop robot cell + machine lane</span>
-                        </div>
-                        <div class="wf-node__status">
-                          <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
-                            >Critical action</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="wf-graph__branch wf-graph__branch--no">
-                    <div class="wf-connector wf-connector--vertical">
-                      <div class="wf-connector__line wf-connector__line--vertical"></div>
-                    </div>
-                    <div class="wf-graph__row">
-                      <div class="wf-node wf-node--action" data-node-id="hybrid-reroute">
-                        <div class="wf-node__header">
-                          <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                          ><span class="wf-node__name">Dispatch safe reroute mission</span>
-                        </div>
-                        <div class="wf-node__meta subtle">Fleet: warehouse-alpha</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="wf-graph__row">
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--action" data-node-id="hybrid-evidence">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
-                      ><span class="wf-node__name">Create evidence bundle</span>
-                    </div>
-                    <div class="wf-node__meta subtle">Includes map playback bookmark and approvals</div>
-                  </div>
-                  <div class="wf-connector">
-                    <div class="wf-connector__line"></div>
-                    <div class="wf-connector__arrow">&#8250;</div>
-                  </div>
-                  <div class="wf-node wf-node--end" data-node-id="hybrid-end">
-                    <div class="wf-node__header">
-                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
-                      ><span class="wf-node__name">End</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <a class="btn btn--primary btn--small" href="#run">Retry run</a>
+              </div>            <a class="btn btn--primary btn--small" href="#run">Retry run</a>
           </div>
 
           <div class="empty js-empty-inbox" hidden>
@@ -5165,6 +4827,236 @@
                       <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
                         >Complete</span
                       >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wf-graph wf-template-graph" data-wf-template-pane="robot-fleet-triage" hidden>
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="robot-start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: Fleet alert</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--condition" data-node-id="robot-geofence-check">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
+                      ><span class="wf-node__name">Geofence violated?</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status" style="font-size: 10px; padding: 2px 6px">Condition</span>
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--approval" data-node-id="robot-safety-approval">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
+                      ><span class="wf-node__name">Supervisor Safety Gate</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Tier: Human-approve | SoD enforced</div>
+                    <div class="wf-node__status">
+                      <span class="status status--warn" style="font-size: 10px; padding: 2px 6px"
+                        >Gate</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="robot-estop">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Send E-Stop</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Target: robot-007 | Zone: yard/no-fly-2</div>
+                    <div class="wf-node__status">
+                      <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                        >Critical</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="robot-location-event">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Write LocationEvent</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Frame-aware telemetry snapshot for replay</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="robot-end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wf-graph wf-template-graph" data-wf-template-pane="machine-maintenance" hidden>
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="machine-start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: every 5 min</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="machine-read-plc">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Read PLC vibration</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Gateway: OPC UA | cnc-cell-2</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--condition" data-node-id="machine-threshold">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
+                      ><span class="wf-node__name">Above threshold?</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="machine-create-work-item">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Create Work Item</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Type: predictive-maintenance</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--notification" data-node-id="machine-page-tech">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
+                      ><span class="wf-node__name">Page on-call technician</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Queue: facilities-l2</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="machine-end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wf-graph wf-template-graph" data-wf-template-pane="hybrid-incident" hidden>
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="hybrid-start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: Incident event</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--agent" data-node-id="hybrid-correlate">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--agent">&#129504;</span
+                      ><span class="wf-node__name">Correlate telemetry</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Agent: anomaly-correlator</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--condition" data-node-id="hybrid-critical-check">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--condition">&#9670;</span
+                      ><span class="wf-node__name">Safety critical?</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--approval" data-node-id="hybrid-supervisor-gate">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
+                      ><span class="wf-node__name">Supervisor Gate</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Required approvers: 2</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="hybrid-stop-cell">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Stop robot + machine lane</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--danger" style="font-size: 10px; padding: 2px 6px"
+                        >Critical action</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="hybrid-end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
                     </div>
                   </div>
                 </div>
@@ -12131,3 +12023,4 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
     <script src="./keyboard.js" defer></script>
   </body>
 </html>
+
