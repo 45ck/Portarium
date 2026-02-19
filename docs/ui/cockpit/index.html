@@ -97,8 +97,8 @@
           <a class="nav__item" href="#evidence"><span class="nav__icon">&sect;</span> Evidence</a>
         </nav>
 
-        <div class="sidebar__section-title">People</div>
-        <nav class="nav" aria-label="People navigation">
+        <div class="sidebar__section-title">Workforce</div>
+        <nav class="nav" aria-label="Workforce navigation">
           <a class="nav__item" href="#workforce"
             ><span class="nav__icon">&#9679;</span> Workforce</a
           >
@@ -1393,22 +1393,22 @@
                     placeholder="Filter members..."
                     aria-label="Search workforce members"
                   />
-                  <div class="owner-picker__list">
-                    <div class="owner-picker__item">
+                  <div class="owner-picker__list" role="listbox">
+                    <div class="owner-picker__item" role="option" tabindex="-1">
                       <span class="availability-dot availability-dot--available"></span>
                       <div>
                         <div class="owner-picker__name">Alice Martinez</div>
                         <div class="owner-picker__email">alice.martinez@acme.com &bull; approver</div>
                       </div>
                     </div>
-                    <div class="owner-picker__item">
+                    <div class="owner-picker__item" role="option" tabindex="-1">
                       <span class="availability-dot availability-dot--busy"></span>
                       <div>
                         <div class="owner-picker__name">Bob Chen</div>
                         <div class="owner-picker__email">bob.chen@acme.com &bull; operator</div>
                       </div>
                     </div>
-                    <div class="owner-picker__item">
+                    <div class="owner-picker__item" role="option" tabindex="-1">
                       <span class="availability-dot availability-dot--available"></span>
                       <div>
                         <div class="owner-picker__name">Carol Davis</div>
@@ -1825,7 +1825,7 @@
                   >
                   <span class="run-step__assignee">
                     <span class="availability-dot availability-dot--available"></span>
-                    Pending: Alice Martinez
+                    Pending: <a href="#workforce" aria-label="View Alice Martinez in Workforce directory">Alice Martinez</a>
                   </span>
                   <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m">3h 48m</span>
                   <span class="status status--warn"><span class="status__icon">◷</span>Pending</span>
@@ -1979,7 +1979,7 @@
                     >
                   </td>
                   <td><span class="sod-badge">Different-approver rule</span></td>
-                  <td>operator@acme.com</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Operator User</span></td>
                   <td>12m</td>
                   <td>
                     <span class="sla-badge sla-badge--warn" data-tooltip="Due in 3h 48m"
@@ -2017,7 +2017,7 @@
                     >
                   </td>
                   <td><span class="sod-badge">Safety constraint: outdoor_uav_permit</span></td>
-                  <td>safety_admin@acme.com</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Safety Admin</span></td>
                   <td>5m</td>
                   <td>
                     <span class="sla-badge sla-badge--warn" data-tooltip="Due in 55m">Due 55m</span>
@@ -2038,7 +2038,7 @@
                     >
                   </td>
                   <td></td>
-                  <td>approver@acme.com</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Approver User</span></td>
                   <td>22m</td>
                   <td><span class="sla-badge" data-tooltip="Due in 2h">Due 2h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -2061,7 +2061,7 @@
                       >&#9888; Role conflict</span
                     >
                   </td>
-                  <td>finance_approver@acme.com</td>
+                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Finance Approver</span></td>
                   <td>8m</td>
                   <td><span class="sla-badge sla-badge--warn" data-tooltip="Due in 1h 12m">Due 1h 12m</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -10286,7 +10286,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- Staleness banner (shown in degraded state) -->
-          <div class="staleness-banner js-workforce-stale" hidden>
+          <div class="staleness-banner js-workforce-stale" role="status" aria-live="polite" hidden>
             &#9888; Directory data may be stale &mdash; last synced 5 minutes ago. Availability
             indicators may not reflect current status.
           </div>
@@ -10815,12 +10815,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 <kbd>g</kbd> then <kbd>t</kbd><span>Setup Wizard</span>
               </div>
               <div class="kbd-cheatsheet__row">
-                <kbd>g</kbd> then <kbd>f</kbd><span>Workforce (People)</span>
+                <kbd>g</kbd> then <kbd>f</kbd><span>Workforce</span>
               </div>
             </div>
           </div>
           <div class="kbd-cheatsheet__group">
-            <h3 class="kbd-cheatsheet__group-title">People</h3>
+            <h3 class="kbd-cheatsheet__group-title">Workforce</h3>
             <div class="kbd-cheatsheet__list">
               <div class="kbd-cheatsheet__row"><kbd>g f</kbd><span>Go to Workforce</span></div>
               <div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd><span>Navigate members / queues</span></div>

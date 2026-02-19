@@ -944,17 +944,6 @@ const Keyboard = (function () {
       return;
     }
 
-    // u -- undo last triage decision (only in triage mode)
-    if (key === 'u') {
-      var triageUndoBtn = document.getElementById('triageUndoBtn');
-      if (triageUndoBtn && !triageUndoBtn.disabled) {
-        triageUndoBtn.click();
-        showToast('Undo: decision reversed');
-        e.preventDefault();
-        return;
-      }
-    }
-
     // ? -- cheatsheet
     if (key === '?') {
       openCheatsheet();

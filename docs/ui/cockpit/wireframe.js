@@ -761,12 +761,12 @@ function setPersona(persona) {
   const inboxLayout = {
     operator: {
       primary: 'failures',
-      secondary: ['approvals', 'violations'],
+      secondary: ['approvals', 'violations', 'human-tasks'],
       hidden: ['evidence', 'health'],
     },
     approver: {
       primary: 'approvals',
-      secondary: ['violations'],
+      secondary: ['violations', 'human-tasks'],
       hidden: ['failures', 'evidence', 'health'],
     },
     auditor: {
@@ -800,6 +800,20 @@ function setPersona(persona) {
           card.style.order = String(visible.indexOf(section) + 1);
         }
       }
+    }
+  }
+
+  /* Activate human-tasks filter chip for operator & approver personas */
+  var humanTasksChip = document.querySelector('.js-filter-human-tasks');
+  if (humanTasksChip) {
+    if (persona === 'operator' || persona === 'approver') {
+      humanTasksChip.classList.add('chip--active');
+      var taskCard = document.getElementById('inboxHumanTasks');
+      if (taskCard) taskCard.style.display = '';
+    } else {
+      humanTasksChip.classList.remove('chip--active');
+      var taskCard2 = document.getElementById('inboxHumanTasks');
+      if (taskCard2) taskCard2.style.display = 'none';
     }
   }
 
@@ -923,7 +937,11 @@ function setStatusBar(systemState) {
 /* ============================================================
    RIGHT DRAWER
    ============================================================ */
+var _drawerTrigger = null;
+var _ownerPickerTrigger = null;
+
 function openDrawer(contentId) {
+  _drawerTrigger = document.activeElement;
   const content = DRAWER_CONTENT[contentId] || DRAWER_CONTENT.context;
   const drawer = qs('#drawer');
   qs('#drawerTitle').textContent = content.title;
@@ -936,6 +954,7 @@ function openDrawer(contentId) {
 function closeDrawer() {
   qs('#drawer').classList.remove('is-open');
   qs('.app').classList.remove('app--drawer-open');
+  if (_drawerTrigger) { _drawerTrigger.focus(); _drawerTrigger = null; }
 }
 
 /* ============================================================
@@ -1316,8 +1335,10 @@ function triageAction(action) {
 
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
+    var progressBar = progressFill ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement : null;
     var currentSpan = document.querySelector('.triage__current');
     if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
+    if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
     if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, 4);
     if (triageIndex >= 4) {
       var triageEl = document.getElementById('triage');
@@ -1358,8 +1379,10 @@ function triageUndo() {
   }
 
   var progressFill = document.querySelector('.triage__progress-fill');
+  var progressBar = progressFill ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement : null;
   var currentSpan = document.querySelector('.triage__current');
   if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
+  if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
   if (currentSpan) currentSpan.textContent = triageIndex + 1;
 
   /* Update next preview */
@@ -1440,8 +1463,10 @@ document.addEventListener('click', function (e) {
 const ConfirmModal = (function () {
   'use strict';
   var _callback = null;
+  var _confirmTrigger = null;
 
   function show(opts) {
+    _confirmTrigger = document.activeElement;
     var backdrop = document.getElementById('confirmBackdrop');
     var modal = document.getElementById('confirmModal');
     if (!backdrop || !modal) return;
@@ -1465,6 +1490,7 @@ const ConfirmModal = (function () {
     if (backdrop) backdrop.hidden = true;
     if (modal) modal.hidden = true;
     _callback = null;
+    if (_confirmTrigger) { _confirmTrigger.focus(); _confirmTrigger = null; }
   }
 
   function confirm() {
@@ -1480,11 +1506,27 @@ const ConfirmModal = (function () {
       if (e.target.id === 'confirmBackdrop') hide();
     });
     document.addEventListener('keydown', function (e) {
+      var modal = document.getElementById('confirmModal');
+      if (!modal || modal.hidden) return;
       if (e.key === 'Escape') {
-        var modal = document.getElementById('confirmModal');
-        if (modal && !modal.hidden) {
-          hide();
-          e.preventDefault();
+        hide();
+        e.preventDefault();
+        return;
+      }
+      if (e.key === 'Tab') {
+        var okBtn = document.getElementById('confirmOk');
+        var cancelBtn = document.getElementById('confirmCancel');
+        if (!okBtn || !cancelBtn) return;
+        if (e.shiftKey) {
+          if (document.activeElement === okBtn) {
+            e.preventDefault();
+            cancelBtn.focus();
+          }
+        } else {
+          if (document.activeElement === cancelBtn) {
+            e.preventDefault();
+            okBtn.focus();
+          }
         }
       }
     });
@@ -1548,10 +1590,12 @@ function withLoadingState(btn, duration) {
   if (!btn || btn.classList.contains('btn--loading')) return;
   var originalText = btn.textContent;
   btn.classList.add('btn--loading');
-  btn.textContent = originalText.replace(/^(.*?)$/, '$1');
+  btn.textContent = 'Loading\u2026';
+  btn.disabled = true;
   setTimeout(function () {
     btn.classList.remove('btn--loading');
     btn.textContent = originalText;
+    btn.disabled = false;
   }, duration || 1500);
 }
 
@@ -1572,11 +1616,50 @@ const ApprovalValidation = (function () {
 
     var fieldDecision = document.getElementById('fieldDecision');
     var fieldRationale = document.getElementById('fieldRationale');
+    var decisionTouched = decision.value !== '';
+    var rationaleTouched = rationale.value.trim().length > 0;
     if (fieldDecision)
-      fieldDecision.classList.toggle('field--error', decision.value !== '' && !decisionValid);
+      fieldDecision.classList.toggle('field--error', decisionTouched && !decisionValid);
     if (fieldRationale) {
-      var showError = rationale.value.trim().length > 0 && !rationaleValid;
+      var showError = rationaleTouched && !rationaleValid;
       fieldRationale.classList.toggle('field--error', showError);
+    }
+
+    /* aria-invalid + error messages */
+    decision.setAttribute('aria-invalid', decisionTouched && !decisionValid ? 'true' : 'false');
+    var decisionError = fieldDecision ? fieldDecision.querySelector('.field__error') : null;
+    if (!decisionError && fieldDecision) {
+      decisionError = document.createElement('div');
+      decisionError.className = 'field__error';
+      decisionError.setAttribute('role', 'alert');
+      fieldDecision.appendChild(decisionError);
+    }
+    if (decisionError) {
+      if (decisionTouched && !decisionValid) {
+        decisionError.textContent = 'Please select a decision.';
+        decisionError.style.display = '';
+      } else {
+        decisionError.textContent = '';
+        decisionError.style.display = 'none';
+      }
+    }
+
+    rationale.setAttribute('aria-invalid', rationaleTouched && !rationaleValid ? 'true' : 'false');
+    var rationaleError = fieldRationale ? fieldRationale.querySelector('.field__error') : null;
+    if (!rationaleError && fieldRationale) {
+      rationaleError = document.createElement('div');
+      rationaleError.className = 'field__error';
+      rationaleError.setAttribute('role', 'alert');
+      fieldRationale.appendChild(rationaleError);
+    }
+    if (rationaleError) {
+      if (rationaleTouched && !rationaleValid) {
+        rationaleError.textContent = 'Rationale must be at least 10 characters.';
+        rationaleError.style.display = '';
+      } else {
+        rationaleError.textContent = '';
+        rationaleError.style.display = 'none';
+      }
     }
 
     submitBtn.disabled = !(decisionValid && rationaleValid);
@@ -2072,6 +2155,7 @@ function main() {
       picker.hidden = isOpen;
       trigger.setAttribute('aria-expanded', String(!isOpen));
       if (!isOpen) {
+        _ownerPickerTrigger = document.activeElement;
         var searchInput = picker.querySelector('.owner-picker__search');
         if (searchInput) searchInput.focus();
       }
@@ -2089,8 +2173,13 @@ function main() {
       var nameEl = item.querySelector('.owner-picker__name');
       var triggerBtn = document.querySelector('.js-owner-picker-trigger');
       if (nameEl && triggerBtn) {
+        var itemDot = item.querySelector('.availability-dot');
+        var dotClass = 'availability-dot availability-dot--available';
+        if (itemDot) {
+          dotClass = itemDot.className;
+        }
         triggerBtn.innerHTML =
-          '<span class="availability-dot availability-dot--available"></span> ' +
+          '<span class="' + dotClass + '"></span> ' +
           nameEl.textContent + ' &#9660;';
         triggerBtn.setAttribute('aria-label', 'Change owner — currently ' + nameEl.textContent);
       }
@@ -2204,6 +2293,111 @@ function main() {
       });
     });
   }
+
+  /* ---- WF-2: Owner picker keyboard navigation ---- */
+  document.addEventListener('keydown', function (e) {
+    var picker = document.getElementById('ownerPicker');
+    if (!picker || picker.hidden) return;
+    var searchInput = picker.querySelector('.owner-picker__search');
+    var items = Array.from(picker.querySelectorAll('.owner-picker__item'));
+    if (!items.length) return;
+
+    if (document.activeElement === searchInput) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        items[0].focus();
+      }
+    } else if (document.activeElement && document.activeElement.classList.contains('owner-picker__item')) {
+      var idx = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (idx < items.length - 1) items[idx + 1].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx > 0) items[idx - 1].focus();
+        else if (searchInput) searchInput.focus();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        document.activeElement.click();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        picker.hidden = true;
+        var t = document.querySelector('.js-owner-picker-trigger');
+        if (t) t.setAttribute('aria-expanded', 'false');
+        if (_ownerPickerTrigger) { _ownerPickerTrigger.focus(); _ownerPickerTrigger = null; }
+      }
+    }
+  });
+
+  /* ---- WF-3: Workforce card click handler ---- */
+  var WORKFORCE_DATA = [
+    { name: 'Alice Martinez', letter: 'A', email: 'alice@acme.com', availability: 'available' },
+    { name: 'Bob Chen', letter: 'B', email: 'bob@acme.com', availability: 'busy' },
+    { name: 'Carol Davis', letter: 'C', email: 'carol@acme.com', availability: 'available' },
+    { name: 'Dave Wilson', letter: 'D', email: 'dave@acme.com', availability: 'offline' },
+  ];
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest('.workforce-card');
+    if (!card) return;
+    document.querySelectorAll('.workforce-card').forEach(function (c) {
+      c.classList.remove('workforce-card--selected');
+    });
+    card.classList.add('workforce-card--selected');
+    var allCards = Array.from(document.querySelectorAll('.workforce-card'));
+    var idx = allCards.indexOf(card);
+    var member = card.dataset.member;
+    var data = null;
+    if (member) {
+      for (var i = 0; i < WORKFORCE_DATA.length; i++) {
+        if (WORKFORCE_DATA[i].name.split(' ')[0].toLowerCase() === member) {
+          data = WORKFORCE_DATA[i];
+          break;
+        }
+      }
+    }
+    if (!data && idx >= 0 && idx < WORKFORCE_DATA.length) data = WORKFORCE_DATA[idx];
+    if (!data) return;
+    var panel = document.querySelector('.workforce-detail') || document.querySelector('.member-detail');
+    if (!panel) return;
+    var nameEl = panel.querySelector('.workforce-detail__name, .member-detail__name, .detail__name');
+    if (nameEl) nameEl.textContent = data.name;
+    var avatarEl = panel.querySelector('.avatar__letter, .workforce-detail__avatar-letter');
+    if (avatarEl) avatarEl.textContent = data.letter;
+    var dotEl = panel.querySelector('.availability-dot');
+    if (dotEl) dotEl.className = 'availability-dot availability-dot--' + data.availability;
+    var emailEl = panel.querySelector('.workforce-detail__email, .member-detail__email, a[href^="mailto:"]');
+    if (emailEl) {
+      emailEl.textContent = data.email;
+      if (emailEl.tagName === 'A') emailEl.href = 'mailto:' + data.email;
+    }
+  });
+
+  /* ---- WF-4: Queue card click handler ---- */
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest('.queue-card');
+    if (!card) return;
+    document.querySelectorAll('.queue-card').forEach(function (c) {
+      c.classList.remove('queue-card--selected');
+    });
+    card.classList.add('queue-card--selected');
+    var heading = card.querySelector('h3, h4, .queue-card__name, .queue-card__title');
+    var queueName = heading ? heading.textContent.trim() : 'Queue';
+    var detailPanel = document.querySelector('.queue-detail') || document.querySelector('.detail-panel');
+    if (detailPanel) {
+      var titleEl = detailPanel.querySelector('.queue-detail__title, .detail-panel__title, h3');
+      if (titleEl) titleEl.textContent = queueName;
+    }
+  });
+
+  /* ---- G-1: Chip Space/Enter keydown delegate ---- */
+  document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.matches && e.target.matches('[role="button"][tabindex="0"].chip')) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        e.target.click();
+      }
+    }
+  });
 
   render(initial);
 }

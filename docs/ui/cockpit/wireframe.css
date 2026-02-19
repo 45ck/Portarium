@@ -3491,6 +3491,11 @@ tr.is-kbd-selected td {
   .drawer {
     transition: none;
   }
+  .ab-toggle { animation: none; }
+  .cmd-palette-backdrop,
+  .kbd-cheatsheet-backdrop { animation: none; opacity: 1; }
+  .statusbar__toast,
+  .statusbar__chord { animation: none; }
 }
 
 /* ============================================================

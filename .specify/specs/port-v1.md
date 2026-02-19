@@ -24,3 +24,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
   - `scopes?`: optional array of non-empty strings with no duplicates
 - `createdAtIso`: ISO timestamp string
 - `updatedAtIso?`: optional ISO timestamp string
+
+## FinanceAccounting Adapter Foundation (bead-0080)
+
+- Application port contract now includes `FinanceAccountingAdapterPort` under
+  `src/application/ports/finance-accounting-adapter.ts`.
+- The operation set is fixed to the 16 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `FinanceAccounting` family.
+- Execute response contract:
+  - success: canonical `Account[]`, `Account`, `Invoice[]`, `Invoice`, `Party[]`,
+    `Party`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/finance-accounting/in-memory-finance-accounting-adapter.ts`.

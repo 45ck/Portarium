@@ -76,8 +76,8 @@
 {"id":"bead-0076","title":"Code review: ADR-039 reference-vertical package: add software-change-management reference pack with evidence and policy semantics","status":"closed","createdAt":"2026-02-17T03:48:21.601Z","updatedAt":"2026-02-19T02:46:53.791Z"}
 {"id":"bead-0077","title":"Code review: port-family integration candidate matrix: assign owners and blockers for all 18 families with required artifact dependencies","status":"closed","createdAt":"2026-02-17T03:48:21.869Z","updatedAt":"2026-02-19T02:47:57.520Z"}
 {"id":"bead-0078","title":"Code review: per-family operation contract stubs from integration-catalog tables into testable machine-readable fixtures","status":"closed","createdAt":"2026-02-17T03:48:22.147Z","updatedAt":"2026-02-19T02:48:39.698Z"}
-{"id":"bead-0079","title":"Code review: provider decision log automation: generate and validate source manifests from research index and decisions with canonical IDs","status":"open","createdAt":"2026-02-17T03:48:22.415Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0080","title":"FinanceAccounting port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:28.878Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0079","title":"Code review: provider decision log automation: generate and validate source manifests from research index and decisions with canonical IDs","status":"closed","createdAt":"2026-02-17T03:48:22.415Z","updatedAt":"2026-02-19T02:49:34.790Z"}
+{"id":"bead-0080","title":"FinanceAccounting port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:28.878Z","updatedAt":"2026-02-19T02:55:13.659Z"}
 {"id":"bead-0081","title":"Code review: FinanceAccounting port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:29.155Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0082","title":"FinanceAccounting port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:29.442Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0083","title":"Review: FinanceAccounting port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:29.741Z","updatedAt":"2026-02-17T20:18:23.090Z"}
