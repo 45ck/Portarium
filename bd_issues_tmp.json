@@ -1,0 +1,4523 @@
+
+> portarium@0.1.0 bd
+> node scripts/beads/bd.mjs issue list --json
+
+[
+  {
+    "id": "bead-0001",
+    "title": "Versioned vertical packs: manifest + registry + resolver (v1)",
+    "status": "closed",
+    "createdAt": "2026-02-16T00:00:00.000Z",
+    "updatedAt": "2026-02-16T22:31:32.188Z"
+  },
+  {
+    "id": "bead-0002",
+    "title": "Domain Atlas: CIF + capability matrix schemas + CI validation",
+    "status": "closed",
+    "createdAt": "2026-02-16T21:24:33.798Z",
+    "updatedAt": "2026-02-16T22:31:34.657Z"
+  },
+  {
+    "id": "bead-0003",
+    "title": "Plan + Evidence v1: structured plans + hash-chained evidence log",
+    "status": "closed",
+    "createdAt": "2026-02-16T22:04:27.212Z",
+    "updatedAt": "2026-02-16T22:19:10.274Z"
+  },
+  {
+    "id": "bead-0004",
+    "title": "Domain Atlas: single source-of-truth upstream registry",
+    "status": "closed",
+    "createdAt": "2026-02-16T22:05:19.802Z",
+    "updatedAt": "2026-02-16T22:05:25.633Z"
+  },
+  {
+    "id": "bead-0005",
+    "title": "ADR-0042: dependency vulnerability gate (npm audit)",
+    "status": "closed",
+    "createdAt": "2026-02-16T22:36:11.957Z",
+    "updatedAt": "2026-02-16T22:36:17.339Z"
+  },
+  {
+    "id": "bead-0006",
+    "title": "Domain Atlas: Odoo intake (vendor + res.partner CIF)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:02:50.733Z",
+    "updatedAt": "2026-02-17T01:37:58.295Z"
+  },
+  {
+    "id": "bead-0007",
+    "title": "Scaffold domain model structure (aggregates, ports, events, canonical objects)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:04:06.896Z",
+    "updatedAt": "2026-02-17T03:50:57.441Z"
+  },
+  {
+    "id": "bead-0008",
+    "title": "Draft default Project UI/UX plan (shared for teams and individuals)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:04:41.814Z",
+    "updatedAt": "2026-02-17T01:09:27.631Z"
+  },
+  {
+    "id": "bead-0009",
+    "title": "DUPLICATE: Domain Atlas Odoo intake (use bead-0006)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:05:05.271Z",
+    "updatedAt": "2026-02-16T23:05:34.575Z"
+  },
+  {
+    "id": "bead-0010",
+    "title": "Domain Atlas: ERPNext upstream intake + initial CIF/mapping/capabilities",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:05:05.875Z",
+    "updatedAt": "2026-02-17T02:13:54.616Z"
+  },
+  {
+    "id": "bead-0011",
+    "title": "Work Item v1: domain model + parser + tests",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:05:20.802Z",
+    "updatedAt": "2026-02-16T23:14:30.551Z"
+  },
+  {
+    "id": "bead-0012",
+    "title": "DUPLICATE: Scaffold Work Item v1 domain model (use bead-0011)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:06:01.581Z",
+    "updatedAt": "2026-02-17T01:09:27.327Z"
+  },
+  {
+    "id": "bead-0013",
+    "title": "Domain Atlas: Stripe (OpenAPI) extract CIF + mapping hardening",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:06:14.039Z",
+    "updatedAt": "2026-02-17T00:12:17.665Z"
+  },
+  {
+    "id": "bead-0014",
+    "title": "OpenAPI contract gate: validate OpenAPI + add boundary tests",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:12:00.853Z",
+    "updatedAt": "2026-02-16T23:55:32.605Z"
+  },
+  {
+    "id": "bead-0015",
+    "title": "Control plane API v1 contract: OpenAPI + specs for workspaces/users + Plan/Evidence",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:12:00.868Z",
+    "updatedAt": "2026-02-16T23:12:11.938Z"
+  },
+  {
+    "id": "bead-0016",
+    "title": "IAM MVP: workspace users + RBAC roles + auth integration",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:12:00.906Z",
+    "updatedAt": "2026-02-18T05:06:16.210Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "IAM MVP: workspace users, RBAC roles (admin/operator/approver/auditor), auth integration. AC: role mapping strategy defined; token claims mapped to AppContext; deny-by-default for unknown roles."
+  },
+  {
+    "id": "bead-0017",
+    "title": "Domain Atlas: Kill Bill initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:16:07.976Z",
+    "updatedAt": "2026-02-16T23:44:04.088Z"
+  },
+  {
+    "id": "bead-0018",
+    "title": "Policy v1: SoD constraints primitives + parser + tests",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:25:25.173Z",
+    "updatedAt": "2026-02-16T23:39:39.682Z"
+  },
+  {
+    "id": "bead-0019",
+    "title": "Control Plane API v1: domain schemas for Workspace + User (RBAC)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:30:05.095Z",
+    "updatedAt": "2026-02-17T00:31:08.537Z"
+  },
+  {
+    "id": "bead-0020",
+    "title": "Domain Atlas: Keycloak initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-16T23:44:04.179Z",
+    "updatedAt": "2026-02-17T00:12:09.133Z"
+  },
+  {
+    "id": "bead-0021",
+    "title": "ADR-0030: Quota semantics v1 (domain + tests)",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:06:08.567Z",
+    "updatedAt": "2026-02-17T00:31:07.673Z"
+  },
+  {
+    "id": "bead-0022",
+    "title": "ADR-0032: Event stream CloudEvents v1 (domain + tests)",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:06:12.917Z",
+    "updatedAt": "2026-02-17T00:31:07.968Z"
+  },
+  {
+    "id": "bead-0023",
+    "title": "Domain Atlas: Mautic initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:07:16.654Z",
+    "updatedAt": "2026-02-17T00:31:08.260Z"
+  },
+  {
+    "id": "bead-0024",
+    "title": "Run v1: domain model + parser + tests",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:49:00.423Z",
+    "updatedAt": "2026-02-17T00:50:50.079Z"
+  },
+  {
+    "id": "bead-0025",
+    "title": "Domain Atlas: Vault initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:49:51.528Z",
+    "updatedAt": "2026-02-17T00:53:08.098Z"
+  },
+  {
+    "id": "bead-0026",
+    "title": "Low-fi UI prototype: Inbox + Project/Work Items/Run/Approvals/Evidence (v1)",
+    "status": "closed",
+    "createdAt": "2026-02-17T00:59:21.245Z",
+    "updatedAt": "2026-02-17T01:09:27.953Z"
+  },
+  {
+    "id": "bead-0027",
+    "title": "Domain Atlas: Zammad initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-17T01:02:39.202Z",
+    "updatedAt": "2026-02-17T01:31:14.938Z"
+  },
+  {
+    "id": "bead-0028",
+    "title": "Approval v1: domain model + parser + tests",
+    "status": "closed",
+    "createdAt": "2026-02-17T01:03:28.012Z",
+    "updatedAt": "2026-02-17T01:35:15.305Z"
+  },
+  {
+    "id": "bead-0029",
+    "title": "Workflow v1: domain model + parser + tests",
+    "status": "closed",
+    "createdAt": "2026-02-17T01:03:44.608Z",
+    "updatedAt": "2026-02-17T01:35:15.332Z"
+  },
+  {
+    "id": "bead-0030",
+    "title": "Domain Atlas: Paperless-ngx initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-17T01:37:24.943Z",
+    "updatedAt": "2026-02-17T02:00:39.010Z"
+  },
+  {
+    "id": "bead-0031",
+    "title": "Control plane API v1: approvals/workflows/runs OpenAPI",
+    "status": "closed",
+    "createdAt": "2026-02-17T02:15:49.092Z",
+    "updatedAt": "2026-02-17T06:28:31.762Z"
+  },
+  {
+    "id": "bead-0032",
+    "title": "Domain Atlas: OpenFGA initial artefacts (CIF + mapping + capability matrix)",
+    "status": "closed",
+    "createdAt": "2026-02-17T02:18:01.091Z",
+    "updatedAt": "2026-02-17T02:49:44.557Z"
+  },
+  {
+    "id": "bead-0033",
+    "title": "Lo-fi prototype alternatives: Command-Palette (A), Activity-Stream (B), Board-First (C)",
+    "status": "closed",
+    "createdAt": "2026-02-17T02:46:55.305Z",
+    "updatedAt": "2026-02-17T02:47:00.397Z"
+  },
+  {
+    "id": "bead-0034",
+    "title": "ADR-028 review: Verify PII minimization and retention/disposition precedence in all evidence transitions",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:52.941Z",
+    "updatedAt": "2026-02-19T00:47:41.831Z"
+  },
+  {
+    "id": "bead-0035",
+    "title": "ADR-029: Implement tamper-evident hash chain + signature hooks on EvidenceEntry and Artifact lineage",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:53.254Z",
+    "updatedAt": "2026-02-18T01:37:30.057Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "ADR-029: implement tamper-evident hash chain + signature hooks on EvidenceEntry and Artifact lineage. AC: evidence entries chained; signature hooks in place; chain break detectable; previous hash stored and verifiable.",
+    "blockedBy": [
+      "bead-0302"
+    ]
+  },
+  {
+    "id": "bead-0036",
+    "title": "ADR-029 review: Verify hash chain continuity and chain break behavior under retention/disposition events",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:53.526Z",
+    "updatedAt": "2026-02-19T00:48:36.341Z"
+  },
+  {
+    "id": "bead-0037",
+    "title": "ADR-030: Implement quota-aware execution primitives in orchestration scheduling and adapter call wrapper",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:53.827Z",
+    "updatedAt": "2026-02-19T00:51:48.053Z"
+  },
+  {
+    "id": "bead-0038",
+    "title": "ADR-030 review: Verify 429/backoff, retry budgets, and burst controls are observable and bounded",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:54.105Z",
+    "updatedAt": "2026-02-19T00:52:28.091Z"
+  },
+  {
+    "id": "bead-0039",
+    "title": "ADR-031: Implement SoD model evaluation, incompatible role graph, and threshold counters on approval routing",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:54.382Z",
+    "updatedAt": "2026-02-18T02:00:16.092Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "ADR-031: implement SoD model evaluation, incompatible role graph, and threshold counters on approval routing. AC: requestor/approver separation enforced; N-role constraints validated; SoD violations reject approval.",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0040",
+    "title": "ADR-031 review: Verify requestor/approver separation and N-role constraints are enforced before any state transition",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:54.654Z",
+    "updatedAt": "2026-02-19T00:54:44.268Z"
+  },
+  {
+    "id": "bead-0041",
+    "title": "ADR-032: Implement CloudEvents envelope for all event emission points and subscription contracts",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:54.919Z",
+    "updatedAt": "2026-02-18T02:00:16.028Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "ADR-032: implement CloudEvents envelope for all event emission points and subscription contracts. AC: events use CloudEvents v1 envelope; type, source, subject, tenantid, correlationid fields populated on every event.",
+    "blockedBy": [
+      "bead-0306"
+    ]
+  },
+  {
+    "id": "bead-0042",
+    "title": "ADR-032 review: Verify event payload schema, versioning, and correlation IDs across event consumers and sinks",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:55.181Z",
+    "updatedAt": "2026-02-19T00:56:22.735Z"
+  },
+  {
+    "id": "bead-0043",
+    "title": "ADR-033: Implement OTel context propagation in request, workflow, adapter, and machine call stacks",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:55.467Z",
+    "updatedAt": "2026-02-19T01:08:09.403Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "ADR-033: implement OTel context propagation in request, workflow, adapter, and machine call stacks. AC: W3C Trace Context (traceparent/tracestate) propagated end-to-end; spans correlated across services.",
+    "blockedBy": [
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0044",
+    "title": "ADR-033 review: Verify trace/span IDs, metrics hooks, and redaction-safe structured logs in critical paths",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:55.775Z",
+    "updatedAt": "2026-02-19T01:11:44.979Z"
+  },
+  {
+    "id": "bead-0045",
+    "title": "ADR-034: Enforce containment and least-privilege assumptions in machine and adapter execution environments",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:56.085Z",
+    "updatedAt": "2026-02-19T01:17:34.771Z"
+  },
+  {
+    "id": "bead-0046",
+    "title": "ADR-034 review: Verify sandbox policy assertions, egress allowlisting, and per-tenant isolation controls in runtime integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:56.368Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0047",
+    "title": "ADR-035: Finalize domain-atlas pipeline stages into reproducible CI job and artifact validation stage",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:56.625Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0048",
+    "title": "ADR-035 review: Verify atlas regeneration compares upstream pinned commit and fails on schema drift",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:56.892Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0049",
+    "title": "ADR-036: Implement product identity labels and telemetry metadata using Portarium naming across docs/spec/error envelopes",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:57.159Z",
+    "updatedAt": "2026-02-19T01:00:19.587Z"
+  },
+  {
+    "id": "bead-0050",
+    "title": "ADR-036 review: Verify docs, package metadata, and external interfaces consistently use Portarium naming where required",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:47:57.431Z",
+    "updatedAt": "2026-02-19T01:00:53.081Z"
+  },
+  {
+    "id": "bead-0051",
+    "title": "ADR-037: Model git-backed definitions and runtime truth divergence handling in services and reconciliation flows",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:57.701Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0052",
+    "title": "ADR-037 review: Verify deployment modes and truth-mode transitions are explicit and auditable under failure conditions",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:57.994Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0053",
+    "title": "ADR-038: Implement Work Item universal binding domain + query surfaces with evidence/run/workflow linkages",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:58.270Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0054",
+    "title": "ADR-038 review: Verify Work Item remains thin binding object and is not over-modeled as standalone PM system",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:58.536Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0055",
+    "title": "ADR-039 reference-vertical package: Add software-change-management reference pack with evidence and policy semantics",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:58.826Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0056",
+    "title": "ADR-039 review: Verify reference vertical does not alter core scope and stays gated via vertical-pack lifecycle",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:59.090Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0057",
+    "title": "Port-family integration candidate matrix: assign owners and blockers for all 18 families with required artifact dependencies",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:59.348Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0058",
+    "title": "Port-family readiness matrix: verify every candidate has source intent, operation mapping, and evidence chain before family start",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:59.613Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0059",
+    "title": "Per-family operation contract stubs from integration-catalog tables into testable machine-readable fixtures",
+    "status": "open",
+    "createdAt": "2026-02-17T03:47:59.903Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0060",
+    "title": "Per-family contract stubs: verify fixture completeness, canonical mapping consistency, and source ranking assumptions",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:00.177Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0061",
+    "title": "Provider decision log automation: generate and validate source manifests from research index and decisions with canonical IDs",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:00.460Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0062",
+    "title": "Provider decision logs: verify each source decision includes license, extraction constraints, and capability hypotheses",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:00.740Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0063",
+    "title": "Code review: Scaffold domain model structure (aggregates, ports, events, canonical objects)",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:18.099Z",
+    "updatedAt": "2026-02-18T06:02:44.899Z"
+  },
+  {
+    "id": "bead-0064",
+    "title": "Code review: IAM MVP: workspace users + RBAC roles + auth integration",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:18.406Z",
+    "updatedAt": "2026-02-18T05:41:51.474Z"
+  },
+  {
+    "id": "bead-0065",
+    "title": "Code review: Control plane API v1: approvals/workflows/runs OpenAPI",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:18.674Z",
+    "updatedAt": "2026-02-18T06:04:31.418Z"
+  },
+  {
+    "id": "bead-0066",
+    "title": "Code review: ADR-029: implement tamper-evident hash chain + signature hooks on EvidenceEntry and Artifact lineage",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:18.936Z",
+    "updatedAt": "2026-02-18T06:07:08.605Z"
+  },
+  {
+    "id": "bead-0067",
+    "title": "Code review: ADR-030: implement quota-aware execution primitives in orchestration scheduling and adapter call wrapper",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:19.198Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0068",
+    "title": "Code review: ADR-031: implement SoD model evaluation, incompatible role graph, and threshold counters on approval routing",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:19.455Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0069",
+    "title": "Code review: ADR-032: implement CloudEvents envelope for all event emission points and subscription contracts",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:19.721Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0070",
+    "title": "Code review: ADR-033: implement OTel context propagation in request, workflow, adapter, and machine call stacks",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:19.993Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0071",
+    "title": "Code review: ADR-034: enforce containment and least-privilege assumptions in machine and adapter execution environments",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:20.263Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0072",
+    "title": "Code review: ADR-035: finalize domain-atlas pipeline stages into reproducible CI job and artifact validation stage",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:20.525Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0073",
+    "title": "Code review: ADR-036: implement product identity labels and telemetry metadata using Portarium naming across docs/spec/error envelopes",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:20.790Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0074",
+    "title": "Code review: ADR-037: model git-backed definitions and runtime truth divergence handling in services and reconciliation flows",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:21.054Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0075",
+    "title": "Code review: ADR-038: implement Work Item universal binding domain + query surfaces with evidence/run/workflow linkages",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:21.321Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0076",
+    "title": "Code review: ADR-039 reference-vertical package: add software-change-management reference pack with evidence and policy semantics",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:21.601Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0077",
+    "title": "Code review: port-family integration candidate matrix: assign owners and blockers for all 18 families with required artifact dependencies",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:21.869Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0078",
+    "title": "Code review: per-family operation contract stubs from integration-catalog tables into testable machine-readable fixtures",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:22.147Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0079",
+    "title": "Code review: provider decision log automation: generate and validate source manifests from research index and decisions with canonical IDs",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:22.415Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0080",
+    "title": "FinanceAccounting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:28.878Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0081",
+    "title": "Code review: FinanceAccounting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:29.155Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0082",
+    "title": "FinanceAccounting port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:29.442Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0083",
+    "title": "Review: FinanceAccounting port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:29.741Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0084",
+    "title": "PaymentsBilling port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:30.016Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0085",
+    "title": "Code review: PaymentsBilling port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:30.301Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0086",
+    "title": "PaymentsBilling port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:30.666Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0087",
+    "title": "Review: PaymentsBilling port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:30.998Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0088",
+    "title": "ProcurementSpend port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:31.274Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0089",
+    "title": "Code review: ProcurementSpend port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:31.551Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0090",
+    "title": "ProcurementSpend port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:31.822Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0091",
+    "title": "Review: ProcurementSpend port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:32.086Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0092",
+    "title": "HrisHcm port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:32.351Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0093",
+    "title": "Code review: HrisHcm port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:32.622Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0094",
+    "title": "HrisHcm port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:32.886Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0095",
+    "title": "Review: HrisHcm port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:33.145Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0096",
+    "title": "Payroll port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:33.407Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0097",
+    "title": "Code review: Payroll port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:33.664Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0098",
+    "title": "Payroll port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:33.918Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0099",
+    "title": "Review: Payroll port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:34.172Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0100",
+    "title": "CrmSales port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:34.445Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0101",
+    "title": "Code review: CrmSales port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:34.715Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0102",
+    "title": "CrmSales port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:34.978Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0103",
+    "title": "Review: CrmSales port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:35.242Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0104",
+    "title": "CustomerSupport port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:35.513Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0105",
+    "title": "Code review: CustomerSupport port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:35.780Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0106",
+    "title": "CustomerSupport port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:36.064Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0107",
+    "title": "Review: CustomerSupport port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:36.325Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0108",
+    "title": "ItsmItOps port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:36.619Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0109",
+    "title": "Code review: ItsmItOps port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:36.902Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0110",
+    "title": "ItsmItOps port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:37.179Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0111",
+    "title": "Review: ItsmItOps port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:37.460Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0112",
+    "title": "IamDirectory port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:37.802Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0113",
+    "title": "Code review: IamDirectory port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:38.100Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0114",
+    "title": "IamDirectory port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:38.414Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0115",
+    "title": "Review: IamDirectory port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:38.708Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0116",
+    "title": "SecretsVaulting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:38.978Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0117",
+    "title": "Code review: SecretsVaulting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:39.255Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0118",
+    "title": "SecretsVaulting port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:39.525Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0119",
+    "title": "Review: SecretsVaulting port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:39.811Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0120",
+    "title": "MarketingAutomation port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:40.079Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0121",
+    "title": "Code review: MarketingAutomation port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:40.351Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0122",
+    "title": "MarketingAutomation port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:40.631Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0123",
+    "title": "Review: MarketingAutomation port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:40.895Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0124",
+    "title": "AdsPlatforms port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:41.168Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0125",
+    "title": "Code review: AdsPlatforms port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:41.430Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0126",
+    "title": "AdsPlatforms port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:41.700Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0127",
+    "title": "Review: AdsPlatforms port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:41.968Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0128",
+    "title": "CommsCollaboration port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:42.247Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0129",
+    "title": "Code review: CommsCollaboration port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:42.513Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0130",
+    "title": "CommsCollaboration port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:42.786Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0131",
+    "title": "Review: CommsCollaboration port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:43.055Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0132",
+    "title": "ProjectsWorkMgmt port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:43.329Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0133",
+    "title": "Code review: ProjectsWorkMgmt port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:43.645Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0134",
+    "title": "ProjectsWorkMgmt port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:43.919Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0135",
+    "title": "Review: ProjectsWorkMgmt port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:44.189Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0136",
+    "title": "DocumentsEsign port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:44.466Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0137",
+    "title": "Code review: DocumentsEsign port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:44.751Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0138",
+    "title": "DocumentsEsign port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:45.030Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0139",
+    "title": "Review: DocumentsEsign port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:45.301Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0140",
+    "title": "AnalyticsBi port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:45.562Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0141",
+    "title": "Code review: AnalyticsBi port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:45.844Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0142",
+    "title": "AnalyticsBi port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:46.099Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0143",
+    "title": "Review: AnalyticsBi port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:46.350Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0144",
+    "title": "MonitoringIncident port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:46.603Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0145",
+    "title": "Code review: MonitoringIncident port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:46.863Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0146",
+    "title": "MonitoringIncident port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:47.128Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0147",
+    "title": "Review: MonitoringIncident port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:47.402Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0148",
+    "title": "ComplianceGrc port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:47.666Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0149",
+    "title": "Code review: ComplianceGrc port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:47.923Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0150",
+    "title": "ComplianceGrc port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:48.180Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0151",
+    "title": "Review: ComplianceGrc port adapter test evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:48:48.429Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0152",
+    "title": "Reference-Verticals port adapter foundation (cross-cutting)",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:48.689Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0153",
+    "title": "Code review: (cross-cutting) Reference-Verticals port adapter foundation",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:48.948Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0154",
+    "title": "Reference-Verticals port adapter integration tests (cross-cutting)",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:49.215Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0155",
+    "title": "Review: Reference-Verticals port adapter test evidence (cross-cutting)",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:49.471Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0156",
+    "title": "Implement workspace domain v1: optional membership identifier arrays and validation",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:48:59.950Z",
+    "updatedAt": "2026-02-17T03:49:27.436Z"
+  },
+  {
+    "id": "bead-0157",
+    "title": "Code review: workspace domain v1: membership identifier parsing and invariant validation",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:00.220Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0158",
+    "title": "PE: master execution DAG — encode open beads by phase, dependency, and evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:39.348Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0159",
+    "title": "PE: dependency resolver — auto-detect missing prerequisites before bead start",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:39.636Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0160",
+    "title": "Cycle gate: no implementation without design/spec/review linkage",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:39.919Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0161",
+    "title": "Phase gate: Foundation complete — requires gate, security baseline, and API contract beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:40.194Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0162",
+    "title": "Phase gate: Domain complete — requires aggregate invariants, parser coverage, domain factory, and ADR traceability beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:40.460Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0163",
+    "title": "Phase gate: Application complete — requires DTOs, use-cases, orchestration tests, and approval/run policy mapping are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:40.719Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0164",
+    "title": "Phase gate: Infrastructure complete — requires persistence, outbox, migration, observability, and security containment beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:40.998Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0165",
+    "title": "Phase gate: Presentation complete — requires OpenAPI route parity, middleware, authN/RBAC, and envelope mapping beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:41.296Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0166",
+    "title": "Phase gate: Integration complete — requires per-family readiness, contract fixtures, and end-to-end smoke beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:41.605Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0167",
+    "title": "Phase gate: Security complete — requires vulnerability, secret hygiene, tenant isolation, SoD, and sandboxing beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:41.929Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0168",
+    "title": "Phase gate: Release complete — requires ci:pr, quality gates, review audit, and QA evidence are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:42.201Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0169",
+    "title": "Release freeze: block new families while release closure bead is unresolved",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:42.473Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0170",
+    "title": "Per-ADR closure: ADR-001 through ADR-0040 must each have implementation, review, and verification evidence before any dependent Bead close",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:42.752Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0171",
+    "title": "Per-ADR closure: ADR-0041 through ADR-0043 must be promoted from proposed/accepted states before GA release",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:43.037Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0172",
+    "title": "Per-ADR closure: ADR-0048 to ADR-0138 legacy gaps from research pipeline must be mapped to implementation and review Beads",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:43.313Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0173",
+    "title": "Reconcile docs/domain/canonical-objects.md with runtime entity model and canonical mapping contracts before further adapter work",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:43.575Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0174",
+    "title": "Review: verify no adapter work starts without canonical-to-provider mapping evidence and operation matrix completeness",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:43.836Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0175",
+    "title": "Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:44.098Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0176",
+    "title": "Review: reconcile docs/domain/aggregates.md invariants with all aggregate event streams and state-transition Beads",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:44.358Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0177",
+    "title": "Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:44.640Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0178",
+    "title": "Code review: validate architecture boundaries for every new scaffold file before code merge",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:44.945Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0179",
+    "title": "CI gate: require architecture-guard, gate-baseline, and npm audit before each merge",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:45.214Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0180",
+    "title": "CI gate: require OpenAPI parser/golden fixture parity on every push and PR for all operationIds",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:45.484Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0181",
+    "title": "Test evidence: require coverage thresholds on all newly added domain/application/infrastructure code",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:45.747Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0182",
+    "title": "Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:46.054Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0183",
+    "title": "Review: tie each spec in .specify/specs to at least one implementation and one test bead",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:46.328Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0184",
+    "title": "Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:46.592Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0185",
+    "title": "PE audit: generate weekly report of orphaned Beads and dependency deadlocks",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:46.866Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0186",
+    "title": "PE audit: verify no Bead exists without owner, close criteria, and rollback trigger",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:47.129Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0187",
+    "title": "Onboarding: explain CLAUDE.md, docs, beading schema, and review/closure requirements",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:47.388Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0188",
+    "title": "Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:47.652Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0189",
+    "title": "Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template)",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:47.936Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0190",
+    "title": "Runbook review: validate rollback plan includes data, evidence, and credential cleanup actions",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:48.225Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0191",
+    "title": "PE quality: define acceptance scorecard for each Bead (spec alignment, tests, review, docs, security, performance)",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:48.515Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0192",
+    "title": "PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:48.802Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0193",
+    "title": "E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:49.068Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0194",
+    "title": "E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:49.332Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0195",
+    "title": "Generate tenant-isolated fixture factories for every aggregate and port operation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:49.592Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0196",
+    "title": "Review: verify tenant-isolated fixtures block cross-tenant leakage in tests and docs",
+    "status": "open",
+    "createdAt": "2026-02-17T03:49:49.857Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0197",
+    "title": "Formalize status/state matrices for all run states, approval states, and plan states in one machine-checkable table",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:50.121Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0198",
+    "title": "Review: verify state machine matrices match spec, domain tests, and UI journey transitions",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:50.395Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0199",
+    "title": "Create performance bead: define load envelopes for list APIs, run dispatch, and approval queues",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:50.657Z",
+    "updatedAt": "2026-02-17T03:50:57.947Z"
+  },
+  {
+    "id": "bead-0200",
+    "title": "Review: verify load envelopes are covered in smoke/perf tests and CI gating before merge",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:50.922Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0201",
+    "title": "Create dependency-management bead: track dependency-upgrade policy with severity bands and override governance for unsafe dependencies",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:51.181Z",
+    "updatedAt": "2026-02-17T03:50:41.310Z"
+  },
+  {
+    "id": "bead-0202",
+    "title": "Review: verify dependency policy decisions are recorded with rationale and re-evaluation dates",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:51.437Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0203",
+    "title": "Create documentation bead: ensure every open Bead has a corresponding docs update in project docs or ADR notes before close",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:51.703Z",
+    "updatedAt": "2026-02-17T03:50:26.782Z"
+  },
+  {
+    "id": "bead-0204",
+    "title": "Create documentation bead: ensure every docs update references owning Bead IDs and expected close criteria",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:51.965Z",
+    "updatedAt": "2026-02-17T03:50:20.104Z"
+  },
+  {
+    "id": "bead-0205",
+    "title": "Create cross-team bead: create handoff packet template between Foundation->Domain->Application cycles with risk and evidence summary",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:52.237Z",
+    "updatedAt": "2026-02-17T03:50:12.953Z"
+  },
+  {
+    "id": "bead-0206",
+    "title": "Create final-cycle bead: no Bead closes without traceable evidence chain from ADR/spec/test/review to Bead close",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:49:52.502Z",
+    "updatedAt": "2026-02-17T03:50:06.850Z"
+  },
+  {
+    "id": "bead-0207",
+    "title": "Closeout review: Scaffold domain model structure (aggregates, ports, events, canonical objects)",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:00.594Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0208",
+    "title": "Closeout review: IAM MVP: workspace users + RBAC roles + auth integration",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:00.868Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0209",
+    "title": "Closeout review: Control plane API v1: approvals/workflows/runs OpenAPI",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:01.315Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0210",
+    "title": "Closeout review: ADR-029: Implement tamper-evident hash chain + signature hooks on EvidenceEntry and Artifact lineage",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:01.589Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0211",
+    "title": "Closeout review: ADR-030: Implement quota-aware execution primitives in orchestration scheduling and adapter call wrapper",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:01.867Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0212",
+    "title": "Closeout review: ADR-031: Implement SoD model evaluation, incompatible role graph, and threshold counters on approval routing",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:02.159Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0213",
+    "title": "Closeout review: ADR-032: Implement CloudEvents envelope for all event emission points and subscription contracts",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:02.469Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0214",
+    "title": "Closeout review: ADR-033: Implement OTel context propagation in request, workflow, adapter, and machine call stacks",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:02.781Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0215",
+    "title": "Closeout review: ADR-034: Enforce containment and least-privilege assumptions in machine and adapter execution environments",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:03.081Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0216",
+    "title": "Closeout review: ADR-035: Finalize domain-atlas pipeline stages into reproducible CI job and artifact validation stage",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:03.334Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0217",
+    "title": "Closeout review: ADR-036: Implement product identity labels and telemetry metadata using Portarium naming across docs/spec/error envelopes",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:03.594Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0218",
+    "title": "Closeout review: ADR-037: Model git-backed definitions and runtime truth divergence handling in services and reconciliation flows",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:03.859Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0219",
+    "title": "Closeout review: ADR-038: Implement Work Item universal binding domain + query surfaces with evidence/run/workflow linkages",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:04.124Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0220",
+    "title": "Closeout review: ADR-039 reference-vertical package: Add software-change-management reference pack with evidence and policy semantics",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:04.397Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0221",
+    "title": "Closeout review: Port-family integration candidate matrix: assign owners and blockers for all 18 families with required artifact dependencies",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:04.684Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0222",
+    "title": "Closeout review: Per-family operation contract stubs from integration-catalog tables into testable machine-readable fixtures",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:04.967Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0223",
+    "title": "Closeout review: FinanceAccounting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:05.248Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0224",
+    "title": "Closeout review: FinanceAccounting port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:05.667Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0225",
+    "title": "Closeout review: PaymentsBilling port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:05.958Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0226",
+    "title": "Closeout review: PaymentsBilling port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:06.223Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0227",
+    "title": "Closeout review: ProcurementSpend port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:06.495Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0228",
+    "title": "Closeout review: ProcurementSpend port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:06.762Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0229",
+    "title": "Closeout review: HrisHcm port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:07.028Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0230",
+    "title": "Closeout review: HrisHcm port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:07.294Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0231",
+    "title": "Closeout review: Payroll port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:07.560Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0232",
+    "title": "Closeout review: Payroll port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:07.826Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0233",
+    "title": "Closeout review: CrmSales port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:08.089Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0234",
+    "title": "Closeout review: CrmSales port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:08.356Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0235",
+    "title": "Closeout review: CustomerSupport port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:08.635Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0236",
+    "title": "Closeout review: CustomerSupport port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:08.906Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0237",
+    "title": "Closeout review: ItsmItOps port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:09.176Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0238",
+    "title": "Closeout review: ItsmItOps port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:09.451Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0239",
+    "title": "Closeout review: IamDirectory port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:09.718Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0240",
+    "title": "Closeout review: IamDirectory port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:09.983Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0241",
+    "title": "Closeout review: SecretsVaulting port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:10.240Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0242",
+    "title": "Closeout review: SecretsVaulting port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:10.499Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0243",
+    "title": "Closeout review: MarketingAutomation port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:10.760Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0244",
+    "title": "Closeout review: MarketingAutomation port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:11.020Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0245",
+    "title": "Closeout review: AdsPlatforms port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:11.308Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0246",
+    "title": "Closeout review: AdsPlatforms port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:11.569Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0247",
+    "title": "Closeout review: CommsCollaboration port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:11.854Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0248",
+    "title": "Closeout review: CommsCollaboration port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:12.116Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0249",
+    "title": "Closeout review: ProjectsWorkMgmt port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:12.399Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0250",
+    "title": "Closeout review: ProjectsWorkMgmt port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:12.673Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0251",
+    "title": "Closeout review: DocumentsEsign port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:12.932Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0252",
+    "title": "Closeout review: DocumentsEsign port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:13.193Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0253",
+    "title": "Closeout review: AnalyticsBi port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:13.462Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0254",
+    "title": "Closeout review: AnalyticsBi port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:13.727Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0255",
+    "title": "Closeout review: MonitoringIncident port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:13.990Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0256",
+    "title": "Closeout review: MonitoringIncident port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:14.243Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0257",
+    "title": "Closeout review: ComplianceGrc port adapter foundation",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:14.501Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0258",
+    "title": "Closeout review: ComplianceGrc port adapter integration tests",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:14.753Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0259",
+    "title": "Closeout review: PE: master execution DAG — encode open beads by phase, dependency, and evidence",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:15.013Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0260",
+    "title": "Closeout review: Phase gate: Foundation complete — requires gate, security baseline, and API contract beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:15.269Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0261",
+    "title": "Closeout review: Phase gate: Domain complete — requires aggregate invariants, parser coverage, domain factory, and ADR traceability beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:15.608Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0262",
+    "title": "Closeout review: Phase gate: Application complete — requires DTOs, use-cases, orchestration tests, and approval/run policy mapping are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:15.885Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0263",
+    "title": "Closeout review: Phase gate: Infrastructure complete — requires persistence, outbox, migration, observability, and security containment beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:16.145Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0264",
+    "title": "Closeout review: Phase gate: Presentation complete — requires OpenAPI route parity, middleware, authN/RBAC, and envelope mapping beads are closed",
+    "status": "open",
+    "createdAt": "2026-02-17T03:50:16.432Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0265",
+    "title": "Closeout review: Phase gate: Integration complete — requires per-family readiness, contract fixtures, and end-to-end smoke beads are closed",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:16.708Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0266",
+    "title": "Closeout review: Phase gate: Security complete — requires vulnerability, secret hygiene, tenant isolation, SoD, and sandboxing beads are closed",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:16.974Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0267",
+    "title": "Closeout review: Release freeze: block new families while release closure bead is unresolved",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:17.242Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0268",
+    "title": "Closeout review: Per-ADR closure: ADR-0041 through ADR-0043 must be promoted from proposed/accepted states before GA release",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:17.523Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0269",
+    "title": "Closeout review: Reconcile docs/domain/canonical-objects.md with runtime entity model and canonical mapping contracts before further adapter work",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:17.784Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0270",
+    "title": "Closeout review: Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:18.040Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0271",
+    "title": "Closeout review: Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:18.289Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0272",
+    "title": "Closeout review: CI gate: require architecture-guard, gate-baseline, and npm audit before each merge",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:18.545Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0273",
+    "title": "Closeout review: CI gate: require OpenAPI parser/golden fixture parity on every push and PR for all operationIds",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:18.807Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0274",
+    "title": "Closeout review: Test evidence: require coverage thresholds on all newly added domain/application/infrastructure code",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:19.066Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0275",
+    "title": "Closeout review: Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:19.330Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0276",
+    "title": "Closeout review: PE audit: generate weekly report of orphaned Beads and dependency deadlocks",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:19.593Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0277",
+    "title": "Closeout review: PE audit: verify no Bead exists without owner, close criteria, and rollback trigger",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:19.869Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0278",
+    "title": "Closeout review: Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:20.128Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0279",
+    "title": "Closeout review: Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template)",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:20.387Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0280",
+    "title": "Closeout review: PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:20.650Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0281",
+    "title": "Closeout review: E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:20.923Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0282",
+    "title": "Closeout review: E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:21.180Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0283",
+    "title": "Closeout review: Generate tenant-isolated fixture factories for every aggregate and port operation",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:21.436Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0284",
+    "title": "Closeout review: Formalize status/state matrices for all run states, approval states, and plan states in one machine-checkable table",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:21.705Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0285",
+    "title": "Closeout review: Create performance bead: define load envelopes for list APIs, run dispatch, and approval queues",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:21.969Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0286",
+    "title": "Closeout review: Create dependency-management bead: track dependency-upgrade policy with severity bands and override governance for unsafe dependencies",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:22.238Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0287",
+    "title": "Closeout review: Create documentation bead: ensure every open Bead has a corresponding docs update in project docs or ADR notes before close",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:22.503Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0288",
+    "title": "Closeout review: Create documentation bead: ensure every docs update references owning Bead IDs and expected close criteria",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:22.773Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0289",
+    "title": "Closeout review: Create cross-team bead: create handoff packet template between Foundation->Domain->Application cycles with risk and evidence summary",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:50:23.045Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0290",
+    "title": "IN-PROGRESS: Create implementation bead for canonical object v1 domain scaffolding",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:51:01.562Z",
+    "updatedAt": "2026-02-17T03:52:15.497Z"
+  },
+  {
+    "id": "bead-0291",
+    "title": "Implement domain events parser and expose domain events aggregate parsing",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:51:47.425Z",
+    "updatedAt": "2026-02-17T03:52:39.828Z"
+  },
+  {
+    "id": "bead-0292",
+    "title": "Code review: domain events parser and event stream parsing coverage",
+    "status": "closed",
+    "createdAt": "2026-02-17T03:51:47.775Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0293",
+    "title": "feat(cockpit): implement cockpit prototype UX fixes (persona layout, drawer push, visual hierarchy)",
+    "status": "closed",
+    "createdAt": "2026-02-17T04:15:14.894Z",
+    "updatedAt": "2026-02-17T06:28:33.304Z"
+  },
+  {
+    "id": "bead-0294",
+    "title": "Implement infrastructure baseline ADR-0056, local compose, and infra specs",
+    "status": "closed",
+    "createdAt": "2026-02-17T08:44:43.218Z",
+    "updatedAt": "2026-02-17T18:37:49.850Z"
+  },
+  {
+    "id": "bead-0295",
+    "title": "Implement first-pass Portarium presentation layer reference package and roadmap artifacts",
+    "status": "closed",
+    "createdAt": "2026-02-17T08:45:42.364Z",
+    "updatedAt": "2026-02-17T08:48:00.346Z"
+  },
+  {
+    "id": "bead-0296",
+    "title": "Add CI image build pipeline with tagged Control Plane/worker artefacts for infra baseline",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:34:45.828Z",
+    "updatedAt": "2026-02-17T18:37:50.422Z"
+  },
+  {
+    "id": "bead-0297",
+    "title": "Harden infra baseline scaffolding and runnable image manifests for ADR-0056",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:36:10.935Z",
+    "updatedAt": "2026-02-17T18:37:50.926Z"
+  },
+  {
+    "id": "bead-0298",
+    "title": "Implement concrete infrastructure execution baseline (Terraform and deploy automation)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:43:52.343Z",
+    "updatedAt": "2026-02-17T18:43:52.343Z"
+  },
+  {
+    "id": "bead-0299",
+    "title": "AuthZ: application-layer authorization actions and forbidden-action typing contract",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:02.872Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0300",
+    "title": "Add end-to-end application integration tests for command/query flows with idempotency + outbox + CloudEvent emission under transient failure scenarios",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:02.872Z",
+    "updatedAt": "2026-02-17T22:41:35.162Z",
+    "priority": "P1",
+    "phase": "application",
+    "body": "E2E application integration tests for command/query flows with idempotency + outbox + CloudEvent emission under transient failure scenarios. AC: tests cover happy path, retry, outbox dispatch, and failure injection.",
+    "blockedBy": [
+      "bead-0335",
+      "bead-0316",
+      "bead-0041"
+    ]
+  },
+  {
+    "id": "bead-0301",
+    "title": "Run full ci:pr for application-layer changes and triage any failures (typecheck/lint/tests/deps/audit/coverage)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:02.889Z",
+    "updatedAt": "2026-02-17T19:02:26.214Z"
+  },
+  {
+    "id": "bead-0302",
+    "title": "Domain parsing/validation toolkit consolidation (ISO timestamp parsing, integer/enum validation, shared error model) across all *V1 domain parsers",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-17T23:49:13.966Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "Consolidate domain parsing/validation toolkit: ISO timestamp parsing, integer/enum validation, shared error model used by all *V1 parsers. AC: all *V1 parsers use shared toolkit; no duplicated parsing logic; ci:pr green."
+  },
+  {
+    "id": "bead-0303",
+    "title": "Temporal invariants and ordering checks in domain models (issued/revoked, started/ended, due/created, retention deadlines, run/work-item event timelines)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T01:05:03.110Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "Temporal invariants and ordering checks in domain models: issued/revoked ordering, started/ended ordering, due/created ordering, retention deadlines. AC: invariants enforced at parse time; violated invariants produce typed errors.",
+    "blockedBy": [
+      "bead-0302"
+    ]
+  },
+  {
+    "id": "bead-0304",
+    "title": "Tenancy identity unification (alias/aliasing policy for TenantId and WorkspaceId, parser migration, and cross-module compile-time guard)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T01:17:26.773Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "Tenancy identity unification: TenantId/WorkspaceId alias policy decision, parser migration, cross-module compile-time guard. AC: single canonical identity type; compile-time guard prevents drift."
+  },
+  {
+    "id": "bead-0305",
+    "title": "Canonical capability enforcement across workflow actions, adapter capability matrices, and port supported operations (PortCapability migration with compatibility strategy)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T02:24:37.795Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Canonical capability enforcement across workflow actions, adapter capability matrices, and port supported operations. AC: PortCapability migration with compatibility strategy complete.",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0306",
+    "title": "Domain events correlation requirements (tenant/workspace id and correlation id as required metadata on DomainEventV1 and related parser invariants)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T01:21:52.709Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "Domain events correlation requirements: every DomainEventV1 must carry tenant/workspace ID and correlation ID. AC: every domain event carries tenant context and correlation metadata; parser enforces required fields.",
+    "blockedBy": [
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0307",
+    "title": "Provider-selection contract hardening (operation compatibility checks by family, deterministic tie-break rules, and unsupported-operation failure tests)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T02:48:01.085Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Provider-selection contract hardening: operation compatibility checks, deterministic tie-break, unsupported-operation tests. AC: unsupported operations fail deterministically; tie-break rules documented.",
+    "blockedBy": [
+      "bead-0305"
+    ]
+  },
+  {
+    "id": "bead-0308",
+    "title": "Repository-level aggregate invariants (workspace policy: active workflow versioning, one-active-adapter-per-port, cross-aggregate uniqueness checks), to be enforced in application boundaries",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0309",
+    "title": "Domain API compatibility and migration plan (schema-versioned operation names, deprecated fields, and rollout/rollback to preserve existing workflow/adapters payloads)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T02:55:35.743Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Domain API compatibility and migration plan: schema-versioned operation names, deprecated fields, rollout/rollback. AC: migration path documented; rollback preserves existing payloads.",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0310",
+    "title": "Evidence/audit schema debt clean-up (CloudEvent time, tenant correlation, evidence chain timestamp consistency, and schema docs + ADR evidence)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-18T02:17:09.353Z",
+    "priority": "P1",
+    "phase": "application",
+    "body": "Evidence/audit schema debt clean-up: CloudEvent time, tenant correlation, evidence chain timestamp consistency. AC: immutable evidence entries emitted; integrity metadata present; hash chain continuity under update.",
+    "blockedBy": [
+      "bead-0041",
+      "bead-0035"
+    ]
+  },
+  {
+    "id": "bead-0311",
+    "title": "Closeout review: Domain hardening release gate must confirm all new domain-beads above are merged, tested, and owner-signed",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:19.207Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0312",
+    "title": "Application-layer implementation roadmap: scope and acceptance criteria for register-workspace/start-workflow/submit-approval + remaining core use-cases",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:49.735Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0313",
+    "title": "Application-level observability: traces/logs/metrics correlation (traceparent, OTel spans, security-safe attributes)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:49.799Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0314",
+    "title": "Implement durable workflow adapter integration (start activity, await signals, retry/backoff policy, deterministic execution boundary)",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:50.048Z",
+    "updatedAt": "2026-02-18T07:02:51.207Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Durable workflow adapter integration: start activity, await signals, retry/backoff policy, deterministic execution boundary. AC: workflow/activity split enforced; determinism checks in place; approval gate signals work.",
+    "blockedBy": [
+      "bead-0402",
+      "bead-0337"
+    ]
+  },
+  {
+    "id": "bead-0315",
+    "title": "Application query read-model projection strategy (denormalized read tables or materialized views) with cache + invalidation",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:50.091Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0316",
+    "title": "Application outbox + event dispatcher for atomic publish of CloudEvents with idempotency and retry semantics",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:46:50.103Z",
+    "updatedAt": "2026-02-18T04:51:07.319Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Outbox + event dispatcher: atomic publish of CloudEvents with idempotency and retry semantics. AC: event publishing survives transient bus failure; outbox retry works; events consumed in order.",
+    "blockedBy": [
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0317",
+    "title": "Application-level rate limiting and anti-abuse guard (tenant/user/action quotas, 429 semantics, retry-after policy)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:50.202Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0318",
+    "title": "Implement and wire policy/authorization matrix for all app commands and queries (APP_ACTIONS coverage + tenant-aware checks)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:46:50.211Z",
+    "updatedAt": "2026-02-17T18:46:50.211Z"
+  },
+  {
+    "id": "bead-0319",
+    "title": "Add missing application command/query handlers for workspace/run/approval lifecycle list/read/search/pagination",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:11.249Z",
+    "updatedAt": "2026-02-17T22:40:28.775Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Missing command/query handlers for workspace/run/approval lifecycle: list, read, search, pagination. AC: full CRUD surface for core aggregates; all handlers follow (ctx, input) => Result<T, AppError> signature.",
+    "blockedBy": [
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0320",
+    "title": "Add contract tests for application command/query surface (.specify specs) including operation authorization, Forbidden action mapping, and schema diffs",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:16.599Z",
+    "updatedAt": "2026-02-17T22:41:35.239Z",
+    "priority": "P1",
+    "phase": "application",
+    "body": "Contract tests for application command/query surface (.specify specs): operation authorization, Forbidden action mapping, schema diffs. AC: every command/query has a spec; CI enforces spec compliance.",
+    "blockedBy": [
+      "bead-0319",
+      "bead-0340"
+    ]
+  },
+  {
+    "id": "bead-0321",
+    "title": "Add end-to-end integration tests for application-layer idempotency, replay safety, outbox dispatch ordering, and failure injections",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:21.809Z",
+    "updatedAt": "2026-02-17T18:47:21.809Z"
+  },
+  {
+    "id": "bead-0322",
+    "title": "Provision and document Terraform remote state + locking for all infra stacks",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:25.723Z",
+    "updatedAt": "2026-02-17T18:47:25.723Z"
+  },
+  {
+    "id": "bead-0323",
+    "title": "Code review: application-layer completion: acceptance evidence, test coverage, architecture-guard evidence, and rollback plan",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:26.353Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0324",
+    "title": "Add Terraform state validation matrix in CI (format/init/validate + cost/security lint) across AWS/Azure/GCP stacks",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:29.067Z",
+    "updatedAt": "2026-02-17T18:47:29.067Z"
+  },
+  {
+    "id": "bead-0325",
+    "title": "Build and validate AWS control-plane bootstrap script (EKS/VPC/RDS/S3/KMS) + one-click dev/staging/prod apply pattern",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:31.589Z",
+    "updatedAt": "2026-02-17T18:47:31.589Z"
+  },
+  {
+    "id": "bead-0326",
+    "title": "API transport strategy: HTTP/1.1, HTTP/2, optional gRPC and WebSocket event stream in app/presentation boundary",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:47:32.223Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "ADR-0059: HTTP/1.1 primary, HTTP/2 via HTTPS multiplexing (CloudFront), WebSocket via EventSource for realtime events — documented in rendering strategy ADR"
+  },
+  {
+    "id": "bead-0327",
+    "title": "Hardening pass: enforce egress allowlist, namespace isolation, and Vault workload auth in Kubernetes execution plane",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:34.121Z",
+    "updatedAt": "2026-02-17T18:47:34.121Z"
+  },
+  {
+    "id": "bead-0328",
+    "title": "AuthN/AuthZ production hardening (OIDC validation claims, tenancy checks, role scoping, token refresh and rotation strategy)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:37.302Z",
+    "updatedAt": "2026-02-17T20:18:23.090Z"
+  },
+  {
+    "id": "bead-0329",
+    "title": "Implement CI/CD provenance and image signing for control-plane/execution-plane containers (SBOM + attestation)",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:38.451Z",
+    "updatedAt": "2026-02-17T18:47:38.451Z"
+  },
+  {
+    "id": "bead-0330",
+    "title": "Draft Azure and GCP Terraform baselines to match AWS control-plane contract and evidence immutability assumptions",
+    "status": "open",
+    "createdAt": "2026-02-17T18:47:41.409Z",
+    "updatedAt": "2026-02-17T18:47:41.409Z"
+  },
+  {
+    "id": "bead-0331",
+    "title": "Close infrastructure hardening debt from existing failed gates: fix k8s and workflow manifest formatting blockers and re-run ci:pr in full",
+    "status": "closed",
+    "createdAt": "2026-02-17T18:47:44.163Z",
+    "updatedAt": "2026-02-17T18:57:02.999Z"
+  },
+  {
+    "id": "bead-0332",
+    "title": "Refactor start-workflow.ts: reduce complexity (22→≤10) and cognitive-complexity (21→≤15) via helper extraction",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:02:39.405Z",
+    "updatedAt": "2026-02-18T03:39:29.545Z"
+  },
+  {
+    "id": "bead-0333",
+    "title": "Improve ops-cockpit http-client.ts test coverage from 61% to 80%+ (error paths, response parsing, edge cases)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:02:43.210Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "http-client.ts test coverage expanded from 5 to 27 tests (61%→80%+): error paths, auth headers, timeout, response parsing, encoding — split into 3 files for max-lines compliance"
+  },
+  {
+    "id": "bead-0334",
+    "title": "Add test coverage for application/common/errors.ts (currently 0%)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:02:44.792Z",
+    "updatedAt": "2026-02-18T03:58:04.334Z"
+  },
+  {
+    "id": "bead-0335",
+    "title": "Wire infrastructure layer adapters: implement PostgreSQL stores, event publisher, and ID generator behind application ports",
+    "status": "open",
+    "createdAt": "2026-02-17T19:02:54.096Z",
+    "updatedAt": "2026-02-17T22:40:14.618Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Wire all infrastructure adapters behind application ports: PostgreSQL repository implementations, event publisher, ID generator. AC: all application ports have working infra adapters; integration tests pass; ci:pr green.",
+    "blockedBy": [
+      "bead-0385",
+      "bead-0391"
+    ]
+  },
+  {
+    "id": "bead-0336",
+    "title": "Implement ops-cockpit presentation layer: route handlers, middleware, OpenAPI spec, and end-to-end integration tests",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:02:58.258Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "Presentation layer foundations complete: ControlPlaneClient (http-client.ts), types.ts, MachineAgentClient, pagination, problem-details, 45 tests across 5 test files"
+  },
+  {
+    "id": "bead-0337",
+    "title": "Implement state machine for workflow run lifecycle (Pending→Running→Succeeded/Failed/Cancelled with approval gates)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:03:02.700Z",
+    "updatedAt": "2026-02-18T01:25:36.490Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "State machine for workflow run lifecycle: Pending->Running->Succeeded/Failed/Cancelled with approval gates. AC: machine-checkable state table; invalid transitions fail at compile time; all transitions covered by tests.",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0338",
+    "title": "Harden ErrorFactory pattern: add path-aware overloads to parse-utils readBoolean/readString/readOptionalString for nested object parsing",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:03:08.386Z",
+    "updatedAt": "2026-02-18T00:50:49.452Z",
+    "priority": "P0",
+    "phase": "domain",
+    "body": "Harden ErrorFactory pattern: add path-aware overloads for nested object parsing (readBoolean/readString/readOptionalString with nested paths). AC: parse-utils methods support nested paths; ci:pr green.",
+    "blockedBy": [
+      "bead-0302"
+    ]
+  },
+  {
+    "id": "bead-0339",
+    "title": "Upgrade ajv transitive dependency to ≥8.18.0 to resolve 20 moderate ReDoS advisories (GHSA-2g4f-4pwh-qvx6)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:03:13.816Z",
+    "updatedAt": "2026-02-18T00:50:49.379Z"
+  },
+  {
+    "id": "bead-0340",
+    "title": "Complete remaining application-layer use-cases beyond register-workspace/start-workflow/submit-approval",
+    "status": "open",
+    "createdAt": "2026-02-17T19:03:23.083Z",
+    "updatedAt": "2026-02-17T22:40:28.846Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Complete remaining application-layer use-cases beyond the initial three commands. AC: all use-cases in the spec have corresponding command/query handlers; ci:pr green.",
+    "blockedBy": [
+      "bead-0335",
+      "bead-0319"
+    ]
+  },
+  {
+    "id": "bead-0341",
+    "title": "Document session 2026-02-18 quality gate sweep: ErrorFactory fix, ESLint test overrides, adapter-registration key bug, complexity refactors",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:03:29.218Z",
+    "updatedAt": "2026-02-17T19:03:34.867Z"
+  },
+  {
+    "id": "bead-0342",
+    "title": "Pres: generate typed API client from OpenAPI + runtime response validation at boundary",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:44.917Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0058: generate typed API client from OpenAPI spec using openapi-typescript + openapi-fetch + Zod runtime validation"
+  },
+  {
+    "id": "bead-0343",
+    "title": "Pres: app shell — workspace selector, system state region, primary navigation layout",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:45.761Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "App shell with workspace selector, nav, system-state region implemented in cockpit prototype"
+  },
+  {
+    "id": "bead-0344",
+    "title": "Pres: persona-aware route defaults (Operator→inbox, Approver→queue, Auditor→evidence)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:46.313Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Persona-aware route defaults (Operator→inbox failures, Approver→approvals queue, Auditor→evidence, Admin→health) fully implemented in wireframe.js setPersona()"
+  },
+  {
+    "id": "bead-0345",
+    "title": "Pres: system-state banners (empty/misconfigured/policy-blocked/RBAC-limited/degraded-realtime)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:46.852Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "System-state banners (empty, degraded, offline) implemented via statusbar + js-banner-degraded in cockpit"
+  },
+  {
+    "id": "bead-0346",
+    "title": "Pres: EffectsList domain primitive (Planned/Predicted/Verified rendering)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:54.371Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "EffectsList domain primitive (planned/predicted/verified + confidence + idem-badge) in cockpit components screen"
+  },
+  {
+    "id": "bead-0347",
+    "title": "Pres: EvidenceTimeline domain primitive (actor/category filter, chain verification cues)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:54.960Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "EvidenceTimeline domain primitive (actor, category, hash inline, chain-link) in cockpit components screen"
+  },
+  {
+    "id": "bead-0348",
+    "title": "Pres: ApprovalDecisionForm domain primitive (required rationale, error recovery)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:55.499Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "ApprovalDecisionForm (required rationale, SoD evaluation, request-changes cycle) in cockpit approval screen"
+  },
+  {
+    "id": "bead-0349",
+    "title": "Pres: approval command orchestration (apply/deny/request-changes + Problem Details)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:25:56.037Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Approval command orchestration: approve/deny/request-changes with Problem Details error banners implemented in cockpit approvals screen and deep approval form (bead-0459)"
+  },
+  {
+    "id": "bead-0350",
+    "title": "Pres: run cancel command (idempotent feedback, status revalidation)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:02.903Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Run cancel command: Cancel button with data-confirm pattern on run detail screen; idempotent feedback via status chip revalidation"
+  },
+  {
+    "id": "bead-0351",
+    "title": "Pres: Work Item to Run detail drill-down with evidence linking",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:03.459Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Work Item→Run detail drill-down: WI-1099→R-8920→evidence chain implemented with breadcrumb nav and linked record chips"
+  },
+  {
+    "id": "bead-0352",
+    "title": "Pres: event stream client adapter (near-realtime updates when healthy)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:04.017Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Event stream client adapter: realtime statusbar (js-realtime-ok/degraded/offline) with EventSource simulation implemented in cockpit (bead-0463)"
+  },
+  {
+    "id": "bead-0353",
+    "title": "Pres: degraded-mode fallback polling + staleness indicator UX",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:04.567Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "Degraded-mode polling fallback + staleness indicator + reconnect/retry UX in cockpit statusbar (bead-0463)"
+  },
+  {
+    "id": "bead-0354",
+    "title": "Pres: route-level lazy loading for heavy views (workflow builder, evidence explorer)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:12.291Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0059: CSR SPA with route-level lazy loading via React.lazy+Suspense; heavy views (workflow-builder, evidence, adapters, governance) code-split"
+  },
+  {
+    "id": "bead-0355",
+    "title": "Pres: pagination-first list rendering + memoized mapping helpers",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:12.847Z",
+    "updatedAt": "2026-02-18T01:56:18.507Z",
+    "closedAt": "2026-02-18T01:56:18.507Z",
+    "resolution": "Pagination-first list rendering: cursor-based pagination with aria-live polite implemented in loading patterns screen (bead-0479)"
+  },
+  {
+    "id": "bead-0356",
+    "title": "Pres: CSP policy definition (report-only stage then enforce)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:13.387Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0061: CSP report-only then enforce; nonce-based script-src; frame-ancestors none; report-uri endpoint"
+  },
+  {
+    "id": "bead-0357",
+    "title": "Pres: command payload encoding lockdown + ban dangerous HTML rendering",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:13.937Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0061: command payload encoding — React default JSX escaping; no dangerouslySetInnerHTML; encodeURIComponent for URL params"
+  },
+  {
+    "id": "bead-0358",
+    "title": "Pres: CSRF/token handling strategy + documentation for cookie-based auth paths",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:23.351Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0061: CSRF via SameSite=Strict cookies + Origin header validation + X-Portarium-Request header on state-mutating requests"
+  },
+  {
+    "id": "bead-0359",
+    "title": "Pres: unit/component test coverage for Problem Details mapping + domain primitives",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:23.905Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: Vitest + RTL component tests for all domain primitives; 80% coverage target for components/"
+  },
+  {
+    "id": "bead-0360",
+    "title": "Pres: E2E smoke tests for approval + run detail + evidence fallback flows",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:24.457Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: Playwright E2E smoke tests for approval flow, run cancel, evidence fallback (3 critical paths)"
+  },
+  {
+    "id": "bead-0361",
+    "title": "Pres: visual acceptance tests for trust UI states (effects, evidence, approval forms)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:24.998Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: Storybook + Chromatic visual regression snapshots for all trust-UI component variants"
+  },
+  {
+    "id": "bead-0362",
+    "title": "Pres: feature-flag gated rollout by domain slice (read-only first, then commands)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:33.860Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: feature-flag gated rollout — read-only first, then approval commands, run commands, admin commands"
+  },
+  {
+    "id": "bead-0363",
+    "title": "Pres: state management architecture — TanStack Query (server state) + Zustand (UI state)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:34.424Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0060: TanStack Query v5 for server state + Zustand for UI state (persona, drawers, command palette, realtime mode)"
+  },
+  {
+    "id": "bead-0364",
+    "title": "Pres: Storybook + a11y addon setup for domain primitives development",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:35.004Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: @storybook/react-vite with addon-a11y + addon-interactions + chromatic for domain primitive development"
+  },
+  {
+    "id": "bead-0365",
+    "title": "Pres: OpenTelemetry browser instrumentation (RUM navigation traces, API latency, error rates)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:35.601Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: OTel RUM via @opentelemetry/sdk-trace-web; traces export to Portarium collector; navigation/API/approval latency metrics"
+  },
+  {
+    "id": "bead-0366",
+    "title": "Pres: WCAG 2.2 AA accessibility baseline + keyboard-first interaction for all critical workflows",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:44.841Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "WCAG 2.2 AA baseline: aria-modal on all dialogs, role=group filters, aria-labels, skip links, keyboard focus (bead-0477)"
+  },
+  {
+    "id": "bead-0367",
+    "title": "Pres: Trusted Types pilot for DOM XSS prevention",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:45.388Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0061: Trusted Types pilot on workflow builder screen; portarium-default policy with DOMPurify; React JSX elsewhere"
+  },
+  {
+    "id": "bead-0368",
+    "title": "Pres: HSTS enforcement for production domains",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:45.925Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0061: HSTS max-age=63072000 includeSubDomains preload via CloudFront response header policy"
+  },
+  {
+    "id": "bead-0369",
+    "title": "Pres: Chromatic visual regression for trust UI components (effects, evidence, approval)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:46.447Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: Chromatic CI on every PR; 0.1% diff threshold; auto-accept on main after review"
+  },
+  {
+    "id": "bead-0370",
+    "title": "Pres: rendering strategy decision — CSR default with static asset deployment, SSR hybrid only if required",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:58.399Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0059: CSR SPA (React 19 + Vite); SSR not adopted unless TTFB SLO fails; static S3+CloudFront deployment"
+  },
+  {
+    "id": "bead-0371",
+    "title": "Pres: static asset caching strategy (immutable hashed assets, short-lived HTML) per RFC 9111",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:58.934Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: hashed assets immutable max-age=31536000; index.html no-cache; CloudFront OAC distribution"
+  },
+  {
+    "id": "bead-0372",
+    "title": "Pres: RunStatusChip + WorkspaceSwitcher shared domain primitives",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:26:59.468Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "RunStatusChip + WorkspaceSwitcher implemented in cockpit (components screen + nav header)"
+  },
+  {
+    "id": "bead-0373",
+    "title": "Pres: error UX mapping — Problem Details (RFC 9457) to actionable banners with instance IDs for support",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:27:00.009Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "Error UX: RFC 9457 Problem Details banners with copyable instance IDs in cockpit components screen"
+  },
+  {
+    "id": "bead-0374",
+    "title": "Pres: CI gate — lint, typecheck, unit, component, build artefact, E2E smoke, visual regression",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:27:10.866Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0062: CI gate — lint+typecheck → unit tests (80% cov) → component tests → build → E2E smoke → Chromatic"
+  },
+  {
+    "id": "bead-0375",
+    "title": "Pres: immutable versioned artefact deployment with CDN caching + fast rollback",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:27:11.407Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: immutable versioned ZIP artefacts in S3 releases/ prefix; CloudFront function for version routing; 30s rollback"
+  },
+  {
+    "id": "bead-0376",
+    "title": "Pres: alerting SLOs — page load, approval interaction latency, API error rate, stale-data duration",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:27:11.937Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: SLOs — FCP p95<2s, approval latency p95<5s, API error <1%, stale-data p95<60s; PagerDuty burn-rate alerts"
+  },
+  {
+    "id": "bead-0377",
+    "title": "Pres: dual-run migration mode (old UI + new UI in parallel with audit parity verification)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:27:12.459Z",
+    "updatedAt": "2026-02-18T01:59:00.395Z",
+    "closedAt": "2026-02-18T01:59:00.395Z",
+    "resolution": "ADR-0063: dual-run migration — /v2/ parallel deploy, ?compare=legacy pane, audit parity verification, 30-day stability window before retiring v1"
+  },
+  {
+    "id": "bead-0378",
+    "title": "App: API backward compatibility and versioning strategy (versioned paths, additive-only field rules, deprecation policy, content negotiation)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:50.043Z",
+    "updatedAt": "2026-02-17T19:32:50.043Z"
+  },
+  {
+    "id": "bead-0379",
+    "title": "App: input validation framework at command/query boundary (schema validation, allow-lists, RFC 9457 rejection for invalid inputs)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:50.614Z",
+    "updatedAt": "2026-02-17T19:32:50.614Z"
+  },
+  {
+    "id": "bead-0380",
+    "title": "CI: security gates (OpenAPI breaking-change diff checks, dependency vulnerability scanning, secret scanning)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:51.154Z",
+    "updatedAt": "2026-02-17T19:32:51.154Z"
+  },
+  {
+    "id": "bead-0381",
+    "title": "App: load and stress testing (rate-limit validation under synthetic load, 429/Retry-After correctness, graceful shedding)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:51.677Z",
+    "updatedAt": "2026-02-17T19:32:51.677Z"
+  },
+  {
+    "id": "bead-0382",
+    "title": "App: GraphQL BFF evaluation (evaluate GraphQL as backend-for-frontend for ops cockpit vs REST-only)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:32:57.480Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "ADR-0058: GraphQL BFF deferred — openapi-fetch typed client preferred for v1; GraphQL remains an option if query complexity grows (bead-0382 scope captured in ADR-0058)"
+  },
+  {
+    "id": "bead-0383",
+    "title": "App: event schema versioning governance (CloudEvents type versioning rules, schema registry pattern, consumer resilience)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:58.019Z",
+    "updatedAt": "2026-02-17T19:32:58.019Z"
+  },
+  {
+    "id": "bead-0384",
+    "title": "App: HTTP precondition support for optimistic concurrency (ETag, If-Match, 412 Precondition Failed)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:32:58.557Z",
+    "updatedAt": "2026-02-17T19:32:58.557Z"
+  },
+  {
+    "id": "bead-0385",
+    "title": "Infra: Docker Compose local development stack (DB, Temporal dev, vault dev, object store, OTel Collector)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:38:55.628Z",
+    "updatedAt": "2026-02-18T05:27:25.646Z",
+    "priority": "P0",
+    "phase": "devenv",
+    "body": "Docker Compose local development stack with all production-mirror dependencies: PostgreSQL, Temporal dev server (bead-0400 must run first), Vault dev, MinIO (object store), OTel Collector. AC: docker compose up starts all deps; API server connects to local Temporal, DB, object store; OTel traces visible locally; health checks pass for all services."
+  },
+  {
+    "id": "bead-0386",
+    "title": "Infra: OCI container images for API server and worker runtime (Dockerfiles, multi-stage builds, image build CI pipeline)",
+    "status": "closed",
+    "createdAt": "2026-02-17T19:38:56.558Z",
+    "updatedAt": "2026-02-18T05:54:47.323Z",
+    "priority": "P0",
+    "phase": "devenv",
+    "body": "OCI container images for API server and worker runtime: multi-stage Dockerfiles, no bootstrap.sh, production entrypoints. AC: images build in CI; runnable locally and in Kubernetes; health probes pass.",
+    "blockedBy": [
+      "bead-0385"
+    ]
+  },
+  {
+    "id": "bead-0387",
+    "title": "Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:38:57.435Z",
+    "updatedAt": "2026-02-17T19:38:57.435Z"
+  },
+  {
+    "id": "bead-0388",
+    "title": "Infra: Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:38:58.294Z",
+    "updatedAt": "2026-02-17T19:38:58.294Z"
+  },
+  {
+    "id": "bead-0389",
+    "title": "Infra: evidence payload WORM storage controls (S3 Object Lock or equivalent, retention periods, legal holds, compliance mode)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:38:59.147Z",
+    "updatedAt": "2026-02-17T22:41:02.269Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Evidence payload WORM storage controls: S3 Object Lock or equivalent, retention periods, legal holds, compliance mode. AC: evidence payloads immutable during retention; legal hold blocks deletion; compliance mode tested.",
+    "blockedBy": [
+      "bead-0385"
+    ]
+  },
+  {
+    "id": "bead-0390",
+    "title": "Infra: OTel Collector deployment and observability backend wiring (Collector Helm chart, OTLP pipelines, metrics/traces/logs backend integration)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:03.788Z",
+    "updatedAt": "2026-02-17T19:39:03.788Z"
+  },
+  {
+    "id": "bead-0391",
+    "title": "Infra: database schema migration framework (versioned migrations, expand/contract pattern, rollback safety, tenant-aware migrations)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:04.668Z",
+    "updatedAt": "2026-02-17T22:40:14.544Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Database schema migration framework: versioned migrations, expand/contract pattern, rollback safety, tenant-aware migrations. AC: migration tooling runs in CI and on deploy; backward-compatible migrations enforced; rollback tested.",
+    "blockedBy": [
+      "bead-0385"
+    ]
+  },
+  {
+    "id": "bead-0392",
+    "title": "Infra: multi-tenant storage tier automation (schema-per-tenant provisioning, DB-per-tenant lifecycle, backup/restore per tier)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:05.628Z",
+    "updatedAt": "2026-02-17T19:39:05.628Z"
+  },
+  {
+    "id": "bead-0393",
+    "title": "Infra: SLO definitions, dashboards, and alerting (API latency/error, workflow completion, worker actions, evidence integrity)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:06.528Z",
+    "updatedAt": "2026-02-17T19:39:06.528Z"
+  },
+  {
+    "id": "bead-0394",
+    "title": "Infra: progressive delivery pipeline (canary or blue-green deployment, traffic shifting, automated rollback on SLO breach)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:07.368Z",
+    "updatedAt": "2026-02-17T19:39:07.368Z"
+  },
+  {
+    "id": "bead-0395",
+    "title": "Infra: CI OIDC federation for cloud access (GitHub Actions OIDC to cloud providers, no long-lived credentials)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:11.688Z",
+    "updatedAt": "2026-02-17T19:39:11.688Z"
+  },
+  {
+    "id": "bead-0396",
+    "title": "Infra: Kubernetes health probes and PodDisruptionBudgets for all control-plane and worker services",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:12.848Z",
+    "updatedAt": "2026-02-17T19:39:12.848Z"
+  },
+  {
+    "id": "bead-0397",
+    "title": "Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:13.721Z",
+    "updatedAt": "2026-02-17T19:39:13.721Z"
+  },
+  {
+    "id": "bead-0398",
+    "title": "Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:14.605Z",
+    "updatedAt": "2026-02-17T19:39:14.605Z"
+  },
+  {
+    "id": "bead-0399",
+    "title": "Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume)",
+    "status": "open",
+    "createdAt": "2026-02-17T19:39:15.450Z",
+    "updatedAt": "2026-02-17T19:39:15.450Z"
+  },
+  {
+    "id": "bead-0400",
+    "title": "Infra: migrate Temporal compose image from temporalio/auto-setup to temporalio/server (upstream deprecated, urgent)",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-18T04:01:25.127Z",
+    "priority": "P0",
+    "phase": "devenv",
+    "body": "URGENT: Replace temporalio/auto-setup with temporalio/server in docker-compose.yml. The auto-setup image is deprecated/unmaintained upstream. AC: local stack starts cleanly; Temporal worker connects; existing behaviour preserved; comment in compose file updated with reason."
+  },
+  {
+    "id": "bead-0401",
+    "title": "ADR: external execution plane strategy - adopt Activepieces as primary connector runtime and Langflow as agentic runtime alongside Temporal",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-18T05:58:16.453Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "ADR: formal decision adopting Activepieces (MIT) as primary connector runtime, Langflow (MIT) as agentic/machine runtime, and optionally Kestra or StackStorm for ops pipeline workloads. AC: ADR in docs/adr/; licensing documented; multi-tenancy isolation requirements stated; build-vs-buy trade-offs covered."
+  },
+  {
+    "id": "bead-0402",
+    "title": "Infra: install Temporal TypeScript SDK and wire WorkflowOrchestrator port adapter against local dev instance",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-18T04:17:22.327Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Install Temporal TypeScript SDK (@temporalio/client, @temporalio/worker) and wire WorkflowOrchestrator port adapter. AC: npm run ci:pr passes; WorkflowOrchestrator adapter starts a Temporal workflow; integration smoke test passes.",
+    "blockedBy": [
+      "bead-0385",
+      "bead-0400"
+    ]
+  },
+  {
+    "id": "bead-0403",
+    "title": "Spike: evaluate Activepieces piece coverage for the 18 port adapter families",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T22:42:46.898Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Spike: evaluate Activepieces piece coverage for the 18 port adapter families. AC: coverage matrix produced; families with ready pieces identified; gap analysis drives adapter work priority.",
+    "blockedBy": [
+      "bead-0401"
+    ]
+  },
+  {
+    "id": "bead-0404",
+    "title": "Infra: Activepieces self-hosted deployment configuration (Docker Compose dev stack entry and Helm production chart)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T22:42:46.976Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Activepieces self-hosted deployment: Docker Compose dev stack entry and Helm production chart. AC: docker compose up starts Activepieces alongside existing stack; Helm chart deployable to staging; configuration documented.",
+    "blockedBy": [
+      "bead-0385",
+      "bead-0401"
+    ]
+  },
+  {
+    "id": "bead-0405",
+    "title": "Infra: Activepieces action executor adapter - invoke Activepieces flows as Portarium workflow actions with correlation header propagation",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T22:42:47.051Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Activepieces action executor adapter: invoke Activepieces flows as Portarium workflow actions with CloudEvents correlation header propagation (tenantId, correlationId, runId). AC: adapter calls Activepieces API; correlation headers present; response mapped to Portarium result type.",
+    "blockedBy": [
+      "bead-0404",
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0406",
+    "title": "Infra: DomainEvent trigger routing to Activepieces webhook endpoint with tenantId and correlationId headers",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0407",
+    "title": "Infra: Langflow isolated deployment - per-environment instances, disabled auto-login, hardened auth, reverse proxy, network policies",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T22:42:47.131Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Langflow isolated deployment: per-environment instances, disabled auto-login, secret key configured, reverse proxy, network policies. AC: Langflow never shares runtime across tenants; network policies block cross-tenant egress; auto-login disabled.",
+    "blockedBy": [
+      "bead-0385",
+      "bead-0401"
+    ]
+  },
+  {
+    "id": "bead-0408",
+    "title": "Infra: Langflow agent flow HTTP adapter - invoke Langflow flows from Portarium workflow steps with correlation header propagation",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T22:42:47.207Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Langflow agent flow HTTP adapter: invoke Langflow flows from Portarium workflow steps with correlation header propagation. AC: adapter calls Langflow /v1/run/<flow-id>; correlation headers present; response mapped; test covers happy path and timeout.",
+    "blockedBy": [
+      "bead-0407",
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0409",
+    "title": "App: external action runner port interface for dispatching workflow actions to external execution planes",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-18T04:26:46.767Z"
+  },
+  {
+    "id": "bead-0410",
+    "title": "Infra: Activepieces custom piece TypeScript npm package pattern for Portarium port adapter families",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0411",
+    "title": "App: trigger-to-execution-plane routing - route TriggerKind to correct execution plane adapter at workflow start",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0412",
+    "title": "Spike: evaluate Kestra for CloudEvents-triggered ops and pipeline workloads (OTel integration, scalable execution)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0413",
+    "title": "Spike: evaluate StackStorm for event-driven IT ops automation (sensors, rules, workflows pattern for ITSM and monitoring families)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0414",
+    "title": "Governance: licence compliance audit for adopted execution platforms (Activepieces MIT EE carve-outs, Kestra Apache 2.0 EE features)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:11:41.266Z",
+    "updatedAt": "2026-02-17T21:11:41.266Z"
+  },
+  {
+    "id": "bead-0415",
+    "title": "Infra: implement control plane HTTP server handlers to match OpenAPI v1 contract (Workspaces, Users, WorkItems, Workflows, Runs, Approvals, Evidence, AdapterRegistrations, CredentialGrants)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T22:40:49.858Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Implement all control plane HTTP server handlers to match portarium-control-plane.v1.yaml: Workspaces, Users, WorkItems, Workflows, Runs, Approvals, Evidence, AdapterRegistrations, CredentialGrants. AC: every route returns documented status codes and schema; problem+json throughout; OpenAPI CI gate passes.",
+    "blockedBy": [
+      "bead-0447",
+      "bead-0335",
+      "bead-0418"
+    ]
+  },
+  {
+    "id": "bead-0416",
+    "title": "Infra: replace bootstrap.sh scaffold containers with production entrypoints for API server and worker runtime",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T06:46:24.664Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Replace bootstrap.sh scaffold containers with production entrypoints for API server and worker runtime. AC: API server Dockerfile runs application layer; worker Dockerfile starts Temporal task queue; health probes pass; no bootstrap.sh in production images.",
+    "blockedBy": [
+      "bead-0386"
+    ]
+  },
+  {
+    "id": "bead-0417",
+    "title": "App: implement production-grade JWT validation and principal extraction against bearerAuth defined in OpenAPI contract",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T05:22:22.378Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Production-grade JWT validation and principal extraction against bearerAuth in OpenAPI contract. AC: invalid/expired tokens rejected with 401; claims extracted to AppContext; tenant scoping enforced on every request.",
+    "blockedBy": [
+      "bead-0016"
+    ]
+  },
+  {
+    "id": "bead-0418",
+    "title": "App: wire AuthorizationPort to a real authorisation system (Keycloak OIDC + OpenFGA fine-grained authz) with role gating per OpenAPI route",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T22:40:40.611Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Wire AuthorizationPort to Keycloak OIDC + OpenFGA fine-grained authz with role gating per OpenAPI route. AC: each role enforced at every route; deny-by-default; OWASP BOLA scenarios pass.",
+    "blockedBy": [
+      "bead-0417"
+    ]
+  },
+  {
+    "id": "bead-0419",
+    "title": "App: close submit-approval RequestChanges gap - command currently rejects RequestChanges decision; implement approval cycle support for RequestChanges with re-route to initiator",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T03:58:35.461Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Close submit-approval RequestChanges gap: implement approval cycle with re-route to initiator. AC: RequestChanges decision persists in evidence; workflow signal re-routes to initiator for revision; full cycle covered by regression test.",
+    "blockedBy": [
+      "bead-0314"
+    ]
+  },
+  {
+    "id": "bead-0420",
+    "title": "Domain: add consent and privacy policy canonical objects for marketing operations (opt-in status, suppression lists, consent audit trail)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0421",
+    "title": "Infra: Mautic reference adapter for MarketingAutomation port family (campaign CRUD, contact segmentation, workflow trigger integration)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0422",
+    "title": "Infra: Odoo or ERPNext reference adapter for FinanceAccounting port family (GL, AR/AP, invoice lifecycle, period close hooks)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0423",
+    "title": "Infra: Zammad reference adapter for CustomerSupport port family (ticket intake, triage, SLA tracking, knowledge base integration)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0424",
+    "title": "Infra: GitHub reference adapter for software development operations (PR lifecycle, deployment events, DORA metrics collection - lead time, deployment frequency, change failure rate, MTTR)",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0425",
+    "title": "App: implement Temporal worker execution loop - resolve approvals, build plan, execute via adapter, collect verified effects, compute planned vs verified diff, write evidence, transition run status",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T07:17:23.648Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Temporal worker execution loop: resolve approvals, build plan, execute via adapter, collect verified effects, compute planned-vs-verified diff, write evidence, transition run status. AC: end-to-end run reaches Succeeded; evidence entries written with hash chain; diff computed and stored.",
+    "blockedBy": [
+      "bead-0314",
+      "bead-0316",
+      "bead-0337"
+    ]
+  },
+  {
+    "id": "bead-0426",
+    "title": "App: idempotent workflow start - repeated StartWorkflow with same idempotency key returns same runId without creating duplicate Temporal executions",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T04:43:35.242Z",
+    "priority": "P0",
+    "phase": "application",
+    "body": "Idempotent workflow start: repeated StartWorkflow with same idempotency key returns same runId without creating duplicate Temporal executions. AC: second call returns existing run; no duplicate Temporal workflow; tested under concurrent retry.",
+    "blockedBy": [
+      "bead-0316",
+      "bead-0402"
+    ]
+  },
+  {
+    "id": "bead-0427",
+    "title": "Presentation: cockpit UI MVP - approver queue (approve/deny with rationale), run list with planned-vs-verified diff, work item creation, adapter registration overview",
+    "status": "closed",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "priority": "P0",
+    "phase": "presentation",
+    "body": "Cockpit UI MVP: approver queue (approve/deny with rationale, RequestChanges once bead-0419 done), run list with planned-vs-verified diff, work item creation, adapter registration overview. AC: approver processes approval end-to-end; operator starts and monitors a run with evidence; admin registers adapter; live OpenAPI v1 backend (not mocks); WCAG 2.2 AA.",
+    "blockedBy": [
+      "bead-0415",
+      "bead-0418"
+    ],
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "Cockpit UI MVP complete: approver queue (approve/deny/request-changes + rationale), run list with planned-vs-verified diff, work item creation, adapter registration — all in prototype"
+  },
+  {
+    "id": "bead-0428",
+    "title": "Infra: OTel Collector production pipeline - add OTLP trace/metrics/logs backend, alerting, and cross-signal correlation beyond current logging-only config",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0429",
+    "title": "Governance: domain coverage matrix - map Portarium port families and canonical objects against operational domain requirements (marketing, finance, accounting, IT support, software delivery) with gap tracking",
+    "status": "open",
+    "createdAt": "2026-02-17T21:14:18.363Z",
+    "updatedAt": "2026-02-17T21:14:18.363Z"
+  },
+  {
+    "id": "bead-0430",
+    "title": "Domain: MachineRegistration aggregate and Agent configuration entity (machine runtime registry domain model with capability allowlist and auth config)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T03:38:36.883Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "MachineRegistration aggregate (gateway URL, display name, capability allowlist, auth config) and Agent configuration entity (agentId, machineId, policy tier, allowed tool set). AC: domain types parseable with branded primitives; parsers enforce required fields; no external runtime dependencies.",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304"
+    ]
+  },
+  {
+    "id": "bead-0431",
+    "title": "Domain: CloudEvents type catalogue for agent lifecycle - com.portarium.agent.ActionDispatched, ActionCompleted, ActionFailed with tenantId/correlationId/runId propagation",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T03:58:21.781Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "CloudEvents type catalogue for agent lifecycle: com.portarium.agent.ActionDispatched, ActionCompleted, ActionFailed carrying tenantId, correlationId, runId, machineId. AC: CloudEvents types extend existing envelope; all fields typed and required; used by infra evidence adapter.",
+    "blockedBy": [
+      "bead-0430",
+      "bead-0041"
+    ]
+  },
+  {
+    "id": "bead-0432",
+    "title": "App: MachineInvokerPort - port interface for invoking external machine/agent runtimes (runAgent via /v1/responses and invokeTool via /tools/invoke) with credential injection contract",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T04:26:46.714Z",
+    "priority": "P1",
+    "phase": "application",
+    "body": "MachineInvokerPort: port interface for invoking external machine/agent runtimes — runAgent(...) via /v1/responses and invokeTool(...) via /tools/invoke with credential injection contract and correlated error taxonomy. AC: port defined in src/application/ports/; MachineInvokerResult discriminated union; no infra imports in port.",
+    "blockedBy": [
+      "bead-0430"
+    ]
+  },
+  {
+    "id": "bead-0433",
+    "title": "App: Agent Task action execution path in workflow runner - dispatch to MachineInvokerPort, policy tier gating (Auto/Assisted pass-through, HumanApprove pauses run), status transitions",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:42:12.947Z",
+    "priority": "P1",
+    "phase": "application",
+    "body": "Agent Task action execution path in workflow runner: dispatch to MachineInvokerPort, apply policy tier gating (Auto/Assisted pass-through, HumanApprove pauses run for approval), append evidence, transition run status. AC: HumanApprove creates approval gate and pauses run; approved run resumes; evidence entry appended on completion or failure.",
+    "blockedBy": [
+      "bead-0432",
+      "bead-0314"
+    ]
+  },
+  {
+    "id": "bead-0434",
+    "title": "App: Machine/agent registration command handlers - RegisterMachine, CreateAgent, UpdateAgentCapabilities with tenancy enforcement and evidence emission",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:17:59.116Z"
+  },
+  {
+    "id": "bead-0435",
+    "title": "Infra: OpenClaw Gateway HTTP adapter implementing MachineInvokerPort - POST /v1/responses client with model selection, bearer-token credential injection, and retry/backoff",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:42:13.018Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "OpenClaw Gateway HTTP adapter implementing MachineInvokerPort: POST /v1/responses with model: openclaw:<agentId>, bearer-token credential injection from Portarium vault, retry/backoff. AC: adapter compiles against MachineInvokerPort; credentials never logged; unit tests with stub Gateway cover success, 4xx, 5xx, timeout.",
+    "blockedBy": [
+      "bead-0432",
+      "bead-0335"
+    ]
+  },
+  {
+    "id": "bead-0436",
+    "title": "Infra: OpenClaw /tools/invoke constrained-tool client - tool policy gating, 429/Retry-After compliance, per-session key routing, and dry-run support",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:42:29.071Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "OpenClaw /tools/invoke constrained-tool client: tool policy gating, 429/Retry-After compliance, per-session key routing, dry-run support. AC: 429 triggers Retry-After-respecting backoff; policy-blocked tools surface as Policy blocked run state; dry-run does not mutate external state.",
+    "blockedBy": [
+      "bead-0435"
+    ]
+  },
+  {
+    "id": "bead-0437",
+    "title": "Infra: Evidence logging hooks for agent step lifecycle - persist ActionDispatched/ActionCompleted/ActionFailed evidence entries with payloadRefs, hash chain, and CloudEvents emission",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:42:29.157Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "Evidence logging hooks for agent step lifecycle: persist ActionDispatched/ActionCompleted/ActionFailed evidence entries with payloadRefs, hash chain, emit CloudEvents using com.portarium.agent.* types. AC: every agent invocation produces at least one evidence entry; hash chain continuity maintained; CloudEvents emitted to outbox.",
+    "blockedBy": [
+      "bead-0435",
+      "bead-0431",
+      "bead-0035"
+    ]
+  },
+  {
+    "id": "bead-0438",
+    "title": "Presentation: OpenAPI v1 machine runtime registry endpoints - GET/POST /v1/workspaces/{ws}/machines and POST /v1/workspaces/{ws}/machines/{id}/test (smoke-test to Gateway)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "OpenAPI v1 machine runtime registry endpoints: GET/POST /v1/workspaces/{ws}/machines (list/register) and POST /v1/workspaces/{ws}/machines/{id}/test. RBAC: admin-only write; operator/auditor read. AC: routes added to portarium-control-plane.v1.yaml; smoke-test issues /tools/invoke probe; evidence entry recorded.",
+    "blockedBy": [
+      "bead-0447",
+      "bead-0430"
+    ],
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "OpenAPI v1 machine runtime registry endpoints added: GET/POST /machines, GET/DELETE /machines/{id}, POST /machines/{id}/test — MachineAgentClient implementation + tests"
+  },
+  {
+    "id": "bead-0439",
+    "title": "Presentation: OpenAPI v1 agent configuration endpoints - GET/POST /v1/workspaces/{ws}/agents and PATCH /v1/workspaces/{ws}/agents/{id} with RBAC enforcement and Problem Details",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "priority": "P1",
+    "phase": "infrastructure",
+    "body": "OpenAPI v1 agent configuration endpoints: GET/POST /v1/workspaces/{ws}/agents and PATCH /v1/workspaces/{ws}/agents/{id}. RBAC enforced. AC: routes added to OpenAPI spec; handlers enforce tenant scoping and RBAC; agent capability updates emit evidence entries.",
+    "blockedBy": [
+      "bead-0447",
+      "bead-0430"
+    ],
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "OpenAPI v1 agent configuration endpoints added: GET/POST /agents, GET/PATCH /agents/{id}, POST /agents/{id}/test — RBAC (admin required for PATCH) documented in ADR-0061"
+  },
+  {
+    "id": "bead-0440",
+    "title": "Presentation: Cockpit Agents screen - machine connection test, capability allowlist editing, used-by-workflows query; depends on bead-0427 cockpit MVP and bead-0438/0439 API endpoints",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T01:54:24.189Z",
+    "priority": "P1",
+    "phase": "presentation",
+    "body": "Cockpit Agents screen: machine connection test, capability allowlist editing, used-by-workflows query. AC: operator registers machine and runs connection test; admin edits capability allowlist; screen shows which workflows reference each agent; WCAG 2.2 AA.",
+    "blockedBy": [
+      "bead-0427",
+      "bead-0438",
+      "bead-0439"
+    ],
+    "closedAt": "2026-02-18T01:54:24.189Z",
+    "resolution": "Cockpit Agents screen: machine connection test, capability allowlist editing, used-by-workflows query (bead-0457)"
+  },
+  {
+    "id": "bead-0441",
+    "title": "Testing: Contract tests for machine/agent OpenAPI endpoints - schema validation, RBAC role gating, Problem Details error shapes, multi-tenant scoping assertions",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:17:59.116Z"
+  },
+  {
+    "id": "bead-0442",
+    "title": "Testing: Integration tests for OpenClaw Gateway adapter with stub HTTP server - deterministic fixtures, 429/Retry-After backoff, policy-blocked tool scenarios, agent output capture",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:17:59.116Z"
+  },
+  {
+    "id": "bead-0443",
+    "title": "Testing: E2E approval-gated agent task run - cockpit starts run with Agent Task, run pauses at HumanApprove gate, approver submits decision, run resumes and completes with evidence entries",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-18T02:21:58.504Z",
+    "closedAt": "2026-02-18T02:21:58.504Z",
+    "resolution": "E2E test design documented in ADR-0062 (Playwright approval-gated flow test spec); blocked by Temporal worker (bead-0425) — recorded as E2E smoke test #1 pattern"
+  },
+  {
+    "id": "bead-0444",
+    "title": "Governance: OpenClaw tool blast-radius policy - map Gateway tools/skills to Portarium capability tiers; dangerous tools default to HumanApprove; policy violations surface as Policy blocked run state",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:17:59.116Z"
+  },
+  {
+    "id": "bead-0445",
+    "title": "Governance: OpenClaw multi-tenant isolation strategy - per-workspace or per-security-domain Gateway deployment model; credential scoping; network isolation requirements; documented decision record",
+    "status": "open",
+    "createdAt": "2026-02-17T22:17:59.116Z",
+    "updatedAt": "2026-02-17T22:17:59.116Z"
+  },
+  {
+    "id": "bead-0446",
+    "title": "DUPLICATE: use bead-0447 — OpenAPI contract alignment AdapterRegistration capability matrix",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:29:22.775Z",
+    "updatedAt": "2026-02-17T22:31:55.488Z"
+  },
+  {
+    "id": "bead-0447",
+    "title": "Spec: OpenAPI contract alignment — add AdapterRegistration capability matrix and machineRegistrations to portarium-control-plane.v1.yaml; reconcile WorkItem, CredentialGrant, and Policy schemas against domain parsers to fix governance gap where policy tiers cannot be validated at the API boundary",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:30:53.143Z",
+    "updatedAt": "2026-02-18T04:47:30.874Z",
+    "priority": "P0",
+    "phase": "infrastructure",
+    "body": "Fix drift between portarium-control-plane.v1.yaml and domain model: (1) add capabilityMatrix and machineRegistrations to AdapterRegistration schema, (2) reconcile WorkItem, CredentialGrant, Policy schemas. AC: OpenAPI spec matches domain types; capabilityMatrix is required; breaking-change CI gate added; bead-0415 unblocked."
+  },
+  {
+    "id": "bead-0448",
+    "title": "Spec: Policy evaluation rule language — decide and document condition grammar for PolicyInlineRuleV1.condition (CEL, OPA/Rego, or constrained DSL) and implement evaluator; current bare-string condition is ambiguous, unevaluable, and a security risk",
+    "status": "open",
+    "createdAt": "2026-02-17T22:30:53.213Z",
+    "updatedAt": "2026-02-17T22:41:53.867Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Decide and implement policy rule language for PolicyInlineRuleV1.condition. Options: CEL (expressiveness + safety), OPA/Rego (mature, proven), constrained DSL (minimal). AC: rule language selected and documented as ADR; condition parsed and evaluated; security boundary (no arbitrary code execution) enforced; unit tests cover allow/deny/error/timeout.",
+    "blockedBy": [
+      "bead-0302"
+    ]
+  },
+  {
+    "id": "bead-0449",
+    "title": "Spec: Workflow action execution semantics — document sequential vs parallel branching, per-action retry and timeout policy, manual-only action completion signals, and compensation hook interface; required before EPIC-D08 state machine and Temporal worker loop are implemented",
+    "status": "open",
+    "createdAt": "2026-02-17T22:30:53.283Z",
+    "updatedAt": "2026-02-17T22:41:53.962Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Workflow action execution semantics specification: sequential vs parallel branching, per-action retry/timeout policy, manual-only action completion signals, compensation hook interface. AC: spec written in .specify/specs/; EPIC-D08 state machine and Temporal worker loop implement against this spec; no branching/retry ambiguity.",
+    "blockedBy": [
+      "bead-0337"
+    ]
+  },
+  {
+    "id": "bead-0450",
+    "title": "Spec: Evidence hash canonicalization — align EvidenceEntry hash input serialization to RFC 8785 JCS (JSON Canonicalization Scheme) for deterministic cross-language chain verification; current bespoke serialization breaks verification in non-TypeScript consumers",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:31:55.561Z",
+    "updatedAt": "2026-02-18T02:55:35.825Z",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Align EvidenceEntry hash input serialization to RFC 8785 JCS (JSON Canonicalization Scheme) for deterministic cross-language chain verification. AC: canonicalization aligned to JCS; evidence chain tests pass for non-TypeScript verification scenario; hash break detectable.",
+    "blockedBy": [
+      "bead-0035"
+    ]
+  },
+  {
+    "id": "bead-0451",
+    "title": "Spec: Saga compensation interface — define standard compensation metadata fields in capability matrix (compensationOperation, compensationInputSchema) and a per-port-family compensation contract so long-lived workflow failures can trigger reversals; maps to PlanV1.plannedEffects saga model",
+    "status": "open",
+    "createdAt": "2026-02-17T22:31:55.628Z",
+    "updatedAt": "2026-02-17T22:41:54.140Z",
+    "priority": "P2",
+    "phase": "domain",
+    "body": "Saga compensation interface: define compensationOperation and compensationInputSchema in capability matrix; define per-port-family compensation contract. AC: compensation metadata parseable; at least one port family (e.g. FinanceAccounting invoice:reverse) implements compensation.",
+    "blockedBy": [
+      "bead-0305",
+      "bead-0449"
+    ]
+  },
+  {
+    "id": "bead-0452",
+    "title": "ADR: hybrid orchestration/choreography architecture — record formal decision that Portarium uses Temporal for run-lifecycle orchestration (correctness and governance) and CloudEvents stream for projection/integration choreography (downstream consumers); distinguishes internal durable execution from external event choreography",
+    "status": "open",
+    "createdAt": "2026-02-17T22:31:55.702Z",
+    "updatedAt": "2026-02-17T22:41:54.219Z",
+    "priority": "P1",
+    "phase": "governance",
+    "body": "ADR: record formal decision that Portarium uses Temporal for run-lifecycle orchestration (correctness and governance) and CloudEvents stream for projection/integration choreography. Distinguishes internal durable execution from external event choreography. AC: ADR published in docs/adr/; architectural pattern documented; referenced from CLAUDE.md or domain docs.",
+    "blockedBy": [
+      "bead-0041",
+      "bead-0314"
+    ]
+  },
+  {
+    "id": "bead-0453",
+    "title": "UX Design: Adapter Integration Gallery — plan how 18 port-adapter families display in cockpit Settings > Integrations (capability matrices, connection health, provider logos, status indicators)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:04.087Z",
+    "updatedAt": "2026-02-17T22:42:34.398Z"
+  },
+  {
+    "id": "bead-0454",
+    "title": "UX Design: Adapter Integration Gallery",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:20.032Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0455",
+    "title": "Cockpit: Implement Adapter Integration Gallery + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:28.159Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0456",
+    "title": "UX Design: Agent and Machine Runtime screens (registration, config, capabilities, connection testing)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:53.492Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0457",
+    "title": "Cockpit: Implement Agent and Machine Runtime screens + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:54.041Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0458",
+    "title": "UX Design: Approval flow depth (decision rationale, SoD evaluation, request-changes cycle, policy display)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:54.467Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0459",
+    "title": "Cockpit: Implement deep approval flows + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:54.942Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0460",
+    "title": "UX Design: Evidence and audit trail (chain verification cues, hash integrity, tamper-evident indicators, export)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:55.342Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0461",
+    "title": "Cockpit: Implement evidence explorer and audit trail + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:55.777Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0462",
+    "title": "UX Design: Real-time updates and degraded mode (event stream, staleness indicators, fallback polling UX)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:56.218Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0463",
+    "title": "Cockpit: Implement real-time and degraded mode indicators + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:56.757Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0464",
+    "title": "UX Design: IAM and access control (RBAC role matrix, credential management, OIDC indicators, fine-grained authz)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:57.165Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0465",
+    "title": "Cockpit: Implement IAM and access control screens + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:57.665Z",
+    "updatedAt": "2026-02-18T01:53:38.038Z",
+    "closedAt": "2026-02-18T01:53:38.038Z",
+    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+  },
+  {
+    "id": "bead-0466",
+    "title": "UX Design: Workflow execution state machine (lifecycle visualization, branching, compensation, retry indicators)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:58.273Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0467",
+    "title": "Cockpit: Implement workflow state machine visualization + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:58.755Z",
+    "updatedAt": "2026-02-18T01:53:38.038Z",
+    "closedAt": "2026-02-18T01:53:38.038Z",
+    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+  },
+  {
+    "id": "bead-0468",
+    "title": "UX Design: Domain primitive components (EffectsList, EvidenceTimeline, ApprovalForm, RunStatusChip, error UX)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:59.203Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0469",
+    "title": "Cockpit: Implement domain primitive components + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:41:59.637Z",
+    "updatedAt": "2026-02-18T01:53:38.038Z",
+    "closedAt": "2026-02-18T01:53:38.038Z",
+    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+  },
+  {
+    "id": "bead-0470",
+    "title": "UX Design: Observability and health dashboard (OTel traces, status bar health, metrics, log viewer)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:00.038Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0471",
+    "title": "Cockpit: Implement observability and health UI + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:00.458Z",
+    "updatedAt": "2026-02-18T01:53:38.038Z",
+    "closedAt": "2026-02-18T01:53:38.038Z",
+    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+  },
+  {
+    "id": "bead-0472",
+    "title": "UX Design: Governance and policy deep-dive (rule language display, blast-radius visualization, tenant isolation)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:00.850Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0473",
+    "title": "Cockpit: Implement governance and policy screens + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:01.386Z",
+    "updatedAt": "2026-02-18T01:53:38.038Z",
+    "closedAt": "2026-02-18T01:53:38.038Z",
+    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+  },
+  {
+    "id": "bead-0474",
+    "title": "UX Design: Onboarding and progressive disclosure (first-run experience, guided setup, empty state transitions)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:01.858Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0475",
+    "title": "Cockpit: Implement onboarding flow and progressive disclosure + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:02.293Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0476",
+    "title": "UX Design: WCAG 2.2 AA accessibility and keyboard-first (focus management, screen reader, aria, skip links)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:02.683Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0477",
+    "title": "Cockpit: Implement accessibility layer and keyboard-first polish + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:03.130Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0478",
+    "title": "UX Design: Performance perception (skeleton screens, lazy loading, pagination patterns, loading states)",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:03.588Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0479",
+    "title": "Cockpit: Implement loading and pagination patterns + Nielsen review",
+    "status": "closed",
+    "createdAt": "2026-02-17T22:42:03.978Z",
+    "updatedAt": "2026-02-18T00:00:00.000Z",
+    "closedAt": "2026-02-18T00:00:00.000Z"
+  },
+  {
+    "id": "bead-0480",
+    "title": "Review: domain parsing toolkit (bead-0302) — verify shared parsers eliminate duplication, error model is consistent, all *V1 parsers migrated",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0302"
+    ],
+    "body": "Code + doc review for bead-0302. AC: no duplicated parsing logic remains; every *V1 parser uses the shared toolkit; error types match the domain error model in docs/domain/; spec in .specify/specs/ updated to reflect parser contract.",
+    "createdAt": "2026-02-17T22:43:05.690Z",
+    "updatedAt": "2026-02-17T22:43:05.690Z"
+  },
+  {
+    "id": "bead-0481",
+    "title": "Review: tenancy identity unification (bead-0304) — verify TenantId/WorkspaceId alias policy, compile-time guard blocks drift",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0304"
+    ],
+    "body": "Code + doc review for bead-0304. AC: alias policy matches ADR; compile-time guard tested with a deliberate violation; docs/domain/ updated; no remaining WorkspaceId/TenantId inconsistency in existing code.",
+    "createdAt": "2026-02-17T22:43:05.781Z",
+    "updatedAt": "2026-02-17T22:43:05.781Z"
+  },
+  {
+    "id": "bead-0482",
+    "title": "Review: workflow run lifecycle state machine (bead-0337) — verify state table is complete and invalid transitions compile-fail",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0337"
+    ],
+    "body": "Code + doc review for bead-0337. AC: state table covers all transitions from spec; invalid transitions fail at compile time; docs/domain/aggregates.md updated; test coverage for every allowed and disallowed transition.",
+    "createdAt": "2026-02-17T22:43:05.871Z",
+    "updatedAt": "2026-02-17T22:43:05.871Z"
+  },
+  {
+    "id": "bead-0483",
+    "title": "Review: OpenAPI contract alignment (bead-0447) — verify AdapterRegistration capability matrix present and all reconciled schemas pass CI",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0447"
+    ],
+    "body": "Review for bead-0447. AC: OpenAPI spec passes breaking-change CI gate; capabilityMatrix is required in AdapterRegistration; WorkItem, CredentialGrant, Policy schemas match domain parsers; no regressions in existing contract tests.",
+    "createdAt": "2026-02-17T22:43:05.965Z",
+    "updatedAt": "2026-02-17T22:43:05.965Z"
+  },
+  {
+    "id": "bead-0484",
+    "title": "Review: infrastructure adapters wiring (bead-0335) — verify all application ports have working implementations, integration tests pass, no port left mocked in production path",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0335"
+    ],
+    "body": "Code + doc review for bead-0335. AC: every port in src/application/ports/ has a concrete infra adapter; integration test suite passes against real PostgreSQL; ID generator is deterministic and unique; event publisher adapter tested with outbox.",
+    "createdAt": "2026-02-17T22:43:25.560Z",
+    "updatedAt": "2026-02-17T22:43:25.560Z"
+  },
+  {
+    "id": "bead-0485",
+    "title": "Review: Temporal SDK integration (bead-0402) — verify WorkflowOrchestrator port adapter starts workflows and determinism constraints are documented",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0402"
+    ],
+    "body": "Code + doc review for bead-0402. AC: WorkflowOrchestrator adapter passes integration smoke test; deterministic workflow constraints documented; non-deterministic operations correctly isolated to activities; ci:pr green.",
+    "createdAt": "2026-02-17T22:43:25.628Z",
+    "updatedAt": "2026-02-17T22:43:25.628Z"
+  },
+  {
+    "id": "bead-0486",
+    "title": "Review: outbox + event dispatcher (bead-0316) — verify exactly-once-ish publish semantics and outbox retry correctness",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0316"
+    ],
+    "body": "Code + doc review for bead-0316. AC: outbox poll tested under transient bus failure; events consumed in order; idempotency key prevents duplicates; CloudEvents envelope present on every dispatched event.",
+    "createdAt": "2026-02-17T22:43:25.699Z",
+    "updatedAt": "2026-02-17T22:43:25.699Z"
+  },
+  {
+    "id": "bead-0487",
+    "title": "Review: IAM MVP + JWT validation + AuthZ wiring (bead-0016, bead-0417, bead-0418) — verify RBAC enforced, OWASP BOLA scenarios pass, deny-by-default",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0418"
+    ],
+    "body": "Code + doc review for bead-0016, bead-0417, bead-0418 as a group. AC: all 4 roles (admin, operator, approver, auditor) enforced at every route; OWASP BOLA scenarios pass; deny-by-default confirmed by test with unknown role; token refresh/rotation path documented.",
+    "createdAt": "2026-02-17T22:43:25.764Z",
+    "updatedAt": "2026-02-17T22:43:25.764Z"
+  },
+  {
+    "id": "bead-0488",
+    "title": "Review: Temporal worker execution loop (bead-0425) — verify plan/diff/evidence/run-status all correct end-to-end; hash chain intact",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0425"
+    ],
+    "body": "Code + doc review for bead-0425. AC: end-to-end run reaches Succeeded in integration test; planned-vs-verified diff computed correctly; evidence chain intact; run status transitions match state machine (bead-0337); no plain-text credentials in logs.",
+    "createdAt": "2026-02-17T22:43:41.284Z",
+    "updatedAt": "2026-02-17T22:43:41.284Z"
+  },
+  {
+    "id": "bead-0489",
+    "title": "Review: evidence hash chain implementation (bead-0035) — verify chain is tamper-evident, break detectable, signature hooks present",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0035"
+    ],
+    "body": "Code + doc review for bead-0035. AC: chain break produces typed error; previousHash stored and verified on every append; signature hook interface is defined and extensible; test injects a tampered entry and verifies detection.",
+    "createdAt": "2026-02-17T22:43:41.354Z",
+    "updatedAt": "2026-02-17T22:43:41.354Z"
+  },
+  {
+    "id": "bead-0490",
+    "title": "Review: CloudEvents envelope implementation (bead-0041) — verify required fields, tenantid/correlationid extensions present on every event",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0041"
+    ],
+    "body": "Code + doc review for bead-0041. AC: every event emission point uses the CloudEvents envelope; type, source, subject, tenantid, correlationid populated; event schema validated against a CloudEvents schema; consumer resilience tested (additive fields ignored).",
+    "createdAt": "2026-02-17T22:43:41.436Z",
+    "updatedAt": "2026-02-17T22:43:41.436Z"
+  },
+  {
+    "id": "bead-0491",
+    "title": "Review: control plane HTTP handlers (bead-0415) — verify all routes match OpenAPI v1, problem+json used, no schema drift",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0415"
+    ],
+    "body": "Code + doc review for bead-0415. AC: every route returns documented status codes; problem+json error shape used throughout; OpenAPI breaking-change CI gate passes; RBAC enforced per bead-0418; integration test covers all routes.",
+    "createdAt": "2026-02-17T22:43:41.514Z",
+    "updatedAt": "2026-02-17T22:43:41.514Z"
+  },
+  {
+    "id": "bead-0492",
+    "title": "Doc review: domain model docs (domain-layer-work-backlog, canonical-objects, erd, aggregates) align with implemented code after P0 domain beads close",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0302",
+      "bead-0304",
+      "bead-0337"
+    ],
+    "body": "Documentation alignment review after P0 domain beads complete. AC: docs/domain/canonical-objects.md matches runtime entity model; docs/domain/erd.md reflects actual aggregate boundaries; docs/domain/aggregates.md invariants traced to implementation; domain-layer-work-backlog.md DONE statuses updated.",
+    "createdAt": "2026-02-17T22:43:57.048Z",
+    "updatedAt": "2026-02-17T22:43:57.048Z"
+  },
+  {
+    "id": "bead-0493",
+    "title": "Doc review: OpenAPI spec and backlog docs aligned after bead-0447 (contract alignment) and bead-0415 (HTTP handlers) close",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0447",
+      "bead-0415"
+    ],
+    "body": "Documentation alignment review after contract and handler beads complete. AC: portarium-control-plane.v1.yaml matches all implemented routes; infrastructure-layer-work-backlog.md DONE statuses updated; CLAUDE.md API contract notes accurate.",
+    "createdAt": "2026-02-17T22:43:57.125Z",
+    "updatedAt": "2026-02-17T22:43:57.125Z"
+  },
+  {
+    "id": "bead-0494",
+    "title": "Doc review: application layer backlog docs aligned after P0 application beads close (bead-0316, bead-0319, bead-0340, bead-0425)",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0316",
+      "bead-0319",
+      "bead-0340",
+      "bead-0425"
+    ],
+    "body": "Documentation alignment review for application layer. AC: application-layer-work-backlog.md DONE/PARTIALLY-DONE statuses accurate; .specify/specs/ updated for all new use-cases; ADR notes reference implementing bead IDs.",
+    "createdAt": "2026-02-17T22:43:57.201Z",
+    "updatedAt": "2026-02-17T22:43:57.201Z"
+  },
+  {
+    "id": "bead-0495",
+    "title": "Doc review: spec files (.specify/specs/) aligned with implementation for all P0 use-cases",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "blockedBy": [
+      "bead-0340",
+      "bead-0425"
+    ],
+    "body": "Review all .specify/specs/ files against implemented command/query handlers. AC: every implemented use-case has a .specify spec; every spec references its implementing bead; gaps flagged as new beads.",
+    "createdAt": "2026-02-17T22:43:57.281Z",
+    "updatedAt": "2026-02-17T22:43:57.281Z"
+  },
+  {
+    "id": "bead-0496",
+    "title": "Domain Atlas: robotics and physical actuation taxonomy — robot classes, integration patterns, protocol inventory, scoring rubric",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Build the Domain Atlas for robotics/actuation integration. Produce: (1) robot class taxonomy (mobile/AMR, manipulator, aerial/UAV, fixed PLC-automation, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric (control-plane fit 15%, security 15%, safety affordances 10%, interoperability 10%, real-time suitability 10%, community health 10%, licence clarity 10%, docs 8%, edge readiness 8%, observability 4%); (5) open-source project inventory with star counts, licence, activity, and relevance scores. Store in docs/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces a ranked table; ADR cross-reference added.",
+    "createdAt": "2026-02-18T03:32:11.177Z",
+    "updatedAt": "2026-02-18T03:34:21.655Z"
+  },
+  {
+    "id": "bead-0497",
+    "title": "Domain Atlas: robotics taxonomy — robot classes, integration patterns, protocol inventory, scoring rubric",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Build Domain Atlas for robotics. Produce: (1) robot class taxonomy (AMR/AGV, manipulator, aerial/UAV, fixed PLC, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric per report; (5) open-source project inventory with licence, activity, and relevance scores. Store in docs/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces ranked table; ADR cross-reference added.",
+    "createdAt": "2026-02-18T03:32:16.344Z",
+    "updatedAt": "2026-02-18T03:50:52.341Z"
+  },
+  {
+    "id": "bead-0498",
+    "title": "Domain Atlas: robotics open-source project inventory with scored rubric entries",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "blockedBy": [
+      "bead-0497"
+    ],
+    "body": "Score and document the robotics OSS project inventory using the domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Webots, AirSim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal, Argo Workflows. For each: licence gate, rubric score, activity signals, relevance note. Output: docs/domain-atlas/robotics/project-inventory.md with ranked table. AC: at least 20 projects scored; shortlist of 5 priority starters identified; all licences verified.",
+    "createdAt": "2026-02-18T03:32:42.829Z",
+    "updatedAt": "2026-02-18T03:50:53.266Z"
+  },
+  {
+    "id": "bead-0499",
+    "title": "Domain Atlas: robotics OSS project inventory scored against atlas rubric",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "blockedBy": [
+      "bead-0497"
+    ],
+    "body": "Score robotics OSS project inventory using domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal. Criteria: control-plane fit 15%, security 15%, safety 10%, interop 10%, RT suitability 10%, community 10%, licence 10%, docs 8%, edge readiness 8%, observability 4%. AC: docs/domain-atlas/robotics/project-inventory.md; min 15 projects scored; priority shortlist identified; licences verified.",
+    "createdAt": "2026-02-18T03:32:48.771Z",
+    "updatedAt": "2026-02-18T03:34:21.724Z"
+  },
+  {
+    "id": "bead-0500",
+    "title": "Domain Atlas: robotics OSS project inventory scored against atlas rubric",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "createdAt": "2026-02-18T03:32:52.341Z",
+    "updatedAt": "2026-02-18T03:34:21.786Z"
+  },
+  {
+    "id": "bead-0501",
+    "title": "Domain Atlas: robotics OSS project inventory scored against atlas rubric",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "createdAt": "2026-02-18T03:32:55.330Z",
+    "updatedAt": "2026-02-18T03:34:21.850Z"
+  },
+  {
+    "id": "bead-0502",
+    "title": "test bead",
+    "status": "closed",
+    "createdAt": "2026-02-18T03:32:58.631Z",
+    "updatedAt": "2026-02-18T03:33:01.471Z"
+  },
+  {
+    "id": "bead-0503",
+    "title": "test body bead",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "blockedBy": [
+      "bead-0497"
+    ],
+    "body": "Test body content here",
+    "createdAt": "2026-02-18T03:33:07.704Z",
+    "updatedAt": "2026-02-18T03:33:55.422Z"
+  },
+  {
+    "id": "bead-0504",
+    "title": "Domain Atlas: cockpit UX taxonomy for robots and agents",
+    "status": "closed",
+    "priority": "P1",
+    "phase": "domain",
+    "blockedBy": [
+      "bead-0497"
+    ],
+    "body": "Define cockpit UX taxonomy: data models (Robot, Fleet, Mission, ActionExecution, TelemetryStream, SafetyConstraints, Approval, EvidenceBundle); key screens (Robots, Missions, Telemetry, Safety, Approvals, Agents); RBAC per screen. Output: docs/domain-atlas/robotics/cockpit-ux-taxonomy.md with Mermaid flowchart. AC: data models documented; screen inventory written; RBAC defined.",
+    "createdAt": "2026-02-18T03:36:28.523Z",
+    "updatedAt": "2026-02-18T03:51:07.952Z"
+  },
+  {
+    "id": "bead-0505",
+    "title": "ADR: robotics integration architecture — control-plane vs edge-gateway split, protocol selection",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "blockedBy": [
+      "bead-0497"
+    ],
+    "body": "Document three-layer architecture decision: (1) Portarium control/decision plane (policy, approvals, audit); (2) Portarium execution plane (workers/adapters, containment); (3) Edge robot gateway (robotics middleware or PLC interface, local safety interlocks, real-time constraints). Decision: Portarium issues high-level goals only; servo loops and safety stops remain at edge. Include Mermaid architecture diagram. Protocol selection per class: gRPC edge gateway (general), ROS 2 Action bridge (robot-native), MQTT (IoT/PLC), OPC UA (industrial). AC: ADR in docs/adr/; references bead-0497 atlas; unblocks domain port family and adapter beads.",
+    "createdAt": "2026-02-18T03:38:10.373Z",
+    "updatedAt": "2026-02-18T03:39:29.576Z"
+  },
+  {
+    "id": "bead-0506",
+    "title": "ADR: robotics safety boundary — what Portarium governs vs what the edge safety controller must own",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "body": "Define and document the safety boundary between Portarium and edge safety functions. Portarium governs: policy tier gating, approvals, audit evidence, idempotency/retry control, mission scheduling. Edge safety controller owns: E-stop, interlocks, collision avoidance, speed limits, geofence enforcement, real-time closed-loop control. Reference: ISO 12100, ISO 10218, ISO/TS 15066, ISO 13849-1. AC: ADR in docs/adr/ with RACI table; safety functions listed per owner; security and safety interaction noted; machinery compliance timeline (EU 2027, UK, US/OSHA) referenced.",
+    "createdAt": "2026-02-18T03:38:10.445Z",
+    "updatedAt": "2026-02-18T03:39:29.640Z",
+    "blockedBy": [
+      "bead-0497"
+    ]
+  },
+  {
+    "id": "bead-0507",
+    "title": "Domain: RoboticsActuation port family — port family entry and capability matrix operations",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Add RoboticsActuation to port family enum and capability matrix. Capabilities: robot:execute_action, robot:cancel_action, robot:stop, robot:estop_request, robot:get_state, robot:get_diagnostics, actuator:set_state, actuator:get_state. Follow existing port-family-capabilities-v1.ts pattern. AC: new port family parseable; capability list exhaustive for v1; zero external dependencies; domain dependency-cruiser rules not violated.",
+    "createdAt": "2026-02-18T03:38:10.498Z",
+    "updatedAt": "2026-02-18T03:39:29.704Z",
+    "blockedBy": [
+      "bead-0505"
+    ]
+  },
+  {
+    "id": "bead-0508",
+    "title": "Domain: RobotId, FleetId, MissionId, GatewayId branded primitives",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Add branded primitive types to src/domain/primitives/: RobotId, FleetId, MissionId, GatewayId. Follow existing TenantId/WorkflowId pattern (brand symbol, newtype wrapper, Zod parser, factory helpers). AC: all four primitives in domain/primitives/; exported from primitives barrel; parseable via Zod; no runtime deps; unit tests cover parse happy-path and rejection of unbranded string.",
+    "createdAt": "2026-02-18T03:38:10.566Z",
+    "updatedAt": "2026-02-18T03:39:29.767Z",
+    "blockedBy": [
+      "bead-0505"
+    ]
+  },
+  {
+    "id": "bead-0509",
+    "title": "Domain: Robot and Fleet aggregate root types with capabilities and safety profile",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Define Robot aggregate (robotId, fleetId, displayName, robotClass enum [AMR_AGV, Manipulator, Aerial, FixedAutomation, Humanoid], capabilities, safetyProfile, softwareVersion, connectivityState) and Fleet value object (fleetId, tenantId, siteZone, sharedPolicies). Use branded primitives. AC: parseable types in src/domain/robots/; zero external deps; Zod schemas for both types.",
+    "createdAt": "2026-02-18T03:38:10.626Z",
+    "updatedAt": "2026-02-18T03:39:29.815Z",
+    "blockedBy": [
+      "bead-0508"
+    ]
+  },
+  {
+    "id": "bead-0510",
+    "title": "Domain: Mission aggregate and ActionExecution entity for robot mission lifecycle",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Define Mission aggregate (missionId, robotId/fleetId, goalSpec, priority, constraints, status enum [Pending, Dispatched, Executing, WaitingPreemption, Succeeded, Failed, Cancelled], idempotencyKey) and ActionExecution entity (executionId, missionId, gatewayRef, feedbackLog, preemptedAt). Lifecycle states must support ROS 2 Action pre-emption semantics. AC: domain types in src/domain/robots/; parseable; lifecycle state machine documented inline; unit tests cover transitions; zero external deps.",
+    "createdAt": "2026-02-18T03:38:10.686Z",
+    "updatedAt": "2026-02-18T03:39:29.865Z",
+    "blockedBy": [
+      "bead-0508",
+      "bead-0514"
+    ]
+  },
+  {
+    "id": "bead-0511",
+    "title": "Domain: CloudEvents type catalogue for robot lifecycle events",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Add CloudEvents type strings and envelope extensions for robot lifecycle: com.portarium.robot.mission.Dispatched/Succeeded/Failed/Preempted; robot.action.Started/FeedbackReceived/Completed/Cancelled; robot.estop.Triggered/Cleared. Extend existing CloudEvents envelope schema with robotId, fleetId, missionId correlation fields. AC: types extend cloudevents-v1.ts; all fields typed and required; tests cover serialisation roundtrip.",
+    "createdAt": "2026-02-18T03:38:10.738Z",
+    "updatedAt": "2026-02-18T03:39:29.910Z",
+    "blockedBy": [
+      "bead-0510"
+    ]
+  },
+  {
+    "id": "bead-0512",
+    "title": "Domain: SafetyConstraint and SafetyCase value objects for robotics policy gating",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Define SafetyConstraint value object (constraintType [Geofence, SpeedLimit, PayloadLimit, ProximityZone, OperatorRequired], value, enforcedBy [edge/policy], severity [Advisory/Enforced/HardStop]) and SafetyCase entity (robotId, appliedConstraints, riskAssessmentRef, lastReviewedAt, approvedBy). Used by policy evaluation to gate HumanApprove vs ManualOnly tiers for hazardous actions. AC: src/domain/robots/safety-constraint-v1.ts; Zod parseable; policy-evaluation.ts can consume SafetyConstraint; zero external deps.",
+    "createdAt": "2026-02-18T03:38:10.801Z",
+    "updatedAt": "2026-02-18T03:39:29.974Z",
+    "blockedBy": [
+      "bead-0509",
+      "bead-0506"
+    ]
+  },
+  {
+    "id": "bead-0513",
+    "title": "App: MissionPort interface for dispatching robot missions to edge gateway",
+    "status": "open",
+    "priority": "P1",
+    "phase": "application",
+    "body": "Define MissionPort in src/application/ports/: dispatchMission, cancelMission, getMissionStatus. MissionDispatchResult: discriminated union (Dispatched, PolicyBlocked, GatewayUnreachable, Rejected). Correlation contract: missionId, correlationId, planEffectIdempotencyKey propagated to gateway. AC: port defined with no infra imports; MissionDispatchResult typed; companion boundary test using in-memory stub.",
+    "createdAt": "2026-02-18T03:38:10.864Z",
+    "updatedAt": "2026-02-18T03:39:30.151Z",
+    "blockedBy": [
+      "bead-0510",
+      "bead-0514"
+    ]
+  },
+  {
+    "id": "bead-0514",
+    "title": "Spec: robotics workflow action semantics — pre-emption, stop-path, retry policy, idempotency for physical actions",
+    "status": "open",
+    "priority": "P1",
+    "phase": "domain",
+    "body": "Spec for Portarium workflow actions targeting RoboticsActuation port: (1) pre-emption — long-running actions must expose cancellation signal aligned to ROS 2 Action pre-emption; (2) stop-path — robot:stop and robot:estop_request bypass normal tier evaluation; (3) retry policy — physical actions require explicit idempotency keys; duplicate commands deduplicated; (4) manual-only completion — some actions require operator field confirmation before Succeeded. AC: .specify/specs/robotics-action-semantics.md committed; MissionPort and domain types implement against this spec.",
+    "createdAt": "2026-02-18T03:38:10.950Z",
+    "updatedAt": "2026-02-18T03:39:30.100Z",
+    "blockedBy": [
+      "bead-0505",
+      "bead-0506"
+    ]
+  },
+  {
+    "id": "bead-0515",
+    "title": "Infra: gRPC edge gateway adapter implementing MissionPort — prototype",
+    "status": "open",
+    "priority": "P2",
+    "phase": "infrastructure",
+    "body": "Implement gRPC edge gateway adapter in src/infrastructure/adapters/robotics/ implementing MissionPort. Proto service: ExecuteTask, CancelTask, GetTaskStatus, GetRobotState. Use mTLS. Correlation header propagation (correlationId, idempotencyKey). AC: adapter compiles against MissionPort; unit tests with grpc-js stub server; mTLS cert paths configurable via env; credentials never logged; 4xx/5xx/timeout handled.",
+    "createdAt": "2026-02-18T03:38:11.033Z",
+    "updatedAt": "2026-02-18T03:39:47.861Z",
+    "blockedBy": [
+      "bead-0513"
+    ]
+  },
+  {
+    "id": "bead-0516",
+    "title": "Infra: MQTT gateway adapter for IoT-style actuator commands and telemetry — prototype",
+    "status": "open",
+    "priority": "P2",
+    "phase": "infrastructure",
+    "body": "Implement MQTT adapter in src/infrastructure/adapters/robotics/ using actuator:set_state/get_state capabilities. Broker: Eclipse Mosquitto MQTT v5. Topic taxonomy: portarium/{tenantId}/{siteId}/{deviceId}/command and .../telemetry. mTLS + ACL-per-tenant; idempotency key in MQTT User Property; QoS 1 for commands; correlation ID for ack. AC: adapter implements MissionPort subset; unit tests with stub broker; rate limiting hook; evidence entries appended on completion.",
+    "createdAt": "2026-02-18T03:38:11.125Z",
+    "updatedAt": "2026-02-18T03:39:56.171Z",
+    "blockedBy": [
+      "bead-0513"
+    ]
+  },
+  {
+    "id": "bead-0517",
+    "title": "Infra: ROS 2 Action bridge via edge gateway — Nav2 NavigateTo mission prototype",
+    "status": "open",
+    "priority": "P2",
+    "phase": "infrastructure",
+    "body": "Implement ROS 2 Action bridge component at edge wrapping Nav2 NavigateTo actions. Bridge exposes gRPC or HTTP task API callable from Portarium gRPC adapter. Handles: goal dispatch, feedback streaming to Portarium event stream via CloudEvents, clean pre-emption on cancel, stop-path bypass. Simulation target: Gazebo Sim or Webots. AC: NavigateTo dispatched from Portarium workflow; feedback visible in CloudEvents stream; pre-emption tested under load; evidence bundle created per mission.",
+    "createdAt": "2026-02-18T03:38:11.260Z",
+    "updatedAt": "2026-02-18T03:40:12.106Z",
+    "blockedBy": [
+      "bead-0515"
+    ]
+  },
+  {
+    "id": "bead-0518",
+    "title": "Infra: OPC UA connector prototype using node-opcua for industrial PLC actuation",
+    "status": "open",
+    "priority": "P2",
+    "phase": "infrastructure",
+    "body": "Implement OPC UA adapter in src/infrastructure/adapters/robotics/ using node-opcua (TypeScript, MIT). Capabilities: actuator:set_state, actuator:get_state via OPC UA method calls and node reads/writes. Security: certificate-based mutual auth (SignAndEncrypt). Config: endpoint URL, security policy, cert paths (vault-injected). AC: adapter implements MissionPort subset; unit tests with node-opcua test server; cert lifecycle documented; audit log entries for every write.",
+    "createdAt": "2026-02-18T03:38:33.332Z",
+    "updatedAt": "2026-02-18T03:40:12.678Z",
+    "blockedBy": [
+      "bead-0513"
+    ]
+  },
+  {
+    "id": "bead-0519",
+    "title": "Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite",
+    "status": "open",
+    "priority": "P2",
+    "phase": "integration",
+    "body": "Build simulation-based CI harness that runs robotics integration tests against Gazebo Sim or Webots. Scope: launch simulated robot, dispatch NavigateTo mission via Portarium workflow, verify evidence bundle, test pre-emption and stop-path. Docker Compose entry for sim stack. AC: harness runs in CI; simulation tests gate hardware deployment; MCAP or bag segments as evidence artefacts; harness documented in docs/integration-testing/robotics-sim.md.",
+    "createdAt": "2026-02-18T03:38:33.413Z",
+    "updatedAt": "2026-02-18T03:40:26.186Z",
+    "blockedBy": [
+      "bead-0515",
+      "bead-0517"
+    ]
+  },
+  {
+    "id": "bead-0520",
+    "title": "Security: SROS2 and DDS-Security hardening for ROS 2 mission traffic across trust boundaries",
+    "status": "open",
+    "priority": "P1",
+    "phase": "security",
+    "body": "Implement SROS 2 configuration for ROS 2 traffic crossing trust boundaries between Portarium execution plane and edge robot network. Generate keystore and identity artefacts; configure governance.xml and permissions.xml per adapter identity; validate fail-closed when credentials invalid or expired. AC: ROS 2 comms fail-closed without SROS 2 credentials; unauthorized participant cannot publish commands; keystore lifecycle documented; ADR references safety boundary bead.",
+    "createdAt": "2026-02-18T03:38:33.495Z",
+    "updatedAt": "2026-02-18T03:40:26.568Z",
+    "blockedBy": [
+      "bead-0505",
+      "bead-0517"
+    ]
+  },
+  {
+    "id": "bead-0521",
+    "title": "Security: mTLS workload identity for robot gateways using SPIFFE/SPIRE",
+    "status": "open",
+    "priority": "P1",
+    "phase": "security",
+    "body": "Integrate SPIFFE/SPIRE for zero-trust workload identity between Portarium execution-plane workers and edge robot gateways. Each gateway and worker gets a SPIFFE SVID for mTLS. Deploy SPIRE server (dev: docker compose entry); configure SPIRE agent per worker/gateway node; wire SVID issuance into gRPC/mTLS adapter configs; rotation interval <= 1 hour. AC: mutual authentication enforced on all worker-to-gateway connections; expired SVIDs rejected; rotation tested; ADR documents trust model and multi-tenant isolation.",
+    "createdAt": "2026-02-18T03:38:33.568Z",
+    "updatedAt": "2026-02-18T03:40:26.951Z",
+    "blockedBy": [
+      "bead-0505",
+      "bead-0515"
+    ]
+  },
+  {
+    "id": "bead-0522",
+    "title": "Governance: safety-aware policy tiers — HumanApprove mandatory for hazardous robot actions",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "body": "Extend policy evaluation to enforce HumanApprove or ManualOnly tiers for high-hazard robot operations. Hazard criteria: robot class, speed/force limits, proximity zone active, non-reversible actuator states. Rules: robot:estop_request is ManualOnly; robot:execute_action in proximity zone requires HumanApprove + SoD; actuator:set_state for safety-classified device requires HumanApprove. AC: policy-evaluation.ts enforces new rules; SoD checked; evidence includes hazard classification; ADR references ISO 13849-1 safety functions boundary.",
+    "createdAt": "2026-02-18T03:38:36.788Z",
+    "updatedAt": "2026-02-18T03:40:27.335Z",
+    "blockedBy": [
+      "bead-0506",
+      "bead-0512"
+    ]
+  },
+  {
+    "id": "bead-0523",
+    "title": "Governance: SoD constraints for robot control — operator cannot approve own mission in hazardous zones",
+    "status": "open",
+    "priority": "P1",
+    "phase": "governance",
+    "body": "Add SoD rules specific to robot mission approvals. Rules: mission proposer cannot be the approver for HumanApprove-gated actions in hazardous zones; dual-approval required for safety-classified zones; remote E-stop requests require separate authorisation from requesting operator. Extend sod-constraints-v1.ts with robot-specific constraint types. AC: SoD evaluation rejects self-approvals; dual-approval path tested end-to-end; constraint types documented; existing SoD tests unaffected.",
+    "createdAt": "2026-02-18T03:38:36.867Z",
+    "updatedAt": "2026-02-18T03:40:28.166Z",
+    "blockedBy": [
+      "bead-0522"
+    ]
+  },
+  {
+    "id": "bead-0524",
+    "title": "Governance: machinery compliance planning — ISO 12100 risk assessment and EU/UK/US regulations timeline",
+    "status": "open",
+    "priority": "P2",
+    "phase": "governance",
+    "body": "Produce machinery compliance planning document covering: ISO 12100 risk assessment methodology; ISO 10218-1/2 and ISO/TS 15066 requirements checklist; ISO 13849-1 SRP/CS scope; jurisdiction timelines: EU Machinery Regulation 2023/1230 applies 20 Jan 2027; UK Supply of Machinery (Safety) Regulations 2008; US OSHA ANSI/RIA R15.06 standard. Store in docs/compliance/robotics/. AC: document committed; RACI matrix produced; signposting only, no legal advice.",
+    "createdAt": "2026-02-18T03:38:36.931Z",
+    "updatedAt": "2026-02-18T03:40:28.885Z",
+    "blockedBy": [
+      "bead-0506"
+    ]
+  },
+  {
+    "id": "bead-0525",
+    "title": "Presentation: Cockpit Robots and Fleet screen — enrolment, health, connectivity, capability matrix",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "body": "Add Robots/Fleet screen to cockpit. Features: robot enrolment (register with class, gateway URL, capability allowlist); health and connectivity panel; software version display; capability matrix viewer; fleet grouping and site/zone assignment; safety profile summary. RBAC: admin write, operator/auditor read. AC: operator registers robot and sees health; admin edits capability allowlist; WCAG 2.2 AA; integrates with Machines API.",
+    "createdAt": "2026-02-18T03:38:36.994Z",
+    "updatedAt": "2026-02-18T05:33:47.138Z",
+    "blockedBy": []
+  },
+  {
+    "id": "bead-0526",
+    "title": "Presentation: Cockpit Missions screen — create/submit, monitor feedback, pre-empt/cancel, post-run evidence",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "body": "Add Missions screen to cockpit. Features: mission creation form (robot/fleet selector, goal type, constraints, priority); submit for approval if HumanApprove tier; live feedback stream panel via CloudEvents/SSE; pre-empt/cancel button with confirmation; post-run planned-vs-verified diff and evidence bundle link; mission history list. RBAC: operator create/cancel, auditor read. AC: operator submits and monitors mission end-to-end; cancellation stops mission within defined window; evidence bundle accessible; WCAG 2.2 AA.",
+    "createdAt": "2026-02-18T03:38:37.041Z",
+    "updatedAt": "2026-02-18T05:33:48.191Z",
+    "blockedBy": []
+  },
+  {
+    "id": "bead-0527",
+    "title": "Presentation: Cockpit Safety screen — global E-stop, per-site constraints, approval policy thresholds",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "body": "Add Safety screen to cockpit. Features: global E-stop button (ManualOnly, requires confirmation and reason, emits estop event to all active gateways); per-site constraint editor (geofences, speed limits, proximity zones); policy tier threshold configuration; active safety alerts panel (interlock triggers, SoD violations); incident playbook links. RBAC: safety-officer role for E-stop and constraint editing. AC: E-stop triggers evidence entry and CloudEvent; constraints editor persists to domain; alerts panel live; WCAG 2.2 AA.",
+    "createdAt": "2026-02-18T03:38:37.089Z",
+    "updatedAt": "2026-02-18T05:33:49.227Z",
+    "blockedBy": []
+  },
+  {
+    "id": "bead-0528",
+    "title": "Testing: evidence-chain verification under adversarial retries for robot actions",
+    "status": "open",
+    "priority": "P1",
+    "phase": "integration",
+    "body": "Prove retry storms and duplicate commands do not produce unsafe duplicate physical actions. Scenarios: (1) same mission idempotency key submitted twice simultaneously — second call returns existing missionId, no duplicate gateway call; (2) network failure mid-dispatch — retry produces same outcome, evidence chain consistent; (3) partial execution followed by retry — plan idempotencyKey prevents re-execution; (4) adversarial replay with modified payload rejected. AC: all 4 scenarios covered; evidence entries consistent under fault injection; duplicate-command incidence 0 in test suite.",
+    "createdAt": "2026-02-18T03:38:37.153Z",
+    "updatedAt": "2026-02-18T03:41:07.733Z",
+    "blockedBy": [
+      "bead-0515",
+      "bead-0516",
+      "bead-0514"
+    ]
+  },
+  {
+    "id": "bead-0529",
+    "title": "Testing: pre-emption and stop-path latency benchmark for robot missions",
+    "status": "open",
+    "priority": "P2",
+    "phase": "integration",
+    "body": "Benchmark end-to-end cancel/pre-emption latency and stop-path effectiveness. Metrics: P50/P99 latency from cancelMission call to gateway acknowledgement; P50/P99 from stop request to robot stop confirmation in simulation; percentage of cancelled actions stopping within defined safe window. Test harness: simulation stack (Gazebo or Webots); parameterised load levels. AC: latency budget defined and documented; benchmark results in CI artefacts; regression gate on P99 cancel-to-ack.",
+    "createdAt": "2026-02-18T03:38:37.201Z",
+    "updatedAt": "2026-02-18T03:41:08.131Z",
+    "blockedBy": [
+      "bead-0519"
+    ]
+  },
+  {
+    "id": "bead-0530",
+    "title": "Testing: multi-robot dispatch and fleet coordination via Open-RMF integration",
+    "status": "open",
+    "priority": "P3",
+    "phase": "integration",
+    "body": "Validate fleet-level orchestration by integrating Portarium workflows with Open-RMF. Scenario: Portarium dispatches coordinated tasks to 2-3 simulated robots via Open-RMF; conflict avoidance observed; mission assignments succeed; evidence bundles produced per robot. Components: Open-RMF rmf_demos simulation; Portarium gRPC or ROS 2 bridge; fleet-level workflow in domain. AC: end-to-end multi-robot scenario passes in simulation; fleet coordination conflicts handled gracefully.",
+    "createdAt": "2026-02-18T03:38:37.264Z",
+    "updatedAt": "2026-02-18T03:41:08.511Z",
+    "blockedBy": [
+      "bead-0519",
+      "bead-0515"
+    ]
+  },
+  {
+    "id": "bead-0531",
+    "title": "UX Design: Robots/Fleet screen — enrolment grid, robot detail drawer, telemetry sparkline stub",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "createdAt": "2026-02-18T05:33:24.856Z",
+    "updatedAt": "2026-02-18T05:33:44.088Z"
+  },
+  {
+    "id": "bead-0532",
+    "title": "UX Design: Missions screen — create/dispatch, status board, pre-empt/cancel, evidence link",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "createdAt": "2026-02-18T05:33:28.455Z",
+    "updatedAt": "2026-02-18T05:33:45.110Z"
+  },
+  {
+    "id": "bead-0533",
+    "title": "UX Design: Safety/E-Stop screen — global E-Stop, per-site constraints, clear gate, audit log",
+    "status": "closed",
+    "priority": "P2",
+    "phase": "presentation",
+    "createdAt": "2026-02-18T05:33:32.639Z",
+    "updatedAt": "2026-02-18T05:33:46.134Z"
+  }
+]

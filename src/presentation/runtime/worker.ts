@@ -2,6 +2,7 @@ import { startHealthServer, type HealthServerHandle } from './health-server.js';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createTemporalWorker } from '../../infrastructure/temporal/temporal-worker.js';
+import { readRuntimeContainmentConfigFromEnv } from './runtime-containment.js';
 
 export type WorkerRuntimeOptions = Readonly<{
   port?: number;
@@ -17,6 +18,7 @@ function readPort(defaultPort: number): number {
 }
 
 export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthServerHandle> {
+  const containment = readRuntimeContainmentConfigFromEnv();
   const role =
     process.env['PORTARIUM_CONTAINER_ROLE'] ?? process.env['PORTARIUM_ROLE'] ?? 'execution-plane';
   const port = options.port ?? readPort(8081);
@@ -25,6 +27,9 @@ export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthSe
   const handle = await startHealthServer({ role, host, port });
 
   console.log(`Portarium ${role} listening on ${handle.host}:${handle.port}`);
+  console.log(
+    `Runtime containment: isolation=${containment.tenantIsolationMode} sandbox=${containment.sandboxAssertions} egress=${containment.egressAllowlist.length}`,
+  );
 
   const enableTemporalWorker = (() => {
     const raw = process.env['PORTARIUM_ENABLE_TEMPORAL_WORKER'];

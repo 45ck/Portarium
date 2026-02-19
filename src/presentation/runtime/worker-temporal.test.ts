@@ -11,6 +11,9 @@ afterEach(async () => {
   delete process.env['PORTARIUM_CONTAINER_ROLE'];
   delete process.env['PORTARIUM_HTTP_PORT'];
   delete process.env['PORTARIUM_ROLE'];
+  delete process.env['PORTARIUM_TENANT_ISOLATION_MODE'];
+  delete process.env['PORTARIUM_SANDBOX_ASSERTIONS'];
+  delete process.env['PORTARIUM_EGRESS_ALLOWLIST'];
   process.exitCode = undefined;
   vi.resetModules();
   vi.clearAllMocks();

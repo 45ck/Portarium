@@ -10,6 +10,9 @@ afterEach(async () => {
   handle = undefined;
   delete process.env['PORTARIUM_CONTAINER_ROLE'];
   delete process.env['PORTARIUM_HTTP_PORT'];
+  delete process.env['PORTARIUM_TENANT_ISOLATION_MODE'];
+  delete process.env['PORTARIUM_SANDBOX_ASSERTIONS'];
+  delete process.env['PORTARIUM_EGRESS_ALLOWLIST'];
 });
 
 describe('worker runtime main', () => {
@@ -20,5 +23,12 @@ describe('worker runtime main', () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as { service: string };
     expect(json.service).toBe('execution-plane');
+  });
+
+  it('fails startup when tenant isolation mode is not per-tenant-worker', async () => {
+    process.env['PORTARIUM_TENANT_ISOLATION_MODE'] = 'shared-worker';
+    await expect(main({ host: '127.0.0.1', port: 0 })).rejects.toThrow(
+      /tenant_isolation_mode must be "per-tenant-worker"/i,
+    );
   });
 });
