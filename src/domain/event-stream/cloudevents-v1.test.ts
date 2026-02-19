@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseCloudEventV1, parsePortariumCloudEventV1 } from './cloudevents-v1.js';
+import {
+  parseCloudEventV1,
+  parsePortariumCloudEventV1,
+  parsePortariumRobotCloudEventV1,
+} from './cloudevents-v1.js';
 
 describe('parseCloudEventV1: happy path', () => {
   it('parses a minimal CloudEventV1', () => {
@@ -165,5 +169,45 @@ describe('parsePortariumCloudEventV1: validation', () => {
         runid: '   ',
       }),
     ).toThrow(/runid/i);
+  });
+});
+
+describe('parsePortariumRobotCloudEventV1', () => {
+  const base = {
+    specversion: '1.0',
+    id: 'evt-r1',
+    source: 'portarium://robotics',
+    type: 'com.portarium.robot.mission.Dispatched',
+    tenantid: 'tenant-1',
+    correlationid: 'corr-1',
+    robotid: 'robot-1',
+    fleetid: 'fleet-1',
+    missionid: 'mis-1',
+  } as const;
+
+  it('parses required robotics correlation extension fields', () => {
+    const evt = parsePortariumRobotCloudEventV1({
+      ...base,
+      data: { status: 'Dispatched' },
+    });
+
+    expect(evt.robotid).toBe('robot-1');
+    expect(evt.fleetid).toBe('fleet-1');
+    expect(evt.missionid).toBe('mis-1');
+  });
+
+  it('rejects missing robot correlation fields', () => {
+    expect(() =>
+      parsePortariumRobotCloudEventV1({
+        ...base,
+        missionid: undefined,
+      }),
+    ).toThrow(/missionid/i);
+  });
+
+  it('roundtrips through JSON serialisation', () => {
+    const parsed = parsePortariumRobotCloudEventV1(base);
+    const roundtrip = parsePortariumRobotCloudEventV1(JSON.parse(JSON.stringify(parsed)));
+    expect(roundtrip).toEqual(parsed);
   });
 });
