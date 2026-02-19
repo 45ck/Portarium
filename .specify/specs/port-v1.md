@@ -38,3 +38,18 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/finance-accounting/in-memory-finance-accounting-adapter.ts`.
+
+## PaymentsBilling Adapter Foundation (bead-0084)
+
+- Application port contract now includes `PaymentsBillingAdapterPort` under
+  `src/application/ports/payments-billing-adapter.ts`.
+- The operation set is fixed to the 15 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `PaymentsBilling` family.
+- Execute response contract:
+  - success: canonical `Payment`, `Payment[]`, `Subscription`, `Subscription[]`,
+    `Invoice`, `Invoice[]`, `Account`, `ExternalObjectRef`, `ExternalObjectRef[]`,
+    `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/payments-billing/in-memory-payments-billing-adapter.ts`.
