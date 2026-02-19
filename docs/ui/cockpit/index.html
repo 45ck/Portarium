@@ -179,18 +179,18 @@
            ============================================================ -->
       <main id="main" class="main" tabindex="-1">
         <!-- Banners -->
-        <div class="banner banner--warning js-banner-degraded" hidden>
+        <div class="banner banner--warning js-banner-degraded" role="status" aria-live="polite" hidden>
           Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
         </div>
-        <div class="banner banner--danger js-banner-misconfigured" hidden>
+        <div class="banner banner--danger js-banner-misconfigured" role="alert" hidden>
           Setup required: no provider configured for this integration category (missing
           credentials/scopes).
           <a href="#settings">Go to Workspace settings</a>.
         </div>
-        <div class="banner banner--danger js-banner-policy" hidden>
+        <div class="banner banner--danger js-banner-policy" role="alert" hidden>
           Policy blocked: this action is Manual-only or requires additional approvals.
         </div>
-        <div class="banner banner--danger js-banner-rbac" hidden>
+        <div class="banner banner--danger js-banner-rbac" role="alert" hidden>
           You can view this, but cannot act (RBAC). Ask a Workspace Admin for access.
         </div>
 
@@ -228,12 +228,12 @@
           </div>
 
           <div class="filters" role="group" aria-label="Filter options">
-            <span class="chip chip--active js-filter-persona">Failures + blocks</span>
-            <span class="chip">Assigned to me</span>
-            <span class="chip js-chip-unassigned">Unassigned</span>
-            <span class="chip">Pending approvals</span>
-            <span class="chip">Failed runs</span>
-            <span class="chip js-filter-human-tasks" style="border-color: var(--warn); color: var(--warn)">&#9786; Human tasks</span>
+            <span class="chip chip--active js-filter-persona" role="button" tabindex="0">Failures + blocks</span>
+            <span class="chip" role="button" tabindex="0">Assigned to me</span>
+            <span class="chip js-chip-unassigned" role="button" tabindex="0">Unassigned</span>
+            <span class="chip" role="button" tabindex="0">Pending approvals</span>
+            <span class="chip" role="button" tabindex="0">Failed runs</span>
+            <span class="chip js-filter-human-tasks" role="button" tabindex="0" style="border-color: var(--warn); color: var(--warn)">&#9786; Human tasks</span>
             <button
               class="chip chip--clear"
               type="button"
@@ -286,7 +286,7 @@
                         Approve Plan: Create Invoice in NetSuite
                         <span
                           class="tier-badge tier-badge--human"
-                          data-tooltip="Requires explicit human approval before execution"
+                          title="Requires explicit human approval before execution"
                           >Human-approve</span
                         >
                       </div>
@@ -294,7 +294,7 @@
                         Project: Billing Governance | WI-1099 | R-8920
                         <span
                           class="sod-badge"
-                          data-tooltip="The person who started this run cannot be the one to approve it"
+                          title="The person who started this run cannot be the one to approve it"
                           >Requires different approver</span
                         >
                       </div>
@@ -311,7 +311,7 @@
                         Approve Plan: Update Ticket priority in Zendesk
                         <span
                           class="tier-badge tier-badge--human"
-                          data-tooltip="Requires explicit human approval before execution"
+                          title="Requires explicit human approval before execution"
                           >Human-approve</span
                         >
                       </div>
@@ -339,7 +339,7 @@
                         WI-1021 | Update Opportunity
                         <span
                           class="idem-badge idem-badge--safe"
-                          data-tooltip="Retrying this action won't create duplicates"
+                          title="Retrying this action won't create duplicates"
                           >Safe to retry</span
                         >
                       </div>
@@ -529,7 +529,7 @@
                         >
                         <span
                           class="idem-badge idem-badge--safe"
-                          data-tooltip="Retrying this action won't create duplicates"
+                          title="Retrying this action won't create duplicates"
                           >Safe to retry</span
                         >
                       </div>
@@ -542,7 +542,7 @@
                         WI-1099 | R-8920 |
                         <span
                           class="tier-badge tier-badge--human"
-                          data-tooltip="Requires explicit human approval before execution"
+                          title="Requires explicit human approval before execution"
                           >Human-approve</span
                         >
                       </div>
@@ -576,7 +576,7 @@
                         WI-1042 | R-8892 |
                         <span
                           class="tier-badge tier-badge--human"
-                          data-tooltip="Requires explicit human approval before execution"
+                          title="Requires explicit human approval before execution"
                           >Human-approve</span
                         >
                       </div>
@@ -675,7 +675,7 @@
                     <span class="bar__label"
                       ><span
                         class="tier-badge tier-badge--auto"
-                        data-tooltip="Runs without human intervention"
+                        title="Runs without human intervention"
                         >Auto</span
                       ></span
                     ><span class="bar__fill" style="width: 45%"></span>
@@ -684,7 +684,7 @@
                     <span class="bar__label"
                       ><span
                         class="tier-badge tier-badge--assisted"
-                        data-tooltip="AI helps, but a human reviews the result"
+                        title="AI helps, but a human reviews the result"
                         >Assisted</span
                       ></span
                     ><span class="bar__fill" style="width: 30%"></span>
@@ -693,7 +693,7 @@
                     <span class="bar__label"
                       ><span
                         class="tier-badge tier-badge--human"
-                        data-tooltip="Requires explicit human approval before execution"
+                        title="Requires explicit human approval before execution"
                         >Human</span
                       ></span
                     ><span class="bar__fill" style="width: 20%"></span>
@@ -702,7 +702,7 @@
                     <span class="bar__label"
                       ><span
                         class="tier-badge tier-badge--manual"
-                        data-tooltip="Fully manual — no automation, human performs all steps"
+                        title="Fully manual — no automation, human performs all steps"
                         >Manual</span
                       ></span
                     ><span class="bar__fill" style="width: 5%"></span>
@@ -722,7 +722,7 @@
                       <div class="row__subtle">
                         <span
                           class="tier-badge tier-badge--assisted"
-                          data-tooltip="AI helps, but a human reviews the result"
+                          title="AI helps, but a human reviews the result"
                           >Assisted</span
                         >
                         Approval Gate likely
@@ -736,7 +736,7 @@
                       <div class="row__subtle">
                         <span
                           class="tier-badge tier-badge--auto"
-                          data-tooltip="Runs without human intervention"
+                          title="Runs without human intervention"
                           >Auto</span
                         >
                         evidence payloads stored
@@ -992,7 +992,7 @@
                     <td>
                       <span
                         class="tier-badge tier-badge--human"
-                        data-tooltip="Requires explicit human approval before execution"
+                        title="Requires explicit human approval before execution"
                         >Human-approve</span
                       >
                     </td>
@@ -1007,7 +1007,7 @@
                       >
                     </td>
                     <td>
-                      <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m"
+                      <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m"
                         >3h 48m</span
                       >
                     </td>
@@ -1022,7 +1022,7 @@
                     <td>
                       <span
                         class="tier-badge tier-badge--assisted"
-                        data-tooltip="AI helps, but a human reviews the result"
+                        title="AI helps, but a human reviews the result"
                         >Assisted</span
                       >
                     </td>
@@ -1036,7 +1036,7 @@
                       >
                     </td>
                     <td>
-                      <span class="sla-badge sla-badge--danger" data-tooltip="SLA overdue by 2h"
+                      <span class="sla-badge sla-badge--danger" title="SLA overdue by 2h"
                         >Overdue 2h</span
                       >
                     </td>
@@ -1051,7 +1051,7 @@
                     <td>
                       <span
                         class="tier-badge tier-badge--auto"
-                        data-tooltip="Runs without human intervention"
+                        title="Runs without human intervention"
                         >Auto</span
                       >
                     </td>
@@ -1061,7 +1061,7 @@
                       <span class="chip"><span class="port-icon">DM</span> Drive</span>
                     </td>
                     <td><span class="status">None</span></td>
-                    <td><span class="sla-badge" data-tooltip="SLA due Mar 1">Mar 1</span></td>
+                    <td><span class="sla-badge" title="SLA due Mar 1">Mar 1</span></td>
                     <td>2d</td>
                   </tr>
                   <tr>
@@ -1076,7 +1076,7 @@
                     <td>
                       <span
                         class="tier-badge tier-badge--auto"
-                        data-tooltip="Runs without human intervention"
+                        title="Runs without human intervention"
                         >Auto</span
                       >
                     </td>
@@ -1124,7 +1124,7 @@
                   <div class="kanban__card-meta">
                     <span
                       class="tier-badge tier-badge--auto"
-                      data-tooltip="Runs without human intervention"
+                      title="Runs without human intervention"
                       >Auto</span
                     >
                     <span class="chip" style="font-size: 11px; padding: 3px 6px"
@@ -1142,7 +1142,7 @@
                   <div class="kanban__card-meta">
                     <span
                       class="tier-badge tier-badge--assisted"
-                      data-tooltip="AI helps, but a human reviews the result"
+                      title="AI helps, but a human reviews the result"
                       >Assisted</span
                     >
                     <span class="status status--info" style="font-size: 11px; padding: 3px 6px"
@@ -1160,7 +1160,7 @@
                   <div class="kanban__card-meta">
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Requires explicit human approval before execution"
+                      title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
                     <span class="status status--warn" style="font-size: 11px; padding: 3px 6px"
@@ -1178,7 +1178,7 @@
                   <div class="kanban__card-meta">
                     <span
                       class="tier-badge tier-badge--auto"
-                      data-tooltip="Runs without human intervention"
+                      title="Runs without human intervention"
                       >Auto</span
                     >
                     <span class="status status--ok" style="font-size: 11px; padding: 3px 6px"
@@ -1421,15 +1421,15 @@
                 <span class="status">Open</span>
                 <span
                   class="tier-badge tier-badge--human"
-                  data-tooltip="Requires explicit human approval before execution"
+                  title="Requires explicit human approval before execution"
                   >Human-approve</span
                 >
                 <span
                   class="sod-badge"
-                  data-tooltip="The person who started this run cannot be the one to approve it"
+                  title="The person who started this run cannot be the one to approve it"
                   >Different approver</span
                 >
-                <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m"
+                <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m"
                   >Due 3h 48m</span
                 >
               </div>
@@ -1530,7 +1530,7 @@
                       Plan created
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -1546,7 +1546,7 @@
                       Approval Gate opened
                       <span
                         class="idem-badge"
-                        data-tooltip="This action runs at most once — it cannot be repeated"
+                        title="This action runs at most once — it cannot be repeated"
                         >One-time action</span
                       >
                     </div>
@@ -1594,7 +1594,7 @@
                       Requires rationale |
                       <span
                         class="sod-badge"
-                        data-tooltip="The person who started this run cannot be the one to approve it"
+                        title="The person who started this run cannot be the one to approve it"
                         >Requires different approver</span
                       >
                     </div>
@@ -1636,7 +1636,7 @@
                 Run R-8920 (Waiting for Approval)
                 <span
                   class="tier-badge tier-badge--human"
-                  data-tooltip="Requires explicit human approval before execution"
+                  title="Requires explicit human approval before execution"
                   >Human-approve</span
                 >
               </h1>
@@ -1685,7 +1685,7 @@
                       <span class="effect__target">NetSuite INV-22318</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -1697,7 +1697,7 @@
                       <span class="effect__target">Drive &middot; Receipt bundle</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -1820,14 +1820,14 @@
                   <span class="run-step__title">Approve Plan: Create Invoice in NetSuite</span>
                   <span
                     class="tier-badge tier-badge--human"
-                    data-tooltip="Requires explicit human approval before execution"
+                    title="Requires explicit human approval before execution"
                     >Human-approve</span
                   >
                   <span class="run-step__assignee">
                     <span class="availability-dot availability-dot--available"></span>
                     Pending: <a href="#workforce" aria-label="View Alice Martinez in Workforce directory">Alice Martinez</a>
                   </span>
-                  <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m">3h 48m</span>
+                  <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m">3h 48m</span>
                   <span class="status status--warn"><span class="status__icon">◷</span>Pending</span>
                 </div>
                 <div class="run-step__meta">
@@ -1854,7 +1854,7 @@
                   <span class="run-step__title">Manual sign-off: Finance controller</span>
                   <span
                     class="tier-badge tier-badge--human-task"
-                    data-tooltip="Step requires manual completion by an assigned operator"
+                    title="Step requires manual completion by an assigned operator"
                     >Manual-only</span
                   >
                   <span class="run-step__assignee">Unassigned</span>
@@ -1974,7 +1974,7 @@
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Requires explicit human approval before execution"
+                      title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
                   </td>
@@ -1982,7 +1982,7 @@
                   <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Operator User</span></td>
                   <td>12m</td>
                   <td>
-                    <span class="sla-badge sla-badge--warn" data-tooltip="Due in 3h 48m"
+                    <span class="sla-badge sla-badge--warn" title="Due in 3h 48m"
                       >Due 3h 48m</span
                     >
                   </td>
@@ -1995,14 +1995,14 @@
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Requires explicit human approval before execution"
+                      title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
                   </td>
                   <td></td>
                   <td>Unassigned</td>
                   <td>1h</td>
-                  <td><span class="sla-badge" data-tooltip="Due in 23h">Due 23h</span></td>
+                  <td><span class="sla-badge" title="Due in 23h">Due 23h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
                 <tr>
@@ -2012,7 +2012,7 @@
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="outdoor_flight policy requires safety_admin sign-off"
+                      title="outdoor_flight policy requires safety_admin sign-off"
                       >Human-approve</span
                     >
                   </td>
@@ -2020,7 +2020,7 @@
                   <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Safety Admin</span></td>
                   <td>5m</td>
                   <td>
-                    <span class="sla-badge sla-badge--warn" data-tooltip="Due in 55m">Due 55m</span>
+                    <span class="sla-badge sla-badge--warn" title="Due in 55m">Due 55m</span>
                   </td>
                   <td>
                     <a class="btn btn--primary btn--small" href="#missions">Review + decide</a>
@@ -2033,14 +2033,14 @@
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Agent CRM writes above confidence threshold require human approval"
+                      title="Agent CRM writes above confidence threshold require human approval"
                       >Human-approve</span
                     >
                   </td>
                   <td></td>
                   <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Approver User</span></td>
                   <td>22m</td>
-                  <td><span class="sla-badge" data-tooltip="Due in 2h">Due 2h</span></td>
+                  <td><span class="sla-badge" title="Due in 2h">Due 2h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
                 <tr>
@@ -2050,20 +2050,20 @@
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Payroll operations require a distinct approval chain"
+                      title="Payroll operations require a distinct approval chain"
                       >Human-approve</span
                     >
                   </td>
                   <td>
                     <span
                       class="badge--incompatible"
-                      data-tooltip="Approver and requester hold incompatible duties under SoD-PAYROLL-001 — a different team member must review"
+                      title="Approver and requester hold incompatible duties under SoD-PAYROLL-001 — a different team member must review"
                       >&#9888; Role conflict</span
                     >
                   </td>
                   <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Finance Approver</span></td>
                   <td>8m</td>
-                  <td><span class="sla-badge sla-badge--warn" data-tooltip="Due in 1h 12m">Due 1h 12m</span></td>
+                  <td><span class="sla-badge sla-badge--warn" title="Due in 1h 12m">Due 1h 12m</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
               </tbody>
@@ -2088,7 +2088,7 @@
           <!-- TRIAGE VIEW (hidden by default, toggled via JS) -->
           <div class="triage" id="triage" hidden>
             <div class="triage__progress triage__progress-row">
-              <div class="triage__progress-bar" style="flex: 1">
+              <div class="triage__progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" style="flex: 1">
                 <div class="triage__progress-fill" style="width: 0%"></div>
               </div>
               <div class="triage__progress-text">
@@ -2112,12 +2112,12 @@
                     <div class="triage-card__id">AG-442</div>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Requires explicit human approval before execution"
+                      title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
                     <span
                       class="sod-badge"
-                      data-tooltip="The person who started this run cannot be the one to approve it"
+                      title="The person who started this run cannot be the one to approve it"
                       >Requires different approver</span
                     >
                   </div>
@@ -2147,7 +2147,7 @@
                       <span>NetSuite | Invoice | INV-22318</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -2156,7 +2156,7 @@
                       <span>Drive | Document | Receipt bundle</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -2333,7 +2333,7 @@
                             <span class="effect__target">NetSuite | Invoice | INV-22318</span>
                             <span
                               class="idem-badge idem-badge--safe"
-                              data-tooltip="Retrying this action won't create duplicates"
+                              title="Retrying this action won't create duplicates"
                               >Safe to retry</span
                             >
                           </div>
@@ -2347,7 +2347,7 @@
                             <span class="effect__target">Drive | Document | Receipt bundle</span>
                             <span
                               class="idem-badge idem-badge--safe"
-                              data-tooltip="Retrying this action won't create duplicates"
+                              title="Retrying this action won't create duplicates"
                               >Safe to retry</span
                             >
                           </div>
@@ -2400,7 +2400,7 @@
                     <div class="triage-card__id">AG-445</div>
                     <span
                       class="tier-badge tier-badge--human"
-                      data-tooltip="Requires explicit human approval before execution"
+                      title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
                   </div>
@@ -2432,7 +2432,7 @@
                       <span>Zendesk | Ticket | ZD-84521 priority &#8594; High</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Retrying this action won't create duplicates"
+                        title="Retrying this action won't create duplicates"
                         >Safe to retry</span
                       >
                     </div>
@@ -2544,7 +2544,7 @@
                             <span class="effect__target">Zendesk | Ticket | ZD-84521</span>
                             <span
                               class="idem-badge idem-badge--safe"
-                              data-tooltip="Retrying this action won't create duplicates"
+                              title="Retrying this action won't create duplicates"
                               >Safe to retry</span
                             >
                           </div>
@@ -2582,7 +2582,7 @@
                     <span class="tier-badge tier-badge--human">Human-approve</span>
                     <span
                       class="sod-badge"
-                      data-tooltip="outdoor_flight requires safety_admin sign-off per safety policy"
+                      title="outdoor_flight requires safety_admin sign-off per safety policy"
                       >Safety constraint</span
                     >
                   </div>
@@ -2617,7 +2617,7 @@
                       <span
                         class="idem-badge"
                         style="background: #fef3c7; color: #92400e"
-                        data-tooltip="Mission cannot be resumed if interrupted mid-flight"
+                        title="Mission cannot be resumed if interrupted mid-flight"
                         >Non-resumable</span
                       >
                     </div>
@@ -2757,7 +2757,7 @@
                       <span>Salesforce | Opportunity | OPP-3841 | field: Description</span>
                       <span
                         class="idem-badge idem-badge--safe"
-                        data-tooltip="Write is idempotent — overwrite is safe"
+                        title="Write is idempotent — overwrite is safe"
                         >Safe to retry</span
                       >
                     </div>
@@ -3926,7 +3926,7 @@
                       <div class="row__subtle">
                         <span
                           class="tier-badge tier-badge--human"
-                          data-tooltip="Requires explicit human approval before execution"
+                          title="Requires explicit human approval before execution"
                           >Human-approve</span
                         >
                         N-approvers: 2 | Priority: 100
@@ -3944,7 +3944,7 @@
                       <div class="row__subtle">
                         <span
                           class="tier-badge tier-badge--assisted"
-                          data-tooltip="AI helps, but a human reviews the result"
+                          title="AI helps, but a human reviews the result"
                           >Assisted</span
                         >
                         Plan review recommended | Priority: 50
@@ -3962,7 +3962,7 @@
                       <div class="row__subtle">
                         <span
                           class="tier-badge tier-badge--auto"
-                          data-tooltip="Runs without human intervention"
+                          title="Runs without human intervention"
                           >Auto</span
                         >
                         No approval required | Priority: 10
@@ -4321,39 +4321,8 @@
                 </div>
                 <button class="btn btn--small btn--primary" style="margin-top: 8px" type="button">Add capability</button>
               </article>
-              <article class="card" data-requires-persona="admin">
-                <div class="card__title">Queue Routing Rules</div>
-                <div class="card__meta subtle">Default routing strategy per queue</div>
-                <div class="list">
-                  <div class="row row--static">
-                    <div class="row__main">
-                      <div class="row__title">Finance Queue</div>
-                      <div class="row__subtle">Strategy: <strong>least-busy</strong> | Requires: finance-review</div>
-                    </div>
-                    <div class="row__right">
-                      <a href="#queues" class="btn btn--small">Edit</a>
-                    </div>
-                  </div>
-                  <div class="row row--static">
-                    <div class="row__main">
-                      <div class="row__title">Legal Queue</div>
-                      <div class="row__subtle">Strategy: <strong>round-robin</strong> | Requires: legal-review</div>
-                    </div>
-                    <div class="row__right">
-                      <a href="#queues" class="btn btn--small">Edit</a>
-                    </div>
-                  </div>
-                  <div class="row row--static">
-                    <div class="row__main">
-                      <div class="row__title">General Queue</div>
-                      <div class="row__subtle">Strategy: <strong>manual</strong> | No capability required</div>
-                    </div>
-                    <div class="row__right">
-                      <a href="#queues" class="btn btn--small">Edit</a>
-                    </div>
-                  </div>
-                </div>
-              </article>
+              <a href="#queues" class="btn btn--small">Manage queues &rarr;</a>
+              <a href="#workforce" class="btn btn--small">Register workforce member &rarr;</a>
               <div class="settings-help-callout">
                 <strong>Tip:</strong> Capability assignments on workforce members must match the capabilities required by queues for automatic routing to work. Mismatches are flagged in the Queues screen.
               </div>
@@ -6391,7 +6360,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
 
         <!-- Confirmation Modal (H3, H5) -->
         <div class="confirm-backdrop" id="confirmBackdrop" hidden></div>
-        <div class="confirm-modal" id="confirmModal" hidden>
+        <div class="confirm-modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
           <div class="confirm-modal__icon" id="confirmIcon"></div>
           <div class="confirm-modal__title" id="confirmTitle">Are you sure?</div>
           <div class="confirm-modal__body" id="confirmBody">This action cannot be undone.</div>
@@ -9598,7 +9567,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 Tier:
                 <span
                   class="tier-badge"
-                  data-tooltip="This action runs automatically — no human approval required"
+                  title="This action runs automatically — no human approval required"
                   >Auto</span
                 >
                 &nbsp;|&nbsp; Dispatched: 2026-02-18 14:02
@@ -10641,7 +10610,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
       <!-- ============================================================
            RIGHT DRAWER (Correlation / Context)
            ============================================================ -->
-      <aside class="drawer" id="drawer" role="complementary" aria-label="Correlation drawer">
+      <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
         <div class="drawer__header">
           <div class="drawer__title" id="drawerTitle">Context</div>
           <button class="drawer__close" id="drawerClose" aria-label="Close drawer" type="button">
@@ -10697,7 +10666,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <span>Offline &mdash; data unavailable</span>
           <button class="statusbar__hint-btn" type="button" style="margin-left: 4px">Retry</button>
         </span>
-        <span class="statusbar__item statusbar__toast js-kbd-toast" hidden></span>
+        <span class="statusbar__item statusbar__toast js-kbd-toast" aria-live="polite" role="status" hidden></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
           <button
             class="statusbar__hint-btn js-open-palette"
