@@ -68,3 +68,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/procurement-spend/in-memory-procurement-spend-adapter.ts`.
+
+## HrisHcm Adapter Foundation (bead-0092)
+
+- Application port contract now includes `HrisHcmAdapterPort` under
+  `src/application/ports/hris-hcm-adapter.ts`.
+- The operation set is fixed to the 12 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `HrisHcm` family.
+- Execute response contract:
+  - success: canonical `Party`, `Party[]`, `Subscription[]`, `ExternalObjectRef`,
+    `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/hris-hcm/in-memory-hris-hcm-adapter.ts`.

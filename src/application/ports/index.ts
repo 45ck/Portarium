@@ -19,3 +19,4 @@ export * from './evidence-payload-store.js';
 export * from './finance-accounting-adapter.js';
 export * from './payments-billing-adapter.js';
 export * from './procurement-spend-adapter.js';
+export * from './hris-hcm-adapter.js';
