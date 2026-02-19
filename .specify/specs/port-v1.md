@@ -214,3 +214,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/comms-collaboration/in-memory-comms-collaboration-adapter.ts`.
+
+## ProjectsWorkMgmt Adapter Foundation (bead-0132)
+
+- Application port contract now includes `ProjectsWorkMgmtAdapterPort` under
+  `src/application/ports/projects-work-mgmt-adapter.ts`.
+- The operation set is fixed to the 21 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `ProjectsWorkMgmt` family.
+- Execute response contract:
+  - success: canonical `Task`, `Task[]`, `ExternalObjectRef`,
+    `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/projects-work-mgmt/in-memory-projects-work-mgmt-adapter.ts`.

@@ -16,3 +16,4 @@ export * from './adapters/secrets-vaulting/in-memory-secrets-vaulting-adapter.js
 export * from './adapters/marketing-automation/in-memory-marketing-automation-adapter.js';
 export * from './adapters/ads-platforms/in-memory-ads-platforms-adapter.js';
 export * from './adapters/comms-collaboration/in-memory-comms-collaboration-adapter.js';
+export * from './adapters/projects-work-mgmt/in-memory-projects-work-mgmt-adapter.js';
