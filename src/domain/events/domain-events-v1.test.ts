@@ -70,6 +70,20 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.eventType).toBe('WorkforceMemberRegistered');
     expect(evt.aggregateKind).toBe('WorkforceMember');
   });
+
+  it('parses human task lifecycle event types', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-human-task-1',
+      eventType: 'HumanTaskCreated',
+      aggregateKind: 'HumanTask',
+      aggregateId: 'ht-1',
+      payload: { runId: 'run-1' },
+    });
+
+    expect(evt.eventType).toBe('HumanTaskCreated');
+    expect(evt.aggregateKind).toBe('HumanTask');
+  });
 });
 
 describe('parseDomainEventV1: validation', () => {

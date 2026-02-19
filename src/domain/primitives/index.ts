@@ -223,6 +223,9 @@ export type WorkforceMemberId = Branded<string, 'WorkforceMemberId'>;
 /** Unique identifier for a workforce queue. */
 export type WorkforceQueueId = Branded<string, 'WorkforceQueueId'>;
 
+/** Unique identifier for a human task. */
+export type HumanTaskId = Branded<string, 'HumanTaskId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -298,6 +301,7 @@ export const WorkforceMemberId = (value: string): WorkforceMemberId =>
   brand<string, 'WorkforceMemberId'>(value);
 export const WorkforceQueueId = (value: string): WorkforceQueueId =>
   brand<string, 'WorkforceQueueId'>(value);
+export const HumanTaskId = (value: string): HumanTaskId => brand<string, 'HumanTaskId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

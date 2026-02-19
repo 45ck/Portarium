@@ -136,18 +136,26 @@ function parseCapabilities(value: unknown): readonly WorkforceCapability[] {
   }
 
   const parsed = value.map((raw, i) => {
-    if (typeof raw !== 'string' || raw.trim() === '') {
-      throw new WorkforceMemberParseError(`capabilities[${i}] must be a non-empty string.`);
-    }
-    if (!(WORKFORCE_CAPABILITY_VOCAB as readonly string[]).includes(raw)) {
-      throw new WorkforceMemberParseError(
-        `capabilities[${i}] must be in controlled vocab: ${WORKFORCE_CAPABILITY_VOCAB.join(', ')}.`,
-      );
-    }
-    return raw as WorkforceCapability;
+    return parseWorkforceCapabilityV1(raw, `capabilities[${i}]`, WorkforceMemberParseError);
   });
 
   return dedupeCapabilities(parsed);
+}
+
+export function parseWorkforceCapabilityV1<E extends Error>(
+  raw: unknown,
+  pathLabel: string,
+  ErrorType: new (message: string) => E,
+): WorkforceCapability {
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    throw new ErrorType(`${pathLabel} must be a non-empty string.`);
+  }
+  if (!(WORKFORCE_CAPABILITY_VOCAB as readonly string[]).includes(raw)) {
+    throw new ErrorType(
+      `${pathLabel} must be in controlled vocab: ${WORKFORCE_CAPABILITY_VOCAB.join(', ')}.`,
+    );
+  }
+  return raw as WorkforceCapability;
 }
 
 function dedupeCapabilities(value: readonly WorkforceCapability[]): readonly WorkforceCapability[] {

@@ -12,6 +12,7 @@ import {
   EvidenceId,
   EffectId,
   GatewayId,
+  HumanTaskId,
   HashSha256,
   LocationEventId,
   MapLayerId,
@@ -90,6 +91,7 @@ describe('domain primitives', () => {
       GatewayId,
       WorkforceMemberId,
       WorkforceQueueId,
+      HumanTaskId,
     ];
 
     for (const factory of factories) {
