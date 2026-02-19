@@ -86,7 +86,7 @@
 {"id":"bead-0086","title":"PaymentsBilling port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:30.666Z","updatedAt":"2026-02-19T03:03:21.962Z"}
 {"id":"bead-0087","title":"Review: PaymentsBilling port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:30.998Z","updatedAt":"2026-02-19T03:06:53.558Z"}
 {"id":"bead-0088","title":"ProcurementSpend port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:31.274Z","updatedAt":"2026-02-19T03:12:00.482Z"}
-{"id":"bead-0089","title":"Code review: ProcurementSpend port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:31.551Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0089","title":"Code review: ProcurementSpend port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:31.551Z","updatedAt":"2026-02-19T03:13:27.728Z"}
 {"id":"bead-0090","title":"ProcurementSpend port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:31.822Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0091","title":"Review: ProcurementSpend port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:32.086Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0092","title":"HrisHcm port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:32.351Z","updatedAt":"2026-02-17T20:18:23.090Z"}

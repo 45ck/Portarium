@@ -2331,48 +2331,56 @@ function main() {
 
   /* ---- WF-3: Workforce card click handler ---- */
   var WORKFORCE_DATA = [
-    { name: 'Alice Martinez', letter: 'A', email: 'alice@acme.com', availability: 'available' },
-    { name: 'Bob Chen', letter: 'B', email: 'bob@acme.com', availability: 'busy' },
-    { name: 'Carol Davis', letter: 'C', email: 'carol@acme.com', availability: 'available' },
-    { name: 'Dave Wilson', letter: 'D', email: 'dave@acme.com', availability: 'offline' },
+    { name: 'Alice Martinez', letter: 'A', email: 'alice.martinez@acme.com', availability: 'available', role: 'approver' },
+    { name: 'Bob Chen',       letter: 'B', email: 'bob.chen@acme.com',       availability: 'busy',      role: 'operator' },
+    { name: 'Carol Davis',    letter: 'C', email: 'carol.davis@acme.com',    availability: 'available', role: 'admin'    },
+    { name: 'Dan Park',       letter: 'D', email: 'dan.park@acme.com',       availability: 'offline',   role: 'auditor'  },
   ];
+  var AVAIL_LABEL = { available: 'Available', busy: 'Busy', offline: 'Offline' };
   document.addEventListener('click', function (e) {
     var card = e.target.closest('.workforce-card');
     if (!card) return;
-    document.querySelectorAll('.workforce-card').forEach(function (c) {
+    /* Ignore clicks that are inside the queues screen — those are queue-cards */
+    if (e.target.closest('[data-screen="queues"]')) return;
+    document.querySelectorAll('[data-screen="workforce"] .workforce-card').forEach(function (c) {
       c.classList.remove('workforce-card--selected');
     });
     card.classList.add('workforce-card--selected');
-    var allCards = Array.from(document.querySelectorAll('.workforce-card'));
+    var allCards = Array.from(document.querySelectorAll('[data-screen="workforce"] .workforce-card'));
     var idx = allCards.indexOf(card);
-    var member = card.dataset.member;
-    var data = null;
-    if (member) {
-      for (var i = 0; i < WORKFORCE_DATA.length; i++) {
-        if (WORKFORCE_DATA[i].name.split(' ')[0].toLowerCase() === member) {
-          data = WORKFORCE_DATA[i];
-          break;
-        }
-      }
-    }
-    if (!data && idx >= 0 && idx < WORKFORCE_DATA.length) data = WORKFORCE_DATA[idx];
+    var data = (idx >= 0 && idx < WORKFORCE_DATA.length) ? WORKFORCE_DATA[idx] : null;
     if (!data) return;
-    var panel = document.querySelector('.workforce-detail') || document.querySelector('.member-detail');
+    var panel = document.querySelector('[data-screen="workforce"] .workforce-detail');
     if (!panel) return;
-    var nameEl = panel.querySelector('.workforce-detail__name, .member-detail__name, .detail__name');
+    /* Header */
+    var nameEl = panel.querySelector('.workforce-detail__name');
     if (nameEl) nameEl.textContent = data.name;
-    var avatarEl = panel.querySelector('.avatar__letter, .workforce-detail__avatar-letter');
+    var avatarEl = panel.querySelector('.workforce-detail__avatar');
     if (avatarEl) avatarEl.textContent = data.letter;
-    var dotEl = panel.querySelector('.availability-dot');
+    var dotEl = document.getElementById('wfDetailDot');
     if (dotEl) dotEl.className = 'availability-dot availability-dot--' + data.availability;
-    var emailEl = panel.querySelector('.workforce-detail__email, .member-detail__email, a[href^="mailto:"]');
-    if (emailEl) {
-      emailEl.textContent = data.email;
-      if (emailEl.tagName === 'A') emailEl.href = 'mailto:' + data.email;
-    }
+    var availText = document.getElementById('wfDetailAvailText');
+    if (availText) availText.textContent = AVAIL_LABEL[data.availability] || data.availability;
+    var emailEl = panel.querySelector('.workforce-detail__email');
+    if (emailEl) emailEl.textContent = data.email;
+    /* Overview grid */
+    var gridName = document.getElementById('wfDetailGridName');
+    if (gridName) gridName.textContent = data.name;
+    var gridEmail = document.getElementById('wfDetailGridEmail');
+    if (gridEmail) gridEmail.textContent = data.email;
+    var gridRole = document.getElementById('wfDetailGridRole');
+    if (gridRole) gridRole.textContent = data.role;
+    /* Edit capabilities button aria-label */
+    var editBtn = panel.querySelector('.js-workforce-edit-btn');
+    if (editBtn) editBtn.setAttribute('aria-label', 'Edit capabilities for ' + data.name);
   });
 
   /* ---- WF-4: Queue card click handler ---- */
+  var QUEUE_DATA = {
+    'Finance Queue':  { strategy: 'least-busy',   cap: 'finance-review',  memberCount: 4, pendingCount: 2 },
+    'Legal Queue':    { strategy: 'round-robin',   cap: 'legal-review',    memberCount: 2, pendingCount: 1 },
+    'General Queue':  { strategy: 'manual',        cap: null,              memberCount: 6, pendingCount: 0 },
+  };
   document.addEventListener('click', function (e) {
     var card = e.target.closest('.queue-card');
     if (!card) return;
@@ -2380,13 +2388,26 @@ function main() {
       c.classList.remove('queue-card--selected');
     });
     card.classList.add('queue-card--selected');
-    var heading = card.querySelector('h3, h4, .queue-card__name, .queue-card__title');
-    var queueName = heading ? heading.textContent.trim() : 'Queue';
-    var detailPanel = document.querySelector('.queue-detail') || document.querySelector('.detail-panel');
-    if (detailPanel) {
-      var titleEl = detailPanel.querySelector('.queue-detail__title, .detail-panel__title, h3');
-      if (titleEl) titleEl.textContent = queueName;
+    var nameEl = card.querySelector('.queue-card__name');
+    var queueName = nameEl ? nameEl.textContent.trim() : 'Queue';
+    var qd = QUEUE_DATA[queueName];
+    var panel = document.querySelector('[data-screen="queues"] .workforce-detail');
+    if (!panel || !qd) return;
+    /* Title row */
+    var titleDiv = panel.querySelector('div[style*="font-weight: 700"]');
+    if (titleDiv) titleDiv.textContent = queueName;
+    /* Strategy / capability subtitle */
+    var subtitleDiv = panel.querySelector('div[style*="color: var(--muted)"]');
+    if (subtitleDiv) {
+      subtitleDiv.innerHTML = 'Strategy: <strong>' + qd.strategy + '</strong>'
+        + (qd.cap ? ' | Required capability: <strong>' + qd.cap + '</strong>' : ' | No capability required');
     }
+    /* Member count label */
+    var memberLabel = panel.querySelector('.subtle[style*="text-transform: uppercase"]');
+    if (memberLabel) memberLabel.textContent = 'Members (' + qd.memberCount + ')';
+    /* Pending tasks label */
+    var pendingLabels = panel.querySelectorAll('.subtle[style*="text-transform: uppercase"]');
+    if (pendingLabels[1]) pendingLabels[1].textContent = 'Pending HumanTasks (' + qd.pendingCount + ')';
   });
 
   /* ---- G-1: Chip Space/Enter keydown delegate ---- */

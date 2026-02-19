@@ -2002,7 +2002,7 @@
                     >
                   </td>
                   <td></td>
-                  <td>Unassigned</td>
+                  <td><span class="chip chip--small">Unassigned</span></td>
                   <td>1h</td>
                   <td><span class="sla-badge" title="Due in 23h">Due 23h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -10353,8 +10353,8 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <div class="workforce-detail__name">Alice Martinez</div>
                   <div class="workforce-detail__email">alice.martinez@acme.com</div>
                   <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
-                    <span class="availability-dot availability-dot--available"></span>
-                    <span style="font-size: 12px">Available</span>
+                    <span class="availability-dot availability-dot--available" id="wfDetailDot"></span>
+                    <span style="font-size: 12px" id="wfDetailAvailText">Available</span>
                     <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer">
                       <input
                         type="checkbox"
