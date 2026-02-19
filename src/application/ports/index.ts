@@ -14,6 +14,7 @@ export * from './unit-of-work.js';
 export * from './workspace-store.js';
 export * from './event-publisher.js';
 export * from './machine-invoker.js';
+export * from './mission-port.js';
 export * from './action-runner.js';
 export * from './outbox.js';
 export * from './evidence-payload-store.js';
