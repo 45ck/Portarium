@@ -71,6 +71,20 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.aggregateKind).toBe('WorkforceMember');
   });
 
+  it('parses workforce assignment event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-workforce-assign-1',
+      eventType: 'WorkforceMemberAssigned',
+      aggregateKind: 'HumanTask',
+      aggregateId: 'ht-1',
+      payload: { workforceMemberId: 'wm-1' },
+    });
+
+    expect(evt.eventType).toBe('WorkforceMemberAssigned');
+    expect(evt.aggregateKind).toBe('HumanTask');
+  });
+
   it('parses human task lifecycle event types', () => {
     const evt = parseDomainEventV1({
       ...BASE,

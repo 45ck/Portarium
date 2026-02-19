@@ -78,6 +78,7 @@ export type DomainEventType =
   | 'WorkforceMemberRegistered'
   | 'WorkforceMemberCapabilityUpdated'
   | 'WorkforceMemberAvailabilityChanged'
+  | 'WorkforceMemberAssigned'
   | 'HumanTaskCreated'
   | 'HumanTaskAssigned'
   | 'HumanTaskCompleted'
@@ -194,6 +195,7 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'WorkforceMemberRegistered',
   'WorkforceMemberCapabilityUpdated',
   'WorkforceMemberAvailabilityChanged',
+  'WorkforceMemberAssigned',
   'HumanTaskCreated',
   'HumanTaskAssigned',
   'HumanTaskCompleted',
