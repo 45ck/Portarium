@@ -111,3 +111,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/crm-sales/in-memory-crm-sales-adapter.ts`.
+
+## CustomerSupport Adapter Foundation (bead-0104)
+
+- Application port contract now includes `CustomerSupportAdapterPort` under
+  `src/application/ports/customer-support-adapter.ts`.
+- The operation set is fixed to the 15 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `CustomerSupport` family.
+- Execute response contract:
+  - success: canonical `Ticket`, `Ticket[]`, `Party[]`, `Document`, `Document[]`,
+    `ExternalObjectRef`, `ExternalObjectRef[]`, `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/customer-support/in-memory-customer-support-adapter.ts`.
