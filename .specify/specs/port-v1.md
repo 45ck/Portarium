@@ -170,3 +170,18 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/secrets-vaulting/in-memory-secrets-vaulting-adapter.ts`.
+
+## MarketingAutomation Adapter Foundation (bead-0120)
+
+- Application port contract now includes `MarketingAutomationAdapterPort` under
+  `src/application/ports/marketing-automation-adapter.ts`.
+- The operation set is fixed to the 18 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `MarketingAutomation` family.
+- Execute response contract:
+  - success: canonical `Party`, `Party[]`, `Campaign`, `Campaign[]`,
+    `ExternalObjectRef`, `ExternalObjectRef[]`, `accepted`, or `opaque`
+    result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/marketing-automation/in-memory-marketing-automation-adapter.ts`.

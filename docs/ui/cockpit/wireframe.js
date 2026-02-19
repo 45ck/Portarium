@@ -1462,6 +1462,11 @@ var WF_TEMPLATE_META = {
   },
 };
 
+function setWorkflowBuilderMessage(message) {
+  var el = document.getElementById('wfBuilderMessage');
+  if (el) el.textContent = message;
+}
+
 function syncWorkflowConfigFromNode(node) {
   if (!node) return;
   var configPanel = document.getElementById('wfConfig');
@@ -1470,8 +1475,10 @@ function syncWorkflowConfigFromNode(node) {
   var nodeName = nameEl ? nameEl.textContent : 'Step';
   var configTitle = configPanel.querySelector('.wf-config__title');
   var configSubtitle = configPanel.querySelector('.wf-config__subtitle');
+  var stepNameInput = configPanel.querySelector('.field__input[type="text"]');
   if (configTitle) configTitle.textContent = nodeName;
   if (configSubtitle) configSubtitle.textContent = 'Configure step: ' + (node.dataset.nodeId || '');
+  if (stepNameInput) stepNameInput.value = nodeName;
 }
 
 function activateWorkflowTemplate(templateId) {
@@ -1494,7 +1501,8 @@ function activateWorkflowTemplate(templateId) {
   var noteEl = document.querySelector('.js-wf-template-note');
   if (noteEl) noteEl.textContent = meta.note;
 
-  qsa('.wf-node').forEach(function (n) {
+  var canvas = document.getElementById('wfCanvas');
+  qsa('.wf-node', canvas || document).forEach(function (n) {
     n.classList.remove('wf-node--selected');
   });
   var firstNode =
@@ -1503,7 +1511,16 @@ function activateWorkflowTemplate(templateId) {
   if (firstNode) {
     firstNode.classList.add('wf-node--selected');
     syncWorkflowConfigFromNode(firstNode);
+    setWorkflowBuilderMessage('Template loaded: ' + meta.subtitle);
   }
+}
+
+function setSelectedNodeInGraph(node, graph) {
+  if (!node || !graph) return;
+  qsa('.wf-node', graph).forEach(function (n) {
+    n.classList.remove('wf-node--selected');
+  });
+  node.classList.add('wf-node--selected');
 }
 
 document.addEventListener('click', function (e) {
@@ -1513,17 +1530,33 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  var stepTypeBtn = e.target.closest('[data-step-type]');
+  if (stepTypeBtn) {
+    var stepNameEl = stepTypeBtn.querySelector('.wf-palette__item-name');
+    var stepName = stepNameEl ? stepNameEl.textContent : 'Step';
+    setWorkflowBuilderMessage(
+      'Draft step queued: ' + stepName + '. Node drag/drop is next for this low-fi prototype.',
+    );
+    return;
+  }
+
   var node = e.target.closest('.wf-node');
   if (!node) return;
 
-  var activeGraph = document.querySelector('.wf-template-graph:not([hidden])');
-  if (activeGraph && !activeGraph.contains(node)) return;
+  var canvas = document.getElementById('wfCanvas');
+  var inBuilderCanvas = canvas && canvas.contains(node);
+  if (inBuilderCanvas) {
+    var activeGraph = canvas.querySelector('.wf-template-graph:not([hidden])');
+    if (activeGraph && !activeGraph.contains(node)) return;
+    setSelectedNodeInGraph(node, activeGraph || canvas);
+    syncWorkflowConfigFromNode(node);
+    setWorkflowBuilderMessage('Selected step: ' + (node.dataset.nodeId || 'step'));
+    return;
+  }
 
-  qsa('.wf-node').forEach(function (n) {
-    n.classList.remove('wf-node--selected');
-  });
-  node.classList.add('wf-node--selected');
-  syncWorkflowConfigFromNode(node);
+  var graph = node.closest('.wf-graph');
+  if (!graph) return;
+  setSelectedNodeInGraph(node, graph);
 });
 
 /* ============================================================
