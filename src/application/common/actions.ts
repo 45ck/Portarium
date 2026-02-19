@@ -4,6 +4,7 @@ export const APP_ACTIONS = {
   workItemRead: 'work-item:read',
   runStart: 'run:start',
   workforceAssign: 'workforce:assign',
+  workforceComplete: 'workforce:complete',
   workspaceRegister: 'workspace:register',
   workspaceRead: 'workspace:read',
 } as const;

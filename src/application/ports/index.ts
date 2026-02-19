@@ -22,6 +22,7 @@ export * from './evidence-log.js';
 export * from './workforce-member-store.js';
 export * from './human-task-store.js';
 export * from './workforce-queue-store.js';
+export * from './run-resumer.js';
 export * from './finance-accounting-adapter.js';
 export * from './payments-billing-adapter.js';
 export * from './procurement-spend-adapter.js';
