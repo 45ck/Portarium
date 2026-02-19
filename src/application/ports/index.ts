@@ -32,3 +32,4 @@ export * from './comms-collaboration-adapter.js';
 export * from './projects-work-mgmt-adapter.js';
 export * from './documents-esign-adapter.js';
 export * from './analytics-bi-adapter.js';
+export * from './monitoring-incident-adapter.js';
