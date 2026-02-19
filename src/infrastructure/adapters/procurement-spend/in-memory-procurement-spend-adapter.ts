@@ -44,7 +44,6 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
   readonly #rfqs: ExternalObjectRef[];
   #orderSequence: number;
   #vendorSequence: number;
-  #contractSequence: number;
   #expenseSequence: number;
   #rfqSequence: number;
 
@@ -57,7 +56,6 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
     this.#rfqs = [...(params?.seed?.rfqs ?? [])];
     this.#orderSequence = this.#purchaseOrders.length;
     this.#vendorSequence = this.#vendors.length;
-    this.#contractSequence = this.#contracts.length;
     this.#expenseSequence = this.#expenseReports.length;
     this.#rfqSequence = this.#rfqs.length;
   }
