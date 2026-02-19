@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document tracks the canonical object parser contracts that are implemented in-domain for VAOP v1.
+This document tracks the canonical object parser contracts that are implemented in-domain for Portarium v1.
 Every object uses:
 
 - `schemaVersion: 1`

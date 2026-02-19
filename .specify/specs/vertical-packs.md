@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide a governed extension mechanism where the Portarium (VAOP) core remains a horizontal control plane, and vertical/domain-specific behavior ships as **versioned, declarative packs**.
+Provide a governed extension mechanism where the Portarium core remains a horizontal control plane, and vertical/domain-specific behavior ships as **versioned, declarative packs**.
 
 ## Terms
 

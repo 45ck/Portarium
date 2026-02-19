@@ -7,6 +7,8 @@ import type {
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 
+export const PORTARIUM_TELEMETRY_NAMESPACE = 'com.portarium' as const;
+
 export type CloudEventInput = Readonly<{
   source: string;
   eventType: string;
@@ -29,7 +31,7 @@ export function domainEventToCloudEventsType(
   event: Pick<DomainEventV1, 'aggregateKind' | 'eventType'>,
 ): string {
   const namespace = event.aggregateKind.toLowerCase().replace(/\s+/g, '-');
-  return `com.portarium.${namespace}.${event.eventType}`;
+  return `${PORTARIUM_TELEMETRY_NAMESPACE}.${namespace}.${event.eventType}`;
 }
 
 /**

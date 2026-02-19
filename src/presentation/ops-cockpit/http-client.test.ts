@@ -269,7 +269,7 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
 describe('ControlPlaneClient error response handling', () => {
   it('throws ProblemDetailsError when server returns RFC 9457 Problem Details', async () => {
     const problem = {
-      type: 'https://portarium.io/errors/approval-not-found',
+      type: 'https://portarium.dev/problems/approval-not-found',
       title: 'Approval Not Found',
       status: 404,
       detail: 'No approval with id appr-99 found',
@@ -281,7 +281,7 @@ describe('ControlPlaneClient error response handling', () => {
     expect(error).toBeInstanceOf(ProblemDetailsError);
     expect((error as ProblemDetailsError).status).toBe(404);
     expect((error as ProblemDetailsError).problem.type).toBe(
-      'https://portarium.io/errors/approval-not-found',
+      'https://portarium.dev/problems/approval-not-found',
     );
     expect((error as ProblemDetailsError).problem.detail).toBe('No approval with id appr-99 found');
   });

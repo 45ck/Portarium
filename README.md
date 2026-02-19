@@ -4,9 +4,9 @@ Open-source, multi-tenant control plane for governable business operations.
 
 Portarium orchestrates durable workflows across your existing tools (ERP, CRM, helpdesk, marketing, HR, IT ops, and more), enforcing policy, approvals, and audit trails -- so every action is tiered by risk, every run is observable, and every outcome is defensible.
 
-## Architecture (VAOP)
+## Architecture
 
-Portarium implements the **VAOP** (Vertical Autonomous Operations Provider) architecture:
+Portarium implements a Vertical Autonomous Operations control-plane architecture:
 
 - **18 port families** covering finance, payments, procurement, HR, CRM, support, ITSM, IAM, marketing, ads, comms, projects, documents, analytics, monitoring, compliance, and more
 - **14 canonical objects** (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account, ExternalObjectRef) for cross-system workflows

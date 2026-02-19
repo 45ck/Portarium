@@ -5,7 +5,7 @@ import { isProblemDetails, parseProblemDetails, ProblemDetailsError } from './pr
 describe('Problem Details parsing and mapping', () => {
   it('accepts RFC 9457-like payloads', () => {
     const value = {
-      type: 'https://control-plane/errors/rate-limited',
+      type: 'https://portarium.dev/problems/rate-limited',
       title: 'Rate limited',
       status: 429,
       detail: 'Try again later',
@@ -27,7 +27,7 @@ describe('Problem Details parsing and mapping', () => {
 
   it('throws ProblemDetailsError only through runtime constructor flow', () => {
     const details = {
-      type: 'https://control-plane/errors/forbidden',
+      type: 'https://portarium.dev/problems/forbidden',
       title: 'Forbidden',
       status: 403,
     };

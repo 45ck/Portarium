@@ -1,11 +1,11 @@
-# VAOP Specification Memory — Constitution
+# Portarium Specification Memory — Constitution
 
-This file captures the foundational rules and constraints that govern VAOP specifications.
+This file captures the foundational rules and constraints that govern Portarium specifications.
 Speckit agents must consult this before generating or validating specs.
 
 ## Core invariants
 
-1. **VAOP is a control plane, not a System of Record.** It coordinates; SoRs own truth.
+1. **Portarium is a control plane, not a System of Record.** It coordinates; SoRs own truth.
 2. **Approvals are native and non-negotiable.** Never delegate approval governance to an external system.
 3. **Evidence is append-only and tamper-evident.** Immutable metadata is never mutated or deleted; payloads/artifacts are retention-managed and may be destroyed or de-identified under policy/legal-hold rules while preserving the metadata chain.
 4. **Tenant isolation is first-class.** No cross-tenant data leakage under any circumstance.

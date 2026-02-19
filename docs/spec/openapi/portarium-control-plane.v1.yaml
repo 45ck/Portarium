@@ -3,7 +3,7 @@ info:
   title: Portarium Control Plane API
   version: 1.0.0
   description: |
-    Portarium is an API-first, multi-tenant control plane (VAOP) for governable business operations.
+    Portarium is an API-first, multi-tenant control plane for governable business operations.
 
     This document defines the v1 HTTP contract for core control plane resources, starting with:
     - Workspaces (tenant boundary)

@@ -1,5 +1,5 @@
 /**
- * Branded-type helpers and VAOP domain primitives.
+ * Branded-type helpers and Portarium domain primitives.
  *
  * A branded type is a TypeScript pattern that prevents accidental mixing of
  * structurally identical types (e.g., passing a TenantId where a WorkspaceId
@@ -33,7 +33,7 @@ export function unbrand<T>(branded: Branded<T, string>): T {
 }
 
 // ---------------------------------------------------------------------------
-// VAOP domain primitives
+// Portarium domain primitives
 // ---------------------------------------------------------------------------
 
 /**

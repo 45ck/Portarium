@@ -1,4 +1,4 @@
-# VAOP MVP: Domain Atlas Research Programme
+# Portarium MVP: Domain Atlas Research Programme
 
 ## Objective
 
@@ -6,7 +6,7 @@ Portarium's MVP problem is operating external Systems of Record (SoRs) safely, n
 
 ## Deliverables (MVP)
 
-The research programme produces artefacts that become VAOP primitives:
+The research programme produces artefacts that become Portarium primitives:
 
 - **Source manifests**: upstream location + pinned commit/version + licence classification.
 - **CIF snapshots**: neutral domain extracts (entities/fields/relationships/lifecycles/actions/events/extension points).
