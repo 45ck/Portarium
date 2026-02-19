@@ -105,3 +105,43 @@ When [Detail →] is clicked:
 
 "No robots enrolled. Enrol your first robot to start dispatching missions."
 CTA: [Enrol robot]
+
+---
+
+## Addendum: Location Map Prototype (Lo-Fi)
+
+**Beads:** bead-0563, bead-0565, bead-0555, bead-0556, bead-0566, bead-0559  
+**Date:** 2026-02-19  
+**Scope:** Presentation-only prototype in `docs/ui/cockpit`
+
+### What was added
+
+1. `Robots > Operations Map` became the default first view.
+2. Two-pane operations surface:
+   - Left: map with occupancy, geofences, robot markers, trails, uncertainty halos, and cluster badges.
+   - Right: synchronized list equivalent for keyboard/assistive use.
+3. Spatial alert triage panel:
+   - geofence violation
+   - localization-quality drop
+   - E-Stop active
+   - each supports `Jump` and `Acknowledge`.
+4. Details-on-demand panel:
+   - selected robot identity, status, location, quality, frame path, mission, freshness.
+5. Playback controls:
+   - `Live`, step back, play/pause timeline scrubber, incident bookmarks.
+6. Degraded-state map banner for stale telemetry.
+
+### Nielsen heuristic alignment
+
+| Heuristic | Map prototype response |
+| --- | --- |
+| Visibility of system status | Live/replay label, freshness text, stale-data banner, critical badges |
+| Match with real world | Site/floor/zone language, map frame text, geofence labels |
+| User control and freedom | Layer toggles, status filters, live/replay switching, jump from alert to map |
+| Consistency and standards | Existing chip/status/card patterns reused |
+| Error prevention | Critical alerts separated, acknowledgment explicit, details panel includes "why this matters" |
+| Recognition over recall | Synchronized list + map selection, legend always visible |
+| Flexibility and efficiency | Keyboard route: `g r`; map quick keys: `m`, `l`, `[` |
+| Aesthetic/minimalist | Overview-first with progressive disclosure instead of full telemetry walls |
+| Error recovery | Jump-to-location from alert, replay bookmarks for incident review |
+| Help/documentation | Inline policy callout and labels for uncertainty/frame context |

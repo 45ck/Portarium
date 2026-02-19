@@ -21,12 +21,25 @@ Then open `http://localhost:4174`.
 
 - Use the left nav to switch screens:
   - Inbox, Project Overview, Work Items, Work Item Detail, Run Detail, Approvals, Evidence, Settings
+  - Robotics: Robots (Operations Map), Missions, Safety, Gateways
 - Use the top controls to simulate:
   - Persona defaults (Operator / Approver / Auditor / Admin)
   - Workspace type (Solo / Team)
   - System state (Normal / Empty / Misconfigured / Policy blocked / RBAC limited / Degraded realtime)
 - Click correlation links, SoR ref chips, or the "Context" button to open the right drawer.
 - The status bar at the bottom shows Run progress, chain integrity, and event stream health.
+
+## Robotics Map Prototype Highlights
+
+- `Robots` now defaults to `Operations Map` (overview-first map + synchronized list).
+- Map controls include:
+  - Site/floor filters
+  - Status filter chips
+  - Layer toggles (occupancy, geofences, trails, uncertainty, clusters)
+  - Live/replay timeline with incident bookmarks
+- Alert triage includes map jump and acknowledge actions.
+- Details-on-demand panel updates from map/list/alert selection.
+- Degraded realtime state shows a map staleness banner.
 
 ## Domain Primitives Rendered
 

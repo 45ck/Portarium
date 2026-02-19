@@ -98,6 +98,16 @@ For each primary screen, show dedicated state components for:
 - No critical state represented by color alone.
 - Master-detail screens must keep detail content synchronized with the selected row/card across all visible tabs.
 
+### R8 Location map operations (prototype scope)
+
+- Cockpit Robots surface must provide an overview-first location map with synchronized non-map list.
+- Operators must be able to filter by site/floor/status and search by asset/robot identifier.
+- Details-on-demand panel must show selected robot state, location quality, frame context, and mission link.
+- Spatial alert triage must support jump-to-location and acknowledgment actions.
+- Uncertainty overlays, clustering, and short-window trail visibility must be user-toggleable.
+- Timeline controls must support live mode and replay mode with incident bookmarks.
+- Degraded realtime state must show explicit stale-data messaging on the map surface.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.
