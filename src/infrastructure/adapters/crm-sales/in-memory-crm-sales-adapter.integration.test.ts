@@ -105,13 +105,12 @@ describe('InMemoryCrmSalesAdapter integration', () => {
     expect(activity.ok).toBe(true);
     if (!activity.ok || activity.result.kind !== 'task') return;
     expect(activity.result.task.status).toBe('in_progress');
+    const activityId = activity.result.task.canonicalTaskId;
 
     const activities = await adapter.execute({ tenantId: TENANT, operation: 'listActivities' });
     expect(activities.ok).toBe(true);
     if (!activities.ok || activities.result.kind !== 'tasks') return;
-    expect(
-      activities.result.tasks.some((task) => task.canonicalTaskId === activity.result.task.canonicalTaskId),
-    ).toBe(true);
+    expect(activities.result.tasks.some((task) => task.canonicalTaskId === activityId)).toBe(true);
 
     const note = await adapter.execute({
       tenantId: TENANT,
@@ -121,13 +120,12 @@ describe('InMemoryCrmSalesAdapter integration', () => {
     expect(note.ok).toBe(true);
     if (!note.ok || note.result.kind !== 'document') return;
     expect(note.result.document.createdAtIso).toBe('2026-02-19T00:00:00.000Z');
+    const noteId = note.result.document.documentId;
 
     const notes = await adapter.execute({ tenantId: TENANT, operation: 'listNotes' });
     expect(notes.ok).toBe(true);
     if (!notes.ok || notes.result.kind !== 'documents') return;
-    expect(notes.result.documents.some((doc) => doc.documentId === note.result.document.documentId)).toBe(
-      true,
-    );
+    expect(notes.result.documents.some((doc) => doc.documentId === noteId)).toBe(true);
   });
 
   it('returns validation errors for missing required identifiers', async () => {
