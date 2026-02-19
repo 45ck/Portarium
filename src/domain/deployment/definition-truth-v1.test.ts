@@ -44,6 +44,30 @@ describe('parseDefinitionTruthStateV1', () => {
       }),
     ).toThrow(/deploymentMode must be one of/i);
   });
+
+  it('rejects out-of-order transition timestamps', () => {
+    expect(() =>
+      parseDefinitionTruthStateV1({
+        ...VALID_STATE,
+        transitionLog: [
+          {
+            transitionedAtIso: '2026-02-19T02:00:00.000Z',
+            transitionedByUserId: 'user-1',
+            fromMode: 'GitAuthoritative',
+            toMode: 'RuntimeAuthoritative',
+            reason: 'hotfix',
+          },
+          {
+            transitionedAtIso: '2026-02-19T01:00:00.000Z',
+            transitionedByUserId: 'user-2',
+            fromMode: 'RuntimeAuthoritative',
+            toMode: 'GitAuthoritative',
+            reason: 'rollback',
+          },
+        ],
+      }),
+    ).toThrow(/must not precede/i);
+  });
 });
 
 describe('evaluateTruthDivergenceV1', () => {
@@ -122,5 +146,39 @@ describe('transitionDefinitionsTruthModeV1', () => {
         reason: 'Reconcile runtime edits into git',
       }),
     ).toThrow(/gitRef is required when transitioning to GitAuthoritative/i);
+  });
+
+  it('returns the same state when transitioning to the current mode', () => {
+    const current = parseDefinitionTruthStateV1(VALID_STATE);
+    const next = transitionDefinitionsTruthModeV1({
+      state: current,
+      toMode: 'GitAuthoritative',
+      transitionedAtIso: '2026-02-19T02:00:00.000Z',
+      transitionedByUserId: UserId('user-2'),
+      reason: 'noop',
+    });
+    expect(next).toBe(current);
+  });
+
+  it('marks Conflict when switching back to GitAuthoritative with runtime mutations', () => {
+    const current = parseDefinitionTruthStateV1({
+      ...VALID_STATE,
+      definitionsTruthMode: 'RuntimeAuthoritative',
+      runtimeHasUnappliedMutations: true,
+      divergenceStatus: 'RuntimeAhead',
+      gitRef: 'b9aa2f6',
+    });
+
+    const next = transitionDefinitionsTruthModeV1({
+      state: current,
+      toMode: 'GitAuthoritative',
+      transitionedAtIso: '2026-02-19T03:00:00.000Z',
+      transitionedByUserId: UserId('user-2'),
+      reason: 'attempted reconciliation',
+      gitRef: 'b9aa2f6',
+    });
+
+    expect(next.divergenceStatus).toBe('Conflict');
+    expect(next.transitionLog.at(-1)?.toMode).toBe('GitAuthoritative');
   });
 });
