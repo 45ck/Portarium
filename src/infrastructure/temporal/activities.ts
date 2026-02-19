@@ -8,6 +8,7 @@ import type { PlanV1, PlannedEffectV1 } from '../../domain/plan/plan-v1.js';
 import type { EffectDiffResultV1 } from '../../domain/services/diff.js';
 import type { WorkflowActionV1, WorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
+import { emitCounter } from '../observability/metrics-hooks.js';
 import {
   appendEvidenceEntryV1,
   verifyEvidenceChainV1,
@@ -36,6 +37,8 @@ export type StartRunActivityInput = Readonly<{
 }>;
 
 export function startRunActivity(input: StartRunActivityInput): Promise<void> {
+  emitCounter('portarium.run.started', { executionTier: input.executionTier });
+
   ensureRunState(input.tenantId, input.runId, 'Pending');
   transitionRun(input.tenantId, input.runId, 'Running');
 
@@ -141,6 +144,7 @@ export function completeRunActivity(input: CompleteRunActivityInput): Promise<vo
   });
 
   transitionRun(input.tenantId, input.runId, 'Succeeded');
+  emitCounter('portarium.run.succeeded');
 
   // Verify chain integrity (defensive) to keep regressions visible early.
   const chain = getEvidenceChain(input.tenantId, input.runId);

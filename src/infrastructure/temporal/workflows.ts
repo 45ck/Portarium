@@ -2,6 +2,7 @@ import { condition, defineSignal, log, proxyActivities, setHandler } from '@temp
 
 import type * as activities from './activities.js';
 import type { WorkflowV1 } from '../../domain/workflows/workflow-v1.js';
+import { redactStructuredLogObject } from '../observability/structured-log.js';
 
 export type PortariumRunWorkflowInput = Readonly<{
   runId: string;
@@ -50,7 +51,19 @@ export async function portariumRun(input: PortariumRunWorkflowInput): Promise<vo
   // Deterministic workflow boundary:
   // - Do not use Date.now(), random UUIDs, network, filesystem, or process env here.
   // - Push all non-deterministic work into activities.
-  log.info('Portarium run workflow started.', { ...input });
+  log.info(
+    'Portarium run workflow started.',
+    redactStructuredLogObject({
+      runId: input.runId,
+      tenantId: input.tenantId,
+      workflowId: input.workflowId,
+      initiatedByUserId: input.initiatedByUserId,
+      correlationId: input.correlationId,
+      traceparent: input.traceparent,
+      tracestate: input.tracestate,
+      executionTier: input.executionTier,
+    }),
+  );
 
   await startRunActivity({
     runId: input.runId,
