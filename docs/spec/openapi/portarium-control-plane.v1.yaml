@@ -1364,6 +1364,7 @@ components:
         - AnalyticsBi
         - MonitoringIncident
         - ComplianceGrc
+        - RoboticsActuation
     ExternalObjectRef:
       type: object
       additionalProperties: false
