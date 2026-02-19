@@ -179,7 +179,12 @@
            ============================================================ -->
       <main id="main" class="main" tabindex="-1">
         <!-- Banners -->
-        <div class="banner banner--warning js-banner-degraded" role="status" aria-live="polite" hidden>
+        <div
+          class="banner banner--warning js-banner-degraded"
+          role="status"
+          aria-live="polite"
+          hidden
+        >
           Realtime updates are unavailable. Showing cached data; last refreshed 2 minutes ago.
         </div>
         <div class="banner banner--danger js-banner-misconfigured" role="alert" hidden>
@@ -228,12 +233,20 @@
           </div>
 
           <div class="filters" role="group" aria-label="Filter options">
-            <span class="chip chip--active js-filter-persona" role="button" tabindex="0">Failures + blocks</span>
+            <span class="chip chip--active js-filter-persona" role="button" tabindex="0"
+              >Failures + blocks</span
+            >
             <span class="chip" role="button" tabindex="0">Assigned to me</span>
             <span class="chip js-chip-unassigned" role="button" tabindex="0">Unassigned</span>
             <span class="chip" role="button" tabindex="0">Pending approvals</span>
             <span class="chip" role="button" tabindex="0">Failed runs</span>
-            <span class="chip js-filter-human-tasks" role="button" tabindex="0" style="border-color: var(--warn); color: var(--warn)">&#9786; Human tasks</span>
+            <span
+              class="chip js-filter-human-tasks"
+              role="button"
+              tabindex="0"
+              style="border-color: var(--warn); color: var(--warn)"
+              >&#9786; Human tasks</span
+            >
             <button
               class="chip chip--clear"
               type="button"
@@ -426,13 +439,26 @@
               </article>
 
               <!-- HumanTask card — bead-0535 / bead-0536 -->
-              <article class="card js-nonempty-inbox" data-inbox-section="human-tasks" style="display: none" id="inboxHumanTasks">
-                <div class="card__title">Human Tasks <span class="nav__badge nav__badge--warn">3</span></div>
-                <div class="card__meta subtle">Tasks assigned to you or your queues requiring action</div>
+              <article
+                class="card js-nonempty-inbox"
+                data-inbox-section="human-tasks"
+                style="display: none"
+                id="inboxHumanTasks"
+              >
+                <div class="card__title">
+                  Human Tasks <span class="nav__badge nav__badge--warn">3</span>
+                </div>
+                <div class="card__meta subtle">
+                  Tasks assigned to you or your queues requiring action
+                </div>
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px">
                   <div class="human-task-card">
-                    <div class="human-task-card__context">Step 3 of 5: Legal review &mdash; WI-1099</div>
-                    <div class="human-task-card__title">Review invoice correction legal compliance</div>
+                    <div class="human-task-card__context">
+                      Step 3 of 5: Legal review &mdash; WI-1099
+                    </div>
+                    <div class="human-task-card__title">
+                      Review invoice correction legal compliance
+                    </div>
                     <div class="human-task-card__meta">
                       <a href="#run">Run R-8920</a>
                       <span>&bull;</span>
@@ -441,14 +467,28 @@
                       <span class="sla-badge sla-badge--warn">Due 3h 48m</span>
                     </div>
                     <div class="human-task-card__actions">
-                      <button class="btn btn--primary btn--small" type="button"
-                        data-confirm="complete-task" aria-label="Complete this human task">Complete</button>
-                      <button class="btn btn--small" type="button"
-                        data-confirm="escalate-task" aria-label="Escalate this human task">Escalate</button>
+                      <button
+                        class="btn btn--primary btn--small"
+                        type="button"
+                        data-confirm="complete-task"
+                        aria-label="Complete this human task"
+                      >
+                        Complete
+                      </button>
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        data-confirm="escalate-task"
+                        aria-label="Escalate this human task"
+                      >
+                        Escalate
+                      </button>
                     </div>
                   </div>
                   <div class="human-task-card">
-                    <div class="human-task-card__context">Step 2 of 4: Finance review &mdash; WI-1108</div>
+                    <div class="human-task-card__context">
+                      Step 2 of 4: Finance review &mdash; WI-1108
+                    </div>
                     <div class="human-task-card__title">Approve payroll run — March batch</div>
                     <div class="human-task-card__meta">
                       <a href="#run">Run R-8941</a>
@@ -458,10 +498,22 @@
                       <span class="sla-badge sla-badge--warn">Due 1h 12m</span>
                     </div>
                     <div class="human-task-card__actions">
-                      <button class="btn btn--primary btn--small" type="button"
-                        data-confirm="complete-task" aria-label="Complete this human task">Complete</button>
-                      <button class="btn btn--small" type="button"
-                        data-confirm="escalate-task" aria-label="Escalate this human task">Escalate</button>
+                      <button
+                        class="btn btn--primary btn--small"
+                        type="button"
+                        data-confirm="complete-task"
+                        aria-label="Complete this human task"
+                      >
+                        Complete
+                      </button>
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        data-confirm="escalate-task"
+                        aria-label="Escalate this human task"
+                      >
+                        Escalate
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1377,7 +1429,13 @@
                 <button
                   class="btn btn--small js-owner-picker-trigger"
                   type="button"
-                  style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px"
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    font-size: 12px;
+                    padding: 2px 8px;
+                  "
                   aria-label="Change owner — currently Me"
                   aria-expanded="false"
                   aria-controls="ownerPicker"
@@ -1398,7 +1456,9 @@
                       <span class="availability-dot availability-dot--available"></span>
                       <div>
                         <div class="owner-picker__name">Alice Martinez</div>
-                        <div class="owner-picker__email">alice.martinez@acme.com &bull; approver</div>
+                        <div class="owner-picker__email">
+                          alice.martinez@acme.com &bull; approver
+                        </div>
                       </div>
                     </div>
                     <div class="owner-picker__item" role="option" tabindex="-1">
@@ -1429,9 +1489,7 @@
                   title="The person who started this run cannot be the one to approve it"
                   >Different approver</span
                 >
-                <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m"
-                  >Due 3h 48m</span
-                >
+                <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m">Due 3h 48m</span>
               </div>
             </div>
             <div class="screen__actions">
@@ -1460,22 +1518,54 @@
           </div>
 
           <!-- SLA metadata card -->
-          <div class="card card--subtle" style="margin-top: 8px; padding: 10px 14px; display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px">
+          <div
+            class="card card--subtle"
+            style="
+              margin-top: 8px;
+              padding: 10px 14px;
+              display: flex;
+              gap: 24px;
+              flex-wrap: wrap;
+              font-size: 12px;
+            "
+          >
             <div>
-              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">Due date</div>
+              <div
+                class="subtle"
+                style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px"
+              >
+                Due date
+              </div>
               <div>2026-02-19 17:30 UTC</div>
             </div>
             <div>
-              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">Time remaining</div>
+              <div
+                class="subtle"
+                style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px"
+              >
+                Time remaining
+              </div>
               <div><span class="sla-badge sla-badge--warn">3h 48m</span></div>
             </div>
             <div>
-              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">SLA tier</div>
+              <div
+                class="subtle"
+                style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px"
+              >
+                SLA tier
+              </div>
               <div>Business Hours</div>
             </div>
             <div>
-              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">SLA status</div>
-              <div><span class="status status--warn"><span class="status__icon">⏰</span>At risk</span></div>
+              <div
+                class="subtle"
+                style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px"
+              >
+                SLA status
+              </div>
+              <div>
+                <span class="status status--warn"><span class="status__icon">⏰</span>At risk</span>
+              </div>
             </div>
           </div>
 
@@ -1761,7 +1851,7 @@
                     <option>Deny</option>
                     <option>Request changes</option>
                   </select>
-                  <div class="field__error" role="alert" style="display:none"></div>
+                  <div class="field__error" role="alert" style="display: none"></div>
                 </label>
                 <label class="field" id="fieldRationale">
                   <span class="field__label">Rationale (required)</span>
@@ -1774,7 +1864,7 @@
                     minlength="10"
                   ></textarea>
                   <span class="field__error">Rationale is required (minimum 10 characters)</span>
-                  <div class="field__error" role="alert" style="display:none"></div>
+                  <div class="field__error" role="alert" style="display: none"></div>
                 </label>
                 <div class="outcome-preview">
                   After approval the run resumes. 1 more approver needed.
@@ -1806,7 +1896,9 @@
           <details class="card card--subtle" style="margin-top: 12px" open>
             <summary class="card__title" style="cursor: pointer">
               Step Timeline
-              <span class="subtle" style="font-weight: 400; font-size: 12px">— execution tier visualization</span>
+              <span class="subtle" style="font-weight: 400; font-size: 12px"
+                >— execution tier visualization</span
+              >
             </summary>
             <div class="run-step__timeline">
               <!-- Step 1: Completed auto step -->
@@ -1815,7 +1907,9 @@
                   <span class="run-step__number">1</span>
                   <span class="run-step__title">Fetch invoice data from NetSuite</span>
                   <span class="tier-badge tier-badge--auto" style="font-size: 10px">Auto</span>
-                  <span class="status status--ok" style="font-size: 11px"><span class="status__icon">✓</span>Done</span>
+                  <span class="status status--ok" style="font-size: 11px"
+                    ><span class="status__icon">✓</span>Done</span
+                  >
                 </div>
                 <div class="run-step__meta">
                   Completed 12m ago &bull; 0.9s &bull; <a href="#evidence">Evidence: ev_8920_01</a>
@@ -1834,10 +1928,15 @@
                   >
                   <span class="run-step__assignee">
                     <span class="availability-dot availability-dot--available"></span>
-                    Pending: <a href="#workforce" aria-label="View Alice Martinez in Workforce directory">Alice Martinez</a>
+                    Pending:
+                    <a href="#workforce" aria-label="View Alice Martinez in Workforce directory"
+                      >Alice Martinez</a
+                    >
                   </span>
                   <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m">3h 48m</span>
-                  <span class="status status--warn"><span class="status__icon">◷</span>Pending</span>
+                  <span class="status status--warn"
+                    ><span class="status__icon">◷</span>Pending</span
+                  >
                 </div>
                 <div class="run-step__meta">
                   Opened 12m ago &bull; SoD: different-approver required &bull;
@@ -1850,7 +1949,9 @@
                 <div class="run-step__header">
                   <span class="run-step__number">3</span>
                   <span class="run-step__title">Apply corrections to invoice</span>
-                  <span class="tier-badge tier-badge--assisted" style="font-size: 10px">Assisted</span>
+                  <span class="tier-badge tier-badge--assisted" style="font-size: 10px"
+                    >Assisted</span
+                  >
                   <span class="status" style="font-size: 11px">Queued</span>
                 </div>
                 <div class="run-step__meta">Waiting for step 2 approval</div>
@@ -1867,9 +1968,14 @@
                     >Manual-only</span
                   >
                   <span class="run-step__assignee">Unassigned</span>
-                  <button class="btn btn--small" type="button"
+                  <button
+                    class="btn btn--small"
+                    type="button"
                     data-requires-persona="operator admin"
-                    aria-label="Mark step 4 complete">Mark complete</button>
+                    aria-label="Mark step 4 complete"
+                  >
+                    Mark complete
+                  </button>
                 </div>
                 <div class="run-step__meta">Waiting for step 3</div>
               </div>
@@ -1988,12 +2094,15 @@
                     >
                   </td>
                   <td><span class="sod-badge">Different-approver rule</span></td>
-                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Operator User</span></td>
+                  <td>
+                    <span style="display: inline-flex; align-items: center; gap: 5px"
+                      ><span class="availability-dot availability-dot--available"></span> Operator
+                      User</span
+                    >
+                  </td>
                   <td>12m</td>
                   <td>
-                    <span class="sla-badge sla-badge--warn" title="Due in 3h 48m"
-                      >Due 3h 48m</span
-                    >
+                    <span class="sla-badge sla-badge--warn" title="Due in 3h 48m">Due 3h 48m</span>
                   </td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
@@ -2026,7 +2135,12 @@
                     >
                   </td>
                   <td><span class="sod-badge">Safety constraint: outdoor_uav_permit</span></td>
-                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Safety Admin</span></td>
+                  <td>
+                    <span style="display: inline-flex; align-items: center; gap: 5px"
+                      ><span class="availability-dot availability-dot--available"></span> Safety
+                      Admin</span
+                    >
+                  </td>
                   <td>5m</td>
                   <td>
                     <span class="sla-badge sla-badge--warn" title="Due in 55m">Due 55m</span>
@@ -2047,7 +2161,12 @@
                     >
                   </td>
                   <td></td>
-                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Approver User</span></td>
+                  <td>
+                    <span style="display: inline-flex; align-items: center; gap: 5px"
+                      ><span class="availability-dot availability-dot--available"></span> Approver
+                      User</span
+                    >
+                  </td>
                   <td>22m</td>
                   <td><span class="sla-badge" title="Due in 2h">Due 2h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
@@ -2070,9 +2189,16 @@
                       >&#9888; Role conflict</span
                     >
                   </td>
-                  <td><span style="display:inline-flex;align-items:center;gap:5px"><span class="availability-dot availability-dot--available"></span> Finance Approver</span></td>
+                  <td>
+                    <span style="display: inline-flex; align-items: center; gap: 5px"
+                      ><span class="availability-dot availability-dot--available"></span> Finance
+                      Approver</span
+                    >
+                  </td>
                   <td>8m</td>
-                  <td><span class="sla-badge sla-badge--warn" title="Due in 1h 12m">Due 1h 12m</span></td>
+                  <td>
+                    <span class="sla-badge sla-badge--warn" title="Due in 1h 12m">Due 1h 12m</span>
+                  </td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
               </tbody>
@@ -2097,7 +2223,14 @@
           <!-- TRIAGE VIEW (hidden by default, toggled via JS) -->
           <div class="triage" id="triage" hidden>
             <div class="triage__progress triage__progress-row">
-              <div class="triage__progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" style="flex: 1">
+              <div
+                class="triage__progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="4"
+                aria-valuenow="0"
+                style="flex: 1"
+              >
                 <div class="triage__progress-fill" style="width: 0%"></div>
               </div>
               <div class="triage__progress-text">
@@ -2111,7 +2244,9 @@
                 disabled
                 aria-label="Undo last triage decision"
                 title="Undo last decision (U)"
-              >&#8617; Undo</button>
+              >
+                &#8617; Undo
+              </button>
             </div>
 
             <div class="triage__stack">
@@ -4306,7 +4441,9 @@
                       <div class="row__subtle">Financial document review and approval</div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
@@ -4315,7 +4452,9 @@
                       <div class="row__subtle">Legal document and contract review</div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
@@ -4324,28 +4463,37 @@
                       <div class="row__subtle">Quality assurance and verification tasks</div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">escalation-authority</div>
-                      <div class="row__subtle">Authorised to escalate and override standard flows</div>
+                      <div class="row__subtle">
+                        Authorised to escalate and override standard flows
+                      </div>
                     </div>
                     <div class="row__right">
-                      <span class="status status--ok"><span class="status__icon">●</span>Active</span>
+                      <span class="status status--ok"
+                        ><span class="status__icon">●</span>Active</span
+                      >
                     </div>
                   </div>
                 </div>
-                <button class="btn btn--small btn--primary" style="margin-top: 8px" type="button">Add capability</button>
+                <button class="btn btn--small btn--primary" style="margin-top: 8px" type="button">
+                  Add capability
+                </button>
               </article>
               <a href="#queues" class="btn btn--small">Manage queues &rarr;</a>
               <a href="#workforce" class="btn btn--small">Register workforce member &rarr;</a>
               <div class="settings-help-callout">
-                <strong>Tip:</strong> Capability assignments on workforce members must match the capabilities required by queues for automatic routing to work. Mismatches are flagged in the Queues screen.
+                <strong>Tip:</strong> Capability assignments on workforce members must match the
+                capabilities required by queues for automatic routing to work. Mismatches are
+                flagged in the Queues screen.
               </div>
             </div>
-
           </div>
         </section>
 
@@ -4984,7 +5132,11 @@
             >
               <div class="agent-layout">
                 <div class="agent-list">
-                  <article class="agent-card agent-card--selected" data-agent-id="claude-classify" tabindex="0">
+                  <article
+                    class="agent-card agent-card--selected"
+                    data-agent-id="claude-classify"
+                    tabindex="0"
+                  >
                     <div class="agent-card__header">
                       <span class="agent-card__provider agent-card__provider--claude">C</span>
                       <div>
@@ -6393,7 +6545,14 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
 
         <!-- Confirmation Modal (H3, H5) -->
         <div class="confirm-backdrop" id="confirmBackdrop" hidden></div>
-        <div class="confirm-modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+        <div
+          class="confirm-modal"
+          id="confirmModal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirmTitle"
+          hidden
+        >
           <div class="confirm-modal__icon" id="confirmIcon"></div>
           <div class="confirm-modal__title" id="confirmTitle">Are you sure?</div>
           <div class="confirm-modal__body" id="confirmBody">This action cannot be undone.</div>
@@ -10275,7 +10434,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <div class="screen__header">
             <div>
               <h1 id="h-workforce" class="h1">Workforce</h1>
-              <div class="subtle">Human operators, approvers, and auditors registered in this workspace</div>
+              <div class="subtle">
+                Human operators, approvers, and auditors registered in this workspace
+              </div>
             </div>
             <div class="screen__actions">
               <button
@@ -10283,7 +10444,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 type="button"
                 data-requires-persona="admin"
                 aria-label="Register new workforce member"
-              >Register member</button>
+              >
+                Register member
+              </button>
             </div>
           </div>
 
@@ -10294,11 +10457,16 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           </div>
 
           <!-- Empty state -->
-          <div class="js-empty-workforce" hidden style="padding: 40px; text-align: center; color: var(--muted)">
+          <div
+            class="js-empty-workforce"
+            hidden
+            style="padding: 40px; text-align: center; color: var(--muted)"
+          >
             <div style="font-size: 32px; margin-bottom: 12px">&#9786;</div>
             <div style="font-weight: 600; margin-bottom: 6px">No workforce members registered</div>
             <div style="font-size: 13px; margin-bottom: 16px">
-              Register team members to enable HumanTask assignment, queue routing, and capability-gated approvals.
+              Register team members to enable HumanTask assignment, queue routing, and
+              capability-gated approvals.
             </div>
             <a class="btn btn--primary" href="#onboarding">Go to Setup Wizard</a>
           </div>
@@ -10307,10 +10475,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <div class="grid grid--2" style="gap: 12px; align-items: start" id="workforceLayout">
             <!-- Member list -->
             <div class="workforce-list">
-              <div class="workforce-card workforce-card--selected" tabindex="0" role="button"
-                aria-label="Alice Martinez, approver, available">
+              <div
+                class="workforce-card workforce-card--selected"
+                tabindex="0"
+                role="button"
+                aria-label="Alice Martinez, approver, available"
+              >
                 <div class="workforce-card__header">
-                  <span class="availability-dot availability-dot--available" title="Available"></span>
+                  <span
+                    class="availability-dot availability-dot--available"
+                    title="Available"
+                  ></span>
                   <span class="workforce-card__name">Alice Martinez</span>
                   <span class="workforce-card__role">approver</span>
                 </div>
@@ -10324,8 +10499,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span>3 open assignments</span>
                 </div>
               </div>
-              <div class="workforce-card" tabindex="0" role="button"
-                aria-label="Bob Chen, operator, busy">
+              <div
+                class="workforce-card"
+                tabindex="0"
+                role="button"
+                aria-label="Bob Chen, operator, busy"
+              >
                 <div class="workforce-card__header">
                   <span class="availability-dot availability-dot--busy" title="Busy"></span>
                   <span class="workforce-card__name">Bob Chen</span>
@@ -10341,10 +10520,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span>1 open assignment</span>
                 </div>
               </div>
-              <div class="workforce-card" tabindex="0" role="button"
-                aria-label="Carol Davis, admin, available">
+              <div
+                class="workforce-card"
+                tabindex="0"
+                role="button"
+                aria-label="Carol Davis, admin, available"
+              >
                 <div class="workforce-card__header">
-                  <span class="availability-dot availability-dot--available" title="Available"></span>
+                  <span
+                    class="availability-dot availability-dot--available"
+                    title="Available"
+                  ></span>
                   <span class="workforce-card__name">Carol Davis</span>
                   <span class="workforce-card__role">admin</span>
                 </div>
@@ -10358,8 +10544,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span>0 open assignments</span>
                 </div>
               </div>
-              <div class="workforce-card" tabindex="0" role="button"
-                aria-label="Dan Park, auditor, offline">
+              <div
+                class="workforce-card"
+                tabindex="0"
+                role="button"
+                aria-label="Dan Park, auditor, offline"
+              >
                 <div class="workforce-card__header">
                   <span class="availability-dot availability-dot--offline" title="Offline"></span>
                   <span class="workforce-card__name">Dan Park</span>
@@ -10384,9 +10574,20 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <div class="workforce-detail__name">Alice Martinez</div>
                   <div class="workforce-detail__email">alice.martinez@acme.com</div>
                   <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
-                    <span class="availability-dot availability-dot--available" id="wfDetailDot"></span>
+                    <span
+                      class="availability-dot availability-dot--available"
+                      id="wfDetailDot"
+                    ></span>
                     <span style="font-size: 12px" id="wfDetailAvailText">Available</span>
-                    <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer">
+                    <label
+                      style="
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                        cursor: pointer;
+                      "
+                    >
                       <input
                         type="checkbox"
                         class="js-availability-toggle"
@@ -10401,51 +10602,117 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
 
               <!-- Member detail tabs -->
               <div class="tabs" role="tablist" aria-label="Member detail tabs">
-                <button class="tab tab--active" type="button" data-tab="wf-overview">Overview</button>
+                <button class="tab tab--active" type="button" data-tab="wf-overview">
+                  Overview
+                </button>
                 <button class="tab" type="button" data-tab="wf-capabilities">Capabilities</button>
                 <button class="tab" type="button" data-tab="wf-queues">Queue Memberships</button>
                 <button class="tab" type="button" data-tab="wf-history">History</button>
               </div>
               <div class="tabpanes">
-                <div class="tabpane tabpane--active" data-pane="wf-overview" role="region" aria-label="Overview">
+                <div
+                  class="tabpane tabpane--active"
+                  data-pane="wf-overview"
+                  role="region"
+                  aria-label="Overview"
+                >
                   <div class="grid grid--2" style="gap: 8px; font-size: 13px">
-                    <div><span class="subtle" style="font-size: 11px">Display name</span><br><span id="wfDetailGridName">Alice Martinez</span></div>
-                    <div><span class="subtle" style="font-size: 11px">Email</span><br><span id="wfDetailGridEmail">alice.martinez@acme.com</span></div>
-                    <div><span class="subtle" style="font-size: 11px">Role</span><br><span class="chip chip--small" id="wfDetailGridRole">approver</span></div>
-                    <div><span class="subtle" style="font-size: 11px">Registered</span><br>2025-11-10</div>
-                    <div><span class="subtle" style="font-size: 11px">Workspace</span><br>acme-finance-ops</div>
-                    <div><span class="subtle" style="font-size: 11px">Tenant</span><br><code style="font-size: 11px">ten_acme_01</code></div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Display name</span><br /><span
+                        id="wfDetailGridName"
+                        >Alice Martinez</span
+                      >
+                    </div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Email</span><br /><span
+                        id="wfDetailGridEmail"
+                        >alice.martinez@acme.com</span
+                      >
+                    </div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Role</span><br /><span
+                        class="chip chip--small"
+                        id="wfDetailGridRole"
+                        >approver</span
+                      >
+                    </div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Registered</span><br />2025-11-10
+                    </div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Workspace</span
+                      ><br />acme-finance-ops
+                    </div>
+                    <div>
+                      <span class="subtle" style="font-size: 11px">Tenant</span><br /><code
+                        style="font-size: 11px"
+                        >ten_acme_01</code
+                      >
+                    </div>
                   </div>
                 </div>
-                <div class="tabpane" data-pane="wf-capabilities" role="region" aria-label="Capabilities">
+                <div
+                  class="tabpane"
+                  data-pane="wf-capabilities"
+                  role="region"
+                  aria-label="Capabilities"
+                >
                   <div class="subtle" style="font-size: 12px; margin-bottom: 8px">
                     Controlled capability vocabulary &mdash;
                     <span data-requires-persona="admin">admin-editable.</span>
-                    <span style="font-size: 11px; color: var(--muted)">Read-only for non-admins.</span>
+                    <span style="font-size: 11px; color: var(--muted)"
+                      >Read-only for non-admins.</span
+                    >
                   </div>
                   <div class="cap-grid">
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" checked aria-label="finance-review capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        checked
+                        aria-label="finance-review capability"
+                      />
                       finance-review
                     </label>
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" checked aria-label="legal-review capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        checked
+                        aria-label="legal-review capability"
+                      />
                       legal-review
                     </label>
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" aria-label="data-entry capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        aria-label="data-entry capability"
+                      />
                       data-entry
                     </label>
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" aria-label="quality-check capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        aria-label="quality-check capability"
+                      />
                       quality-check
                     </label>
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" aria-label="technical-review capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        aria-label="technical-review capability"
+                      />
                       technical-review
                     </label>
                     <label class="cap-grid__item">
-                      <input type="checkbox" class="js-cap-checkbox" aria-label="escalation-authority capability" />
+                      <input
+                        type="checkbox"
+                        class="js-cap-checkbox"
+                        aria-label="escalation-authority capability"
+                      />
                       escalation-authority
                     </label>
                   </div>
@@ -10454,48 +10721,87 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     style="margin-top: 10px"
                     type="button"
                     aria-label="Edit capabilities for Alice Martinez"
-                  >Edit capabilities</button>
+                  >
+                    Edit capabilities
+                  </button>
                 </div>
-                <div class="tabpane" data-pane="wf-queues" role="region" aria-label="Queue memberships">
+                <div
+                  class="tabpane"
+                  data-pane="wf-queues"
+                  role="region"
+                  aria-label="Queue memberships"
+                >
                   <div class="list">
                     <div class="row row--static">
                       <div class="row__main">
                         <div class="row__title">Finance Queue</div>
-                        <div class="row__subtle">Routing: <strong>least-busy</strong> | Pending tasks: <strong class="queue-card__pending">2</strong></div>
+                        <div class="row__subtle">
+                          Routing: <strong>least-busy</strong> | Pending tasks:
+                          <strong class="queue-card__pending">2</strong>
+                        </div>
                       </div>
-                      <div class="row__right"><a href="#queues" class="btn btn--small">View queue</a></div>
+                      <div class="row__right">
+                        <a href="#queues" class="btn btn--small">View queue</a>
+                      </div>
                     </div>
                     <div class="row row--static">
                       <div class="row__main">
                         <div class="row__title">Legal Queue</div>
-                        <div class="row__subtle">Routing: <strong>round-robin</strong> | Pending tasks: <strong>1</strong></div>
+                        <div class="row__subtle">
+                          Routing: <strong>round-robin</strong> | Pending tasks: <strong>1</strong>
+                        </div>
                       </div>
-                      <div class="row__right"><a href="#queues" class="btn btn--small">View queue</a></div>
+                      <div class="row__right">
+                        <a href="#queues" class="btn btn--small">View queue</a>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="tabpane" data-pane="wf-history" role="region" aria-label="Assignment history">
+                <div
+                  class="tabpane"
+                  data-pane="wf-history"
+                  role="region"
+                  aria-label="Assignment history"
+                >
                   <div class="list">
                     <div class="row row--static">
                       <div class="row__main">
-                        <div class="row__title"><a href="#work-item">WI-1099</a> Invoice correction — Approval Gate</div>
+                        <div class="row__title">
+                          <a href="#work-item">WI-1099</a> Invoice correction — Approval Gate
+                        </div>
                         <div class="row__subtle">Assigned 12m ago by operator@acme.com</div>
                       </div>
-                      <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
+                      <div class="row__right">
+                        <span class="status status--warn"
+                          ><span class="status__icon">◷</span>Pending</span
+                        >
+                      </div>
                     </div>
                     <div class="row row--static">
                       <div class="row__main">
-                        <div class="row__title"><a href="#work-item">WI-1042</a> Dispute: payment failure — Review step</div>
+                        <div class="row__title">
+                          <a href="#work-item">WI-1042</a> Dispute: payment failure — Review step
+                        </div>
                         <div class="row__subtle">Assigned 3h ago by operator@acme.com</div>
                       </div>
-                      <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Completed</span></div>
+                      <div class="row__right">
+                        <span class="status status--ok"
+                          ><span class="status__icon">✓</span>Completed</span
+                        >
+                      </div>
                     </div>
                     <div class="row row--static">
                       <div class="row__main">
-                        <div class="row__title"><a href="#work-item">WI-1013</a> Receipt export — Quality check</div>
+                        <div class="row__title">
+                          <a href="#work-item">WI-1013</a> Receipt export — Quality check
+                        </div>
                         <div class="row__subtle">Assigned 1d ago by system</div>
                       </div>
-                      <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Completed</span></div>
+                      <div class="row__right">
+                        <span class="status status--ok"
+                          ><span class="status__icon">✓</span>Completed</span
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -10507,20 +10813,21 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
         <!-- ============================================================
              SCREEN: QUEUES (bead-0535)
              ============================================================ -->
-        <section
-          id="screen-queues"
-          class="screen"
-          data-screen="queues"
-          aria-labelledby="h-queues"
-        >
+        <section id="screen-queues" class="screen" data-screen="queues" aria-labelledby="h-queues">
           <div class="screen__header">
             <div>
               <h1 id="h-queues" class="h1">Human Task Queues</h1>
               <div class="subtle">Manage queue membership, routing strategy, and pending tasks</div>
             </div>
             <div class="screen__actions">
-              <button class="btn btn--primary" type="button" data-requires-persona="admin"
-                aria-label="Create new queue">Create queue</button>
+              <button
+                class="btn btn--primary"
+                type="button"
+                data-requires-persona="admin"
+                aria-label="Create new queue"
+              >
+                Create queue
+              </button>
             </div>
           </div>
 
@@ -10564,7 +10871,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <span class="nav__badge">0</span>
                 </div>
                 <div class="chips">
-                  <span class="workforce-card__cap subtle" style="color: var(--muted)">No capability required</span>
+                  <span class="workforce-card__cap subtle" style="color: var(--muted)"
+                    >No capability required</span
+                  >
                 </div>
                 <div class="queue-card__stats">
                   <span>6 members</span>
@@ -10577,29 +10886,45 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <!-- Queue detail -->
             <div class="workforce-detail">
               <div>
-                <div style="font-size: 16px; font-weight: 700; margin-bottom: 2px">Finance Queue</div>
-                <div style="font-size: 12px; color: var(--muted)">Strategy: <strong>least-busy</strong> | Required capability: <strong>finance-review</strong></div>
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 2px">
+                  Finance Queue
+                </div>
+                <div style="font-size: 12px; color: var(--muted)">
+                  Strategy: <strong>least-busy</strong> | Required capability:
+                  <strong>finance-review</strong>
+                </div>
               </div>
               <div>
-                <div class="subtle" style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px">Members (4)</div>
+                <div
+                  class="subtle"
+                  style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px"
+                >
+                  Members (4)
+                </div>
                 <div class="list">
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title" style="display: flex; align-items: center; gap: 6px">
-                        <span class="availability-dot availability-dot--available"></span> Alice Martinez
+                        <span class="availability-dot availability-dot--available"></span> Alice
+                        Martinez
                       </div>
                       <div class="row__subtle">finance-review | 3 open</div>
                     </div>
-                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                    <div class="row__right">
+                      <button class="btn btn--small" type="button">Assign</button>
+                    </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title" style="display: flex; align-items: center; gap: 6px">
-                        <span class="availability-dot availability-dot--available"></span> Carol Davis
+                        <span class="availability-dot availability-dot--available"></span> Carol
+                        Davis
                       </div>
                       <div class="row__subtle">finance-review, escalation-authority | 0 open</div>
                     </div>
-                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                    <div class="row__right">
+                      <button class="btn btn--small" type="button">Assign</button>
+                    </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
@@ -10608,7 +10933,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                       </div>
                       <div class="row__subtle">finance-review | 2 open</div>
                     </div>
-                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                    <div class="row__right">
+                      <button class="btn btn--small" type="button">Assign</button>
+                    </div>
                   </div>
                 </div>
                 <div class="callout" style="font-size: 12px; margin-top: 8px">
@@ -10616,34 +10943,52 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 </div>
               </div>
               <div>
-                <div class="subtle" style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px">Pending HumanTasks (2)</div>
+                <div
+                  class="subtle"
+                  style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px"
+                >
+                  Pending HumanTasks (2)
+                </div>
                 <div class="list">
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Approve invoice correction &mdash; WI-1099</div>
-                      <div class="row__subtle">Due in 3h 48m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span></div>
+                      <div class="row__subtle">
+                        Due in 3h 48m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span>
+                      </div>
                     </div>
-                    <div class="row__right"><button class="btn btn--small btn--primary" type="button">Assign</button></div>
+                    <div class="row__right">
+                      <button class="btn btn--small btn--primary" type="button">Assign</button>
+                    </div>
                   </div>
                   <div class="row row--static">
                     <div class="row__main">
                       <div class="row__title">Finance review: payroll batch &mdash; WI-1108</div>
-                      <div class="row__subtle">Due in 1h 12m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span></div>
+                      <div class="row__subtle">
+                        Due in 1h 12m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span>
+                      </div>
                     </div>
-                    <div class="row__right"><button class="btn btn--small btn--primary" type="button">Assign</button></div>
+                    <div class="row__right">
+                      <button class="btn btn--small btn--primary" type="button">Assign</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
       </main>
 
       <!-- ============================================================
            RIGHT DRAWER (Correlation / Context)
            ============================================================ -->
-      <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <aside
+        class="drawer"
+        id="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawerTitle"
+      >
         <div class="drawer__header">
           <div class="drawer__title" id="drawerTitle">Context</div>
           <button class="drawer__close" id="drawerClose" aria-label="Close drawer" type="button">
@@ -10699,7 +11044,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
           <span>Offline &mdash; data unavailable</span>
           <button class="statusbar__hint-btn" type="button" style="margin-left: 4px">Retry</button>
         </span>
-        <span class="statusbar__item statusbar__toast js-kbd-toast" aria-live="polite" role="status" hidden></span>
+        <span
+          class="statusbar__item statusbar__toast js-kbd-toast"
+          aria-live="polite"
+          role="status"
+          hidden
+        ></span>
         <span class="statusbar__item statusbar__kbd-hint js-kbd-hint">
           <button
             class="statusbar__hint-btn js-open-palette"
@@ -10825,8 +11175,12 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             <h3 class="kbd-cheatsheet__group-title">Workforce</h3>
             <div class="kbd-cheatsheet__list">
               <div class="kbd-cheatsheet__row"><kbd>g f</kbd><span>Go to Workforce</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd><span>Navigate members / queues</span></div>
-              <div class="kbd-cheatsheet__row"><kbd>Enter</kbd><span>Open member / queue detail</span></div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>j</kbd>/<kbd>k</kbd><span>Navigate members / queues</span>
+              </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>Enter</kbd><span>Open member / queue detail</span>
+              </div>
             </div>
           </div>
           <div class="kbd-cheatsheet__group">

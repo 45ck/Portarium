@@ -966,7 +966,10 @@ function openDrawer(contentId) {
 function closeDrawer() {
   qs('#drawer').classList.remove('is-open');
   qs('.app').classList.remove('app--drawer-open');
-  if (_drawerTrigger) { _drawerTrigger.focus(); _drawerTrigger = null; }
+  if (_drawerTrigger) {
+    _drawerTrigger.focus();
+    _drawerTrigger = null;
+  }
 }
 
 /* ============================================================
@@ -1347,7 +1350,9 @@ function triageAction(action) {
 
     triageIndex++;
     var progressFill = document.querySelector('.triage__progress-fill');
-    var progressBar = progressFill ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement : null;
+    var progressBar = progressFill
+      ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement
+      : null;
     var currentSpan = document.querySelector('.triage__current');
     if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
     if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
@@ -1375,7 +1380,9 @@ function triageUndo() {
   triageLastUndo = null;
 
   /* Reverse the result counter */
-  var resultKey = { approve: 'approved', deny: 'denied', changes: 'changes', skip: 'skipped' }[undo.action];
+  var resultKey = { approve: 'approved', deny: 'denied', changes: 'changes', skip: 'skipped' }[
+    undo.action
+  ];
   if (resultKey && triageResults[resultKey] > 0) triageResults[resultKey]--;
 
   /* Hide current card (if any) and restore the undone card */
@@ -1391,7 +1398,9 @@ function triageUndo() {
   }
 
   var progressFill = document.querySelector('.triage__progress-fill');
-  var progressBar = progressFill ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement : null;
+  var progressBar = progressFill
+    ? progressFill.closest('[role="progressbar"]') || progressFill.parentElement
+    : null;
   var currentSpan = document.querySelector('.triage__current');
   if (progressFill) progressFill.style.width = (triageIndex / 4) * 100 + '%';
   if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
@@ -1861,7 +1870,10 @@ const ConfirmModal = (function () {
     if (backdrop) backdrop.hidden = true;
     if (modal) modal.hidden = true;
     _callback = null;
-    if (_confirmTrigger) { _confirmTrigger.focus(); _confirmTrigger = null; }
+    if (_confirmTrigger) {
+      _confirmTrigger.focus();
+      _confirmTrigger = null;
+    }
   }
 
   function confirm() {
@@ -2433,8 +2445,10 @@ function main() {
     else if (key === 'd') triageAction('deny');
     else if (key === 'r') triageAction('changes');
     else if (key === 's') triageAction('skip');
-    else if (key === 'u') { triageUndo(); e.preventDefault(); }
-    else if (key === 'i') AISummaryToggle.toggle();
+    else if (key === 'u') {
+      triageUndo();
+      e.preventDefault();
+    } else if (key === 'i') AISummaryToggle.toggle();
     else if (key === ' ') {
       e.preventDefault();
       var back = document.querySelector('.triage-card__back');
@@ -2556,8 +2570,7 @@ function main() {
           dotClass = itemDot.className;
         }
         triggerBtn.innerHTML =
-          '<span class="' + dotClass + '"></span> ' +
-          nameEl.textContent + ' &#9660;';
+          '<span class="' + dotClass + '"></span> ' + nameEl.textContent + ' &#9660;';
         triggerBtn.setAttribute('aria-label', 'Change owner — currently ' + nameEl.textContent);
       }
       picker.hidden = true;
@@ -2684,7 +2697,10 @@ function main() {
         e.preventDefault();
         items[0].focus();
       }
-    } else if (document.activeElement && document.activeElement.classList.contains('owner-picker__item')) {
+    } else if (
+      document.activeElement &&
+      document.activeElement.classList.contains('owner-picker__item')
+    ) {
       var idx = items.indexOf(document.activeElement);
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -2701,17 +2717,44 @@ function main() {
         picker.hidden = true;
         var t = document.querySelector('.js-owner-picker-trigger');
         if (t) t.setAttribute('aria-expanded', 'false');
-        if (_ownerPickerTrigger) { _ownerPickerTrigger.focus(); _ownerPickerTrigger = null; }
+        if (_ownerPickerTrigger) {
+          _ownerPickerTrigger.focus();
+          _ownerPickerTrigger = null;
+        }
       }
     }
   });
 
   /* ---- WF-3: Workforce card click handler ---- */
   var WORKFORCE_DATA = [
-    { name: 'Alice Martinez', letter: 'A', email: 'alice.martinez@acme.com', availability: 'available', role: 'approver' },
-    { name: 'Bob Chen',       letter: 'B', email: 'bob.chen@acme.com',       availability: 'busy',      role: 'operator' },
-    { name: 'Carol Davis',    letter: 'C', email: 'carol.davis@acme.com',    availability: 'available', role: 'admin'    },
-    { name: 'Dan Park',       letter: 'D', email: 'dan.park@acme.com',       availability: 'offline',   role: 'auditor'  },
+    {
+      name: 'Alice Martinez',
+      letter: 'A',
+      email: 'alice.martinez@acme.com',
+      availability: 'available',
+      role: 'approver',
+    },
+    {
+      name: 'Bob Chen',
+      letter: 'B',
+      email: 'bob.chen@acme.com',
+      availability: 'busy',
+      role: 'operator',
+    },
+    {
+      name: 'Carol Davis',
+      letter: 'C',
+      email: 'carol.davis@acme.com',
+      availability: 'available',
+      role: 'admin',
+    },
+    {
+      name: 'Dan Park',
+      letter: 'D',
+      email: 'dan.park@acme.com',
+      availability: 'offline',
+      role: 'auditor',
+    },
   ];
   var AVAIL_LABEL = { available: 'Available', busy: 'Busy', offline: 'Offline' };
   document.addEventListener('click', function (e) {
@@ -2723,9 +2766,11 @@ function main() {
       c.classList.remove('workforce-card--selected');
     });
     card.classList.add('workforce-card--selected');
-    var allCards = Array.from(document.querySelectorAll('[data-screen="workforce"] .workforce-card'));
+    var allCards = Array.from(
+      document.querySelectorAll('[data-screen="workforce"] .workforce-card'),
+    );
     var idx = allCards.indexOf(card);
-    var data = (idx >= 0 && idx < WORKFORCE_DATA.length) ? WORKFORCE_DATA[idx] : null;
+    var data = idx >= 0 && idx < WORKFORCE_DATA.length ? WORKFORCE_DATA[idx] : null;
     if (!data) return;
     var panel = document.querySelector('[data-screen="workforce"] .workforce-detail');
     if (!panel) return;
@@ -2754,9 +2799,19 @@ function main() {
 
   /* ---- WF-4: Queue card click handler ---- */
   var QUEUE_DATA = {
-    'Finance Queue':  { strategy: 'least-busy',   cap: 'finance-review',  memberCount: 4, pendingCount: 2 },
-    'Legal Queue':    { strategy: 'round-robin',   cap: 'legal-review',    memberCount: 2, pendingCount: 1 },
-    'General Queue':  { strategy: 'manual',        cap: null,              memberCount: 6, pendingCount: 0 },
+    'Finance Queue': {
+      strategy: 'least-busy',
+      cap: 'finance-review',
+      memberCount: 4,
+      pendingCount: 2,
+    },
+    'Legal Queue': {
+      strategy: 'round-robin',
+      cap: 'legal-review',
+      memberCount: 2,
+      pendingCount: 1,
+    },
+    'General Queue': { strategy: 'manual', cap: null, memberCount: 6, pendingCount: 0 },
   };
   document.addEventListener('click', function (e) {
     var card = e.target.closest('.queue-card');
@@ -2776,15 +2831,21 @@ function main() {
     /* Strategy / capability subtitle */
     var subtitleDiv = panel.querySelector('div[style*="color: var(--muted)"]');
     if (subtitleDiv) {
-      subtitleDiv.innerHTML = 'Strategy: <strong>' + qd.strategy + '</strong>'
-        + (qd.cap ? ' | Required capability: <strong>' + qd.cap + '</strong>' : ' | No capability required');
+      subtitleDiv.innerHTML =
+        'Strategy: <strong>' +
+        qd.strategy +
+        '</strong>' +
+        (qd.cap
+          ? ' | Required capability: <strong>' + qd.cap + '</strong>'
+          : ' | No capability required');
     }
     /* Member count label */
     var memberLabel = panel.querySelector('.subtle[style*="text-transform: uppercase"]');
     if (memberLabel) memberLabel.textContent = 'Members (' + qd.memberCount + ')';
     /* Pending tasks label */
     var pendingLabels = panel.querySelectorAll('.subtle[style*="text-transform: uppercase"]');
-    if (pendingLabels[1]) pendingLabels[1].textContent = 'Pending HumanTasks (' + qd.pendingCount + ')';
+    if (pendingLabels[1])
+      pendingLabels[1].textContent = 'Pending HumanTasks (' + qd.pendingCount + ')';
   });
 
   /* ---- G-1: Chip Space/Enter keydown delegate ---- */

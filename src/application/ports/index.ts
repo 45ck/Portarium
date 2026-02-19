@@ -21,3 +21,4 @@ export * from './payments-billing-adapter.js';
 export * from './procurement-spend-adapter.js';
 export * from './hris-hcm-adapter.js';
 export * from './payroll-adapter.js';
+export * from './crm-sales-adapter.js';

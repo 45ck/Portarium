@@ -96,3 +96,18 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/payroll/in-memory-payroll-adapter.ts`.
+
+## CrmSales Adapter Foundation (bead-0100)
+
+- Application port contract now includes `CrmSalesAdapterPort` under
+  `src/application/ports/crm-sales-adapter.ts`.
+- The operation set is fixed to the 16 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `CrmSales` family.
+- Execute response contract:
+  - success: canonical `Party`, `Party[]`, `Opportunity`, `Opportunity[]`, `Task`,
+    `Task[]`, `Document`, `Document[]`, `ExternalObjectRef[]`, `accepted`,
+    or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/crm-sales/in-memory-crm-sales-adapter.ts`.
