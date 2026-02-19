@@ -1443,23 +1443,87 @@ function triageUndo() {
 /* ============================================================
    WORKFLOW BUILDER - Node Selection
    ============================================================ */
+var WF_TEMPLATE_META = {
+  'finance-invoice': {
+    subtitle: 'Invoice Correction Workflow (draft)',
+    note: 'Template focus: Finance correction with approval gates and evidence capture.',
+  },
+  'robot-fleet-triage': {
+    subtitle: 'Robot Fleet Triage Workflow (draft)',
+    note: 'Template focus: map-aware alert triage, geofence safety gate, and E-Stop actions.',
+  },
+  'machine-maintenance': {
+    subtitle: 'Machine Maintenance Workflow (draft)',
+    note: 'Template focus: PLC telemetry thresholds, escalation, and maintenance tracking.',
+  },
+  'hybrid-incident': {
+    subtitle: 'Hybrid Robot + Machine Incident Workflow (draft)',
+    note: 'Template focus: supervisor approval, coordinated stop, and evidence-linked recovery.',
+  },
+};
+
+function syncWorkflowConfigFromNode(node) {
+  if (!node) return;
+  var configPanel = document.getElementById('wfConfig');
+  if (!configPanel) return;
+  var nameEl = node.querySelector('.wf-node__name');
+  var nodeName = nameEl ? nameEl.textContent : 'Step';
+  var configTitle = configPanel.querySelector('.wf-config__title');
+  var configSubtitle = configPanel.querySelector('.wf-config__subtitle');
+  if (configTitle) configTitle.textContent = nodeName;
+  if (configSubtitle) configSubtitle.textContent = 'Configure step: ' + (node.dataset.nodeId || '');
+}
+
+function activateWorkflowTemplate(templateId) {
+  var meta = WF_TEMPLATE_META[templateId] || WF_TEMPLATE_META['finance-invoice'];
+
+  qsa('.wf-template').forEach(function (btn) {
+    var isActive = btn.dataset.wfTemplate === templateId;
+    btn.classList.toggle('wf-template--active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+
+  qsa('.wf-template-graph').forEach(function (graph) {
+    var isActive = graph.dataset.wfTemplatePane === templateId;
+    graph.hidden = !isActive;
+    graph.classList.toggle('wf-template-graph--active', isActive);
+  });
+
+  var subtitleEl = document.querySelector('.js-wf-builder-subtitle');
+  if (subtitleEl) subtitleEl.textContent = meta.subtitle;
+  var noteEl = document.querySelector('.js-wf-template-note');
+  if (noteEl) noteEl.textContent = meta.note;
+
+  qsa('.wf-node').forEach(function (n) {
+    n.classList.remove('wf-node--selected');
+  });
+  var firstNode =
+    document.querySelector('.wf-template-graph:not([hidden]) .wf-node[data-node-id="approve"]') ||
+    document.querySelector('.wf-template-graph:not([hidden]) .wf-node[data-node-id]');
+  if (firstNode) {
+    firstNode.classList.add('wf-node--selected');
+    syncWorkflowConfigFromNode(firstNode);
+  }
+}
+
 document.addEventListener('click', function (e) {
+  var templateBtn = e.target.closest('.wf-template');
+  if (templateBtn) {
+    activateWorkflowTemplate(templateBtn.dataset.wfTemplate);
+    return;
+  }
+
   var node = e.target.closest('.wf-node');
   if (!node) return;
+
+  var activeGraph = document.querySelector('.wf-template-graph:not([hidden])');
+  if (activeGraph && !activeGraph.contains(node)) return;
+
   qsa('.wf-node').forEach(function (n) {
     n.classList.remove('wf-node--selected');
   });
   node.classList.add('wf-node--selected');
-  var configPanel = document.getElementById('wfConfig');
-  if (configPanel) {
-    var nameEl = node.querySelector('.wf-node__name');
-    var nodeName = nameEl ? nameEl.textContent : 'Step';
-    var configTitle = configPanel.querySelector('.wf-config__title');
-    var configSubtitle = configPanel.querySelector('.wf-config__subtitle');
-    if (configTitle) configTitle.textContent = nodeName;
-    if (configSubtitle)
-      configSubtitle.textContent = 'Configure step: ' + (node.dataset.nodeId || '');
-  }
+  syncWorkflowConfigFromNode(node);
 });
 
 /* ============================================================
@@ -3221,6 +3285,9 @@ function main() {
       }
     }
   });
+
+  /* ---- Workflow builder template default ---- */
+  activateWorkflowTemplate('finance-invoice');
 
   /* ---- Robotics map initial state ---- */
   setMapTimeline(100);

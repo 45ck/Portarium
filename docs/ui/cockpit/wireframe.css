@@ -1714,6 +1714,11 @@ a {
   display: grid;
   gap: 6px;
 }
+.wf-template-group {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-soft);
+}
 .wf-palette__item {
   display: flex;
   gap: 8px;
@@ -1730,6 +1735,13 @@ a {
 .wf-palette__item:hover {
   border-color: var(--line);
   box-shadow: var(--shadow);
+}
+.wf-template {
+  align-items: flex-start;
+}
+.wf-template--active {
+  border-color: var(--focus);
+  background: rgba(10, 102, 255, 0.06);
 }
 .wf-palette__item-name {
   font-weight: 800;
@@ -1793,6 +1805,9 @@ a {
   flex-direction: column;
   gap: 16px;
   min-width: max-content;
+}
+.wf-template-graph[hidden] {
+  display: none !important;
 }
 .wf-graph__row {
   display: flex;
