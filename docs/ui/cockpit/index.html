@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Portarium Cockpit Lo-Fi Prototype</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="./wireframe.css" />
   </head>
   <body>
@@ -4514,7 +4515,15 @@
               <button class="btn btn--small" type="button">Undo</button>
               <button class="btn btn--small" type="button">Redo</button>
               <button class="btn" type="button">Save draft</button>
-              <button class="btn" type="button" data-dialog="dlgStartWorkflow">Run workflow</button>
+              <button
+                class="btn"
+                id="wfRunButton"
+                type="button"
+                data-dialog="dlgStartWorkflow"
+                aria-describedby="wfReadinessSummary"
+              >
+                Run workflow
+              </button>
               <button class="btn" type="button" data-confirm="deactivate-workflow">
                 Deactivate
               </button>
@@ -4634,6 +4643,28 @@
                     <div>
                       <div class="wf-palette__item-name">Hybrid: Robot + Machine Incident</div>
                       <div class="wf-palette__item-desc">Supervisor gate with evidence trail</div>
+                    </div>
+                  </button>
+                  <button
+                    class="wf-palette__item wf-template"
+                    type="button"
+                    data-wf-template="itsm-major-incident"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">IT Ops: Major Incident</div>
+                      <div class="wf-palette__item-desc">Alert triage, change gate, and comms</div>
+                    </div>
+                  </button>
+                  <button
+                    class="wf-palette__item wf-template"
+                    type="button"
+                    data-wf-template="compliance-legal-hold"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">Compliance: Legal Hold</div>
+                      <div class="wf-palette__item-desc">
+                        Preserve evidence and notify cross-functional owners
+                      </div>
                     </div>
                   </button>
                 </div>
@@ -5064,6 +5095,150 @@
                   </div>
                 </div>
               </div>
+
+              <div class="wf-graph wf-template-graph" data-wf-template-pane="itsm-major-incident" hidden>
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="itsm-start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: MonitoringIncident webhook</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--agent" data-node-id="itsm-summarize">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--agent">&#129504;</span
+                      ><span class="wf-node__name">Summarize incident blast radius</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Agent: incident-summarizer</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--approval" data-node-id="itsm-change-gate">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
+                      ><span class="wf-node__name">Change Freeze Override Gate</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Tier: Human-approve</div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--notification" data-node-id="itsm-notify-war-room">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
+                      ><span class="wf-node__name">Notify war-room channel</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Channel: #major-incident</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="itsm-open-work-items">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Open remediation work items</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Queues: sre-l2, platform-ops</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="itsm-end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wf-graph wf-template-graph" data-wf-template-pane="compliance-legal-hold" hidden>
+                <div class="wf-graph__row">
+                  <div class="wf-node wf-node--start" data-node-id="hold-start">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--start">&#9654;</span
+                      ><span class="wf-node__name">Start</span>
+                    </div>
+                    <div class="wf-node__status">
+                      <span class="status status--ok" style="font-size: 10px; padding: 2px 6px"
+                        >Trigger: compliance request</span
+                      >
+                    </div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--approval" data-node-id="hold-counsel-gate">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--approval">&#9730;</span
+                      ><span class="wf-node__name">Counsel Approval Gate</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Tier: Human-approve | SoD required</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="hold-freeze-evidence">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Set evidence legal hold</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Retention: 7 years | WORM lock</div>
+                  </div>
+                </div>
+                <div class="wf-graph__row">
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--notification" data-node-id="hold-notify-owners">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--notification">&#128276;</span
+                      ><span class="wf-node__name">Notify data owners</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Channels: legal, security, ops</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--action" data-node-id="hold-open-audit-task">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--action">&#9889;</span
+                      ><span class="wf-node__name">Open audit verification task</span>
+                    </div>
+                    <div class="wf-node__meta subtle">Queue: compliance-audit</div>
+                  </div>
+                  <div class="wf-connector">
+                    <div class="wf-connector__line"></div>
+                    <div class="wf-connector__arrow">&#8250;</div>
+                  </div>
+                  <div class="wf-node wf-node--end" data-node-id="hold-end">
+                    <div class="wf-node__header">
+                      <span class="wf-node-icon wf-node-icon--end">&#9632;</span
+                      ><span class="wf-node__name">End</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <aside class="wf-config" id="wfConfig">
@@ -5122,6 +5297,27 @@
               </div>
             </aside>
           </div>
+
+          <article class="card wf-readiness" id="wfReadiness" aria-live="polite">
+            <div class="card__title">Run Readiness</div>
+            <div class="subtle" id="wfReadinessSummary">
+              Checks update as you edit steps and branches.
+            </div>
+            <ul class="wf-readiness__list js-wf-readiness-list">
+              <li class="wf-readiness__item">
+                <span class="wf-readiness__dot wf-readiness__dot--ok" aria-hidden="true"></span>
+                Scope baseline loaded
+              </li>
+              <li class="wf-readiness__item">
+                <span class="wf-readiness__dot wf-readiness__dot--warn" aria-hidden="true"></span>
+                Run validations pending
+              </li>
+            </ul>
+            <div class="subtle wf-readiness__hint">
+              Keyboard: <kbd>j</kbd>/<kbd>k</kbd> move nodes, <kbd>Enter</kbd> select,
+              <kbd>E</kbd> focus config.
+            </div>
+          </article>
 
           <!-- Version History -->
           <details class="card" style="margin-top: 12px">
@@ -9436,7 +9632,10 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <div class="map-canvas-card__header">
                     <div>
                       <div class="card__title">Live Operations Map</div>
-                      <div class="subtle">Frame: map | Window: last 15 minutes | Site: warehouse-a</div>
+                      <div class="subtle">
+                        Frame: map | Window: last 15 minutes | Site: warehouse-a |
+                        <span class="js-map-renderer-status">Renderer: static fallback</span>
+                      </div>
                     </div>
                     <div class="filters map-status-filters" role="group" aria-label="Filter by status">
                       <span
@@ -9471,6 +9670,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   </div>
 
                   <div class="map-canvas js-map-canvas" role="group" aria-label="Robot map">
+                    <div id="leafletMap" class="map-canvas__leaflet" aria-hidden="true"></div>
                     <div class="map-canvas__grid" data-map-layer-target="floorplan" aria-hidden="true"></div>
                     <div
                       class="map-canvas__occupancy"
@@ -12022,6 +12222,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
       </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="./wireframe.js" defer></script>
     <script src="./keyboard.js" defer></script>
   </body>
