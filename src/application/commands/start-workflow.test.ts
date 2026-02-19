@@ -331,4 +331,41 @@ describe('startWorkflow', () => {
       expect.objectContaining({ idempotencyKey: 'req-concurrent' }),
     );
   });
+
+  it('propagates traceparent and tracestate into orchestrator input', async () => {
+    const result = await startWorkflow(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        idempotency,
+        unitOfWork,
+        workflowStore,
+        runStore,
+        orchestrator,
+        eventPublisher,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+        traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        tracestate: 'vendor=value',
+      }),
+      {
+        idempotencyKey: 'req-trace',
+        workspaceId: 'ws-1',
+        workflowId: 'wf-1',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(orchestrator.startRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        tracestate: 'vendor=value',
+      }),
+    );
+  });
 });

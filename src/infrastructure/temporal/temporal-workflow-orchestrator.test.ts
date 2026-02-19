@@ -112,6 +112,8 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
       workflow: WORKFLOW_DEF,
       initiatedByUserId: UserId('user-7'),
       correlationId: CorrelationId('corr-xyz'),
+      traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+      tracestate: 'vendor=value',
       executionTier: 'HumanApprove',
       idempotencyKey: 'req-abc',
     });
@@ -129,6 +131,8 @@ describe('TemporalWorkflowOrchestrator.startRun', () => {
             workflow: WORKFLOW_DEF,
             initiatedByUserId: 'user-7',
             correlationId: 'corr-xyz',
+            traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+            tracestate: 'vendor=value',
             executionTier: 'HumanApprove',
           }),
         ],

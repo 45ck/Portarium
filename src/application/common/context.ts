@@ -8,6 +8,7 @@ import {
   type UserId as UserIdType,
   type WorkspaceUserRole,
 } from '../../domain/primitives/index.js';
+import { normalizeTraceparent, normalizeTracestate } from './trace-context.js';
 
 export type AppContext = Readonly<{
   tenantId: TenantIdType;
@@ -15,6 +16,8 @@ export type AppContext = Readonly<{
   roles: readonly WorkspaceUserRole[];
   scopes: readonly string[];
   correlationId: CorrelationIdType;
+  traceparent?: string;
+  tracestate?: string;
 }>;
 
 export const DEFAULT_SCOPES: readonly string[] = [];
@@ -44,16 +47,27 @@ export const toAppContext = ({
   roles = [],
   scopes = [],
   correlationId,
+  traceparent,
+  tracestate,
 }: {
   tenantId: string;
   principalId: string;
   roles?: readonly string[];
   scopes?: readonly string[];
   correlationId: string;
-}): AppContext => ({
-  tenantId: TenantId(tenantId),
-  principalId: UserId(principalId),
-  roles: normalizeRoles(roles),
-  scopes: [...scopes],
-  correlationId: CorrelationId(correlationId),
-});
+  traceparent?: string;
+  tracestate?: string;
+}): AppContext => {
+  const normalizedTraceparent = normalizeTraceparent(traceparent);
+  const normalizedTracestate = normalizeTracestate(tracestate);
+
+  return {
+    ...(normalizedTraceparent !== undefined ? { traceparent: normalizedTraceparent } : {}),
+    ...(normalizedTracestate !== undefined ? { tracestate: normalizedTracestate } : {}),
+    tenantId: TenantId(tenantId),
+    principalId: UserId(principalId),
+    roles: normalizeRoles(roles),
+    scopes: [...scopes],
+    correlationId: CorrelationId(correlationId),
+  };
+};

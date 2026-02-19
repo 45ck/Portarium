@@ -16,6 +16,8 @@ export interface WorkflowExecutionInput {
   readonly workflow: WorkflowV1;
   readonly initiatedByUserId: UserId;
   readonly correlationId: CorrelationId;
+  readonly traceparent?: string;
+  readonly tracestate?: string;
   readonly executionTier: ExecutionTier;
   /**
    * Caller-supplied idempotency key scoped to the tenant.

@@ -51,6 +51,7 @@ describe('createControlPlaneHandler', () => {
     const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/i);
+    expect(res.headers.get('traceparent')).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/i);
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/not-found/);
     expect(body.status).toBe(404);
@@ -145,10 +146,18 @@ describe('createControlPlaneHandler', () => {
     });
 
     const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/%20`, {
-      headers: { 'x-correlation-id': 'corr-fixed' },
+      headers: {
+        'x-correlation-id': 'corr-fixed',
+        traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        tracestate: 'vendor=value',
+      },
     });
     expect(res.status).toBe(400);
     expect(res.headers.get('x-correlation-id')).toBe('corr-fixed');
+    expect(res.headers.get('traceparent')).toBe(
+      '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+    );
+    expect(res.headers.get('tracestate')).toBe('vendor=value');
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/validation-failed/);
     expect(body.status).toBe(400);

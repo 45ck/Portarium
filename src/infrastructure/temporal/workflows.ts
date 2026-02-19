@@ -10,6 +10,8 @@ export type PortariumRunWorkflowInput = Readonly<{
   workflow: WorkflowV1;
   initiatedByUserId: string;
   correlationId: string;
+  traceparent?: string;
+  tracestate?: string;
   executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 }>;
 
@@ -57,6 +59,8 @@ export async function portariumRun(input: PortariumRunWorkflowInput): Promise<vo
     workflow: input.workflow,
     initiatedByUserId: input.initiatedByUserId,
     correlationId: input.correlationId,
+    ...(input.traceparent ? { traceparent: input.traceparent } : {}),
+    ...(input.tracestate ? { tracestate: input.tracestate } : {}),
     executionTier: input.executionTier,
   });
 
@@ -86,5 +90,7 @@ export async function portariumRun(input: PortariumRunWorkflowInput): Promise<vo
     workflow: input.workflow,
     initiatedByUserId: input.initiatedByUserId,
     correlationId: input.correlationId,
+    ...(input.traceparent ? { traceparent: input.traceparent } : {}),
+    ...(input.tracestate ? { tracestate: input.tracestate } : {}),
   });
 }

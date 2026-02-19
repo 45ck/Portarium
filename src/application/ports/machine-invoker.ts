@@ -44,6 +44,8 @@ type InvocationCorrelation = Readonly<{
   runId: RunId;
   actionId: ActionId;
   correlationId: CorrelationId;
+  traceparent?: string;
+  tracestate?: string;
 }>;
 
 /**

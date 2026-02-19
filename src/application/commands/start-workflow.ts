@@ -241,6 +241,8 @@ async function executeTransaction(
         workflow: plan.workflow,
         initiatedByUserId: ctx.principalId,
         correlationId: ctx.correlationId,
+        ...(ctx.traceparent ? { traceparent: ctx.traceparent } : {}),
+        ...(ctx.tracestate ? { tracestate: ctx.tracestate } : {}),
         executionTier: plan.workflow.executionTier,
         idempotencyKey: plan.commandKey.requestKey,
       });

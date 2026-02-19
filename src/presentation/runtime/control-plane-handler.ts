@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import type {
@@ -9,6 +9,11 @@ import type {
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import type { AppContext } from '../../application/common/context.js';
+import {
+  normalizeTraceparent,
+  normalizeTracestate,
+  type TraceContext,
+} from '../../application/common/trace-context.js';
 import type {
   Forbidden,
   NotFound,
@@ -57,22 +62,55 @@ function normalizeCorrelationId(req: IncomingMessage): string {
   return randomUUID();
 }
 
+function randomHex(byteLength: number): string {
+  return randomBytes(byteLength).toString('hex');
+}
+
+function createTraceparent(): string {
+  // W3C Trace Context v00: version-traceid-spanid-flags
+  return `00-${randomHex(16)}-${randomHex(8)}-01`;
+}
+
+function normalizeTraceContext(req: IncomingMessage): TraceContext {
+  const inboundTraceparent = normalizeTraceparent(normalizeHeader(req.headers['traceparent']));
+  const inboundTracestate = normalizeTracestate(normalizeHeader(req.headers['tracestate']));
+
+  return {
+    traceparent: inboundTraceparent ?? createTraceparent(),
+    ...(inboundTracestate ? { tracestate: inboundTracestate } : {}),
+  };
+}
+
 function respondJson(
   res: ServerResponse,
   statusCode: number,
   correlationId: string,
+  traceContext: TraceContext,
   body: unknown,
 ): void {
   res.statusCode = statusCode;
   res.setHeader('content-type', 'application/json');
   res.setHeader('x-correlation-id', correlationId);
+  res.setHeader('traceparent', traceContext.traceparent);
+  if (traceContext.tracestate) {
+    res.setHeader('tracestate', traceContext.tracestate);
+  }
   res.end(JSON.stringify(body));
 }
 
-function respondProblem(res: ServerResponse, problem: ProblemDetails, correlationId: string): void {
+function respondProblem(
+  res: ServerResponse,
+  problem: ProblemDetails,
+  correlationId: string,
+  traceContext: TraceContext,
+): void {
   res.statusCode = problem.status;
   res.setHeader('content-type', 'application/problem+json');
   res.setHeader('x-correlation-id', correlationId);
+  res.setHeader('traceparent', traceContext.traceparent);
+  if (traceContext.tracestate) {
+    res.setHeader('tracestate', traceContext.tracestate);
+  }
   res.end(JSON.stringify(problem));
 }
 
@@ -156,11 +194,14 @@ async function authenticate(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
   correlationId: string,
+  traceContext: TraceContext,
   expectedWorkspaceId: string | undefined,
 ): Promise<{ ok: true; ctx: AppContext } | { ok: false; error: Unauthorized }> {
   const auth = await deps.authentication.authenticateBearerToken({
     authorizationHeader: readAuthorizationHeader(req),
     correlationId,
+    traceparent: traceContext.traceparent,
+    ...(traceContext.tracestate ? { tracestate: traceContext.tracestate } : {}),
     ...(expectedWorkspaceId ? { expectedWorkspaceId } : {}),
   });
 
@@ -176,13 +217,14 @@ async function handleGetWorkspace(
     correlationId: string;
     pathname: string;
     workspaceId: string;
+    traceContext: TraceContext;
   }>,
 ): Promise<void> {
-  const { deps, req, res, correlationId, pathname, workspaceId } = args;
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
 
-  const auth = await authenticate(deps, req, correlationId, workspaceId);
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
   if (!auth.ok) {
-    respondProblem(res, problemFromError(auth.error, pathname), correlationId);
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
     return;
   }
 
@@ -193,11 +235,11 @@ async function handleGetWorkspace(
   );
 
   if (result.ok) {
-    respondJson(res, 200, correlationId, result.value);
+    respondJson(res, 200, correlationId, traceContext, result.value);
     return;
   }
 
-  respondProblem(res, problemFromError(result.error, pathname), correlationId);
+  respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
 }
 
 async function handleGetRun(
@@ -209,13 +251,14 @@ async function handleGetRun(
     pathname: string;
     workspaceId: string;
     runId: string;
+    traceContext: TraceContext;
   }>,
 ): Promise<void> {
-  const { deps, req, res, correlationId, pathname, workspaceId, runId } = args;
+  const { deps, req, res, correlationId, pathname, workspaceId, runId, traceContext } = args;
 
-  const auth = await authenticate(deps, req, correlationId, workspaceId);
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
   if (!auth.ok) {
-    respondProblem(res, problemFromError(auth.error, pathname), correlationId);
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
     return;
   }
 
@@ -226,11 +269,11 @@ async function handleGetRun(
   );
 
   if (result.ok) {
-    respondJson(res, 200, correlationId, result.value);
+    respondJson(res, 200, correlationId, traceContext, result.value);
     return;
   }
 
-  respondProblem(res, problemFromError(result.error, pathname), correlationId);
+  respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
 }
 
 async function handleRequest(
@@ -239,6 +282,7 @@ async function handleRequest(
   res: ServerResponse,
 ): Promise<void> {
   const correlationId = normalizeCorrelationId(req);
+  const traceContext = normalizeTraceContext(req);
   const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
 
   if (req.method === 'GET') {
@@ -249,6 +293,7 @@ async function handleRequest(
         req,
         res,
         correlationId,
+        traceContext,
         pathname,
         workspaceId: decodeURIComponent(mWorkspace[1] ?? ''),
       });
@@ -262,6 +307,7 @@ async function handleRequest(
         req,
         res,
         correlationId,
+        traceContext,
         pathname,
         workspaceId: decodeURIComponent(mRun[1] ?? ''),
         runId: decodeURIComponent(mRun[2] ?? ''),
@@ -280,6 +326,7 @@ async function handleRequest(
       instance: pathname,
     },
     correlationId,
+    traceContext,
   );
 }
 
@@ -287,6 +334,7 @@ export function createControlPlaneHandler(deps: ControlPlaneDeps = buildDeps()):
   return (req, res) => {
     void handleRequest(deps, req, res).catch((error) => {
       const correlationId = randomUUID();
+      const traceContext = normalizeTraceContext(req);
       respondProblem(
         res,
         {
@@ -297,6 +345,7 @@ export function createControlPlaneHandler(deps: ControlPlaneDeps = buildDeps()):
           instance: req.url ?? '/',
         },
         correlationId,
+        traceContext,
       );
     });
   };

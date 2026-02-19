@@ -93,6 +93,8 @@ export class TemporalWorkflowOrchestrator implements WorkflowOrchestrator {
             workflow: input.workflow,
             initiatedByUserId: input.initiatedByUserId.toString(),
             correlationId: input.correlationId.toString(),
+            ...(input.traceparent ? { traceparent: input.traceparent } : {}),
+            ...(input.tracestate ? { tracestate: input.tracestate } : {}),
             executionTier: input.executionTier,
           },
         ],

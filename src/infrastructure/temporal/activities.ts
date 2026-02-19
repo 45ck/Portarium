@@ -30,6 +30,8 @@ export type StartRunActivityInput = Readonly<{
   workflow: WorkflowV1;
   initiatedByUserId: string;
   correlationId: string;
+  traceparent?: string;
+  tracestate?: string;
   executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 }>;
 
@@ -62,6 +64,8 @@ export type CompleteRunActivityInput = Readonly<{
   workflow: WorkflowV1;
   initiatedByUserId: string;
   correlationId: string;
+  traceparent?: string;
+  tracestate?: string;
 }>;
 
 export function completeRunActivity(input: CompleteRunActivityInput): Promise<void> {

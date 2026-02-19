@@ -166,6 +166,8 @@ export class JoseJwtAuthentication implements AuthenticationPort {
     const { actor, ctx } = appContextFromWorkspaceAuthClaims({
       claims: payload,
       correlationId: input.correlationId,
+      ...(input.traceparent ? { traceparent: input.traceparent } : {}),
+      ...(input.tracestate ? { tracestate: input.tracestate } : {}),
       scopes: parseScopes(payload),
     });
 
