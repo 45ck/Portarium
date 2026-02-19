@@ -1862,6 +1862,29 @@
                   <td><span class="sla-badge" data-tooltip="Due in 2h">Due 2h</span></td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
+                <tr>
+                  <td>Approve Payroll Run: March batch — Finance write</td>
+                  <td><a href="#work-item">WI-1108</a></td>
+                  <td><a href="#run">R-8941</a></td>
+                  <td>
+                    <span
+                      class="tier-badge tier-badge--human"
+                      data-tooltip="Payroll operations require a distinct approval chain"
+                      >Human-approve</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="badge--incompatible"
+                      data-tooltip="Approver and requester hold incompatible duties under SoD-PAYROLL-001 — a different team member must review"
+                      >&#9888; Role conflict</span
+                    >
+                  </td>
+                  <td>finance_approver@acme.com</td>
+                  <td>8m</td>
+                  <td><span class="sla-badge sla-badge--warn" data-tooltip="Due in 1h 12m">Due 1h 12m</span></td>
+                  <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -3227,6 +3250,7 @@
             <button class="tab" type="button" data-tab="settings-governance">Governance</button>
             <button class="tab" type="button" data-tab="settings-packs">Packs</button>
             <button class="tab" type="button" data-tab="settings-triggers">Triggers</button>
+            <button class="tab" type="button" data-tab="settings-workforce">Workforce</button>
           </div>
 
           <div class="tabpanes">
