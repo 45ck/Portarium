@@ -99,7 +99,7 @@
 {"id":"bead-0099","title":"Review: Payroll port adapter test evidence","status":"closed","createdAt":"2026-02-17T03:48:34.172Z","updatedAt":"2026-02-19T08:17:01.878Z"}
 {"id":"bead-0100","title":"CrmSales port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:34.445Z","updatedAt":"2026-02-19T08:20:39.658Z"}
 {"id":"bead-0101","title":"Code review: CrmSales port adapter foundation","status":"closed","createdAt":"2026-02-17T03:48:34.715Z","updatedAt":"2026-02-19T08:21:39.720Z"}
-{"id":"bead-0102","title":"CrmSales port adapter integration tests","status":"open","createdAt":"2026-02-17T03:48:34.978Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0102","title":"CrmSales port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:48:34.978Z","updatedAt":"2026-02-19T08:22:52.963Z"}
 {"id":"bead-0103","title":"Review: CrmSales port adapter test evidence","status":"open","createdAt":"2026-02-17T03:48:35.242Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0104","title":"CustomerSupport port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:35.513Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0105","title":"Code review: CustomerSupport port adapter foundation","status":"open","createdAt":"2026-02-17T03:48:35.780Z","updatedAt":"2026-02-17T20:18:23.090Z"}
