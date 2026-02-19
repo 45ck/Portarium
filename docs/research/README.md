@@ -13,3 +13,5 @@ Commands:
 
 - `npm run domain-atlas:vendor` clone missing upstreams and pin missing commits in source manifests
 - `npm run domain-atlas:index` regenerate `docs/research/index.md` from Domain Atlas sources
+- `npm run domain-atlas:validate` validate source/CIF/mapping/capability artefacts and pinned commit consistency
+- `npm run domain-atlas:ci` run index regeneration + artifact validation + drift check for CI

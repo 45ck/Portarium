@@ -24,6 +24,8 @@ The research programme produces artefacts that become Portarium primitives:
    - `capability-matrix.schema.json`
 3. At least one provider example exists and validates against schemas (e.g., `stripe`).
 4. CI validates domain-atlas artefacts against schemas (no manual spot-checking).
+5. CI enforces upstream pin consistency: `source.json` `upstream.commit` must match corresponding extracted CIF `source.upstream.commit`.
+6. CI produces a machine-readable validation summary report under `reports/domain-atlas/`.
 
 ## Non-Goals (MVP)
 

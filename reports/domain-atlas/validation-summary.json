@@ -1,0 +1,523 @@
+{
+  "generatedAt": "2026-02-19T01:24:29.796Z",
+  "counts": {
+    "sourceManifests": 30,
+    "extractedCif": 17,
+    "mappings": 19,
+    "capabilityMatrices": 19
+  },
+  "errorCount": 0,
+  "errors": [],
+  "checks": [
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/canvas-lms/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/chargebee-openapi/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/deputy/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/docusign-openapi/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/erpnext/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/keycloak-openapi/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/keycloak/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/killbill/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/mautic/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/moodle/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/mosquitto/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/nav2/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/node-opcua/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/odoo/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/openapi-directory/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/opencontrol/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/openfga/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/oscal/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/paperless-ngx/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/ros2-common-interfaces/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/rosbridge-suite/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/spire/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/square/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/stripe-openapi/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/stripe/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/twilio-oai/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/vault/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/xero/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/zammad/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "source-manifest",
+      "file": "domain-atlas/sources/zenoh/source.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/erpnext/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/keycloak/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/killbill/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/mautic/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/mosquitto/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/nav2/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/node-opcua/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/odoo/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/openfga/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/paperless-ngx/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/ros2-common-interfaces/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/rosbridge-suite/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/spire/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/stripe/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/vault/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/zammad/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "cif",
+      "file": "domain-atlas/extracted/zenoh/cif.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/erpnext/FinanceAccounting.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/erpnext/ProcurementSpend.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/keycloak/IamDirectory.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/killbill/PaymentsBilling.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/mautic/MarketingAutomation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/mosquitto/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/nav2/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/node-opcua/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/odoo/FinanceAccounting.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/odoo/ProcurementSpend.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/openfga/IamDirectory.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/paperless-ngx/DocumentsEsign.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/ros2-common-interfaces/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/rosbridge-suite/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/spire/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/stripe/PaymentsBilling.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/vault/SecretsVaulting.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/zammad/CustomerSupport.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "mapping",
+      "file": "domain-atlas/mappings/zenoh/RoboticsActuation.mapping.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/erpnext/FinanceAccounting.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/erpnext/ProcurementSpend.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/keycloak/IamDirectory.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/killbill/PaymentsBilling.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/mautic/MarketingAutomation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/mosquitto/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/nav2/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/node-opcua/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/odoo/FinanceAccounting.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/odoo/ProcurementSpend.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/openfga/IamDirectory.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/paperless-ngx/DocumentsEsign.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/ros2-common-interfaces/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/rosbridge-suite/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/spire/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/stripe/PaymentsBilling.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/vault/SecretsVaulting.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/zammad/CustomerSupport.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    },
+    {
+      "kind": "capability-matrix",
+      "file": "domain-atlas/capabilities/zenoh/RoboticsActuation.capability-matrix.json",
+      "ok": true,
+      "issues": []
+    }
+  ]
+}

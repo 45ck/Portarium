@@ -39,6 +39,8 @@
     "domain-atlas:extract:node-opcua": "node scripts/domain-atlas/extract-node-opcua-cif.mjs",
     "domain-atlas:extract:rosbridge-suite": "node scripts/domain-atlas/extract-rosbridge-suite-cif.mjs",
     "domain-atlas:extract:zenoh": "node scripts/domain-atlas/extract-zenoh-cif.mjs",
+    "domain-atlas:validate": "node scripts/domain-atlas/validate-artifacts.mjs",
+    "domain-atlas:ci": "npm run domain-atlas:index && npm run domain-atlas:validate && git diff --exit-code -- docs/research/index.md",
     "bd": "node scripts/beads/bd.mjs",
     "ci:gates": "node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",

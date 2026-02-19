@@ -9,6 +9,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  domain_atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Validate Domain Atlas artifacts
+        run: npm run domain-atlas:ci
+
+      - name: Upload Domain Atlas validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: domain-atlas-validation
+          path: reports/domain-atlas/
+
   pr:
     runs-on: ubuntu-latest
     timeout-minutes: 10
