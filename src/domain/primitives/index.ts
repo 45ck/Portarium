@@ -217,6 +217,12 @@ export type MissionId = Branded<string, 'MissionId'>;
 /** Unique identifier for an edge gateway. */
 export type GatewayId = Branded<string, 'GatewayId'>;
 
+/** Unique identifier for a workforce member. */
+export type WorkforceMemberId = Branded<string, 'WorkforceMemberId'>;
+
+/** Unique identifier for a workforce queue. */
+export type WorkforceQueueId = Branded<string, 'WorkforceQueueId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -288,6 +294,10 @@ export const RobotId = (value: string): RobotId => brand<string, 'RobotId'>(valu
 export const FleetId = (value: string): FleetId => brand<string, 'FleetId'>(value);
 export const MissionId = (value: string): MissionId => brand<string, 'MissionId'>(value);
 export const GatewayId = (value: string): GatewayId => brand<string, 'GatewayId'>(value);
+export const WorkforceMemberId = (value: string): WorkforceMemberId =>
+  brand<string, 'WorkforceMemberId'>(value);
+export const WorkforceQueueId = (value: string): WorkforceQueueId =>
+  brand<string, 'WorkforceQueueId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

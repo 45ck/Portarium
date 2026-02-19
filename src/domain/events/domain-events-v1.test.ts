@@ -56,6 +56,20 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.aggregateKind).toBe('Run');
     expect(evt.payload).toEqual({ reason: 'awaiting-approval' });
   });
+
+  it('parses workforce lifecycle event types', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-workforce-1',
+      eventType: 'WorkforceMemberRegistered',
+      aggregateKind: 'WorkforceMember',
+      aggregateId: 'wm-001',
+      payload: { linkedUserId: 'user-1' },
+    });
+
+    expect(evt.eventType).toBe('WorkforceMemberRegistered');
+    expect(evt.aggregateKind).toBe('WorkforceMember');
+  });
 });
 
 describe('parseDomainEventV1: validation', () => {

@@ -74,6 +74,10 @@ export type DomainEventType =
   | 'MachineRegistered'
   | 'MachineDeregistered'
   | 'MachineEndpointUpdated'
+  // Workforce aggregate
+  | 'WorkforceMemberRegistered'
+  | 'WorkforceMemberCapabilityUpdated'
+  | 'WorkforceMemberAvailabilityChanged'
   // Port
   | 'PortRegistered'
   | 'PortEnabled'
@@ -179,6 +183,10 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'MachineRegistered',
   'MachineDeregistered',
   'MachineEndpointUpdated',
+  // Workforce aggregate
+  'WorkforceMemberRegistered',
+  'WorkforceMemberCapabilityUpdated',
+  'WorkforceMemberAvailabilityChanged',
   // Port
   'PortRegistered',
   'PortEnabled',

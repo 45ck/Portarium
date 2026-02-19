@@ -24,3 +24,4 @@ export * from './machines/index.js';
 export * from './deployment/index.js';
 export * from './location/index.js';
 export * from './robots/index.js';
+export * from './workforce/index.js';

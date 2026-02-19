@@ -287,6 +287,10 @@ A lightweight cross-system binding object (case) that connects SoR links (Extern
 
 An imperative, durable sequence of steps that calls ports/adapters/machines with retries and gates.
 
+### Workforce Member
+
+An operational overlay identity linked to an active WorkspaceUser that can be assigned human tasks based on capabilities and availability.
+
 ### Workspace / Tenant
 
 The isolation boundary for an organisation/client: users, roles, policies, credentials, runs, evidence, configs.

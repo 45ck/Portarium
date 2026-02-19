@@ -28,6 +28,8 @@ import {
   UserId,
   WorkspaceId,
   WorkflowId,
+  WorkforceMemberId,
+  WorkforceQueueId,
   RobotId,
   SiteId,
   SourceStreamId,
@@ -86,6 +88,8 @@ describe('domain primitives', () => {
       FleetId,
       MissionId,
       GatewayId,
+      WorkforceMemberId,
+      WorkforceQueueId,
     ];
 
     for (const factory of factories) {
