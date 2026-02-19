@@ -4509,7 +4509,7 @@
           <div class="screen__header">
             <div>
               <h1 id="h-workflow-builder" class="h1">Workflow Builder</h1>
-              <div class="subtle">Invoice Correction Workflow (draft)</div>
+              <div class="subtle js-wf-builder-subtitle">Invoice Correction Workflow (draft)</div>
             </div>
             <div class="screen__actions">
               <span class="subtle" style="font-size: 11px; margin-right: 4px">v1.2 (draft)</span>
@@ -4578,6 +4578,67 @@
                     <div class="wf-palette__item-desc">Delegate to AI agent</div>
                   </div>
                 </button>
+                <button class="wf-palette__item" type="button" data-step-type="robot-action">
+                  <span class="wf-node-icon wf-node-icon--action">&#9632;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Robot Action</div>
+                    <div class="wf-palette__item-desc">Dispatch robot mission command</div>
+                  </div>
+                </button>
+                <button class="wf-palette__item" type="button" data-step-type="machine-job">
+                  <span class="wf-node-icon wf-node-icon--condition">&#9635;</span>
+                  <div>
+                    <div class="wf-palette__item-name">Machine Job</div>
+                    <div class="wf-palette__item-desc">Invoke PLC/OT execution step</div>
+                  </div>
+                </button>
+              </div>
+
+              <div class="wf-template-group">
+                <div class="wf-palette__title">Example Blueprints</div>
+                <div class="wf-palette__hint subtle">Switch canvas to concrete examples</div>
+                <div class="wf-palette__list">
+                  <button
+                    class="wf-palette__item wf-template wf-template--active"
+                    type="button"
+                    data-wf-template="finance-invoice"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">Finance: Invoice Correction</div>
+                      <div class="wf-palette__item-desc">Approval and evidence baseline</div>
+                    </div>
+                  </button>
+                  <button
+                    class="wf-palette__item wf-template"
+                    type="button"
+                    data-wf-template="robot-fleet-triage"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">Robotics: Fleet Triage</div>
+                      <div class="wf-palette__item-desc">Geofence, E-Stop, and map alerts</div>
+                    </div>
+                  </button>
+                  <button
+                    class="wf-palette__item wf-template"
+                    type="button"
+                    data-wf-template="machine-maintenance"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">Machines: Maintenance Loop</div>
+                      <div class="wf-palette__item-desc">PLC thresholds and work-item escalation</div>
+                    </div>
+                  </button>
+                  <button
+                    class="wf-palette__item wf-template"
+                    type="button"
+                    data-wf-template="hybrid-incident"
+                  >
+                    <div>
+                      <div class="wf-palette__item-name">Hybrid: Robot + Machine Incident</div>
+                      <div class="wf-palette__item-desc">Supervisor gate with evidence trail</div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </aside>
 
@@ -4587,7 +4648,11 @@
                 <button class="btn btn--small" type="button" title="Zoom out">&minus;</button>
                 <button class="btn btn--small" type="button" title="Fit to view">Fit</button>
               </div>
-              <div class="wf-graph" id="wfGraph">
+              <div
+                class="wf-graph wf-template-graph wf-template-graph--active"
+                id="wfGraph"
+                data-wf-template-pane="finance-invoice"
+              >
                 <div class="wf-graph__row">
                   <div class="wf-node wf-node--start" data-node-id="start">
                     <div class="wf-node__header">

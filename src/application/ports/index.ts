@@ -25,3 +25,4 @@ export * from './crm-sales-adapter.js';
 export * from './customer-support-adapter.js';
 export * from './itsm-it-ops-adapter.js';
 export * from './iam-directory-adapter.js';
+export * from './secrets-vaulting-adapter.js';

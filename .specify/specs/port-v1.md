@@ -156,3 +156,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/iam-directory/in-memory-iam-directory-adapter.ts`.
+
+## SecretsVaulting Adapter Foundation (bead-0116)
+
+- Application port contract now includes `SecretsVaultingAdapterPort` under
+  `src/application/ports/secrets-vaulting-adapter.ts`.
+- The operation set is fixed to the 15 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `SecretsVaulting` family.
+- Execute response contract:
+  - success: `ExternalObjectRef`, `ExternalObjectRef[]`, `accepted`, or `opaque`
+    result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/secrets-vaulting/in-memory-secrets-vaulting-adapter.ts`.
