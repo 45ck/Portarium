@@ -62,9 +62,9 @@ describe('InMemorySecretsVaultingAdapter', () => {
     });
     expect(list.ok).toBe(true);
     if (!list.ok || list.result.kind !== 'externalRefs') return;
-    expect(list.result.externalRefs.some((ref) => ref.displayLabel.includes('secret/app/token'))).toBe(
-      true,
-    );
+    expect(
+      list.result.externalRefs.some((ref) => (ref.displayLabel ?? '').includes('secret/app/token')),
+    ).toBe(true);
 
     const deleted = await adapter.execute({
       tenantId: TENANT_A,
@@ -120,13 +120,12 @@ describe('InMemorySecretsVaultingAdapter', () => {
     });
     expect(key.ok).toBe(true);
     if (!key.ok || key.result.kind !== 'externalRef') return;
+    const keyExternalId = key.result.externalRef.externalId;
 
     const keys = await adapter.execute({ tenantId: TENANT_A, operation: 'listKeys' });
     expect(keys.ok).toBe(true);
     if (!keys.ok || keys.result.kind !== 'externalRefs') return;
-    expect(keys.result.externalRefs.some((ref) => ref.externalId === key.result.externalRef.externalId)).toBe(
-      true,
-    );
+    expect(keys.result.externalRefs.some((ref) => ref.externalId === keyExternalId)).toBe(true);
   });
 
   it('supports crypto, audit, and secret policy operations', async () => {
