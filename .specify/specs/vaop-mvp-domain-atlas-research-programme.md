@@ -26,6 +26,7 @@ The research programme produces artefacts that become Portarium primitives:
 4. CI validates domain-atlas artefacts against schemas (no manual spot-checking).
 5. CI enforces upstream pin consistency: `source.json` `upstream.commit` must match corresponding extracted CIF `source.upstream.commit`.
 6. CI produces a machine-readable validation summary report under `reports/domain-atlas/`.
+7. Port-family candidate ownership/blocker matrix exists for all 18 standard families with required artefact dependencies.
 
 ## Non-Goals (MVP)
 

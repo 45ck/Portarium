@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-02-19T00:00:00.000Z",
+  "artifactDependencies": [
+    "sourceManifest",
+    "providerDecision",
+    "cifExtract",
+    "canonicalMapping",
+    "capabilityMatrix",
+    "contractFixtures"
+  ],
+  "families": [
+    {
+      "portFamily": "FinanceAccounting",
+      "owner": "integration-finance",
+      "candidateProviders": ["odoo", "erpnext", "xero", "openapi-directory"],
+      "blockers": ["Select primary MVP provider between odoo and erpnext."]
+    },
+    {
+      "portFamily": "PaymentsBilling",
+      "owner": "integration-finance",
+      "candidateProviders": ["stripe", "killbill", "chargebee-openapi", "square", "openapi-directory"],
+      "blockers": ["Resolve primary provider order between stripe and killbill."]
+    },
+    {
+      "portFamily": "ProcurementSpend",
+      "owner": "integration-finance",
+      "candidateProviders": ["odoo", "erpnext"],
+      "blockers": ["Add at least one safe_to_reuse candidate to reduce GPL/LGPL-only reliance."]
+    },
+    {
+      "portFamily": "HrisHcm",
+      "owner": "integration-people",
+      "candidateProviders": ["deputy"],
+      "blockers": ["No ACTIVE or DONE candidate providers yet."]
+    },
+    {
+      "portFamily": "Payroll",
+      "owner": "integration-people",
+      "candidateProviders": [],
+      "blockers": ["No source manifest candidates defined."]
+    },
+    {
+      "portFamily": "CrmSales",
+      "owner": "integration-growth",
+      "candidateProviders": ["openapi-directory"],
+      "blockers": ["No ACTIVE or DONE candidate providers yet."]
+    },
+    {
+      "portFamily": "CustomerSupport",
+      "owner": "integration-service-ops",
+      "candidateProviders": ["zammad", "openapi-directory"],
+      "blockers": ["Primary DONE candidate is study_only; add safe_to_reuse fallback."]
+    },
+    {
+      "portFamily": "ItsmItOps",
+      "owner": "integration-service-ops",
+      "candidateProviders": [],
+      "blockers": ["No source manifest candidates defined."]
+    },
+    {
+      "portFamily": "IamDirectory",
+      "owner": "integration-security",
+      "candidateProviders": ["keycloak", "openfga", "keycloak-openapi"],
+      "blockers": ["Resolve primary provider order between keycloak and openfga."]
+    },
+    {
+      "portFamily": "SecretsVaulting",
+      "owner": "integration-security",
+      "candidateProviders": ["vault"],
+      "blockers": ["Only DONE candidate is unsafe_dependency; add safe_to_reuse path."]
+    },
+    {
+      "portFamily": "MarketingAutomation",
+      "owner": "integration-growth",
+      "candidateProviders": ["mautic"],
+      "blockers": ["Primary DONE candidate is study_only; add safe_to_reuse fallback."]
+    },
+    {
+      "portFamily": "AdsPlatforms",
+      "owner": "integration-growth",
+      "candidateProviders": [],
+      "blockers": ["No source manifest candidates defined."]
+    },
+    {
+      "portFamily": "CommsCollaboration",
+      "owner": "integration-collab",
+      "candidateProviders": ["twilio-oai", "openapi-directory"],
+      "blockers": ["No ACTIVE or DONE candidate providers yet."]
+    },
+    {
+      "portFamily": "ProjectsWorkMgmt",
+      "owner": "integration-collab",
+      "candidateProviders": ["canvas-lms", "moodle"],
+      "blockers": ["No ACTIVE or DONE candidate providers yet."]
+    },
+    {
+      "portFamily": "DocumentsEsign",
+      "owner": "integration-collab",
+      "candidateProviders": ["paperless-ngx", "docusign-openapi"],
+      "blockers": ["Add safe_to_reuse DONE candidate to reduce GPL-only reliance."]
+    },
+    {
+      "portFamily": "AnalyticsBi",
+      "owner": "integration-data",
+      "candidateProviders": [],
+      "blockers": ["No source manifest candidates defined."]
+    },
+    {
+      "portFamily": "MonitoringIncident",
+      "owner": "integration-service-ops",
+      "candidateProviders": [],
+      "blockers": ["No source manifest candidates defined."]
+    },
+    {
+      "portFamily": "ComplianceGrc",
+      "owner": "integration-security",
+      "candidateProviders": ["opencontrol", "oscal"],
+      "blockers": ["No ACTIVE or DONE candidate providers yet."]
+    }
+  ]
+}

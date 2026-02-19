@@ -7,6 +7,7 @@ Single source of truth for upstream intake metadata: `domain-atlas/sources/*/sou
 - Upstream clones (gitignored): `domain-atlas/upstreams/`
 - Source intake manifests (committed): `domain-atlas/sources/`
 - Provider decision notes (committed): `domain-atlas/decisions/providers/`
+- Port-family candidate ownership/blockers matrix: `docs/research/port-family-integration-candidate-matrix.md`
 - Index (generated): `docs/research/index.md`
 
 Commands:
