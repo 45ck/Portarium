@@ -73,6 +73,7 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 - Approval action requires rationale when decision is deny or request-changes.
 - Decision errors must include actionable information and retain the operation `instance`.
 - The UI must show policy context alongside effect summaries before submission.
+- Decision submission controls must be role-gated to approvers; non-approver personas see read-only approval context.
 
 ### R5 System states
 
@@ -95,6 +96,7 @@ For each primary screen, show dedicated state components for:
 - Keyboard access for primary rows, drawers, modals, and decision forms.
 - Focus visibility and recovery when closing overlays.
 - No critical state represented by color alone.
+- Master-detail screens must keep detail content synchronized with the selected row/card across all visible tabs.
 
 ## Acceptance signals
 

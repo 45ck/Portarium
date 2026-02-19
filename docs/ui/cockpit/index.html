@@ -1752,7 +1752,7 @@
                 </div>
               </div>
 
-              <div class="form">
+              <div class="form" data-requires-persona="approver">
                 <label class="field" id="fieldDecision">
                   <span class="field__label">Decision</span>
                   <select class="field__input" id="approvalDecision" required>
@@ -1791,6 +1791,13 @@
                   </button>
                   <a class="btn" href="#work-item">Back to Work Item</a>
                 </div>
+              </div>
+              <div
+                class="callout"
+                style="margin-top: 10px"
+                data-requires-persona="operator auditor admin"
+              >
+                Read-only view: only users in the approver role can submit decisions on this gate.
               </div>
             </article>
           </div>
@@ -3090,6 +3097,7 @@
               role="group"
               aria-label="Make approval decision"
               style="border-top: 1px solid rgba(0, 0, 0, 0.08); padding-top: 12px"
+              data-requires-persona="approver"
             >
               <div
                 style="
@@ -3128,6 +3136,14 @@
                 </button>
                 <button class="btn btn--small" type="button">&#8617; Request changes</button>
               </div>
+            </div>
+
+            <div
+              class="callout"
+              style="margin-top: 12px"
+              data-requires-persona="operator auditor admin"
+            >
+              Read-only view: approval decisions require the approver role.
             </div>
 
             <div class="callout callout--ok" style="margin-top: 12px; font-size: 12px">
@@ -5081,13 +5097,20 @@
                   <div class="agent-detail__header">
                     <div>
                       <h2 class="agent-detail__name">Invoice Classifier</h2>
-                      <div class="subtle">Agent: claude-classify</div>
+                      <div class="subtle js-agent-detail-id">Agent: claude-classify</div>
                     </div>
                     <div style="display: flex; gap: 6px">
-                      <button class="btn btn--small" type="button" aria-controls="agentTestResult">
+                      <button
+                        class="btn btn--small"
+                        type="button"
+                        id="agentTestButton"
+                        aria-controls="agentTestResult"
+                      >
                         Test connection &#8635;
                       </button>
-                      <button class="btn btn--small" type="button">Deactivate</button>
+                      <button class="btn btn--small" type="button" id="agentLifecycleButton">
+                        Deactivate
+                      </button>
                     </div>
                   </div>
                   <div
@@ -5114,22 +5137,26 @@
                       <div class="form">
                         <label class="field"
                           ><span class="field__label">Agent Name</span
-                          ><input class="field__input" type="text" value="Invoice Classifier"
+                          ><input
+                            class="field__input"
+                            type="text"
+                            id="agentConfigName"
+                            value="Invoice Classifier"
                         /></label>
                         <label class="field"
                           ><span class="field__label">Provider</span>
-                          <select class="field__input">
-                            <option selected>Anthropic (Claude)</option>
-                            <option>OpenAI</option>
-                            <option>Custom endpoint</option>
+                          <select class="field__input" id="agentConfigProvider">
+                            <option value="anthropic" selected>Anthropic (Claude)</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="custom">Custom endpoint</option>
                           </select>
                         </label>
                         <label class="field"
                           ><span class="field__label">Model</span>
-                          <select class="field__input">
-                            <option>Claude Opus 4.6</option>
-                            <option selected>Claude Sonnet 4.5</option>
-                            <option>Claude Haiku 4.5</option>
+                          <select class="field__input" id="agentConfigModel">
+                            <option value="claude-opus-4.6">Claude Opus 4.6</option>
+                            <option value="claude-sonnet-4.5" selected>Claude Sonnet 4.5</option>
+                            <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
                           </select>
                         </label>
                         <label class="field"
@@ -5137,6 +5164,7 @@
                           ><input
                             class="field__input"
                             type="number"
+                            id="agentConfigTemperature"
                             value="0.1"
                             min="0"
                             max="2"
@@ -5147,6 +5175,7 @@
                           ><input
                             class="field__input"
                             type="number"
+                            id="agentConfigMaxTokens"
                             value="4096"
                             min="1"
                             max="200000"
@@ -5168,38 +5197,38 @@
                         >
                           <div class="agent-capabilities">
                             <label class="agent-capability"
-                              ><input type="checkbox" checked />
+                              ><input type="checkbox" data-capability="read:external" checked />
                               <span
                                 ><strong>read:external</strong> — read from external adapter</span
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" checked />
+                              ><input type="checkbox" data-capability="classify" checked />
                               <span
                                 ><strong>classify</strong> — classification and labelling
                                 tasks</span
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" />
+                              ><input type="checkbox" data-capability="write:external" />
                               <span
                                 ><strong>write:external</strong> — write to external adapter</span
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" />
+                              ><input type="checkbox" data-capability="generate" />
                               <span
                                 ><strong>generate</strong> — text and document generation</span
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" checked />
+                              ><input type="checkbox" data-capability="analyze" checked />
                               <span
                                 ><strong>analyze</strong> — data analysis and scoring</span
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" />
+                              ><input type="checkbox" data-capability="execute-code" />
                               <span
                                 ><strong>execute-code</strong> — run sandboxed code
                                 <span
@@ -5210,7 +5239,7 @@
                               ></label
                             >
                             <label class="agent-capability"
-                              ><input type="checkbox" />
+                              ><input type="checkbox" data-capability="notify" />
                               <span
                                 ><strong>notify</strong> — send notifications and webhooks</span
                               ></label
@@ -5226,12 +5255,12 @@
                       </div>
                       <div style="margin-top: 16px">
                         <div class="agent-section-title">Permissions</div>
-                        <div class="callout" style="margin-top: 6px">
+                        <div class="callout" style="margin-top: 6px" id="agentPermissionsSummary">
                           This agent can access data from: <strong>Finance</strong>,
                           <strong>Payments</strong>. It cannot write to any external system
                           directly.
                         </div>
-                        <div class="chips" style="margin-top: 8px">
+                        <div class="chips" style="margin-top: 8px" id="agentPermissionsChips">
                           <span class="chip"><span class="port-icon">FA</span> Finance (read)</span>
                           <span class="chip"
                             ><span class="port-icon">PB</span> Payments (read)</span
@@ -5242,7 +5271,7 @@
                         <div class="agent-section-title">Prompt Template</div>
                         <label class="field" style="margin-top: 6px"
                           ><span class="field__label">System prompt</span>
-                          <textarea class="field__input" rows="5">
+                          <textarea class="field__input" rows="5" id="agentPromptTemplate">
 You are an invoice classification agent for Portarium. Given an invoice record, classify each line item into the correct accounting category. Return a JSON array of {lineItemId, category, confidence}.</textarea
                           >
                         </label>
@@ -5256,20 +5285,20 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                       <div class="grid grid--3" style="margin-top: 0">
                         <div class="metric">
                           <div class="metric__label">Total runs (7d)</div>
-                          <div class="metric__value">142</div>
+                          <div class="metric__value" id="agentMetricRuns">142</div>
                         </div>
                         <div class="metric">
                           <div class="metric__label">Success rate</div>
-                          <div class="metric__value">96%</div>
+                          <div class="metric__value" id="agentMetricSuccess">96%</div>
                         </div>
                         <div class="metric">
                           <div class="metric__label">Avg response time</div>
-                          <div class="metric__value">1.2s</div>
+                          <div class="metric__value" id="agentMetricLatency">1.2s</div>
                         </div>
                       </div>
                       <article class="card" style="margin-top: 12px">
                         <div class="card__title">Recent Runs</div>
-                        <div class="list">
+                        <div class="list" id="agentRecentRunsList">
                           <div class="row row--static">
                             <div class="row__main">
                               <div class="row__title">Classify: INV-22318 (12 line items)</div>
@@ -5315,8 +5344,10 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <div class="tabpane" data-pane="agent-integrations">
                       <article class="card">
                         <div class="card__title">Workflows using this agent</div>
-                        <div class="card__meta subtle">Steps that reference Invoice Classifier</div>
-                        <div class="list">
+                        <div class="card__meta subtle" id="agentIntegrationsMeta">
+                          Steps that reference Invoice Classifier
+                        </div>
+                        <div class="list" id="agentIntegrationsList">
                           <a class="row" href="#workflow-builder" style="text-decoration: none"
                             ><div class="row__main">
                               <div class="row__title">Invoice Correction Workflow</div>
@@ -5349,7 +5380,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                           >
                         </div>
                       </article>
-                      <div class="callout" style="margin-top: 12px">
+                      <div class="callout" style="margin-top: 12px" id="agentDeactivateImpact">
                         Deactivating this agent will pause 2 active workflows at their next Agent
                         Task step.
                       </div>

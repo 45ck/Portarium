@@ -7,3 +7,4 @@ export * from './adapters/finance-accounting/in-memory-finance-accounting-adapte
 export * from './adapters/payments-billing/in-memory-payments-billing-adapter.js';
 export * from './adapters/procurement-spend/in-memory-procurement-spend-adapter.js';
 export * from './adapters/hris-hcm/in-memory-hris-hcm-adapter.js';
+export * from './adapters/payroll/in-memory-payroll-adapter.js';

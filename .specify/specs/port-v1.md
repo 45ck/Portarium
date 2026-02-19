@@ -82,3 +82,17 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/hris-hcm/in-memory-hris-hcm-adapter.ts`.
+
+## Payroll Adapter Foundation (bead-0096)
+
+- Application port contract now includes `PayrollAdapterPort` under
+  `src/application/ports/payroll-adapter.ts`.
+- The operation set is fixed to the 12 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `Payroll` family.
+- Execute response contract:
+  - success: `ExternalObjectRef`, `ExternalObjectRef[]`, `Payment`, `Payment[]`,
+    `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/payroll/in-memory-payroll-adapter.ts`.

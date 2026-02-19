@@ -751,6 +751,18 @@ function setPersona(persona) {
     nextActionText.textContent = naText || '';
   }
 
+  /* Inbox hero prompt text */
+  const inboxHeroText = document.querySelector('.js-hero-inbox-text');
+  if (inboxHeroText) {
+    const heroText = {
+      operator: 'A run failed and can be retried. Start from the failures queue.',
+      approver: 'You have 2 approvals waiting for your decision.',
+      auditor: 'Review evidence integrity and retention status for recent runs.',
+      admin: 'Configuration drift detected in one adapter. Diagnose and restore health.',
+    }[persona];
+    inboxHeroText.textContent = heroText || '';
+  }
+
   /* SoD callout visibility */
   const sodCallout = document.querySelector('.js-callout-sod');
   if (sodCallout) {
@@ -1426,35 +1438,394 @@ document.addEventListener('click', function (e) {
 /* ============================================================
    AGENT CONFIG - Card Selection
    ============================================================ */
+const AGENT_DETAIL_CONTENT = {
+  'claude-classify': {
+    name: 'Invoice Classifier',
+    agentId: 'claude-classify',
+    provider: 'anthropic',
+    model: 'claude-sonnet-4.5',
+    modelOptions: [
+      { value: 'claude-opus-4.6', label: 'Claude Opus 4.6' },
+      { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
+      { value: 'claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+    ],
+    temperature: '0.1',
+    maxTokens: '4096',
+    capabilities: ['read:external', 'classify', 'analyze'],
+    permissionsSummary:
+      'This agent can access data from: <strong>Finance</strong>, <strong>Payments</strong>. It cannot write to any external system directly.',
+    permissionChips: [
+      { icon: 'FA', label: 'Finance (read)' },
+      { icon: 'PB', label: 'Payments (read)' },
+    ],
+    prompt:
+      'You are an invoice classification agent for Portarium. Given an invoice record, classify each line item into the correct accounting category. Return a JSON array of {lineItemId, category, confidence}.',
+    metrics: { runs: '142', success: '96%', latency: '1.2s' },
+    recentRuns: [
+      {
+        title: 'Classify: INV-22318 (12 line items)',
+        meta: 'Run R-8920 | WI-1099 | 12m ago | 0.9s',
+        statusClass: 'status--ok',
+        statusText: 'Success',
+      },
+      {
+        title: 'Classify: INV-22305 (8 line items)',
+        meta: 'Run R-8901 | WI-1088 | 2h ago | 1.1s',
+        statusClass: 'status--ok',
+        statusText: 'Success',
+      },
+      {
+        title: 'Classify: INV-22291 (3 line items)',
+        meta: 'Run R-8889 | WI-1072 | 6h ago | 0.8s',
+        statusClass: 'status--danger',
+        statusText: 'Failed',
+      },
+    ],
+    integrationsMeta: 'Steps that reference Invoice Classifier',
+    integrations: [
+      {
+        title: 'Invoice Correction Workflow',
+        subtitle: 'Step: "Classify Line Items" (position 4 of 7)',
+        statusClass: 'status--info',
+        statusText: 'Active',
+      },
+      {
+        title: 'Quarterly Audit Preparation',
+        subtitle: 'Step: "Categorize Entries" (position 2 of 5)',
+        statusClass: 'status--info',
+        statusText: 'Active',
+      },
+    ],
+    deactivateImpact:
+      'Deactivating this agent will pause 2 active workflows at their next Agent Task step.',
+    bannerClass: 'integrity-banner--ok',
+    bannerText: 'Connection healthy. Last test: 2m ago (latency: 180ms).',
+    lifecycleButton: 'Deactivate',
+  },
+  'openai-summarize': {
+    name: 'Document Summarizer',
+    agentId: 'openai-summarize',
+    provider: 'openai',
+    model: 'gpt-4o',
+    modelOptions: [
+      { value: 'gpt-4o', label: 'GPT-4o' },
+      { value: 'gpt-4.1', label: 'GPT-4.1' },
+      { value: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
+    ],
+    temperature: '0.2',
+    maxTokens: '8192',
+    capabilities: ['read:external', 'generate', 'analyze', 'notify'],
+    permissionsSummary:
+      'This agent can access data from: <strong>Documents</strong>, <strong>Support</strong>. It can draft summaries and notify channels but cannot write to source records.',
+    permissionChips: [
+      { icon: 'DE', label: 'Documents (read)' },
+      { icon: 'CS', label: 'Support (read)' },
+      { icon: 'CC', label: 'Comms (notify)' },
+    ],
+    prompt:
+      'Summarize the provided document set in concise, action-oriented language. Include risks, missing facts, and recommended follow-up actions.',
+    metrics: { runs: '58', success: '91%', latency: '3.4s' },
+    recentRuns: [
+      {
+        title: 'Summarize: Escalation bundle #771',
+        meta: 'Run R-8892 | WI-1042 | 22m ago | 3.1s',
+        statusClass: 'status--ok',
+        statusText: 'Success',
+      },
+      {
+        title: 'Summarize: Contract review pack',
+        meta: 'Run R-8881 | WI-1037 | 3h ago | 3.7s',
+        statusClass: 'status--ok',
+        statusText: 'Success',
+      },
+      {
+        title: 'Summarize: Policy change digest',
+        meta: 'Run R-8819 | WI-0972 | 1d ago | 4.6s',
+        statusClass: 'status--warn',
+        statusText: 'Slow',
+      },
+    ],
+    integrationsMeta: 'Steps that reference Document Summarizer',
+    integrations: [
+      {
+        title: 'Customer Escalation Triage',
+        subtitle: 'Step: "Summarize Ticket History" (position 3 of 6)',
+        statusClass: 'status--info',
+        statusText: 'Active',
+      },
+      {
+        title: 'Policy Review Workflow',
+        subtitle: 'Step: "Summarize Proposed Changes" (position 2 of 4)',
+        statusClass: 'status--info',
+        statusText: 'Active',
+      },
+    ],
+    deactivateImpact:
+      'Deactivating this agent will pause 2 active workflows that rely on summary generation.',
+    bannerClass: 'integrity-banner--ok',
+    bannerText: 'Connection healthy. Last test: 6m ago (latency: 410ms).',
+    lifecycleButton: 'Deactivate',
+  },
+  'custom-validator': {
+    name: 'Policy Validator',
+    agentId: 'custom-validator',
+    provider: 'custom',
+    model: 'custom-endpoint-v1',
+    modelOptions: [{ value: 'custom-endpoint-v1', label: 'Custom endpoint v1' }],
+    temperature: '0.0',
+    maxTokens: '2048',
+    capabilities: ['read:external', 'analyze', 'write:external'],
+    permissionsSummary:
+      'This agent can access data from: <strong>Payroll</strong>, <strong>Compliance</strong>. It can write policy-evaluation outcomes but cannot trigger payouts.',
+    permissionChips: [
+      { icon: 'PA', label: 'Payroll (read)' },
+      { icon: 'CG', label: 'Compliance (read)' },
+      { icon: 'PO', label: 'Policy (write)' },
+    ],
+    prompt:
+      'Validate proposed payroll and policy changes against SoD and threshold rules. Return policy outcome, violated constraints, and required approver set.',
+    metrics: { runs: '0', success: '--', latency: '--' },
+    recentRuns: [
+      {
+        title: 'Validate: Payroll policy P-332',
+        meta: 'Run R-8854 | WI-1002 | 5m ago | endpoint 502',
+        statusClass: 'status--danger',
+        statusText: 'Failed',
+      },
+      {
+        title: 'Validate: Compensation exception C-82',
+        meta: 'Run R-8848 | WI-0999 | 1h ago | endpoint timeout',
+        statusClass: 'status--danger',
+        statusText: 'Failed',
+      },
+    ],
+    integrationsMeta: 'Steps that reference Policy Validator',
+    integrations: [
+      {
+        title: 'Payroll Exception Review',
+        subtitle: 'Step: "Validate Policy Rule Set" (position 2 of 5)',
+        statusClass: 'status--warn',
+        statusText: 'Paused',
+      },
+      {
+        title: 'Access Governance Enforcement',
+        subtitle: 'Step: "Policy Safety Check" (position 1 of 4)',
+        statusClass: 'status--warn',
+        statusText: 'Paused',
+      },
+    ],
+    deactivateImpact:
+      'This agent is already degraded. Keeping it active may block policy-gated workflows until endpoint health recovers.',
+    bannerClass: 'integrity-banner--danger',
+    bannerText: 'Connection failed. Click "Test connection" to retry.',
+    lifecycleButton: 'Deactivate',
+  },
+  'claude-draft': {
+    name: 'Draft Generator',
+    agentId: 'claude-draft',
+    provider: 'anthropic',
+    model: 'claude-haiku-4.5',
+    modelOptions: [
+      { value: 'claude-opus-4.6', label: 'Claude Opus 4.6' },
+      { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
+      { value: 'claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+    ],
+    temperature: '0.7',
+    maxTokens: '4096',
+    capabilities: ['generate', 'notify'],
+    permissionsSummary:
+      'This agent has no direct source-system access. It drafts artifacts from provided prompts and posts outputs to review queues.',
+    permissionChips: [
+      { icon: 'AR', label: 'Artifacts (write)' },
+      { icon: 'CC', label: 'Comms (notify)' },
+    ],
+    prompt:
+      'Generate a first draft for the requested document type using provided context and policy-safe language. Flag missing information explicitly.',
+    metrics: { runs: '0', success: '--', latency: '--' },
+    recentRuns: [
+      {
+        title: 'No recent runs',
+        meta: 'Agent is inactive. Activate to collect runtime metrics.',
+        statusClass: 'status--info',
+        statusText: 'Idle',
+      },
+    ],
+    integrationsMeta: 'Steps that reference Draft Generator',
+    integrations: [
+      {
+        title: 'Customer Response Workflow',
+        subtitle: 'Step: "Draft Customer Email" (position 4 of 6)',
+        statusClass: 'status--warn',
+        statusText: 'Inactive',
+      },
+    ],
+    deactivateImpact:
+      'This agent is inactive. Activate it to enable draft-generation steps in dependent workflows.',
+    bannerClass: 'integrity-banner--warn',
+    bannerText: 'Agent is inactive. Activate to use in workflows.',
+    lifecycleButton: 'Activate',
+  },
+};
+
+function renderAgentDetail(agentId) {
+  var detailPanel = document.getElementById('agentDetail');
+  if (!detailPanel) return;
+
+  var data = AGENT_DETAIL_CONTENT[agentId] || AGENT_DETAIL_CONTENT['claude-classify'];
+
+  var detailName = detailPanel.querySelector('.agent-detail__name');
+  if (detailName) detailName.textContent = data.name;
+
+  var detailId = detailPanel.querySelector('.js-agent-detail-id');
+  if (detailId) detailId.textContent = 'Agent: ' + data.agentId;
+
+  var banner = detailPanel.querySelector('#agentTestResult');
+  if (banner) {
+    banner.className = 'integrity-banner ' + data.bannerClass;
+    banner.textContent = data.bannerText;
+  }
+
+  var lifecycleBtn = detailPanel.querySelector('#agentLifecycleButton');
+  if (lifecycleBtn) lifecycleBtn.textContent = data.lifecycleButton;
+
+  var configName = detailPanel.querySelector('#agentConfigName');
+  if (configName) configName.value = data.name;
+
+  var providerSelect = detailPanel.querySelector('#agentConfigProvider');
+  if (providerSelect) providerSelect.value = data.provider;
+
+  var modelSelect = detailPanel.querySelector('#agentConfigModel');
+  if (modelSelect) {
+    modelSelect.innerHTML = data.modelOptions
+      .map(function (opt) {
+        var selected = opt.value === data.model ? ' selected' : '';
+        return '<option value="' + opt.value + '"' + selected + '>' + opt.label + '</option>';
+      })
+      .join('');
+  }
+
+  var temperatureInput = detailPanel.querySelector('#agentConfigTemperature');
+  if (temperatureInput) temperatureInput.value = data.temperature;
+
+  var maxTokensInput = detailPanel.querySelector('#agentConfigMaxTokens');
+  if (maxTokensInput) maxTokensInput.value = data.maxTokens;
+
+  qsa('[data-capability]', detailPanel).forEach(function (checkbox) {
+    checkbox.checked = data.capabilities.includes(checkbox.dataset.capability);
+  });
+
+  var permissionsSummary = detailPanel.querySelector('#agentPermissionsSummary');
+  if (permissionsSummary) permissionsSummary.innerHTML = data.permissionsSummary;
+
+  var permissionsChips = detailPanel.querySelector('#agentPermissionsChips');
+  if (permissionsChips) {
+    permissionsChips.innerHTML = data.permissionChips
+      .map(function (chip) {
+        return (
+          '<span class="chip"><span class="port-icon">' +
+          chip.icon +
+          '</span> ' +
+          chip.label +
+          '</span>'
+        );
+      })
+      .join('');
+  }
+
+  var promptInput = detailPanel.querySelector('#agentPromptTemplate');
+  if (promptInput) promptInput.value = data.prompt;
+
+  var runsMetric = detailPanel.querySelector('#agentMetricRuns');
+  if (runsMetric) runsMetric.textContent = data.metrics.runs;
+
+  var successMetric = detailPanel.querySelector('#agentMetricSuccess');
+  if (successMetric) successMetric.textContent = data.metrics.success;
+
+  var latencyMetric = detailPanel.querySelector('#agentMetricLatency');
+  if (latencyMetric) latencyMetric.textContent = data.metrics.latency;
+
+  var recentRunsList = detailPanel.querySelector('#agentRecentRunsList');
+  if (recentRunsList) {
+    recentRunsList.innerHTML = data.recentRuns
+      .map(function (run) {
+        return (
+          '<div class="row row--static">' +
+          '<div class="row__main">' +
+          '<div class="row__title">' +
+          run.title +
+          '</div>' +
+          '<div class="row__subtle">' +
+          run.meta +
+          '</div>' +
+          '</div>' +
+          '<div class="row__right">' +
+          '<span class="status ' +
+          run.statusClass +
+          '" style="font-size: 10px; padding: 2px 6px">' +
+          run.statusText +
+          '</span>' +
+          '</div>' +
+          '</div>'
+        );
+      })
+      .join('');
+  }
+
+  var integrationsMeta = detailPanel.querySelector('#agentIntegrationsMeta');
+  if (integrationsMeta) integrationsMeta.textContent = data.integrationsMeta;
+
+  var integrationsList = detailPanel.querySelector('#agentIntegrationsList');
+  if (integrationsList) {
+    integrationsList.innerHTML = data.integrations
+      .map(function (integration) {
+        return (
+          '<a class="row" href="#workflow-builder" style="text-decoration: none">' +
+          '<div class="row__main">' +
+          '<div class="row__title">' +
+          integration.title +
+          '</div>' +
+          '<div class="row__subtle">' +
+          integration.subtitle +
+          '</div>' +
+          '</div>' +
+          '<div class="row__right">' +
+          '<span class="status ' +
+          integration.statusClass +
+          '" style="font-size: 10px; padding: 2px 6px">' +
+          integration.statusText +
+          '</span>' +
+          '</div>' +
+          '</a>'
+        );
+      })
+      .join('');
+  }
+
+  var deactivateImpact = detailPanel.querySelector('#agentDeactivateImpact');
+  if (deactivateImpact) deactivateImpact.textContent = data.deactivateImpact;
+}
+
+function selectAgentCard(card) {
+  if (!card) return;
+  qsa('.agent-card').forEach(function (el) {
+    el.classList.remove('agent-card--selected');
+  });
+  card.classList.add('agent-card--selected');
+  renderAgentDetail(card.dataset.agentId);
+}
+
 document.addEventListener('click', function (e) {
   var card = e.target.closest('.agent-card');
   if (!card) return;
-  qsa('.agent-card').forEach(function (c) {
-    c.classList.remove('agent-card--selected');
-  });
-  card.classList.add('agent-card--selected');
-  var detailPanel = document.getElementById('agentDetail');
-  if (detailPanel) {
-    var nameEl = card.querySelector('.agent-card__name');
-    var name = nameEl ? nameEl.textContent : 'Agent';
-    var detailName = detailPanel.querySelector('.agent-detail__name');
-    if (detailName) detailName.textContent = name;
-    var statusEl = card.querySelector('.status');
-    var banner = detailPanel.querySelector('.integrity-banner');
-    if (banner && statusEl) {
-      var text = statusEl.textContent.trim();
-      if (text === 'Error') {
-        banner.className = 'integrity-banner integrity-banner--danger';
-        banner.textContent = 'Connection failed. Click "Test connection" to retry.';
-      } else if (text === 'Inactive') {
-        banner.className = 'integrity-banner integrity-banner--warn';
-        banner.textContent = 'Agent is inactive. Activate to use in workflows.';
-      } else {
-        banner.className = 'integrity-banner integrity-banner--ok';
-        banner.textContent = 'Connection healthy. Last test: 2m ago (latency: 180ms).';
-      }
-    }
-  }
+  selectAgentCard(card);
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  var card = e.target.closest('.agent-card');
+  if (!card) return;
+  e.preventDefault();
+  selectAgentCard(card);
 });
 
 /* ============================================================
@@ -1934,6 +2305,12 @@ function main() {
   /* Tabs */
   bindTabs();
 
+  /* Agent detail defaults to the currently selected card */
+  var selectedAgentCard =
+    document.querySelector('.agent-card.agent-card--selected') ||
+    document.querySelector('.agent-card');
+  if (selectedAgentCard) renderAgentDetail(selectedAgentCard.dataset.agentId);
+
   /* A/B Toggle */
   ABToggle.injectToggles();
 
@@ -2200,7 +2577,7 @@ function main() {
   });
 
   /* ---- Workforce: staleness banner in degraded state ---- */
-  document.addEventListener('change', function (e) {
+  document.addEventListener('change', function () {
     var sel = document.getElementById('systemState');
     var banner = document.querySelector('.js-workforce-stale');
     if (banner && sel) {
