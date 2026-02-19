@@ -24,3 +24,4 @@ export * from './payroll-adapter.js';
 export * from './crm-sales-adapter.js';
 export * from './customer-support-adapter.js';
 export * from './itsm-it-ops-adapter.js';
+export * from './iam-directory-adapter.js';
