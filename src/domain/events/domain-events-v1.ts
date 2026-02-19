@@ -82,6 +82,9 @@ export type DomainEventType =
   | 'HumanTaskAssigned'
   | 'HumanTaskCompleted'
   | 'HumanTaskEscalated'
+  | 'WorkforceQueueCreated'
+  | 'WorkforceQueueMemberAdded'
+  | 'HumanTaskQueued'
   // Port
   | 'PortRegistered'
   | 'PortEnabled'
@@ -195,6 +198,9 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'HumanTaskAssigned',
   'HumanTaskCompleted',
   'HumanTaskEscalated',
+  'WorkforceQueueCreated',
+  'WorkforceQueueMemberAdded',
+  'HumanTaskQueued',
   // Port
   'PortRegistered',
   'PortEnabled',

@@ -84,6 +84,20 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.eventType).toBe('HumanTaskCreated');
     expect(evt.aggregateKind).toBe('HumanTask');
   });
+
+  it('parses workforce queue lifecycle event types', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-queue-1',
+      eventType: 'WorkforceQueueCreated',
+      aggregateKind: 'WorkforceQueue',
+      aggregateId: 'queue-ops',
+      payload: { memberCount: 2 },
+    });
+
+    expect(evt.eventType).toBe('WorkforceQueueCreated');
+    expect(evt.aggregateKind).toBe('WorkforceQueue');
+  });
 });
 
 describe('parseDomainEventV1: validation', () => {
