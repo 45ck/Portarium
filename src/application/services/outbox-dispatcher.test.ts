@@ -218,4 +218,22 @@ describe('OutboxDispatcher — in-order delivery', () => {
 
     expect(published).toEqual(['evt-a', 'evt-b', 'evt-c']);
   });
+
+  it('preserves CloudEvent envelope fields to sink publisher', async () => {
+    const event = makeEvent('evt-1');
+    const outbox = makeOutbox([makeEntry({ entryId: 'e-1', event })]);
+    const publisher = makePublisher();
+    const dispatcher = new OutboxDispatcher({ outbox, publisher, clock: makeClock() });
+
+    await dispatcher.sweep();
+
+    expect(publisher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        specversion: '1.0',
+        id: 'evt-1',
+        tenantid: 'tenant-1',
+        correlationid: 'corr-1',
+      }),
+    );
+  });
 });

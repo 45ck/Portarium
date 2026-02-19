@@ -111,6 +111,14 @@ describe('startWorkflow', () => {
     expect(runStore.saveRun).toHaveBeenCalledTimes(1);
     expect(orchestrator.startRun).toHaveBeenCalledTimes(1);
     expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+
+    const published = (eventPublisher.publish as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0] as Record<string, unknown>;
+    expect(published['specversion']).toBe('1.0');
+    expect(published['type']).toBe('com.portarium.run.RunStarted');
+    expect(published['tenantid']).toBe('tenant-1');
+    expect(published['correlationid']).toBe('corr-1');
+    expect(published['source']).toBe('portarium.control-plane.workflow-runtime');
   });
 
   it('replays from idempotency cache', async () => {
