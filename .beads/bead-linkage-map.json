@@ -1,0 +1,34 @@
+{
+  "bead-0140": {
+    "specPaths": [".specify/specs/port-v1.md"],
+    "reviewBeads": ["bead-0141", "bead-0143"]
+  },
+  "bead-0144": {
+    "specPaths": [".specify/specs/port-v1.md"],
+    "reviewBeads": ["bead-0145", "bead-0147"]
+  },
+  "bead-0148": {
+    "specPaths": [".specify/specs/port-v1.md"],
+    "reviewBeads": ["bead-0149", "bead-0151"]
+  },
+  "bead-0538": {
+    "specBeads": ["bead-0534", "bead-0535", "bead-0536", "bead-0537"],
+    "reviewBeads": ["bead-0550", "bead-0551"]
+  },
+  "bead-0545": {
+    "specBeads": ["bead-0544"],
+    "reviewBeads": ["bead-0550"]
+  },
+  "bead-0546": {
+    "specBeads": ["bead-0544"],
+    "reviewBeads": ["bead-0550", "bead-0551"]
+  },
+  "bead-0547": {
+    "specBeads": ["bead-0544"],
+    "reviewBeads": ["bead-0550"]
+  },
+  "bead-0298": {
+    "specPaths": [".specify/specs/port-v1.md"],
+    "reviewBeads": ["bead-0263"]
+  }
+}

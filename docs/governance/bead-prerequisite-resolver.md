@@ -23,6 +23,12 @@ List all currently startable open beads:
 node scripts/beads/check-bead-prerequisites.mjs --next
 ```
 
+Enable cycle-gate linkage checks (implementation beads must have spec + review linkage):
+
+```bash
+node scripts/beads/check-bead-prerequisites.mjs bead-0298 --cycle-gate
+```
+
 ## Exit Codes
 
 - `0`: ready (or at least one ready bead when using `--next`)
@@ -36,3 +42,18 @@ node scripts/beads/check-bead-prerequisites.mjs --next
 - A bead is startable only when:
   - its status is `open`, and
   - it has no unresolved/invalid prerequisites.
+
+## Cycle Gate Linkage Mode
+
+When `--cycle-gate` is enabled, implementation beads additionally require:
+
+- at least one spec/design linkage, and
+- at least one review linkage.
+
+Linkage sources:
+
+- `.beads/bead-linkage-map.json`:
+  - `specBeads`, `specPaths`, `reviewBeads`
+- `.specify/specs/*` paths referenced in bead body text
+- `Spec:` / `ADR:` blockers from `blockedBy`
+- inferred review beads where review-title issues mention the target bead id
