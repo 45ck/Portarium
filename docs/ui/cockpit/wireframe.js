@@ -626,6 +626,8 @@ const SCREENS = [
   'mission',
   'safety',
   'gateways',
+  'workforce',
+  'queues',
 ];
 
 function getScreenFromHash() {
@@ -645,6 +647,7 @@ function activateScreen(screen) {
     mission: 'missions',
     robot: 'robots',
     gateways: 'robots',
+    queues: 'workforce',
   };
   const navScreen = parentMap[screen] || screen;
   for (const link of qsa('.nav__item')) {
@@ -661,6 +664,10 @@ function setBanners(systemState) {
   qs('.js-banner-misconfigured').hidden = systemState !== 'misconfigured';
   qs('.js-banner-policy').hidden = systemState !== 'policy-blocked';
   qs('.js-banner-rbac').hidden = systemState !== 'rbac-limited';
+
+  /* Workforce staleness banner — show when degraded */
+  var workforceBanner = document.querySelector('.js-workforce-stale');
+  if (workforceBanner) workforceBanner.hidden = systemState !== 'degraded';
 }
 
 /* ============================================================
@@ -2055,6 +2062,63 @@ function main() {
   });
 
   /* Initial render */
+  /* ---- Work Item: owner picker toggle ---- */
+  document.addEventListener('click', function (e) {
+    var trigger = e.target.closest('.js-owner-picker-trigger');
+    var picker = document.getElementById('ownerPicker');
+    if (!picker) return;
+    if (trigger) {
+      var isOpen = !picker.hidden;
+      picker.hidden = isOpen;
+      trigger.setAttribute('aria-expanded', String(!isOpen));
+      if (!isOpen) {
+        var searchInput = picker.querySelector('.owner-picker__search');
+        if (searchInput) searchInput.focus();
+      }
+      return;
+    }
+    /* Close picker on outside click */
+    if (!e.target.closest('#ownerPicker')) {
+      picker.hidden = true;
+      var t = document.querySelector('.js-owner-picker-trigger');
+      if (t) t.setAttribute('aria-expanded', 'false');
+    }
+    /* Pick a member */
+    var item = e.target.closest('.owner-picker__item');
+    if (item) {
+      var nameEl = item.querySelector('.owner-picker__name');
+      var triggerBtn = document.querySelector('.js-owner-picker-trigger');
+      if (nameEl && triggerBtn) {
+        triggerBtn.innerHTML =
+          '<span class="availability-dot availability-dot--available"></span> ' +
+          nameEl.textContent + ' &#9660;';
+        triggerBtn.setAttribute('aria-label', 'Change owner — currently ' + nameEl.textContent);
+      }
+      picker.hidden = true;
+      if (triggerBtn) triggerBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  /* ---- Inbox: Human tasks filter chip ---- */
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest('.js-filter-human-tasks');
+    if (!chip) return;
+    chip.classList.toggle('chip--active');
+    var taskCard = document.getElementById('inboxHumanTasks');
+    if (taskCard) {
+      taskCard.style.display = chip.classList.contains('chip--active') ? '' : 'none';
+    }
+  });
+
+  /* ---- Workforce: staleness banner in degraded state ---- */
+  document.addEventListener('change', function (e) {
+    var sel = document.getElementById('systemState');
+    var banner = document.querySelector('.js-workforce-stale');
+    if (banner && sel) {
+      banner.hidden = sel.value !== 'degraded';
+    }
+  });
+
   /* ---- Robotics: class filter chips ---- */
   document.addEventListener('click', function (e) {
     var chip = e.target.closest('[data-robot-class]');

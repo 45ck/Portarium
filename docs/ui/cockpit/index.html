@@ -233,6 +233,7 @@
             <span class="chip js-chip-unassigned">Unassigned</span>
             <span class="chip">Pending approvals</span>
             <span class="chip">Failed runs</span>
+            <span class="chip js-filter-human-tasks" style="border-color: var(--warn); color: var(--warn)">&#9786; Human tasks</span>
             <button
               class="chip chip--clear"
               type="button"
@@ -421,6 +422,48 @@
                       >
                     </div>
                   </a>
+                </div>
+              </article>
+
+              <!-- HumanTask card — bead-0535 / bead-0536 -->
+              <article class="card js-nonempty-inbox" data-inbox-section="human-tasks" style="display: none" id="inboxHumanTasks">
+                <div class="card__title">Human Tasks <span class="nav__badge nav__badge--warn">3</span></div>
+                <div class="card__meta subtle">Tasks assigned to you or your queues requiring action</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px">
+                  <div class="human-task-card">
+                    <div class="human-task-card__context">Step 3 of 5: Legal review &mdash; WI-1099</div>
+                    <div class="human-task-card__title">Review invoice correction legal compliance</div>
+                    <div class="human-task-card__meta">
+                      <a href="#run">Run R-8920</a>
+                      <span>&bull;</span>
+                      <span class="chip chip--small">Alice Martinez</span>
+                      <span>&bull;</span>
+                      <span class="sla-badge sla-badge--warn">Due 3h 48m</span>
+                    </div>
+                    <div class="human-task-card__actions">
+                      <button class="btn btn--primary btn--small" type="button"
+                        data-confirm="complete-task" aria-label="Complete this human task">Complete</button>
+                      <button class="btn btn--small" type="button"
+                        data-confirm="escalate-task" aria-label="Escalate this human task">Escalate</button>
+                    </div>
+                  </div>
+                  <div class="human-task-card">
+                    <div class="human-task-card__context">Step 2 of 4: Finance review &mdash; WI-1108</div>
+                    <div class="human-task-card__title">Approve payroll run — March batch</div>
+                    <div class="human-task-card__meta">
+                      <a href="#run">Run R-8941</a>
+                      <span>&bull;</span>
+                      <span class="chip chip--small">Unassigned</span>
+                      <span>&bull;</span>
+                      <span class="sla-badge sla-badge--warn">Due 1h 12m</span>
+                    </div>
+                    <div class="human-task-card__actions">
+                      <button class="btn btn--primary btn--small" type="button"
+                        data-confirm="complete-task" aria-label="Complete this human task">Complete</button>
+                      <button class="btn btn--small" type="button"
+                        data-confirm="escalate-task" aria-label="Escalate this human task">Escalate</button>
+                    </div>
+                  </div>
                 </div>
               </article>
 
@@ -1330,7 +1373,51 @@
               </div>
               <h1 id="h-work-item" class="h1">WI-1099 Invoice correction for ACME</h1>
               <div class="subtle">
-                Owner: <strong>Me</strong> | Status:
+                Owner:
+                <button
+                  class="btn btn--small js-owner-picker-trigger"
+                  type="button"
+                  style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px"
+                  aria-label="Change owner — currently Me"
+                  aria-expanded="false"
+                  aria-controls="ownerPicker"
+                >
+                  <span class="availability-dot availability-dot--available"></span>
+                  Me &#9660;
+                </button>
+                <!-- Owner picker dropdown (hidden by default) -->
+                <div id="ownerPicker" class="owner-picker" hidden aria-label="Assign owner">
+                  <input
+                    class="owner-picker__search"
+                    type="search"
+                    placeholder="Filter members..."
+                    aria-label="Search workforce members"
+                  />
+                  <div class="owner-picker__list">
+                    <div class="owner-picker__item">
+                      <span class="availability-dot availability-dot--available"></span>
+                      <div>
+                        <div class="owner-picker__name">Alice Martinez</div>
+                        <div class="owner-picker__email">alice.martinez@acme.com &bull; approver</div>
+                      </div>
+                    </div>
+                    <div class="owner-picker__item">
+                      <span class="availability-dot availability-dot--busy"></span>
+                      <div>
+                        <div class="owner-picker__name">Bob Chen</div>
+                        <div class="owner-picker__email">bob.chen@acme.com &bull; operator</div>
+                      </div>
+                    </div>
+                    <div class="owner-picker__item">
+                      <span class="availability-dot availability-dot--available"></span>
+                      <div>
+                        <div class="owner-picker__name">Carol Davis</div>
+                        <div class="owner-picker__email">carol.davis@acme.com &bull; admin</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                | Status:
                 <span class="status">Open</span>
                 <span
                   class="tier-badge tier-badge--human"
@@ -1370,6 +1457,26 @@
               1 approval pending. Review the run and submit your decision.
             </div>
             <a class="btn btn--primary" href="#run">Review &amp; decide</a>
+          </div>
+
+          <!-- SLA metadata card -->
+          <div class="card card--subtle" style="margin-top: 8px; padding: 10px 14px; display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px">
+            <div>
+              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">Due date</div>
+              <div>2026-02-19 17:30 UTC</div>
+            </div>
+            <div>
+              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">Time remaining</div>
+              <div><span class="sla-badge sla-badge--warn">3h 48m</span></div>
+            </div>
+            <div>
+              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">SLA tier</div>
+              <div>Business Hours</div>
+            </div>
+            <div>
+              <div class="subtle" style="font-size: 10px; text-transform: uppercase; margin-bottom: 2px">SLA status</div>
+              <div><span class="status status--warn"><span class="status__icon">⏰</span>At risk</span></div>
+            </div>
           </div>
 
           <!-- Linked records — compact inline -->
@@ -1685,6 +1792,80 @@
               </div>
             </article>
           </div>
+
+          <!-- Step Timeline — Execution Tier Visualization (bead-0537) -->
+          <details class="card card--subtle" style="margin-top: 12px" open>
+            <summary class="card__title" style="cursor: pointer">
+              Step Timeline
+              <span class="subtle" style="font-weight: 400; font-size: 12px">— execution tier visualization</span>
+            </summary>
+            <div class="run-step__timeline">
+              <!-- Step 1: Completed auto step -->
+              <div class="run-step run-step--done">
+                <div class="run-step__header">
+                  <span class="run-step__number">1</span>
+                  <span class="run-step__title">Fetch invoice data from NetSuite</span>
+                  <span class="tier-badge tier-badge--auto" style="font-size: 10px">Auto</span>
+                  <span class="status status--ok" style="font-size: 11px"><span class="status__icon">✓</span>Done</span>
+                </div>
+                <div class="run-step__meta">
+                  Completed 12m ago &bull; 0.9s &bull; <a href="#evidence">Evidence: ev_8920_01</a>
+                </div>
+              </div>
+
+              <!-- Step 2: Current — Human-approve gate (amber) -->
+              <div class="run-step run-step--human-task">
+                <div class="run-step__header">
+                  <span class="run-step__number">2</span>
+                  <span class="run-step__title">Approve Plan: Create Invoice in NetSuite</span>
+                  <span
+                    class="tier-badge tier-badge--human"
+                    data-tooltip="Requires explicit human approval before execution"
+                    >Human-approve</span
+                  >
+                  <span class="run-step__assignee">
+                    <span class="availability-dot availability-dot--available"></span>
+                    Pending: Alice Martinez
+                  </span>
+                  <span class="sla-badge sla-badge--warn" data-tooltip="SLA due in 3h 48m">3h 48m</span>
+                  <span class="status status--warn"><span class="status__icon">◷</span>Pending</span>
+                </div>
+                <div class="run-step__meta">
+                  Opened 12m ago &bull; SoD: different-approver required &bull;
+                  <a href="#approvals">Go to Approvals &rarr;</a>
+                </div>
+              </div>
+
+              <!-- Step 3: Upcoming — Assisted step -->
+              <div class="run-step" style="opacity: 0.5">
+                <div class="run-step__header">
+                  <span class="run-step__number">3</span>
+                  <span class="run-step__title">Apply corrections to invoice</span>
+                  <span class="tier-badge tier-badge--assisted" style="font-size: 10px">Assisted</span>
+                  <span class="status" style="font-size: 11px">Queued</span>
+                </div>
+                <div class="run-step__meta">Waiting for step 2 approval</div>
+              </div>
+
+              <!-- Step 4: Upcoming — Manual-only step (red) -->
+              <div class="run-step run-step--manual" style="opacity: 0.5">
+                <div class="run-step__header">
+                  <span class="run-step__number">4</span>
+                  <span class="run-step__title">Manual sign-off: Finance controller</span>
+                  <span
+                    class="tier-badge tier-badge--human-task"
+                    data-tooltip="Step requires manual completion by an assigned operator"
+                    >Manual-only</span
+                  >
+                  <span class="run-step__assignee">Unassigned</span>
+                  <button class="btn btn--small" type="button"
+                    data-requires-persona="operator admin"
+                    aria-label="Mark step 4 complete">Mark complete</button>
+                </div>
+                <div class="run-step__meta">Waiting for step 3</div>
+              </div>
+            </div>
+          </details>
 
           <details class="card card--subtle" style="margin-top: 12px">
             <summary class="card__title" style="cursor: pointer">
@@ -2748,8 +2929,8 @@
               </button>
             </div>
             <div class="triage__hint subtle">
-              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, Space = Toggle
-              details, I = Toggle AI summary
+              Keyboard: A = Approve, D = Deny, R = Request Changes, S = Skip, U = Undo, Space =
+              Toggle details, I = Toggle AI summary
             </div>
           </div>
 
@@ -10079,6 +10260,382 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
             SVID issued by the cluster SPIRE agent.
           </div>
         </section>
+
+        <!-- ============================================================
+             SCREEN: WORKFORCE (bead-0534)
+             ============================================================ -->
+        <section
+          id="screen-workforce"
+          class="screen"
+          data-screen="workforce"
+          aria-labelledby="h-workforce"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-workforce" class="h1">Workforce</h1>
+              <div class="subtle">Human operators, approvers, and auditors registered in this workspace</div>
+            </div>
+            <div class="screen__actions">
+              <button
+                class="btn btn--primary"
+                type="button"
+                data-requires-persona="admin"
+                aria-label="Register new workforce member"
+              >Register member</button>
+            </div>
+          </div>
+
+          <!-- Staleness banner (shown in degraded state) -->
+          <div class="staleness-banner js-workforce-stale" hidden>
+            &#9888; Directory data may be stale &mdash; last synced 5 minutes ago. Availability
+            indicators may not reflect current status.
+          </div>
+
+          <!-- Empty state -->
+          <div class="js-empty-workforce" hidden style="padding: 40px; text-align: center; color: var(--muted)">
+            <div style="font-size: 32px; margin-bottom: 12px">&#9786;</div>
+            <div style="font-weight: 600; margin-bottom: 6px">No workforce members registered</div>
+            <div style="font-size: 13px; margin-bottom: 16px">
+              Register team members to enable HumanTask assignment, queue routing, and capability-gated approvals.
+            </div>
+            <a class="btn btn--primary" href="#onboarding">Go to Setup Wizard</a>
+          </div>
+
+          <!-- Non-empty state: 2-column master-detail -->
+          <div class="grid grid--2" style="gap: 12px; align-items: start" id="workforceLayout">
+            <!-- Member list -->
+            <div class="workforce-list">
+              <div class="workforce-card workforce-card--selected" tabindex="0" role="button"
+                aria-label="Alice Martinez, approver, available">
+                <div class="workforce-card__header">
+                  <span class="availability-dot availability-dot--available" title="Available"></span>
+                  <span class="workforce-card__name">Alice Martinez</span>
+                  <span class="workforce-card__role">approver</span>
+                </div>
+                <div class="workforce-card__caps">
+                  <span class="workforce-card__cap">finance-review</span>
+                  <span class="workforce-card__cap">legal-review</span>
+                </div>
+                <div class="workforce-card__footer">
+                  <span>2 queues</span>
+                  <span>&bull;</span>
+                  <span>3 open assignments</span>
+                </div>
+              </div>
+              <div class="workforce-card" tabindex="0" role="button"
+                aria-label="Bob Chen, operator, busy">
+                <div class="workforce-card__header">
+                  <span class="availability-dot availability-dot--busy" title="Busy"></span>
+                  <span class="workforce-card__name">Bob Chen</span>
+                  <span class="workforce-card__role">operator</span>
+                </div>
+                <div class="workforce-card__caps">
+                  <span class="workforce-card__cap">data-entry</span>
+                  <span class="workforce-card__cap">quality-check</span>
+                </div>
+                <div class="workforce-card__footer">
+                  <span>1 queue</span>
+                  <span>&bull;</span>
+                  <span>1 open assignment</span>
+                </div>
+              </div>
+              <div class="workforce-card" tabindex="0" role="button"
+                aria-label="Carol Davis, admin, available">
+                <div class="workforce-card__header">
+                  <span class="availability-dot availability-dot--available" title="Available"></span>
+                  <span class="workforce-card__name">Carol Davis</span>
+                  <span class="workforce-card__role">admin</span>
+                </div>
+                <div class="workforce-card__caps">
+                  <span class="workforce-card__cap">escalation-authority</span>
+                  <span class="workforce-card__cap">finance-review</span>
+                </div>
+                <div class="workforce-card__footer">
+                  <span>3 queues</span>
+                  <span>&bull;</span>
+                  <span>0 open assignments</span>
+                </div>
+              </div>
+              <div class="workforce-card" tabindex="0" role="button"
+                aria-label="Dan Park, auditor, offline">
+                <div class="workforce-card__header">
+                  <span class="availability-dot availability-dot--offline" title="Offline"></span>
+                  <span class="workforce-card__name">Dan Park</span>
+                  <span class="workforce-card__role">auditor</span>
+                </div>
+                <div class="workforce-card__caps">
+                  <span class="workforce-card__cap">technical-review</span>
+                </div>
+                <div class="workforce-card__footer">
+                  <span>1 queue</span>
+                  <span>&bull;</span>
+                  <span>0 open assignments</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detail panel -->
+            <div class="workforce-detail" id="workforceDetail">
+              <div class="workforce-detail__profile">
+                <div class="workforce-detail__avatar">A</div>
+                <div class="workforce-detail__profile-info">
+                  <div class="workforce-detail__name">Alice Martinez</div>
+                  <div class="workforce-detail__email">alice.martinez@acme.com</div>
+                  <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
+                    <span class="availability-dot availability-dot--available"></span>
+                    <span style="font-size: 12px">Available</span>
+                    <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer">
+                      <input
+                        type="checkbox"
+                        class="js-availability-toggle"
+                        checked
+                        aria-label="Toggle availability"
+                      />
+                      Toggle availability
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Member detail tabs -->
+              <div class="tabs" role="tablist" aria-label="Member detail tabs">
+                <button class="tab tab--active" type="button" data-tab="wf-overview">Overview</button>
+                <button class="tab" type="button" data-tab="wf-capabilities">Capabilities</button>
+                <button class="tab" type="button" data-tab="wf-queues">Queue Memberships</button>
+                <button class="tab" type="button" data-tab="wf-history">History</button>
+              </div>
+              <div class="tabpanes">
+                <div class="tabpane tabpane--active" data-pane="wf-overview" role="region" aria-label="Overview">
+                  <div class="grid grid--2" style="gap: 8px; font-size: 13px">
+                    <div><span class="subtle" style="font-size: 11px">Display name</span><br>Alice Martinez</div>
+                    <div><span class="subtle" style="font-size: 11px">Email</span><br>alice.martinez@acme.com</div>
+                    <div><span class="subtle" style="font-size: 11px">Role</span><br><span class="chip chip--small">approver</span></div>
+                    <div><span class="subtle" style="font-size: 11px">Registered</span><br>2025-11-10</div>
+                    <div><span class="subtle" style="font-size: 11px">Workspace</span><br>acme-finance-ops</div>
+                    <div><span class="subtle" style="font-size: 11px">Tenant</span><br><code style="font-size: 11px">ten_acme_01</code></div>
+                  </div>
+                </div>
+                <div class="tabpane" data-pane="wf-capabilities" role="region" aria-label="Capabilities">
+                  <div class="subtle" style="font-size: 12px; margin-bottom: 8px">
+                    Controlled capability vocabulary &mdash;
+                    <span data-requires-persona="admin">admin-editable.</span>
+                    <span style="font-size: 11px; color: var(--muted)">Read-only for non-admins.</span>
+                  </div>
+                  <div class="cap-grid">
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" checked aria-label="finance-review capability" />
+                      finance-review
+                    </label>
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" checked aria-label="legal-review capability" />
+                      legal-review
+                    </label>
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" aria-label="data-entry capability" />
+                      data-entry
+                    </label>
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" aria-label="quality-check capability" />
+                      quality-check
+                    </label>
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" aria-label="technical-review capability" />
+                      technical-review
+                    </label>
+                    <label class="cap-grid__item">
+                      <input type="checkbox" class="js-cap-checkbox" aria-label="escalation-authority capability" />
+                      escalation-authority
+                    </label>
+                  </div>
+                  <button
+                    class="btn btn--small btn--primary js-workforce-edit-btn"
+                    style="margin-top: 10px"
+                    type="button"
+                    aria-label="Edit capabilities for Alice Martinez"
+                  >Edit capabilities</button>
+                </div>
+                <div class="tabpane" data-pane="wf-queues" role="region" aria-label="Queue memberships">
+                  <div class="list">
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Finance Queue</div>
+                        <div class="row__subtle">Routing: <strong>least-busy</strong> | Pending tasks: <strong class="queue-card__pending">2</strong></div>
+                      </div>
+                      <div class="row__right"><a href="#queues" class="btn btn--small">View queue</a></div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Legal Queue</div>
+                        <div class="row__subtle">Routing: <strong>round-robin</strong> | Pending tasks: <strong>1</strong></div>
+                      </div>
+                      <div class="row__right"><a href="#queues" class="btn btn--small">View queue</a></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tabpane" data-pane="wf-history" role="region" aria-label="Assignment history">
+                  <div class="list">
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title"><a href="#work-item">WI-1099</a> Invoice correction — Approval Gate</div>
+                        <div class="row__subtle">Assigned 12m ago by operator@acme.com</div>
+                      </div>
+                      <div class="row__right"><span class="status status--warn"><span class="status__icon">◷</span>Pending</span></div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title"><a href="#work-item">WI-1042</a> Dispute: payment failure — Review step</div>
+                        <div class="row__subtle">Assigned 3h ago by operator@acme.com</div>
+                      </div>
+                      <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Completed</span></div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title"><a href="#work-item">WI-1013</a> Receipt export — Quality check</div>
+                        <div class="row__subtle">Assigned 1d ago by system</div>
+                      </div>
+                      <div class="row__right"><span class="status status--ok"><span class="status__icon">✓</span>Completed</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             SCREEN: QUEUES (bead-0535)
+             ============================================================ -->
+        <section
+          id="screen-queues"
+          class="screen"
+          data-screen="queues"
+          aria-labelledby="h-queues"
+        >
+          <div class="screen__header">
+            <div>
+              <h1 id="h-queues" class="h1">Human Task Queues</h1>
+              <div class="subtle">Manage queue membership, routing strategy, and pending tasks</div>
+            </div>
+            <div class="screen__actions">
+              <button class="btn btn--primary" type="button" data-requires-persona="admin"
+                aria-label="Create new queue">Create queue</button>
+            </div>
+          </div>
+
+          <div class="grid grid--2" style="gap: 12px; align-items: start">
+            <!-- Queue list -->
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div class="queue-card queue-card--selected" tabindex="0" role="button">
+                <div class="queue-card__header">
+                  <span class="queue-card__name">Finance Queue</span>
+                  <span class="queue-card__strategy">least-busy</span>
+                  <span class="nav__badge nav__badge--warn">2</span>
+                </div>
+                <div class="chips">
+                  <span class="workforce-card__cap">finance-review</span>
+                </div>
+                <div class="queue-card__stats">
+                  <span>4 members</span>
+                  <span>&bull;</span>
+                  <span class="queue-card__pending">2 pending tasks</span>
+                </div>
+              </div>
+              <div class="queue-card" tabindex="0" role="button">
+                <div class="queue-card__header">
+                  <span class="queue-card__name">Legal Queue</span>
+                  <span class="queue-card__strategy">round-robin</span>
+                  <span class="nav__badge nav__badge--warn">1</span>
+                </div>
+                <div class="chips">
+                  <span class="workforce-card__cap">legal-review</span>
+                </div>
+                <div class="queue-card__stats">
+                  <span>2 members</span>
+                  <span>&bull;</span>
+                  <span class="queue-card__pending">1 pending task</span>
+                </div>
+              </div>
+              <div class="queue-card" tabindex="0" role="button">
+                <div class="queue-card__header">
+                  <span class="queue-card__name">General Queue</span>
+                  <span class="queue-card__strategy">manual</span>
+                  <span class="nav__badge">0</span>
+                </div>
+                <div class="chips">
+                  <span class="workforce-card__cap subtle" style="color: var(--muted)">No capability required</span>
+                </div>
+                <div class="queue-card__stats">
+                  <span>6 members</span>
+                  <span>&bull;</span>
+                  <span>0 pending tasks</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Queue detail -->
+            <div class="workforce-detail">
+              <div>
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 2px">Finance Queue</div>
+                <div style="font-size: 12px; color: var(--muted)">Strategy: <strong>least-busy</strong> | Required capability: <strong>finance-review</strong></div>
+              </div>
+              <div>
+                <div class="subtle" style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px">Members (4)</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title" style="display: flex; align-items: center; gap: 6px">
+                        <span class="availability-dot availability-dot--available"></span> Alice Martinez
+                      </div>
+                      <div class="row__subtle">finance-review | 3 open</div>
+                    </div>
+                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title" style="display: flex; align-items: center; gap: 6px">
+                        <span class="availability-dot availability-dot--available"></span> Carol Davis
+                      </div>
+                      <div class="row__subtle">finance-review, escalation-authority | 0 open</div>
+                    </div>
+                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title" style="display: flex; align-items: center; gap: 6px">
+                        <span class="availability-dot availability-dot--busy"></span> Emma Wilson
+                      </div>
+                      <div class="row__subtle">finance-review | 2 open</div>
+                    </div>
+                    <div class="row__right"><button class="btn btn--small" type="button">Assign</button></div>
+                  </div>
+                </div>
+                <div class="callout" style="font-size: 12px; margin-top: 8px">
+                  <strong>Next in rotation:</strong> Alice Martinez (least-busy)
+                </div>
+              </div>
+              <div>
+                <div class="subtle" style="font-size: 11px; text-transform: uppercase; margin-bottom: 6px">Pending HumanTasks (2)</div>
+                <div class="list">
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Approve invoice correction &mdash; WI-1099</div>
+                      <div class="row__subtle">Due in 3h 48m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span></div>
+                    </div>
+                    <div class="row__right"><button class="btn btn--small btn--primary" type="button">Assign</button></div>
+                  </div>
+                  <div class="row row--static">
+                    <div class="row__main">
+                      <div class="row__title">Finance review: payroll batch &mdash; WI-1108</div>
+                      <div class="row__subtle">Due in 1h 12m &bull; <span class="sla-badge sla-badge--warn">SLA warn</span></div>
+                    </div>
+                    <div class="row__right"><button class="btn btn--small btn--primary" type="button">Assign</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <!-- ============================================================
@@ -10257,6 +10814,17 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="kbd-cheatsheet__row">
                 <kbd>g</kbd> then <kbd>t</kbd><span>Setup Wizard</span>
               </div>
+              <div class="kbd-cheatsheet__row">
+                <kbd>g</kbd> then <kbd>f</kbd><span>Workforce (People)</span>
+              </div>
+            </div>
+          </div>
+          <div class="kbd-cheatsheet__group">
+            <h3 class="kbd-cheatsheet__group-title">People</h3>
+            <div class="kbd-cheatsheet__list">
+              <div class="kbd-cheatsheet__row"><kbd>g f</kbd><span>Go to Workforce</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd><span>Navigate members / queues</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>Enter</kbd><span>Open member / queue detail</span></div>
             </div>
           </div>
           <div class="kbd-cheatsheet__group">
@@ -10291,6 +10859,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
               <div class="kbd-cheatsheet__row"><kbd>D</kbd><span>Deny</span></div>
               <div class="kbd-cheatsheet__row"><kbd>R</kbd><span>Request changes</span></div>
               <div class="kbd-cheatsheet__row"><kbd>S</kbd><span>Skip</span></div>
+              <div class="kbd-cheatsheet__row"><kbd>U</kbd><span>Undo last decision</span></div>
               <div class="kbd-cheatsheet__row"><kbd>Space</kbd><span>Expand / collapse</span></div>
             </div>
           </div>
