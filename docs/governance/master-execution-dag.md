@@ -1,11 +1,11 @@
 # Master Execution DAG
 
-Generated: 2026-02-19T19:29:04.877Z
+Generated: 2026-02-19T19:31:45.216Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 236
+- Open beads: 235
 - Open dependency edges: 99
 - Open beads currently blocked by open prerequisites: 60
 - Open beads with at least one review artifact in `docs/review/`: 0
@@ -22,7 +22,7 @@ Source: `.beads/issues.jsonl`
 | integration | 5 | 5 | 0 |
 | presentation | 11 | 7 | 0 |
 | security | 2 | 2 | 0 |
-| unspecified | 149 | 0 | 0 |
+| unspecified | 148 | 0 | 0 |
 
 ## Critical Path
 
@@ -145,7 +145,6 @@ flowchart TD
     B0521["bead-0521<br/>Security: mTLS workload identity for robot gateways using SPIFF…"]
   end
   subgraph unspecified[unspecified]
-    B0159["bead-0159<br/>PE: dependency resolver — auto-detect missing prerequisites bef…"]
     B0160["bead-0160<br/>Cycle gate: no implementation without design/spec/review linkage"]
     B0161["bead-0161<br/>Phase gate: Foundation complete — requires gate, security basel…"]
     B0162["bead-0162<br/>Phase gate: Domain complete — requires aggregate invariants, pa…"]
@@ -400,7 +399,6 @@ flowchart TD
 
 | Bead | Phase | Open Blockers | Review Artifacts |
 | --- | --- | --- | --- |
-| bead-0159 | unspecified | none | none |
 | bead-0160 | unspecified | none | none |
 | bead-0161 | unspecified | none | none |
 | bead-0162 | unspecified | none | none |
