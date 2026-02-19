@@ -125,3 +125,19 @@ This is the parser surface in `src/domain/ports/port-v1.ts`.
 - Infrastructure baseline includes an in-memory adapter implementation for
   deterministic tests and local development:
   `src/infrastructure/adapters/customer-support/in-memory-customer-support-adapter.ts`.
+
+## ItsmItOps Adapter Foundation (bead-0108)
+
+- Application port contract now includes `ItsmItOpsAdapterPort` under
+  `src/application/ports/itsm-it-ops-adapter.ts`.
+- The operation set is fixed to the 17 taxonomy operations in
+  `docs/domain/port-taxonomy.md` for the `ItsmItOps` family.
+- Execute response contract:
+  - success: canonical `Ticket`, `Ticket[]`, `Asset`, `Asset[]`, `Party`,
+    `Party[]`, `Document`, `Document[]`, `Subscription`, `Subscription[]`,
+    `Product`, `Product[]`, `ExternalObjectRef`, `ExternalObjectRef[]`,
+    `accepted`, or `opaque` result variants;
+  - failure: `unsupported_operation`, `not_found`, `validation_error`, `provider_error`.
+- Infrastructure baseline includes an in-memory adapter implementation for
+  deterministic tests and local development:
+  `src/infrastructure/adapters/itsm-it-ops/in-memory-itsm-it-ops-adapter.ts`.

@@ -23,3 +23,4 @@ export * from './hris-hcm-adapter.js';
 export * from './payroll-adapter.js';
 export * from './crm-sales-adapter.js';
 export * from './customer-support-adapter.js';
+export * from './itsm-it-ops-adapter.js';

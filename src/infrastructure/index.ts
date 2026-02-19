@@ -10,3 +10,4 @@ export * from './adapters/hris-hcm/in-memory-hris-hcm-adapter.js';
 export * from './adapters/payroll/in-memory-payroll-adapter.js';
 export * from './adapters/crm-sales/in-memory-crm-sales-adapter.js';
 export * from './adapters/customer-support/in-memory-customer-support-adapter.js';
+export * from './adapters/itsm-it-ops/in-memory-itsm-it-ops-adapter.js';
