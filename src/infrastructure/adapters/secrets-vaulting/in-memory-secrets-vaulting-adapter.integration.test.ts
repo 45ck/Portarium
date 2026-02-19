@@ -85,14 +85,13 @@ describe('InMemorySecretsVaultingAdapter integration', () => {
     expect(renewedCert.ok).toBe(true);
     if (!renewedCert.ok || renewedCert.result.kind !== 'externalRef') return;
     expect(renewedCert.result.externalRef.displayLabel).toContain('renewed');
+    const renewedCertificateId = renewedCert.result.externalRef.externalId;
 
     const listedCerts = await adapter.execute({ tenantId: TENANT, operation: 'listCertificates' });
     expect(listedCerts.ok).toBe(true);
     if (!listedCerts.ok || listedCerts.result.kind !== 'externalRefs') return;
     expect(
-      listedCerts.result.externalRefs.some(
-        (candidate) => candidate.externalId === renewedCert.result.externalRef.externalId,
-      ),
+      listedCerts.result.externalRefs.some((candidate) => candidate.externalId === renewedCertificateId),
     ).toBe(true);
 
     const createdKey = await adapter.execute({
