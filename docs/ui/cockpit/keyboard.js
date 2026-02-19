@@ -671,7 +671,10 @@ const Keyboard = (function () {
         '</div>',
       'workflow-builder':
         '<div class="kbd-cheatsheet__list">' +
-        '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>New workflow</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>j</kbd>/<kbd>k</kbd> <span>Move step selection</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>Enter</kbd> <span>Select focused step</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>E</kbd> <span>Focus step config field</span></div>' +
+        '<div class="kbd-cheatsheet__row"><kbd>n</kbd> <span>Create work item</span></div>' +
         '</div>',
       agents:
         '<div class="kbd-cheatsheet__list">' +

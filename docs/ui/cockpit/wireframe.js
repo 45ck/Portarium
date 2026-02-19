@@ -1000,6 +1000,9 @@ function bindTabs() {
         p.classList.toggle('tabpane--active', isActive);
         p.hidden = !isActive;
       }
+      if (typeof globalThis.__portariumRefreshLeafletMap === 'function') {
+        setTimeout(globalThis.__portariumRefreshLeafletMap, 40);
+      }
     }
 
     for (const t of tabs) {
@@ -1880,11 +1883,13 @@ document.addEventListener('keydown', function (e) {
   var key = e.key.toLowerCase();
   if (key === 'j' || e.key === 'ArrowRight') {
     e.preventDefault();
+    e.stopImmediatePropagation();
     moveWorkflowNodeSelection(1);
     return;
   }
   if (key === 'k' || e.key === 'ArrowLeft') {
     e.preventDefault();
+    e.stopImmediatePropagation();
     moveWorkflowNodeSelection(-1);
     return;
   }
@@ -1892,6 +1897,7 @@ document.addEventListener('keydown', function (e) {
     var focusedNode = document.activeElement && document.activeElement.closest('.wf-node');
     if (focusedNode && focusedNode.closest('#wfCanvas')) {
       e.preventDefault();
+      e.stopImmediatePropagation();
       var graph = getActiveWorkflowTemplateGraph();
       setSelectedNodeInGraph(focusedNode, graph || getWorkflowBuilderCanvas());
       syncWorkflowConfigFromNode(focusedNode);
@@ -1904,6 +1910,7 @@ document.addEventListener('keydown', function (e) {
     var stepNameInput = document.querySelector('#wfConfig .field__input[type="text"]');
     if (stepNameInput) {
       e.preventDefault();
+      e.stopImmediatePropagation();
       stepNameInput.focus();
       stepNameInput.select();
       setWorkflowBuilderMessage('Focused step name field.');
@@ -2753,6 +2760,9 @@ function main() {
   window.addEventListener('hashchange', () => {
     closeDrawer();
     render(getState() ?? initial);
+    if (typeof globalThis.__portariumRefreshLeafletMap === 'function') {
+      setTimeout(globalThis.__portariumRefreshLeafletMap, 60);
+    }
   });
 
   /* Drawer triggers */
@@ -3963,9 +3973,11 @@ function main() {
   activateWorkflowTemplate('finance-invoice');
 
   /* ---- Robotics map initial state ---- */
+  initLeafletMap();
   setMapTimeline(100);
   applyMapFilters();
   selectMapRobot(mapSelectedRobotId);
+  setTimeout(refreshLeafletMapLayout, 80);
 
   render(initial);
 }
