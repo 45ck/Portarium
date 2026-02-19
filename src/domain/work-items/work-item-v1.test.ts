@@ -272,4 +272,35 @@ describe('parseWorkItemV1: validation', () => {
       }),
     ).toThrow(/workflowIds\[0\]/i);
   });
+
+  it('rejects over-modeled extra fields to keep WorkItem thin', () => {
+    expect(() =>
+      parseWorkItemV1({
+        schemaVersion: 1,
+        workItemId: 'wi-1',
+        workspaceId: 'ws-1',
+        createdAtIso: '2026-02-16T00:00:00.000Z',
+        createdByUserId: 'user-1',
+        title: 't',
+        status: 'Open',
+        storyPoints: 13,
+      }),
+    ).toThrow(/unsupported field\(s\): storyPoints/i);
+
+    expect(() =>
+      parseWorkItemV1({
+        schemaVersion: 1,
+        workItemId: 'wi-1',
+        workspaceId: 'ws-1',
+        createdAtIso: '2026-02-16T00:00:00.000Z',
+        createdByUserId: 'user-1',
+        title: 't',
+        status: 'Open',
+        links: {
+          runIds: ['run-1'],
+          backlogColumn: 'triage',
+        },
+      }),
+    ).toThrow(/links contains unsupported field\(s\): backlogColumn/i);
+  });
 });

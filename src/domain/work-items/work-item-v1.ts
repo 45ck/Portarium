@@ -64,6 +64,22 @@ export class WorkItemParseError extends Error {
 
 export function parseWorkItemV1(value: unknown): WorkItemV1 {
   const record = readRecord(value, 'WorkItem', WorkItemParseError);
+  assertOnlyKeys(
+    record,
+    [
+      'schemaVersion',
+      'workItemId',
+      'workspaceId',
+      'createdAtIso',
+      'createdByUserId',
+      'title',
+      'status',
+      'ownerUserId',
+      'sla',
+      'links',
+    ],
+    'WorkItem',
+  );
 
   const schemaVersion = readInteger(record, 'schemaVersion', WorkItemParseError);
   if (schemaVersion !== 1) {
@@ -109,6 +125,7 @@ export function parseWorkItemV1(value: unknown): WorkItemV1 {
 
 function parseWorkItemSlaV1(value: unknown, createdAtIso: string): WorkItemSlaV1 {
   const record = readRecord(value, 'sla', WorkItemParseError);
+  assertOnlyKeys(record, ['dueAtIso'], 'sla');
   const dueAtIso = readOptionalIsoString(record, 'dueAtIso', WorkItemParseError);
   if (dueAtIso !== undefined) {
     assertNotBefore(createdAtIso, dueAtIso, WorkItemParseError, {
@@ -123,6 +140,11 @@ function parseWorkItemSlaV1(value: unknown, createdAtIso: string): WorkItemSlaV1
 
 function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
   const record = readRecord(value, 'links', WorkItemParseError);
+  assertOnlyKeys(
+    record,
+    ['externalRefs', 'runIds', 'workflowIds', 'approvalIds', 'evidenceIds'],
+    'links',
+  );
 
   const externalRefsRaw = record['externalRefs'];
   const externalRefs =
@@ -186,4 +208,15 @@ function isWorkItemStatus(value: string): value is WorkItemStatus {
     value === 'Resolved' ||
     value === 'Closed'
   );
+}
+
+function assertOnlyKeys(
+  record: Record<string, unknown>,
+  allowed: readonly string[],
+  label: string,
+): void {
+  const unknown = Object.keys(record).filter((key) => !allowed.includes(key));
+  if (unknown.length > 0) {
+    throw new WorkItemParseError(`${label} contains unsupported field(s): ${unknown.join(', ')}.`);
+  }
 }
