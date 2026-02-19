@@ -8988,16 +8988,516 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
 
           <!-- View toggle tabs -->
           <div class="tabs" role="tablist" aria-label="Robots view" style="margin-bottom: 12px">
-            <button class="tab tab--active" type="button" data-tab="robots-grid">All Robots</button>
+            <button class="tab tab--active" type="button" data-tab="robots-map">
+              Operations Map
+            </button>
+            <button class="tab" type="button" data-tab="robots-grid">All Robots</button>
             <button class="tab" type="button" data-tab="robots-fleet">By Fleet</button>
           </div>
 
           <div class="tabpanes">
             <div
               class="tabpane tabpane--active"
+              data-pane="robots-map"
+              role="tabpanel"
+              aria-label="Live location map operations"
+            >
+              <div class="callout callout--policy" style="margin-bottom: 12px">
+                Overview first, then zoom/filter, then details on demand. The synchronized list is
+                the non-map equivalent for keyboard and degraded-stream operation.
+              </div>
+
+              <div class="staleness-banner js-map-stale" role="status" aria-live="polite" hidden>
+                Location stream degraded: showing cached map state from 14:11:40.
+              </div>
+
+              <div class="map-ops__controls" role="group" aria-label="Map controls">
+                <label class="control">
+                  <span class="control__label">Site</span>
+                  <select id="mapSite" class="control__select">
+                    <option value="all">All sites</option>
+                    <option value="warehouse-a" selected>warehouse-a</option>
+                    <option value="yard">yard</option>
+                  </select>
+                </label>
+                <label class="control">
+                  <span class="control__label">Floor</span>
+                  <select id="mapFloor" class="control__select">
+                    <option value="all">All floors</option>
+                    <option value="f1" selected>f1</option>
+                    <option value="yard">yard level</option>
+                  </select>
+                </label>
+                <label class="control">
+                  <span class="control__label">Scale</span>
+                  <select id="mapScale" class="control__select">
+                    <option value="overview" selected>Overview (clustered)</option>
+                    <option value="detail">Sector detail</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="map-ops__toggles" role="group" aria-label="Map layers">
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="occupancy"
+                  aria-pressed="true"
+                >
+                  Occupancy
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="geofences"
+                  aria-pressed="true"
+                >
+                  Geofences
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="trails"
+                  aria-pressed="true"
+                >
+                  Trails
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="uncertainty"
+                  aria-pressed="true"
+                >
+                  Uncertainty
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="clusters"
+                  aria-pressed="true"
+                >
+                  Clusters
+                </button>
+              </div>
+
+              <div class="map-playback" role="group" aria-label="Playback controls">
+                <button class="btn btn--small js-map-live" type="button" aria-pressed="true">
+                  Live
+                </button>
+                <button class="btn btn--small js-map-step" type="button" data-map-step="-15">
+                  -15s
+                </button>
+                <button class="btn btn--small js-map-play" type="button" aria-pressed="false">
+                  Play
+                </button>
+                <label class="map-playback__range">
+                  <span class="subtle">Timeline</span>
+                  <input
+                    id="mapTimeline"
+                    class="map-playback__slider"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="100"
+                    aria-label="Playback timeline"
+                  />
+                </label>
+                <span id="mapTimelineLabel" class="subtle" aria-live="polite">Live now</span>
+              </div>
+
+              <div class="map-bookmarks" role="group" aria-label="Incident bookmarks">
+                <button
+                  class="chip js-map-bookmark"
+                  type="button"
+                  data-map-robot-id="robot-007"
+                  data-map-timeline="62"
+                >
+                  14:10 Geofence breach
+                </button>
+                <button
+                  class="chip js-map-bookmark"
+                  type="button"
+                  data-map-robot-id="robot-009"
+                  data-map-timeline="48"
+                >
+                  14:06 E-Stop event
+                </button>
+                <button
+                  class="chip js-map-bookmark"
+                  type="button"
+                  data-map-robot-id="robot-003"
+                  data-map-timeline="82"
+                >
+                  14:13 Localization drift
+                </button>
+              </div>
+
+              <div class="map-ops__layout">
+                <article class="card map-canvas-card">
+                  <div class="map-canvas-card__header">
+                    <div>
+                      <div class="card__title">Live Operations Map</div>
+                      <div class="subtle">Frame: map | Window: last 15 minutes | Site: warehouse-a</div>
+                    </div>
+                    <div class="filters map-status-filters" role="group" aria-label="Filter by status">
+                      <span
+                        class="chip chip--active js-map-status-filter"
+                        role="button"
+                        tabindex="0"
+                        data-map-status="all"
+                        >All</span
+                      >
+                      <span
+                        class="chip js-map-status-filter"
+                        role="button"
+                        tabindex="0"
+                        data-map-status="normal"
+                        >Normal</span
+                      >
+                      <span
+                        class="chip js-map-status-filter"
+                        role="button"
+                        tabindex="0"
+                        data-map-status="warning"
+                        >Warning</span
+                      >
+                      <span
+                        class="chip js-map-status-filter"
+                        role="button"
+                        tabindex="0"
+                        data-map-status="critical"
+                        >Critical</span
+                      >
+                    </div>
+                  </div>
+
+                  <div class="map-canvas js-map-canvas" role="group" aria-label="Robot map">
+                    <div class="map-canvas__grid" data-map-layer-target="floorplan" aria-hidden="true"></div>
+                    <div
+                      class="map-canvas__occupancy"
+                      data-map-layer-target="occupancy"
+                      aria-hidden="true"
+                    ></div>
+
+                    <div
+                      class="map-zone map-zone--restricted"
+                      data-map-layer-target="geofences"
+                      aria-label="Restricted area: no lift zone"
+                    >
+                      no_lift_zone
+                    </div>
+                    <div
+                      class="map-zone map-zone--warning"
+                      data-map-layer-target="geofences"
+                      aria-label="Warning area: shared crossing"
+                    >
+                      crossing
+                    </div>
+
+                    <div
+                      class="map-trail"
+                      data-map-layer-target="trails"
+                      data-map-robot-id="robot-001"
+                      style="left: 20%; top: 54%; width: 14%; height: 18%"
+                    ></div>
+                    <div
+                      class="map-trail"
+                      data-map-layer-target="trails"
+                      data-map-robot-id="robot-003"
+                      style="left: 44%; top: 44%; width: 12%; height: 16%"
+                    ></div>
+                    <div
+                      class="map-trail"
+                      data-map-layer-target="trails"
+                      data-map-robot-id="robot-007"
+                      style="left: 68%; top: 18%; width: 13%; height: 18%"
+                    ></div>
+
+                    <button
+                      class="map-marker map-marker--normal map-marker--selected js-map-marker"
+                      type="button"
+                      data-map-robot-id="robot-001"
+                      data-map-status="normal"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-001"
+                      style="left: 23%; top: 61%"
+                      aria-label="robot-001, normal, aisle 3"
+                    >
+                      <span
+                        class="map-marker__uncertainty"
+                        data-map-layer-target="uncertainty"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="map-marker__dot" aria-hidden="true"></span>
+                      <span class="map-marker__label">robot-001</span>
+                    </button>
+
+                    <button
+                      class="map-marker map-marker--warning js-map-marker"
+                      type="button"
+                      data-map-robot-id="robot-003"
+                      data-map-status="warning"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-003"
+                      style="left: 46%; top: 48%"
+                      aria-label="robot-003, warning, localization drift"
+                    >
+                      <span
+                        class="map-marker__uncertainty"
+                        data-map-layer-target="uncertainty"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="map-marker__dot" aria-hidden="true"></span>
+                      <span class="map-marker__label">robot-003</span>
+                    </button>
+
+                    <button
+                      class="map-marker map-marker--critical js-map-marker"
+                      type="button"
+                      data-map-robot-id="robot-007"
+                      data-map-status="critical"
+                      data-map-site="yard"
+                      data-map-floor="yard"
+                      data-map-label="robot-007"
+                      style="left: 72%; top: 24%"
+                      aria-label="robot-007, critical, geofence violation"
+                    >
+                      <span
+                        class="map-marker__uncertainty"
+                        data-map-layer-target="uncertainty"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="map-marker__dot" aria-hidden="true"></span>
+                      <span class="map-marker__label">robot-007</span>
+                    </button>
+
+                    <button
+                      class="map-marker map-marker--critical js-map-marker"
+                      type="button"
+                      data-map-robot-id="robot-009"
+                      data-map-status="critical"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-009"
+                      style="left: 56%; top: 72%"
+                      aria-label="robot-009, critical, E-Stop active"
+                    >
+                      <span
+                        class="map-marker__uncertainty"
+                        data-map-layer-target="uncertainty"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="map-marker__dot" aria-hidden="true"></span>
+                      <span class="map-marker__label">robot-009</span>
+                    </button>
+
+                    <button
+                      class="map-cluster js-map-cluster"
+                      type="button"
+                      data-map-layer-target="clusters"
+                      style="left: 79%; top: 37%"
+                      aria-label="Cluster with 9 robots in yard sector"
+                    >
+                      9 robots
+                    </button>
+                  </div>
+
+                  <div class="map-legend">
+                    <span><span class="map-legend__dot map-legend__dot--normal"></span>Normal</span>
+                    <span><span class="map-legend__dot map-legend__dot--warning"></span>Warning</span>
+                    <span
+                      ><span class="map-legend__dot map-legend__dot--critical"></span>Critical</span
+                    >
+                    <span><span class="map-legend__line"></span>Trail</span>
+                    <span><span class="map-legend__halo"></span>Uncertainty</span>
+                  </div>
+                </article>
+
+                <article class="card map-list-card">
+                  <div class="card__title">Fleet Queue (map synced)</div>
+                  <div class="subtle">List equivalent of map state for keyboard and assistive tech.</div>
+                  <input
+                    id="mapSearch"
+                    class="field__input map-list__search"
+                    type="search"
+                    placeholder="Search robot ID, mission, zone"
+                    aria-label="Search robots in map list"
+                  />
+
+                  <div class="map-list" role="listbox" aria-label="Robot list">
+                    <button
+                      class="map-row map-row--selected js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-001"
+                      data-map-status="normal"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-001"
+                    >
+                      <span class="map-row__id">robot-001</span>
+                      <span class="status status--ok">Normal</span>
+                      <span class="map-row__meta">Aisle 3 | q=0.92 | battery 87%</span>
+                    </button>
+                    <button
+                      class="map-row js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-003"
+                      data-map-status="warning"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-003"
+                    >
+                      <span class="map-row__id">robot-003</span>
+                      <span class="status status--warn">Warning</span>
+                      <span class="map-row__meta">Crossing | q=0.46 | drift +0.7m</span>
+                    </button>
+                    <button
+                      class="map-row js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-007"
+                      data-map-status="critical"
+                      data-map-site="yard"
+                      data-map-floor="yard"
+                      data-map-label="robot-007"
+                    >
+                      <span class="map-row__id">robot-007</span>
+                      <span class="status status--danger">Critical</span>
+                      <span class="map-row__meta">Yard no-fly-2 | geofence breach</span>
+                    </button>
+                    <button
+                      class="map-row js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-009"
+                      data-map-status="critical"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f1"
+                      data-map-label="robot-009"
+                    >
+                      <span class="map-row__id">robot-009</span>
+                      <span class="status status--danger">Critical</span>
+                      <span class="map-row__meta">Cell 2 | E-Stop active</span>
+                    </button>
+                    <button
+                      class="map-row js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-011"
+                      data-map-status="normal"
+                      data-map-site="yard"
+                      data-map-floor="yard"
+                      data-map-label="robot-011"
+                    >
+                      <span class="map-row__id">robot-011</span>
+                      <span class="status">Normal</span>
+                      <span class="map-row__meta">Clustered in yard group</span>
+                    </button>
+                  </div>
+                </article>
+              </div>
+
+              <div class="map-ops__lower">
+                <article class="card">
+                  <div class="card__title">Spatial Alert Triage</div>
+                  <div class="list js-map-alert-list">
+                    <div
+                      class="row row--static js-map-alert"
+                      data-map-alert-id="alert-007"
+                      data-map-robot-id="robot-007"
+                      data-map-severity="critical"
+                    >
+                      <div class="row__main">
+                        <div class="row__title">Geofence violation: robot-007 entered no-fly corridor</div>
+                        <div class="row__subtle">Critical | 14:10:12 | yard/no-fly-2 | source RTLS</div>
+                      </div>
+                      <div class="row__right">
+                        <button class="btn btn--small js-map-jump" type="button">Jump</button>
+                        <button class="btn btn--small js-map-ack" type="button">Acknowledge</button>
+                      </div>
+                    </div>
+                    <div
+                      class="row row--static js-map-alert"
+                      data-map-alert-id="alert-009"
+                      data-map-robot-id="robot-009"
+                      data-map-severity="critical"
+                    >
+                      <div class="row__main">
+                        <div class="row__title">Safety stop active: robot-009 halted</div>
+                        <div class="row__subtle">Critical | 14:06:28 | assembly-cell-2 | source PLC</div>
+                      </div>
+                      <div class="row__right">
+                        <button class="btn btn--small js-map-jump" type="button">Jump</button>
+                        <button class="btn btn--small js-map-ack" type="button">Acknowledge</button>
+                      </div>
+                    </div>
+                    <div
+                      class="row row--static js-map-alert"
+                      data-map-alert-id="alert-003"
+                      data-map-robot-id="robot-003"
+                      data-map-severity="warning"
+                    >
+                      <div class="row__main">
+                        <div class="row__title">Localization quality low: robot-003 covariance expanded</div>
+                        <div class="row__subtle">Warning | 14:13:01 | crossing | source SLAM</div>
+                      </div>
+                      <div class="row__right">
+                        <button class="btn btn--small js-map-jump" type="button">Jump</button>
+                        <button class="btn btn--small js-map-ack" type="button">Acknowledge</button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="card">
+                  <div class="card__title">Details on Demand</div>
+                  <div class="subtle" style="margin-bottom: 8px">
+                    Selection updates from map, list, or alert jump.
+                  </div>
+                  <dl class="map-detail-grid">
+                    <dt class="subtle">Robot</dt>
+                    <dd id="mapDetailRobot">robot-001</dd>
+                    <dt class="subtle">Status</dt>
+                    <dd id="mapDetailStatus">Normal</dd>
+                    <dt class="subtle">Location</dt>
+                    <dd id="mapDetailLocation">Aisle 3 (x:22.4, y:61.1)</dd>
+                    <dt class="subtle">Site/Floor</dt>
+                    <dd id="mapDetailSiteFloor">warehouse-a / f1</dd>
+                    <dt class="subtle">Heading</dt>
+                    <dd id="mapDetailHeading">NE (42 deg)</dd>
+                    <dt class="subtle">Speed</dt>
+                    <dd id="mapDetailSpeed">0.38 m/s</dd>
+                    <dt class="subtle">Uncertainty</dt>
+                    <dd id="mapDetailUncertainty">q=0.92, covariance=small</dd>
+                    <dt class="subtle">Source frame</dt>
+                    <dd id="mapDetailFrame">map -> odom -> base_link</dd>
+                    <dt class="subtle">Mission</dt>
+                    <dd id="mapDetailMission">mis-0094 navigate_to bay-3</dd>
+                    <dt class="subtle">Freshness</dt>
+                    <dd id="mapDetailFreshness">2s ago</dd>
+                  </dl>
+
+                  <div class="callout callout--policy" id="mapDetailWhy">
+                    Why this matters: low uncertainty plus recent updates indicates high confidence
+                    for dispatch decisions.
+                  </div>
+
+                  <div class="screen__actions" style="margin-top: 10px">
+                    <button class="btn btn--small" type="button">Bookmark Incident</button>
+                    <a class="btn btn--small" href="#mission">Open mission detail</a>
+                    <button class="btn btn--small js-estop-robot" type="button" data-robot-id="robot-001">
+                      Send E-Stop
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div
+              class="tabpane"
               data-pane="robots-grid"
               role="tabpanel"
               aria-label="All robots grid"
+              hidden
             >
               <!-- Robot card grid -->
               <div

@@ -3998,3 +3998,301 @@ tr.is-kbd-selected td {
 .cred-expiry--ok   { background: #e8f5e9; color: var(--ok); }
 .cred-expiry--warn { background: #fff3e0; color: var(--warn); }
 .cred-expiry--danger { background: #fdecea; color: var(--danger); }
+
+/* ============================================================
+   ROBOTS: LOCATION MAP OPERATIONS (Lo-Fi)
+   ============================================================ */
+.map-ops__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.map-ops__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.map-playback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.map-playback__range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.map-playback__slider {
+  width: 220px;
+}
+.map-bookmarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.map-ops__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.map-canvas-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.map-canvas-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+.map-status-filters {
+  gap: 6px;
+}
+
+.map-canvas {
+  position: relative;
+  min-height: 380px;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.95), rgba(238, 244, 255, 0.8)),
+    radial-gradient(circle at 20% 15%, rgba(37, 87, 167, 0.08), transparent 50%),
+    radial-gradient(circle at 82% 75%, rgba(31, 122, 54, 0.08), transparent 48%);
+}
+.map-canvas__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(27, 27, 27, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 27, 27, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+.map-canvas__occupancy {
+  position: absolute;
+  inset: 12% 10% 16% 8%;
+  border: 1px solid rgba(27, 27, 27, 0.28);
+  border-radius: var(--r-sm);
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(27, 27, 27, 0.03),
+      rgba(27, 27, 27, 0.03) 8px,
+      rgba(27, 27, 27, 0.09) 8px,
+      rgba(27, 27, 27, 0.09) 16px
+    );
+}
+
+.map-zone {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-radius: var(--r-sm);
+  padding: 2px 6px;
+}
+.map-zone--restricted {
+  left: 58%;
+  top: 16%;
+  width: 24%;
+  height: 28%;
+  border: 2px dashed var(--danger);
+  background: rgba(179, 38, 30, 0.1);
+  color: #7a1f1b;
+}
+.map-zone--warning {
+  left: 38%;
+  top: 58%;
+  width: 18%;
+  height: 18%;
+  border: 2px dashed var(--warn);
+  background: rgba(164, 107, 0, 0.1);
+  color: #7a5200;
+}
+
+.map-trail {
+  position: absolute;
+  border: 2px dashed rgba(37, 87, 167, 0.8);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.map-marker {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 0 rgba(27, 27, 27, 0.2);
+}
+.map-marker:hover {
+  transform: translate(-50%, -50%) scale(1.03);
+}
+.map-marker--selected {
+  outline: 3px solid rgba(10, 102, 255, 0.35);
+  outline-offset: 1px;
+}
+.map-marker__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.map-marker__uncertainty {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: -8px;
+  bottom: -8px;
+  border-radius: 999px;
+  border: 2px solid rgba(37, 87, 167, 0.34);
+  pointer-events: none;
+}
+.map-marker--normal .map-marker__dot {
+  background: var(--ok);
+}
+.map-marker--warning .map-marker__dot {
+  background: var(--warn);
+}
+.map-marker--critical .map-marker__dot {
+  background: var(--danger);
+}
+
+.map-cluster {
+  position: absolute;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(27, 27, 27, 0.2);
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.map-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.map-legend__dot--normal {
+  background: var(--ok);
+}
+.map-legend__dot--warning {
+  background: var(--warn);
+}
+.map-legend__dot--critical {
+  background: var(--danger);
+}
+.map-legend__line {
+  width: 16px;
+  border-top: 2px dashed rgba(37, 87, 167, 0.8);
+}
+.map-legend__halo {
+  width: 16px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(37, 87, 167, 0.34);
+}
+
+.map-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.map-list__search {
+  margin-top: 4px;
+}
+.map-list {
+  display: grid;
+  gap: 8px;
+  max-height: 340px;
+  overflow: auto;
+}
+.map-row {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  border: 2px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+  padding: 8px;
+  cursor: pointer;
+}
+.map-row:hover {
+  border-color: var(--line);
+}
+.map-row--selected {
+  border-color: var(--focus);
+  background: rgba(10, 102, 255, 0.06);
+}
+.map-row__id {
+  font-weight: 900;
+  font-size: 12px;
+}
+.map-row__meta {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.map-ops__lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 12px;
+}
+.map-detail-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+  margin: 0;
+}
+.js-map-alert.is-acknowledged {
+  opacity: 0.6;
+}
+
+@media (max-width: 1180px) {
+  .map-ops__layout,
+  .map-ops__lower {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-playback__slider {
+    width: 150px;
+  }
+  .map-canvas {
+    min-height: 300px;
+  }
+}
