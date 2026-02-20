@@ -41,6 +41,10 @@ describe('Workspace RBAC (IAM MVP)', () => {
     expect(isAllowedWorkspaceAction(actor(['operator']), 'workforce:complete')).toBe(true);
   });
 
+  it('allows approver for workforce:complete', () => {
+    expect(isAllowedWorkspaceAction(actor(['approver']), 'workforce:complete')).toBe(true);
+  });
+
   it('assert helper throws when denied', () => {
     expect(() => assertCanPerformWorkspaceAction(actor(['auditor']), 'approval:submit')).toThrow(
       /lacks required role/i,

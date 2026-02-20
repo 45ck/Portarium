@@ -188,6 +188,14 @@ export class AssignWorkforceMemberUseCase {
       });
     }
 
+    if (this.isOperatorWithoutAdmin(ctx) && workItem.ownerUserId !== ctx.principalId) {
+      return err({
+        kind: 'Forbidden',
+        action: APP_ACTIONS.workforceAssign,
+        message: 'Operators may only assign workforce members to WorkItems they own.',
+      });
+    }
+
     const artifacts = buildAssignmentArtifacts(ctx, {
       clock: this.deps.clock,
       idGenerator: this.deps.idGenerator,
@@ -336,6 +344,10 @@ export class AssignWorkforceMemberUseCase {
       kind: 'DependencyFailure',
       message: 'Queue routing selected a member that was not loaded.',
     });
+  }
+
+  private isOperatorWithoutAdmin(ctx: AppContext): boolean {
+    return ctx.roles.includes('operator') && !ctx.roles.includes('admin');
   }
 }
 

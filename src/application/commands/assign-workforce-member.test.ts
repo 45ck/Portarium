@@ -24,6 +24,13 @@ const ctx = toAppContext({
   correlationId: 'corr-1',
 });
 
+const operatorCtx = toAppContext({
+  tenantId: 'ws-1',
+  principalId: 'user-operator',
+  roles: ['operator'],
+  correlationId: 'corr-operator',
+});
+
 function makeDeps(overrides: Partial<AssignWorkforceMemberDeps> = {}): AssignWorkforceMemberDeps {
   const deps: AssignWorkforceMemberDeps = {
     authorization: {
@@ -237,5 +244,40 @@ describe('assignWorkforceMember', () => {
     if (result.ok) return;
     expect(result.error.kind).toBe('Conflict');
     expect(result.error.message).toMatch(/unavailable/i);
+  });
+
+  it('restricts operator assignment to work items they own', async () => {
+    const deps = makeDeps({
+      workItemStore: {
+        getWorkItemById: vi.fn(async () =>
+          parseWorkItemV1({
+            schemaVersion: 1,
+            workItemId: 'wi-1',
+            workspaceId: 'ws-1',
+            createdAtIso: '2026-02-19T10:00:00.000Z',
+            createdByUserId: 'user-init',
+            title: 'Investigate alert',
+            status: 'Open',
+            ownerUserId: 'user-other',
+          }),
+        ),
+        listWorkItems: vi.fn(async () => ({ items: [] })),
+        saveWorkItem: vi.fn(async () => undefined),
+      },
+    });
+
+    const result = await assignWorkforceMember(deps, operatorCtx, {
+      workspaceId: 'ws-1',
+      target: {
+        kind: 'WorkItem',
+        workItemId: 'wi-1',
+        workforceMemberId: 'wm-1',
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/operators may only assign/i);
   });
 });
