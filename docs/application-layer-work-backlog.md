@@ -250,8 +250,8 @@ Goal: safe rollout with rollback capability.
 | bead-0181 | open   | Test coverage thresholds                                         |
 | bead-0188 | open   | Runbook: execution order                                         |
 | bead-0189 | open   | Runbook: rollback plan                                           |
-| bead-0195 | open   | Tenant-isolated fixture factories                                |
-| bead-0196 | open   | Review: tenant-isolated fixtures                                 |
+| bead-0195 | closed | Tenant-isolated fixture factories                                |
+| bead-0196 | closed | Review: tenant-isolated fixtures                                 |
 | bead-0298 | open   | Infrastructure execution baseline                                |
 | bead-0299 | open   | AuthZ actions and forbidden-action typing                        |
 | bead-0300 | open   | E2E integration tests (command/query + idempotency + outbox)     |

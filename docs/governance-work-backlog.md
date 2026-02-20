@@ -191,6 +191,7 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.8 — bead-0196
   - Review: verify tenant-isolated fixtures block cross-tenant leakage.
   - AC: review passed.
+  - Artifact: `docs/review/bead-0196-tenant-fixture-leakage-review.md`
 
 ### EPIC-V07c — Operational domain coverage tracking
 
