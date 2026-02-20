@@ -1,0 +1,38 @@
+name: Links
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+  schedule:
+    - cron: '0 18 * * *'
+
+jobs:
+  link-checker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --root-dir "${{ github.workspace }}"
+            --verbose
+            --no-progress
+            --exclude-mail
+            "README.md"
+            "CONTRIBUTING.md"
+            "docs/index.md"
+            "docs/changelog.md"
+            "docs/faq.md"
+            "docs/getting-started/**/*.md"
+            "docs/how-to/**/*.md"
+            "docs/tutorials/**/*.md"
+            "docs/reference/**/*.md"
+            "docs/explanation/**/*.md"
+            "docs/_meta/**/*.md"
+            "docs/assets/**/*.md"
+          fail: true

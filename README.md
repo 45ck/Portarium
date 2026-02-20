@@ -1,71 +1,148 @@
 # Portarium
 
-Open-source, multi-tenant control plane for governable business operations.
+**Open-source multi-tenant control plane for governable business operations.**
 
-Portarium orchestrates durable workflows across your existing tools (ERP, CRM, helpdesk, marketing, HR, IT ops, and more), enforcing policy, approvals, and audit trails -- so every action is tiered by risk, every run is observable, and every outcome is defensible.
+Portarium is the public product name. You will also see **VAOP** in technical documentation and domain modelling.
 
-## Architecture
+> Status: early and actively built.
+>
+> - Runtime entrypoints are available for a control plane and execution-plane worker.
+> - The OpenAPI v1 contract is defined and evolving.
+> - Some persistence and integration paths are intentionally stubbed during scaffold phases.
 
-Portarium implements a Vertical Autonomous Operations control-plane architecture:
+## Badges
 
-- **18 port families** covering finance, payments, procurement, HR, CRM, support, ITSM, IAM, marketing, ads, comms, projects, documents, analytics, monitoring, compliance, and more
-- **14 canonical objects** (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account, ExternalObjectRef) for cross-system workflows
-- **5 aggregate roots** (Workspace, Workflow, Run, Policy, AdapterRegistration) with strict consistency boundaries
-- **Hexagonal architecture** with ports and adapters -- domain layer has zero external dependencies
-- **Evidence-first design** with tamper-evident audit trails and retention management
+[![CI (PR)](https://github.com/45ck/Portarium/actions/workflows/ci.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci.yml)
+[![CI (Nightly Deep Checks)](https://github.com/45ck/Portarium/actions/workflows/nightly.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/nightly.yml)
+[![CI (Infrastructure Gates)](https://github.com/45ck/Portarium/actions/workflows/ci-infra.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci-infra.yml)
 
-## Key Features
+## What Portarium Is
 
-- **Execution tiers**: Auto / Assisted / Human-approve / Manual-only -- per action, per policy
-- **Plan-based approvals**: structured Plan objects with typed diffs (Planned vs Verified Effects)
-- **Separation of duties**: maker-checker, N-approvers, incompatible duty constraints
-- **Quota-aware execution**: built-in throttling, backoff, batching, scheduling
-- **CloudEvents + OpenTelemetry**: standardised event stream and observability
-- **Untrusted execution containment**: least-privilege credentials, per-tenant isolation
+Portarium coordinates governable work across systems of record through Ports and Adapters.
 
-## Quick Start
+- Domain-first modelling with a shared canonical language
+- Control plane policies, approvals, and audit-ready evidence
+- Execution-plane worker runtime for durable orchestration and machine actions
 
-```bash
-npm install
-npm run typecheck
-npm run test
-npm run ci:pr        # full CI gate
+If you are new, start here:
+
+- `docs/index.md`
+- `docs/getting-started/local-dev.md`
+- `docs/getting-started/dev-workflow.md`
+
+## Architecture Overview
+
+```mermaid
+flowchart LR
+  subgraph Client[Clients]
+    Cockpit[Cockpit UI]
+    Automation[CLI / SDK / Automation]
+  end
+
+  subgraph CP[Control Plane]
+    Http[HTTP API /v1]
+    Auth[AuthN and AuthZ]
+    Domain[Application and Domain]
+  end
+
+  subgraph EP[Execution Plane]
+    Worker[Worker Runtime]
+    Temporal[Temporal Worker optional]
+  end
+
+  subgraph State[State and Evidence]
+    DB[(PostgreSQL)]
+    ObjectStore[(Object Storage)]
+    Events[CloudEvents stream]
+  end
+
+  Cockpit --> Http
+  Automation --> Http
+  Http --> Auth --> Domain
+  Domain --> Temporal --> Worker
+  Domain --> DB
+  Worker --> ObjectStore
+  Domain --> Events
 ```
 
-Run a local dependency stack for infra parity:
+## Installation
+
+Prerequisites:
+
+- Node.js `>=22`
+- Docker + Docker Compose
+- npm
 
 ```bash
-docker compose up
+npm ci
 ```
 
-Run the full runnable scaffold (control plane + worker) when you want to validate
-readiness/liveness probes and deployable image manifests locally:
+## Quickstart
+
+Start local infrastructure:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+docker compose up -d
 ```
 
-This references the repository root `docker-compose.yml` and the local development
-stack described in the Infrastructure ADR (ADR-0056).
-
-## Documentation
-
-- [Project Overview](docs/project-overview.md)
-- [Glossary (Ubiquitous Language)](docs/glossary.md)
-- [Domain Model](docs/domain/README.md)
-- [Integration Catalog (18 port families, 150+ tools)](docs/integration-catalog/README.md)
-- [ADRs (Architecture Decision Records)](docs/ADRs-v0.md)
-- [Infrastructure Layer Spec](.specify/specs/infrastructure-layer-v1.md)
-- [Infrastructure ADR-0056](docs/adr/0056-infrastructure-reference-architecture.md)
-
-## Deployment
-
-Portarium ships as an API server + database + evidence store. Git is the source of truth for definitions (runbooks, policies, manifests); the database is the source of truth for runtime state (runs, approvals, evidence).
+Run control plane:
 
 ```bash
-docker compose up    # one-command local dev environment
+npx tsx src/presentation/runtime/control-plane.ts
 ```
+
+Check health:
+
+```bash
+curl -s http://localhost:8080/healthz
+```
+
+Run execution-plane worker:
+
+```bash
+PORTARIUM_ENABLE_TEMPORAL_WORKER=true npx tsx src/presentation/runtime/worker.ts
+```
+
+Check health:
+
+```bash
+curl -s http://localhost:8081/healthz
+```
+
+## API Notes
+
+- Base path: `/v1`
+- Workspace scope: `/v1/workspaces/{workspaceId}/...`
+- Error envelope: `application/problem+json`
+- Auth defaults to `401` on protected routes when JWT/JWKS is not configured
+
+Source of truth:
+
+- `docs/spec/openapi/portarium-control-plane.v1.yaml`
+
+## Developer Workflow
+
+1. Read `CLAUDE.md` and `docs/development-start-here.md`.
+2. Track work in Beads (`npm run bd -- issue next --priority P1`).
+3. Implement with tests.
+4. Run full gates before PRs:
+
+```bash
+npm run ci:pr
+```
+
+## Documentation Map
+
+- `docs/index.md` - entry point
+- `docs/tutorials/` - guided learning
+- `docs/how-to/` - task recipes
+- `docs/reference/` - contracts and factual references
+- `docs/explanation/` - architecture and rationale
+
+## Contributing
+
+See `CONTRIBUTING.md` for contribution flow, quality gates, and review expectations.
 
 ## License
 
-See [ADR-020](docs/ADRs-v0.md) -- permissive core; avoid fair-code in critical path.
+License is being finalised. Until a `LICENSE` file is added, treat repository content as all rights reserved.

@@ -1,0 +1,35 @@
+name: Assets (Optimise)
+
+on:
+  pull_request:
+    paths:
+      - 'docs/assets/**/*.svg'
+      - '.github/assets/**/*.svg'
+
+jobs:
+  svgo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install SVGO
+        run: npm install -g svgo
+
+      - name: Optimise SVG assets
+        run: |
+          if [ -d docs/assets ]; then
+            svgo -rf docs/assets -o docs/assets
+          fi
+          if [ -d .github/assets ]; then
+            svgo -rf .github/assets -o .github/assets
+          fi
+
+      - name: Fail if optimisation changed files
+        run: git diff --exit-code

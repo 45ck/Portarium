@@ -53,7 +53,10 @@
     "mutation": "stryker run",
     "ci:pr": "npm run ci:gates && npm run typecheck && npm run lint && npm run format:check && npm run spell && npm run depcruise && npm run knip && npm run test:coverage && node scripts/ci/audit-high.mjs",
     "audit:high": "node scripts/ci/audit-high.mjs",
-    "ci:nightly": "npm run ci:pr && npm run mutation && npm run depgraph:mermaid && npm run typecheck:slow && npm run knip:strict"
+    "ci:nightly": "npm run ci:pr && npm run mutation && npm run depgraph:mermaid && npm run typecheck:slow && npm run knip:strict",
+    "docs:spell": "cspell --no-progress --config cspell.json \"README.md\" \"CONTRIBUTING.md\" \"docs/index.md\" \"docs/changelog.md\" \"docs/faq.md\" \"docs/getting-started/**/*.md\" \"docs/how-to/**/*.md\" \"docs/tutorials/**/*.md\" \"docs/reference/**/*.md\" \"docs/explanation/**/*.md\" \"docs/_meta/**/*.md\" \"docs/assets/**/*.md\"",
+    "docs:lint": "npm run docs:spell && prettier --check \"README.md\" \"CONTRIBUTING.md\" \"docs/index.md\" \"docs/changelog.md\" \"docs/faq.md\" \"docs/getting-started/**/*.md\" \"docs/how-to/**/*.md\" \"docs/tutorials/**/*.md\" \"docs/reference/**/*.md\" \"docs/explanation/**/*.md\" \"docs/_meta/**/*.md\" \"docs/assets/**/*.md\"",
+    "docs:assets:optimize": "npx svgo -rf docs/assets -o docs/assets && npx svgo -rf .github/assets -o .github/assets"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

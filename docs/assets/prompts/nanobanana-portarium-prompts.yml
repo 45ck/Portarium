@@ -1,0 +1,241 @@
+# cspell:disable
+model_defaults:
+  model: gemini-3-pro-image-preview
+  guidance:
+    - 'Use structured prompts: subject, composition, style, text, constraints, output.'
+    - 'If seed is unavailable, keep consistency through explicit layout and palette constraints.'
+  temperature_suggestions:
+    deterministic: 0.2
+    balanced: 0.7
+    exploratory: 1.0
+  output:
+    formats: ['png', 'webp']
+  palettes:
+    portarium_light: ['#FFFFFF', '#0B1220', '#14B8A6', '#2563EB', '#F59E0B', '#DC2626']
+    portarium_dark: ['#0B1220', '#E5E7EB', '#2DD4BF', '#60A5FA', '#FBBF24', '#F87171']
+    high_contrast: ['#000000', '#FFFFFF', '#00E5FF', '#FFD600', '#FF1744']
+
+prompts:
+  - id: NB-01
+    intent: README hero banner
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41001
+    temperature: 0.7
+    prompt: >
+      Create a clean hero banner for Portarium showing control plane and execution plane layers.
+      Use a {theme} theme and only the provided palette. Render "Portarium" as the only text.
+
+  - id: NB-02
+    intent: Architecture poster
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41002
+    temperature: 0.4
+    prompt: >
+      Diagram-style image with readable labels: Clients, Control Plane, Execution Plane, Stores.
+      Left-to-right flow, rounded boxes, clear arrows, high contrast.
+
+  - id: NB-03
+    intent: Local stack diagram
+    aspect_ratio: '1:1'
+    resolution: '2048x2048'
+    seed: 41003
+    temperature: 0.5
+    prompt: >
+      Isometric mini-map of services labeled: Control Plane, Worker, PostgreSQL, Temporal, Vault,
+      MinIO, OpenTelemetry. No vendor logos.
+
+  - id: NB-04
+    intent: Port family taxonomy poster
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41004
+    temperature: 0.6
+    prompt: >
+      Poster titled "Portarium Port Families" with a clean grid of category cards and consistent icons.
+
+  - id: NB-05
+    intent: Evidence chain visual
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41005
+    temperature: 0.5
+    prompt: >
+      Diagram titled "Evidence Chain" with six linked entries and readable hash arrows.
+
+  - id: NB-06
+    intent: Cockpit UI mockup
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41006
+    temperature: 0.7
+    prompt: >
+      UI mock named "Portarium Cockpit" with sidebar, runs table, and evidence panel.
+      Use placeholder data only.
+
+  - id: NB-07
+    intent: Icon set
+    aspect_ratio: '1:1'
+    resolution: '2048x2048'
+    seed: 41007
+    temperature: 0.8
+    prompt: >
+      3x3 grid of tactile icons for control plane, execution plane, workflow, approval, evidence,
+      policy, adapter, port, and audit.
+
+  - id: NB-08
+    intent: API announcement tile
+    aspect_ratio: '1:1'
+    resolution: '2048x2048'
+    seed: 41008
+    temperature: 0.6
+    prompt: >
+      Square graphic with readable text: "Control Plane API v1" and subtitle
+      "Workspace-scoped - RFC7807 - Cursor pagination".
+
+  - id: NB-09
+    intent: Request lifecycle diagram
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41009
+    temperature: 0.4
+    prompt: >
+      Flow diagram: Client request -> Correlation ID -> Trace Context -> AuthN -> AuthZ -> Handler -> Problem+JSON/JSON.
+
+  - id: NB-10
+    intent: Ports and Adapters metaphor
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41010
+    temperature: 0.9
+    prompt: >
+      Abstract illustration of a panel labeled Ports connecting to plugs labeled Adapters.
+
+  - id: NB-11
+    intent: Changelog header
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41011
+    temperature: 0.6
+    prompt: >
+      Header banner titled "Changelog" using layered timeline bars.
+
+  - id: NB-12
+    intent: FAQ header
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41012
+    temperature: 0.7
+    prompt: >
+      Header banner titled "FAQ" with minimal question motifs.
+
+  - id: NB-13
+    intent: System boundaries header
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41013
+    temperature: 0.5
+    prompt: >
+      Header titled "System Boundaries" using nested trust-boundary shapes.
+
+  - id: NB-14
+    intent: OpenAPI cover
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41014
+    temperature: 0.6
+    prompt: >
+      Blueprint-style technical cover titled "OpenAPI v1".
+
+  - id: NB-15
+    intent: Evidence icon
+    aspect_ratio: '1:1'
+    resolution: '1024x1024'
+    seed: 41015
+    temperature: 0.7
+    prompt: >
+      Single tactile icon showing document plus chain badge.
+
+  - id: NB-16
+    intent: Approval icon
+    aspect_ratio: '1:1'
+    resolution: '1024x1024'
+    seed: 41016
+    temperature: 0.7
+    prompt: >
+      Single tactile icon showing approval gate and check.
+
+  - id: NB-17
+    intent: Governable automation banner
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41017
+    temperature: 0.9
+    prompt: >
+      Banner with headline "Governable automation" and structured guarded flow lines.
+
+  - id: NB-18
+    intent: CI pipeline diagram
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41018
+    temperature: 0.4
+    prompt: >
+      Pipeline diagram labels: Typecheck, Lint, Format check, Spell, DepCruise, Knip, Tests, Audit.
+
+  - id: NB-19
+    intent: Documentation map quadrant
+    aspect_ratio: '1:1'
+    resolution: '2048x2048'
+    seed: 41019
+    temperature: 0.5
+    prompt: >
+      2x2 chart titled Documentation Map with labels Tutorials, How-to, Reference, Explanation.
+
+  - id: NB-20
+    intent: Glossary header
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41020
+    temperature: 0.6
+    prompt: >
+      Header titled "Glossary" with subtle typographic texture.
+
+  - id: NB-21
+    intent: Integration landscape cover
+    aspect_ratio: '16:9'
+    resolution: '3840x2160'
+    seed: 41021
+    temperature: 0.8
+    prompt: >
+      Cover titled "Integration Landscape" with clustered node constellations.
+
+  - id: NB-22
+    intent: Contributor build map cover
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41022
+    temperature: 0.7
+    prompt: >
+      Banner titled "Build Map" with phases: devenv, domain, application, infrastructure, presentation.
+
+  - id: NB-23
+    intent: Separation of duties concept
+    aspect_ratio: '1:1'
+    resolution: '2048x2048'
+    seed: 41023
+    temperature: 0.8
+    prompt: >
+      Minimal concept art for separation of duties with distinct roles and a gate.
+
+  - id: NB-24
+    intent: Mermaid fallback architecture image
+    aspect_ratio: '16:9'
+    resolution: '2560x1440'
+    seed: 41024
+    temperature: 0.4
+    prompt: >
+      Clean static flowchart with labeled boxes: Clients, Control Plane, Execution Plane, Stores.
+
+# cspell:enable
