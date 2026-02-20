@@ -16,6 +16,8 @@ Portarium is the public product name. You will also see **VAOP** in technical do
 [![CI (Nightly Deep Checks)](https://github.com/45ck/Portarium/actions/workflows/nightly.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/nightly.yml)
 [![CI (Infrastructure Gates)](https://github.com/45ck/Portarium/actions/workflows/ci-infra.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci-infra.yml)
 
+Badge links target the upstream repository (`45ck/Portarium`).
+
 ## What Portarium Is
 
 Portarium coordinates governable work across systems of record through Ports and Adapters.
@@ -101,6 +103,11 @@ Run execution-plane worker:
 
 ```bash
 PORTARIUM_ENABLE_TEMPORAL_WORKER=true npx tsx src/presentation/runtime/worker.ts
+```
+
+```powershell
+$env:PORTARIUM_ENABLE_TEMPORAL_WORKER = "true"
+npx tsx src/presentation/runtime/worker.ts
 ```
 
 Check health:

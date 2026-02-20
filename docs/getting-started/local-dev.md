@@ -26,6 +26,10 @@ Services are defined in `docker-compose.yml` and include PostgreSQL, Temporal, M
 npx tsx src/presentation/runtime/control-plane.ts
 ```
 
+```powershell
+npx tsx src/presentation/runtime/control-plane.ts
+```
+
 Default bind: `0.0.0.0:8080`
 
 Environment overrides:
@@ -41,10 +45,20 @@ curl -s http://localhost:8080/healthz
 curl -s http://localhost:8080/readyz
 ```
 
+```powershell
+Invoke-RestMethod http://localhost:8080/healthz
+Invoke-RestMethod http://localhost:8080/readyz
+```
+
 ## Run execution-plane runtime
 
 ```bash
 PORTARIUM_ENABLE_TEMPORAL_WORKER=true npx tsx src/presentation/runtime/worker.ts
+```
+
+```powershell
+$env:PORTARIUM_ENABLE_TEMPORAL_WORKER = "true"
+npx tsx src/presentation/runtime/worker.ts
 ```
 
 Default bind: `0.0.0.0:8081`
@@ -56,10 +70,19 @@ curl -s http://localhost:8081/healthz
 curl -s http://localhost:8081/readyz
 ```
 
+```powershell
+Invoke-RestMethod http://localhost:8081/healthz
+Invoke-RestMethod http://localhost:8081/readyz
+```
+
 ## Call a v1 endpoint
 
 ```bash
 curl -i http://localhost:8080/v1/workspaces/demo
+```
+
+```powershell
+Invoke-WebRequest http://localhost:8080/v1/workspaces/demo -Method GET
 ```
 
 Expected behavior without auth config: `401 Unauthorized` on protected routes.
