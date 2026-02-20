@@ -247,7 +247,7 @@ Goal: safe rollout with rollback capability.
 | bead-0043 | open   | OTel context propagation                                         |
 | bead-0163 | open   | Phase transition: Application complete                           |
 | bead-0167 | open   | Phase transition: Security complete                              |
-| bead-0181 | open   | Test coverage thresholds                                         |
+| bead-0181 | closed | Test coverage thresholds                                         |
 | bead-0188 | open   | Runbook: execution order                                         |
 | bead-0189 | open   | Runbook: rollback plan                                           |
 | bead-0195 | closed | Tenant-isolated fixture factories                                |

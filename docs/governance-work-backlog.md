@@ -167,6 +167,7 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.1 — bead-0181
   - Test evidence: coverage thresholds on all new code.
   - AC: CI blocks PRs below threshold.
+  - Artifact: `docs/review/bead-0181-coverage-thresholds-review.md`
 - STORY-V07.2 — bead-0182
   - Test evidence: mutation-test or fault-injection for policy and SoD logic.
   - AC: mutation score above threshold; gaps documented.

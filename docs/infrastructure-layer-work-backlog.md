@@ -254,7 +254,7 @@ Goal: infrastructure layer completion evidence.
 | bead-0116 | open   | SecretsVaulting port adapter implementation                        |
 | bead-0164 | open   | Phase transition: Infrastructure complete                          |
 | bead-0167 | open   | Phase transition: Security complete                                |
-| bead-0181 | open   | Coverage thresholds on infrastructure code                         |
+| bead-0181 | closed | Coverage thresholds on infrastructure code                         |
 | bead-0188 | open   | Runbook: execution order                                           |
 | bead-0189 | open   | Runbook: rollback plan                                             |
 | bead-0190 | open   | Review: rollback plan validation                                   |
