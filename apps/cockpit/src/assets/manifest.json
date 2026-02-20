@@ -23,9 +23,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/robot-ground.png",
         "dark": "/assets/icons/domain/robot-ground.png"
@@ -41,11 +39,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "robot",
-        "icon"
-      ]
+      "tags": ["domain", "robot", "icon"]
     },
     {
       "id": "icon-robot-drone",
@@ -67,9 +61,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/robot-drone.png",
         "dark": "/assets/icons/domain/robot-drone.png"
@@ -85,11 +77,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "drone",
-        "icon"
-      ]
+      "tags": ["domain", "drone", "icon"]
     },
     {
       "id": "icon-agent",
@@ -111,9 +99,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/agent.png",
         "dark": "/assets/icons/domain/agent.png"
@@ -129,11 +115,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "agent",
-        "icon"
-      ]
+      "tags": ["domain", "agent", "icon"]
     },
     {
       "id": "icon-adapter",
@@ -155,9 +137,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/adapter.png",
         "dark": "/assets/icons/domain/adapter.png"
@@ -173,11 +153,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "adapter",
-        "icon"
-      ]
+      "tags": ["domain", "adapter", "icon"]
     },
     {
       "id": "icon-mission",
@@ -199,9 +175,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/mission.png",
         "dark": "/assets/icons/domain/mission.png"
@@ -217,11 +191,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "mission",
-        "icon"
-      ]
+      "tags": ["domain", "mission", "icon"]
     },
     {
       "id": "icon-evidence",
@@ -243,9 +213,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/evidence.png",
         "dark": "/assets/icons/domain/evidence.png"
@@ -261,11 +229,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "evidence",
-        "icon"
-      ]
+      "tags": ["domain", "evidence", "icon"]
     },
     {
       "id": "icon-policy",
@@ -287,9 +251,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/policy.png",
         "dark": "/assets/icons/domain/policy.png"
@@ -305,11 +267,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "policy",
-        "icon"
-      ]
+      "tags": ["domain", "policy", "icon"]
     },
     {
       "id": "icon-fleet",
@@ -331,9 +289,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/fleet.png",
         "dark": "/assets/icons/domain/fleet.png"
@@ -349,11 +305,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "fleet",
-        "icon"
-      ]
+      "tags": ["domain", "fleet", "icon"]
     },
     {
       "id": "image-robot-ground-alpha",
@@ -371,9 +323,7 @@
           "height": 512
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "neutral": "/assets/images/robots/robot-ground-alpha.png"
       },
@@ -388,10 +338,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "robot",
-        "entity-image"
-      ]
+      "tags": ["robot", "entity-image"]
     },
     {
       "id": "image-robot-drone-gamma",
@@ -409,9 +356,7 @@
           "height": 512
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "neutral": "/assets/images/robots/robot-drone-gamma.png"
       },
@@ -426,10 +371,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "drone",
-        "entity-image"
-      ]
+      "tags": ["drone", "entity-image"]
     },
     {
       "id": "image-agent-ops-analyst",
@@ -447,9 +389,7 @@
           "height": 512
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "neutral": "/assets/images/agents/agent-ops-analyst.png"
       },
@@ -464,10 +404,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "agent",
-        "entity-image"
-      ]
+      "tags": ["agent", "entity-image"]
     },
     {
       "id": "image-agent-policy-reviewer",
@@ -485,9 +422,7 @@
           "height": 512
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "neutral": "/assets/images/agents/agent-policy-reviewer.png"
       },
@@ -502,10 +437,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "agent",
-        "entity-image"
-      ]
+      "tags": ["agent", "entity-image"]
     },
     {
       "id": "illustration-fleet-overview",
@@ -519,9 +451,7 @@
           "height": 675
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "neutral": "/assets/illustrations/fleet-overview.png"
       },
@@ -536,10 +466,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "fleet",
-        "illustration"
-      ]
+      "tags": ["fleet", "illustration"]
     },
     {
       "id": "icon-work-item",
@@ -561,9 +488,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/work-item.png",
         "dark": "/assets/icons/domain/work-item.png"
@@ -579,11 +504,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "work-item",
-        "icon"
-      ]
+      "tags": ["domain", "work-item", "icon"]
     },
     {
       "id": "icon-workflow",
@@ -605,9 +526,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/workflow.png",
         "dark": "/assets/icons/domain/workflow.png"
@@ -623,11 +542,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "workflow",
-        "icon"
-      ]
+      "tags": ["domain", "workflow", "icon"]
     },
     {
       "id": "icon-run",
@@ -649,9 +564,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/run.png",
         "dark": "/assets/icons/domain/run.png"
@@ -667,11 +580,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "run",
-        "icon"
-      ]
+      "tags": ["domain", "run", "icon"]
     },
     {
       "id": "icon-approval",
@@ -693,9 +602,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/approval.png",
         "dark": "/assets/icons/domain/approval.png"
@@ -711,11 +618,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "approval",
-        "icon"
-      ]
+      "tags": ["domain", "approval", "icon"]
     },
     {
       "id": "icon-human-task",
@@ -737,9 +640,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/human-task.png",
         "dark": "/assets/icons/domain/human-task.png"
@@ -755,11 +656,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "human-task",
-        "icon"
-      ]
+      "tags": ["domain", "human-task", "icon"]
     },
     {
       "id": "icon-workforce",
@@ -781,9 +678,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/workforce.png",
         "dark": "/assets/icons/domain/workforce.png"
@@ -799,11 +694,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "workforce",
-        "icon"
-      ]
+      "tags": ["domain", "workforce", "icon"]
     },
     {
       "id": "icon-queue",
@@ -825,9 +716,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/queue.png",
         "dark": "/assets/icons/domain/queue.png"
@@ -843,11 +732,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "queue",
-        "icon"
-      ]
+      "tags": ["domain", "queue", "icon"]
     },
     {
       "id": "icon-machine",
@@ -869,9 +754,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/machine.png",
         "dark": "/assets/icons/domain/machine.png"
@@ -887,11 +770,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "machine",
-        "icon"
-      ]
+      "tags": ["domain", "machine", "icon"]
     },
     {
       "id": "icon-map-layer",
@@ -913,9 +792,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/map-layer.png",
         "dark": "/assets/icons/domain/map-layer.png"
@@ -931,11 +808,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "map-layer",
-        "icon"
-      ]
+      "tags": ["domain", "map-layer", "icon"]
     },
     {
       "id": "icon-location-event",
@@ -957,9 +830,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/location-event.png",
         "dark": "/assets/icons/domain/location-event.png"
@@ -975,11 +846,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "location-event",
-        "icon"
-      ]
+      "tags": ["domain", "location-event", "icon"]
     },
     {
       "id": "icon-port",
@@ -1001,9 +868,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/port.png",
         "dark": "/assets/icons/domain/port.png"
@@ -1019,11 +884,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "port",
-        "icon"
-      ]
+      "tags": ["domain", "port", "icon"]
     },
     {
       "id": "icon-project",
@@ -1045,9 +906,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/project.png",
         "dark": "/assets/icons/domain/project.png"
@@ -1063,11 +922,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "project",
-        "icon"
-      ]
+      "tags": ["domain", "project", "icon"]
     },
     {
       "id": "icon-plan",
@@ -1089,9 +944,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/plan.png",
         "dark": "/assets/icons/domain/plan.png"
@@ -1107,11 +960,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "plan",
-        "icon"
-      ]
+      "tags": ["domain", "plan", "icon"]
     },
     {
       "id": "icon-credential",
@@ -1133,9 +982,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/credential.png",
         "dark": "/assets/icons/domain/credential.png"
@@ -1151,11 +998,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "credential",
-        "icon"
-      ]
+      "tags": ["domain", "credential", "icon"]
     },
     {
       "id": "icon-tenant",
@@ -1177,9 +1020,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/tenant.png",
         "dark": "/assets/icons/domain/tenant.png"
@@ -1195,11 +1036,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "tenant",
-        "icon"
-      ]
+      "tags": ["domain", "tenant", "icon"]
     },
     {
       "id": "icon-user",
@@ -1221,9 +1058,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/user.png",
         "dark": "/assets/icons/domain/user.png"
@@ -1239,11 +1074,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "user",
-        "icon"
-      ]
+      "tags": ["domain", "user", "icon"]
     },
     {
       "id": "icon-event",
@@ -1265,9 +1096,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/event.png",
         "dark": "/assets/icons/domain/event.png"
@@ -1283,11 +1112,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "event",
-        "icon"
-      ]
+      "tags": ["domain", "event", "icon"]
     },
     {
       "id": "icon-artifact",
@@ -1309,9 +1134,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/artifact.png",
         "dark": "/assets/icons/domain/artifact.png"
@@ -1327,11 +1150,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "artifact",
-        "icon"
-      ]
+      "tags": ["domain", "artifact", "icon"]
     },
     {
       "id": "icon-party",
@@ -1353,9 +1172,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/party.png",
         "dark": "/assets/icons/domain/party.png"
@@ -1371,11 +1188,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "party",
-        "icon"
-      ]
+      "tags": ["domain", "party", "icon"]
     },
     {
       "id": "icon-ticket",
@@ -1397,9 +1210,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/ticket.png",
         "dark": "/assets/icons/domain/ticket.png"
@@ -1415,11 +1226,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "ticket",
-        "icon"
-      ]
+      "tags": ["domain", "ticket", "icon"]
     },
     {
       "id": "icon-invoice",
@@ -1441,9 +1248,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/invoice.png",
         "dark": "/assets/icons/domain/invoice.png"
@@ -1459,11 +1264,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "invoice",
-        "icon"
-      ]
+      "tags": ["domain", "invoice", "icon"]
     },
     {
       "id": "icon-payment",
@@ -1485,9 +1286,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/payment.png",
         "dark": "/assets/icons/domain/payment.png"
@@ -1503,11 +1302,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "payment",
-        "icon"
-      ]
+      "tags": ["domain", "payment", "icon"]
     },
     {
       "id": "icon-task",
@@ -1529,9 +1324,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/task.png",
         "dark": "/assets/icons/domain/task.png"
@@ -1547,11 +1340,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "task",
-        "icon"
-      ]
+      "tags": ["domain", "task", "icon"]
     },
     {
       "id": "icon-campaign",
@@ -1573,9 +1362,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/campaign.png",
         "dark": "/assets/icons/domain/campaign.png"
@@ -1591,11 +1378,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "campaign",
-        "icon"
-      ]
+      "tags": ["domain", "campaign", "icon"]
     },
     {
       "id": "icon-asset",
@@ -1617,9 +1400,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/asset.png",
         "dark": "/assets/icons/domain/asset.png"
@@ -1635,11 +1416,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "asset",
-        "icon"
-      ]
+      "tags": ["domain", "asset", "icon"]
     },
     {
       "id": "icon-document",
@@ -1661,9 +1438,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/document.png",
         "dark": "/assets/icons/domain/document.png"
@@ -1679,11 +1454,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "document",
-        "icon"
-      ]
+      "tags": ["domain", "document", "icon"]
     },
     {
       "id": "icon-subscription",
@@ -1705,9 +1476,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/subscription.png",
         "dark": "/assets/icons/domain/subscription.png"
@@ -1723,11 +1492,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "subscription",
-        "icon"
-      ]
+      "tags": ["domain", "subscription", "icon"]
     },
     {
       "id": "icon-opportunity",
@@ -1749,9 +1514,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/opportunity.png",
         "dark": "/assets/icons/domain/opportunity.png"
@@ -1767,11 +1530,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "opportunity",
-        "icon"
-      ]
+      "tags": ["domain", "opportunity", "icon"]
     },
     {
       "id": "icon-product",
@@ -1793,9 +1552,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/product.png",
         "dark": "/assets/icons/domain/product.png"
@@ -1811,11 +1568,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "product",
-        "icon"
-      ]
+      "tags": ["domain", "product", "icon"]
     },
     {
       "id": "icon-order",
@@ -1837,9 +1590,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/order.png",
         "dark": "/assets/icons/domain/order.png"
@@ -1855,11 +1606,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "order",
-        "icon"
-      ]
+      "tags": ["domain", "order", "icon"]
     },
     {
       "id": "icon-account",
@@ -1881,9 +1628,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/account.png",
         "dark": "/assets/icons/domain/account.png"
@@ -1899,11 +1644,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "account",
-        "icon"
-      ]
+      "tags": ["domain", "account", "icon"]
     },
     {
       "id": "icon-external-object-ref",
@@ -1925,9 +1666,7 @@
           "height": 32
         }
       },
-      "formats": [
-        "png"
-      ],
+      "formats": ["png"],
       "paths": {
         "light": "/assets/icons/domain/external-object-ref.png",
         "dark": "/assets/icons/domain/external-object-ref.png"
@@ -1943,11 +1682,7 @@
       },
       "status": "approved",
       "license": "internal-generated",
-      "tags": [
-        "domain",
-        "external-object-ref",
-        "icon"
-      ]
+      "tags": ["domain", "external-object-ref", "icon"]
     }
   ]
 }

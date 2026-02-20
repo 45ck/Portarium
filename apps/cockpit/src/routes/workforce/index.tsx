@@ -1,28 +1,28 @@
-import { createRoute, useNavigate } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-workforce'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { KpiRow } from '@/components/cockpit/kpi-row'
-import { DataTable } from '@/components/cockpit/data-table'
-import { Badge } from '@/components/ui/badge'
-import type { WorkforceMemberSummary } from '@portarium/cockpit-types'
+import { createRoute, useNavigate } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-workforce';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { KpiRow } from '@/components/cockpit/kpi-row';
+import { DataTable } from '@/components/cockpit/data-table';
+import { Badge } from '@/components/ui/badge';
+import type { WorkforceMemberSummary } from '@portarium/cockpit-types';
 
 const statusColor: Record<string, string> = {
   available: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',
   busy: 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950',
   offline: 'text-muted-foreground bg-muted',
-}
+};
 
 function WorkforcePage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const navigate = useNavigate()
-  const { data: membersData, isLoading: membersLoading } = useWorkforceMembers(wsId)
-  const { data: queuesData, isLoading: queuesLoading } = useWorkforceQueues(wsId)
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
+  const { data: membersData, isLoading: membersLoading } = useWorkforceMembers(wsId);
+  const { data: queuesData, isLoading: queuesLoading } = useWorkforceQueues(wsId);
 
-  const members = membersData?.items ?? []
-  const queues = queuesData?.items ?? []
+  const members = membersData?.items ?? [];
+  const queues = queuesData?.items ?? [];
 
   const columns = [
     {
@@ -66,11 +66,9 @@ function WorkforcePage() {
       key: 'queues',
       header: 'Queues',
       width: '80px',
-      render: (row: WorkforceMemberSummary) => (
-        <span>{row.queueMemberships.length}</span>
-      ),
+      render: (row: WorkforceMemberSummary) => <span>{row.queueMemberships.length}</span>,
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-4">
@@ -83,8 +81,14 @@ function WorkforcePage() {
       <KpiRow
         stats={[
           { label: 'Total Members', value: members.length },
-          { label: 'Online', value: members.filter((m) => m.availabilityStatus !== 'offline').length },
-          { label: 'Available', value: members.filter((m) => m.availabilityStatus === 'available').length },
+          {
+            label: 'Online',
+            value: members.filter((m) => m.availabilityStatus !== 'offline').length,
+          },
+          {
+            label: 'Available',
+            value: members.filter((m) => m.availabilityStatus === 'available').length,
+          },
           { label: 'Total Queues', value: queues.length },
         ]}
       />
@@ -95,15 +99,18 @@ function WorkforcePage() {
         loading={membersLoading || queuesLoading}
         getRowKey={(row) => row.workforceMemberId}
         onRowClick={(row) =>
-          navigate({ to: '/workforce/$memberId' as string, params: { memberId: row.workforceMemberId } })
+          navigate({
+            to: '/workforce/$memberId' as string,
+            params: { memberId: row.workforceMemberId },
+          })
         }
       />
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workforce',
   component: WorkforcePage,
-})
+});

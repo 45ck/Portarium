@@ -1,6 +1,7 @@
 import type { PolicyV1 } from '../policy/policy-v1.js';
 import type {
   PerformedDutyV1,
+  RobotSodContextV1,
   SodEvaluationContextV1,
   SodViolationV1,
 } from '../policy/sod-constraints-v1.js';
@@ -17,6 +18,7 @@ export type PolicyEvaluationContextV1 = Readonly<{
   initiatorUserId: UserIdType;
   approverUserIds: readonly UserIdType[];
   performedDuties?: readonly PerformedDutyV1[];
+  robotContext?: RobotSodContextV1;
 }> &
   SafetyPolicyContextV1;
 
@@ -65,6 +67,7 @@ export function evaluatePolicy(params: {
     initiatorUserId: context.initiatorUserId,
     approverUserIds: context.approverUserIds,
     ...(context.performedDuties ? { performedDuties: context.performedDuties } : {}),
+    ...(context.robotContext ? { robotContext: context.robotContext } : {}),
   };
 
   const violations = evaluateSodConstraintsV1({

@@ -1,45 +1,49 @@
-import { useState } from 'react'
-import { createRoute, useNavigate } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkItems } from '@/hooks/queries/use-work-items'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { FilterBar } from '@/components/cockpit/filter-bar'
-import { DataTable } from '@/components/cockpit/data-table'
-import { Badge } from '@/components/ui/badge'
-import type { WorkItemSummary } from '@portarium/cockpit-types'
+import { useState } from 'react';
+import { createRoute, useNavigate } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkItems } from '@/hooks/queries/use-work-items';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { FilterBar } from '@/components/cockpit/filter-bar';
+import { DataTable } from '@/components/cockpit/data-table';
+import { Badge } from '@/components/ui/badge';
+import type { WorkItemSummary } from '@portarium/cockpit-types';
 
 const STATUS_FILTERS = [
   { label: 'Open', value: 'Open' },
   { label: 'Closed', value: 'Closed' },
-]
+];
 
 const OWNER_FILTERS = [
   { label: 'alex', value: 'user-ops-alex' },
   { label: 'sam', value: 'user-ops-sam' },
   { label: 'dana', value: 'user-approver-dana' },
-]
+];
 
 function WorkItemsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const navigate = useNavigate()
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     status: 'all',
     owner: 'all',
-  })
+  });
 
-  const { data, isLoading } = useWorkItems(wsId)
-  const items = data?.items ?? []
+  const { data, isLoading } = useWorkItems(wsId);
+  const items = data?.items ?? [];
 
   const filtered = items.filter((item) => {
     if (filterValues.status && filterValues.status !== 'all' && item.status !== filterValues.status)
-      return false
-    if (filterValues.owner && filterValues.owner !== 'all' && item.ownerUserId !== filterValues.owner)
-      return false
-    return true
-  })
+      return false;
+    if (
+      filterValues.owner &&
+      filterValues.owner !== 'all' &&
+      item.ownerUserId !== filterValues.owner
+    )
+      return false;
+    return true;
+  });
 
   const columns = [
     {
@@ -72,9 +76,7 @@ function WorkItemsPage() {
       header: 'SLA',
       width: '140px',
       render: (row: WorkItemSummary) =>
-        row.sla?.dueAtIso
-          ? format(new Date(row.sla.dueAtIso), 'MMM d, yyyy')
-          : '-',
+        row.sla?.dueAtIso ? format(new Date(row.sla.dueAtIso), 'MMM d, yyyy') : '-',
     },
     {
       key: 'links',
@@ -85,15 +87,18 @@ function WorkItemsPage() {
           (row.links?.runIds?.length ?? 0) +
           (row.links?.approvalIds?.length ?? 0) +
           (row.links?.evidenceIds?.length ?? 0) +
-          (row.links?.externalRefs?.length ?? 0)
-        return count > 0 ? count : '-'
+          (row.links?.externalRefs?.length ?? 0);
+        return count > 0 ? count : '-';
       },
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title="Work Items" icon={<EntityIcon entityType="work-item" size="md" decorative />} />
+      <PageHeader
+        title="Work Items"
+        icon={<EntityIcon entityType="work-item" size="md" decorative />}
+      />
 
       <FilterBar
         filters={[
@@ -101,9 +106,7 @@ function WorkItemsPage() {
           { key: 'owner', label: 'Owner', options: OWNER_FILTERS },
         ]}
         values={filterValues}
-        onChange={(key, value) =>
-          setFilterValues((prev) => ({ ...prev, [key]: value }))
-        }
+        onChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
       />
 
       <DataTable
@@ -112,15 +115,18 @@ function WorkItemsPage() {
         loading={isLoading}
         getRowKey={(row) => row.workItemId}
         onRowClick={(row) =>
-          navigate({ to: '/work-items/$workItemId' as string, params: { workItemId: row.workItemId } })
+          navigate({
+            to: '/work-items/$workItemId' as string,
+            params: { workItemId: row.workItemId },
+          })
         }
       />
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/work-items',
   component: WorkItemsPage,
-})
+});

@@ -1,5 +1,15 @@
 import type { CSSProperties } from 'react';
-import { Bot, Brain, FileCheck2, Network, Plane, Plug, Route, ShieldCheck, User } from 'lucide-react';
+import {
+  Bot,
+  Brain,
+  FileCheck2,
+  Network,
+  Plane,
+  Plug,
+  Route,
+  ShieldCheck,
+  User,
+} from 'lucide-react';
 import { getDomainIcon, resolveAssetPath } from '@/assets/registry';
 import type { CockpitAssetTheme, DomainEntityType } from '@/assets/types';
 

@@ -13,6 +13,7 @@ import {
 } from '../../domain/approvals/index.js';
 import {
   evaluateApprovalRoutingSodV1,
+  type RobotSodContextV1,
   type SodConstraintV1,
 } from '../../domain/policy/sod-constraints-v1.js';
 import {
@@ -48,6 +49,8 @@ export type SubmitApprovalInput = Readonly<{
   /** SoD constraints to enforce before accepting the decision.  Sourced from the policy
    *  attached to the run.  When absent, no SoD check is performed. */
   sodConstraints?: readonly SodConstraintV1[];
+  /** Optional robot context for robot-specific SoD constraints. */
+  robotContext?: RobotSodContextV1;
 }>;
 
 export type SubmitApprovalOutput = Readonly<{
@@ -137,6 +140,7 @@ function guardSodConstraints(
   approval: ApprovalPendingV1,
   proposedApproverId: string,
   sodConstraints: readonly SodConstraintV1[] | undefined,
+  robotContext: RobotSodContextV1 | undefined,
 ): Err<SubmitApprovalError> | null {
   if (!sodConstraints || sodConstraints.length === 0) return null;
 
@@ -144,6 +148,7 @@ function guardSodConstraints(
     approval,
     proposedApproverId: UserId(proposedApproverId),
     constraints: sodConstraints,
+    ...(robotContext ? { robotContext } : {}),
   });
 
   if (violations.length === 0) return null;
@@ -278,6 +283,7 @@ export async function submitApproval(
     current as ApprovalPendingV1,
     ctx.principalId.toString(),
     input.sodConstraints,
+    input.robotContext,
   );
   if (sodError) return sodError;
 

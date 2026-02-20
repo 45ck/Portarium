@@ -1,52 +1,52 @@
-import { useState } from 'react'
-import { createRoute, useNavigate } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { DataTable } from '@/components/cockpit/data-table'
-import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
-import { ApprovalTriageCard, type TriageAction } from '@/components/cockpit/approval-triage-card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { EmptyState } from '@/components/cockpit/empty-state'
-import { CheckSquare } from 'lucide-react'
-import type { ApprovalSummary } from '@portarium/cockpit-types'
+import { useState } from 'react';
+import { createRoute, useNavigate } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { DataTable } from '@/components/cockpit/data-table';
+import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { ApprovalTriageCard, type TriageAction } from '@/components/cockpit/approval-triage-card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/cockpit/empty-state';
+import { CheckSquare } from 'lucide-react';
+import type { ApprovalSummary } from '@portarium/cockpit-types';
 
 function ApprovalsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const navigate = useNavigate()
-  const { data, isLoading } = useApprovals(wsId)
-  const items = data?.items ?? []
-  const pendingItems = items.filter((a) => a.status === 'Pending')
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
+  const { data, isLoading } = useApprovals(wsId);
+  const items = data?.items ?? [];
+  const pendingItems = items.filter((a) => a.status === 'Pending');
 
   // Triage card index — skip over items that have been actioned in this session
-  const [triageIndex, setTriageIndex] = useState(0)
-  const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set())
+  const [triageIndex, setTriageIndex] = useState(0);
+  const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set());
 
   // Get pending items not yet actioned/skipped in this triage session
-  const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId))
-  const currentApproval = triageQueue[triageIndex] ?? triageQueue[0] ?? null
+  const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
+  const currentApproval = triageQueue[triageIndex] ?? triageQueue[0] ?? null;
 
   const { mutate: decide, isPending: deciding } = useApprovalDecision(
     wsId,
     currentApproval?.approvalId ?? '',
-  )
+  );
 
   function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
     if (action === 'Skip') {
-      setTriageSkipped((prev) => new Set([...prev, approvalId]))
-      return
+      setTriageSkipped((prev) => new Set([...prev, approvalId]));
+      return;
     }
     decide(
       { decision: action as 'Approved' | 'Denied' | 'RequestChanges', rationale },
       {
         onSuccess: () => {
-          setTriageSkipped((prev) => new Set([...prev, approvalId]))
+          setTriageSkipped((prev) => new Set([...prev, approvalId]));
         },
       },
-    )
+    );
   }
 
   const columns = [
@@ -62,9 +62,7 @@ function ApprovalsPage() {
       key: 'runId',
       header: 'Run',
       width: '120px',
-      render: (row: ApprovalSummary) => (
-        <span className="font-mono">{row.runId.slice(0, 12)}</span>
-      ),
+      render: (row: ApprovalSummary) => <span className="font-mono">{row.runId.slice(0, 12)}</span>,
     },
     {
       key: 'prompt',
@@ -86,30 +84,29 @@ function ApprovalsPage() {
       header: 'Due',
       width: '140px',
       render: (row: ApprovalSummary) =>
-        row.dueAtIso
-          ? format(new Date(row.dueAtIso), 'MMM d, yyyy HH:mm')
-          : '\u2014',
+        row.dueAtIso ? format(new Date(row.dueAtIso), 'MMM d, yyyy HH:mm') : '\u2014',
     },
     {
       key: 'status',
       header: 'Status',
       width: '130px',
-      render: (row: ApprovalSummary) => (
-        <ApprovalStatusBadge status={row.status} />
-      ),
+      render: (row: ApprovalSummary) => <ApprovalStatusBadge status={row.status} />,
     },
-  ]
+  ];
 
   const handleRowClick = (row: ApprovalSummary) => {
     navigate({
       to: '/approvals/$approvalId' as string,
       params: { approvalId: row.approvalId },
-    })
-  }
+    });
+  };
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title="Approvals" icon={<EntityIcon entityType="approval" size="md" decorative />} />
+      <PageHeader
+        title="Approvals"
+        icon={<EntityIcon entityType="approval" size="md" decorative />}
+      />
 
       <Tabs defaultValue="pending">
         <TabsList>
@@ -176,11 +173,11 @@ function ApprovalsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/approvals',
   component: ApprovalsPage,
-})
+});

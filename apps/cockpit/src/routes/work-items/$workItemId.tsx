@@ -1,32 +1,32 @@
-import { createRoute } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkItem } from '@/hooks/queries/use-work-items'
-import { useRuns } from '@/hooks/queries/use-runs'
-import { useApprovals } from '@/hooks/queries/use-approvals'
-import { useEvidence } from '@/hooks/queries/use-evidence'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { DataTable } from '@/components/cockpit/data-table'
-import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
-import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge'
-import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
-import { SorRefPill } from '@/components/cockpit/sor-ref-pill'
-import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { RunSummary } from '@portarium/cockpit-types'
+import { createRoute } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkItem } from '@/hooks/queries/use-work-items';
+import { useRuns } from '@/hooks/queries/use-runs';
+import { useApprovals } from '@/hooks/queries/use-approvals';
+import { useEvidence } from '@/hooks/queries/use-evidence';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { DataTable } from '@/components/cockpit/data-table';
+import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
+import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { SorRefPill } from '@/components/cockpit/sor-ref-pill';
+import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { RunSummary } from '@portarium/cockpit-types';
 
 function WorkItemDetailPage() {
-  const { workItemId } = Route.useParams()
-  const { activeWorkspaceId: wsId } = useUIStore()
+  const { workItemId } = Route.useParams();
+  const { activeWorkspaceId: wsId } = useUIStore();
 
-  const { data: item, isLoading: itemLoading } = useWorkItem(wsId, workItemId)
-  const runs = useRuns(wsId)
-  const approvals = useApprovals(wsId)
-  const evidence = useEvidence(wsId)
+  const { data: item, isLoading: itemLoading } = useWorkItem(wsId, workItemId);
+  const runs = useRuns(wsId);
+  const approvals = useApprovals(wsId);
+  const evidence = useEvidence(wsId);
 
   if (itemLoading || !item) {
     return (
@@ -34,29 +34,27 @@ function WorkItemDetailPage() {
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-40 w-full" />
       </div>
-    )
+    );
   }
 
-  const linkedRunIds = new Set(item.links?.runIds ?? [])
-  const linkedApprovalIds = new Set(item.links?.approvalIds ?? [])
-  const linkedEvidenceIds = new Set(item.links?.evidenceIds ?? [])
+  const linkedRunIds = new Set(item.links?.runIds ?? []);
+  const linkedApprovalIds = new Set(item.links?.approvalIds ?? []);
+  const linkedEvidenceIds = new Set(item.links?.evidenceIds ?? []);
 
-  const linkedRuns = (runs.data?.items ?? []).filter((r) => linkedRunIds.has(r.runId))
+  const linkedRuns = (runs.data?.items ?? []).filter((r) => linkedRunIds.has(r.runId));
   const linkedApprovals = (approvals.data?.items ?? []).filter((a) =>
     linkedApprovalIds.has(a.approvalId),
-  )
+  );
   const linkedEvidence = (evidence.data?.items ?? []).filter((e) =>
     linkedEvidenceIds.has(e.evidenceId),
-  )
+  );
 
   const runColumns = [
     {
       key: 'runId',
       header: 'Run ID',
       width: '120px',
-      render: (row: RunSummary) => (
-        <span className="font-mono">{row.runId.slice(0, 12)}</span>
-      ),
+      render: (row: RunSummary) => <span className="font-mono">{row.runId.slice(0, 12)}</span>,
     },
     {
       key: 'status',
@@ -70,17 +68,14 @@ function WorkItemDetailPage() {
       width: '140px',
       render: (row: RunSummary) => <ExecutionTierBadge tier={row.executionTier} />,
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title={item.title}
         icon={<EntityIcon entityType="work-item" size="md" decorative />}
-        breadcrumb={[
-          { label: 'Work Items', to: '/work-items' },
-          { label: item.title },
-        ]}
+        breadcrumb={[{ label: 'Work Items', to: '/work-items' }, { label: item.title }]}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -91,7 +86,10 @@ function WorkItemDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2">
-              <Badge variant={item.status === 'Open' ? 'default' : 'secondary'} className="text-[10px]">
+              <Badge
+                variant={item.status === 'Open' ? 'default' : 'secondary'}
+                className="text-[10px]"
+              >
                 {item.status}
               </Badge>
             </div>
@@ -180,18 +178,15 @@ function WorkItemDetailPage() {
           <CardTitle className="text-sm">Evidence</CardTitle>
         </CardHeader>
         <CardContent>
-          <EvidenceTimeline
-            entries={linkedEvidence}
-            loading={evidence.isLoading}
-          />
+          <EvidenceTimeline entries={linkedEvidence} loading={evidence.isLoading} />
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/work-items/$workItemId',
   component: WorkItemDetailPage,
-})
+});

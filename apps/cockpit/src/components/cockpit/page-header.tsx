@@ -5,15 +5,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { Separator } from '@/components/ui/separator'
+} from '@/components/ui/breadcrumb';
+import { Separator } from '@/components/ui/separator';
 
 interface PageHeaderProps {
-  title: string
-  description?: string
-  action?: React.ReactNode
-  breadcrumb?: { label: string; to?: string }[]
-  icon?: React.ReactNode
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  breadcrumb?: { label: string; to?: string }[];
+  icon?: React.ReactNode;
 }
 
 export function PageHeader({ title, description, action, breadcrumb, icon }: PageHeaderProps) {
@@ -51,5 +51,5 @@ export function PageHeader({ title, description, action, breadcrumb, icon }: Pag
         {action && <div>{action}</div>}
       </div>
     </div>
-  )
+  );
 }

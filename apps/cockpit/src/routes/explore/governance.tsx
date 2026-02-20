@@ -1,20 +1,20 @@
-import { createRoute } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useEvidence } from '@/hooks/queries/use-evidence'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { KpiRow } from '@/components/cockpit/kpi-row'
-import { DataTable } from '@/components/cockpit/data-table'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { createRoute } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useEvidence } from '@/hooks/queries/use-evidence';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { KpiRow } from '@/components/cockpit/kpi-row';
+import { DataTable } from '@/components/cockpit/data-table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface SodConstraint {
-  constraintId: string
-  name: string
-  description: string
-  status: string
+  constraintId: string;
+  name: string;
+  description: string;
+  status: string;
 }
 
 const SOD_CONSTRAINTS: SodConstraint[] = [
@@ -36,25 +36,25 @@ const SOD_CONSTRAINTS: SodConstraint[] = [
     description: 'IAM reviewer cannot be a Finance team member',
     status: 'Active',
   },
-]
+];
 
 const POLICIES = [
   'SOC 2 CC6.1 \u2014 Logical access controls',
   'GDPR Art. 25 \u2014 Data minimization',
   'ISO 27001 A.9 \u2014 Access management',
-]
+];
 
 const sodColumns = [
   { key: 'name', header: 'Constraint' },
   { key: 'description', header: 'Description' },
   { key: 'status', header: 'Status', width: '100px' },
-]
+];
 
 function ExploreGovernancePage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const { data: evidenceData, isLoading } = useEvidence(wsId)
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const { data: evidenceData, isLoading } = useEvidence(wsId);
 
-  const recentAuditEntries = (evidenceData?.items ?? []).slice(0, 10)
+  const recentAuditEntries = (evidenceData?.items ?? []).slice(0, 10);
 
   return (
     <div className="p-6 space-y-6">
@@ -125,11 +125,11 @@ function ExploreGovernancePage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore/governance',
   component: ExploreGovernancePage,
-})
+});

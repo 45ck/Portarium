@@ -4,6 +4,7 @@ export const APP_ACTIONS = {
   runRead: 'run:read',
   workItemRead: 'work-item:read',
   runStart: 'run:start',
+  mapCommandSubmit: 'map-command:submit',
   workforceAssign: 'workforce:assign',
   workforceComplete: 'workforce:complete',
   workspaceRegister: 'workspace:register',

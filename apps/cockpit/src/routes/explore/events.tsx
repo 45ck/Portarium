@@ -1,24 +1,24 @@
-import { createRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline'
-import type { EvidenceEntry } from '@portarium/cockpit-types'
+import { createRoute } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
+import type { EvidenceEntry } from '@portarium/cockpit-types';
 
 function ExploreEventsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
+  const { activeWorkspaceId: wsId } = useUIStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['evidence', wsId],
     queryFn: async () => {
-      const r = await fetch(`/v1/workspaces/${wsId}/evidence`)
-      if (!r.ok) throw new Error('Failed to fetch evidence')
-      return r.json() as Promise<{ items: EvidenceEntry[] }>
+      const r = await fetch(`/v1/workspaces/${wsId}/evidence`);
+      if (!r.ok) throw new Error('Failed to fetch evidence');
+      return r.json() as Promise<{ items: EvidenceEntry[] }>;
     },
     refetchInterval: 5000,
-  })
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -38,11 +38,11 @@ function ExploreEventsPage() {
 
       <EvidenceTimeline entries={data?.items ?? []} loading={isLoading} />
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore/events',
   component: ExploreEventsPage,
-})
+});

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TenantId } from '../../domain/primitives/index.js';
+import { TenantId, UserId } from '../../domain/primitives/index.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
@@ -249,6 +249,66 @@ describe('submitApproval', () => {
     }
     expect(result.error.kind).toBe('Forbidden');
     expect(result.error.message).toMatch(/SoD violation/i);
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('blocks hazardous-zone mission proposer self-approval', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-2',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Hazardous-zone self-approve attempt.',
+        sodConstraints: [{ kind: 'HazardousZoneNoSelfApproval' }],
+        robotContext: {
+          hazardousZone: true,
+          missionProposerUserId: UserId('user-2'),
+        },
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected forbidden response.');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/HazardousZoneNoSelfApprovalViolation/i);
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('blocks remote e-stop requester from self-authorizing approval decision', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'approver-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Remote stop self-authorize attempt.',
+        sodConstraints: [{ kind: 'RemoteEstopRequesterSeparation' }],
+        robotContext: {
+          remoteEstopRequest: true,
+          estopRequesterUserId: UserId('approver-1'),
+        },
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected forbidden response.');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/RemoteEstopRequesterSeparationViolation/i);
     expect(approvalStore.saveApproval).not.toHaveBeenCalled();
     expect(eventPublisher.publish).not.toHaveBeenCalled();
   });

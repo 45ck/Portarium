@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
-import { createRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react';
+import { createRoute } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   AreaChart,
   Area,
@@ -10,44 +10,44 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { KpiRow } from '@/components/cockpit/kpi-row'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+} from 'recharts';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { KpiRow } from '@/components/cockpit/kpi-row';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ObservabilityData {
   runsOverTime: {
-    date: string
-    succeeded: number
-    failed: number
-    waitingForApproval: number
-  }[]
-  successRate: number
-  avgSlaDays: number
+    date: string;
+    succeeded: number;
+    failed: number;
+    waitingForApproval: number;
+  }[];
+  successRate: number;
+  avgSlaDays: number;
 }
 
 function ExploreObservabilityPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
+  const { activeWorkspaceId: wsId } = useUIStore();
 
   const { data, isLoading } = useQuery<ObservabilityData>({
     queryKey: ['observability', wsId],
     queryFn: async () => {
-      const r = await fetch(`/v1/workspaces/${wsId}/observability`)
-      if (!r.ok) throw new Error('Failed to fetch observability data')
-      return r.json()
+      const r = await fetch(`/v1/workspaces/${wsId}/observability`);
+      if (!r.ok) throw new Error('Failed to fetch observability data');
+      return r.json();
     },
-  })
+  });
 
   const totalRuns = useMemo(() => {
-    if (!data?.runsOverTime) return 0
+    if (!data?.runsOverTime) return 0;
     return data.runsOverTime.reduce(
       (sum, d) => sum + d.succeeded + d.failed + d.waitingForApproval,
       0,
-    )
-  }, [data])
+    );
+  }, [data]);
 
   return (
     <div className="p-6 space-y-6">
@@ -115,11 +115,11 @@ function ExploreObservabilityPage() {
         </>
       ) : null}
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore/observability',
   component: ExploreObservabilityPage,
-})
+});

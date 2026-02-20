@@ -1,29 +1,27 @@
-import { createRoute } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useAgents } from '@/hooks/queries/use-agents'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { DataTable } from '@/components/cockpit/data-table'
-import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import type { AgentV1 } from '@portarium/cockpit-types'
+import { createRoute } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useAgents } from '@/hooks/queries/use-agents';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { DataTable } from '@/components/cockpit/data-table';
+import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { AgentV1 } from '@portarium/cockpit-types';
 
 function AgentsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const { data, isLoading } = useAgents(wsId)
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const { data, isLoading } = useAgents(wsId);
 
-  const agents = data?.items ?? []
+  const agents = data?.items ?? [];
 
   const columns = [
     {
       key: 'name',
       header: 'Name',
-      render: (row: AgentV1) => (
-        <span className="font-medium">{row.name}</span>
-      ),
+      render: (row: AgentV1) => <span className="font-medium">{row.name}</span>,
     },
     {
       key: 'agentId',
@@ -36,9 +34,7 @@ function AgentsPage() {
       key: 'modelId',
       header: 'Model',
       width: '120px',
-      render: (row: AgentV1) => (
-        <span>{row.modelId ?? '\u2014'}</span>
-      ),
+      render: (row: AgentV1) => <span>{row.modelId ?? '\u2014'}</span>,
     },
     {
       key: 'endpoint',
@@ -68,7 +64,7 @@ function AgentsPage() {
         <Badge variant="secondary">{row.usedByWorkflowIds?.length ?? 0}</Badge>
       ),
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-4">
@@ -91,11 +87,11 @@ function AgentsPage() {
         getRowKey={(row) => row.agentId}
       />
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/config/agents',
   component: AgentsPage,
-})
+});

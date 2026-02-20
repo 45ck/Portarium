@@ -46,6 +46,27 @@ Declares that a single actor cannot perform more than one duty from a declared i
 - `kind`: `IncompatibleDuties`
 - `dutyKeys`: `string[]` (non-empty strings; length `>= 2`)
 
+#### HazardousZoneNoSelfApproval
+
+For robot missions in hazardous zones, the mission proposer cannot also approve.
+
+- `kind`: `HazardousZoneNoSelfApproval`
+- Uses `robotContext.hazardousZone` and `robotContext.missionProposerUserId` when provided.
+
+#### SafetyClassifiedZoneDualApproval
+
+For safety-classified zones, at least two distinct approvers are required.
+
+- `kind`: `SafetyClassifiedZoneDualApproval`
+- Requires `robotContext.safetyClassifiedZone = true` to activate.
+
+#### RemoteEstopRequesterSeparation
+
+For remote emergency-stop requests, the requester must be different from the approver.
+
+- `kind`: `RemoteEstopRequesterSeparation`
+- Uses `robotContext.remoteEstopRequest` and `robotContext.estopRequesterUserId` (or falls back to initiator).
+
 Notes:
 
 - Duty keys are stable identifiers for duties (e.g. action kinds, capability keys) chosen by the workflow/policy layer.

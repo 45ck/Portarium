@@ -21,6 +21,10 @@ describe('Workspace RBAC (IAM MVP)', () => {
     expect(isAllowedWorkspaceAction(actor(['operator']), 'run:start')).toBe(true);
   });
 
+  it('allows operator for map-command:submit', () => {
+    expect(isAllowedWorkspaceAction(actor(['operator']), 'map-command:submit')).toBe(true);
+  });
+
   it('allows auditor for work-item:read', () => {
     expect(isAllowedWorkspaceAction(actor(['auditor']), 'work-item:read')).toBe(true);
   });
@@ -35,6 +39,10 @@ describe('Workspace RBAC (IAM MVP)', () => {
 
   it('denies auditor for approval:submit', () => {
     expect(isAllowedWorkspaceAction(actor(['auditor']), 'approval:submit')).toBe(false);
+  });
+
+  it('denies approver for map-command:submit', () => {
+    expect(isAllowedWorkspaceAction(actor(['approver']), 'map-command:submit')).toBe(false);
   });
 
   it('allows operator for workforce:assign', () => {

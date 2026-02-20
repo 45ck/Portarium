@@ -1,21 +1,21 @@
-import { createRoute } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkforceMembers } from '@/hooks/queries/use-workforce'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { EmptyState } from '@/components/cockpit/empty-state'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Skeleton } from '@/components/ui/skeleton'
+import { createRoute } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { EmptyState } from '@/components/cockpit/empty-state';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusColor: Record<string, string> = {
   available: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',
   busy: 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950',
   offline: 'text-muted-foreground bg-muted',
-}
+};
 
 function initials(name: string): string {
   return name
@@ -23,13 +23,13 @@ function initials(name: string): string {
     .map((w) => w[0])
     .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 function WorkforceMemberDetailPage() {
-  const { memberId } = Route.useParams()
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const { data, isLoading } = useWorkforceMembers(wsId)
+  const { memberId } = Route.useParams();
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const { data, isLoading } = useWorkforceMembers(wsId);
 
   if (isLoading) {
     return (
@@ -37,10 +37,10 @@ function WorkforceMemberDetailPage() {
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-40 w-full" />
       </div>
-    )
+    );
   }
 
-  const member = (data?.items ?? []).find((m) => m.workforceMemberId === memberId)
+  const member = (data?.items ?? []).find((m) => m.workforceMemberId === memberId);
 
   if (!member) {
     return (
@@ -55,7 +55,7 @@ function WorkforceMemberDetailPage() {
           description="The workforce member you are looking for does not exist or has been removed."
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -63,10 +63,7 @@ function WorkforceMemberDetailPage() {
       <PageHeader
         title={member.displayName}
         icon={<EntityIcon entityType="workforce" size="md" decorative />}
-        breadcrumb={[
-          { label: 'Workforce', to: '/workforce' },
-          { label: member.displayName },
-        ]}
+        breadcrumb={[{ label: 'Workforce', to: '/workforce' }, { label: member.displayName }]}
       />
 
       <Card className="shadow-none">
@@ -114,11 +111,11 @@ function WorkforceMemberDetailPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workforce/$memberId',
   component: WorkforceMemberDetailPage,
-})
+});

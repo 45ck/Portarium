@@ -1,23 +1,31 @@
-import { createRoute, useNavigate } from '@tanstack/react-router'
-import { format } from 'date-fns'
-import { Route as rootRoute } from './__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useApprovals } from '@/hooks/queries/use-approvals'
-import { useRuns } from '@/hooks/queries/use-runs'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
-import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
-import { SystemStateBanner } from '@/components/cockpit/system-state-banner'
-import { KpiRow } from '@/components/cockpit/kpi-row'
-import { Button } from '@/components/ui/button'
-import type { ApprovalSummary, RunSummary } from '@portarium/cockpit-types'
-import { CheckSquare, AlertCircle, ShieldAlert, Clock } from 'lucide-react'
+import { createRoute, useNavigate } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { Route as rootRoute } from './__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useApprovals } from '@/hooks/queries/use-approvals';
+import { useRuns } from '@/hooks/queries/use-runs';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
+import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
+import { KpiRow } from '@/components/cockpit/kpi-row';
+import { Button } from '@/components/ui/button';
+import type { ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
+import { CheckSquare, AlertCircle, ShieldAlert, Clock } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Section header
 // ---------------------------------------------------------------------------
-function SectionHeader({ icon, title, count }: { icon: React.ReactNode; title: string; count?: number }) {
+function SectionHeader({
+  icon,
+  title,
+  count,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count?: number;
+}) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className="text-muted-foreground">{icon}</span>
@@ -28,14 +36,20 @@ function SectionHeader({ icon, title, count }: { icon: React.ReactNode; title: s
         </span>
       )}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Pending approval rows
 // ---------------------------------------------------------------------------
-function PendingApprovalRow({ approval, onClick }: { approval: ApprovalSummary; onClick: () => void }) {
-  const isOverdue = approval.dueAtIso && new Date(approval.dueAtIso) < new Date()
+function PendingApprovalRow({
+  approval,
+  onClick,
+}: {
+  approval: ApprovalSummary;
+  onClick: () => void;
+}) {
+  const isOverdue = approval.dueAtIso && new Date(approval.dueAtIso) < new Date();
   return (
     <button
       type="button"
@@ -59,7 +73,7 @@ function PendingApprovalRow({ approval, onClick }: { approval: ApprovalSummary; 
       </div>
       <ApprovalStatusBadge status={approval.status} />
     </button>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -82,7 +96,7 @@ function BlockedRunRow({ run, onClick }: { run: RunSummary; onClick: () => void 
       </div>
       <RunStatusBadge status={run.status} />
     </button>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -101,12 +115,13 @@ const MOCK_VIOLATIONS = [
     severity: 'High',
     detectedAt: '2026-02-17T14:30:00Z',
   },
-]
+];
 
-function PolicyViolationRow({ violation }: { violation: typeof MOCK_VIOLATIONS[number] }) {
-  const severityCls = violation.severity === 'High'
-    ? 'bg-red-100 text-red-800 border-red-200'
-    : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+function PolicyViolationRow({ violation }: { violation: (typeof MOCK_VIOLATIONS)[number] }) {
+  const severityCls =
+    violation.severity === 'High'
+      ? 'bg-red-100 text-red-800 border-red-200'
+      : 'bg-yellow-100 text-yellow-800 border-yellow-200';
 
   return (
     <div className="flex items-start gap-3 px-3 py-3 rounded-md border border-transparent hover:bg-muted/50 transition-colors">
@@ -121,24 +136,24 @@ function PolicyViolationRow({ violation }: { violation: typeof MOCK_VIOLATIONS[n
         {violation.severity}
       </span>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Inbox page
 // ---------------------------------------------------------------------------
 function InboxPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const navigate = useNavigate()
-  const { data: approvalsData, isLoading: approvalsLoading } = useApprovals(wsId)
-  const { data: runsData, isLoading: runsLoading } = useRuns(wsId)
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
+  const { data: approvalsData, isLoading: approvalsLoading } = useApprovals(wsId);
+  const { data: runsData, isLoading: runsLoading } = useRuns(wsId);
 
-  const pendingApprovals = (approvalsData?.items ?? []).filter((a) => a.status === 'Pending')
+  const pendingApprovals = (approvalsData?.items ?? []).filter((a) => a.status === 'Pending');
   const blockedRuns = (runsData?.items ?? []).filter(
     (r) => r.status === 'Failed' || r.status === 'WaitingForApproval' || r.status === 'Paused',
-  )
+  );
 
-  const totalItems = pendingApprovals.length + blockedRuns.length + MOCK_VIOLATIONS.length
+  const totalItems = pendingApprovals.length + blockedRuns.length + MOCK_VIOLATIONS.length;
 
   return (
     <div className="p-6 space-y-6">
@@ -170,7 +185,9 @@ function InboxPage() {
           {approvalsLoading ? (
             <div className="p-4 text-sm text-muted-foreground animate-pulse">Loading…</div>
           ) : pendingApprovals.length === 0 ? (
-            <div className="px-3 py-4 text-sm text-muted-foreground italic">No pending approvals.</div>
+            <div className="px-3 py-4 text-sm text-muted-foreground italic">
+              No pending approvals.
+            </div>
           ) : (
             pendingApprovals.map((a) => (
               <PendingApprovalRow
@@ -211,7 +228,9 @@ function InboxPage() {
           {runsLoading ? (
             <div className="p-4 text-sm text-muted-foreground animate-pulse">Loading…</div>
           ) : blockedRuns.length === 0 ? (
-            <div className="px-3 py-4 text-sm text-muted-foreground italic">No failed or blocked runs.</div>
+            <div className="px-3 py-4 text-sm text-muted-foreground italic">
+              No failed or blocked runs.
+            </div>
           ) : (
             blockedRuns.map((r) => (
               <BlockedRunRow
@@ -243,11 +262,11 @@ function InboxPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/inbox',
   component: InboxPage,
-})
+});

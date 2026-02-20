@@ -1,30 +1,23 @@
-import { createRootRoute, Outlet, Link } from '@tanstack/react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { queryClient } from '@/lib/query-client'
-import { useTheme } from '@/hooks/use-theme'
-import { useUIStore } from '@/stores/ui-store'
-import { cn } from '@/lib/utils'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import {
-  LayoutDashboard,
-  Settings,
-  BarChart3,
-  Scale,
-  Inbox,
-  ShieldAlert,
-} from 'lucide-react'
+import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { queryClient } from '@/lib/query-client';
+import { useTheme } from '@/hooks/use-theme';
+import { useUIStore } from '@/stores/ui-store';
+import { cn } from '@/lib/utils';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { LayoutDashboard, Settings, BarChart3, Scale, Inbox, ShieldAlert } from 'lucide-react';
 
 interface NavItemDef {
-  label: string
-  to: string
-  icon: React.ReactNode
+  label: string;
+  to: string;
+  icon: React.ReactNode;
 }
 
 interface NavSectionDef {
-  label: string
-  items?: NavItemDef[]
-  comingSoon?: boolean
+  label: string;
+  items?: NavItemDef[];
+  comingSoon?: boolean;
 }
 
 const NAV_SECTIONS: NavSectionDef[] = [
@@ -33,59 +26,124 @@ const NAV_SECTIONS: NavSectionDef[] = [
     items: [
       { label: 'Inbox', to: '/inbox', icon: <Inbox className="h-4 w-4" /> },
       { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
-      { label: 'Work Items', to: '/work-items', icon: <EntityIcon entityType="work-item" size="sm" decorative /> },
+      {
+        label: 'Work Items',
+        to: '/work-items',
+        icon: <EntityIcon entityType="work-item" size="sm" decorative />,
+      },
     ],
   },
   {
     label: 'Work',
     items: [
       { label: 'Runs', to: '/runs', icon: <EntityIcon entityType="run" size="sm" decorative /> },
-      { label: 'Approvals', to: '/approvals', icon: <EntityIcon entityType="approval" size="sm" decorative /> },
-      { label: 'Evidence', to: '/evidence', icon: <EntityIcon entityType="evidence" size="sm" decorative /> },
+      {
+        label: 'Approvals',
+        to: '/approvals',
+        icon: <EntityIcon entityType="approval" size="sm" decorative />,
+      },
+      {
+        label: 'Evidence',
+        to: '/evidence',
+        icon: <EntityIcon entityType="evidence" size="sm" decorative />,
+      },
     ],
   },
   {
     label: 'Workforce',
     items: [
-      { label: 'Members', to: '/workforce', icon: <EntityIcon entityType="workforce" size="sm" decorative /> },
-      { label: 'Queues', to: '/workforce/queues', icon: <EntityIcon entityType="queue" size="sm" decorative /> },
+      {
+        label: 'Members',
+        to: '/workforce',
+        icon: <EntityIcon entityType="workforce" size="sm" decorative />,
+      },
+      {
+        label: 'Queues',
+        to: '/workforce/queues',
+        icon: <EntityIcon entityType="queue" size="sm" decorative />,
+      },
     ],
   },
   {
     label: 'Config',
     items: [
-      { label: 'Agents', to: '/config/agents', icon: <EntityIcon entityType="agent" size="sm" decorative /> },
-      { label: 'Adapters', to: '/config/adapters', icon: <EntityIcon entityType="adapter" size="sm" decorative /> },
+      {
+        label: 'Agents',
+        to: '/config/agents',
+        icon: <EntityIcon entityType="agent" size="sm" decorative />,
+      },
+      {
+        label: 'Adapters',
+        to: '/config/adapters',
+        icon: <EntityIcon entityType="adapter" size="sm" decorative />,
+      },
       { label: 'Settings', to: '/config/settings', icon: <Settings className="h-4 w-4" /> },
     ],
   },
   {
     label: 'Explore',
     items: [
-      { label: 'Objects', to: '/explore/objects', icon: <EntityIcon entityType="external-object-ref" size="sm" decorative /> },
-      { label: 'Events', to: '/explore/events', icon: <EntityIcon entityType="event" size="sm" decorative /> },
-      { label: 'Observability', to: '/explore/observability', icon: <BarChart3 className="h-4 w-4" /> },
+      {
+        label: 'Objects',
+        to: '/explore/objects',
+        icon: <EntityIcon entityType="external-object-ref" size="sm" decorative />,
+      },
+      {
+        label: 'Events',
+        to: '/explore/events',
+        icon: <EntityIcon entityType="event" size="sm" decorative />,
+      },
+      {
+        label: 'Observability',
+        to: '/explore/observability',
+        icon: <BarChart3 className="h-4 w-4" />,
+      },
       { label: 'Governance', to: '/explore/governance', icon: <Scale className="h-4 w-4" /> },
     ],
   },
   {
     label: 'Robotics',
     items: [
-      { label: 'Robots', to: '/robotics/robots', icon: <EntityIcon entityType="robot" size="sm" decorative /> },
-      { label: 'Missions', to: '/robotics/missions', icon: <EntityIcon entityType="mission" size="sm" decorative /> },
+      {
+        label: 'Robots',
+        to: '/robotics/robots',
+        icon: <EntityIcon entityType="robot" size="sm" decorative />,
+      },
+      {
+        label: 'Missions',
+        to: '/robotics/missions',
+        icon: <EntityIcon entityType="mission" size="sm" decorative />,
+      },
       { label: 'Safety', to: '/robotics/safety', icon: <ShieldAlert className="h-4 w-4" /> },
-      { label: 'Gateways', to: '/robotics/gateways', icon: <EntityIcon entityType="port" size="sm" decorative /> },
+      {
+        label: 'Gateways',
+        to: '/robotics/gateways',
+        icon: <EntityIcon entityType="port" size="sm" decorative />,
+      },
     ],
   },
-]
+];
 
 // Wrapper to avoid TS errors while child routes are not yet registered.
 // Once all route files are in place the router's type map will include
 // every path and this cast will be redundant but harmless.
-function NavLink({ to, collapsed, children }: { to: string; collapsed: boolean; children: React.ReactNode }) {
+function NavLink({
+  to,
+  collapsed,
+  children,
+}: {
+  to: string;
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
   // Cast via `unknown` so the nav works before all routes are registered in the tree.
   // Once router.ts wires every route the cast becomes redundant but stays harmless.
-  const TypedLink = Link as React.ComponentType<{ to: string; className?: string; activeProps?: { className?: string }; children?: React.ReactNode }>
+  const TypedLink = Link as React.ComponentType<{
+    to: string;
+    className?: string;
+    activeProps?: { className?: string };
+    children?: React.ReactNode;
+  }>;
   return (
     <TypedLink
       to={to}
@@ -94,12 +152,12 @@ function NavLink({ to, collapsed, children }: { to: string; collapsed: boolean; 
     >
       {children}
     </TypedLink>
-  )
+  );
 }
 
 function RootLayout() {
-  useTheme()
-  const { sidebarCollapsed } = useUIStore()
+  useTheme();
+  const { sidebarCollapsed } = useUIStore();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -158,7 +216,7 @@ function RootLayout() {
         </div>
       </TooltipProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export const Route = createRootRoute({ component: RootLayout })
+export const Route = createRootRoute({ component: RootLayout });

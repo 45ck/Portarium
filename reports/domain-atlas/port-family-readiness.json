@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-02-19T02:47:33.961Z",
+  "generatedAt": "2026-02-20T03:31:26.962Z",
   "sourceMatrix": "domain-atlas/decisions/port-family-integration-candidate-matrix.json",
   "familyCount": 18,
   "readyFamilies": 2,

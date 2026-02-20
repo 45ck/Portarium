@@ -16,15 +16,21 @@ describe('parseSodConstraintsV1', () => {
       { kind: 'MakerChecker' },
       { kind: 'DistinctApprovers', minimumApprovers: 2 },
       { kind: 'IncompatibleDuties', dutyKeys: ['payment:initiate', 'payment:approve'] },
+      { kind: 'HazardousZoneNoSelfApproval' },
+      { kind: 'SafetyClassifiedZoneDualApproval' },
+      { kind: 'RemoteEstopRequesterSeparation' },
     ]);
 
-    expect(constraints).toHaveLength(3);
+    expect(constraints).toHaveLength(6);
     expect(constraints[0]).toEqual({ kind: 'MakerChecker' });
     expect(constraints[1]).toEqual({ kind: 'DistinctApprovers', minimumApprovers: 2 });
     expect(constraints[2]).toEqual({
       kind: 'IncompatibleDuties',
       dutyKeys: ['payment:initiate', 'payment:approve'],
     });
+    expect(constraints[3]).toEqual({ kind: 'HazardousZoneNoSelfApproval' });
+    expect(constraints[4]).toEqual({ kind: 'SafetyClassifiedZoneDualApproval' });
+    expect(constraints[5]).toEqual({ kind: 'RemoteEstopRequesterSeparation' });
   });
 
   it('rejects non-array inputs', () => {
@@ -130,6 +136,70 @@ describe('evaluateSodConstraintsV1', () => {
     });
 
     expect(violations).toEqual([]);
+  });
+
+  it('flags hazardous-zone mission proposer self-approval', () => {
+    const violations = evaluateSodConstraintsV1({
+      constraints: [{ kind: 'HazardousZoneNoSelfApproval' }],
+      context: {
+        initiatorUserId: UserId('mission-proposer-1'),
+        approverUserIds: [UserId('mission-proposer-1')],
+        robotContext: {
+          hazardousZone: true,
+          missionProposerUserId: UserId('mission-proposer-1'),
+        },
+      },
+    });
+
+    expect(violations).toEqual([
+      {
+        kind: 'HazardousZoneNoSelfApprovalViolation',
+        missionProposerUserId: UserId('mission-proposer-1'),
+      },
+    ]);
+  });
+
+  it('flags safety-classified zone dual-approval violations when fewer than two approvers are present', () => {
+    const violations = evaluateSodConstraintsV1({
+      constraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+      context: {
+        initiatorUserId: UserId('operator-1'),
+        approverUserIds: [UserId('approver-1')],
+        robotContext: {
+          safetyClassifiedZone: true,
+        },
+      },
+    });
+
+    expect(violations).toEqual([
+      {
+        kind: 'SafetyClassifiedZoneDualApprovalViolation',
+        requiredApprovers: 2,
+        distinctApprovers: 1,
+        approverUserIds: [UserId('approver-1')],
+      },
+    ]);
+  });
+
+  it('flags remote e-stop requester separation violations', () => {
+    const violations = evaluateSodConstraintsV1({
+      constraints: [{ kind: 'RemoteEstopRequesterSeparation' }],
+      context: {
+        initiatorUserId: UserId('operator-1'),
+        approverUserIds: [UserId('operator-1')],
+        robotContext: {
+          remoteEstopRequest: true,
+          estopRequesterUserId: UserId('operator-1'),
+        },
+      },
+    });
+
+    expect(violations).toEqual([
+      {
+        kind: 'RemoteEstopRequesterSeparationViolation',
+        estopRequesterUserId: UserId('operator-1'),
+      },
+    ]);
   });
 });
 
