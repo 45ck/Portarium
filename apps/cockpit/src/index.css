@@ -1,82 +1,233 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tailwind v4 theme bridge
+   Maps :root CSS variables → Tailwind utility classes
+   (bg-background, text-primary, border-border, etc.)
+───────────────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --color-background:             hsl(var(--background));
+  --color-foreground:             hsl(var(--foreground));
+  --color-card:                   hsl(var(--card));
+  --color-card-foreground:        hsl(var(--card-foreground));
+  --color-popover:                hsl(var(--popover));
+  --color-popover-foreground:     hsl(var(--popover-foreground));
+  --color-primary:                hsl(var(--primary));
+  --color-primary-foreground:     hsl(var(--primary-foreground));
+  --color-secondary:              hsl(var(--secondary));
+  --color-secondary-foreground:   hsl(var(--secondary-foreground));
+  --color-muted:                  hsl(var(--muted));
+  --color-muted-foreground:       hsl(var(--muted-foreground));
+  --color-accent:                 hsl(var(--accent));
+  --color-accent-foreground:      hsl(var(--accent-foreground));
+  --color-destructive:            hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border:                 hsl(var(--border));
+  --color-input:                  hsl(var(--input));
+  --color-ring:                   hsl(var(--ring));
+
+  /* Status semantic colors */
+  --color-status-ok:              hsl(var(--status-ok));
+  --color-status-warn:            hsl(var(--status-warn));
+  --color-status-danger:          hsl(var(--status-danger));
+  --color-status-info:            hsl(var(--status-info));
+
+  /* Chart palette */
+  --color-chart-1:                hsl(var(--chart-1));
+  --color-chart-2:                hsl(var(--chart-2));
+  --color-chart-3:                hsl(var(--chart-3));
+  --color-chart-4:                hsl(var(--chart-4));
+  --color-chart-5:                hsl(var(--chart-5));
+
+  /* Sidebar */
+  --color-sidebar:                      hsl(var(--sidebar));
+  --color-sidebar-foreground:           hsl(var(--sidebar-foreground));
+  --color-sidebar-primary:              hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground:   hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent:               hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground:    hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border:               hsl(var(--sidebar-border));
+  --color-sidebar-ring:                 hsl(var(--sidebar-ring));
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Typography scale */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design tokens — light mode
+   All color values in HSL (H S% L%) for compatibility with shadcn components
+───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Base */
+  --background:             72 11% 96%;    /* #f6f6f3 warm off-white */
+  --foreground:              0  0% 11%;    /* #1b1b1b near-black */
+
+  /* Surfaces */
+  --card:                    0  0% 100%;
+  --card-foreground:         0  0% 11%;
+  --popover:                 0  0% 100%;
+  --popover-foreground:      0  0% 11%;
+
+  /* Brand */
+  --primary:               218 100% 52%;   /* #0a66ff */
+  --primary-foreground:      0   0% 100%;
+
+  /* Neutral secondary */
+  --secondary:              72  11% 94%;
+  --secondary-foreground:    0   0% 11%;
+
+  /* Muted */
+  --muted:                   0   0% 94%;
+  --muted-foreground:        0   0% 42%;   /* #6b6b6b */
+
+  /* Accent (hover states) */
+  --accent:                 72  11% 92%;
+  --accent-foreground:       0   0% 11%;
+
+  /* Destructive */
+  --destructive:             3  71% 41%;   /* #b3261e */
+  --destructive-foreground:  0   0% 100%;
+
+  /* Chrome */
+  --border:                  0   0% 87%;
+  --input:                   0   0% 87%;
+  --ring:                  218 100% 52%;   /* matches primary */
+
+  /* Status semantic */
+  --status-ok:             135  60% 30%;   /* #1f7a36 */
+  --status-warn:            39 100% 32%;   /* #a46b00 */
+  --status-danger:           3  71% 41%;   /* #b3261e */
+  --status-info:           217  64% 40%;   /* #2557a7 */
+
+  /* Chart */
+  --chart-1:               218 100% 52%;
+  --chart-2:               135  60% 30%;
+  --chart-3:                39 100% 32%;
+  --chart-4:               217  64% 40%;
+  --chart-5:                 3  71% 41%;
+
+  /* Sidebar */
+  --sidebar:                 0   0% 100%;
+  --sidebar-foreground:      0   0% 11%;
+  --sidebar-primary:       218 100% 52%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:         72  11% 94%;
+  --sidebar-accent-foreground: 0 0% 11%;
+  --sidebar-border:          0   0% 87%;
+  --sidebar-ring:          218 100% 52%;
+
+  /* Radius */
+  --radius: 0.625rem;   /* 10px */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark mode overrides
+───────────────────────────────────────────────────────────────────────────── */
+.dark {
+  --background:              0   0%   9%;
+  --foreground:              0   0%  95%;
+
+  --card:                    0   0%  12%;
+  --card-foreground:         0   0%  95%;
+  --popover:                 0   0%  12%;
+  --popover-foreground:      0   0%  95%;
+
+  --primary:               218  90%  62%;
+  --primary-foreground:      0   0%   5%;
+
+  --secondary:               0   0%  17%;
+  --secondary-foreground:    0   0%  85%;
+
+  --muted:                   0   0%  17%;
+  --muted-foreground:        0   0%  63%;
+
+  --accent:                  0   0%  17%;
+  --accent-foreground:       0   0%  95%;
+
+  --destructive:             3  68%  52%;
+  --destructive-foreground:  0   0% 100%;
+
+  --border:                  0   0%  22%;
+  --input:                   0   0%  22%;
+  --ring:                  218  90%  62%;
+
+  --status-ok:             135  50%  45%;
+  --status-warn:            39  90%  48%;
+  --status-danger:           3  68%  52%;
+  --status-info:           217  55%  58%;
+
+  --chart-1:               218  90%  62%;
+  --chart-2:               135  50%  45%;
+  --chart-3:                39  90%  48%;
+  --chart-4:               217  55%  58%;
+  --chart-5:                 3  68%  52%;
+
+  --sidebar:                 0   0%  12%;
+  --sidebar-foreground:      0   0%  95%;
+  --sidebar-primary:       218  90%  62%;
+  --sidebar-primary-foreground: 0 0% 5%;
+  --sidebar-accent:          0   0%  17%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border:          0   0%  22%;
+  --sidebar-ring:          218  90%  62%;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Base styles
+───────────────────────────────────────────────────────────────────────────── */
 @layer base {
-  :root {
-    /* ---- Base palette (mapped from docs/ui/lofi/wireframe.css) ---- */
-    --background: 246 246 243; /* #f6f6f3 */
-    --foreground: 27 27 27; /* #1b1b1b */
-    --muted: 107 107 107; /* #6b6b6b */
-    --card: 255 255 255;
-    --card-foreground: 27 27 27;
-    --popover: 255 255 255;
-    --popover-foreground: 27 27 27;
-    --primary: 10 102 255; /* --focus: #0a66ff */
-    --primary-foreground: 255 255 255;
-    --secondary: 246 246 243;
-    --secondary-foreground: 27 27 27;
-    --muted-foreground: 107 107 107;
-    --accent: 246 246 243;
-    --accent-foreground: 27 27 27;
-    --destructive: 179 38 30; /* --danger */
-    --destructive-foreground: 255 255 255;
-    --border: 27 27 27; /* --line */
-    --border-soft: rgba(27, 27, 27, 0.2); /* --line-soft */
-    --input: 255 255 255;
-    --ring: 10 102 255;
-
-    /* ---- Status semantic tokens ---- */
-    --status-ok: 31 122 54; /* --ok: #1f7a36 */
-    --status-warn: 164 107 0; /* --warn: #a46b00 */
-    --status-danger: 179 38 30; /* --danger: #b3261e */
-    --status-info: 37 87 167; /* --info: #2557a7 */
-
-    /* ---- Layout tokens ---- */
-    --sidebar-width: 280px;
-    --topbar-height: 52px;
-    --statusbar-height: 32px;
-
-    /* ---- Radius ---- */
-    --radius: 0.75rem; /* 12px = --r-md */
-    --radius-sm: 0.5rem; /* 8px = --r-sm */
-
-    /* ---- Shadow ---- */
-    --shadow-card: 0 3px 0 rgba(27, 27, 27, 0.15);
-  }
-
-  .dark {
-    --background: 20 20 20;
-    --foreground: 240 240 240;
-    --card: 30 30 30;
-    --card-foreground: 240 240 240;
-    --popover: 30 30 30;
-    --popover-foreground: 240 240 240;
-    --primary: 79 140 255;
-    --primary-foreground: 10 10 10;
-    --secondary: 40 40 40;
-    --secondary-foreground: 200 200 200;
-    --muted: 80 80 80;
-    --muted-foreground: 160 160 160;
-    --accent: 40 40 40;
-    --accent-foreground: 200 200 200;
-    --destructive: 220 60 50;
-    --destructive-foreground: 255 255 255;
-    --border: 60 60 60;
-    --input: 40 40 40;
-    --ring: 79 140 255;
-  }
-
   * {
+    @apply border-border;
     box-sizing: border-box;
   }
 
   body {
-    background-color: rgb(var(--background));
-    color: rgb(var(--foreground));
-    font-family:
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      "Segoe UI",
-      sans-serif;
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography scale */
+  h1 { @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl; }
+  h2 { @apply scroll-m-20 text-3xl font-semibold tracking-tight; }
+  h3 { @apply scroll-m-20 text-2xl font-semibold tracking-tight; }
+  h4 { @apply scroll-m-20 text-xl font-semibold tracking-tight; }
+  p  { @apply leading-7; }
+  code {
+    @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
+  }
+  blockquote {
+    @apply mt-6 border-l-2 border-border pl-6 italic;
   }
 }
