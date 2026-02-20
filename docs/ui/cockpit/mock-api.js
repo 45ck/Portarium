@@ -228,11 +228,35 @@
     };
 
     runtimeState.evidence.push(evidenceEntry);
+
+    let followUpEvidenceEntry = null;
+    if (followUpApproval) {
+      const followUpProofSuffix = Math.floor((Date.now() + 1) % 1000000)
+        .toString(16)
+        .padStart(6, '0');
+      followUpEvidenceEntry = {
+        id: 'ev_followup_' + Date.now().toString(36),
+        type: 'approval_opened',
+        message:
+          'Follow-up approval gate opened (' + (approvedCount + 1) + '/' + requiredApprovals + ')',
+        workItemId: approval.workItemId,
+        runId: approval.runId,
+        approvalId: followUpApproval.id,
+        correlationId: run?.correlationId ?? workItem?.correlationId ?? 'cor_demo',
+        actor: 'System',
+        occurredAt: timestamp,
+        previousHash: evidenceEntry.hash,
+        hash: 'sha256:' + followUpProofSuffix + followUpProofSuffix,
+      };
+      runtimeState.evidence.push(followUpEvidenceEntry);
+    }
+
     return {
       approval,
       run,
       workItem,
       followUpApproval,
+      followUpEvidenceEntry,
       evidenceEntry,
     };
   }

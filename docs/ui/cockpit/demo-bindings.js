@@ -507,11 +507,13 @@
   }
 
   function bindEvents() {
-    const submitButton = document.getElementById('submitDecision');
-    if (submitButton && submitButton.dataset.demoBound !== '1') {
+    const existingSubmitButton = document.getElementById('submitDecision');
+    if (existingSubmitButton && existingSubmitButton.dataset.demoBound !== '1') {
+      const submitButton = existingSubmitButton.cloneNode(true);
       submitButton.dataset.demoBound = '1';
       submitButton.removeAttribute('data-confirm');
-      submitButton.addEventListener('click', handleSubmitDecision);
+      existingSubmitButton.replaceWith(submitButton);
+      submitButton.addEventListener('click', handleSubmitDecision, { capture: true });
     }
 
     window.addEventListener('hashchange', function () {
