@@ -30,6 +30,12 @@ const DOMAIN_ICON_IDS: Record<DomainEntityType, string> = {
   'location-event': 'icon-location-event',
   port: 'icon-port',
   project: 'icon-project',
+  plan: 'icon-plan',
+  credential: 'icon-credential',
+  tenant: 'icon-tenant',
+  user: 'icon-user',
+  event: 'icon-event',
+  artifact: 'icon-artifact',
 };
 
 const ENTITY_IMAGE_IDS: Record<string, string> = {

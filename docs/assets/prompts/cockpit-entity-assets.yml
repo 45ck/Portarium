@@ -218,6 +218,66 @@ prompts:
       Isometric 3D icon for Project container.
       Folder/container glyph with grouped artifacts motif. No text.
 
+  - id: CB-ICON-21
+    intent: 'Domain icon: plan'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61021
+    prompt: >
+      Isometric 3D icon for Plan.
+      Structured blueprint card with checklist and flow arrows. No text.
+
+  - id: CB-ICON-22
+    intent: 'Domain icon: credential'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61022
+    prompt: >
+      Isometric 3D icon for credential vaulting.
+      Key-and-vault motif with secure token chip, no logos, no text.
+
+  - id: CB-ICON-23
+    intent: 'Domain icon: tenant'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61023
+    prompt: >
+      Isometric 3D icon for tenant/workspace boundary.
+      Segmented container with boundary ring and isolation cue. No text.
+
+  - id: CB-ICON-24
+    intent: 'Domain icon: user'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61024
+    prompt: >
+      Isometric 3D icon for workspace user identity.
+      Clean person silhouette with badge marker, no text.
+
+  - id: CB-ICON-25
+    intent: 'Domain icon: event stream'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61025
+    prompt: >
+      Isometric 3D icon for domain/event stream.
+      Pulsed node trail and envelope marker, no text.
+
+  - id: CB-ICON-26
+    intent: 'Domain icon: artifact'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61026
+    prompt: >
+      Isometric 3D icon for run artifact.
+      Document/object tile with output badge and integrity mark, no text.
+
   - id: CB-IMG-01
     intent: 'Entity image: ground robot'
     style: 'realistic'

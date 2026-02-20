@@ -20,6 +20,12 @@ export type CockpitAssetDomain =
   | 'location-event'
   | 'port'
   | 'project'
+  | 'plan'
+  | 'credential'
+  | 'tenant'
+  | 'user'
+  | 'event'
+  | 'artifact'
   | 'other';
 
 export type CockpitAssetStyle = 'isometric-3d' | 'realistic' | 'flat';
@@ -84,4 +90,10 @@ export type DomainEntityType =
   | 'map-layer'
   | 'location-event'
   | 'port'
-  | 'project';
+  | 'project'
+  | 'plan'
+  | 'credential'
+  | 'tenant'
+  | 'user'
+  | 'event'
+  | 'artifact';

@@ -56,7 +56,10 @@ function collectSafetyHazards(context: SafetyPolicyContextV1): readonly HazardCl
   return dedupeHazardsByCode(hazards);
 }
 
-function addOperationHazards(context: SafetyPolicyContextV1, hazards: HazardClassificationV1[]): void {
+function addOperationHazards(
+  context: SafetyPolicyContextV1,
+  hazards: HazardClassificationV1[],
+): void {
   if (isRobotEstopOperation(context)) {
     hazards.push(
       classifyHazard(
@@ -95,7 +98,9 @@ function addOperationHazards(context: SafetyPolicyContextV1, hazards: HazardClas
   }
 }
 
-function hazardsFromSafetyCase(safetyCase: SafetyCaseV1 | undefined): readonly HazardClassificationV1[] {
+function hazardsFromSafetyCase(
+  safetyCase: SafetyCaseV1 | undefined,
+): readonly HazardClassificationV1[] {
   if (!safetyCase) return [];
 
   const hazards: HazardClassificationV1[] = [];
@@ -189,13 +194,16 @@ function isExecuteActionInProximity(context: SafetyPolicyContextV1): boolean {
   if (context.actionOperation !== 'robot:execute_action') return false;
   const proximityZoneActive =
     context.proximityZoneActive ??
-    Boolean(context.safetyCase?.appliedConstraints.some((c) => c.constraintType === 'ProximityZone'));
+    Boolean(
+      context.safetyCase?.appliedConstraints.some((c) => c.constraintType === 'ProximityZone'),
+    );
   return proximityZoneActive;
 }
 
 function isSafetyClassifiedActuatorChange(context: SafetyPolicyContextV1): boolean {
   if (context.actionOperation !== 'actuator:set_state') return false;
-  return Boolean(context.nonReversibleActuatorState || isSafetyClassifiedRobot(context));
+  const nonReversibleActuatorState = context.nonReversibleActuatorState ?? false;
+  return nonReversibleActuatorState || isSafetyClassifiedRobot(context);
 }
 
 function isHighHazardRobotAction(context: SafetyPolicyContextV1): boolean {

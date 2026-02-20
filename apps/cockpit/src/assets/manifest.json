@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:39:51.272Z",
+  "generatedAt": "2026-02-20T02:44:16.136Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -1066,6 +1066,270 @@
       "tags": [
         "domain",
         "project",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-plan",
+      "kind": "icon",
+      "domain": "plan",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/plan.png",
+        "dark": "/assets/icons/domain/plan.png"
+      },
+      "alt": "Plan icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-21",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61021
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "plan",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-credential",
+      "kind": "icon",
+      "domain": "credential",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/credential.png",
+        "dark": "/assets/icons/domain/credential.png"
+      },
+      "alt": "Credential icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-22",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61022
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "credential",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-tenant",
+      "kind": "icon",
+      "domain": "tenant",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/tenant.png",
+        "dark": "/assets/icons/domain/tenant.png"
+      },
+      "alt": "Tenant icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-23",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61023
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "tenant",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-user",
+      "kind": "icon",
+      "domain": "user",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/user.png",
+        "dark": "/assets/icons/domain/user.png"
+      },
+      "alt": "User icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-24",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61024
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "user",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-event",
+      "kind": "icon",
+      "domain": "event",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/event.png",
+        "dark": "/assets/icons/domain/event.png"
+      },
+      "alt": "Event icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-25",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61025
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "event",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-artifact",
+      "kind": "icon",
+      "domain": "artifact",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/artifact.png",
+        "dark": "/assets/icons/domain/artifact.png"
+      },
+      "alt": "Artifact icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-26",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:44:16.136Z",
+        "operator": "@45ck",
+        "seed": 61026
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "artifact",
         "icon"
       ]
     }

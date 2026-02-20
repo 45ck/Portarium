@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Bot, Brain, FileCheck2, Network, Plane, Plug, Route, ShieldCheck } from 'lucide-react';
+import { Bot, Brain, FileCheck2, Network, Plane, Plug, Route, ShieldCheck, User } from 'lucide-react';
 import { getDomainIcon, resolveAssetPath } from '@/assets/registry';
 import type { CockpitAssetTheme, DomainEntityType } from '@/assets/types';
 
@@ -34,6 +34,12 @@ const FALLBACK_ICON: Record<DomainEntityType, typeof Bot> = {
   'location-event': Route,
   port: Plug,
   project: FileCheck2,
+  plan: FileCheck2,
+  credential: ShieldCheck,
+  tenant: Network,
+  user: User,
+  event: Route,
+  artifact: FileCheck2,
 };
 
 export type EntityIconProps = {
