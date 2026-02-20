@@ -186,6 +186,8 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.7 — bead-0195
   - Tenant-isolated fixture factories for every aggregate and port operation.
   - AC: cross-tenant leakage blocked in tests.
+  - Artifact: `src/domain/testing/tenant-isolated-aggregate-fixtures-v1.ts`
+  - Artifact: `src/infrastructure/testing/tenant-isolated-port-fixtures-v1.ts`
 - STORY-V07.8 — bead-0196
   - Review: verify tenant-isolated fixtures block cross-tenant leakage.
   - AC: review passed.
