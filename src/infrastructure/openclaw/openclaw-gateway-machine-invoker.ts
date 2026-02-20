@@ -6,7 +6,7 @@ import type {
   RunAgentInput,
 } from '../../application/ports/machine-invoker.js';
 import { evaluateOpenClawToolPolicyV1 } from '../../domain/machines/openclaw-tool-blast-radius-v1.js';
-import type { MachineId, TenantId } from '../../domain/primitives/index.js';
+import type { ExecutionTier, MachineId, TenantId } from '../../domain/primitives/index.js';
 
 type FetchImpl = typeof fetch;
 type SleepFn = (ms: number) => Promise<void>;
@@ -93,7 +93,7 @@ export class OpenClawGatewayMachineInvoker implements MachineInvokerPort {
   }
 
   public async invokeTool(input: InvokeToolInput): Promise<MachineInvokerResult> {
-    const policyTier = input.policyTier ?? 'HumanApprove';
+    const policyTier = (input.policyTier ?? 'HumanApprove') as ExecutionTier;
     const policy = evaluateOpenClawToolPolicyV1({
       toolName: input.toolName,
       policyTier,

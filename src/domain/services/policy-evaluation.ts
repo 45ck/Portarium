@@ -20,6 +20,7 @@ export type PolicyEvaluationContextV1 = Readonly<{
   performedDuties?: readonly PerformedDutyV1[];
   robotContext?: RobotSodContextV1;
   ruleContext?: Readonly<Record<string, unknown>>;
+  ruleEvaluationMaxOperations?: number;
 }> &
   SafetyPolicyContextV1;
 

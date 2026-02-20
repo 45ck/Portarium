@@ -70,7 +70,7 @@ export class PostgresOutboxAdapter implements OutboxPort {
       throw new Error(`Outbox entry not found: ${entryId}`);
     }
 
-    const current = rows[0].payload;
+    const current = rows[0]!.payload;
     const updated: OutboxEntry = { ...current, status: 'Published' };
 
     await this.#client.query(
@@ -89,7 +89,7 @@ export class PostgresOutboxAdapter implements OutboxPort {
       throw new Error(`Outbox entry not found: ${entryId}`);
     }
 
-    const current = rows[0].payload;
+    const current = rows[0]!.payload;
     const updated: OutboxEntry = {
       ...current,
       status: 'Failed',

@@ -1,6 +1,6 @@
 # Machine Agent Registration Commands v1
 
-**Beads:** bead-0434, bead-0655, bead-0656
+**Beads:** bead-0434, bead-0655, bead-0656, bead-0657
 
 ## Purpose
 

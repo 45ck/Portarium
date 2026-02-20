@@ -30,3 +30,27 @@ Every pack version must pass its full test suite before registry publication. Te
 
 - **Only manual QA** -- too slow as packs proliferate
 - **Only unit tests** -- insufficient for integration semantics
+
+## Implementation Mapping
+
+- Closed implementation/review coverage:
+  - `bead-0001`
+  - `bead-0055`
+  - `bead-0076`
+  - `bead-0220`
+- Follow-up bead for dedicated per-pack CI publish gates:
+  - `bead-0639`
+- ADR closure implementation mapping bead:
+  - `bead-0601`
+- ADR linkage verification review bead:
+  - `bead-0602`
+
+## Evidence References
+
+- `.specify/specs/vertical-packs.md`
+- `src/domain/packs/pack-manifest.ts`
+- `src/domain/packs/pack-test-asset-v1.ts`
+- `src/domain/packs/pack-workflow-definition-v1.ts`
+- `src/domain/packs/software-change-management-reference-pack.test.ts`
+- `vertical-packs/software-change-management/tests/change-evidence-fixture.json`
+- `docs/review/bead-0601-adr-0051-implementation-mapping-review.md`

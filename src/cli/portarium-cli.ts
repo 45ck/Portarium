@@ -55,7 +55,12 @@ export function parseArgs(argv: string[]): CliArgs {
   const command = positional[0] ?? 'help';
   const subcommand = positional[1];
 
-  return { command, subcommand, flags, positional: positional.slice(2) };
+  return {
+    command,
+    flags,
+    positional: positional.slice(2),
+    ...(subcommand !== undefined ? { subcommand } : {}),
+  };
 }
 
 // -- Configuration -----------------------------------------------------------

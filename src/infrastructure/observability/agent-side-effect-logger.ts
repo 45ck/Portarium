@@ -145,10 +145,10 @@ export class AgentSideEffectLogger {
         method,
         url,
         classification,
-        statusCode,
         durationMs,
-        agentId: this.#agentId,
-        workspaceId: this.#workspaceId,
+        ...(statusCode !== undefined ? { statusCode } : {}),
+        ...(this.#agentId !== undefined ? { agentId: this.#agentId } : {}),
+        ...(this.#workspaceId !== undefined ? { workspaceId: this.#workspaceId } : {}),
       };
       this.#entries.push(entry);
       this.#sink.write(entry);

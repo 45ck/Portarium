@@ -286,7 +286,7 @@ export async function createAgent(
 
   const handshake = establishCapabilityHandshakeV1({
     machineCapabilities: machine.capabilities,
-    agentCapabilities: agent.allowedTools,
+    agentCapabilities: agent.capabilities,
   });
   if (handshake.nonRoutableAgentCapabilities.length > 0) {
     const nonRoutable = handshake.nonRoutableAgentCapabilities
@@ -304,8 +304,8 @@ export async function createAgent(
   );
   if (existingAgent !== null) {
     const driftDecision = evaluateCapabilityDriftQuarantinePolicyV1({
-      baselineCapabilities: existingAgent.allowedTools,
-      observedCapabilities: agent.allowedTools,
+      baselineCapabilities: existingAgent.capabilities,
+      observedCapabilities: agent.capabilities,
       source: 'ReRegistration',
       reviewed: false,
     });

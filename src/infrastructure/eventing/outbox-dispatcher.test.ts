@@ -47,16 +47,17 @@ class InMemoryOutbox implements OutboxPort {
   async markPublished(entryId: string): Promise<void> {
     const entry = this.entries.find((e) => e.entryId === entryId);
     if (!entry) throw new Error(`Not found: ${entryId}`);
-    entry.status = 'Published';
+    (entry as Record<string, unknown>)['status'] = 'Published';
   }
 
   async markFailed(entryId: string, reason: string, nextRetryAtIso: string): Promise<void> {
     const entry = this.entries.find((e) => e.entryId === entryId);
     if (!entry) throw new Error(`Not found: ${entryId}`);
-    entry.status = 'Failed';
-    entry.failedReason = reason;
-    entry.nextRetryAtIso = nextRetryAtIso;
-    entry.retryCount += 1;
+    const mut = entry as Record<string, unknown>;
+    mut['status'] = 'Failed';
+    mut['failedReason'] = reason;
+    mut['nextRetryAtIso'] = nextRetryAtIso;
+    mut['retryCount'] = (entry.retryCount) + 1;
   }
 }
 
@@ -84,8 +85,8 @@ describe('OutboxDispatcher', () => {
 
     expect(processed).toBe(2);
     expect(published).toHaveLength(2);
-    expect(outbox.entries[0].status).toBe('Published');
-    expect(outbox.entries[1].status).toBe('Published');
+    expect(outbox.entries[0]!.status).toBe('Published');
+    expect(outbox.entries[1]!.status).toBe('Published');
   });
 
   it('pollOnce marks entries as Failed when publisher throws', async () => {
@@ -101,9 +102,9 @@ describe('OutboxDispatcher', () => {
     const processed = await dispatcher.pollOnce();
 
     expect(processed).toBe(0);
-    expect(outbox.entries[0].status).toBe('Failed');
-    expect(outbox.entries[0].failedReason).toBe('NATS connection refused');
-    expect(outbox.entries[0].retryCount).toBe(1);
+    expect(outbox.entries[0]!.status).toBe('Failed');
+    expect(outbox.entries[0]!.failedReason).toBe('NATS connection refused');
+    expect(outbox.entries[0]!.retryCount).toBe(1);
   });
 
   it('skips entries that exceed maxRetries', async () => {

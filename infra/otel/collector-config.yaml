@@ -14,14 +14,34 @@ exporters:
   logging:
     verbosity: basic
 
+  # Placeholder for production trace backend (Tempo, Jaeger, etc.).
+  # Configure TLS and auth headers for production deployments.
   otlp/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
 
+  # Placeholder for production metrics backend (Prometheus, Mimir, etc.).
+  # Uncomment and configure for production deployments.
+  # otlp/prometheus:
+  #   endpoint: prometheus:9090
+  #   tls:
+  #     cert_file: /etc/otelcol-contrib/tls/cert.pem
+  #     key_file: /etc/otelcol-contrib/tls/key.pem
+  #   headers:
+  #     Authorization: "Bearer ${OTEL_EXPORTER_AUTH_TOKEN}"
+
 processors:
   batch:
     timeout: 1s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  # Memory limiter prevents OOM on high-volume spikes.
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 256
+    spike_limit_mib: 64
 
   # Redaction processor: obfuscate sensitive tenant/user fields in log attributes.
   # tenantId is hashed rather than removed so traces remain joinable.
@@ -35,6 +55,17 @@ processors:
         action: delete
       - key: http.request.header.authorization
         action: delete
+      - key: http.request.header.cookie
+        action: delete
+      - key: db.statement
+        action: delete
+
+  # Resource detection: auto-tag spans with host/container metadata.
+  resource:
+    attributes:
+      - key: service.namespace
+        value: portarium
+        action: upsert
 
 service:
   extensions:
@@ -44,6 +75,7 @@ service:
       receivers:
         - otlp
       processors:
+        - memory_limiter
         - batch
       exporters:
         - logging
@@ -51,7 +83,9 @@ service:
       receivers:
         - otlp
       processors:
+        - memory_limiter
         - attributes/redact
+        - resource
         - batch
       exporters:
         - logging
@@ -60,7 +94,9 @@ service:
       receivers:
         - otlp
       processors:
+        - memory_limiter
         - attributes/redact
+        - resource
         - batch
       exporters:
         - logging

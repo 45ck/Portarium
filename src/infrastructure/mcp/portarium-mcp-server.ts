@@ -182,12 +182,14 @@ export class PortariumMcpServer {
     args: Record<string, unknown>,
   ): Promise<unknown> {
     switch (toolName) {
-      case 'portarium_run_start':
+      case 'portarium_run_start': {
+        const input = asRecord(args['input']);
         return this.#client.startRun({
           workspaceId: requireString(args, 'workspaceId'),
           workflowId: requireString(args, 'workflowId'),
-          input: asRecord(args['input']),
+          ...(input !== undefined ? { input } : {}),
         });
+      }
 
       case 'portarium_run_get':
         return this.#client.getRun({
@@ -195,44 +197,55 @@ export class PortariumMcpServer {
           runId: requireString(args, 'runId'),
         });
 
-      case 'portarium_run_cancel':
+      case 'portarium_run_cancel': {
+        const reason = asString(args['reason']);
         return this.#client.cancelRun({
           workspaceId: requireString(args, 'workspaceId'),
           runId: requireString(args, 'runId'),
-          reason: asString(args['reason']),
+          ...(reason !== undefined ? { reason } : {}),
         });
+      }
 
-      case 'portarium_work_items_list':
+      case 'portarium_work_items_list': {
+        const runId = asString(args['runId']);
+        const status = asString(args['status']);
         return this.#client.listWorkItems({
           workspaceId: requireString(args, 'workspaceId'),
-          runId: asString(args['runId']),
-          status: asString(args['status']),
+          ...(runId !== undefined ? { runId } : {}),
+          ...(status !== undefined ? { status } : {}),
         });
+      }
 
-      case 'portarium_approval_submit':
+      case 'portarium_approval_submit': {
+        const comment = asString(args['comment']);
         return this.#client.submitApproval({
           workspaceId: requireString(args, 'workspaceId'),
           approvalId: requireString(args, 'approvalId'),
           decision: requireString(args, 'decision'),
-          comment: asString(args['comment']),
+          ...(comment !== undefined ? { comment } : {}),
         });
+      }
 
-      case 'portarium_agent_register':
+      case 'portarium_agent_register': {
+        const capabilities = asStringArray(args['capabilities']);
         return this.#client.registerAgent({
           workspaceId: requireString(args, 'workspaceId'),
           machineId: requireString(args, 'machineId'),
           agentId: requireString(args, 'agentId'),
           displayName: requireString(args, 'displayName'),
-          capabilities: asStringArray(args['capabilities']),
+          ...(capabilities !== undefined ? { capabilities } : {}),
         });
+      }
 
-      case 'portarium_agent_heartbeat':
+      case 'portarium_agent_heartbeat': {
+        const status = asString(args['status']);
         return this.#client.agentHeartbeat({
           workspaceId: requireString(args, 'workspaceId'),
           machineId: requireString(args, 'machineId'),
           agentId: requireString(args, 'agentId'),
-          status: asString(args['status']),
+          ...(status !== undefined ? { status } : {}),
         });
+      }
 
       default:
         throw new Error(`Unimplemented tool: ${toolName}`);

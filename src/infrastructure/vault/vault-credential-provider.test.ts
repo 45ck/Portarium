@@ -43,7 +43,7 @@ describe('VaultCredentialProvider', () => {
       expect(result.value.createdAtIso).toBe('2026-02-01T12:00:00Z');
     }
 
-    const url = fetchImpl.mock.calls[0][0] as string;
+    const url = fetchImpl.mock.calls[0]![0] as string;
     expect(url).toBe('http://vault.local:8200/v1/secret/data/tenant-1/erpnext-api-key');
   });
 
@@ -53,7 +53,7 @@ describe('VaultCredentialProvider', () => {
 
     await provider.getCredential(ref({ version: 2 }));
 
-    const url = fetchImpl.mock.calls[0][0] as string;
+    const url = fetchImpl.mock.calls[0]![0] as string;
     expect(url).toContain('?version=2');
   });
 
@@ -63,7 +63,7 @@ describe('VaultCredentialProvider', () => {
 
     await provider.getCredential(ref());
 
-    const url = fetchImpl.mock.calls[0][0] as string;
+    const url = fetchImpl.mock.calls[0]![0] as string;
     expect(url).toContain('/v1/kv/data/tenant-1/');
   });
 
@@ -140,7 +140,7 @@ describe('VaultCredentialProvider', () => {
 
     await provider.getCredential(ref());
 
-    const headers = fetchImpl.mock.calls[0][1].headers as Record<string, string>;
+    const headers = fetchImpl.mock.calls[0]![1].headers as Record<string, string>;
     expect(headers['x-vault-token']).toBe('vault-token-abc');
   });
 });

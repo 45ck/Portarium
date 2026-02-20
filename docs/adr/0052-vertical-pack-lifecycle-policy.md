@@ -29,3 +29,26 @@ Publish an explicit support policy:
 
 - **"Support everything forever"** -- operationally untenable
 - **"Support only latest"** -- breaks enterprise and school adoption patterns
+
+## Implementation Mapping
+
+- Closed implementation/review coverage:
+  - `bead-0001`
+  - `bead-0055`
+  - `bead-0056`
+- Follow-up implementation bead for lifecycle status and support-window enforcement:
+  - `bead-0640`
+- ADR closure implementation mapping bead:
+  - `bead-0603`
+- ADR linkage verification review bead:
+  - `bead-0604`
+
+## Evidence References
+
+- `src/domain/packs/pack-manifest.ts`
+- `src/domain/packs/pack-manifest.test.ts`
+- `src/domain/packs/pack-resolver.ts`
+- `src/domain/packs/pack-resolver.test.ts`
+- `src/domain/packs/pack-registry.ts`
+- `docs/vertical-packs/README.md`
+- `docs/review/bead-0603-adr-0052-implementation-mapping-review.md`

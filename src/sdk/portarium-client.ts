@@ -140,8 +140,8 @@ export class PortariumClient {
       maxRetries: config.maxRetries ?? 3,
       retryBaseDelayMs: config.retryBaseDelayMs ?? 500,
       fetchFn: config.fetchFn ?? fetch,
-      traceparent: config.traceparent,
-      tracestate: config.tracestate,
+      ...(config.traceparent !== undefined ? { traceparent: config.traceparent } : {}),
+      ...(config.tracestate !== undefined ? { tracestate: config.tracestate } : {}),
     };
 
     this.runs = new RunsNamespace(this);

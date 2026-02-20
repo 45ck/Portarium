@@ -67,6 +67,13 @@ Local development visualization:
 - Grafana is available at `http://localhost:3100` (auto-provisioned with Tempo datasource).
 - Tempo API is available at `http://localhost:3200`.
 
+Node.js OTel setup:
+
+- `src/infrastructure/observability/otel-setup.ts` -- SDK initialization module.
+  Call `initializeOtel()` at process startup before importing application code.
+  Configures OTLP trace/metric/log export. Bridges to existing `metrics-hooks.ts`.
+  Env vars: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`, `PORTARIUM_OTEL_ENABLED`.
+
 Config files:
 
 - `infra/otel/collector-config.yaml` -- OTel Collector pipeline config.

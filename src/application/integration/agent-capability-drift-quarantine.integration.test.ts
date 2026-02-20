@@ -202,6 +202,6 @@ describe('application integration: capability drift quarantine on agent re-regis
 
     const storedAgent = await registry.getAgentConfigById(TenantId('ws-1'), AgentId('agent-1'));
     expect(storedAgent).not.toBeNull();
-    expect(storedAgent?.allowedTools).toEqual(['run:workflow']);
+    expect(storedAgent?.allowedTools).toEqual(['classify']);
   });
 });

@@ -8,10 +8,6 @@ import type {
   MachineRegistryStore,
 } from '../ports/index.js';
 import { toAppContext } from '../common/context.js';
-import type {
-  AgentConfigV1,
-  MachineRegistrationV1,
-} from '../../domain/machines/machine-registration-v1.js';
 
 function makeCtx(workspaceId = 'ws-1') {
   return toAppContext({

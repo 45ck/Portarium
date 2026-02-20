@@ -524,6 +524,7 @@ function assertWorkspaceScope(
       ok: false,
       error: {
         kind: 'Forbidden',
+        action: APP_ACTIONS.workspaceRead,
         message: `Token workspace does not match requested workspace: ${workspaceId}`,
       },
     };
