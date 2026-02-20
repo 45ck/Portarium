@@ -9,33 +9,9 @@ import type {
 
 const manifest = manifestData as CockpitAssetManifest;
 
-const DOMAIN_ICON_IDS: Record<DomainEntityType, string> = {
+const DOMAIN_ICON_ID_OVERRIDES: Partial<Record<DomainEntityType, string>> = {
   robot: 'icon-robot-ground',
   drone: 'icon-robot-drone',
-  agent: 'icon-agent',
-  adapter: 'icon-adapter',
-  mission: 'icon-mission',
-  evidence: 'icon-evidence',
-  policy: 'icon-policy',
-  fleet: 'icon-fleet',
-  'work-item': 'icon-work-item',
-  workflow: 'icon-workflow',
-  run: 'icon-run',
-  approval: 'icon-approval',
-  'human-task': 'icon-human-task',
-  workforce: 'icon-workforce',
-  queue: 'icon-queue',
-  machine: 'icon-machine',
-  'map-layer': 'icon-map-layer',
-  'location-event': 'icon-location-event',
-  port: 'icon-port',
-  project: 'icon-project',
-  plan: 'icon-plan',
-  credential: 'icon-credential',
-  tenant: 'icon-tenant',
-  user: 'icon-user',
-  event: 'icon-event',
-  artifact: 'icon-artifact',
 };
 
 const ENTITY_IMAGE_IDS: Record<string, string> = {
@@ -58,8 +34,8 @@ export function getAssetById(id: string): CockpitAsset | undefined {
 }
 
 export function getDomainIcon(entityType: DomainEntityType): CockpitAsset | undefined {
-  const assetId = DOMAIN_ICON_IDS[entityType];
-  return assetId !== undefined ? getAssetById(assetId) : undefined;
+  const assetId = DOMAIN_ICON_ID_OVERRIDES[entityType] ?? `icon-${entityType}`;
+  return getAssetById(assetId);
 }
 
 export function getEntityImage(entityId: string): CockpitAsset | undefined {

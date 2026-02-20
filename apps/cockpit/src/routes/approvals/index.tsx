@@ -3,11 +3,15 @@ import { createRoute, useNavigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
-import { useApprovals } from '@/hooks/queries/use-approvals'
+import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { DataTable } from '@/components/cockpit/data-table'
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
+import { ApprovalTriageCard, type TriageAction } from '@/components/cockpit/approval-triage-card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { EmptyState } from '@/components/cockpit/empty-state'
+import { CheckSquare } from 'lucide-react'
 import type { ApprovalSummary } from '@portarium/cockpit-types'
 
 function ApprovalsPage() {
@@ -15,8 +19,35 @@ function ApprovalsPage() {
   const navigate = useNavigate()
   const { data, isLoading } = useApprovals(wsId)
   const items = data?.items ?? []
-
   const pendingItems = items.filter((a) => a.status === 'Pending')
+
+  // Triage card index — skip over items that have been actioned in this session
+  const [triageIndex, setTriageIndex] = useState(0)
+  const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set())
+
+  // Get pending items not yet actioned/skipped in this triage session
+  const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId))
+  const currentApproval = triageQueue[triageIndex] ?? triageQueue[0] ?? null
+
+  const { mutate: decide, isPending: deciding } = useApprovalDecision(
+    wsId,
+    currentApproval?.approvalId ?? '',
+  )
+
+  function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
+    if (action === 'Skip') {
+      setTriageSkipped((prev) => new Set([...prev, approvalId]))
+      return
+    }
+    decide(
+      { decision: action as 'Approved' | 'Denied' | 'RequestChanges', rationale },
+      {
+        onSuccess: () => {
+          setTriageSkipped((prev) => new Set([...prev, approvalId]))
+        },
+      },
+    )
+  }
 
   const columns = [
     {
@@ -78,11 +109,26 @@ function ApprovalsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title="Approvals" />
+      <PageHeader title="Approvals" icon={<EntityIcon entityType="approval" size="md" decorative />} />
 
       <Tabs defaultValue="pending">
         <TabsList>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending
+            {pendingItems.length > 0 && (
+              <span className="ml-1.5 rounded-full bg-primary/15 text-primary text-[10px] px-1.5 py-0.5 font-medium">
+                {pendingItems.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="triage">
+            Triage
+            {pendingItems.length > 0 && (
+              <span className="ml-1.5 rounded-full bg-orange-100 text-orange-700 text-[10px] px-1.5 py-0.5 font-medium">
+                {triageQueue.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="all">All</TabsTrigger>
         </TabsList>
 
@@ -94,6 +140,29 @@ function ApprovalsPage() {
             getRowKey={(row) => row.approvalId}
             onRowClick={handleRowClick}
           />
+        </TabsContent>
+
+        <TabsContent value="triage">
+          <div className="py-6">
+            {isLoading ? (
+              <div className="max-w-xl mx-auto h-64 rounded-xl bg-muted/30 animate-pulse" />
+            ) : triageQueue.length === 0 ? (
+              <EmptyState
+                title="All caught up"
+                description="No pending approvals left in the triage queue."
+                icon={<CheckSquare className="h-12 w-12" />}
+              />
+            ) : (
+              <ApprovalTriageCard
+                key={currentApproval?.approvalId}
+                approval={currentApproval!}
+                index={pendingItems.length - triageQueue.length}
+                total={pendingItems.length}
+                onAction={handleTriageAction}
+                loading={deciding}
+              />
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="all">

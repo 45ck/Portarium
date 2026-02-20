@@ -19,6 +19,11 @@ describe('cockpit asset registry', () => {
     expect(robotIcon?.id).toBe('icon-robot-ground');
   });
 
+  it('resolves canonical object icons', () => {
+    const partyIcon = getDomainIcon('party');
+    expect(partyIcon?.id).toBe('icon-party');
+  });
+
   it('resolves known entity images', () => {
     const robotImage = getEntityImage('robot-ground-alpha');
     expect(robotImage?.id).toBe('image-robot-ground-alpha');

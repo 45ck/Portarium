@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:50:08.599Z",
+  "generatedAt": "2026-02-20T03:25:45.808Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -35,7 +35,7 @@
       "promptRef": "CB-ICON-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61001
       },
@@ -79,7 +79,7 @@
       "promptRef": "CB-ICON-02",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61002
       },
@@ -123,7 +123,7 @@
       "promptRef": "CB-ICON-03",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61003
       },
@@ -167,7 +167,7 @@
       "promptRef": "CB-ICON-04",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61004
       },
@@ -211,7 +211,7 @@
       "promptRef": "CB-ICON-05",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61005
       },
@@ -255,7 +255,7 @@
       "promptRef": "CB-ICON-06",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61006
       },
@@ -299,7 +299,7 @@
       "promptRef": "CB-ICON-07",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61007
       },
@@ -343,7 +343,7 @@
       "promptRef": "CB-ICON-08",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:23:17.446Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61008
       },
@@ -573,7 +573,7 @@
       "promptRef": "CB-ICON-09",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61009
       },
@@ -617,7 +617,7 @@
       "promptRef": "CB-ICON-10",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61010
       },
@@ -661,7 +661,7 @@
       "promptRef": "CB-ICON-11",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61011
       },
@@ -705,7 +705,7 @@
       "promptRef": "CB-ICON-12",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61012
       },
@@ -749,7 +749,7 @@
       "promptRef": "CB-ICON-13",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61013
       },
@@ -793,7 +793,7 @@
       "promptRef": "CB-ICON-14",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61014
       },
@@ -837,7 +837,7 @@
       "promptRef": "CB-ICON-15",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61015
       },
@@ -881,7 +881,7 @@
       "promptRef": "CB-ICON-16",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61016
       },
@@ -925,7 +925,7 @@
       "promptRef": "CB-ICON-17",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61017
       },
@@ -969,7 +969,7 @@
       "promptRef": "CB-ICON-18",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61018
       },
@@ -1013,7 +1013,7 @@
       "promptRef": "CB-ICON-19",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61019
       },
@@ -1057,7 +1057,7 @@
       "promptRef": "CB-ICON-20",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:39:51.272Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61020
       },
@@ -1101,7 +1101,7 @@
       "promptRef": "CB-ICON-21",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61021
       },
@@ -1145,7 +1145,7 @@
       "promptRef": "CB-ICON-22",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61022
       },
@@ -1189,7 +1189,7 @@
       "promptRef": "CB-ICON-23",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61023
       },
@@ -1233,7 +1233,7 @@
       "promptRef": "CB-ICON-24",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61024
       },
@@ -1277,7 +1277,7 @@
       "promptRef": "CB-ICON-25",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61025
       },
@@ -1321,7 +1321,7 @@
       "promptRef": "CB-ICON-26",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:47:11.428Z",
+        "createdAt": "2026-02-20T03:25:45.808Z",
         "operator": "@45ck",
         "seed": 61026
       },
@@ -1330,6 +1330,622 @@
       "tags": [
         "domain",
         "artifact",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-party",
+      "kind": "icon",
+      "domain": "party",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/party.png",
+        "dark": "/assets/icons/domain/party.png"
+      },
+      "alt": "Party icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-27",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61027
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "party",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-ticket",
+      "kind": "icon",
+      "domain": "ticket",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/ticket.png",
+        "dark": "/assets/icons/domain/ticket.png"
+      },
+      "alt": "Ticket icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-28",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61028
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "ticket",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-invoice",
+      "kind": "icon",
+      "domain": "invoice",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/invoice.png",
+        "dark": "/assets/icons/domain/invoice.png"
+      },
+      "alt": "Invoice icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-29",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61029
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "invoice",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-payment",
+      "kind": "icon",
+      "domain": "payment",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/payment.png",
+        "dark": "/assets/icons/domain/payment.png"
+      },
+      "alt": "Payment icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-30",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61030
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "payment",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-task",
+      "kind": "icon",
+      "domain": "task",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/task.png",
+        "dark": "/assets/icons/domain/task.png"
+      },
+      "alt": "Task icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-31",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61031
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "task",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-campaign",
+      "kind": "icon",
+      "domain": "campaign",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/campaign.png",
+        "dark": "/assets/icons/domain/campaign.png"
+      },
+      "alt": "Campaign icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-32",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61032
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "campaign",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-asset",
+      "kind": "icon",
+      "domain": "asset",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/asset.png",
+        "dark": "/assets/icons/domain/asset.png"
+      },
+      "alt": "Asset icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-33",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61033
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "asset",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-document",
+      "kind": "icon",
+      "domain": "document",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/document.png",
+        "dark": "/assets/icons/domain/document.png"
+      },
+      "alt": "Document icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-34",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61034
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "document",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-subscription",
+      "kind": "icon",
+      "domain": "subscription",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/subscription.png",
+        "dark": "/assets/icons/domain/subscription.png"
+      },
+      "alt": "Subscription icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-35",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61035
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "subscription",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-opportunity",
+      "kind": "icon",
+      "domain": "opportunity",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/opportunity.png",
+        "dark": "/assets/icons/domain/opportunity.png"
+      },
+      "alt": "Opportunity icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-36",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61036
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "opportunity",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-product",
+      "kind": "icon",
+      "domain": "product",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/product.png",
+        "dark": "/assets/icons/domain/product.png"
+      },
+      "alt": "Product icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-37",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61037
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "product",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-order",
+      "kind": "icon",
+      "domain": "order",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/order.png",
+        "dark": "/assets/icons/domain/order.png"
+      },
+      "alt": "Order icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-38",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61038
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "order",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-account",
+      "kind": "icon",
+      "domain": "account",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/account.png",
+        "dark": "/assets/icons/domain/account.png"
+      },
+      "alt": "Account icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-39",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61039
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "account",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-external-object-ref",
+      "kind": "icon",
+      "domain": "external-object-ref",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/external-object-ref.png",
+        "dark": "/assets/icons/domain/external-object-ref.png"
+      },
+      "alt": "External object reference icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-40",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T03:25:45.808Z",
+        "operator": "@45ck",
+        "seed": 61040
+      },
+      "status": "approved",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "external-object-ref",
         "icon"
       ]
     }

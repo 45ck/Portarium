@@ -40,6 +40,20 @@ const FALLBACK_ICON: Record<DomainEntityType, typeof Bot> = {
   user: User,
   event: Route,
   artifact: FileCheck2,
+  party: User,
+  ticket: FileCheck2,
+  invoice: FileCheck2,
+  payment: ShieldCheck,
+  task: FileCheck2,
+  campaign: Network,
+  asset: Bot,
+  document: FileCheck2,
+  subscription: Route,
+  opportunity: Route,
+  product: Plug,
+  order: Route,
+  account: ShieldCheck,
+  'external-object-ref': Plug,
 };
 
 export type EntityIconProps = {

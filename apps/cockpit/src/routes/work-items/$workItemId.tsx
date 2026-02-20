@@ -7,6 +7,7 @@ import { useRuns } from '@/hooks/queries/use-runs'
 import { useApprovals } from '@/hooks/queries/use-approvals'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { DataTable } from '@/components/cockpit/data-table'
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge'
@@ -75,6 +76,7 @@ function WorkItemDetailPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title={item.title}
+        icon={<EntityIcon entityType="work-item" size="md" decorative />}
         breadcrumb={[
           { label: 'Work Items', to: '/work-items' },
           { label: item.title },

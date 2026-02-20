@@ -5,6 +5,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useWorkItems } from '@/hooks/queries/use-work-items'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { FilterBar } from '@/components/cockpit/filter-bar'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -92,7 +93,7 @@ function WorkItemsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title="Work Items" />
+      <PageHeader title="Work Items" icon={<EntityIcon entityType="work-item" size="md" decorative />} />
 
       <FilterBar
         filters={[

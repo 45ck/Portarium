@@ -7,6 +7,15 @@ import type {
   WorkforceQueueSummary,
   AgentV1,
 } from '@portarium/cockpit-types'
+import type {
+  RobotSummary,
+  MissionSummary,
+  SafetyConstraint,
+  ApprovalThreshold,
+  EStopAuditEntry,
+} from '@/types/robotics'
+
+export type { RobotSummary, MissionSummary, SafetyConstraint, ApprovalThreshold, EStopAuditEntry }
 
 export const WORK_ITEMS: WorkItemSummary[] = [
   {
@@ -343,6 +352,195 @@ export const ADAPTERS = [
   { adapterId: 'adapter-stripe-001', name: 'Stripe Payments', sorFamily: 'PaymentsBilling', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
   { adapterId: 'adapter-bamboohr-001', name: 'BambooHR HRIS', sorFamily: 'HrisHcm', status: 'healthy', lastSyncIso: '2026-02-19T23:00:00Z' },
   { adapterId: 'adapter-salesforce-001', name: 'Salesforce CRM', sorFamily: 'CrmSales', status: 'degraded', lastSyncIso: '2026-02-19T18:00:00Z' },
+]
+
+// ---------------------------------------------------------------------------
+// Robotics fixtures
+// ---------------------------------------------------------------------------
+
+export const ROBOTS: RobotSummary[] = [
+  {
+    robotId: 'robot-001',
+    name: 'Rover Alpha',
+    robotClass: 'AMR',
+    status: 'Online',
+    batteryPct: 87,
+    lastHeartbeatSec: 2,
+    missionId: 'mis-0094',
+    gatewayUrl: 'grpc://gw-wh-a.portarium.io:9001',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-001',
+    capabilities: ['navigate', 'localize', 'obstacle-avoidance'],
+  },
+  {
+    robotId: 'robot-002',
+    name: 'Carrier Beta',
+    robotClass: 'AGV',
+    status: 'Online',
+    batteryPct: 94,
+    lastHeartbeatSec: 1,
+    missionId: 'mis-0087',
+    gatewayUrl: 'grpc://gw-wh-a.portarium.io:9002',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-002',
+    capabilities: ['transport', 'dock'],
+  },
+  {
+    robotId: 'robot-003',
+    name: 'Arm Gamma',
+    robotClass: 'Manipulator',
+    status: 'Online',
+    batteryPct: 72,
+    lastHeartbeatSec: 3,
+    missionId: 'mis-0095',
+    gatewayUrl: 'grpc://gw-bay3.portarium.io:9003',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-003',
+    capabilities: ['pick', 'place', 'grip'],
+  },
+  {
+    robotId: 'robot-004',
+    name: 'Drone Delta',
+    robotClass: 'UAV',
+    status: 'Degraded',
+    batteryPct: 12,
+    lastHeartbeatSec: 45,
+    gatewayUrl: 'grpc://gw-yard.portarium.io:9004',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-004',
+    capabilities: ['fly', 'scan', 'photograph'],
+  },
+  {
+    robotId: 'robot-005',
+    name: 'Rover Epsilon',
+    robotClass: 'AMR',
+    status: 'E-Stopped',
+    batteryPct: 56,
+    lastHeartbeatSec: 8,
+    gatewayUrl: 'grpc://gw-wh-a.portarium.io:9005',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-005',
+    capabilities: ['navigate', 'localize'],
+  },
+  {
+    robotId: 'robot-006',
+    name: 'Conveyor Zeta',
+    robotClass: 'PLC',
+    status: 'Online',
+    batteryPct: 100,
+    lastHeartbeatSec: 1,
+    missionId: 'mis-0096',
+    gatewayUrl: 'grpc://gw-bay3.portarium.io:9006',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-006',
+    capabilities: ['conveyor-control', 'sort', 'count'],
+  },
+  {
+    robotId: 'robot-007',
+    name: 'Carrier Eta',
+    robotClass: 'AGV',
+    status: 'Offline',
+    batteryPct: 31,
+    lastHeartbeatSec: 320,
+    gatewayUrl: 'grpc://gw-wh-a.portarium.io:9007',
+    spiffeSvid: 'spiffe://portarium.io/robot/robot-007',
+    capabilities: ['transport'],
+  },
+]
+
+export const MISSIONS: MissionSummary[] = [
+  {
+    missionId: 'mis-0094',
+    robotId: 'robot-001',
+    goal: 'Navigate to bay 3',
+    actionType: 'navigate_to',
+    status: 'Executing',
+    priority: 'Normal',
+    dispatchedAtIso: '2026-02-20T14:02:00Z',
+    executionTier: 'Auto',
+  },
+  {
+    missionId: 'mis-0095',
+    robotId: 'robot-003',
+    goal: 'Pick SKU-8821',
+    actionType: 'pick',
+    status: 'Pending',
+    priority: 'Normal',
+    executionTier: 'HumanApprove',
+  },
+  {
+    missionId: 'mis-0087',
+    robotId: 'robot-002',
+    goal: 'Return to charge station',
+    actionType: 'dock',
+    status: 'Completed',
+    priority: 'Low',
+    dispatchedAtIso: '2026-02-20T13:30:00Z',
+    completedAtIso: '2026-02-20T13:41:00Z',
+    executionTier: 'Auto',
+  },
+  {
+    missionId: 'mis-0091',
+    robotId: 'robot-004',
+    goal: 'Dock at charging pad',
+    actionType: 'dock',
+    status: 'Failed',
+    priority: 'High',
+    dispatchedAtIso: '2026-02-20T12:50:00Z',
+    completedAtIso: '2026-02-20T12:55:00Z',
+    executionTier: 'Auto',
+  },
+  {
+    missionId: 'mis-0096',
+    robotId: 'robot-006',
+    goal: 'Sort incoming parcels — batch 42',
+    actionType: 'custom',
+    status: 'Executing',
+    priority: 'Normal',
+    dispatchedAtIso: '2026-02-20T13:55:00Z',
+    executionTier: 'Auto',
+  },
+]
+
+export const SAFETY_CONSTRAINTS: SafetyConstraint[] = [
+  {
+    constraintId: 'sc-001',
+    site: 'warehouse-a',
+    constraint: 'max_speed ≤ 0.5 m/s',
+    enforcement: 'block',
+    robotCount: 12,
+  },
+  {
+    constraintId: 'sc-002',
+    site: 'bay-3',
+    constraint: 'no_lift_zone',
+    enforcement: 'warn',
+    robotCount: 4,
+  },
+  {
+    constraintId: 'sc-003',
+    site: 'yard',
+    constraint: 'outdoor_uav_permit required',
+    enforcement: 'block',
+    robotCount: 6,
+  },
+]
+
+export const APPROVAL_THRESHOLDS: ApprovalThreshold[] = [
+  { actionClass: 'navigate_to', tier: 'Auto', notes: 'Normal environments' },
+  { actionClass: 'outdoor_flight', tier: 'HumanApprove', notes: 'Requires safety_admin sign-off' },
+  { actionClass: 'pick (>10 kg)', tier: 'HumanApprove', notes: 'Weight threshold gate' },
+]
+
+export const ESTOP_AUDIT_LOG: EStopAuditEntry[] = [
+  {
+    timestamp: '2026-02-18T14:01:00Z',
+    actor: 'operator@acme.com',
+    robotId: 'robot-007',
+    event: 'Sent',
+    detail: 'reason: low battery drift',
+  },
+  {
+    timestamp: '2026-02-18T13:55:00Z',
+    actor: 'safety_admin',
+    robotId: 'robot-007',
+    event: 'Cleared',
+    detail: 'rationale: charged + verified',
+  },
 ]
 
 export const OBSERVABILITY_DATA = {

@@ -14,6 +14,7 @@ import {
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { KpiRow } from '@/components/cockpit/kpi-row'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -53,6 +54,7 @@ function ExploreObservabilityPage() {
       <PageHeader
         title="Observability"
         description="Run metrics and performance trends"
+        icon={<EntityIcon entityType="run" size="md" decorative />}
       />
 
       {isLoading ? (

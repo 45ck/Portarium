@@ -1,0 +1,29 @@
+# cspell:disable
+model_defaults:
+  model: gemini-3-pro-image-preview
+  guidance:
+    - 'Create a single centered product mark for downscaling to app icons and favicons.'
+    - 'No text, no logo lockups, no watermark overlays, no decorative scene background.'
+    - 'Keep the icon facing front-left isometric orientation for consistency with cockpit domain icons.'
+
+prompts:
+  - id: CB-BRAND-01
+    intent: 'Cockpit app icon source mark'
+    aspect_ratio: '1:1'
+    temperature: 0.4
+    seed: 62001
+    prompt: >
+      Generate a premium app icon mark for "Portarium Cockpit" in isometric 3D style.
+      Subject: geometric "P" mark built from a beveled frame and inner route channel.
+      Perspective: fixed 30 degree isometric, facing top-left, centered.
+      Palette: #0B1220 background base, #14B8A6 and #2563EB accents, subtle white highlights.
+      Lighting: soft studio lighting, crisp edges, high contrast, minimal reflections.
+      Composition: single icon mark only, no text, no border ornaments, no other objects.
+      Background: clean pure white with no gradient or texture.
+    negative_prompts:
+      - 'no letters or words'
+      - 'no photoreal scenes'
+      - 'no extra symbols'
+      - 'no background clutter'
+
+# cspell:enable

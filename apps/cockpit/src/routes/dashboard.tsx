@@ -8,6 +8,7 @@ import { useApprovals } from '@/hooks/queries/use-approvals'
 import { useWorkItems } from '@/hooks/queries/use-work-items'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner'
 import { KpiRow } from '@/components/cockpit/kpi-row'
 import { DataTable } from '@/components/cockpit/data-table'
@@ -78,6 +79,7 @@ function DashboardPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Dashboard"
+        icon={<EntityIcon entityType="workflow" size="md" decorative />}
         action={<Button size="sm">New Run</Button>}
       />
 

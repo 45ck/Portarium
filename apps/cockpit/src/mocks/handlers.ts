@@ -9,6 +9,11 @@ import {
   AGENTS,
   ADAPTERS,
   OBSERVABILITY_DATA,
+  ROBOTS,
+  MISSIONS,
+  SAFETY_CONSTRAINTS,
+  APPROVAL_THRESHOLDS,
+  ESTOP_AUDIT_LOG,
 } from './fixtures/demo'
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types'
 
@@ -91,5 +96,36 @@ export const handlers = [
   // Observability
   http.get('/v1/workspaces/:wsId/observability', () =>
     HttpResponse.json(OBSERVABILITY_DATA),
+  ),
+
+  // Robotics — Robots
+  http.get('/v1/workspaces/:wsId/robotics/robots', () =>
+    HttpResponse.json({ items: ROBOTS }),
+  ),
+  http.get('/v1/workspaces/:wsId/robotics/robots/:robotId', ({ params }) => {
+    const robot = ROBOTS.find((r) => r.robotId === params['robotId'])
+    if (!robot) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(robot)
+  }),
+
+  // Robotics — Missions
+  http.get('/v1/workspaces/:wsId/robotics/missions', () =>
+    HttpResponse.json({ items: MISSIONS }),
+  ),
+  http.get('/v1/workspaces/:wsId/robotics/missions/:missionId', ({ params }) => {
+    const mission = MISSIONS.find((m) => m.missionId === params['missionId'])
+    if (!mission) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(mission)
+  }),
+
+  // Robotics — Safety
+  http.get('/v1/workspaces/:wsId/robotics/safety/constraints', () =>
+    HttpResponse.json({ items: SAFETY_CONSTRAINTS }),
+  ),
+  http.get('/v1/workspaces/:wsId/robotics/safety/thresholds', () =>
+    HttpResponse.json({ items: APPROVAL_THRESHOLDS }),
+  ),
+  http.get('/v1/workspaces/:wsId/robotics/safety/estop-log', () =>
+    HttpResponse.json({ items: ESTOP_AUDIT_LOG }),
   ),
 ]

@@ -5,6 +5,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useRuns } from '@/hooks/queries/use-runs'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { FilterBar } from '@/components/cockpit/filter-bar'
 import { DataTable } from '@/components/cockpit/data-table'
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
@@ -104,7 +105,7 @@ function RunsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title="Runs" />
+      <PageHeader title="Runs" icon={<EntityIcon entityType="run" size="md" decorative />} />
 
       <FilterBar
         filters={[

@@ -5,6 +5,7 @@ import { useApproval, useApprovalDecision } from '@/hooks/queries/use-approvals'
 import { useRuns } from '@/hooks/queries/use-runs'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
 import { ApprovalGatePanel } from '@/components/cockpit/approval-gate-panel'
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
@@ -40,7 +41,7 @@ function ApprovalDetailPage() {
   if (isError || !approval) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Approval Not Found" />
+        <PageHeader title="Approval Not Found" icon={<EntityIcon entityType="approval" size="md" decorative />} />
         <p className="text-sm text-muted-foreground">
           The approval request could not be loaded.
         </p>
@@ -64,6 +65,7 @@ function ApprovalDetailPage() {
         <div className="flex-1">
           <PageHeader
             title="Approval Request"
+            icon={<EntityIcon entityType="approval" size="md" decorative />}
             breadcrumb={[
               { label: 'Approvals', to: '/approvals' },
               { label: approvalId.slice(0, 12) },

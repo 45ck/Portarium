@@ -278,6 +278,146 @@ prompts:
       Isometric 3D icon for run artifact.
       Document/object tile with output badge and integrity mark, no text.
 
+  - id: CB-ICON-27
+    intent: 'Canonical icon: party'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61027
+    prompt: >
+      Isometric 3D icon for Party canonical object.
+      One stylized person-and-organization dual glyph, transparent background, no text.
+
+  - id: CB-ICON-28
+    intent: 'Canonical icon: ticket'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61028
+    prompt: >
+      Isometric 3D icon for Ticket canonical object.
+      Service desk ticket card with corner notch and status marker, transparent background.
+
+  - id: CB-ICON-29
+    intent: 'Canonical icon: invoice'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61029
+    prompt: >
+      Isometric 3D icon for Invoice canonical object.
+      Financial invoice sheet with amount rows and seal marker, transparent background.
+
+  - id: CB-ICON-30
+    intent: 'Canonical icon: payment'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61030
+    prompt: >
+      Isometric 3D icon for Payment canonical object.
+      Secure payment token and transfer arrow motif, transparent background.
+
+  - id: CB-ICON-31
+    intent: 'Canonical icon: task'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61031
+    prompt: >
+      Isometric 3D icon for Task canonical object.
+      Checklist card with one completed and one pending item, transparent background.
+
+  - id: CB-ICON-32
+    intent: 'Canonical icon: campaign'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61032
+    prompt: >
+      Isometric 3D icon for Campaign canonical object.
+      Outreach megaphone with signal arcs and analytics pulse, transparent background.
+
+  - id: CB-ICON-33
+    intent: 'Canonical icon: asset'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61033
+    prompt: >
+      Isometric 3D icon for Asset canonical object.
+      Tagged equipment cube with small tracking beacon, transparent background.
+
+  - id: CB-ICON-34
+    intent: 'Canonical icon: document'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61034
+    prompt: >
+      Isometric 3D icon for Document canonical object.
+      Layered document sheets with verified stamp, transparent background.
+
+  - id: CB-ICON-35
+    intent: 'Canonical icon: subscription'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61035
+    prompt: >
+      Isometric 3D icon for Subscription canonical object.
+      Recurring cycle arrows wrapped around a contract tile, transparent background.
+
+  - id: CB-ICON-36
+    intent: 'Canonical icon: opportunity'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61036
+    prompt: >
+      Isometric 3D icon for Opportunity canonical object.
+      Deal funnel tile with target marker, transparent background.
+
+  - id: CB-ICON-37
+    intent: 'Canonical icon: product'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61037
+    prompt: >
+      Isometric 3D icon for Product canonical object.
+      Product box with SKU badge motif, transparent background.
+
+  - id: CB-ICON-38
+    intent: 'Canonical icon: order'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61038
+    prompt: >
+      Isometric 3D icon for Order canonical object.
+      Purchase order sheet with fulfillment arrow, transparent background.
+
+  - id: CB-ICON-39
+    intent: 'Canonical icon: account'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61039
+    prompt: >
+      Isometric 3D icon for Account canonical object.
+      Ledger account tile with balanced columns motif, transparent background.
+
+  - id: CB-ICON-40
+    intent: 'Canonical icon: external object reference'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61040
+    prompt: >
+      Isometric 3D icon for ExternalObjectRef canonical object.
+      Outbound reference link card pointing to external system node, transparent background.
+
   - id: CB-IMG-01
     intent: 'Entity image: ground robot'
     style: 'realistic'

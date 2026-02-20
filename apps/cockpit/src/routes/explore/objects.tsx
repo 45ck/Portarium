@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useWorkItems } from '@/hooks/queries/use-work-items'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { EmptyState } from '@/components/cockpit/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -44,6 +45,7 @@ function ExploreObjectsPage() {
       <PageHeader
         title="Objects"
         description="External object references grouped by System of Record"
+        icon={<EntityIcon entityType="external-object-ref" size="md" decorative />}
       />
 
       {isLoading ? (

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline'
 import type { EvidenceEntry } from '@portarium/cockpit-types'
 
@@ -24,6 +25,7 @@ function ExploreEventsPage() {
       <PageHeader
         title="Events"
         description="Live event stream — refreshes every 5 seconds"
+        icon={<EntityIcon entityType="event" size="md" decorative />}
       />
 
       <div className="flex items-center gap-2">

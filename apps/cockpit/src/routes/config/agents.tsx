@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useAgents } from '@/hooks/queries/use-agents'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { DataTable } from '@/components/cockpit/data-table'
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge'
 import { Badge } from '@/components/ui/badge'
@@ -74,6 +75,7 @@ function AgentsPage() {
       <PageHeader
         title="Agents"
         description="AI agents registered in this workspace"
+        icon={<EntityIcon entityType="agent" size="md" decorative />}
         action={
           <Button variant="outline" size="sm">
             <Plus className="h-4 w-4 mr-1" />

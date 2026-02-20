@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Badge } from '@/components/ui/badge'
 
@@ -84,6 +85,7 @@ function AdaptersPage() {
       <PageHeader
         title="Adapters"
         description="System of Record adapters"
+        icon={<EntityIcon entityType="adapter" size="md" decorative />}
       />
 
       <DataTable

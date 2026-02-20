@@ -5,6 +5,7 @@ import { useRun } from '@/hooks/queries/use-runs'
 import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge'
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge'
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner'
@@ -119,6 +120,7 @@ function RunDetailPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title={`Run: ${runId}`}
+        icon={<EntityIcon entityType="run" size="md" decorative />}
         breadcrumb={[
           { label: 'Runs', to: '/runs' },
           { label: runId },

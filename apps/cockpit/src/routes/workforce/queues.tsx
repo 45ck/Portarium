@@ -3,6 +3,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useWorkforceQueues, useWorkforceMembers } from '@/hooks/queries/use-workforce'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Badge } from '@/components/ui/badge'
 import type { WorkforceQueueSummary } from '@portarium/cockpit-types'
@@ -73,6 +74,7 @@ function WorkforceQueuesPage() {
       <PageHeader
         title="Queues"
         description="Workforce routing queues"
+        icon={<EntityIcon entityType="queue" size="md" decorative />}
       />
 
       <DataTable

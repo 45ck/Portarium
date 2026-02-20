@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useWorkforceMembers } from '@/hooks/queries/use-workforce'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { EmptyState } from '@/components/cockpit/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -46,6 +47,7 @@ function WorkforceMemberDetailPage() {
       <div className="p-6 space-y-4">
         <PageHeader
           title="Member not found"
+          icon={<EntityIcon entityType="workforce" size="md" decorative />}
           breadcrumb={[{ label: 'Workforce', to: '/workforce' }]}
         />
         <EmptyState
@@ -60,6 +62,7 @@ function WorkforceMemberDetailPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title={member.displayName}
+        icon={<EntityIcon entityType="workforce" size="md" decorative />}
         breadcrumb={[
           { label: 'Workforce', to: '/workforce' },
           { label: member.displayName },

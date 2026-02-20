@@ -3,6 +3,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-workforce'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { KpiRow } from '@/components/cockpit/kpi-row'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -76,6 +77,7 @@ function WorkforcePage() {
       <PageHeader
         title="Workforce"
         description="Human operators and their capabilities"
+        icon={<EntityIcon entityType="workforce" size="md" decorative />}
       />
 
       <KpiRow

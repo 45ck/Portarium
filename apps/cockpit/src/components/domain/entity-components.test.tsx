@@ -10,6 +10,12 @@ describe('EntityIcon', () => {
     expect(html).toContain('/assets/icons/domain/robot-ground.png');
   });
 
+  it('renders canonical object icon images', () => {
+    const html = renderToStaticMarkup(<EntityIcon entityType="party" />);
+    expect(html).toContain('img');
+    expect(html).toContain('/assets/icons/domain/party.png');
+  });
+
   it('falls back to lucide icon for unknown entity type mapping', () => {
     const html = renderToStaticMarkup(<EntityIcon entityType={'other' as never} />);
     expect(html).toContain('svg');

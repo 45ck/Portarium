@@ -6,6 +6,9 @@ import { Route as rootRoute } from './routes/__root'
 // Index (redirect)
 import { Route as indexRoute } from './routes/index'
 
+// Inbox
+import { Route as inboxRoute } from './routes/inbox'
+
 // Dashboard
 import { Route as dashboardRoute } from './routes/dashboard'
 
@@ -40,7 +43,7 @@ import { Route as exploreEventsRoute } from './routes/explore/events'
 import { Route as exploreObservabilityRoute } from './routes/explore/observability'
 import { Route as exploreGovernanceRoute } from './routes/explore/governance'
 
-// Robotics (stubs)
+// Robotics
 import { Route as roboticsRoute } from './routes/robotics/index'
 import { Route as roboticsRobotsRoute } from './routes/robotics/robots'
 import { Route as roboticsMissionsRoute } from './routes/robotics/missions'
@@ -49,6 +52,7 @@ import { Route as roboticsGatewaysRoute } from './routes/robotics/gateways'
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  inboxRoute,
   dashboardRoute,
   workItemsRoute,
   workItemDetailRoute,

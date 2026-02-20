@@ -13,9 +13,10 @@ interface PageHeaderProps {
   description?: string
   action?: React.ReactNode
   breadcrumb?: { label: string; to?: string }[]
+  icon?: React.ReactNode
 }
 
-export function PageHeader({ title, description, action, breadcrumb }: PageHeaderProps) {
+export function PageHeader({ title, description, action, breadcrumb, icon }: PageHeaderProps) {
   return (
     <div className="space-y-2">
       {breadcrumb && breadcrumb.length > 0 && (
@@ -41,7 +42,10 @@ export function PageHeader({ title, description, action, breadcrumb }: PageHeade
       )}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold">{title}</h1>
+          <h1 className="flex items-center gap-2 text-lg font-semibold">
+            {icon && <span className="inline-flex shrink-0">{icon}</span>}
+            <span>{title}</span>
+          </h1>
           {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
         {action && <div>{action}</div>}

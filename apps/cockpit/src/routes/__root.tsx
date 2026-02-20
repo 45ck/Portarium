@@ -5,22 +5,14 @@ import { queryClient } from '@/lib/query-client'
 import { useTheme } from '@/hooks/use-theme'
 import { useUIStore } from '@/stores/ui-store'
 import { cn } from '@/lib/utils'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import {
   LayoutDashboard,
-  Briefcase,
-  Play,
-  CheckSquare,
-  Shield,
-  Users,
-  ListOrdered,
-  Bot,
-  Plug,
   Settings,
-  Database,
-  Activity,
   BarChart3,
   Scale,
-  Cpu,
+  Inbox,
+  ShieldAlert,
 } from 'lucide-react'
 
 interface NavItemDef {
@@ -39,45 +31,51 @@ const NAV_SECTIONS: NavSectionDef[] = [
   {
     label: 'Workspace',
     items: [
+      { label: 'Inbox', to: '/inbox', icon: <Inbox className="h-4 w-4" /> },
       { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
-      { label: 'Work Items', to: '/work-items', icon: <Briefcase className="h-4 w-4" /> },
+      { label: 'Work Items', to: '/work-items', icon: <EntityIcon entityType="work-item" size="sm" decorative /> },
     ],
   },
   {
     label: 'Work',
     items: [
-      { label: 'Runs', to: '/runs', icon: <Play className="h-4 w-4" /> },
-      { label: 'Approvals', to: '/approvals', icon: <CheckSquare className="h-4 w-4" /> },
-      { label: 'Evidence', to: '/evidence', icon: <Shield className="h-4 w-4" /> },
+      { label: 'Runs', to: '/runs', icon: <EntityIcon entityType="run" size="sm" decorative /> },
+      { label: 'Approvals', to: '/approvals', icon: <EntityIcon entityType="approval" size="sm" decorative /> },
+      { label: 'Evidence', to: '/evidence', icon: <EntityIcon entityType="evidence" size="sm" decorative /> },
     ],
   },
   {
     label: 'Workforce',
     items: [
-      { label: 'Members', to: '/workforce', icon: <Users className="h-4 w-4" /> },
-      { label: 'Queues', to: '/workforce/queues', icon: <ListOrdered className="h-4 w-4" /> },
+      { label: 'Members', to: '/workforce', icon: <EntityIcon entityType="workforce" size="sm" decorative /> },
+      { label: 'Queues', to: '/workforce/queues', icon: <EntityIcon entityType="queue" size="sm" decorative /> },
     ],
   },
   {
     label: 'Config',
     items: [
-      { label: 'Agents', to: '/config/agents', icon: <Bot className="h-4 w-4" /> },
-      { label: 'Adapters', to: '/config/adapters', icon: <Plug className="h-4 w-4" /> },
+      { label: 'Agents', to: '/config/agents', icon: <EntityIcon entityType="agent" size="sm" decorative /> },
+      { label: 'Adapters', to: '/config/adapters', icon: <EntityIcon entityType="adapter" size="sm" decorative /> },
       { label: 'Settings', to: '/config/settings', icon: <Settings className="h-4 w-4" /> },
     ],
   },
   {
     label: 'Explore',
     items: [
-      { label: 'Objects', to: '/explore/objects', icon: <Database className="h-4 w-4" /> },
-      { label: 'Events', to: '/explore/events', icon: <Activity className="h-4 w-4" /> },
+      { label: 'Objects', to: '/explore/objects', icon: <EntityIcon entityType="external-object-ref" size="sm" decorative /> },
+      { label: 'Events', to: '/explore/events', icon: <EntityIcon entityType="event" size="sm" decorative /> },
       { label: 'Observability', to: '/explore/observability', icon: <BarChart3 className="h-4 w-4" /> },
       { label: 'Governance', to: '/explore/governance', icon: <Scale className="h-4 w-4" /> },
     ],
   },
   {
     label: 'Robotics',
-    comingSoon: true,
+    items: [
+      { label: 'Robots', to: '/robotics/robots', icon: <EntityIcon entityType="robot" size="sm" decorative /> },
+      { label: 'Missions', to: '/robotics/missions', icon: <EntityIcon entityType="mission" size="sm" decorative /> },
+      { label: 'Safety', to: '/robotics/safety', icon: <ShieldAlert className="h-4 w-4" /> },
+      { label: 'Gateways', to: '/robotics/gateways', icon: <EntityIcon entityType="port" size="sm" decorative /> },
+    ],
   },
 ]
 

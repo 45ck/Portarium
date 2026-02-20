@@ -3,6 +3,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { KpiRow } from '@/components/cockpit/kpi-row'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,6 +61,7 @@ function ExploreGovernancePage() {
       <PageHeader
         title="Governance"
         description="Policy compliance and segregation of duties"
+        icon={<EntityIcon entityType="policy" size="md" decorative />}
       />
 
       <KpiRow

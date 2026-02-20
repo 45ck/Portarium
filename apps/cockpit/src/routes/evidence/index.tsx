@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useEvidence } from '@/hooks/queries/use-evidence'
 import { PageHeader } from '@/components/cockpit/page-header'
+import { EntityIcon } from '@/components/domain/entity-icon'
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner'
 import { FilterBar } from '@/components/cockpit/filter-bar'
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline'
@@ -36,6 +37,7 @@ function EvidencePage() {
       <PageHeader
         title="Evidence"
         description="Immutable audit trail with hash chain verification"
+        icon={<EntityIcon entityType="evidence" size="md" decorative />}
       />
 
       <ChainIntegrityBanner status="verified" />

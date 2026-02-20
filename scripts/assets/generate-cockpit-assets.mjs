@@ -106,11 +106,20 @@ function inferImageConfig(asset, promptDef) {
   return { aspectRatio, imageSize }
 }
 
-function getPromptText(promptDef, options) {
+function getPromptText(asset, promptDef, options) {
   if (!promptDef?.prompt || typeof promptDef.prompt !== 'string') {
     throw new Error(`Missing prompt text for promptRef ${String(promptDef?.id ?? 'unknown')}`)
   }
 
+  const iconFramingInstruction =
+    asset.kind === 'icon'
+      ? [
+          'Global icon constraints: use fixed 30 degree isometric perspective.',
+          'Keep the primary subject centered and facing top-left for consistency across the icon set.',
+          'Transparent background preferred; if not possible use pure white (#FFFFFF) with no gradient or texture.',
+          'No text, no logos, no background objects, no cast shadows beyond the icon silhouette.',
+        ].join(' ')
+      : ''
   const backgroundInstruction = options.background
     ? [
         `Background requirement: use a ${options.background} background only.`,
@@ -121,7 +130,12 @@ function getPromptText(promptDef, options) {
   const negatives = Array.isArray(promptDef.negative_prompts)
     ? promptDef.negative_prompts.join('; ')
     : ''
-  return [promptDef.prompt, backgroundInstruction, negatives ? `Strict constraints: ${negatives}.` : '']
+  return [
+    promptDef.prompt,
+    iconFramingInstruction,
+    backgroundInstruction,
+    negatives ? `Strict constraints: ${negatives}.` : '',
+  ]
     .filter(Boolean)
     .join('\n\n')
 }
@@ -228,7 +242,7 @@ async function main() {
       Object.values(asset.paths).filter((p) => typeof p === 'string'),
     )
 
-    const promptText = getPromptText(promptDef, cli)
+    const promptText = getPromptText(asset, promptDef, cli)
     const imageConfig = inferImageConfig(asset, promptDef)
     const temperature = promptDef.temperature
 
