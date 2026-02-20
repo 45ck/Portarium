@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { createRoute, Link } from '@tanstack/react-router';
 import { format, isAfter, isBefore, addHours, startOfDay, endOfDay } from 'date-fns';
 import { Route as rootRoute } from './__root';
@@ -15,14 +14,12 @@ import { DataTable } from '@/components/cockpit/data-table';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
-import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { WorkItemSummary, ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
 
 function DashboardPage() {
-  const { activeWorkspaceId: wsId } = useUIStore();
-  const [startRunOpen, setStartRunOpen] = useState(false);
+  const { activeWorkspaceId: wsId, startRunOpen, setStartRunOpen } = useUIStore();
   const runs = useRuns(wsId);
   const approvals = useApprovals(wsId);
   const workItems = useWorkItems(wsId);
@@ -130,8 +127,6 @@ function DashboardPage() {
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
         action={<Button size="sm" onClick={() => setStartRunOpen(true)}>New Run</Button>}
       />
-
-      <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
 
       <SystemStateBanner state={workspaceState} />
 

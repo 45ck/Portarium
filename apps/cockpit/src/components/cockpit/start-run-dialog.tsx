@@ -100,6 +100,11 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
             />
           </div>
         </div>
+        {createRun.error && (
+          <p className="text-xs text-destructive px-1">
+            {createRun.error instanceof Error ? createRun.error.message : 'Failed to start run'}
+          </p>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

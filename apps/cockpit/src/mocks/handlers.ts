@@ -31,6 +31,7 @@ let workItems: MeridianDataset['WORK_ITEMS'] = []
 let users: UserSummary[] = [...MOCK_USERS]
 let agents: MeridianDataset['AGENTS'] = []
 let runs: MeridianDataset['RUNS'] = []
+let missions: MeridianDataset['MISSIONS'] = []
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index')
@@ -44,6 +45,7 @@ export async function loadActiveDataset(): Promise<void> {
   humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS)
   agents = [...data.AGENTS]
   runs = [...data.RUNS]
+  missions = [...(data.MISSIONS ?? [])]
 }
 
 export const handlers = [
@@ -294,12 +296,36 @@ export const handlers = [
 
   // Robotics — Missions
   http.get('/v1/workspaces/:wsId/robotics/missions', () =>
-    HttpResponse.json({ items: data?.MISSIONS ?? [] }),
+    HttpResponse.json({ items: missions }),
   ),
   http.get('/v1/workspaces/:wsId/robotics/missions/:missionId', ({ params }) => {
-    const mission = data?.MISSIONS.find((m) => m.missionId === params['missionId'])
+    const mission = missions.find((m) => m.missionId === params['missionId'])
     if (!mission) return HttpResponse.json(null, { status: 404 })
     return HttpResponse.json(mission)
+  }),
+  http.post('/v1/workspaces/:wsId/robotics/missions/:missionId/cancel', ({ params }) => {
+    missions = missions.map((m) =>
+      m.missionId === params['missionId'] ? { ...m, status: 'Cancelled' as const } : m,
+    )
+    const updated = missions.find((m) => m.missionId === params['missionId'])
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+  http.post('/v1/workspaces/:wsId/robotics/missions/:missionId/preempt', ({ params }) => {
+    missions = missions.map((m) =>
+      m.missionId === params['missionId'] ? { ...m, status: 'Cancelled' as const } : m,
+    )
+    const updated = missions.find((m) => m.missionId === params['missionId'])
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+  http.post('/v1/workspaces/:wsId/robotics/missions/:missionId/retry', ({ params }) => {
+    missions = missions.map((m) =>
+      m.missionId === params['missionId'] ? { ...m, status: 'Pending' as const } : m,
+    )
+    const updated = missions.find((m) => m.missionId === params['missionId'])
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
   }),
 
   // Robotics — Safety
@@ -311,6 +337,12 @@ export const handlers = [
   ),
   http.get('/v1/workspaces/:wsId/robotics/safety/estop-log', () =>
     HttpResponse.json({ items: data?.ESTOP_AUDIT_LOG ?? [] }),
+  ),
+  http.post('/v1/workspaces/:wsId/robotics/safety/estop', () =>
+    HttpResponse.json({ status: 'activated' }),
+  ),
+  http.delete('/v1/workspaces/:wsId/robotics/safety/estop', () =>
+    HttpResponse.json({ status: 'cleared' }),
   ),
 
   // Users

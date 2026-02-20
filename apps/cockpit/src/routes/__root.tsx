@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { CommandPalette } from '@/components/cockpit/command-palette';
 import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
+import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { Toaster } from 'sonner';
 import {
   LayoutDashboard,
@@ -238,7 +239,7 @@ function InboxBadge({ wsId }: { wsId: string }) {
 function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
-  const { sidebarCollapsed, setSidebarCollapsed, activeWorkspaceId, setActiveWorkspaceId, activePersona, setActivePersona } =
+  const { sidebarCollapsed, setSidebarCollapsed, activeWorkspaceId, setActiveWorkspaceId, activePersona, setActivePersona, startRunOpen, setStartRunOpen } =
     useUIStore();
 
   return (
@@ -357,8 +358,7 @@ function RootLayout() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ws-demo">ws-demo</SelectItem>
-                      <SelectItem value="ws-prod">ws-prod</SelectItem>
-                      <SelectItem value="ws-staging">ws-staging</SelectItem>
+                      <SelectItem value="ws-meridian">ws-meridian</SelectItem>
                     </SelectContent>
                   </Select>
                 </>
@@ -375,6 +375,7 @@ function RootLayout() {
         </div>
 
         {/* Global overlays */}
+        <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
         <CommandPalette />
         <KeyboardCheatsheet />
         <Toaster position="bottom-right" />

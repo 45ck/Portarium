@@ -14,12 +14,14 @@ export type PersonaId = 'Operator' | 'Approver' | 'Auditor' | 'Admin'
 interface UIStore {
   sidebarCollapsed: boolean
   commandPaletteOpen: boolean
+  startRunOpen: boolean
   activeWorkspaceId: string
   activeDataset: DatasetId
   activePersona: PersonaId
   keyboardCheatsheetOpen: boolean
   setSidebarCollapsed: (v: boolean) => void
   setCommandPaletteOpen: (v: boolean) => void
+  setStartRunOpen: (v: boolean) => void
   setActiveDataset: (id: DatasetId) => void
   setActiveWorkspaceId: (id: string) => void
   setActivePersona: (persona: PersonaId) => void
@@ -37,12 +39,14 @@ function readStoredDataset(): DatasetId {
 export const useUIStore = create<UIStore>((set) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
+  startRunOpen: false,
   activeWorkspaceId: DATASET_WORKSPACE_MAP[readStoredDataset()],
   activeDataset: readStoredDataset(),
   activePersona: 'Operator',
   keyboardCheatsheetOpen: false,
   setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
   setCommandPaletteOpen: (v) => set({ commandPaletteOpen: v }),
+  setStartRunOpen: (v) => set({ startRunOpen: v }),
   setActiveDataset: (id) => {
     localStorage.setItem(DATASET_STORAGE_KEY, id)
     window.location.reload()

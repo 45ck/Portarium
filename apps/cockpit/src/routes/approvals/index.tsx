@@ -23,13 +23,11 @@ function ApprovalsPage() {
   const items = data?.items ?? [];
   const pendingItems = items.filter((a) => a.status === 'Pending');
 
-  // Triage card index — skip over items that have been actioned in this session
-  const [triageIndex, setTriageIndex] = useState(0);
   const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set());
 
   // Get pending items not yet actioned/skipped in this triage session
   const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
-  const currentApproval = triageQueue[triageIndex] ?? triageQueue[0] ?? null;
+  const currentApproval = triageQueue[0] ?? null;
 
   const { mutate: decide, isPending: deciding } = useApprovalDecision(
     wsId,

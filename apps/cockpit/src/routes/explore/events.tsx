@@ -11,12 +11,13 @@ function ExploreEventsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
 
   const { data, isLoading, isError, dataUpdatedAt } = useQuery({
-    queryKey: ['evidence', wsId],
+    queryKey: ['events-stream', wsId],
     queryFn: async () => {
       const r = await fetch(`/v1/workspaces/${wsId}/evidence`);
-      if (!r.ok) throw new Error('Failed to fetch evidence');
+      if (!r.ok) throw new Error('Failed to fetch event stream');
       return r.json() as Promise<{ items: EvidenceEntry[] }>;
     },
+    enabled: Boolean(wsId),
     refetchInterval: 5000,
   });
 

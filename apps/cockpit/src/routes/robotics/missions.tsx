@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
-import { format } from 'date-fns'
+import { isToday, format } from 'date-fns'
+import { toast } from 'sonner'
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
-import { useMissions } from '@/hooks/queries/use-missions'
+import { useMissions, useCancelMission, usePreemptMission, useRetryMission } from '@/hooks/queries/use-missions'
 import { PageHeader } from '@/components/cockpit/page-header'
 import { DataTable } from '@/components/cockpit/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -25,13 +26,35 @@ function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
   return <Badge variant="outline" className={cn('flex items-center gap-1 text-[11px]', c.className)} aria-label={status}>{c.icon}{c.label}</Badge>
 }
 
-function MissionDetailSheet({ mission, open, onClose }: { mission: MissionSummary | null; open: boolean; onClose: () => void }) {
+function MissionDetailSheet({
+  mission,
+  open,
+  onClose,
+  onCancel,
+  onPreempt,
+  onRetry,
+}: {
+  mission: MissionSummary | null
+  open: boolean
+  onClose: () => void
+  onCancel: (id: string) => void
+  onPreempt: (id: string) => void
+  onRetry: (id: string) => void
+}) {
   const [confirmAction, setConfirmAction] = useState<'preempt' | 'cancel' | null>(null)
   if (!mission) return null
   const isTerminal = ['Completed', 'Failed', 'Cancelled'].includes(mission.status)
   const activeIdx = mission.status === 'Pending' ? 0 : mission.status === 'Executing' ? 2 : 3
   const terminalLabel = mission.status === 'Completed' ? 'Succeeded' : mission.status === 'Failed' ? 'Failed' : 'Cancelled'
   const TIMELINE = ['Pending', 'Dispatched', 'Executing', terminalLabel]
+
+  function handleConfirm() {
+    if (!mission) return
+    if (confirmAction === 'cancel') onCancel(mission.missionId)
+    else if (confirmAction === 'preempt') onPreempt(mission.missionId)
+    setConfirmAction(null)
+    onClose()
+  }
 
   return (
     <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>
@@ -74,8 +97,8 @@ function MissionDetailSheet({ mission, open, onClose }: { mission: MissionSummar
                   <p className="text-sm font-medium text-destructive">Confirm {confirmAction === 'preempt' ? 'Pre-empt' : 'Cancel'} {mission.missionId}?</p>
                   <p className="text-xs text-muted-foreground">This action will be logged in the evidence chain.</p>
                   <div className="flex gap-2">
-                    <Button variant="destructive" size="sm" className="flex-1" onClick={() => setConfirmAction(null)}>Confirm</Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setConfirmAction(null)}>Cancel</Button>
+                    <Button variant="destructive" size="sm" className="flex-1" onClick={handleConfirm}>Confirm</Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setConfirmAction(null)}>Go back</Button>
                   </div>
                 </div>
               ) : (
@@ -88,7 +111,11 @@ function MissionDetailSheet({ mission, open, onClose }: { mission: MissionSummar
               )}
             </section>
           )}
-          {mission.status === 'Failed' && <Button variant="outline" size="sm" className="w-full">Retry Mission</Button>}
+          {mission.status === 'Failed' && (
+            <Button variant="outline" size="sm" className="w-full" onClick={() => { onRetry(mission.missionId); onClose() }}>
+              Retry Mission
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>
@@ -98,13 +125,28 @@ function MissionDetailSheet({ mission, open, onClose }: { mission: MissionSummar
 function MissionsPage() {
   const { activeWorkspaceId: wsId } = useUIStore()
   const { data, isLoading } = useMissions(wsId)
+  const cancelMission = useCancelMission(wsId)
+  const preemptMission = usePreemptMission(wsId)
+  const retryMission = useRetryMission(wsId)
   const [selectedMission, setSelectedMission] = useState<MissionSummary | null>(null)
-  const missions = data?.items ?? []
+  const missionsList = data?.items ?? []
   const stats = {
-    active: missions.filter((m) => m.status === 'Executing').length,
-    pending: missions.filter((m) => m.status === 'Pending').length,
-    completedToday: missions.filter((m) => m.status === 'Completed').length,
-    failed: missions.filter((m) => m.status === 'Failed').length,
+    active: missionsList.filter((m) => m.status === 'Executing').length,
+    pending: missionsList.filter((m) => m.status === 'Pending').length,
+    completedToday: missionsList.filter(
+      (m) => m.status === 'Completed' && m.completedAtIso && isToday(new Date(m.completedAtIso)),
+    ).length,
+    failed: missionsList.filter((m) => m.status === 'Failed').length,
+  }
+
+  function handleCancel(missionId: string) {
+    cancelMission.mutate(missionId, { onSuccess: () => toast.success(`Mission ${missionId} cancelled`) })
+  }
+  function handlePreempt(missionId: string) {
+    preemptMission.mutate(missionId, { onSuccess: () => toast.success(`Mission ${missionId} pre-empted`) })
+  }
+  function handleRetry(missionId: string) {
+    retryMission.mutate(missionId, { onSuccess: () => toast.success(`Mission ${missionId} queued for retry`) })
   }
 
   const columns = [
@@ -117,7 +159,7 @@ function MissionsPage() {
       key: 'actions', header: '', width: '90px',
       render: (row: MissionSummary) => {
         if (row.status === 'Executing') return <Button variant="outline" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); setSelectedMission(row) }}>Pre-empt</Button>
-        if (row.status === 'Failed') return <Button variant="outline" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); setSelectedMission(row) }}>Retry</Button>
+        if (row.status === 'Failed') return <Button variant="outline" size="sm" className="h-6 text-xs" onClick={(e) => { e.stopPropagation(); handleRetry(row.missionId) }}>Retry</Button>
         if (row.status === 'Pending') return <Button variant="outline" size="sm" className="h-6 text-xs text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedMission(row) }}>Cancel</Button>
         return null
       },
@@ -140,8 +182,15 @@ function MissionsPage() {
           </div>
         ))}
       </div>
-      <DataTable columns={columns} data={missions} loading={isLoading} getRowKey={(row) => row.missionId} onRowClick={setSelectedMission} pagination={{ pageSize: 20 }} />
-      <MissionDetailSheet mission={selectedMission} open={selectedMission !== null} onClose={() => setSelectedMission(null)} />
+      <DataTable columns={columns} data={missionsList} loading={isLoading} getRowKey={(row) => row.missionId} onRowClick={setSelectedMission} pagination={{ pageSize: 20 }} />
+      <MissionDetailSheet
+        mission={selectedMission}
+        open={selectedMission !== null}
+        onClose={() => setSelectedMission(null)}
+        onCancel={handleCancel}
+        onPreempt={handlePreempt}
+        onRetry={handleRetry}
+      />
     </div>
   )
 }

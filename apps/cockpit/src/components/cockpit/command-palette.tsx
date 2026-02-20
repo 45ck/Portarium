@@ -79,7 +79,14 @@ function CommandPalette() {
   ]
 
   const actionItems: CommandItemDef[] = [
-    { label: 'New Run', icon: <Play className="h-4 w-4" />, onSelect: () => nav('/runs') },
+    {
+      label: 'New Run',
+      icon: <Play className="h-4 w-4" />,
+      onSelect: () => {
+        setCommandPaletteOpen(false)
+        useUIStore.getState().setStartRunOpen(true)
+      },
+    },
     { label: 'Register Agent', icon: <UserPlus className="h-4 w-4" />, onSelect: () => nav('/config/agents') },
     {
       label: 'Toggle Theme',

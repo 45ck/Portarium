@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import { Route as rootRoute } from '../__root'
 import { useUIStore } from '@/stores/ui-store'
 import { useSafetyConstraints, useApprovalThresholds, useEStopLog } from '@/hooks/queries/use-safety'
@@ -141,7 +142,12 @@ function SafetyPage() {
           <p className="text-sm text-muted-foreground">ALL robots will be immediately halted. This action is irreversible until manually cleared and will be logged in the audit trail.</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEstopModal(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => { setGlobalEstopActive(true); setShowEstopModal(false) }}>Confirm E-Stop</Button>
+            <Button variant="destructive" onClick={async () => {
+            await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor: 'user-operator' }) }).catch(() => null)
+            setGlobalEstopActive(true)
+            setShowEstopModal(false)
+            toast.error('Global E-Stop activated — all robots halted', { duration: 8000 })
+          }}>Confirm E-Stop</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -155,7 +161,13 @@ function SafetyPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowClearModal(false); setClearRationale('') }}>Cancel</Button>
-            <Button disabled={!clearRationale.trim()} onClick={() => { setGlobalEstopActive(false); setClearRationale(''); setShowClearModal(false) }}>Clear E-Stop</Button>
+            <Button disabled={!clearRationale.trim()} onClick={async () => {
+              await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actor: 'user-admin', rationale: clearRationale }) }).catch(() => null)
+              setGlobalEstopActive(false)
+              setClearRationale('')
+              setShowClearModal(false)
+              toast.success('E-Stop cleared — robots may resume operations')
+            }}>Clear E-Stop</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
