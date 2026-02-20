@@ -131,11 +131,11 @@
       "types": {
         "input": {
           "name": "RegisterMachineInput",
-          "sha256": "a2cfaf7cb4f67593e4fca4f03cffc26865d8e602c57a3576f6dbf55955da19e9"
+          "sha256": "f4312ad882585a2edbae343193e6f65034ad4ecc35627e8a243fb1395af57e53"
         },
         "output": {
           "name": "RegisterMachineOutput",
-          "sha256": "d934b3778efa1c1bf8389ef0eea5858fcdc887f0344cda470c7d1b52564c56c6"
+          "sha256": "c2f0dc90216a513a2b9358653404e6f95c6c85cd3869140e0adeddd713983503"
         },
         "error": {
           "name": "MachineAgentRegistrationError",
@@ -151,11 +151,11 @@
       "types": {
         "input": {
           "name": "CreateAgentInput",
-          "sha256": "23e78a42105c3108456f65fe153970ff52a510d32e11c0691027ebc88d765015"
+          "sha256": "9a802e63b573069e0513fd2f9e6d0bb6211510b529076bdb67b47759bb5abc19"
         },
         "output": {
           "name": "CreateAgentOutput",
-          "sha256": "c41858fe7da09e9aa651199bf439bb546a9822c26e09fefd6c38a5151fa51755"
+          "sha256": "7c9c42b08fbe9411532e267e29ec36ade5ac9f2ecc4543932ec5801e6b19cbe0"
         },
         "error": {
           "name": "MachineAgentRegistrationError",
