@@ -229,6 +229,7 @@ export class CompleteHumanTaskUseCase {
         humanTaskId: args.task.humanTaskId,
         workItemId: args.task.workItemId,
         runId: args.task.runId,
+        stepId: args.task.stepId,
         completedById: args.task.completedById,
         completionNote: args.completionNote,
       },

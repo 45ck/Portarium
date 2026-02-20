@@ -274,6 +274,8 @@ export class AssignWorkforceMemberUseCase {
       eventPayload: {
         humanTaskId: task.humanTaskId,
         workItemId: task.workItemId,
+        runId: task.runId,
+        stepId: task.stepId,
         workforceMemberId: member.value.workforceMemberId,
         queueRouting: parsed.target.workforceMemberId === undefined,
       },
