@@ -318,7 +318,7 @@ function matchApprovalFilter(approval: ApprovalV1, filter: ListApprovalsFilter):
   if (filter.status && approval.status !== filter.status) {
     return false;
   }
-  const checks: ReadonlyArray<readonly [string | undefined, string]> = [
+  const checks: readonly (readonly [string | undefined, string])[] = [
     [filter.runId ? String(filter.runId) : undefined, String(approval.runId)],
     [filter.planId ? String(filter.planId) : undefined, String(approval.planId)],
     [filter.workItemId ? String(filter.workItemId) : undefined, String(approval.workItemId)],
