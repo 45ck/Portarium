@@ -1,204 +1,257 @@
 @import "tailwindcss";
+@import "geist/dist/fonts/geist-sans/geist-sans.css";
+@import "geist/dist/fonts/geist-mono/geist-mono.css";
 
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Tailwind v4 theme bridge
-   Maps :root CSS variables → Tailwind utility classes
-   (bg-background, text-primary, border-border, etc.)
+   Tailwind v4 — @theme inline
+   Direct var() references: tokens are full hsl/oklch values in :root
 ───────────────────────────────────────────────────────────────────────────── */
 @theme inline {
-  --color-background:             hsl(var(--background));
-  --color-foreground:             hsl(var(--foreground));
-  --color-card:                   hsl(var(--card));
-  --color-card-foreground:        hsl(var(--card-foreground));
-  --color-popover:                hsl(var(--popover));
-  --color-popover-foreground:     hsl(var(--popover-foreground));
-  --color-primary:                hsl(var(--primary));
-  --color-primary-foreground:     hsl(var(--primary-foreground));
-  --color-secondary:              hsl(var(--secondary));
-  --color-secondary-foreground:   hsl(var(--secondary-foreground));
-  --color-muted:                  hsl(var(--muted));
-  --color-muted-foreground:       hsl(var(--muted-foreground));
-  --color-accent:                 hsl(var(--accent));
-  --color-accent-foreground:      hsl(var(--accent-foreground));
-  --color-destructive:            hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border:                 hsl(var(--border));
-  --color-input:                  hsl(var(--input));
-  --color-ring:                   hsl(var(--ring));
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-ring:                   var(--ring);
 
-  /* Status semantic colors */
-  --color-status-ok:              hsl(var(--status-ok));
-  --color-status-warn:            hsl(var(--status-warn));
-  --color-status-danger:          hsl(var(--status-danger));
-  --color-status-info:            hsl(var(--status-info));
+  /* Semantic status */
+  --color-success:                var(--success);
+  --color-success-foreground:     var(--success-foreground);
+  --color-warning:                var(--warning);
+  --color-warning-foreground:     var(--warning-foreground);
+  --color-info:                   var(--info);
+  --color-info-foreground:        var(--info-foreground);
 
-  /* Chart palette */
-  --color-chart-1:                hsl(var(--chart-1));
-  --color-chart-2:                hsl(var(--chart-2));
-  --color-chart-3:                hsl(var(--chart-3));
-  --color-chart-4:                hsl(var(--chart-4));
-  --color-chart-5:                hsl(var(--chart-5));
+  /* Chart */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   /* Sidebar */
-  --color-sidebar:                      hsl(var(--sidebar));
-  --color-sidebar-foreground:           hsl(var(--sidebar-foreground));
-  --color-sidebar-primary:              hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground:   hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent:               hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground:    hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border:               hsl(var(--sidebar-border));
-  --color-sidebar-ring:                 hsl(var(--sidebar-ring));
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
 
-  /* Radius scale */
+  /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Typography scale */
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+  /* Fonts */
+  --font-sans: "Geist Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Accordion animations (added by shadcn) */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
   @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
+    from { height: 0; }
+    to   { height: var(--radix-accordion-content-height); }
   }
-
   @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
+    from { height: var(--radix-accordion-content-height); }
+    to   { height: 0; }
   }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Design tokens — light mode
-   All color values in HSL (H S% L%) for compatibility with shadcn components
+   Theme 1 — "Arctic Ops"  (default / .theme-arctic)
+   Cool-neutral whites · electric blue · hairline borders · 12px radius
+   Source: design spec "white / clean / futuristic"
 ───────────────────────────────────────────────────────────────────────────── */
-:root {
-  /* Base */
-  --background:             72 11% 96%;    /* #f6f6f3 warm off-white */
-  --foreground:              0  0% 11%;    /* #1b1b1b near-black */
+:root,
+.theme-arctic {
+  --background:            hsl(210 40% 98%);
+  --foreground:            hsl(222.2 47.4% 11.2%);
 
-  /* Surfaces */
-  --card:                    0  0% 100%;
-  --card-foreground:         0  0% 11%;
-  --popover:                 0  0% 100%;
-  --popover-foreground:      0  0% 11%;
+  --card:                  hsl(0 0% 100%);
+  --card-foreground:       hsl(222.2 47.4% 11.2%);
 
-  /* Brand */
-  --primary:               218 100% 52%;   /* #0a66ff */
-  --primary-foreground:      0   0% 100%;
+  --popover:               hsl(0 0% 100%);
+  --popover-foreground:    hsl(222.2 47.4% 11.2%);
 
-  /* Neutral secondary */
-  --secondary:              72  11% 94%;
-  --secondary-foreground:    0   0% 11%;
+  --primary:               hsl(221 83% 53%);
+  --primary-foreground:    hsl(210 40% 98%);
 
-  /* Muted */
-  --muted:                   0   0% 94%;
-  --muted-foreground:        0   0% 42%;   /* #6b6b6b */
+  --secondary:             hsl(210 40% 96%);
+  --secondary-foreground:  hsl(222.2 47.4% 11.2%);
 
-  /* Accent (hover states) */
-  --accent:                 72  11% 92%;
-  --accent-foreground:       0   0% 11%;
+  --muted:                 hsl(210 40% 96%);
+  --muted-foreground:      hsl(215.4 16.3% 46.9%);
 
-  /* Destructive */
-  --destructive:             3  71% 41%;   /* #b3261e */
-  --destructive-foreground:  0   0% 100%;
+  --accent:                hsl(210 40% 96%);
+  --accent-foreground:     hsl(222.2 47.4% 11.2%);
 
-  /* Chrome */
-  --border:                  0   0% 87%;
-  --input:                   0   0% 87%;
-  --ring:                  218 100% 52%;   /* matches primary */
+  --destructive:           hsl(0 84% 60%);
+  --destructive-foreground: hsl(210 40% 98%);
 
-  /* Status semantic */
-  --status-ok:             135  60% 30%;   /* #1f7a36 */
-  --status-warn:            39 100% 32%;   /* #a46b00 */
-  --status-danger:           3  71% 41%;   /* #b3261e */
-  --status-info:           217  64% 40%;   /* #2557a7 */
+  --border:                hsl(214.3 31.8% 91.4%);
+  --input:                 hsl(214.3 31.8% 91.4%);
+  --ring:                  hsl(221 83% 53%);
 
-  /* Chart */
-  --chart-1:               218 100% 52%;
-  --chart-2:               135  60% 30%;
-  --chart-3:                39 100% 32%;
-  --chart-4:               217  64% 40%;
-  --chart-5:                 3  71% 41%;
+  --success:               oklch(0.72 0.19 150);
+  --success-foreground:    oklch(0.98 0.02 150);
+  --warning:               oklch(0.84 0.16 84);
+  --warning-foreground:    oklch(0.28 0.07 46);
+  --info:                  oklch(0.78 0.14 230);
+  --info-foreground:       oklch(0.18 0.05 230);
 
-  /* Sidebar */
-  --sidebar:                 0   0% 100%;
-  --sidebar-foreground:      0   0% 11%;
-  --sidebar-primary:       218 100% 52%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent:         72  11% 94%;
-  --sidebar-accent-foreground: 0 0% 11%;
-  --sidebar-border:          0   0% 87%;
-  --sidebar-ring:          218 100% 52%;
+  --chart-1: hsl(221 83% 53%);
+  --chart-2: oklch(0.72 0.19 150);
+  --chart-3: oklch(0.84 0.16 84);
+  --chart-4: oklch(0.78 0.14 230);
+  --chart-5: hsl(0 84% 60%);
 
-  /* Radius */
-  --radius: 0.625rem;   /* 10px */
+  --sidebar:               hsl(210 40% 96%);
+  --sidebar-foreground:    hsl(222.2 47.4% 11.2%);
+  --sidebar-primary:       hsl(221 83% 53%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent:        hsl(210 40% 94%);
+  --sidebar-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --sidebar-border:        hsl(214.3 31.8% 91.4%);
+  --sidebar-ring:          hsl(221 83% 53%);
+
+  --radius: 0.75rem;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Dark mode overrides
+   Theme 2 — "Midnight"
+   Dark-first · deep navy · electric cyan accent · tight 8px radius
 ───────────────────────────────────────────────────────────────────────────── */
-.dark {
-  --background:              0   0%   9%;
-  --foreground:              0   0%  95%;
+.theme-midnight {
+  --background:            hsl(222.2 47.4% 7%);
+  --foreground:            hsl(210 40% 98%);
 
-  --card:                    0   0%  12%;
-  --card-foreground:         0   0%  95%;
-  --popover:                 0   0%  12%;
-  --popover-foreground:      0   0%  95%;
+  --card:                  hsl(222.2 47.4% 9%);
+  --card-foreground:       hsl(210 40% 98%);
 
-  --primary:               218  90%  62%;
-  --primary-foreground:      0   0%   5%;
+  --popover:               hsl(222.2 47.4% 9%);
+  --popover-foreground:    hsl(210 40% 98%);
 
-  --secondary:               0   0%  17%;
-  --secondary-foreground:    0   0%  85%;
+  --primary:               hsl(185 96% 52%);
+  --primary-foreground:    hsl(222.2 47.4% 7%);
 
-  --muted:                   0   0%  17%;
-  --muted-foreground:        0   0%  63%;
+  --secondary:             hsl(217.2 32.6% 15.5%);
+  --secondary-foreground:  hsl(210 40% 98%);
 
-  --accent:                  0   0%  17%;
-  --accent-foreground:       0   0%  95%;
+  --muted:                 hsl(217.2 32.6% 15.5%);
+  --muted-foreground:      hsl(215 20.2% 65.1%);
 
-  --destructive:             3  68%  52%;
-  --destructive-foreground:  0   0% 100%;
+  --accent:                hsl(217.2 32.6% 15.5%);
+  --accent-foreground:     hsl(210 40% 98%);
 
-  --border:                  0   0%  22%;
-  --input:                   0   0%  22%;
-  --ring:                  218  90%  62%;
+  --destructive:           hsl(0 72% 51%);
+  --destructive-foreground: hsl(210 40% 98%);
 
-  --status-ok:             135  50%  45%;
-  --status-warn:            39  90%  48%;
-  --status-danger:           3  68%  52%;
-  --status-info:           217  55%  58%;
+  --border:                hsl(217.2 32.6% 17.5%);
+  --input:                 hsl(217.2 32.6% 17.5%);
+  --ring:                  hsl(185 96% 52%);
 
-  --chart-1:               218  90%  62%;
-  --chart-2:               135  50%  45%;
-  --chart-3:                39  90%  48%;
-  --chart-4:               217  55%  58%;
-  --chart-5:                 3  68%  52%;
+  --success:               oklch(0.64 0.17 150);
+  --success-foreground:    oklch(0.98 0.02 150);
+  --warning:               oklch(0.62 0.14 84);
+  --warning-foreground:    oklch(0.98 0.02 95);
+  --info:                  oklch(0.66 0.12 230);
+  --info-foreground:       oklch(0.98 0.02 230);
 
-  --sidebar:                 0   0%  12%;
-  --sidebar-foreground:      0   0%  95%;
-  --sidebar-primary:       218  90%  62%;
-  --sidebar-primary-foreground: 0 0% 5%;
-  --sidebar-accent:          0   0%  17%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border:          0   0%  22%;
-  --sidebar-ring:          218  90%  62%;
+  --chart-1: hsl(185 96% 52%);
+  --chart-2: oklch(0.64 0.17 150);
+  --chart-3: oklch(0.62 0.14 84);
+  --chart-4: oklch(0.66 0.12 230);
+  --chart-5: hsl(0 72% 51%);
+
+  --sidebar:               hsl(222.2 47.4% 6%);
+  --sidebar-foreground:    hsl(210 40% 98%);
+  --sidebar-primary:       hsl(185 96% 52%);
+  --sidebar-primary-foreground: hsl(222.2 47.4% 7%);
+  --sidebar-accent:        hsl(217.2 32.6% 13%);
+  --sidebar-accent-foreground: hsl(210 40% 98%);
+  --sidebar-border:        hsl(217.2 32.6% 14%);
+  --sidebar-ring:          hsl(185 96% 52%);
+
+  --radius: 0.5rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Theme 3 — "Warm Slate"
+   Warm neutrals · violet accent · soft 14px radius
+───────────────────────────────────────────────────────────────────────────── */
+.theme-warm {
+  --background:            hsl(40 20% 97%);
+  --foreground:            hsl(25 20% 14%);
+
+  --card:                  hsl(0 0% 100%);
+  --card-foreground:       hsl(25 20% 14%);
+
+  --popover:               hsl(0 0% 100%);
+  --popover-foreground:    hsl(25 20% 14%);
+
+  --primary:               hsl(258 90% 56%);
+  --primary-foreground:    hsl(0 0% 100%);
+
+  --secondary:             hsl(40 15% 94%);
+  --secondary-foreground:  hsl(25 20% 14%);
+
+  --muted:                 hsl(40 12% 93%);
+  --muted-foreground:      hsl(25 10% 45%);
+
+  --accent:                hsl(40 15% 91%);
+  --accent-foreground:     hsl(25 20% 14%);
+
+  --destructive:           hsl(358 75% 50%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border:                hsl(40 12% 88%);
+  --input:                 hsl(40 12% 88%);
+  --ring:                  hsl(258 90% 56%);
+
+  --success:               oklch(0.70 0.18 145);
+  --success-foreground:    oklch(0.98 0.02 145);
+  --warning:               oklch(0.80 0.15 65);
+  --warning-foreground:    oklch(0.25 0.08 50);
+  --info:                  oklch(0.72 0.13 235);
+  --info-foreground:       oklch(0.18 0.05 235);
+
+  --chart-1: hsl(258 90% 56%);
+  --chart-2: oklch(0.70 0.18 145);
+  --chart-3: oklch(0.80 0.15 65);
+  --chart-4: oklch(0.72 0.13 235);
+  --chart-5: hsl(358 75% 50%);
+
+  --sidebar:               hsl(40 18% 95%);
+  --sidebar-foreground:    hsl(25 20% 14%);
+  --sidebar-primary:       hsl(258 90% 56%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent:        hsl(40 12% 91%);
+  --sidebar-accent-foreground: hsl(25 20% 14%);
+  --sidebar-border:        hsl(40 12% 86%);
+  --sidebar-ring:          hsl(258 90% 56%);
+
+  --radius: 0.875rem;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -206,28 +259,18 @@
 ───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
-    @apply border-border;
-    box-sizing: border-box;
+    @apply border-border box-border;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    font-size: 0.875rem;           /* 14px — data-dense default */
+    line-height: 1.25rem;          /* 20px */
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  /* Typography scale */
-  h1 { @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl; }
-  h2 { @apply scroll-m-20 text-3xl font-semibold tracking-tight; }
-  h3 { @apply scroll-m-20 text-2xl font-semibold tracking-tight; }
-  h4 { @apply scroll-m-20 text-xl font-semibold tracking-tight; }
-  p  { @apply leading-7; }
-  code {
-    @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
-  }
-  blockquote {
-    @apply mt-6 border-l-2 border-border pl-6 italic;
-  }
 }
+
+/* shadcn sidebar overrides removed — sidebar tokens live in each theme block above */
