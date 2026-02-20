@@ -59,19 +59,43 @@ function ensureNonEmptyString(
   return ok(undefined);
 }
 
-function validateInput(input: ListRunsInput): Result<void, ValidationFailed> {
-  if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
+function validateWorkspaceId(workspaceId: string): Result<void, ValidationFailed> {
+  if (workspaceId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
-  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
+  return ok(undefined);
+}
+
+function validateLimit(limit: number | undefined): Result<void, ValidationFailed> {
+  if (limit !== undefined && (!Number.isInteger(limit) || limit <= 0)) {
     return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
   }
-  if (input.cursor?.trim() === '') {
+  return ok(undefined);
+}
+
+function validateCursor(cursor: string | undefined): Result<void, ValidationFailed> {
+  if (cursor?.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'cursor must be a non-empty string.' });
   }
-  if (input.status !== undefined && !RUN_STATUSES.includes(input.status)) {
+  return ok(undefined);
+}
+
+function validateStatus(status: RunStatus | undefined): Result<void, ValidationFailed> {
+  if (status !== undefined && !RUN_STATUSES.includes(status)) {
     return err({ kind: 'ValidationFailed', message: 'status is invalid.' });
   }
+  return ok(undefined);
+}
+
+function validateInput(input: ListRunsInput): Result<void, ValidationFailed> {
+  const workspaceIdValid = validateWorkspaceId(input.workspaceId);
+  if (!workspaceIdValid.ok) return workspaceIdValid;
+  const limitValid = validateLimit(input.limit);
+  if (!limitValid.ok) return limitValid;
+  const cursorValid = validateCursor(input.cursor);
+  if (!cursorValid.ok) return cursorValid;
+  const statusValid = validateStatus(input.status);
+  if (!statusValid.ok) return statusValid;
 
   for (const [field, value] of [
     ['workflowId', input.workflowId],
