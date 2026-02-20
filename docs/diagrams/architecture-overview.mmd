@@ -1,0 +1,64 @@
+%%{ init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor":       "#1e293b",
+    "primaryTextColor":   "#f8fafc",
+    "primaryBorderColor": "#475569",
+    "secondaryColor":     "#0f172a",
+    "tertiaryColor":      "#334155",
+    "lineColor":          "#94a3b8",
+    "fontSize":           "15px"
+  }
+} }%%
+
+flowchart TB
+
+  %% ── Top tier: consumers ──────────────────────────
+  subgraph consumers [" "]
+    direction LR
+    AG["Agents"]
+    AU["Automations"]
+    OC["OpenClaw"]
+  end
+
+  %% ── Middle tier: Portarium ───────────────────────
+  subgraph core [" "]
+    P["Portarium · VAOP\nControl Plane"]
+  end
+
+  %% ── User (to the right) ─────────────────────────
+  U(["User"])
+
+  %% ── Bottom tier: systems of record ───────────────
+  subgraph systems [" "]
+    direction LR
+    SV["Services"]
+    SW["Software"]
+    AP["APIs & Tools"]
+  end
+
+  %% ── Edges ────────────────────────────────────────
+  AG --> P
+  AU --> P
+  OC --> P
+
+  P <--> U
+
+  P --> SV
+  P --> SW
+  P --> AP
+
+  %% ── Styles ───────────────────────────────────────
+  classDef consumerNode fill:#6366f1,stroke:#818cf8,color:#fff,rx:8,ry:8
+  classDef coreNode    fill:#0ea5e9,stroke:#38bdf8,color:#fff,rx:12,ry:12,font-weight:bold
+  classDef systemNode  fill:#10b981,stroke:#34d399,color:#fff,rx:8,ry:8
+  classDef userNode    fill:#f59e0b,stroke:#fbbf24,color:#1e293b,rx:20,ry:20,font-weight:bold
+
+  class AG,AU,OC consumerNode
+  class P coreNode
+  class SV,SW,AP systemNode
+  class U userNode
+
+  style consumers fill:none,stroke:#6366f1,stroke-width:2,stroke-dasharray:6,rx:12,ry:12
+  style core       fill:none,stroke:#0ea5e9,stroke-width:2,stroke-dasharray:6,rx:12,ry:12
+  style systems    fill:none,stroke:#10b981,stroke-width:2,stroke-dasharray:6,rx:12,ry:12

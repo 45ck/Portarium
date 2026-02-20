@@ -60,38 +60,7 @@ If you are new, start here:
 
 ## Architecture Overview
 
-```mermaid
-flowchart LR
-  subgraph Client[Clients]
-    Cockpit[Cockpit UI]
-    Automation[CLI / SDK / Automation]
-  end
-
-  subgraph CP[Control Plane]
-    Http[HTTP API /v1]
-    Auth[AuthN and AuthZ]
-    Domain[Application and Domain]
-  end
-
-  subgraph EP[Execution Plane]
-    Worker[Worker Runtime]
-    Temporal[Temporal Worker optional]
-  end
-
-  subgraph State[State and Evidence]
-    DB[(PostgreSQL)]
-    ObjectStore[(Object Storage)]
-    Events[CloudEvents stream]
-  end
-
-  Cockpit --> Http
-  Automation --> Http
-  Http --> Auth --> Domain
-  Domain --> Temporal --> Worker
-  Domain --> DB
-  Worker --> ObjectStore
-  Domain --> Events
-```
+![Portarium Architecture Overview](docs/diagrams/generated/09_isometric_minimal_fusion_textonly_v3_user_left.jpg)
 
 ## Installation
 
