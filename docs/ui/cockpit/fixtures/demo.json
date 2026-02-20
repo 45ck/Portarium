@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "workspaceId": "ws_demo",
+    "generatedAt": "2026-02-20T09:10:00Z",
+    "scenario": "invoice_remediation"
+  },
+  "connectors": [
+    {
+      "id": "conn_odoo_demo",
+      "name": "Odoo Demo",
+      "provider": "odoo",
+      "status": "healthy",
+      "lastCheckedAt": "2026-02-20T09:10:00Z",
+      "capabilities": ["read_contacts", "create_invoice_draft", "post_invoice"]
+    },
+    {
+      "id": "conn_stripe_demo",
+      "name": "Stripe Demo",
+      "provider": "stripe",
+      "status": "healthy",
+      "lastCheckedAt": "2026-02-20T09:08:00Z",
+      "capabilities": ["read_charge", "list_refunds"]
+    }
+  ],
+  "workItems": [
+    {
+      "id": "wi_1099",
+      "code": "WI-1099",
+      "title": "Invoice correction for ACME",
+      "status": "pending_approval",
+      "priority": "high",
+      "riskLevel": "medium",
+      "createdAt": "2026-02-20T08:58:00Z",
+      "updatedAt": "2026-02-20T09:05:00Z",
+      "slaDueAt": "2026-02-20T12:53:00Z",
+      "connectorId": "conn_odoo_demo",
+      "owner": "Operator User",
+      "workflowName": "Invoice correction",
+      "summary": "Correct invoice memo and classification before posting to ERP.",
+      "runIds": ["run_8920"],
+      "approvalIds": ["ag_442"],
+      "correlationId": "cor_8920_wi1099_f7a2"
+    },
+    {
+      "id": "wi_1042",
+      "code": "WI-1042",
+      "title": "Dispute: investigate payment failure",
+      "status": "running",
+      "priority": "high",
+      "riskLevel": "low",
+      "createdAt": "2026-02-20T08:10:00Z",
+      "updatedAt": "2026-02-20T08:40:00Z",
+      "slaDueAt": "2026-02-20T10:00:00Z",
+      "connectorId": "conn_stripe_demo",
+      "owner": "Unassigned",
+      "workflowName": "Ticket priority update",
+      "summary": "Investigate and classify payment dispute.",
+      "runIds": ["run_8892"],
+      "approvalIds": [],
+      "correlationId": "cor_8892_wi1042_f145"
+    },
+    {
+      "id": "wi_1105",
+      "code": "WI-1105",
+      "title": "Sync Salesforce contacts",
+      "status": "closed",
+      "priority": "normal",
+      "riskLevel": "low",
+      "createdAt": "2026-02-19T09:00:00Z",
+      "updatedAt": "2026-02-19T16:30:00Z",
+      "slaDueAt": "2026-02-22T09:00:00Z",
+      "connectorId": "conn_odoo_demo",
+      "owner": "Operator User",
+      "workflowName": "CRM sync",
+      "summary": "Completed contact synchronization.",
+      "runIds": ["run_8801"],
+      "approvalIds": [],
+      "correlationId": "cor_8801_wi1105_9981"
+    }
+  ],
+  "runs": [
+    {
+      "id": "run_8920",
+      "code": "R-8920",
+      "workItemId": "wi_1099",
+      "workflowName": "Invoice correction",
+      "status": "waiting_for_approval",
+      "executionTier": "Human-approve",
+      "initiator": "Operator User",
+      "startedAt": "2026-02-20T08:53:00Z",
+      "correlationId": "cor_8920_wi1099_f7a2"
+    },
+    {
+      "id": "run_8892",
+      "code": "R-8892",
+      "workItemId": "wi_1042",
+      "workflowName": "Ticket priority update",
+      "status": "running",
+      "executionTier": "Human-approve",
+      "initiator": "Operator User",
+      "startedAt": "2026-02-20T07:57:00Z",
+      "correlationId": "cor_8892_wi1042_f145"
+    },
+    {
+      "id": "run_8850",
+      "code": "R-8850",
+      "workItemId": "wi_1021",
+      "workflowName": "CRM sync",
+      "status": "failed",
+      "executionTier": "Assisted",
+      "initiator": "Operator User",
+      "startedAt": "2026-02-20T06:00:00Z",
+      "correlationId": "cor_8850_wi1021_aa18"
+    },
+    {
+      "id": "run_8801",
+      "code": "R-8801",
+      "workItemId": "wi_1105",
+      "workflowName": "Collect payment receipts",
+      "status": "succeeded",
+      "executionTier": "Auto",
+      "initiator": "Operator User",
+      "startedAt": "2026-02-19T18:20:00Z",
+      "correlationId": "cor_8801_wi1105_9981"
+    },
+    {
+      "id": "run_8779",
+      "code": "R-8779",
+      "workItemId": "wi_1038",
+      "workflowName": "CRM Contact Sync",
+      "status": "cancelled",
+      "executionTier": "Auto",
+      "initiator": "admin@acme.com",
+      "startedAt": "2026-02-18T17:14:00Z",
+      "correlationId": "cor_8779_wi1038_b170"
+    }
+  ],
+  "approvals": [
+    {
+      "id": "ag_442",
+      "code": "AG-442",
+      "workItemId": "wi_1099",
+      "runId": "run_8920",
+      "title": "Approve Plan: Create Invoice in NetSuite",
+      "status": "pending",
+      "decision": null,
+      "requestedAt": "2026-02-20T08:53:30Z",
+      "requestedBy": "Operator User",
+      "assignee": "Operator User",
+      "rule": "Different-approver rule",
+      "slaDueAt": "2026-02-20T12:53:00Z",
+      "rationale": null,
+      "decidedAt": null,
+      "decidedBy": null
+    },
+    {
+      "id": "ag_443",
+      "code": "AG-443",
+      "workItemId": "wi_1042",
+      "runId": "run_8892",
+      "title": "Approve Plan: Update Ticket priority in Zendesk",
+      "status": "pending",
+      "decision": null,
+      "requestedAt": "2026-02-20T08:00:00Z",
+      "requestedBy": "Operator User",
+      "assignee": "Approver User",
+      "rule": "Manual review",
+      "slaDueAt": "2026-02-21T08:00:00Z",
+      "rationale": null,
+      "decidedAt": null,
+      "decidedBy": null
+    },
+    {
+      "id": "ag_444",
+      "code": "AG-444",
+      "workItemId": "wi_1101",
+      "runId": "run_8930",
+      "title": "Approve Agent Action: Document Summarizer — write to Salesforce",
+      "status": "pending",
+      "decision": null,
+      "requestedAt": "2026-02-20T08:35:00Z",
+      "requestedBy": "Operator User",
+      "assignee": "Approver User",
+      "rule": "Human-approve",
+      "slaDueAt": "2026-02-20T11:00:00Z",
+      "rationale": null,
+      "decidedAt": null,
+      "decidedBy": null
+    },
+    {
+      "id": "ag_445",
+      "code": "AG-445",
+      "workItemId": "wi_1108",
+      "runId": "run_8941",
+      "title": "Approve Payroll Run: March batch — Finance write",
+      "status": "pending",
+      "decision": null,
+      "requestedAt": "2026-02-20T08:50:00Z",
+      "requestedBy": "Operator User",
+      "assignee": "Finance Approver",
+      "rule": "SoD-PAYROLL-001",
+      "slaDueAt": "2026-02-20T10:02:00Z",
+      "rationale": null,
+      "decidedAt": null,
+      "decidedBy": null
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev_8920_01",
+      "type": "run_started",
+      "message": "Run initiated",
+      "workItemId": "wi_1099",
+      "runId": "run_8920",
+      "approvalId": null,
+      "correlationId": "cor_8920_wi1099_f7a2",
+      "actor": "Operator User",
+      "occurredAt": "2026-02-20T08:53:00Z",
+      "previousHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "sha256:a3f8c2d1d91c"
+    },
+    {
+      "id": "ev_8920_02",
+      "type": "approval_opened",
+      "message": "Approval Gate opened",
+      "workItemId": "wi_1099",
+      "runId": "run_8920",
+      "approvalId": "ag_442",
+      "correlationId": "cor_8920_wi1099_f7a2",
+      "actor": "System",
+      "occurredAt": "2026-02-20T08:53:30Z",
+      "previousHash": "sha256:a3f8c2d1d91c",
+      "hash": "sha256:7e2b44a54a5f"
+    },
+    {
+      "id": "ev_8920_03",
+      "type": "plan_recorded",
+      "message": "Plan recorded (tamper-proof)",
+      "workItemId": "wi_1099",
+      "runId": "run_8920",
+      "approvalId": null,
+      "correlationId": "cor_8920_wi1099_f7a2",
+      "actor": "Operator User",
+      "occurredAt": "2026-02-20T08:53:40Z",
+      "previousHash": "sha256:7e2b44a54a5f",
+      "hash": "sha256:8ef9d14c53aa"
+    }
+  ]
+}

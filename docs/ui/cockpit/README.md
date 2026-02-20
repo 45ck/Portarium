@@ -74,3 +74,31 @@ Notes:
 
 - This prototype is intentionally low fidelity (structure + flows, not visual design).
 - Layout and copy are derived from `docs/ui/ux-ideas.json` composition 201.
+
+## Mocked Demo Mode (Backend-Free)
+
+The cockpit now includes a frontend-only mock API layer for high-fidelity demos without a backend.
+
+- Fixtures live at `docs/ui/cockpit/fixtures/demo.json`.
+- Mock route interception is implemented in `docs/ui/cockpit/mock-api.js`.
+- A thin frontend DAL lives in `docs/ui/cockpit/api-client.js`.
+- UI hydration and decision-flow updates live in `docs/ui/cockpit/demo-bindings.js`.
+
+### Demo API Routes (in-browser)
+
+- `GET /api/connectors`
+- `GET /api/work-items`
+- `GET /api/work-items/:id`
+- `GET /api/runs`
+- `GET /api/runs/:id`
+- `GET /api/approvals`
+- `POST /api/approvals/:id/decision`
+- `GET /api/evidence`
+- `POST /api/demo/reset`
+
+### Demo Flow
+
+1. Open the cockpit and review the top pending Work Item.
+2. Navigate to Run detail and submit an approval decision.
+3. Observe updates to Work Item/Run/Approvals state and Evidence entries.
+4. Use `Reset demo state` in the status bar to return to the deterministic start state.

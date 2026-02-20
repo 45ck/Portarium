@@ -1020,7 +1020,7 @@
             <div class="table-wrap js-nonempty-workitems">
               <table class="table" aria-label="Work Items table">
                 <thead>
-                  <tr>
+                  <tr id="demoWorkItemRow">
                     <th>
                       <input type="checkbox" aria-label="Select all" class="bulk-checkbox-all" />
                     </th>
@@ -1040,11 +1040,15 @@
                       <input type="checkbox" class="bulk-checkbox" aria-label="Select WI-1099" />
                     </td>
                     <td>
-                      <a href="#work-item" class="js-drawer-trigger" data-drawer="wi-1099"
+                      <a
+                        href="#work-item"
+                        class="js-drawer-trigger"
+                        data-drawer="wi-1099"
+                        id="demoWorkItemTitle"
                         >WI-1099 Invoice correction for ACME</a
                       >
                     </td>
-                    <td><span class="status">Open</span></td>
+                    <td><span class="status" id="demoWorkItemStatus">Open</span></td>
                     <td>
                       <span
                         class="tier-badge tier-badge--human"
@@ -1058,16 +1062,19 @@
                       <span class="chip"><span class="port-icon">PB</span> Stripe</span>
                     </td>
                     <td>
-                      <span class="status status--warn"
+                      <span class="status status--warn" id="demoWorkItemRunStatus"
                         ><span class="status__icon">⏸</span>Waiting for approval</span
                       >
                     </td>
                     <td>
-                      <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m"
+                      <span
+                        class="sla-badge sla-badge--warn"
+                        title="SLA due in 3h 48m"
+                        id="demoWorkItemSla"
                         >3h 48m</span
                       >
                     </td>
-                    <td>5m</td>
+                    <td id="demoWorkItemUpdated">5m</td>
                   </tr>
                   <tr>
                     <td>
@@ -1211,15 +1218,20 @@
                 <div class="kanban__column-title">
                   Blocked <span class="kanban__column-count">1</span>
                 </div>
-                <a class="kanban__card" href="#work-item">
-                  <div class="kanban__card-title">WI-1099 Invoice correction for ACME</div>
+                <a class="kanban__card" href="#work-item" id="demoKanbanBlockedCard">
+                  <div class="kanban__card-title" id="demoKanbanBlockedTitle">
+                    WI-1099 Invoice correction for ACME
+                  </div>
                   <div class="kanban__card-meta">
                     <span
                       class="tier-badge tier-badge--human"
                       title="Requires explicit human approval before execution"
                       >Human-approve</span
                     >
-                    <span class="status status--warn" style="font-size: 11px; padding: 3px 6px"
+                    <span
+                      class="status status--warn"
+                      style="font-size: 11px; padding: 3px 6px"
+                      id="demoKanbanBlockedStatus"
                       >Awaiting approval</span
                     >
                   </div>
@@ -1308,7 +1320,7 @@
           <div class="table-wrap js-nonempty-runs">
             <table class="table" aria-label="Runs table">
               <thead>
-                <tr>
+                <tr id="demoRunRow">
                   <th><input type="checkbox" id="bulkSelectAll" aria-label="Select all runs" /></th>
                   <th>Run</th>
                   <th>Status</th>
@@ -1324,17 +1336,17 @@
                   <td>
                     <input type="checkbox" class="bulk-checkbox" aria-label="Select R-8920" />
                   </td>
-                  <td><a href="#run">R-8920</a></td>
+                  <td><a href="#run" id="demoRunListId">R-8920</a></td>
                   <td>
-                    <span class="status status--warn"
+                    <span class="status status--warn" id="demoRunListStatus"
                       ><span class="status__icon">⏸</span>Waiting for approval</span
                     >
                   </td>
-                  <td>Invoice correction</td>
-                  <td><a href="#work-item">WI-1099</a></td>
-                  <td><span class="status status--warn">1 pending</span></td>
-                  <td>Me</td>
-                  <td>12m ago</td>
+                  <td id="demoRunListWorkflow">Invoice correction</td>
+                  <td><a href="#work-item" id="demoRunListWorkItem">WI-1099</a></td>
+                  <td><span class="status status--warn" id="demoRunListApprovals">1 pending</span></td>
+                  <td id="demoRunListInitiator">Me</td>
+                  <td id="demoRunListStarted">12m ago</td>
                 </tr>
                 <tr>
                   <td>
@@ -1402,7 +1414,7 @@
             </table>
             <div class="pagination">
               <button class="btn btn--small" type="button" disabled>&laquo; Previous</button>
-              <span class="pagination__info">Page 1 of 1 &middot; 5 runs</span>
+              <span class="pagination__info" id="demoRunsPagination">Page 1 of 1 &middot; 5 runs</span>
               <button class="btn btn--small" type="button" disabled>Next &raquo;</button>
               <select class="pagination__size" aria-label="Items per page">
                 <option>10 / page</option>
@@ -1727,7 +1739,7 @@
                 <a href="#runs">Runs</a> /
               </div>
               <h1 id="h-run" class="h1">
-                Run R-8920 (Waiting for Approval)
+                <span id="demoRunHeadingText">Run R-8920 (Waiting for Approval)</span>
                 <span
                   class="tier-badge tier-badge--human"
                   title="Requires explicit human approval before execution"
@@ -1736,7 +1748,7 @@
               </h1>
               <div class="subtle">
                 Workflow: Invoice correction | Initiator: Me |
-                <span class="correlation-id" title="Click to copy"
+                <span class="correlation-id" title="Click to copy" id="demoRunCorrelation"
                   >Correlation: cor_8920_wi1099_f7a2</span
                 >
               </div>
@@ -1758,7 +1770,9 @@
             <span class="stepper__connector">→</span>
             <span class="stepper__step stepper__step--done">Running</span>
             <span class="stepper__connector">→</span>
-            <span class="stepper__step stepper__step--active">Waiting for Approval</span>
+            <span class="stepper__step stepper__step--active" id="demoRunStepperActive"
+              >Waiting for Approval</span
+            >
             <span class="stepper__connector">→</span>
             <span class="stepper__step">Succeeded</span>
             <span class="stepper__connector stepper__connector--alt">or</span>
@@ -1870,7 +1884,7 @@
                   <span class="field__error">Rationale is required (minimum 10 characters)</span>
                   <div class="field__error" role="alert" style="display: none"></div>
                 </label>
-                <div class="outcome-preview">
+                <div class="outcome-preview" id="demoRunOutcomePreview">
                   After approval the run resumes. 1 more approver needed.
                 </div>
                 <div class="form__actions">
@@ -1938,7 +1952,7 @@
                     >
                   </span>
                   <span class="sla-badge sla-badge--warn" title="SLA due in 3h 48m">3h 48m</span>
-                  <span class="status status--warn"
+                  <span class="status status--warn" id="demoRunStepGateStatus"
                     ><span class="status__icon">◷</span>Pending</span
                   >
                 </div>
@@ -1988,7 +2002,7 @@
 
           <details class="card card--subtle" style="margin-top: 12px">
             <summary class="card__title" style="cursor: pointer">
-              Evidence (2 entries)
+              <span id="demoRunEvidenceSummary">Evidence (2 entries)</span>
               <span class="subtle" style="font-weight: 400; font-size: 12px"
                 >— <a href="#evidence">View full log</a></span
               >
@@ -2046,7 +2060,7 @@
             >
               ✕
             </button>
-            <div class="hero-prompt__text">
+            <div class="hero-prompt__text" id="demoApprovalsHeroText">
               You have 4 approvals waiting for your decision — including 1 robot mission and 1 agent
               action. Review each and decide.
             </div>
@@ -2086,10 +2100,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Approve Plan: Create Invoice in NetSuite</td>
-                  <td><a href="#work-item">WI-1099</a></td>
-                  <td><a href="#run">R-8920</a></td>
+                <tr id="demoApprovalRow">
+                  <td id="demoApprovalTitle">Approve Plan: Create Invoice in NetSuite</td>
+                  <td><a href="#work-item" id="demoApprovalWorkItem">WI-1099</a></td>
+                  <td><a href="#run" id="demoApprovalRun">R-8920</a></td>
                   <td>
                     <span
                       class="tier-badge tier-badge--human"
@@ -2097,16 +2111,18 @@
                       >Human-approve</span
                     >
                   </td>
-                  <td><span class="sod-badge">Different-approver rule</span></td>
+                  <td><span class="sod-badge" id="demoApprovalRule">Different-approver rule</span></td>
                   <td>
-                    <span style="display: inline-flex; align-items: center; gap: 5px"
+                    <span style="display: inline-flex; align-items: center; gap: 5px" id="demoApprovalAssignee"
                       ><span class="availability-dot availability-dot--available"></span> Operator
                       User</span
                     >
                   </td>
-                  <td>12m</td>
+                  <td id="demoApprovalRequested">12m</td>
                   <td>
-                    <span class="sla-badge sla-badge--warn" title="Due in 3h 48m">Due 3h 48m</span>
+                    <span class="sla-badge sla-badge--warn" title="Due in 3h 48m" id="demoApprovalSla"
+                      >Due 3h 48m</span
+                    >
                   </td>
                   <td><a class="btn btn--primary btn--small" href="#run">Review + decide</a></td>
                 </tr>
@@ -2211,7 +2227,7 @@
 
           <div class="pagination js-approvals-noise" style="margin-top: 10px">
             <button class="btn btn--small" type="button" disabled>&laquo; Previous</button>
-            <span class="pagination__info">Page 1 of 1 &middot; 4 pending</span>
+            <span class="pagination__info" id="demoApprovalsPagination">Page 1 of 1 &middot; 4 pending</span>
             <button class="btn btn--small" type="button" disabled>Next &raquo;</button>
             <select class="pagination__size" aria-label="Items per page">
               <option>10 / page</option>
@@ -3410,8 +3426,8 @@
               "
             >
               <div>
-                <strong>&#10003; Chain Integrity: All 26 entries verified</strong>
-                <div style="font-size: 11px; margin-top: 2px">
+                <strong id="demoChainIntegrityTitle">&#10003; Chain Integrity: All 26 entries verified</strong>
+                <div style="font-size: 11px; margin-top: 2px" id="demoChainIntegrityMeta">
                   Entries #120 &ndash; #146 &bull; SHA-256 hash chain &bull; Last verified: just now
                 </div>
               </div>
@@ -3454,7 +3470,7 @@
             <button class="btn btn--small" type="button">Export selected</button>
             <button class="btn btn--small" type="button">Set legal hold</button>
           </div>
-          <div class="list js-nonempty-evidence">
+          <div class="list js-nonempty-evidence" id="demoEvidenceList">
             <div
               class="row row--static js-drawer-trigger"
               data-drawer="evidence-1"
@@ -12447,7 +12463,10 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
       crossorigin=""
       defer
     ></script>
+    <script src="./mock-api.js" defer></script>
+    <script src="./api-client.js" defer></script>
     <script src="./wireframe.js" defer></script>
     <script src="./keyboard.js" defer></script>
+    <script src="./demo-bindings.js" defer></script>
   </body>
 </html>
