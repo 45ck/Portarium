@@ -2,6 +2,7 @@ node_modules
 dist
 coverage
 storybook-static
+*.tsbuildinfo
 *.js
 !.storybook/*.ts
 !src/**/*.ts
