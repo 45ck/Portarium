@@ -233,7 +233,7 @@
 {"id":"bead-0233","title":"Closeout review: CrmSales port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:08.089Z","updatedAt":"2026-02-20T03:42:22.699Z"}
 {"id":"bead-0234","title":"Closeout review: CrmSales port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:08.356Z","updatedAt":"2026-02-20T03:42:58.570Z"}
 {"id":"bead-0235","title":"Closeout review: CustomerSupport port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:08.635Z","updatedAt":"2026-02-20T03:43:30.731Z"}
-{"id":"bead-0236","title":"Closeout review: CustomerSupport port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:08.906Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0236","title":"Closeout review: CustomerSupport port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:08.906Z","updatedAt":"2026-02-20T03:46:06.672Z"}
 {"id":"bead-0237","title":"Closeout review: ItsmItOps port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:09.176Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0238","title":"Closeout review: ItsmItOps port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:09.451Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0239","title":"Closeout review: IamDirectory port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:09.718Z","updatedAt":"2026-02-17T20:18:23.090Z"}
