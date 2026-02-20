@@ -1,10 +1,13 @@
 # Portarium
 
-**Open-source multi-tenant control plane for governable business operations.**
+**Open-source control plane for governable operations across your existing systems.**
 
-Portarium is the public product name. You will also see **VAOP** in technical documentation and domain modelling.
+Portarium is the product name. **VAOP** is the internal architecture acronym used in technical docs and domain modelling.
 
-> Status: early and actively built.
+Portarium helps teams automate real operational work without losing control:
+policies stay enforceable, approvals stay explicit, and every run produces evidence you can audit.
+
+> Status: early and actively built
 >
 > - Runtime entrypoints are available for a control plane and execution-plane worker.
 > - The OpenAPI v1 contract is defined and evolving.
@@ -18,13 +21,35 @@ Portarium is the public product name. You will also see **VAOP** in technical do
 
 Badge links target the upstream repository (`45ck/Portarium`).
 
-## What Portarium Is
+## Why Portarium
 
-Portarium coordinates governable work across systems of record through Ports and Adapters.
+Most automation stacks force a tradeoff:
 
-- Domain-first modelling with a shared canonical language
-- Control plane policies, approvals, and audit-ready evidence
-- Execution-plane worker runtime for durable orchestration and machine actions
+- move fast, but lose traceability and policy control
+- enforce control, but slow everything down with manual process
+
+Portarium is designed to close that gap.
+It is a governance-first control plane that coordinates workflows across systems of record through stable Ports and provider-specific Adapters.
+
+## What You Get
+
+- Policy-aware execution tiers (`Auto`, `Assisted`, `Human-approve`, `Manual-only`)
+- Workspace-scoped API with RFC 7807 error envelopes
+- Durable execution model with control-plane + execution-plane runtime split
+- Evidence-oriented operation history for review and auditability
+- Domain-first model and strict architecture boundaries
+
+## Typical Use Cases
+
+- Introduce approval gates for high-risk operational actions
+- Orchestrate cross-system business workflows without rewriting your SoRs
+- Centralize operational evidence and decision history
+- Build internal automation with explicit tenancy and RBAC boundaries
+
+## Current Scope (and Non-Goals)
+
+Portarium is currently focused on API/runtime foundations and governance primitives.
+It is not trying to replace ERP/CRM/helpdesk systems or become a full BPM suite UI.
 
 If you are new, start here:
 
@@ -116,6 +141,11 @@ Check health:
 curl -s http://localhost:8081/healthz
 ```
 
+What success looks like in scaffold stage:
+
+- both runtimes respond on `/healthz`
+- protected `/v1` routes return `401` until JWT/JWKS auth is configured
+
 ## API Notes
 
 - Base path: `/v1`
@@ -147,10 +177,11 @@ npm run migrate:deploy
 
 ## Documentation Map
 
-- `docs/index.md` - entry point
-- `docs/tutorials/` - guided learning
-- `docs/how-to/` - task recipes
-- `docs/reference/` - contracts and factual references
+- `docs/index.md` - choose-your-path entrypoint
+- `docs/getting-started/` - first run + contributor workflow
+- `docs/tutorials/` - guided examples
+- `docs/how-to/` - task-oriented guides
+- `docs/reference/` - contracts, runtime/env, schemas, CI gates
 - `docs/explanation/` - architecture and rationale
 
 ## Contributing

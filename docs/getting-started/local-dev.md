@@ -1,5 +1,7 @@
 # Getting Started: Local Development
 
+This guide is for your first successful local runtime boot.
+
 ## Prerequisites
 
 - Node.js `>=22`
@@ -86,6 +88,18 @@ Invoke-WebRequest http://localhost:8080/v1/workspaces/demo -Method GET
 ```
 
 Expected behavior without auth config: `401 Unauthorized` on protected routes.
+
+## Success Checklist
+
+- `http://localhost:8080/healthz` returns `200`
+- `http://localhost:8081/healthz` returns `200`
+- `/v1/workspaces/...` returns `401` before JWT/JWKS config (expected)
+
+## Common Pitfalls
+
+- Port conflicts on `8080`/`8081`: set `PORTARIUM_HTTP_PORT`.
+- Missing Docker dependencies: confirm `docker compose ps` is healthy.
+- PowerShell env var persistence: remove when done with `Remove-Item Env:PORTARIUM_ENABLE_TEMPORAL_WORKER`.
 
 ## Next
 

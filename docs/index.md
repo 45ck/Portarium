@@ -1,40 +1,36 @@
-# Documentation Index
+# Docs: Start Here
 
-Portarium documentation is organised by user intent.
+Use this page to pick the shortest path for what you are trying to do.
 
-## Start Here
+## I Want To Evaluate Portarium
 
-- New contributor: `docs/getting-started/dev-workflow.md`
-- Local run path: `docs/getting-started/local-dev.md`
-- Product and architecture context: `docs/project-overview.md`
+1. `README.md`
+2. `docs/project-overview.md`
+3. `docs/explanation/architecture.md`
 
-## Tutorials
+## I Want To Run It Locally
 
-- `docs/tutorials/first-work-item.md`
-- `docs/tutorials/evidence-trace.md`
+1. `docs/getting-started/local-dev.md`
+2. `docs/reference/runtime-and-env.md`
+3. `docs/reference/http-api.md`
 
-## How-to
+## I Want To Contribute Code
 
-- `docs/how-to/run-quality-gates.md`
+1. `docs/getting-started/dev-workflow.md`
+2. `docs/how-to/run-quality-gates.md`
+3. `docs/glossary.md`
+4. `docs/development-start-here.md`
 
-## Reference
+## I Want Contracts and Technical Facts
 
-- `docs/reference/http-api.md`
-- `docs/reference/runtime-and-env.md`
-- `docs/reference/ci-and-quality.md`
-- `docs/reference/schemas.md`
+- HTTP API: `docs/reference/http-api.md`
+- Runtime and env vars: `docs/reference/runtime-and-env.md`
+- CI and quality gates: `docs/reference/ci-and-quality.md`
+- Versioned schemas and spec sources: `docs/reference/schemas.md`
 
-## Explanation
+## I Want Architecture Rationale
 
-- `docs/explanation/architecture.md`
-- `docs/explanation/ports-and-adapters.md`
-- `docs/explanation/adr-index.md`
-- `docs/explanation/design-system.md`
-
-## Existing Source Documents
-
-- `docs/glossary.md`
-- `docs/development-start-here.md`
-- `docs/spec/openapi/portarium-control-plane.v1.yaml`
-- `docs/adr/`
-- `docs/domain/`
+- System architecture: `docs/explanation/architecture.md`
+- Ports and Adapters model: `docs/explanation/ports-and-adapters.md`
+- ADR navigation: `docs/explanation/adr-index.md`
+- UI/design direction: `docs/explanation/design-system.md`

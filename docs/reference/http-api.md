@@ -2,6 +2,8 @@
 
 Human-readable API reference for the current control-plane scaffold.
 
+Use this page for runtime reality. Use OpenAPI as contract source of truth.
+
 ## Source of truth
 
 - `docs/spec/openapi/portarium-control-plane.v1.yaml`
@@ -26,6 +28,12 @@ Human-readable API reference for the current control-plane scaffold.
 | GET    | `/v1/workspaces/{workspaceId}/evidence`                           | evidence list       |
 | GET    | `/v1/workspaces/{workspaceId}/location-events`                    | telemetry history   |
 | GET    | `/v1/workspaces/{workspaceId}/map-layers`                         | map layers          |
+
+## Current Scaffold Behavior
+
+- JWT/JWKS auth is required for protected routes.
+- When auth is not configured, protected routes return `401`.
+- Some resources are currently fixture-backed or stubbed while persistence adapters are in progress.
 
 ## Error example
 

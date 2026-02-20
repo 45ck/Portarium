@@ -14,6 +14,8 @@ Portarium uses stable **Ports** for capability contracts and **Adapters** for pr
 - Adapter: provider-specific implementation of a Port
 - Capability Matrix: declared support and constraints for an adapter
 
+These definitions align with `docs/glossary.md`.
+
 ## References
 
 - `docs/domain/port-taxonomy.md`

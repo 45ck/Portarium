@@ -1,5 +1,7 @@
 # Getting Started: Development Workflow
 
+Use this workflow for all engineering changes in this repository.
+
 Portarium uses a strict execution order:
 
 Spec -> Tasks (Beads) -> Implement -> Tests -> Quality gates -> Review -> QA -> Merge.
@@ -17,6 +19,8 @@ npm run bd -- issue next --priority P1
 npm run bd -- issue view bead-XXXX
 ```
 
+If you start untracked work, create a bead first.
+
 ## 3) Implement with tests
 
 - Keep domain boundaries enforced (`src/domain` has no infra/presentation imports).
@@ -28,6 +32,8 @@ npm run bd -- issue view bead-XXXX
 npm run ci:pr
 ```
 
+If this fails, do not mark work complete.
+
 ## 5) Open PR with evidence
 
 Include:
@@ -35,6 +41,14 @@ Include:
 - changed spec/ADR references
 - test evidence
 - gate output summary
+
+## Fast Checklist
+
+- Read rules and glossary
+- Confirm bead linkage
+- Implement with tests
+- Pass `npm run ci:pr`
+- Attach evidence in PR
 
 ## Useful commands
 

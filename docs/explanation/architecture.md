@@ -2,6 +2,8 @@
 
 Portarium is a layered, hexagonal system with strict dependency boundaries.
 
+If you only read one technical page after the README, read this one.
+
 ## Layers
 
 - `src/domain`: entities, value objects, invariants
