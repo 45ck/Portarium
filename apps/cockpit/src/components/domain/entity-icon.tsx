@@ -45,8 +45,8 @@ export function EntityIcon({
   const iconPath = iconAsset ? resolveAssetPath(iconAsset, theme) : undefined;
   const pixelSize = SIZE_PIXELS[size];
 
-  if (iconPath) {
-    const altText = decorative ? '' : (iconAsset.alt ?? `${entityType} icon`);
+  if (iconAsset && iconPath) {
+    const altText = decorative ? '' : (iconAsset?.alt ?? `${entityType} icon`);
     return (
       <img
         src={iconPath}

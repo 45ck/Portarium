@@ -45,11 +45,11 @@ export function EntityImage({
   const asset = getEntityImage(entityId);
   const src = asset ? resolveAssetPath(asset, theme) : undefined;
 
-  if (src) {
+  if (asset && src) {
     return (
       <img
         src={src}
-        alt={asset.alt ?? `${entityId} preview`}
+        alt={asset?.alt ?? `${entityId} preview`}
         className={`${VARIANT_CLASS[variant]} ${className ?? ''}`.trim()}
         style={ASPECT_STYLE[aspect]}
       />

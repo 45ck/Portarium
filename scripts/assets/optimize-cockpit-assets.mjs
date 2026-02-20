@@ -5,9 +5,9 @@ import process from 'node:process';
 const repoRoot = process.cwd();
 const assetRoot = path.join(repoRoot, 'apps', 'cockpit', 'public', 'assets');
 
-const result = spawnSync('npx', ['svgo', '-rf', assetRoot, '-o', assetRoot], {
+const npxExecutable = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+const result = spawnSync(npxExecutable, ['svgo', '-rf', assetRoot, '-o', assetRoot], {
   stdio: 'inherit',
-  shell: process.platform === 'win32',
 });
 
 if (result.status !== 0) {

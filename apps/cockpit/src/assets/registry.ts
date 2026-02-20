@@ -40,11 +40,13 @@ export function getAssetById(id: string): CockpitAsset | undefined {
 }
 
 export function getDomainIcon(entityType: DomainEntityType): CockpitAsset | undefined {
-  return getAssetById(DOMAIN_ICON_IDS[entityType]);
+  const assetId = DOMAIN_ICON_IDS[entityType];
+  return assetId !== undefined ? getAssetById(assetId) : undefined;
 }
 
 export function getEntityImage(entityId: string): CockpitAsset | undefined {
-  return getAssetById(ENTITY_IMAGE_IDS[entityId]);
+  const assetId = ENTITY_IMAGE_IDS[entityId];
+  return assetId !== undefined ? getAssetById(assetId) : undefined;
 }
 
 export function resolveAssetPath(
