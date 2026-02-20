@@ -131,6 +131,13 @@ Source of truth:
 npm run ci:pr
 ```
 
+Migration checks:
+
+```bash
+npm run migrate:ci
+npm run migrate:deploy
+```
+
 ## Documentation Map
 
 - `docs/index.md` - entry point

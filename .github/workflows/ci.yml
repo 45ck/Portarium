@@ -51,6 +51,9 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Validate schema migration framework
+        run: npm run migrate:ci
+
       - name: Run PR gates
         run: npm run ci:pr
 

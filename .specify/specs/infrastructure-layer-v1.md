@@ -82,6 +82,19 @@ ADR-0056 and existing domain invariants:
   - image policy and secret hygiene checks when artifacts are added,
   - infrastructure baseline gates (format/lint/validation).
   - Kubernetes overlay validation for `dev|staging|prod`.
+  - schema migration validation and dry-run execution for the expand phase.
+
+### 6) Database schema migration contract
+
+- Runtime schema changes must use versioned migrations.
+- Migrations must declare an explicit phase:
+  - **Expand** for backward-compatible additive changes.
+  - **Contract** for removal or incompatible cleanup.
+- Contract migrations must not run by default in CI/deploy automation.
+- Contract migrations require explicit opt-in and rollback SQL.
+- Tenant-aware migrations must execute per tenant target, with migration journal
+  tracking per target.
+- Deploy automation must run migration tooling before workload rollout.
 
 - Container images for the Control Plane and Execution Plane are built by
   `.github/workflows/ci-images.yml` and promoted through environment overlays.
@@ -95,3 +108,5 @@ ADR-0056 and existing domain invariants:
 - AWS Terraform modules are now implemented under `infra/terraform/aws` with local
   validation and environment examples. Azure/GCP provider directories are tracked
   as planned follow-up milestones.
+- Migration tooling is executable via repository scripts and runs in CI and CD
+  workflows.

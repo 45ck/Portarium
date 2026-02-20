@@ -34,6 +34,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Dry-run schema migrations (expand phase)
+        run: npm run migrate:deploy
+
       - name: Resolve overlay and image tag
         id: resolve
         shell: bash
