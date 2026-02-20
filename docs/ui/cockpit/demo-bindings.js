@@ -99,11 +99,27 @@
   }
 
   function findPrimaryWorkItem(snapshot) {
-    return (
-      snapshot.workItems.find(function (item) {
-        return item.code === 'WI-1099';
-      }) ?? snapshot.workItems[0]
-    );
+    const pendingApproval = snapshot.approvals.find(function (approval) {
+      return approval.status === 'pending';
+    });
+    if (pendingApproval) {
+      const fromPending = snapshot.workItems.find(function (item) {
+        return item.id === pendingApproval.workItemId;
+      });
+      if (fromPending) return fromPending;
+    }
+
+    const waitingRun = snapshot.runs.find(function (run) {
+      return run.status === 'waiting_for_approval';
+    });
+    if (waitingRun) {
+      const fromRun = snapshot.workItems.find(function (item) {
+        return item.id === waitingRun.workItemId;
+      });
+      if (fromRun) return fromRun;
+    }
+
+    return snapshot.workItems[0];
   }
 
   function findPrimaryRun(snapshot, workItem) {
@@ -206,7 +222,7 @@
         ? 'Decision captured. Run is approved and ready for downstream execution.'
         : primaryRun.status === 'rejected'
           ? 'Decision captured. Run is rejected and requires remediation before retry.'
-          : 'After approval the run resumes. ' + pendingCount + ' more approver(s) needed.';
+          : 'Run remains waiting for approval. ' + pendingCount + ' more approver(s) needed.';
     text('demoRunOutcomePreview', outcomeText);
 
     const runEvidenceCount = snapshot.evidence.filter(function (entry) {

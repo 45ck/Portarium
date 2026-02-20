@@ -120,6 +120,38 @@
     return 'unknown';
   }
 
+  function normalizeRequiredApprovals(run) {
+    if (!run) return 1;
+    const parsed = Number(run.requiredApprovals);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+  }
+
+  function normalizeGrantedApprovals(run) {
+    if (!run) return 0;
+    const parsed = Number(run.approvalsGranted);
+    return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0;
+  }
+
+  function buildFollowUpApproval(previousApproval, stageNumber, requestedAt) {
+    return {
+      id: previousApproval.id + '_stage_' + stageNumber,
+      code: previousApproval.code + '-' + stageNumber,
+      workItemId: previousApproval.workItemId,
+      runId: previousApproval.runId,
+      title: previousApproval.title + ' (stage ' + stageNumber + ')',
+      status: 'pending',
+      decision: null,
+      requestedAt,
+      requestedBy: 'System',
+      assignee: 'Approver User',
+      rule: previousApproval.rule,
+      slaDueAt: previousApproval.slaDueAt,
+      rationale: null,
+      decidedAt: null,
+      decidedBy: null,
+    };
+  }
+
   function updateLinkedEntitiesAfterDecision(approval, decision, actor, rationale) {
     const timestamp = nowIso();
     approval.status = 'decided';
@@ -129,13 +161,45 @@
     approval.decidedAt = timestamp;
 
     const run = findById(runtimeState.runs, approval.runId);
+    const requiredApprovals = normalizeRequiredApprovals(run);
+    const previousApprovedCount = normalizeGrantedApprovals(run);
+    const approvedCount =
+      decision === 'approve'
+        ? Math.min(requiredApprovals, previousApprovedCount + 1)
+        : previousApprovedCount;
     if (run) {
-      run.status = decision === 'approve' ? 'approved' : 'rejected';
+      run.approvalsGranted = approvedCount;
     }
 
     const workItem = findById(runtimeState.workItems, approval.workItemId);
+    const shouldQueueFollowUpApproval =
+      decision === 'approve' && approvedCount < requiredApprovals && run;
+    let followUpApproval = null;
+    if (shouldQueueFollowUpApproval) {
+      followUpApproval = buildFollowUpApproval(approval, approvedCount + 1, timestamp);
+      runtimeState.approvals.push(followUpApproval);
+      if (
+        Array.isArray(workItem?.approvalIds) &&
+        !workItem.approvalIds.includes(followUpApproval.id)
+      ) {
+        workItem.approvalIds.push(followUpApproval.id);
+      }
+    }
+
+    if (run) {
+      if (decision === 'approve') {
+        run.status = approvedCount >= requiredApprovals ? 'approved' : 'waiting_for_approval';
+      } else {
+        run.status = 'rejected';
+      }
+    }
+
     if (workItem) {
-      workItem.status = decision === 'approve' ? 'approved' : 'rejected';
+      if (decision === 'approve') {
+        workItem.status = approvedCount >= requiredApprovals ? 'approved' : 'pending_approval';
+      } else {
+        workItem.status = 'rejected';
+      }
       workItem.updatedAt = timestamp;
     }
 
@@ -149,7 +213,10 @@
     const evidenceEntry = {
       id: 'ev_decision_' + Date.now().toString(36),
       type: 'approval_decided',
-      message: 'Approval decision submitted (' + labelForDecision(decision).replace('_', ' ') + ')',
+      message:
+        decision === 'approve'
+          ? 'Approval decision submitted (approved ' + approvedCount + '/' + requiredApprovals + ')'
+          : 'Approval decision submitted (' + labelForDecision(decision).replace('_', ' ') + ')',
       workItemId: approval.workItemId,
       runId: approval.runId,
       approvalId: approval.id,
@@ -165,6 +232,7 @@
       approval,
       run,
       workItem,
+      followUpApproval,
       evidenceEntry,
     };
   }

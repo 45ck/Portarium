@@ -85,6 +85,8 @@
       "workItemId": "wi_1099",
       "workflowName": "Invoice correction",
       "status": "waiting_for_approval",
+      "requiredApprovals": 2,
+      "approvalsGranted": 0,
       "executionTier": "Human-approve",
       "initiator": "Operator User",
       "startedAt": "2026-02-20T08:53:00Z",

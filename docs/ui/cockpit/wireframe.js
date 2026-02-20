@@ -1477,7 +1477,8 @@ function triageUpdateProgress() {
   var currentSpan = document.querySelector('.triage__current');
   if (progressFill) progressFill.style.width = (triageIndex / total) * 100 + '%';
   if (progressBar) progressBar.setAttribute('aria-valuenow', triageIndex);
-  if (progressBar) progressBar.setAttribute('aria-valuetext', triageIndex + ' of ' + total + ' reviewed');
+  if (progressBar)
+    progressBar.setAttribute('aria-valuetext', triageIndex + ' of ' + total + ' reviewed');
   if (currentSpan) currentSpan.textContent = Math.min(triageIndex + 1, total);
 }
 
@@ -1499,7 +1500,8 @@ function renderTriageDiff(cardId) {
   if (!diff) {
     titleEl.textContent = 'Plan diff';
     metaEl.textContent = 'No active decision.';
-    bodyEl.innerHTML = '<div class="triage-diff__empty">Select a pending approval to inspect changes.</div>';
+    bodyEl.innerHTML =
+      '<div class="triage-diff__empty">Select a pending approval to inspect changes.</div>';
     return;
   }
 
@@ -1970,8 +1972,7 @@ function evaluateWorkflowReadiness() {
     var txt = nameEl ? nameEl.textContent.toLowerCase() : '';
     return txt.indexOf('stop') >= 0 || txt.indexOf('e-stop') >= 0;
   });
-  var needsSafetyAction =
-    templateId === 'robot-fleet-triage' || templateId === 'hybrid-incident';
+  var needsSafetyAction = templateId === 'robot-fleet-triage' || templateId === 'hybrid-incident';
 
   var items = [
     {
@@ -2793,17 +2794,25 @@ const ApprovalValidation = (function () {
     var submitBtn = document.getElementById('submitDecision');
     if (!decision || !rationale || !submitBtn) return;
 
+    var decisionValue = decision.value.trim().toLowerCase();
+    var requiresRationale = decisionValue === 'deny' || decisionValue === 'request changes';
     var decisionValid = decision.value !== '';
-    var rationaleValid = rationale.value.trim().length >= 10;
+    var rationaleValid = !requiresRationale || rationale.value.trim().length >= 10;
 
     var fieldDecision = document.getElementById('fieldDecision');
     var fieldRationale = document.getElementById('fieldRationale');
     var decisionTouched = decision.value !== '';
-    var rationaleTouched = rationale.value.trim().length > 0;
+    var rationaleTouched = rationale.value.trim().length > 0 || requiresRationale;
     if (fieldDecision)
       fieldDecision.classList.toggle('field--error', decisionTouched && !decisionValid);
     if (fieldRationale) {
-      var showError = rationaleTouched && !rationaleValid;
+      var rationaleLabel = fieldRationale.querySelector('.field__label');
+      if (rationaleLabel) {
+        rationaleLabel.textContent = requiresRationale
+          ? 'Rationale (required for deny/request changes)'
+          : 'Rationale (optional)';
+      }
+      var showError = requiresRationale && rationaleTouched && !rationaleValid;
       fieldRationale.classList.toggle('field--error', showError);
     }
 
@@ -2826,7 +2835,10 @@ const ApprovalValidation = (function () {
       }
     }
 
-    rationale.setAttribute('aria-invalid', rationaleTouched && !rationaleValid ? 'true' : 'false');
+    rationale.setAttribute(
+      'aria-invalid',
+      requiresRationale && rationaleTouched && !rationaleValid ? 'true' : 'false',
+    );
     var rationaleError = fieldRationale ? fieldRationale.querySelector('.field__error') : null;
     if (!rationaleError && fieldRationale) {
       rationaleError = document.createElement('div');
@@ -2835,8 +2847,9 @@ const ApprovalValidation = (function () {
       fieldRationale.appendChild(rationaleError);
     }
     if (rationaleError) {
-      if (rationaleTouched && !rationaleValid) {
-        rationaleError.textContent = 'Rationale must be at least 10 characters.';
+      if (requiresRationale && rationaleTouched && !rationaleValid) {
+        rationaleError.textContent =
+          'Rationale is required for deny/request changes (minimum 10 characters).';
         rationaleError.style.display = '';
       } else {
         rationaleError.textContent = '';
@@ -3274,8 +3287,7 @@ function main() {
         Keyboard.showToast('View: ' + TRIAGE_LAYOUT_LABELS[nextLayout]);
       }
       e.preventDefault();
-    }
-    else if (key === ' ') {
+    } else if (key === ' ') {
       e.preventDefault();
       var currentCardId = triageGetCurrentCardId();
       var currentCard = currentCardId ? document.getElementById(currentCardId) : null;
@@ -3939,7 +3951,12 @@ function main() {
 
     if (isMapLayerEnabled('coverage')) {
       MAP_COVERAGE_GEOMETRY.forEach(function (cell) {
-        var color = cell.intensity === 'high' ? 'rgba(179, 38, 30, 0.36)' : cell.intensity === 'medium' ? 'rgba(164, 107, 0, 0.32)' : 'rgba(31, 122, 54, 0.28)';
+        var color =
+          cell.intensity === 'high'
+            ? 'rgba(179, 38, 30, 0.36)'
+            : cell.intensity === 'medium'
+              ? 'rgba(164, 107, 0, 0.32)'
+              : 'rgba(31, 122, 54, 0.28)';
         window.L.rectangle(
           [
             [cell.bounds.top, cell.bounds.left],
@@ -4036,7 +4053,11 @@ function main() {
       if (!robot || !point) return;
 
       var statusLower = String(robot.status || '').toLowerCase();
-      if (filterState.clusterEnabled && statusLower === 'normal' && robotId !== mapSelectedRobotId) {
+      if (
+        filterState.clusterEnabled &&
+        statusLower === 'normal' &&
+        robotId !== mapSelectedRobotId
+      ) {
         return;
       }
 
@@ -4262,7 +4283,7 @@ function main() {
     var cluster = document.querySelector('.js-map-cluster');
     if (cluster) {
       cluster.hidden =
-        !clusterEnabled || (status !== 'all' && status !== 'normal') || (site === 'warehouse-a');
+        !clusterEnabled || (status !== 'all' && status !== 'normal') || site === 'warehouse-a';
     }
 
     mapLastFilterState = {

@@ -1872,16 +1872,16 @@
                   <div class="field__error" role="alert" style="display: none"></div>
                 </label>
                 <label class="field" id="fieldRationale">
-                  <span class="field__label">Rationale (required)</span>
+                  <span class="field__label">Rationale (optional)</span>
                   <textarea
                     class="field__input"
                     id="approvalRationale"
                     rows="3"
                     placeholder="Why is this plan acceptable or not?"
-                    required
-                    minlength="10"
                   ></textarea>
-                  <span class="field__error">Rationale is required (minimum 10 characters)</span>
+                  <span class="field__error"
+                    >Rationale is required for deny/request changes (minimum 10 characters)</span
+                  >
                   <div class="field__error" role="alert" style="display: none"></div>
                 </label>
                 <div class="outcome-preview" id="demoRunOutcomePreview">
