@@ -37,6 +37,7 @@ Owner: Principal Engineer
   - `node scripts/beads/generate-execution-dag.mjs`
   - `npm run beads:audit:weekly`
   - `npm run beads:audit:metadata`
+  - `npm run beads:audit:scorecard`
 - Confirm next ready bead and claim:
   - `npm run bd -- issue next --priority P0`
   - `npm run bd -- issue claim bead-XXXX --by "<owner>"`

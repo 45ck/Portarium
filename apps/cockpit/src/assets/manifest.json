@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:44:16.136Z",
+  "generatedAt": "2026-02-20T02:46:06.421Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -1321,11 +1321,11 @@
       "promptRef": "CB-ICON-26",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:44:16.136Z",
+        "createdAt": "2026-02-20T02:46:06.421Z",
         "operator": "@45ck",
         "seed": 61026
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
       "tags": [
         "domain",

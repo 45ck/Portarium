@@ -62,6 +62,8 @@
     "beads:audit:metadata": "node scripts/beads/generate-bead-metadata-audit.mjs",
     "beads:audit:metadata:check": "node scripts/beads/generate-bead-metadata-audit.mjs --check",
     "beads:audit:metadata:enforce": "node scripts/beads/generate-bead-metadata-audit.mjs --enforce",
+    "beads:audit:scorecard": "node scripts/beads/generate-bead-acceptance-scorecard.mjs",
+    "beads:audit:scorecard:check": "node scripts/beads/generate-bead-acceptance-scorecard.mjs --check",
     "ci:gates": "node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",
     "migrate:check": "tsx src/infrastructure/migrations/cli.ts check",

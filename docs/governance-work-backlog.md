@@ -80,6 +80,7 @@ Goal: prevent orphaned work, enforce quality standards, enable audit.
 - STORY-V04.5 — bead-0191
   - PE quality: acceptance scorecard for each bead (spec, tests, review, docs, security, performance).
   - AC: scorecard template published; applied to all beads.
+  - Artifact: `docs/governance/bead-acceptance-scorecard.md`
 - STORY-V04.6 — bead-0192
   - PE quality: stop-loss thresholds (risk score, failed gates, open decisions) that force cycle halt.
   - AC: thresholds documented; enforcement mechanism in place.
