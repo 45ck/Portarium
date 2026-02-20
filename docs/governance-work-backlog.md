@@ -171,6 +171,7 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.2 — bead-0182
   - Test evidence: mutation-test or fault-injection for policy and SoD logic.
   - AC: mutation score above threshold; gaps documented.
+  - Artifact: `docs/review/bead-0182-policy-sod-fault-injection-review.md`
 - STORY-V07.3 — bead-0183
   - Review: tie each spec in .specify/specs to at least one implementation and test bead.
   - AC: traceability matrix complete.
