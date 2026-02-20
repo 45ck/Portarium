@@ -1,5 +1,6 @@
 import type { AppContext } from '../common/context.js';
 import type { AppError } from '../common/errors.js';
+import { observeCommandExecution } from '../common/command-observability.js';
 import { err } from '../common/result.js';
 import type { Result } from '../common/result.js';
 
@@ -29,21 +30,28 @@ export class CommandBus {
     ctx: AppContext,
     input: TInput,
   ): Promise<Result<TOutput, AppError>> {
-    const handler = this.handlers.get(name);
-    if (!handler) {
-      return err({
-        kind: 'DependencyFailure',
-        message: `No handler registered for command '${name}'.`,
-      });
-    }
+    return observeCommandExecution({
+      commandName: name,
+      ctx,
+      run: async () => {
+        const handler = this.handlers.get(name);
+        if (!handler) {
+          return err({
+            kind: 'DependencyFailure',
+            message: `No handler registered for command '${name}'.`,
+          });
+        }
 
-    try {
-      return (await handler(ctx, input)) as Result<TOutput, AppError>;
-    } catch (error) {
-      return err({
-        kind: 'DependencyFailure',
-        message: error instanceof Error ? error.message : 'Unhandled command handler error.',
-      });
-    }
+        try {
+          return (await handler(ctx, input)) as Result<TOutput, AppError>;
+        } catch (error) {
+          return err({
+            kind: 'DependencyFailure',
+            message: error instanceof Error ? error.message : 'Unhandled command handler error.',
+          });
+        }
+      },
+      classifyOutcome: (result) => (result.ok ? 'ok' : 'error'),
+    });
   }
 }
