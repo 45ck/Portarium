@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portarium.dev/schemas/cockpit-assets-manifest.schema.json",
+  "title": "Cockpit Assets Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "assets"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "size": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "createdAt", "operator"],
+      "properties": {
+        "model": { "type": "string", "minLength": 1 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "operator": { "type": "string", "minLength": 1 },
+        "seed": { "type": "integer" }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "domain",
+        "style",
+        "theme",
+        "sizes",
+        "formats",
+        "paths",
+        "decorative",
+        "promptRef",
+        "generator",
+        "status",
+        "license",
+        "tags"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["icon", "image", "illustration"]
+        },
+        "domain": {
+          "type": "string",
+          "enum": ["robot", "agent", "mission", "adapter", "evidence", "policy", "fleet", "other"]
+        },
+        "style": {
+          "type": "string",
+          "enum": ["isometric-3d", "realistic", "flat"]
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["light", "dark", "neutral"]
+        },
+        "sizes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "xs": { "$ref": "#/$defs/size" },
+            "sm": { "$ref": "#/$defs/size" },
+            "md": { "$ref": "#/$defs/size" },
+            "lg": { "$ref": "#/$defs/size" },
+            "xl": { "$ref": "#/$defs/size" }
+          },
+          "minProperties": 1
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["svg", "png", "webp"]
+          },
+          "minItems": 1
+        },
+        "paths": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "enum": ["light", "dark", "neutral"]
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^/assets/"
+          },
+          "minProperties": 1
+        },
+        "alt": {
+          "type": "string"
+        },
+        "decorative": {
+          "type": "boolean"
+        },
+        "promptRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generator": {
+          "$ref": "#/$defs/generator"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "approved", "deprecated"]
+        },
+        "license": {
+          "type": "string",
+          "enum": ["internal-generated"]
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "decorative": { "const": false }
+            }
+          },
+          "then": {
+            "required": ["alt"],
+            "properties": {
+              "alt": { "minLength": 1 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

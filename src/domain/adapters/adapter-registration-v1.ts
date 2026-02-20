@@ -14,6 +14,7 @@ import {
   PORT_FAMILY_CAPABILITIES,
 } from '../ports/port-family-capabilities-v1.js';
 import {
+  parseRecord,
   readBoolean,
   readInteger,
   readOptionalString,
@@ -111,7 +112,7 @@ function parseCapabilityMatrix(raw: unknown, portFamily: PortFamily): readonly C
 }
 
 function parseCapability(raw: unknown, path: string, portFamily: PortFamily): CapabilityClaimV1 {
-  const record = assertRecord(raw, path);
+  const record = parseRecord(raw, path, AdapterRegistrationParseError);
   const capability = parseOptionalCapability(record);
   const operation = parseOperation(record, path, capability);
   const requiresAuth = readBoolean(record, 'requiresAuth', AdapterRegistrationParseError);
@@ -240,17 +241,21 @@ function parseExecutionPolicy(record: Record<string, unknown>): AdapterExecution
 }
 
 function parseMachineRegistration(raw: unknown, path: string): AdapterMachineEntryV1 {
-  const record = assertRecord(raw, path);
-  const machineId = MachineId(readMachineField(record, `${path}.machineId`, 'machineId'));
-  const endpointUrl = readMachineField(record, `${path}.endpointUrl`, 'endpointUrl');
+  const record = parseRecord(raw, path, AdapterRegistrationParseError);
+  const machineId = MachineId(
+    readString(record, 'machineId', AdapterRegistrationParseError, { path }),
+  );
+  const endpointUrl = readString(record, 'endpointUrl', AdapterRegistrationParseError, { path });
   if (!endpointUrl.startsWith('http://') && !endpointUrl.startsWith('https://')) {
     throw new AdapterRegistrationParseError(
       `${path}.endpointUrl must start with http:// or https://.`,
     );
   }
   const active = readBoolean(record, 'active', AdapterRegistrationParseError);
-  const displayName = parseMachineFieldOptional(record, `${path}.displayName`, 'displayName');
-  const authHint = parseMachineFieldOptional(record, `${path}.authHint`, 'authHint');
+  const displayName = readOptionalString(record, 'displayName', AdapterRegistrationParseError, {
+    path,
+  });
+  const authHint = readOptionalString(record, 'authHint', AdapterRegistrationParseError, { path });
 
   return {
     machineId,
@@ -259,38 +264,6 @@ function parseMachineRegistration(raw: unknown, path: string): AdapterMachineEnt
     ...(displayName ? { displayName } : {}),
     ...(authHint ? { authHint } : {}),
   };
-}
-
-function readMachineField(record: Record<string, unknown>, label: string, key: string): string {
-  const value = record[key];
-  if (typeof value !== 'string' || value.trim() === '') {
-    throw new AdapterRegistrationParseError(`${label} must be a non-empty string.`);
-  }
-  return value;
-}
-
-function parseMachineFieldOptional(
-  record: Record<string, unknown>,
-  label: string,
-  key: string,
-): string | undefined {
-  const value = record[key];
-  if (value === undefined) return undefined;
-  if (typeof value !== 'string' || value.trim() === '') {
-    throw new AdapterRegistrationParseError(`${label} must be a non-empty string when provided.`);
-  }
-  return value;
-}
-
-function assertRecord(value: unknown, path: string): Record<string, unknown> {
-  if (!isRecord(value)) {
-    throw new AdapterRegistrationParseError(`${path} must be an object.`);
-  }
-  return value;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function assertHttpsEndpoint(value: string, fieldName: string): void {

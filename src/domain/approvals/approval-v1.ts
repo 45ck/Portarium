@@ -14,6 +14,7 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
+  parseRecord,
   parseIsoDate,
   readInteger,
   readIsoString,
@@ -173,10 +174,10 @@ function parseEscalationChain(value: unknown): readonly EscalationStepV1[] {
 }
 
 function parseEscalationStep(value: unknown, pathLabel: string): EscalationStepV1 {
-  if (!isRecord(value)) throw new ApprovalParseError(`${pathLabel} must be an object.`);
-  const stepOrder = readInteger(value, 'stepOrder', ApprovalParseError);
-  const escalateToUserId = readString(value, 'escalateToUserId', ApprovalParseError);
-  const afterHours = readInteger(value, 'afterHours', ApprovalParseError);
+  const record = parseRecord(value, pathLabel, ApprovalParseError);
+  const stepOrder = readInteger(record, 'stepOrder', ApprovalParseError);
+  const escalateToUserId = readString(record, 'escalateToUserId', ApprovalParseError);
+  const afterHours = readInteger(record, 'afterHours', ApprovalParseError);
   return { stepOrder, escalateToUserId, afterHours };
 }
 
@@ -195,8 +196,4 @@ function isApprovalDecision(value: string): value is ApprovalDecision {
 
 function isApprovalStatus(value: string): value is ApprovalStatus {
   return value === 'Pending' || isApprovalDecision(value);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

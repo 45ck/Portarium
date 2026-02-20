@@ -1,0 +1,34 @@
+name: Cockpit Assets
+
+on:
+  pull_request:
+    paths:
+      - 'apps/cockpit/public/assets/**'
+      - 'apps/cockpit/src/assets/**'
+      - 'apps/cockpit/src/components/domain/**'
+      - 'docs/assets/prompts/cockpit-entity-assets.yml'
+      - 'docs/assets/manifests/cockpit-assets-log.md'
+      - 'docs/ui/cockpit/assets-guidelines.md'
+      - 'scripts/assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/cockpit-assets.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate asset manifest and orphans
+        run: npm run cockpit:assets:check
+      - name: Optimize SVG assets
+        run: npm run cockpit:assets:optimize
+      - name: Ensure optimized assets are committed
+        run: git diff --exit-code -- apps/cockpit/public/assets
+      - name: Cockpit tests (asset registry + components)
+        run: npm run -w apps/cockpit test -- src/assets/registry.test.ts src/components/domain/entity-components.test.tsx

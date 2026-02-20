@@ -1,0 +1,373 @@
+{
+  "$schema": "./manifest.schema.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-02-20T01:55:00.000Z",
+  "assets": [
+    {
+      "id": "icon-robot-ground",
+      "kind": "icon",
+      "domain": "robot",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/robot-ground.svg",
+        "dark": "/assets/icons/domain/robot-ground.svg"
+      },
+      "alt": "Ground robot icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-01",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61001
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "robot", "icon"]
+    },
+    {
+      "id": "icon-robot-drone",
+      "kind": "icon",
+      "domain": "robot",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/robot-drone.svg",
+        "dark": "/assets/icons/domain/robot-drone.svg"
+      },
+      "alt": "Drone icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-02",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61002
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "drone", "icon"]
+    },
+    {
+      "id": "icon-agent",
+      "kind": "icon",
+      "domain": "agent",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/agent.svg",
+        "dark": "/assets/icons/domain/agent.svg"
+      },
+      "alt": "AI agent icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-03",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61003
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "agent", "icon"]
+    },
+    {
+      "id": "icon-adapter",
+      "kind": "icon",
+      "domain": "adapter",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/adapter.svg",
+        "dark": "/assets/icons/domain/adapter.svg"
+      },
+      "alt": "Adapter icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-04",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61004
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "adapter", "icon"]
+    },
+    {
+      "id": "icon-mission",
+      "kind": "icon",
+      "domain": "mission",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/mission.svg",
+        "dark": "/assets/icons/domain/mission.svg"
+      },
+      "alt": "Mission icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-05",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61005
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "mission", "icon"]
+    },
+    {
+      "id": "icon-evidence",
+      "kind": "icon",
+      "domain": "evidence",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/evidence.svg",
+        "dark": "/assets/icons/domain/evidence.svg"
+      },
+      "alt": "Evidence icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-06",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61006
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "evidence", "icon"]
+    },
+    {
+      "id": "icon-policy",
+      "kind": "icon",
+      "domain": "policy",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/policy.svg",
+        "dark": "/assets/icons/domain/policy.svg"
+      },
+      "alt": "Policy icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-07",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61007
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "policy", "icon"]
+    },
+    {
+      "id": "icon-fleet",
+      "kind": "icon",
+      "domain": "fleet",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": { "width": 20, "height": 20 },
+        "md": { "width": 24, "height": 24 },
+        "lg": { "width": 32, "height": 32 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "light": "/assets/icons/domain/fleet.svg",
+        "dark": "/assets/icons/domain/fleet.svg"
+      },
+      "alt": "Fleet icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-08",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61008
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["domain", "fleet", "icon"]
+    },
+    {
+      "id": "image-robot-ground-alpha",
+      "kind": "image",
+      "domain": "robot",
+      "style": "realistic",
+      "theme": "neutral",
+      "sizes": {
+        "md": { "width": 384, "height": 256 },
+        "lg": { "width": 768, "height": 512 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "neutral": "/assets/images/robots/robot-ground-alpha.svg"
+      },
+      "alt": "Ground robot in warehouse aisle",
+      "decorative": false,
+      "promptRef": "CB-IMG-01",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61101
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["robot", "entity-image"]
+    },
+    {
+      "id": "image-robot-drone-gamma",
+      "kind": "image",
+      "domain": "robot",
+      "style": "realistic",
+      "theme": "neutral",
+      "sizes": {
+        "md": { "width": 384, "height": 256 },
+        "lg": { "width": 768, "height": 512 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "neutral": "/assets/images/robots/robot-drone-gamma.svg"
+      },
+      "alt": "Inspection drone near industrial gantry",
+      "decorative": false,
+      "promptRef": "CB-IMG-02",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61102
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["drone", "entity-image"]
+    },
+    {
+      "id": "image-agent-ops-analyst",
+      "kind": "image",
+      "domain": "agent",
+      "style": "realistic",
+      "theme": "neutral",
+      "sizes": {
+        "md": { "width": 384, "height": 256 },
+        "lg": { "width": 768, "height": 512 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "neutral": "/assets/images/agents/agent-ops-analyst.svg"
+      },
+      "alt": "Operations analyst AI agent profile artwork",
+      "decorative": false,
+      "promptRef": "CB-IMG-03",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61103
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["agent", "entity-image"]
+    },
+    {
+      "id": "image-agent-policy-reviewer",
+      "kind": "image",
+      "domain": "agent",
+      "style": "realistic",
+      "theme": "neutral",
+      "sizes": {
+        "md": { "width": 384, "height": 256 },
+        "lg": { "width": 768, "height": 512 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "neutral": "/assets/images/agents/agent-policy-reviewer.svg"
+      },
+      "alt": "Policy reviewer AI agent profile artwork",
+      "decorative": false,
+      "promptRef": "CB-IMG-04",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61104
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["agent", "entity-image"]
+    },
+    {
+      "id": "illustration-fleet-overview",
+      "kind": "illustration",
+      "domain": "fleet",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "lg": { "width": 1200, "height": 675 }
+      },
+      "formats": ["svg"],
+      "paths": {
+        "neutral": "/assets/illustrations/fleet-overview.svg"
+      },
+      "alt": "Fleet overview illustration with robots and drones",
+      "decorative": false,
+      "promptRef": "CB-ILL-01",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T01:55:00.000Z",
+        "operator": "@45ck",
+        "seed": 61201
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": ["fleet", "illustration"]
+    }
+  ]
+}

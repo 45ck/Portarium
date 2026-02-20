@@ -102,3 +102,12 @@ The cockpit now includes a frontend-only mock API layer for high-fidelity demos 
 2. Navigate to Run detail and submit an approval decision.
 3. Observe updates to Work Item/Run/Approvals state and Evidence entries.
 4. Use `Reset demo state` in the status bar to return to the deterministic start state.
+
+## Asset Pipeline (Hi-fi App)
+
+The high-fidelity app in `apps/cockpit` now has a manifest-based asset pipeline for
+domain icons and entity imagery.
+
+- Guidelines: `docs/ui/cockpit/assets-guidelines.md`
+- Prompt catalog: `docs/assets/prompts/cockpit-entity-assets.yml`
+- Runtime manifest: `apps/cockpit/src/assets/manifest.json`

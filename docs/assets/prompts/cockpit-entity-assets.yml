@@ -1,0 +1,154 @@
+# cspell:disable
+model_defaults:
+  model: gemini-3-pro-image-preview
+  output_formats: ['png', 'webp', 'svg-when-clean']
+  guidance:
+    - 'Target apps/cockpit first. Keep domain visuals in manifest, keep generic controls in Lucide.'
+    - 'Use explicit camera angle, lens, material and background instructions for consistency.'
+    - 'When seed is unavailable, force consistency through fixed framing and palette constraints.'
+  palettes:
+    arctic_ops: ['#0B1220', '#2563EB', '#14B8A6', '#EAF1FF', '#FFFFFF']
+    midnight: ['#0A1220', '#22D3EE', '#1D4ED8', '#111827', '#E5E7EB']
+
+prompts:
+  - id: CB-ICON-01
+    intent: 'Domain icon: ground robot'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61001
+    prompt: >
+      Create a crisp isometric 3D icon of an autonomous ground robot for Portarium Cockpit.
+      Transparent background. No text. Rounded industrial body, visible wheel modules.
+      Palette limited to Arctic Ops colors. Keep shape readable at 20px and 24px.
+    negative_prompts: ['no logo', 'no tiny details', 'no photo background']
+
+  - id: CB-ICON-02
+    intent: 'Domain icon: drone'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61002
+    prompt: >
+      Isometric 3D icon of a quadcopter inspection drone.
+      Transparent background, no text, no brand marks.
+      Use Arctic Ops palette only. Balanced silhouette for small UI sizes.
+    negative_prompts: ['no motion blur', 'no cluttered rotors']
+
+  - id: CB-ICON-03
+    intent: 'Domain icon: AI agent'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.6
+    seed: 61003
+    prompt: >
+      Isometric 3D icon for an AI agent profile.
+      Futuristic avatar glyph with neural motif, transparent background.
+      Keep high contrast and clean edges for dark/light theme usage.
+
+  - id: CB-ICON-04
+    intent: 'Domain icon: adapter'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61004
+    prompt: >
+      Isometric 3D icon showing a platform adapter/connector concept:
+      two interlocking plugs with a subtle data bridge.
+      Transparent background, no text.
+
+  - id: CB-ICON-05
+    intent: 'Domain icon: mission'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61005
+    prompt: >
+      Isometric 3D mission icon with path nodes and directional route arrow.
+      Transparent background. Strong readability at small sizes.
+
+  - id: CB-ICON-06
+    intent: 'Domain icon: evidence'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61006
+    prompt: >
+      Isometric 3D icon representing evidence artifact and integrity check.
+      Document tile + verification badge. Transparent background.
+
+  - id: CB-ICON-07
+    intent: 'Domain icon: policy'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61007
+    prompt: >
+      Isometric 3D policy shield icon with governance checkmark.
+      Transparent background and balanced shape.
+
+  - id: CB-ICON-08
+    intent: 'Domain icon: fleet'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61008
+    prompt: >
+      Isometric 3D fleet icon combining multiple robot silhouettes.
+      Transparent background. Keep icon legible at 20px.
+
+  - id: CB-IMG-01
+    intent: 'Entity image: ground robot'
+    style: 'realistic'
+    aspect_ratio: '3:2'
+    temperature: 0.7
+    seed: 61101
+    prompt: >
+      Generate a realistic product-card image of an autonomous ground robot in a warehouse aisle.
+      Clean scene, soft industrial lighting, no people, no logos, no overlaid text.
+      Camera: eye-level, 35mm lens look, shallow depth of field.
+    negative_prompts: ['no watermark text', 'no brand logos', 'no UI overlays']
+
+  - id: CB-IMG-02
+    intent: 'Entity image: inspection drone'
+    style: 'realistic'
+    aspect_ratio: '3:2'
+    temperature: 0.7
+    seed: 61102
+    prompt: >
+      Realistic product-card image of an inspection drone near industrial steel framework.
+      Bright neutral background, high clarity silhouette, no people, no logos.
+
+  - id: CB-IMG-03
+    intent: 'Entity image: operations analyst agent'
+    style: 'realistic'
+    aspect_ratio: '3:2'
+    temperature: 0.7
+    seed: 61103
+    prompt: >
+      Realistic conceptual portrait card for an AI operations analyst agent.
+      Abstract but professional, neutral background, no literal human face.
+      High contrast suitable for dashboard cards.
+
+  - id: CB-IMG-04
+    intent: 'Entity image: policy reviewer agent'
+    style: 'realistic'
+    aspect_ratio: '3:2'
+    temperature: 0.7
+    seed: 61104
+    prompt: >
+      Realistic conceptual portrait card for a policy reviewer AI agent.
+      Governance motif with shield-like geometry, no text, no logos.
+
+  - id: CB-ILL-01
+    intent: 'Illustration: fleet overview scene'
+    style: 'isometric-3d'
+    aspect_ratio: '16:9'
+    temperature: 0.6
+    seed: 61201
+    prompt: >
+      Isometric fleet overview scene for Portarium Cockpit:
+      multiple ground robots and drones in a clean operations environment.
+      No text labels or logos. Background should be calm and UI-friendly.
+
+# cspell:enable
