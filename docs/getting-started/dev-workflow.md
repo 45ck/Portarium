@@ -17,6 +17,7 @@ Spec -> Tasks (Beads) -> Implement -> Tests -> Quality gates -> Review -> QA -> 
 ```bash
 npm run bd -- issue next --priority P1
 npm run bd -- issue view bead-XXXX
+npm run bd -- issue claim bead-XXXX --by "<owner>"
 ```
 
 If you start untracked work, create a bead first.
@@ -41,6 +42,7 @@ Include:
 - changed spec/ADR references
 - test evidence
 - gate output summary
+- bead claim/close state updated (`issue close` or `issue unclaim`)
 
 ## Fast Checklist
 

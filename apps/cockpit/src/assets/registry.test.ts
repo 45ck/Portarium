@@ -29,8 +29,8 @@ describe('cockpit asset registry', () => {
     expect(icon).toBeDefined();
     if (!icon) return;
 
-    expect(resolveAssetPath(icon, 'light')).toBe('/assets/icons/domain/agent.svg');
-    expect(resolveAssetPath(icon, 'dark')).toBe('/assets/icons/domain/agent.svg');
+    expect(resolveAssetPath(icon, 'light')).toBe('/assets/icons/domain/agent.png');
+    expect(resolveAssetPath(icon, 'dark')).toBe('/assets/icons/domain/agent.png');
   });
 
   it('reports format support correctly', () => {
@@ -38,7 +38,7 @@ describe('cockpit asset registry', () => {
     expect(icon).toBeDefined();
     if (!icon) return;
 
-    expect(assetSupportsFormat(icon, 'svg')).toBe(true);
+    expect(assetSupportsFormat(icon, 'png')).toBe(true);
     expect(assetSupportsFormat(icon, 'webp')).toBe(false);
   });
 

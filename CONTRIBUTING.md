@@ -20,6 +20,11 @@ Use Beads for all work.
 ```bash
 npm run bd -- issue next --priority P1
 npm run bd -- issue view bead-XXXX
+npm run bd -- issue claim bead-XXXX --by "<owner>"
+# when paused/handed off
+npm run bd -- issue unclaim bead-XXXX --by "<owner>"
+# when completed
+npm run bd -- issue close bead-XXXX
 ```
 
 Commit `.beads/issues.jsonl` with related code changes.

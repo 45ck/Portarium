@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T01:55:00.000Z",
+  "generatedAt": "2026-02-20T02:16:16.660Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -10,27 +10,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/robot-ground.svg",
-        "dark": "/assets/icons/domain/robot-ground.svg"
+        "light": "/assets/icons/domain/robot-ground.png",
+        "dark": "/assets/icons/domain/robot-ground.png"
       },
       "alt": "Ground robot icon",
       "decorative": false,
       "promptRef": "CB-ICON-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61001
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "robot", "icon"]
+      "tags": [
+        "domain",
+        "robot",
+        "icon"
+      ]
     },
     {
       "id": "icon-robot-drone",
@@ -39,27 +54,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/robot-drone.svg",
-        "dark": "/assets/icons/domain/robot-drone.svg"
+        "light": "/assets/icons/domain/robot-drone.png",
+        "dark": "/assets/icons/domain/robot-drone.png"
       },
       "alt": "Drone icon",
       "decorative": false,
       "promptRef": "CB-ICON-02",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61002
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "drone", "icon"]
+      "tags": [
+        "domain",
+        "drone",
+        "icon"
+      ]
     },
     {
       "id": "icon-agent",
@@ -68,27 +98,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/agent.svg",
-        "dark": "/assets/icons/domain/agent.svg"
+        "light": "/assets/icons/domain/agent.png",
+        "dark": "/assets/icons/domain/agent.png"
       },
       "alt": "AI agent icon",
       "decorative": false,
       "promptRef": "CB-ICON-03",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61003
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "agent", "icon"]
+      "tags": [
+        "domain",
+        "agent",
+        "icon"
+      ]
     },
     {
       "id": "icon-adapter",
@@ -97,27 +142,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/adapter.svg",
-        "dark": "/assets/icons/domain/adapter.svg"
+        "light": "/assets/icons/domain/adapter.png",
+        "dark": "/assets/icons/domain/adapter.png"
       },
       "alt": "Adapter icon",
       "decorative": false,
       "promptRef": "CB-ICON-04",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61004
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "adapter", "icon"]
+      "tags": [
+        "domain",
+        "adapter",
+        "icon"
+      ]
     },
     {
       "id": "icon-mission",
@@ -126,27 +186,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/mission.svg",
-        "dark": "/assets/icons/domain/mission.svg"
+        "light": "/assets/icons/domain/mission.png",
+        "dark": "/assets/icons/domain/mission.png"
       },
       "alt": "Mission icon",
       "decorative": false,
       "promptRef": "CB-ICON-05",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61005
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "mission", "icon"]
+      "tags": [
+        "domain",
+        "mission",
+        "icon"
+      ]
     },
     {
       "id": "icon-evidence",
@@ -155,27 +230,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/evidence.svg",
-        "dark": "/assets/icons/domain/evidence.svg"
+        "light": "/assets/icons/domain/evidence.png",
+        "dark": "/assets/icons/domain/evidence.png"
       },
       "alt": "Evidence icon",
       "decorative": false,
       "promptRef": "CB-ICON-06",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61006
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "evidence", "icon"]
+      "tags": [
+        "domain",
+        "evidence",
+        "icon"
+      ]
     },
     {
       "id": "icon-policy",
@@ -184,27 +274,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/policy.svg",
-        "dark": "/assets/icons/domain/policy.svg"
+        "light": "/assets/icons/domain/policy.png",
+        "dark": "/assets/icons/domain/policy.png"
       },
       "alt": "Policy icon",
       "decorative": false,
       "promptRef": "CB-ICON-07",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61007
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "policy", "icon"]
+      "tags": [
+        "domain",
+        "policy",
+        "icon"
+      ]
     },
     {
       "id": "icon-fleet",
@@ -213,27 +318,42 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "sm": { "width": 20, "height": 20 },
-        "md": { "width": 24, "height": 24 },
-        "lg": { "width": 32, "height": 32 }
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "light": "/assets/icons/domain/fleet.svg",
-        "dark": "/assets/icons/domain/fleet.svg"
+        "light": "/assets/icons/domain/fleet.png",
+        "dark": "/assets/icons/domain/fleet.png"
       },
       "alt": "Fleet icon",
       "decorative": false,
       "promptRef": "CB-ICON-08",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61008
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["domain", "fleet", "icon"]
+      "tags": [
+        "domain",
+        "fleet",
+        "icon"
+      ]
     },
     {
       "id": "image-robot-ground-alpha",
@@ -242,25 +362,36 @@
       "style": "realistic",
       "theme": "neutral",
       "sizes": {
-        "md": { "width": 384, "height": 256 },
-        "lg": { "width": 768, "height": 512 }
+        "md": {
+          "width": 384,
+          "height": 256
+        },
+        "lg": {
+          "width": 768,
+          "height": 512
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "neutral": "/assets/images/robots/robot-ground-alpha.svg"
+        "neutral": "/assets/images/robots/robot-ground-alpha.png"
       },
       "alt": "Ground robot in warehouse aisle",
       "decorative": false,
       "promptRef": "CB-IMG-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61101
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["robot", "entity-image"]
+      "tags": [
+        "robot",
+        "entity-image"
+      ]
     },
     {
       "id": "image-robot-drone-gamma",
@@ -269,25 +400,36 @@
       "style": "realistic",
       "theme": "neutral",
       "sizes": {
-        "md": { "width": 384, "height": 256 },
-        "lg": { "width": 768, "height": 512 }
+        "md": {
+          "width": 384,
+          "height": 256
+        },
+        "lg": {
+          "width": 768,
+          "height": 512
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "neutral": "/assets/images/robots/robot-drone-gamma.svg"
+        "neutral": "/assets/images/robots/robot-drone-gamma.png"
       },
       "alt": "Inspection drone near industrial gantry",
       "decorative": false,
       "promptRef": "CB-IMG-02",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61102
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["drone", "entity-image"]
+      "tags": [
+        "drone",
+        "entity-image"
+      ]
     },
     {
       "id": "image-agent-ops-analyst",
@@ -296,25 +438,36 @@
       "style": "realistic",
       "theme": "neutral",
       "sizes": {
-        "md": { "width": 384, "height": 256 },
-        "lg": { "width": 768, "height": 512 }
+        "md": {
+          "width": 384,
+          "height": 256
+        },
+        "lg": {
+          "width": 768,
+          "height": 512
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "neutral": "/assets/images/agents/agent-ops-analyst.svg"
+        "neutral": "/assets/images/agents/agent-ops-analyst.png"
       },
       "alt": "Operations analyst AI agent profile artwork",
       "decorative": false,
       "promptRef": "CB-IMG-03",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61103
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["agent", "entity-image"]
+      "tags": [
+        "agent",
+        "entity-image"
+      ]
     },
     {
       "id": "image-agent-policy-reviewer",
@@ -323,25 +476,36 @@
       "style": "realistic",
       "theme": "neutral",
       "sizes": {
-        "md": { "width": 384, "height": 256 },
-        "lg": { "width": 768, "height": 512 }
+        "md": {
+          "width": 384,
+          "height": 256
+        },
+        "lg": {
+          "width": 768,
+          "height": 512
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "neutral": "/assets/images/agents/agent-policy-reviewer.svg"
+        "neutral": "/assets/images/agents/agent-policy-reviewer.png"
       },
       "alt": "Policy reviewer AI agent profile artwork",
       "decorative": false,
       "promptRef": "CB-IMG-04",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61104
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["agent", "entity-image"]
+      "tags": [
+        "agent",
+        "entity-image"
+      ]
     },
     {
       "id": "illustration-fleet-overview",
@@ -350,24 +514,32 @@
       "style": "isometric-3d",
       "theme": "neutral",
       "sizes": {
-        "lg": { "width": 1200, "height": 675 }
+        "lg": {
+          "width": 1200,
+          "height": 675
+        }
       },
-      "formats": ["svg"],
+      "formats": [
+        "png"
+      ],
       "paths": {
-        "neutral": "/assets/illustrations/fleet-overview.svg"
+        "neutral": "/assets/illustrations/fleet-overview.png"
       },
       "alt": "Fleet overview illustration with robots and drones",
       "decorative": false,
       "promptRef": "CB-ILL-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T01:55:00.000Z",
+        "createdAt": "2026-02-20T02:16:16.660Z",
         "operator": "@45ck",
         "seed": 61201
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
-      "tags": ["fleet", "illustration"]
+      "tags": [
+        "fleet",
+        "illustration"
+      ]
     }
   ]
 }

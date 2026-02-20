@@ -10,6 +10,7 @@ A developer entry point for the Portarium (VAOP) codebase.
    node scripts/beads/bd.mjs issue next --priority P0
    node scripts/beads/bd.mjs issue next --priority P0 --phase devenv
    node scripts/beads/bd.mjs issue view <id>     # full AC + blockedBy
+   node scripts/beads/bd.mjs issue claim <id> --by "<owner>"
    ```
 3. Work in **phase order** within each priority tier (devenv → domain → application → infrastructure → presentation).
 4. Every bead you implement needs a corresponding **review bead** to close — see the governance phase for review bead IDs.
@@ -167,8 +168,11 @@ node scripts/beads/bd.mjs issue next --phase domain
 # See full AC for a bead
 node scripts/beads/bd.mjs issue view bead-0302
 
-# Mark a bead in progress (update title to show active)
-# (claim it in a commit message referencing the bead ID)
+# Mark in progress (claim ownership)
+node scripts/beads/bd.mjs issue claim bead-XXXX --by "<owner>"
+
+# Release claim without closing (handoff / pause)
+node scripts/beads/bd.mjs issue unclaim bead-XXXX --by "<owner>"
 
 # Mark done
 node scripts/beads/bd.mjs issue close bead-XXXX
