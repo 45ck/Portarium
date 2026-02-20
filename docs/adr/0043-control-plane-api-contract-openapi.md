@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -27,3 +27,10 @@ We already have versioned domain schemas (e.g. Plan v1, Evidence v1) and an expl
 - We can generate clients, docs, and contract tests from a single source of truth.
 - Contract changes become explicit design changes (ADR + spec update), reducing accidental API drift.
 - We must maintain backward compatibility within `/v1` or cut `/v2` when breaking changes are required.
+
+## Implementation Notes
+
+- OpenAPI contract publication and validation were implemented via:
+  - `bead-0031` (control plane API OpenAPI v1)
+  - `bead-0014` (OpenAPI contract gate + boundary tests)
+  - `bead-0447` (contract alignment updates)

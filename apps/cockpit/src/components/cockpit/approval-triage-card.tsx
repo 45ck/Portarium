@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import type { ApprovalSummary } from '@portarium/cockpit-types'
+import type { ApprovalSummary, PlanEffect } from '@portarium/cockpit-types'
 import { EntityIcon } from '@/components/domain/entity-icon'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -137,6 +137,124 @@ function getHistory(approval: ApprovalSummary): HistoryEntry[] {
 }
 
 // ---------------------------------------------------------------------------
+// Mock planned effects per approval
+// ---------------------------------------------------------------------------
+function getMockEffects(approval: ApprovalSummary): PlanEffect[] {
+  if (approval.approvalId === 'apr-3001') {
+    return [
+      {
+        effectId: 'eff-1',
+        operation: 'Create',
+        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4271C', externalType: 'CreditNote', displayLabel: 'Credit Note INV-4271C' },
+        summary: 'Credit note of €1,240 to ACME Repairs',
+      },
+      {
+        effectId: 'eff-2',
+        operation: 'Create',
+        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4272', externalType: 'Invoice', displayLabel: 'Corrected Invoice INV-4272' },
+        summary: 'Re-issue corrected invoice',
+      },
+    ]
+  }
+  if (approval.approvalId === 'apr-3002') {
+    return [
+      {
+        effectId: 'eff-3',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-001', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — alice@acme' },
+        summary: 'Revoke excess write permission',
+      },
+      {
+        effectId: 'eff-4',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-002', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — bob@acme' },
+        summary: 'Revoke excess write permission',
+      },
+      {
+        effectId: 'eff-5',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-003', externalType: 'GroupMembership', displayLabel: 'Finance:Admin — carol@acme' },
+        summary: 'Revoke excess admin permission',
+      },
+    ]
+  }
+  if (approval.approvalId === 'apr-3004') {
+    return [
+      {
+        effectId: 'eff-6',
+        operation: 'Create',
+        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'pmt-8821', externalType: 'Transfer', displayLabel: 'Transfer PO-8821' },
+        summary: 'Initiate €14,200 supplier payment',
+      },
+      {
+        effectId: 'eff-7',
+        operation: 'Update',
+        target: { sorName: 'NetSuite', portFamily: 'FinanceAccounting', externalId: 'po-8821', externalType: 'PurchaseOrder', displayLabel: 'PO-8821' },
+        summary: 'Mark purchase order as paid',
+      },
+    ]
+  }
+  return []
+}
+
+// ---------------------------------------------------------------------------
+// SorBadge — color-coded circular badge for each system of record
+// ---------------------------------------------------------------------------
+const SOR_PALETTE: Record<string, { bg: string; text: string }> = {
+  Odoo:     { bg: 'bg-indigo-600',  text: 'text-white' },
+  Stripe:   { bg: 'bg-violet-600',  text: 'text-white' },
+  NetSuite: { bg: 'bg-blue-600',    text: 'text-white' },
+  Okta:     { bg: 'bg-sky-500',     text: 'text-white' },
+  Mautic:   { bg: 'bg-orange-500',  text: 'text-white' },
+  Zammad:   { bg: 'bg-rose-500',    text: 'text-white' },
+  Vault:    { bg: 'bg-amber-500',   text: 'text-white' },
+}
+
+const SOR_PALETTE_DEFAULT = { bg: 'bg-muted', text: 'text-muted-foreground' }
+
+function SorBadge({ name }: { name: string }) {
+  const palette = SOR_PALETTE[name] ?? SOR_PALETTE_DEFAULT
+  const abbr = name.slice(0, 2)
+  return (
+    <span
+      title={name}
+      className={cn(
+        'inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0',
+        palette.bg,
+        palette.text,
+      )}
+    >
+      {abbr}
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Inline triage effect row (avoids modifying shared effects-list.tsx)
+// ---------------------------------------------------------------------------
+const opColors: Record<string, string> = {
+  Create: 'bg-success text-success-foreground',
+  Update: 'bg-info text-info-foreground',
+  Delete: 'bg-destructive text-white',
+  Upsert: 'bg-warning text-warning-foreground',
+}
+
+function TriageEffectRow({ effect }: { effect: PlanEffect }) {
+  return (
+    <div className="flex items-center gap-2 py-1 text-xs">
+      <Badge variant="secondary" className={cn('text-[10px] shrink-0', opColors[effect.operation])}>
+        {effect.operation}
+      </Badge>
+      <SorBadge name={effect.target.sorName} />
+      <span className="font-mono text-muted-foreground text-[11px] shrink-0">
+        {effect.target.externalType}
+      </span>
+      <span className="flex-1 truncate text-foreground">{effect.summary}</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // SodBanner — always visible
 // ---------------------------------------------------------------------------
 function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
@@ -197,7 +315,7 @@ function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
 }
 
 // ---------------------------------------------------------------------------
-// PolicyRulePanel — always visible, blast radius as chips
+// PolicyRulePanel — blast radius with SorBadge avatars
 // ---------------------------------------------------------------------------
 function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
   const irreversibilityLabel = {
@@ -226,12 +344,22 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
         <span className="text-muted-foreground">Trigger</span>
         <span className="font-mono text-[11px]">{rule.trigger}</span>
         <span className="text-muted-foreground">Blast radius</span>
-        <div className="flex flex-wrap gap-1">
-          {rule.blastRadius.map((b) => (
-            <Badge key={b} variant="outline" className="text-[10px] h-5 px-1.5">
-              {b}
-            </Badge>
-          ))}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {rule.blastRadius.map((b) =>
+            b.includes('record') ? (
+              <Badge key={b} variant="outline" className="text-[10px] h-5 px-1.5">
+                {b}
+              </Badge>
+            ) : (
+              <span
+                key={b}
+                className="inline-flex items-center gap-1 text-[11px] border border-border rounded-full px-2 py-0.5 bg-background"
+              >
+                <SorBadge name={b} />
+                {b}
+              </span>
+            ),
+          )}
         </div>
         <span className="text-muted-foreground">Reversibility</span>
         <span className={irreversibilityCls}>{irreversibilityLabel}</span>
@@ -308,10 +436,12 @@ export function ApprovalTriageCard({
   const [rationale, setRationale] = useState('')
   const [requestChangesMode, setRequestChangesMode] = useState(false)
   const [requestChangesMsg, setRequestChangesMsg] = useState('')
+  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
 
   const sodEval = getSodEvaluation(approval)
   const policyRule = getPolicyRule(approval)
   const history = getHistory(approval)
+  const mockEffects = getMockEffects(approval)
   const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role'
   const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date())
   const triagePosition = index + 1
@@ -322,10 +452,20 @@ export function ApprovalTriageCard({
         setRequestChangesMode(true)
         return
       }
-      onAction(approval.approvalId, action, requestChangesMsg)
+      const dir: 'left' | 'right' = 'left'
+      setExitDir(dir)
+      setTimeout(() => {
+        setExitDir(null)
+        onAction(approval.approvalId, action, requestChangesMsg)
+      }, 320)
       return
     }
-    onAction(approval.approvalId, action, rationale)
+    const dir: 'left' | 'right' = action === 'Approved' ? 'right' : 'left'
+    setExitDir(dir)
+    setTimeout(() => {
+      setExitDir(null)
+      onAction(approval.approvalId, action, rationale)
+    }, 320)
   }
 
   // Keyboard shortcuts
@@ -333,7 +473,7 @@ export function ApprovalTriageCard({
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
-      if ((e.key === 'a' || e.key === 'A') && !isBlocked && rationale.trim() && !loading)
+      if ((e.key === 'a' || e.key === 'A') && !isBlocked && !loading)
         handleAction('Approved')
       if ((e.key === 'd' || e.key === 'D') && rationale.trim() && !loading)
         handleAction('Denied')
@@ -381,7 +521,12 @@ export function ApprovalTriageCard({
 
         {/* Main card */}
         <div
-          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden"
+          className={cn(
+            'relative rounded-xl border border-border bg-card shadow-md overflow-hidden',
+            exitDir === 'right' && 'animate-triage-out-right',
+            exitDir === 'left'  && 'animate-triage-out-left',
+            !exitDir            && 'animate-triage-in',
+          )}
           style={{ zIndex: 2 }}
         >
           {/* Overdue stripe */}
@@ -467,6 +612,20 @@ export function ApprovalTriageCard({
               </div>
             )}
 
+            {/* Planned effects panel */}
+            {mockEffects.length > 0 && (
+              <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                  What will happen if approved
+                </p>
+                <div className="divide-y divide-border/40">
+                  {mockEffects.map((e) => (
+                    <TriageEffectRow key={e.effectId} effect={e} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Decision area */}
             {requestChangesMode ? (
               <div className="space-y-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
@@ -485,7 +644,7 @@ export function ApprovalTriageCard({
                   <Button
                     size="sm"
                     className="flex-1 h-9"
-                    disabled={!requestChangesMsg.trim() || loading}
+                    disabled={!requestChangesMsg.trim() || Boolean(loading)}
                     onClick={() => handleAction('RequestChanges')}
                   >
                     <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
@@ -507,19 +666,21 @@ export function ApprovalTriageCard({
             ) : (
               <div className="space-y-3">
                 <Textarea
-                  aria-required="true"
                   aria-label={`Decision rationale for approval ${approval.approvalId}`}
                   className="text-xs min-h-[80px] resize-none"
-                  placeholder="Decision rationale — required for approve or deny…"
+                  placeholder="Decision rationale — optional for approve, required for deny…"
                   value={rationale}
                   onChange={(e) => setRationale(e.target.value)}
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  Rationale is optional when approving, required when denying.
+                </p>
 
                 <div role="group" aria-label="Make approval decision" className="grid grid-cols-4 gap-2">
                   <Button
                     size="sm"
                     className="h-12 flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
-                    disabled={isBlocked || !rationale.trim() || Boolean(loading)}
+                    disabled={isBlocked || Boolean(loading)}
                     onClick={() => handleAction('Approved')}
                     title="Approve (A)"
                   >
