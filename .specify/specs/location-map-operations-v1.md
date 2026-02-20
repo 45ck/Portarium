@@ -111,6 +111,12 @@ Invariants:
 - History retention windows are enforced before query execution.
 - Access purpose metadata must be captured for auditability.
 
+## Infrastructure query budgets
+
+- Latest pose (`getLatestPose`) target latency budget: `p95 <= 50ms`.
+- History window query (`queryHistory`) target latency budget: `p95 <= 250ms` for typical cockpit windows.
+- These budgets are exposed as infrastructure defaults to keep API boundary behavior explicit.
+
 ## Glossary alignment notes
 
 New terms introduced for this slice:

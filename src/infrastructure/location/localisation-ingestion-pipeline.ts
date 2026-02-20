@@ -21,6 +21,7 @@ export interface LocationHistoryStore {
   append(event: LocationEventV1): Promise<void>;
   getLastBySourceStream(tenantId: string, sourceStreamId: string): Promise<LocationEventV1 | null>;
   listByAsset(tenantId: string, assetId: string): Promise<readonly LocationEventV1[]>;
+  listByTenant(tenantId: string): Promise<readonly LocationEventV1[]>;
 }
 
 export interface LocationDeadLetterStore {
@@ -248,6 +249,10 @@ export class InMemoryLocationHistoryStore implements LocationHistoryStore {
     return Promise.resolve(
       this.#events.filter((event) => String(event.tenantId) === tenantId && String(event.assetId) === assetId),
     );
+  }
+
+  public listByTenant(tenantId: string): Promise<readonly LocationEventV1[]> {
+    return Promise.resolve(this.#events.filter((event) => String(event.tenantId) === tenantId));
   }
 }
 
