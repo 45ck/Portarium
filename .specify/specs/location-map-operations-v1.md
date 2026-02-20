@@ -74,7 +74,7 @@ Invariants:
 - Behavior:
   - emits latest samples and updates filtered by site/floor/asset
   - includes correlation headers/metadata
-  - documents stale stream semantics
+  - stale stream semantics are explicit (`staleAfterSeconds`, `stale`, `lastObservedAtIso`)
 
 ### History query endpoint
 

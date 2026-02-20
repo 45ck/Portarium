@@ -25,6 +25,14 @@ import { err } from '../../application/common/result.js';
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
+import { parseLocationEventV1 } from '../../domain/location/location-event-v1.js';
+import { InMemoryLocationHistoryStore, InMemoryLocationLatestStateCache } from '../../infrastructure/location/localisation-ingestion-pipeline.js';
+import {
+  InMemoryLocationMapLayerStore,
+  MapDataServices,
+  parseAndStoreMapLayer,
+} from '../../infrastructure/location/map-data-services.js';
+import { enforceLocationTelemetryBoundary } from './location-telemetry-boundary.js';
 import type { RequestHandler } from './health-server.js';
 
 type ProblemDetails = Readonly<{
@@ -200,6 +208,113 @@ const HUMAN_TASK_FIXTURE: readonly HumanTaskRecord[] = [
 
 let runtimeHumanTasks: HumanTaskRecord[] = [...HUMAN_TASK_FIXTURE];
 let runtimeEvidence: EvidenceRecord[] = [];
+const runtimeLocationHistoryStore = new InMemoryLocationHistoryStore();
+const runtimeLocationLatestStateCache = new InMemoryLocationLatestStateCache();
+const runtimeLocationMapLayerStore = new InMemoryLocationMapLayerStore();
+const runtimeMapDataServices = new MapDataServices({
+  latestStateCache: runtimeLocationLatestStateCache,
+  historyStore: runtimeLocationHistoryStore,
+  mapLayerStore: runtimeLocationMapLayerStore,
+});
+let runtimeLocationSeeded = false;
+
+async function ensureRuntimeLocationDataSeeded(): Promise<void> {
+  if (runtimeLocationSeeded) {
+    return;
+  }
+  runtimeLocationSeeded = true;
+
+  await parseAndStoreMapLayer(runtimeLocationMapLayerStore, {
+    schemaVersion: 1,
+    mapLayerId: 'ml-ws1-floor1',
+    tenantId: 'workspace-1',
+    siteId: 'site-a',
+    floorId: 'floor-1',
+    layerType: 'Floorplan',
+    coordinateFrame: 'floor-1',
+    origin: { x: 0, y: 0, z: 0 },
+    version: 1,
+    validFromIso: '2026-02-20T00:00:00.000Z',
+    provenance: {
+      sourceType: 'CadImport',
+      sourceRef: 'floor-1-v1',
+      registeredAtIso: '2026-02-20T00:00:00.000Z',
+      registeredBy: 'ops-admin',
+    },
+  });
+
+  await parseAndStoreMapLayer(runtimeLocationMapLayerStore, {
+    schemaVersion: 1,
+    mapLayerId: 'ml-ws2-floor1',
+    tenantId: 'workspace-2',
+    siteId: 'site-z',
+    floorId: 'floor-1',
+    layerType: 'Floorplan',
+    coordinateFrame: 'floor-1',
+    origin: { x: 0, y: 0, z: 0 },
+    version: 1,
+    validFromIso: '2026-02-20T00:00:00.000Z',
+    provenance: {
+      sourceType: 'CadImport',
+      sourceRef: 'floor-1-v1',
+      registeredAtIso: '2026-02-20T00:00:00.000Z',
+      registeredBy: 'ops-admin',
+    },
+  });
+
+  const locationEvents = [
+    parseLocationEventV1({
+      schemaVersion: 1,
+      locationEventId: 'loc-evt-1',
+      tenantId: 'workspace-1',
+      assetId: 'asset-1',
+      robotId: 'robot-1',
+      sourceStreamId: 'stream-1',
+      sourceType: 'SLAM',
+      coordinateFrame: 'floor-1',
+      observedAtIso: '2026-02-20T10:00:00.000Z',
+      ingestedAtIso: '2026-02-20T10:00:00.100Z',
+      pose: { x: 1, y: 2, z: 0, yawRadians: 0.2 },
+      quality: { status: 'Known', horizontalStdDevMeters: 0.2 },
+      correlationId: 'corr-location-1',
+    }),
+    parseLocationEventV1({
+      schemaVersion: 1,
+      locationEventId: 'loc-evt-2',
+      tenantId: 'workspace-1',
+      assetId: 'asset-1',
+      robotId: 'robot-1',
+      sourceStreamId: 'stream-2',
+      sourceType: 'RTLS',
+      coordinateFrame: 'floor-1',
+      observedAtIso: '2026-02-20T10:05:00.000Z',
+      ingestedAtIso: '2026-02-20T10:05:00.100Z',
+      pose: { x: 2, y: 3, z: 0, yawRadians: 0.3 },
+      quality: { status: 'Known', horizontalStdDevMeters: 0.3 },
+      correlationId: 'corr-location-2',
+    }),
+    parseLocationEventV1({
+      schemaVersion: 1,
+      locationEventId: 'loc-evt-3',
+      tenantId: 'workspace-2',
+      assetId: 'asset-2',
+      robotId: 'robot-2',
+      sourceStreamId: 'stream-3',
+      sourceType: 'SLAM',
+      coordinateFrame: 'floor-1',
+      observedAtIso: '2026-02-20T10:02:00.000Z',
+      ingestedAtIso: '2026-02-20T10:02:00.100Z',
+      pose: { x: 3, y: 4, z: 0, yawRadians: 0.4 },
+      quality: { status: 'Known', horizontalStdDevMeters: 0.25 },
+      correlationId: 'corr-location-3',
+    }),
+  ];
+
+  for (const event of locationEvents) {
+    await runtimeLocationHistoryStore.append(event);
+    await runtimeLocationLatestStateCache.put(event);
+  }
+}
 
 function normalizeHeader(value: string | string[] | undefined): string | undefined {
   if (typeof value === 'string') return value;
@@ -435,6 +550,24 @@ function paginate<T extends Readonly<Record<string, unknown>>>(
   }
   const sliced = items.slice(0, limit);
   return { items: sliced, nextCursor: String(limit) };
+}
+
+function parseLocationTelemetryPurpose(
+  value: string | null,
+): 'operations' | 'incident-response' | 'compliance-audit' {
+  if (value === 'operations' || value === 'incident-response' || value === 'compliance-audit') {
+    return value;
+  }
+  return 'incident-response';
+}
+
+function parsePositiveIntegerQueryParam(value: string | null): number | undefined {
+  if (value === null) return undefined;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return undefined;
+  }
+  return parsed;
 }
 
 function parseAvailabilityPatchBody(
@@ -871,6 +1004,208 @@ async function handleGetHumanTask(
   respondJson(res, 200, correlationId, traceContext, task);
 }
 
+async function handleLocationEventsStream(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const purpose = parseLocationTelemetryPurpose(url.searchParams.get('purpose'));
+  const boundary = enforceLocationTelemetryBoundary(
+    auth.ctx,
+    {
+      mode: 'live',
+      purpose,
+    },
+    undefined,
+    new Date(),
+  );
+  if (!boundary.ok) {
+    respondProblem(res, problemFromError(boundary.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  await ensureRuntimeLocationDataSeeded();
+  const assetId = url.searchParams.get('assetId') ?? 'asset-1';
+  const latest = await runtimeMapDataServices.getLatestPose(workspaceId, assetId);
+  const staleAfterSeconds = 30;
+  const stale =
+    !latest ||
+    Date.now() - Date.parse(latest.observedAtIso) > staleAfterSeconds * 1000;
+
+  res.statusCode = 200;
+  res.setHeader('content-type', 'text/event-stream');
+  res.setHeader('cache-control', 'no-cache');
+  res.setHeader('connection', 'keep-alive');
+  res.setHeader('x-correlation-id', correlationId);
+  res.setHeader('traceparent', traceContext.traceparent);
+  if (traceContext.tracestate) {
+    res.setHeader('tracestate', traceContext.tracestate);
+  }
+
+  res.write(
+    `event: stream-metadata\ndata: ${JSON.stringify({
+      staleAfterSeconds,
+      stale,
+      lastObservedAtIso: latest?.observedAtIso ?? null,
+    })}\n\n`,
+  );
+  res.write(`event: location\ndata: ${JSON.stringify(latest)}\n\n`);
+  res.end();
+}
+
+async function handleListLocationEvents(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const fromIso = url.searchParams.get('fromIso') ?? undefined;
+  const toIso = url.searchParams.get('toIso') ?? undefined;
+  const purpose = parseLocationTelemetryPurpose(url.searchParams.get('purpose'));
+  const boundaryRequest =
+    fromIso && toIso
+      ? { mode: 'history' as const, purpose, fromIso, toIso }
+      : { mode: 'history' as const, purpose };
+  const boundary = enforceLocationTelemetryBoundary(
+    auth.ctx,
+    boundaryRequest,
+    undefined,
+    new Date(),
+  );
+  if (!boundary.ok) {
+    respondProblem(res, problemFromError(boundary.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  await ensureRuntimeLocationDataSeeded();
+  try {
+    const sourceTypeRaw = url.searchParams.get('sourceType');
+    const sourceType =
+      sourceTypeRaw === 'GPS' ||
+      sourceTypeRaw === 'RTLS' ||
+      sourceTypeRaw === 'SLAM' ||
+      sourceTypeRaw === 'odometry' ||
+      sourceTypeRaw === 'fusion'
+        ? sourceTypeRaw
+        : undefined;
+
+    const historyQuery: Parameters<typeof runtimeMapDataServices.queryHistory>[0] = {
+      tenantId: workspaceId,
+      fromIso: fromIso!,
+      toIso: toIso!,
+      ...(url.searchParams.get('assetId') ? { assetId: url.searchParams.get('assetId')! } : {}),
+      ...(url.searchParams.get('siteId') ? { siteId: url.searchParams.get('siteId')! } : {}),
+      ...(url.searchParams.get('floorId') ? { floorId: url.searchParams.get('floorId')! } : {}),
+      ...(sourceType ? { sourceType } : {}),
+      ...(parsePositiveIntegerQueryParam(url.searchParams.get('limit'))
+        ? { limit: parsePositiveIntegerQueryParam(url.searchParams.get('limit'))! }
+        : {}),
+    };
+
+    const items = await runtimeMapDataServices.queryHistory(historyQuery);
+    const body = paginate(items, req.url ?? '/');
+    respondJson(res, 200, correlationId, traceContext, body);
+  } catch (error) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: error instanceof Error ? error.message : 'Invalid location-events query.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+  }
+}
+
+async function handleListMapLayers(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  await ensureRuntimeLocationDataSeeded();
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const layerTypeRaw = url.searchParams.get('layerType');
+  const layerType =
+    layerTypeRaw === 'Floorplan' ||
+    layerTypeRaw === 'OccupancyGrid' ||
+    layerTypeRaw === 'Geofence' ||
+    layerTypeRaw === 'SemanticZone'
+      ? layerTypeRaw
+      : undefined;
+  const versionRaw = url.searchParams.get('version');
+  const version = versionRaw ? Number.parseInt(versionRaw, 10) : undefined;
+
+  const mapLayerQuery: Parameters<typeof runtimeMapDataServices.listMapLayers>[0] = {
+    tenantId: workspaceId,
+    ...(url.searchParams.get('siteId') ? { siteId: url.searchParams.get('siteId')! } : {}),
+    ...(url.searchParams.get('floorId') ? { floorId: url.searchParams.get('floorId')! } : {}),
+    ...(layerType ? { layerType } : {}),
+    ...(version && !Number.isNaN(version) ? { version } : {}),
+  };
+  const items = await runtimeMapDataServices.listMapLayers(mapLayerQuery);
+  const body = paginate(items, req.url ?? '/');
+  respondJson(res, 200, correlationId, traceContext, body);
+}
+
 async function handleAssignHumanTask(
   args: Readonly<{
     deps: ControlPlaneDeps;
@@ -1213,6 +1548,48 @@ async function handleRequest(
         pathname,
         workspaceId: decodeURIComponent(mRun[1] ?? ''),
         runId: decodeURIComponent(mRun[2] ?? ''),
+      });
+      return;
+    }
+
+    const mLocationStream = /^\/v1\/workspaces\/([^/]+)\/location-events:stream$/.exec(pathname);
+    if (mLocationStream) {
+      await handleLocationEventsStream({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mLocationStream[1] ?? ''),
+      });
+      return;
+    }
+
+    const mLocationEvents = /^\/v1\/workspaces\/([^/]+)\/location-events$/.exec(pathname);
+    if (mLocationEvents) {
+      await handleListLocationEvents({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mLocationEvents[1] ?? ''),
+      });
+      return;
+    }
+
+    const mMapLayers = /^\/v1\/workspaces\/([^/]+)\/map-layers$/.exec(pathname);
+    if (mMapLayers) {
+      await handleListMapLayers({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mMapLayers[1] ?? ''),
       });
       return;
     }

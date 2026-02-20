@@ -26,6 +26,8 @@ tags:
   - name: Agents
   - name: Workforce
   - name: HumanTasks
+  - name: Location
+  - name: MapLayers
 paths:
   /v1/workspaces:
     get:
@@ -385,6 +387,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkforceQueueListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/location-events:stream:
+    get:
+      tags: [Location]
+      summary: Subscribe to live location updates (SSE)
+      operationId: streamLocationEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LocationAssetIdQuery'
+        - $ref: '#/components/parameters/LocationPurposeQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream containing stream-metadata and location events.
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/location-events:
+    get:
+      tags: [Location]
+      summary: Query location trails and playback window
+      operationId: listLocationEvents
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LocationFromIsoQuery'
+        - $ref: '#/components/parameters/LocationToIsoQuery'
+        - $ref: '#/components/parameters/LocationPurposeQuery'
+        - $ref: '#/components/parameters/LocationAssetIdQuery'
+        - $ref: '#/components/parameters/LocationSiteIdQuery'
+        - $ref: '#/components/parameters/LocationFloorIdQuery'
+        - $ref: '#/components/parameters/LocationSourceTypeQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationEventListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/map-layers:
+    get:
+      tags: [MapLayers]
+      summary: List map layers for a workspace/site/floor
+      operationId: listMapLayers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LocationSiteIdQuery'
+        - $ref: '#/components/parameters/LocationFloorIdQuery'
+        - $ref: '#/components/parameters/MapLayerTypeQuery'
+        - $ref: '#/components/parameters/MapLayerVersionQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapLayerListResponse'
         default:
           $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/human-tasks:
@@ -1448,6 +1522,64 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/RunId'
+    LocationFromIsoQuery:
+      name: fromIso
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/IsoTimestamp'
+    LocationToIsoQuery:
+      name: toIso
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/IsoTimestamp'
+    LocationPurposeQuery:
+      name: purpose
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/LocationTelemetryPurpose'
+    LocationAssetIdQuery:
+      name: assetId
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+    LocationSiteIdQuery:
+      name: siteId
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+    LocationFloorIdQuery:
+      name: floorId
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+    LocationSourceTypeQuery:
+      name: sourceType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/LocationSourceType'
+    MapLayerTypeQuery:
+      name: layerType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/MapLayerType'
+    MapLayerVersionQuery:
+      name: version
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
   responses:
     Problem:
       description: Error response
@@ -2035,6 +2167,168 @@ components:
           type: string
           minLength: 1
       required: [workforceQueueId]
+    LocationSourceType:
+      type: string
+      enum: [GPS, RTLS, SLAM, odometry, fusion]
+    LocationTelemetryPurpose:
+      type: string
+      enum: [operations, incident-response, compliance-audit]
+    LocationQualityKnown:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          const: Known
+        horizontalStdDevMeters:
+          type: number
+          minimum: 0
+        verticalStdDevMeters:
+          type: number
+          minimum: 0
+      required: [status, horizontalStdDevMeters]
+    LocationQualityUnknown:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          const: Unknown
+        reason:
+          type: string
+          minLength: 1
+      required: [status, reason]
+    LocationPoseV1:
+      type: object
+      additionalProperties: false
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+        yawRadians:
+          type: number
+      required: [x, y, z, yawRadians]
+    LocationEventV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        locationEventId:
+          type: string
+          minLength: 1
+        tenantId:
+          $ref: '#/components/schemas/WorkspaceId'
+        assetId:
+          type: string
+          minLength: 1
+        robotId:
+          type: string
+          minLength: 1
+        sourceStreamId:
+          type: string
+          minLength: 1
+        sourceType:
+          $ref: '#/components/schemas/LocationSourceType'
+        coordinateFrame:
+          type: string
+          minLength: 1
+        observedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        ingestedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        pose:
+          $ref: '#/components/schemas/LocationPoseV1'
+        quality:
+          oneOf:
+            - $ref: '#/components/schemas/LocationQualityKnown'
+            - $ref: '#/components/schemas/LocationQualityUnknown'
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+      required:
+        - schemaVersion
+        - locationEventId
+        - tenantId
+        - assetId
+        - sourceStreamId
+        - sourceType
+        - coordinateFrame
+        - observedAtIso
+        - ingestedAtIso
+        - pose
+        - quality
+        - correlationId
+    LocationEventListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationEventV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    MapLayerType:
+      type: string
+      enum: [Floorplan, OccupancyGrid, Geofence, SemanticZone]
+    MapLayerV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        mapLayerId:
+          type: string
+          minLength: 1
+        tenantId:
+          $ref: '#/components/schemas/WorkspaceId'
+        siteId:
+          type: string
+          minLength: 1
+        floorId:
+          type: string
+          minLength: 1
+        layerType:
+          $ref: '#/components/schemas/MapLayerType'
+        coordinateFrame:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        validFromIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        validToIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - mapLayerId
+        - tenantId
+        - siteId
+        - floorId
+        - layerType
+        - coordinateFrame
+        - version
+        - validFromIso
+    MapLayerListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapLayerV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
     EffectOperation:
       type: string
       enum: [Create, Update, Delete, Upsert]

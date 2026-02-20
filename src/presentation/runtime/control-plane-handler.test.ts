@@ -434,4 +434,119 @@ describe('createControlPlaneHandler', () => {
       true,
     );
   });
+
+  it('lists location events in a bounded playback window with filters', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/location-events?fromIso=2026-02-20T10:00:00.000Z&toIso=2026-02-20T10:10:00.000Z&sourceType=SLAM&siteId=site-a&floorId=floor-1&limit=1`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      items: Array<{ locationEventId: string; tenantId: string; sourceType: string }>;
+      nextCursor?: string;
+    };
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0]!.locationEventId).toBe('loc-evt-1');
+    expect(body.items[0]!.sourceType).toBe('SLAM');
+  });
+
+  it('serves location stream endpoint as text/event-stream with stale semantics metadata', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/location-events:stream?assetId=asset-1&purpose=operations`,
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toMatch(/text\/event-stream/i);
+    const text = await res.text();
+    expect(text).toContain('event: stream-metadata');
+    expect(text).toContain('event: location');
+    expect(text).toContain('staleAfterSeconds');
+  });
+
+  it('lists map layers and enforces tenant isolation by workspace route', async () => {
+    const deps = {
+      authentication: {
+        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
+      },
+      authorization: {
+        isAllowed: async () => true,
+      },
+      workspaceStore: {
+        getWorkspaceById: async () => null,
+        getWorkspaceByName: async () => null,
+        saveWorkspace: async () => undefined,
+      },
+      runStore: {
+        getRunById: async () => null,
+        saveRun: async () => undefined,
+      },
+    };
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-2/map-layers?version=1`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      items: Array<{ tenantId: string; mapLayerId: string; version: number }>;
+    };
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0]!.tenantId).toBe('workspace-2');
+    expect(body.items[0]!.mapLayerId).toBe('ml-ws2-floor1');
+    expect(body.items[0]!.version).toBe(1);
+  });
 });
