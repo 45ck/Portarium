@@ -1,15 +1,15 @@
 # Weekly PE Audit: Orphaned Beads And Dependency Deadlocks
 
-Generated: 2026-02-20T02:32:33.310Z
+Generated: 2026-02-20T02:33:41.537Z
 Week of: 2026-02-16
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 176
+- Open beads: 174
 - Open dependency edges: 25
 - Open beads blocked by open prerequisites: 20
-- Orphaned beads: 147
+- Orphaned beads: 145
 - Deadlock cycles: 0
 - Beads participating in deadlocks: 0
 
@@ -29,8 +29,6 @@ Source: `.beads/issues.jsonl`
 | bead-0171 | -- | unspecified | Per-ADR closure: ADR-0041 through ADR-0043 must be promoted from proposed/accepted states before GA release |
 | bead-0172 | -- | unspecified | Per-ADR closure: ADR-0048 to ADR-0138 legacy gaps from research pipeline must be mapped to implementation and review Beads |
 | bead-0174 | -- | unspecified | Review: verify no adapter work starts without canonical-to-provider mapping evidence and operation matrix completeness |
-| bead-0175 | -- | unspecified | Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer |
-| bead-0176 | -- | unspecified | Review: reconcile docs/domain/aggregates.md invariants with all aggregate event streams and state-transition Beads |
 | bead-0177 | -- | unspecified | Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence |
 | bead-0178 | -- | unspecified | Code review: validate architecture boundaries for every new scaffold file before code merge |
 | bead-0179 | -- | unspecified | CI gate: require architecture-guard, gate-baseline, and npm audit before each merge |

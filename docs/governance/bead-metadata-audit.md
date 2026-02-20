@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:33:03.273Z
+Generated: 2026-02-20T02:33:41.537Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -191,7 +191,7 @@ Source: `.beads/issues.jsonl`
 | bead-0173 | closed | (none) | owner, closeCriteria, rollbackTrigger | Reconcile docs/domain/canonical-objects.md with runtime entity model and canonical mapping contracts before further adapter work |
 | bead-0174 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: verify no adapter work starts without canonical-to-provider mapping evidence and operation matrix completeness |
 | bead-0175 | closed | (none) | owner, closeCriteria, rollbackTrigger | Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer |
-| bead-0176 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: reconcile docs/domain/aggregates.md invariants with all aggregate event streams and state-transition Beads |
+| bead-0176 | closed | (none) | owner, closeCriteria, rollbackTrigger | Review: reconcile docs/domain/aggregates.md invariants with all aggregate event streams and state-transition Beads |
 | bead-0177 | open | (none) | owner, closeCriteria, rollbackTrigger | Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence |
 | bead-0178 | open | (none) | owner, closeCriteria, rollbackTrigger | Code review: validate architecture boundaries for every new scaffold file before code merge |
 | bead-0179 | open | (none) | owner, closeCriteria, rollbackTrigger | CI gate: require architecture-guard, gate-baseline, and npm audit before each merge |
