@@ -132,6 +132,28 @@ describe('parsePortariumCloudEventV1: happy path', () => {
     expect(evt.actionid).toBe('action-1');
     expect(evt.data).toEqual({ runStatus: 'Running' });
   });
+
+  it('ignores additive extension fields to preserve consumer forward-compatibility', () => {
+    const evt = parsePortariumCloudEventV1({
+      specversion: '1.0',
+      id: 'evt-11',
+      source: 'portarium://control-plane',
+      type: 'portarium.run.updated',
+      tenantid: 'tenant-1',
+      correlationid: 'corr-1',
+      runid: 'run-1',
+      datacontenttype: 'application/json',
+      data: { status: 'Running' },
+      // Future producer extension that this consumer does not model yet.
+      producer_extension_v2: { rollout: 'phase-1' },
+    });
+
+    expect(evt.tenantid).toBe('tenant-1');
+    expect(evt.correlationid).toBe('corr-1');
+    expect(evt.runid).toBe('run-1');
+    expect(evt.data).toEqual({ status: 'Running' });
+    expect((evt as Record<string, unknown>)['producer_extension_v2']).toBeUndefined();
+  });
 });
 
 describe('parsePortariumCloudEventV1: validation', () => {
