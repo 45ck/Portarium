@@ -8,6 +8,7 @@ Spec -> Tasks (Beads) -> Implement -> Tests -> Quality gates -> Review -> QA -> 
 
 ## Required Reading
 
+- `docs/getting-started/contributor-onboarding.md`
 - `CLAUDE.md`
 - `AGENTS.md`
 - `docs/glossary.md`

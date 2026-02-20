@@ -540,6 +540,534 @@
         "fleet",
         "illustration"
       ]
+    },
+    {
+      "id": "icon-work-item",
+      "kind": "icon",
+      "domain": "work-item",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/work-item.png",
+        "dark": "/assets/icons/domain/work-item.png"
+      },
+      "alt": "Work item icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-09",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61009
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "work-item",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-workflow",
+      "kind": "icon",
+      "domain": "workflow",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/workflow.png",
+        "dark": "/assets/icons/domain/workflow.png"
+      },
+      "alt": "Workflow icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-10",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61010
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "workflow",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-run",
+      "kind": "icon",
+      "domain": "run",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/run.png",
+        "dark": "/assets/icons/domain/run.png"
+      },
+      "alt": "Run icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-11",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61011
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "run",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-approval",
+      "kind": "icon",
+      "domain": "approval",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/approval.png",
+        "dark": "/assets/icons/domain/approval.png"
+      },
+      "alt": "Approval gate icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-12",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61012
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "approval",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-human-task",
+      "kind": "icon",
+      "domain": "human-task",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/human-task.png",
+        "dark": "/assets/icons/domain/human-task.png"
+      },
+      "alt": "Human task icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-13",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61013
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "human-task",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-workforce",
+      "kind": "icon",
+      "domain": "workforce",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/workforce.png",
+        "dark": "/assets/icons/domain/workforce.png"
+      },
+      "alt": "Workforce icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-14",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61014
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "workforce",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-queue",
+      "kind": "icon",
+      "domain": "queue",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/queue.png",
+        "dark": "/assets/icons/domain/queue.png"
+      },
+      "alt": "Queue icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-15",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61015
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "queue",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-machine",
+      "kind": "icon",
+      "domain": "machine",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/machine.png",
+        "dark": "/assets/icons/domain/machine.png"
+      },
+      "alt": "Machine icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-16",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61016
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "machine",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-map-layer",
+      "kind": "icon",
+      "domain": "map-layer",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/map-layer.png",
+        "dark": "/assets/icons/domain/map-layer.png"
+      },
+      "alt": "Map layer icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-17",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61017
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "map-layer",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-location-event",
+      "kind": "icon",
+      "domain": "location-event",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/location-event.png",
+        "dark": "/assets/icons/domain/location-event.png"
+      },
+      "alt": "Location event icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-18",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61018
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "location-event",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-port",
+      "kind": "icon",
+      "domain": "port",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/port.png",
+        "dark": "/assets/icons/domain/port.png"
+      },
+      "alt": "Port family icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-19",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61019
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "port",
+        "icon"
+      ]
+    },
+    {
+      "id": "icon-project",
+      "kind": "icon",
+      "domain": "project",
+      "style": "isometric-3d",
+      "theme": "neutral",
+      "sizes": {
+        "sm": {
+          "width": 20,
+          "height": 20
+        },
+        "md": {
+          "width": 24,
+          "height": 24
+        },
+        "lg": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "formats": [
+        "png"
+      ],
+      "paths": {
+        "light": "/assets/icons/domain/project.png",
+        "dark": "/assets/icons/domain/project.png"
+      },
+      "alt": "Project icon",
+      "decorative": false,
+      "promptRef": "CB-ICON-20",
+      "generator": {
+        "model": "gemini-3-pro-image-preview",
+        "createdAt": "2026-02-20T02:35:00.965Z",
+        "operator": "@45ck",
+        "seed": 61020
+      },
+      "status": "draft",
+      "license": "internal-generated",
+      "tags": [
+        "domain",
+        "project",
+        "icon"
+      ]
     }
   ]
 }

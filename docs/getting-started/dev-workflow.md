@@ -8,6 +8,7 @@ Spec -> Tasks (Beads) -> Implement -> Tests -> Quality gates -> Review -> QA -> 
 
 ## 1) Read project rules and language
 
+- `docs/getting-started/contributor-onboarding.md`
 - `CLAUDE.md`
 - `docs/glossary.md`
 - `docs/development-start-here.md`

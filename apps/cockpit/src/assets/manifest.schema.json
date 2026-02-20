@@ -76,7 +76,28 @@
         },
         "domain": {
           "type": "string",
-          "enum": ["robot", "agent", "mission", "adapter", "evidence", "policy", "fleet", "other"]
+          "enum": [
+            "robot",
+            "agent",
+            "mission",
+            "adapter",
+            "evidence",
+            "policy",
+            "fleet",
+            "work-item",
+            "workflow",
+            "run",
+            "approval",
+            "human-task",
+            "workforce",
+            "queue",
+            "machine",
+            "map-layer",
+            "location-event",
+            "port",
+            "project",
+            "other"
+          ]
         },
         "style": {
           "type": "string",

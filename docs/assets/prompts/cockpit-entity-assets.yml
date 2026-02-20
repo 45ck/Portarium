@@ -97,6 +97,127 @@ prompts:
       Isometric 3D fleet icon combining multiple robot silhouettes.
       Transparent background. Keep icon legible at 20px.
 
+  - id: CB-ICON-09
+    intent: 'Domain icon: work item'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61009
+    prompt: >
+      Isometric 3D icon for Work Item in Portarium.
+      Visual metaphor: binder card linking multiple systems with a small chain/link detail.
+      No text. High readability at 20px and 24px.
+
+  - id: CB-ICON-10
+    intent: 'Domain icon: workflow'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61010
+    prompt: >
+      Isometric 3D workflow icon with connected steps and directional flow.
+      No text. Clean silhouette. UI-friendly.
+
+  - id: CB-ICON-11
+    intent: 'Domain icon: run'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61011
+    prompt: >
+      Isometric 3D icon representing a workflow run instance in progress.
+      Include a subtle progress ring motif. No text.
+
+  - id: CB-ICON-12
+    intent: 'Domain icon: approval gate'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61012
+    prompt: >
+      Isometric 3D icon representing an approval gate.
+      Shield plus checkmark plus gate metaphor. No text.
+
+  - id: CB-ICON-13
+    intent: 'Domain icon: human task'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61013
+    prompt: >
+      Isometric 3D icon for a human task.
+      Clipboard/task card with a person indicator. No text.
+
+  - id: CB-ICON-14
+    intent: 'Domain icon: workforce'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61014
+    prompt: >
+      Isometric 3D icon for workforce members.
+      Grouped people glyph style, clean and minimal, no text.
+
+  - id: CB-ICON-15
+    intent: 'Domain icon: queue'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61015
+    prompt: >
+      Isometric 3D icon for queue routing.
+      Stacked cards/lanes with flow arrow. No text.
+
+  - id: CB-ICON-16
+    intent: 'Domain icon: machine'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61016
+    prompt: >
+      Isometric 3D icon for Machine (artifact producer).
+      Intelligent device core motif, no text, no brand marks.
+
+  - id: CB-ICON-17
+    intent: 'Domain icon: map layer'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61017
+    prompt: >
+      Isometric 3D icon showing stacked map layers.
+      Include subtle geofence/zone hint. No text.
+
+  - id: CB-ICON-18
+    intent: 'Domain icon: location event'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61018
+    prompt: >
+      Isometric 3D icon representing location telemetry event.
+      Pin marker plus pulse/radar trace motif. No text.
+
+  - id: CB-ICON-19
+    intent: 'Domain icon: port family'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61019
+    prompt: >
+      Isometric 3D icon for Port / Port Family.
+      Universal socket + capability nodes metaphor. No text.
+
+  - id: CB-ICON-20
+    intent: 'Domain icon: project'
+    style: 'isometric-3d'
+    aspect_ratio: '1:1'
+    temperature: 0.5
+    seed: 61020
+    prompt: >
+      Isometric 3D icon for Project container.
+      Folder/container glyph with grouped artifacts motif. No text.
+
   - id: CB-IMG-01
     intent: 'Entity image: ground robot'
     style: 'realistic'

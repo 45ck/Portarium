@@ -4,6 +4,7 @@ A developer entry point for the Portarium (VAOP) codebase.
 
 ## How to use this guide
 
+0. If you are new to the repo, start with `docs/getting-started/contributor-onboarding.md`.
 1. Read the **Critical path** below — this is the minimum dependency chain to get from zero to a working system.
 2. Use `bd` to find what is ready to pick up right now:
    ```

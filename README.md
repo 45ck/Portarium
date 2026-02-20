@@ -54,6 +54,7 @@ It is not trying to replace ERP/CRM/helpdesk systems or become a full BPM suite 
 If you are new, start here:
 
 - `docs/index.md`
+- `docs/getting-started/contributor-onboarding.md`
 - `docs/getting-started/local-dev.md`
 - `docs/getting-started/dev-workflow.md`
 
@@ -159,7 +160,7 @@ Source of truth:
 
 ## Developer Workflow
 
-1. Read `CLAUDE.md` and `docs/development-start-here.md`.
+1. Read `docs/getting-started/contributor-onboarding.md`, then `CLAUDE.md` and `docs/development-start-here.md`.
 2. Track and claim work in Beads (`npm run bd -- issue next --priority P1`, then `npm run bd -- issue claim bead-XXXX --by "<owner>"`).
 3. Implement with tests.
 4. Run full gates before PRs:

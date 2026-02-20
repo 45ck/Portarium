@@ -18,6 +18,18 @@ const DOMAIN_ICON_IDS: Record<DomainEntityType, string> = {
   evidence: 'icon-evidence',
   policy: 'icon-policy',
   fleet: 'icon-fleet',
+  'work-item': 'icon-work-item',
+  workflow: 'icon-workflow',
+  run: 'icon-run',
+  approval: 'icon-approval',
+  'human-task': 'icon-human-task',
+  workforce: 'icon-workforce',
+  queue: 'icon-queue',
+  machine: 'icon-machine',
+  'map-layer': 'icon-map-layer',
+  'location-event': 'icon-location-event',
+  port: 'icon-port',
+  project: 'icon-project',
 };
 
 const ENTITY_IMAGE_IDS: Record<string, string> = {

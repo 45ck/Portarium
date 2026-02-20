@@ -1,6 +1,6 @@
 # Weekly PE Audit: Orphaned Beads And Dependency Deadlocks
 
-Generated: 2026-02-20T02:33:41.537Z
+Generated: 2026-02-20T02:35:56.712Z
 Week of: 2026-02-16
 Source: `.beads/issues.jsonl`
 
@@ -29,7 +29,6 @@ Source: `.beads/issues.jsonl`
 | bead-0171 | -- | unspecified | Per-ADR closure: ADR-0041 through ADR-0043 must be promoted from proposed/accepted states before GA release |
 | bead-0172 | -- | unspecified | Per-ADR closure: ADR-0048 to ADR-0138 legacy gaps from research pipeline must be mapped to implementation and review Beads |
 | bead-0174 | -- | unspecified | Review: verify no adapter work starts without canonical-to-provider mapping evidence and operation matrix completeness |
-| bead-0177 | -- | unspecified | Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence |
 | bead-0178 | -- | unspecified | Code review: validate architecture boundaries for every new scaffold file before code merge |
 | bead-0179 | -- | unspecified | CI gate: require architecture-guard, gate-baseline, and npm audit before each merge |
 | bead-0180 | -- | unspecified | CI gate: require OpenAPI parser/golden fixture parity on every push and PR for all operationIds |
@@ -162,6 +161,7 @@ Source: `.beads/issues.jsonl`
 | bead-0448 | P1 | domain | Spec: Policy evaluation rule language — decide and document condition grammar for PolicyInlineRuleV1.condition (CEL, OPA/Rego, or constrained DSL) and implement evaluator; current bare-string condition is ambiguous, unevaluable, and a security risk |
 | bead-0518 | P2 | infrastructure | Infra: OPC UA connector prototype using node-opcua for industrial PLC actuation |
 | bead-0524 | P2 | governance | Governance: machinery compliance planning — ISO 12100 risk assessment and EU/UK/US regulations timeline |
+| bead-0586 | P1 | presentation | Cockpit assets: domain icon gap expansion + transparent icon pipeline |
 
 ## Dependency Deadlocks
 

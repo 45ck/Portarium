@@ -16,10 +16,11 @@ Use this page to pick the shortest path for what you are trying to do.
 
 ## I Want To Contribute Code
 
-1. `docs/getting-started/dev-workflow.md`
-2. `docs/how-to/run-quality-gates.md`
-3. `docs/glossary.md`
-4. `docs/development-start-here.md`
+1. `docs/getting-started/contributor-onboarding.md`
+2. `docs/getting-started/dev-workflow.md`
+3. `docs/how-to/run-quality-gates.md`
+4. `docs/glossary.md`
+5. `docs/development-start-here.md`
 
 ## I Want Contracts and Technical Facts
 

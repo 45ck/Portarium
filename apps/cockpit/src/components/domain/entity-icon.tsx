@@ -22,6 +22,18 @@ const FALLBACK_ICON: Record<DomainEntityType, typeof Bot> = {
   evidence: FileCheck2,
   policy: ShieldCheck,
   fleet: Network,
+  'work-item': FileCheck2,
+  workflow: Route,
+  run: Route,
+  approval: ShieldCheck,
+  'human-task': FileCheck2,
+  workforce: Network,
+  queue: Network,
+  machine: Bot,
+  'map-layer': Network,
+  'location-event': Route,
+  port: Plug,
+  project: FileCheck2,
 };
 
 export type EntityIconProps = {

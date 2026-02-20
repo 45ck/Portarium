@@ -8,6 +8,18 @@ export type CockpitAssetDomain =
   | 'evidence'
   | 'policy'
   | 'fleet'
+  | 'work-item'
+  | 'workflow'
+  | 'run'
+  | 'approval'
+  | 'human-task'
+  | 'workforce'
+  | 'queue'
+  | 'machine'
+  | 'map-layer'
+  | 'location-event'
+  | 'port'
+  | 'project'
   | 'other';
 
 export type CockpitAssetStyle = 'isometric-3d' | 'realistic' | 'flat';
@@ -60,4 +72,16 @@ export type DomainEntityType =
   | 'mission'
   | 'evidence'
   | 'policy'
-  | 'fleet';
+  | 'fleet'
+  | 'work-item'
+  | 'workflow'
+  | 'run'
+  | 'approval'
+  | 'human-task'
+  | 'workforce'
+  | 'queue'
+  | 'machine'
+  | 'map-layer'
+  | 'location-event'
+  | 'port'
+  | 'project';
