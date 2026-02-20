@@ -24,7 +24,9 @@ describe('InMemoryFinanceAccountingAdapter integration', () => {
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listInvoices' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'invoices') return;
-    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdInvoiceId)).toBe(true);
+    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdInvoiceId)).toBe(
+      true,
+    );
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
@@ -54,7 +56,9 @@ describe('InMemoryFinanceAccountingAdapter integration', () => {
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listBills' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'invoices') return;
-    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdBillId)).toBe(true);
+    expect(listed.result.invoices.some((invoice) => invoice.invoiceId === createdBillId)).toBe(
+      true,
+    );
 
     const fetched = await adapter.execute({
       tenantId: TENANT,
@@ -100,7 +104,11 @@ describe('InMemoryFinanceAccountingAdapter integration', () => {
       const result = await adapter.execute({ tenantId: TENANT, operation });
       expect(result.ok).toBe(true);
       if (!result.ok || result.result.kind !== 'opaque') continue;
-      expect(result.result.payload).toMatchObject({ operation, tenantId: TENANT, status: 'stubbed' });
+      expect(result.result.payload).toMatchObject({
+        operation,
+        tenantId: TENANT,
+        status: 'stubbed',
+      });
     }
   });
 });

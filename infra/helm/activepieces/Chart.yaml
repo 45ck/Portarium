@@ -3,4 +3,4 @@ name: activepieces
 description: Portarium Activepieces self-hosted deployment chart
 type: application
 version: 0.1.0
-appVersion: "latest"
+appVersion: 'latest'

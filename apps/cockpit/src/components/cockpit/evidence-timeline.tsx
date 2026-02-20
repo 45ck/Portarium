@@ -1,13 +1,16 @@
-import type { EvidenceEntry } from '@portarium/cockpit-types'
-import { EvidenceCategoryBadge, EVIDENCE_CATEGORY_COLORS } from '@/components/cockpit/evidence-category-badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Link2 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { cn } from '@/lib/utils'
+import type { EvidenceEntry } from '@portarium/cockpit-types';
+import {
+  EvidenceCategoryBadge,
+  EVIDENCE_CATEGORY_COLORS,
+} from '@/components/cockpit/evidence-category-badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface EvidenceTimelineProps {
-  entries: EvidenceEntry[]
-  loading?: boolean
+  entries: EvidenceEntry[];
+  loading?: boolean;
 }
 
 const dotColors: Record<string, string> = {
@@ -16,14 +19,18 @@ const dotColors: Record<string, string> = {
   Approval: 'bg-yellow-500',
   Policy: 'bg-orange-500',
   System: 'bg-gray-500',
-}
+};
 
 function actorLabel(actor: EvidenceEntry['actor']): string {
   switch (actor.kind) {
-    case 'User': return `User: ${actor.userId}`
-    case 'Machine': return `Machine: ${actor.machineId}`
-    case 'Adapter': return `Adapter: ${actor.adapterId}`
-    case 'System': return 'System'
+    case 'User':
+      return `User: ${actor.userId}`;
+    case 'Machine':
+      return `Machine: ${actor.machineId}`;
+    case 'Adapter':
+      return `Adapter: ${actor.adapterId}`;
+    case 'System':
+      return 'System';
   }
 }
 
@@ -42,15 +49,23 @@ export function EvidenceTimeline({ entries, loading }: EvidenceTimelineProps) {
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-0">
       {entries.map((entry, i) => (
-        <div key={entry.evidenceId} className="flex gap-3 py-2 border-b border-border last:border-0">
+        <div
+          key={entry.evidenceId}
+          className="flex gap-3 py-2 border-b border-border last:border-0"
+        >
           <div className="flex flex-col items-center pt-1">
-            <div className={cn('h-3 w-3 rounded-full shrink-0', dotColors[entry.category] ?? 'bg-gray-400')} />
+            <div
+              className={cn(
+                'h-3 w-3 rounded-full shrink-0',
+                dotColors[entry.category] ?? 'bg-gray-400',
+              )}
+            />
             {i < entries.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
           </div>
           <div className="flex-1 min-w-0">
@@ -71,5 +86,5 @@ export function EvidenceTimeline({ entries, loading }: EvidenceTimelineProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }

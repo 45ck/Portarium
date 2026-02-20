@@ -94,9 +94,7 @@ export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQuerySto
     const byName = filter.nameQuery?.toLowerCase();
     const items = payloads
       .map((payload) => parseWorkspaceV1(payload))
-      .filter((workspace) =>
-        byName ? workspace.name.toLowerCase().includes(byName) : true,
-      )
+      .filter((workspace) => (byName ? workspace.name.toLowerCase().includes(byName) : true))
       .sort((left, right) => String(left.workspaceId).localeCompare(String(right.workspaceId)));
 
     return pageByCursor(items, String, filter.limit, filter.cursor);
@@ -249,7 +247,12 @@ export class PostgresApprovalStore implements ApprovalStore, ApprovalQueryStore 
       .filter((approval) => matchApprovalFilter(approval, filter))
       .sort((left, right) => String(left.approvalId).localeCompare(String(right.approvalId)));
 
-    return pageByCursor(items, (approval) => String(approval.approvalId), filter.limit, filter.cursor);
+    return pageByCursor(
+      items,
+      (approval) => String(approval.approvalId),
+      filter.limit,
+      filter.cursor,
+    );
   }
 }
 
@@ -307,10 +310,14 @@ function formatIdempotencyDocumentId(key: IdempotencyKey): string {
 function matchRunFilter(run: RunV1, filter: ListRunsFilter): boolean {
   if (filter.status && run.status !== filter.status) return false;
   if (filter.workflowId && String(run.workflowId) !== String(filter.workflowId)) return false;
-  if (filter.initiatedByUserId && String(run.initiatedByUserId) !== String(filter.initiatedByUserId)) {
+  if (
+    filter.initiatedByUserId &&
+    String(run.initiatedByUserId) !== String(filter.initiatedByUserId)
+  ) {
     return false;
   }
-  if (filter.correlationId && String(run.correlationId) !== String(filter.correlationId)) return false;
+  if (filter.correlationId && String(run.correlationId) !== String(filter.correlationId))
+    return false;
   return true;
 }
 
@@ -322,7 +329,10 @@ function matchApprovalFilter(approval: ApprovalV1, filter: ListApprovalsFilter):
     [filter.runId ? String(filter.runId) : undefined, String(approval.runId)],
     [filter.planId ? String(filter.planId) : undefined, String(approval.planId)],
     [filter.workItemId ? String(filter.workItemId) : undefined, String(approval.workItemId)],
-    [filter.assigneeUserId ? String(filter.assigneeUserId) : undefined, String(approval.assigneeUserId)],
+    [
+      filter.assigneeUserId ? String(filter.assigneeUserId) : undefined,
+      String(approval.assigneeUserId),
+    ],
     [
       filter.requestedByUserId ? String(filter.requestedByUserId) : undefined,
       String(approval.requestedByUserId),

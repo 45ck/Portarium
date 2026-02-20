@@ -16,7 +16,12 @@ const candidateMatrixPath = path.join(
 const sourcesRoot = path.join(repoRoot, 'domain-atlas', 'sources');
 const mappingsRoot = path.join(repoRoot, 'domain-atlas', 'mappings');
 const catalogRoot = path.join(repoRoot, 'docs', 'integration-catalog');
-const reportPath = path.join(repoRoot, 'reports', 'domain-atlas', 'operation-contract-stub-verification.json');
+const reportPath = path.join(
+  repoRoot,
+  'reports',
+  'domain-atlas',
+  'operation-contract-stub-verification.json',
+);
 
 const canonicalObjects = new Set([
   'Party',
@@ -40,7 +45,9 @@ function readJson(filePath) {
 }
 
 function normalizeName(value) {
-  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 function extractSourceRanks(markdown) {

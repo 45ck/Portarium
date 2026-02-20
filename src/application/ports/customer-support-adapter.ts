@@ -46,11 +46,7 @@ export type CustomerSupportExecuteOutputV1 =
   | Readonly<{ ok: true; result: CustomerSupportOperationResultV1 }>
   | Readonly<{
       ok: false;
-      error:
-        | 'unsupported_operation'
-        | 'not_found'
-        | 'validation_error'
-        | 'provider_error';
+      error: 'unsupported_operation' | 'not_found' | 'validation_error' | 'provider_error';
       message: string;
     }>;
 

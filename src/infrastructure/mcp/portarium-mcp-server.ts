@@ -55,17 +55,9 @@ export interface PortariumClient {
 
   getRun(params: { workspaceId: string; runId: string }): Promise<unknown>;
 
-  cancelRun(params: {
-    workspaceId: string;
-    runId: string;
-    reason?: string;
-  }): Promise<unknown>;
+  cancelRun(params: { workspaceId: string; runId: string; reason?: string }): Promise<unknown>;
 
-  listWorkItems(params: {
-    workspaceId: string;
-    runId?: string;
-    status?: string;
-  }): Promise<unknown>;
+  listWorkItems(params: { workspaceId: string; runId?: string; status?: string }): Promise<unknown>;
 
   submitApproval(params: {
     workspaceId: string;
@@ -98,10 +90,7 @@ export class PortariumMcpServer {
   readonly #client: PortariumClient;
   readonly #allowedTools: ReadonlySet<string> | undefined;
 
-  public constructor(
-    client: PortariumClient,
-    opts?: { allowedTools?: ReadonlySet<string> },
-  ) {
+  public constructor(client: PortariumClient, opts?: { allowedTools?: ReadonlySet<string> }) {
     this.#client = client;
     this.#allowedTools = opts?.allowedTools;
   }
@@ -142,10 +131,7 @@ export class PortariumMcpServer {
     return MCP_TOOLS.filter((t) => this.#allowedTools!.has(t.name));
   }
 
-  async #handleToolCall(
-    id: string | number,
-    params: unknown,
-  ): Promise<JsonRpcResponse> {
+  async #handleToolCall(id: string | number, params: unknown): Promise<JsonRpcResponse> {
     if (!isRecord(params)) {
       return jsonRpcError(id, INVALID_PARAMS, 'params must be an object.');
     }
@@ -177,10 +163,7 @@ export class PortariumMcpServer {
     }
   }
 
-  async #dispatch(
-    toolName: string,
-    args: Record<string, unknown>,
-  ): Promise<unknown> {
+  async #dispatch(toolName: string, args: Record<string, unknown>): Promise<unknown> {
     switch (toolName) {
       case 'portarium_run_start': {
         const input = asRecord(args['input']);
@@ -274,8 +257,7 @@ function parseJsonRpcRequest(raw: unknown): ParseOk | ParseFail {
   }
 
   const id = raw['id'];
-  const resolvedId =
-    typeof id === 'string' || typeof id === 'number' ? id : null;
+  const resolvedId = typeof id === 'string' || typeof id === 'number' ? id : null;
 
   if (raw['jsonrpc'] !== '2.0') {
     return {
@@ -309,11 +291,7 @@ function jsonRpcOk(id: string | number, result: unknown): JsonRpcResponse {
   return { jsonrpc: '2.0', id, result };
 }
 
-function jsonRpcError(
-  id: string | number | null,
-  code: number,
-  message: string,
-): JsonRpcResponse {
+function jsonRpcError(id: string | number | null, code: number, message: string): JsonRpcResponse {
   return { jsonrpc: '2.0', id: id ?? 0, error: { code, message } };
 }
 
@@ -334,10 +312,7 @@ function asStringArray(value: unknown): readonly string[] | undefined {
   return value.filter((v): v is string => typeof v === 'string');
 }
 
-function requireString(
-  record: Record<string, unknown>,
-  key: string,
-): string {
+function requireString(record: Record<string, unknown>, key: string): string {
   const value = record[key];
   if (typeof value !== 'string' || value.trim() === '') {
     throw new Error(`Missing required string parameter: ${key}`);

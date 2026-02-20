@@ -50,7 +50,10 @@ type InMemoryMarketingAutomationAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -258,7 +261,8 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
       return { ok: false, error: 'not_found', message: `Contact ${contactId} was not found.` };
     }
     const list = this.#lists.find(
-      (candidate) => candidate.tenantId === input.tenantId && candidate.externalRef.externalId === listId,
+      (candidate) =>
+        candidate.tenantId === input.tenantId && candidate.externalRef.externalId === listId,
     );
     if (list === undefined) {
       return { ok: false, error: 'not_found', message: `List ${listId} was not found.` };
@@ -276,7 +280,9 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
   }
 
-  #removeContactFromList(input: MarketingAutomationExecuteInputV1): MarketingAutomationExecuteOutputV1 {
+  #removeContactFromList(
+    input: MarketingAutomationExecuteInputV1,
+  ): MarketingAutomationExecuteOutputV1 {
     const contactId = readString(input.payload, 'contactId');
     if (contactId === null) {
       return {
@@ -414,7 +420,13 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
   }
 
   #getAutomation(input: MarketingAutomationExecuteInputV1): MarketingAutomationExecuteOutputV1 {
-    return this.#getTenantRef(input, this.#automations, 'automationId', 'Automation', 'getAutomation');
+    return this.#getTenantRef(
+      input,
+      this.#automations,
+      'automationId',
+      'Automation',
+      'getAutomation',
+    );
   }
 
   #triggerAutomation(input: MarketingAutomationExecuteInputV1): MarketingAutomationExecuteOutputV1 {
@@ -431,7 +443,11 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
         candidate.tenantId === input.tenantId && candidate.externalRef.externalId === automationId,
     );
     if (automation === undefined) {
-      return { ok: false, error: 'not_found', message: `Automation ${automationId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Automation ${automationId} was not found.`,
+      };
     }
 
     const externalRef: ExternalObjectRef = {
@@ -447,7 +463,9 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
 
-  #getFormSubmissions(input: MarketingAutomationExecuteInputV1): MarketingAutomationExecuteOutputV1 {
+  #getFormSubmissions(
+    input: MarketingAutomationExecuteInputV1,
+  ): MarketingAutomationExecuteOutputV1 {
     const formId = readString(input.payload, 'formId');
     if (formId === null) {
       return {
@@ -457,7 +475,8 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
       };
     }
     const form = this.#forms.find(
-      (candidate) => candidate.tenantId === input.tenantId && candidate.externalRef.externalId === formId,
+      (candidate) =>
+        candidate.tenantId === input.tenantId && candidate.externalRef.externalId === formId,
     );
     if (form === undefined) {
       return { ok: false, error: 'not_found', message: `Form ${formId} was not found.` };
@@ -500,8 +519,7 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

@@ -18,13 +18,7 @@ import type { AppContext } from '../../application/common/context.js';
 // Resource types and relations
 // ---------------------------------------------------------------------------
 
-export const OPENFGA_RESOURCE_TYPES = [
-  'agent',
-  'machine',
-  'run',
-  'workflow',
-  'workspace',
-] as const;
+export const OPENFGA_RESOURCE_TYPES = ['agent', 'machine', 'run', 'workflow', 'workspace'] as const;
 
 export type OpenFgaResourceType = (typeof OPENFGA_RESOURCE_TYPES)[number];
 
@@ -158,9 +152,7 @@ export class OpenFgaResourceAuthorization implements ResourceAuthorizationPort {
         relation: check.relation,
         object: `${check.resourceType}:${check.resourceId}`,
       },
-      ...(this.#authorizationModelId
-        ? { authorization_model_id: this.#authorizationModelId }
-        : {}),
+      ...(this.#authorizationModelId ? { authorization_model_id: this.#authorizationModelId } : {}),
     };
 
     try {

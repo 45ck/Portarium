@@ -11,6 +11,7 @@ Scope:
 ## Acceptance Criteria Check
 
 1. No duplicated parsing logic remains:
+
 - Verified by removing remaining duplicated record/string parsing helpers in V1 parser modules and centralizing those calls on `parse-utils`.
 - Evidence:
   - `src/domain/adapters/adapter-registration-v1.ts`
@@ -18,12 +19,14 @@ Scope:
   - `src/domain/validation/parse-utils.ts`
 
 2. Every `*V1` parser uses shared toolkit:
+
 - Verified by repository scan for `parse*V1` modules and import usage of `../validation/parse-utils.js` in all V1 parser files.
 - Evidence:
   - `src/domain/**/*.ts` (`*v1.ts` parser modules)
   - `src/domain/validation/parse-utils.ts`
 
 3. Error types match domain error model in docs/domain:
+
 - Verified by parser modules consistently exposing typed `<Thing>ParseError` classes and documented parser contracts.
 - Evidence:
   - `docs/domain-layer-work-backlog.md`
@@ -31,6 +34,7 @@ Scope:
   - `src/domain/**/**-v1.ts` parser modules
 
 4. `.specify/specs` updated to reflect parser contract:
+
 - Added explicit parser toolkit contract spec.
 - Evidence:
   - `.specify/specs/domain-parsing-toolkit-v1.md`

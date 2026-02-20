@@ -127,7 +127,9 @@ describe('InMemoryMarketingAutomationAdapter', () => {
     const listed = await adapter.execute({ tenantId: TENANT_A, operation: 'listCampaigns' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'campaigns') return;
-    expect(listed.result.campaigns.some((campaign) => campaign.campaignId === campaignId)).toBe(true);
+    expect(listed.result.campaigns.some((campaign) => campaign.campaignId === campaignId)).toBe(
+      true,
+    );
 
     const stats = await adapter.execute({
       tenantId: TENANT_A,

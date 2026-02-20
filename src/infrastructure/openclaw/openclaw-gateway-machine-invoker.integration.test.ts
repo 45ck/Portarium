@@ -125,7 +125,9 @@ describe('OpenClawGatewayMachineInvoker integration', () => {
 
       expect(result).toEqual({ ok: true, output: responseFixture });
       expect(sleepCalls).toEqual([1_000]);
-      expect(gateway.requests.filter((request) => request.path === '/tools/invoke')).toHaveLength(2);
+      expect(gateway.requests.filter((request) => request.path === '/tools/invoke')).toHaveLength(
+        2,
+      );
     } finally {
       await gateway.close();
     }
@@ -149,8 +151,7 @@ describe('OpenClawGatewayMachineInvoker integration', () => {
         ok: false,
         errorKind: 'PolicyDenied',
         runState: 'PolicyBlocked',
-        message:
-          'Policy blocked tool "shell.exec" for tier "Auto"; requires "ManualOnly".',
+        message: 'Policy blocked tool "shell.exec" for tier "Auto"; requires "ManualOnly".',
       });
       expect(gateway.requests).toHaveLength(0);
     } finally {

@@ -34,10 +34,10 @@ use the Portarium SDK.
 
 ## Modes
 
-| Mode         | `PORTARIUM_ENFORCE` | Behavior                          |
-| ------------ | ------------------- | --------------------------------- |
-| **Enforce**  | `true` (default)    | Block unrouted calls              |
-| **Audit**    | `false`             | Log warning, allow call           |
+| Mode        | `PORTARIUM_ENFORCE` | Behavior                |
+| ----------- | ------------------- | ----------------------- |
+| **Enforce** | `true` (default)    | Block unrouted calls    |
+| **Audit**   | `false`             | Log warning, allow call |
 
 ## Testing locally
 

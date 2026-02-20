@@ -11,12 +11,14 @@ Scope:
 ## Acceptance Criteria Check
 
 1. Chain break produces typed error:
+
 - Verified by `verifyEvidenceChainV1` discriminated result union returning typed reasons (`hash_mismatch`, `previous_hash_mismatch`, `unexpected_previous_hash`, `signature_invalid`, `timestamp_not_monotonic`).
 - Evidence:
   - `src/domain/evidence/evidence-chain-v1.ts`
   - `src/domain/evidence/evidence-chain-v1.test.ts`
 
 2. `previousHash` stored and verified on every append:
+
 - Verified by append behavior linking each new entry to prior hash and verification-time link checks.
 - Evidence:
   - `src/domain/evidence/evidence-chain-v1.ts`
@@ -24,6 +26,7 @@ Scope:
   - `src/infrastructure/evidence/evidence-retention-chain-continuity.test.ts`
 
 3. Signature hook interface defined and extensible:
+
 - Verified by domain-level `EvidenceSigner` and `EvidenceSignatureVerifier` abstractions and signature-aware chain verification path.
 - Evidence:
   - `src/domain/evidence/evidence-hasher.ts`
@@ -31,6 +34,7 @@ Scope:
   - `src/domain/evidence/evidence-chain-v1.test.ts`
 
 4. Tampered entry detection test exists:
+
 - Verified by tests mutating an entry and asserting `hash_mismatch`, plus forced bad-link mismatch assertions.
 - Evidence:
   - `src/domain/evidence/evidence-chain-v1.test.ts`

@@ -11,29 +11,34 @@ Scope:
 ## Acceptance Criteria Check
 
 1. End-to-end run reaches `Succeeded` in integration test:
+
 - Verified by Temporal activity loop test asserting `Succeeded` terminal status after start + complete activities.
 - Evidence:
   - `src/infrastructure/temporal/activities.test.ts`
 
 2. Planned-vs-verified diff computed correctly:
+
 - Verified by execution-loop tests asserting plan creation and clean planned-vs-verified diff result.
 - Evidence:
   - `src/infrastructure/temporal/activities.test.ts`
   - `src/domain/services/diff.test.ts`
 
 3. Evidence chain intact:
+
 - Verified by execution-loop test validating appended chain plus domain evidence-chain tamper-detection tests.
 - Evidence:
   - `src/infrastructure/temporal/activities.test.ts`
   - `src/domain/evidence/evidence-chain-v1.test.ts`
 
 4. Run-status transitions match state machine:
+
 - Verified by transition guard usage in activities and comprehensive valid/invalid transition tests.
 - Evidence:
   - `src/infrastructure/temporal/activities.ts`
   - `src/domain/services/run-status-transitions.test.ts`
 
 5. No plain-text credentials in logs:
+
 - Verified by workflow structured logging redaction and focused redaction tests for authorization/token/password/apiKey keys.
 - Evidence:
   - `src/infrastructure/temporal/workflows.ts`

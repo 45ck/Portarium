@@ -47,11 +47,11 @@ for in-cluster mTLS.
 
 ### SPIFFE ID assignments
 
-| Workload           | SPIFFE ID                                                    |
-|--------------------|------------------------------------------------------------- |
-| Control Plane      | `spiffe://portarium.io/ns/portarium/sa/portarium-control-plane` |
-| Execution Plane    | `spiffe://portarium.io/ns/portarium/sa/portarium-execution-plane` |
-| Agent              | `spiffe://portarium.io/ns/portarium/sa/portarium-agent`      |
+| Workload        | SPIFFE ID                                                         |
+| --------------- | ----------------------------------------------------------------- |
+| Control Plane   | `spiffe://portarium.io/ns/portarium/sa/portarium-control-plane`   |
+| Execution Plane | `spiffe://portarium.io/ns/portarium/sa/portarium-execution-plane` |
+| Agent           | `spiffe://portarium.io/ns/portarium/sa/portarium-agent`           |
 
 ### Node attestation
 

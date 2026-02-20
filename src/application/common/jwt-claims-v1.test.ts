@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  assertWorkspaceScoped,
-  validatePortariumJwtClaimsV1,
-} from './jwt-claims-v1.js';
+import { assertWorkspaceScoped, validatePortariumJwtClaimsV1 } from './jwt-claims-v1.js';
 
 describe('validatePortariumJwtClaimsV1', () => {
   const validClaims = {

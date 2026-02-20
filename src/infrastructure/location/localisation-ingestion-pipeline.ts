@@ -1,7 +1,18 @@
 import { createPortariumCloudEvent } from '../../application/events/cloudevent.js';
-import { parsePortariumCloudEventV1, type PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
-import { parseLocationEventV1, type LocationEventV1 } from '../../domain/location/location-event-v1.js';
-import { CorrelationId, LocationEventId, SourceStreamId, TenantId } from '../../domain/primitives/index.js';
+import {
+  parsePortariumCloudEventV1,
+  type PortariumCloudEventV1,
+} from '../../domain/event-stream/cloudevents-v1.js';
+import {
+  parseLocationEventV1,
+  type LocationEventV1,
+} from '../../domain/location/location-event-v1.js';
+import {
+  CorrelationId,
+  LocationEventId,
+  SourceStreamId,
+  TenantId,
+} from '../../domain/primitives/index.js';
 
 export interface LocalisationIngestionDeps {
   idGenerator: Readonly<{ generateId(): string }>;
@@ -94,7 +105,10 @@ export type SlamLocalisationInput = LocalisationInputBase &
     }>;
   }>;
 
-export type LocalisationInput = GpsLocalisationInput | RtlsLocalisationInput | SlamLocalisationInput;
+export type LocalisationInput =
+  | GpsLocalisationInput
+  | RtlsLocalisationInput
+  | SlamLocalisationInput;
 
 const LOCATION_INGESTION_SOURCE = 'portarium.infrastructure.location-ingestion';
 
@@ -110,7 +124,10 @@ export class LocalisationIngestionPipeline {
     try {
       const sourceStreamId = SourceStreamId(input.sourceStreamId);
       const tenantId = TenantId(input.tenantId);
-      const previous = await this.#deps.historyStore.getLastBySourceStream(input.tenantId, input.sourceStreamId);
+      const previous = await this.#deps.historyStore.getLastBySourceStream(
+        input.tenantId,
+        input.sourceStreamId,
+      );
       const event = parseLocationEventV1(
         toLocationEventRecord({
           input,
@@ -235,7 +252,10 @@ export class InMemoryLocationHistoryStore implements LocationHistoryStore {
     return Promise.resolve();
   }
 
-  public getLastBySourceStream(tenantId: string, sourceStreamId: string): Promise<LocationEventV1 | null> {
+  public getLastBySourceStream(
+    tenantId: string,
+    sourceStreamId: string,
+  ): Promise<LocationEventV1 | null> {
     for (let i = this.#events.length - 1; i >= 0; i -= 1) {
       const entry = this.#events[i]!;
       if (String(entry.tenantId) === tenantId && String(entry.sourceStreamId) === sourceStreamId) {
@@ -247,7 +267,9 @@ export class InMemoryLocationHistoryStore implements LocationHistoryStore {
 
   public listByAsset(tenantId: string, assetId: string): Promise<readonly LocationEventV1[]> {
     return Promise.resolve(
-      this.#events.filter((event) => String(event.tenantId) === tenantId && String(event.assetId) === assetId),
+      this.#events.filter(
+        (event) => String(event.tenantId) === tenantId && String(event.assetId) === assetId,
+      ),
     );
   }
 
@@ -337,6 +359,8 @@ function knownOrUnknownAccuracyQuality(
   return {
     status: 'Known',
     horizontalStdDevMeters: horizontalAccuracyMeters,
-    ...(verticalAccuracyMeters !== undefined ? { verticalStdDevMeters: verticalAccuracyMeters } : {}),
+    ...(verticalAccuracyMeters !== undefined
+      ? { verticalStdDevMeters: verticalAccuracyMeters }
+      : {}),
   };
 }

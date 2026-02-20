@@ -12,15 +12,19 @@ Scope:
 ## Acceptance Criteria Check
 
 1. Weekly report generation exists for orphaned beads and dependency deadlocks:
+
 - Implemented `scripts/beads/generate-weekly-pe-audit.mjs` to parse `.beads/issues.jsonl`, detect orphaned open beads, compute dependency graph SCC cycles, and render markdown output.
 
 2. Report output is persisted as governance artifact:
+
 - Added generated artifact at `docs/governance/weekly-pe-audit.md`.
 
 3. Automated verification exists:
+
 - Added test coverage in `src/infrastructure/beads/generate-weekly-pe-audit.test.ts` for orphan/deadlock detection and report/check-mode behavior.
 
 4. Developer workflow command added:
+
 - Added npm scripts:
   - `beads:audit:weekly`
   - `beads:audit:weekly:check`

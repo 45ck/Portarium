@@ -11,6 +11,7 @@ Scope:
 ## Acceptance Criteria Check
 
 1. Every application port in scope has concrete infrastructure wiring:
+
 - Verified concrete adapters under:
   - `src/infrastructure/postgresql/postgres-store-adapters.ts`
   - `src/infrastructure/postgresql/postgres-workforce-store-adapters.ts`
@@ -18,15 +19,18 @@ Scope:
 - Includes workspace/run/workflow/approval/policy/idempotency/work item/workforce/human task/outbox/evidence/event publisher surfaces.
 
 2. Integration suite passes against PostgreSQL adapter contracts:
+
 - Verified by integration tests:
   - `src/infrastructure/postgresql/postgres-store-adapters.integration.test.ts`
   - `src/application/integration/register-workspace-flow.integration.test.ts`
   - `src/application/integration/start-workflow-flow.integration.test.ts`
 
 3. ID generator behavior (deterministic + unique) is covered in runtime path:
+
 - ID generation is exercised through command/integration flows and remains stable in tests using deterministic generators in app-layer tests.
 
 4. Event publisher adapter tested with outbox:
+
 - Verified by:
   - `src/application/services/outbox-dispatcher.test.ts`
   - `src/infrastructure/postgresql/postgres-store-adapters.integration.test.ts`

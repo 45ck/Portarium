@@ -12,6 +12,7 @@ Scope:
 ## Acceptance Criteria Check
 
 1. `docs/domain/canonical-objects.md` matches implemented runtime model:
+
 - Updated wording to match actual runtime contract shape (`externalRefs?` optional).
 - Added explicit note that canonical table fields are conceptual and runtime source-of-truth is `src/domain/canonical/*-v1.ts`.
 - Evidence:
@@ -19,6 +20,7 @@ Scope:
   - `src/domain/canonical/index.ts`
 
 2. `docs/domain/erd.md` reflects actual aggregate boundaries and references:
+
 - Replaced stale conceptual ERD with as-implemented snapshot aligned to current `*-v1` parser contracts.
 - Included implemented relationships among Workspace, Workflow, Run, Policy, AdapterRegistration, CredentialGrant, WorkItem, Project, Approval, Artifact.
 - Evidence:
@@ -32,6 +34,7 @@ Scope:
   - `src/domain/credentials/credential-grant-v1.ts`
 
 3. `docs/domain/aggregates.md` invariants traced to implementation:
+
 - Rewrote aggregates documentation as an as-implemented invariant map tied to parser and service contracts.
 - Added explicit Run transition state machine section aligned to compile-time/runtime guards.
 - Evidence:
@@ -39,6 +42,7 @@ Scope:
   - `src/domain/services/run-status-transitions.ts`
 
 4. `domain-layer-work-backlog.md` DONE/closed statuses updated:
+
 - Updated closed statuses for completed P0/P1 domain beads in the pre-existing cross-reference table:
   - `bead-0302`, `0303`, `0304`, `0305`, `0306`, `0307`, `0309`, `0337`, `0338`.
 - Evidence:

@@ -74,10 +74,7 @@ export type ParsedSubmitMapCommandIntentInput = Readonly<{
 
 export type SubmitMapCommandIntentPolicyError = Forbidden | Conflict;
 
-function parseRequiredString(
-  value: unknown,
-  fieldName: string,
-): Result<string, ValidationFailed> {
+function parseRequiredString(value: unknown, fieldName: string): Result<string, ValidationFailed> {
   if (typeof value !== 'string' || value.trim() === '') {
     return err({
       kind: 'ValidationFailed',
@@ -138,9 +135,7 @@ function parseOptionalString(
   return ok(parsed.value);
 }
 
-function parseMapContextStrings(
-  record: Record<string, unknown>,
-): Result<
+function parseMapContextStrings(record: Record<string, unknown>): Result<
   Readonly<{
     siteId: string;
     floorId?: string;
@@ -198,7 +193,10 @@ export function parseSubmitMapCommandIntentInput(
   if (!robotIdResult.ok) return robotIdResult;
   const rationaleResult = parseRequiredString(rawInput.rationale, 'rationale');
   if (!rationaleResult.ok) return rationaleResult;
-  const requestedByUserIdResult = parseRequiredString(rawInput.requestedByUserId, 'requestedByUserId');
+  const requestedByUserIdResult = parseRequiredString(
+    rawInput.requestedByUserId,
+    'requestedByUserId',
+  );
   if (!requestedByUserIdResult.ok) return requestedByUserIdResult;
   const policyIdsResult = parsePolicyIds(rawInput.policyIds);
   if (!policyIdsResult.ok) return policyIdsResult;
@@ -220,7 +218,9 @@ export function parseSubmitMapCommandIntentInput(
   });
 }
 
-function toActionOperation(commandKind: MapCommandKind): 'robot:estop_request' | 'robot:execute_action' {
+function toActionOperation(
+  commandKind: MapCommandKind,
+): 'robot:estop_request' | 'robot:execute_action' {
   return commandKind === 'RemoteStop' ? 'robot:estop_request' : 'robot:execute_action';
 }
 
@@ -230,7 +230,8 @@ export function evaluateMapCommandGovernance(params: {
 }): PolicyEvaluationResultV1 {
   const { policies, input } = params;
   const actionOperation = toActionOperation(input.commandKind);
-  const hazardousZone = input.mapContext.hazardousZone ?? input.commandKind === 'RestrictedZoneMove';
+  const hazardousZone =
+    input.mapContext.hazardousZone ?? input.commandKind === 'RestrictedZoneMove';
   const safetyClassifiedZone = input.mapContext.safetyClassifiedZone ?? false;
 
   return evaluatePolicies({

@@ -80,15 +80,11 @@ export async function getAgentWorkItems(
     });
   }
 
-  const page: WorkItemListPage = await deps.workItemStore.listWorkItems(
-    ctx.tenantId,
-    workspaceId,
-    {
-      ...(input.status ? { status: input.status as WorkItemV1['status'] } : {}),
-      ...(input.limit !== undefined ? { limit: input.limit } : {}),
-      ...(input.cursor ? { cursor: input.cursor } : {}),
-    },
-  );
+  const page: WorkItemListPage = await deps.workItemStore.listWorkItems(ctx.tenantId, workspaceId, {
+    ...(input.status ? { status: input.status as WorkItemV1['status'] } : {}),
+    ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    ...(input.cursor ? { cursor: input.cursor } : {}),
+  });
 
   return ok({
     agentId: input.agentId,

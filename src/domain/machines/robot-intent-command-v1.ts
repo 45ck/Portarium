@@ -22,13 +22,7 @@ import {
 // Intent command types
 // ---------------------------------------------------------------------------
 
-export const INTENT_COMMAND_TYPES = [
-  'navigate',
-  'pick',
-  'place',
-  'inspect',
-  'dock',
-] as const;
+export const INTENT_COMMAND_TYPES = ['navigate', 'pick', 'place', 'inspect', 'dock'] as const;
 
 export type IntentCommandType = (typeof INTENT_COMMAND_TYPES)[number];
 
@@ -159,17 +153,11 @@ function parseSafetyConstraints(raw: unknown): SafetyConstraints {
     throw new IntentCommandParseError('safetyConstraints.maxVelocityMps must be positive.');
   }
 
-  const geofenceBoundary = readOptionalString(
-    record,
-    'geofenceBoundary',
-    IntentCommandParseError,
-  );
+  const geofenceBoundary = readOptionalString(record, 'geofenceBoundary', IntentCommandParseError);
 
   const collisionAvoidanceRaw = record['collisionAvoidance'];
   if (typeof collisionAvoidanceRaw !== 'boolean') {
-    throw new IntentCommandParseError(
-      'safetyConstraints.collisionAvoidance must be a boolean.',
-    );
+    throw new IntentCommandParseError('safetyConstraints.collisionAvoidance must be a boolean.');
   }
 
   return {
@@ -240,11 +228,7 @@ function parseTelemetrySnapshot(raw: unknown): TelemetrySnapshot {
 
   const positionX = readOptionalFiniteNumber(record, 'positionX', ExecutionEvidenceParseError);
   const positionY = readOptionalFiniteNumber(record, 'positionY', ExecutionEvidenceParseError);
-  const velocityMps = readOptionalFiniteNumber(
-    record,
-    'velocityMps',
-    ExecutionEvidenceParseError,
-  );
+  const velocityMps = readOptionalFiniteNumber(record, 'velocityMps', ExecutionEvidenceParseError);
 
   return {
     ...(batteryPercent !== undefined ? { batteryPercent } : {}),
@@ -275,9 +259,7 @@ export function parseExecutionEvidenceV1(value: unknown): ExecutionEvidenceV1 {
 
   const telemetrySnapshotRaw = record['telemetrySnapshot'];
   const telemetrySnapshot =
-    telemetrySnapshotRaw === undefined
-      ? undefined
-      : parseTelemetrySnapshot(telemetrySnapshotRaw);
+    telemetrySnapshotRaw === undefined ? undefined : parseTelemetrySnapshot(telemetrySnapshotRaw);
 
   const completedAtIso = readOptionalIsoString(
     record,

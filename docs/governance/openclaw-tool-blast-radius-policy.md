@@ -12,12 +12,12 @@ If a tool is requested under a tier lower than its minimum, execution is denied 
 
 ## Tool/Skill Category Mapping
 
-| Category | Minimum tier | Typical patterns | Governance rationale |
-| --- | --- | --- | --- |
-| `ReadOnly` | `Auto` | `read`, `get`, `list`, `search`, `query`, `inspect` | Read-only retrieval and analysis are low blast radius and can run automatically. |
-| `Mutation` | `HumanApprove` | `write`, `create`, `update`, `delete`, `send`, `publish`, `transfer` | Mutations can change external system state and require human approval by default. |
-| `Dangerous` | `ManualOnly` | `shell`, `terminal`, `powershell`, `bash`, `cmd`, `system.exec`, `browser`, `playwright`, `puppeteer`, `selenium` | Command execution and browser automation can cause broad unintended effects; keep manually governed. |
-| `Unknown` | `HumanApprove` | Unclassified custom names | Fail-safe default for unmapped identifiers. |
+| Category    | Minimum tier   | Typical patterns                                                                                                  | Governance rationale                                                                                 |
+| ----------- | -------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `ReadOnly`  | `Auto`         | `read`, `get`, `list`, `search`, `query`, `inspect`                                                               | Read-only retrieval and analysis are low blast radius and can run automatically.                     |
+| `Mutation`  | `HumanApprove` | `write`, `create`, `update`, `delete`, `send`, `publish`, `transfer`                                              | Mutations can change external system state and require human approval by default.                    |
+| `Dangerous` | `ManualOnly`   | `shell`, `terminal`, `powershell`, `bash`, `cmd`, `system.exec`, `browser`, `playwright`, `puppeteer`, `selenium` | Command execution and browser automation can cause broad unintended effects; keep manually governed. |
+| `Unknown`   | `HumanApprove` | Unclassified custom names                                                                                         | Fail-safe default for unmapped identifiers.                                                          |
 
 ## Enforcement Semantics
 

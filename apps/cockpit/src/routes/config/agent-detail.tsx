@@ -1,4 +1,5 @@
 import { createRoute, Link } from '@tanstack/react-router';
+import { Bot, Brain, Code2 } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useAgents } from '@/hooks/queries/use-agents';
@@ -6,6 +7,7 @@ import { useRuns } from '@/hooks/queries/use-runs';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { EmptyState } from '@/components/cockpit/empty-state';
+import type { AgentV1 } from '@portarium/cockpit-types';
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
@@ -13,6 +15,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+
+function agentKind(agent: AgentV1): 'openclaw' | 'code' | 'llm' {
+  if (agent.allowedCapabilities.includes('machine:invoke')) return 'openclaw';
+  if (agent.allowedCapabilities.includes('execute-code')) return 'code';
+  return 'llm';
+}
+
+const KIND_ICON = {
+  openclaw: { Icon: Bot, cls: 'text-orange-500' },
+  code: { Icon: Code2, cls: 'text-violet-500' },
+  llm: { Icon: Brain, cls: 'text-blue-500' },
+} as const;
 
 function AgentDetailPage() {
   const { agentId } = Route.useParams();
@@ -47,24 +61,19 @@ function AgentDetailPage() {
     );
   }
 
-  const recentRuns = (runsData?.items ?? []).filter((r) =>
-    r.agentIds?.includes(agentId),
-  );
+  const recentRuns = (runsData?.items ?? []).filter((r) => r.agentIds?.includes(agentId));
 
   const maskedEndpoint =
-    agent.endpoint.length > 30
-      ? `${agent.endpoint.slice(0, 30)}...`
-      : agent.endpoint;
+    agent.endpoint.length > 30 ? `${agent.endpoint.slice(0, 30)}...` : agent.endpoint;
+
+  const { Icon: KindIcon, cls: kindCls } = KIND_ICON[agentKind(agent)];
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title={agent.name}
-        icon={<EntityIcon entityType="agent" size="md" decorative />}
-        breadcrumb={[
-          { label: 'Agents', to: '/config/agents' },
-          { label: agent.name },
-        ]}
+        icon={<KindIcon className={`h-5 w-5 ${kindCls}`} aria-hidden="true" />}
+        breadcrumb={[{ label: 'Agents', to: '/config/agents' }, { label: agent.name }]}
       />
 
       <Card className="shadow-none">
@@ -112,7 +121,10 @@ function AgentDetailPage() {
                 to={'/workflows/$workflowId' as string}
                 params={{ workflowId: wfId }}
               >
-                <Badge variant="outline" className="hover:bg-muted/50 cursor-pointer transition-colors">
+                <Badge
+                  variant="outline"
+                  className="hover:bg-muted/50 cursor-pointer transition-colors"
+                >
                   {wfId}
                 </Badge>
               </Link>

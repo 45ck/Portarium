@@ -11,6 +11,7 @@ Scope:
 ## Acceptance Criteria Check
 
 1. All 4 roles (`admin`, `operator`, `approver`, `auditor`) enforced at routes:
+
 - Verified in role matrix and route-path tests.
 - Evidence:
   - `src/application/iam/rbac/workspace-rbac.ts`
@@ -18,6 +19,7 @@ Scope:
   - `src/presentation/runtime/control-plane-handler.test.ts`
 
 2. OWASP BOLA scenarios pass:
+
 - Tenant scoping and forbidden mapping covered by handler and query/command tests.
 - Evidence:
   - `src/presentation/runtime/control-plane-handler.test.ts`
@@ -25,12 +27,14 @@ Scope:
   - `src/application/commands/assign-workforce-member.test.ts`
 
 3. Deny-by-default with unknown role:
+
 - Unknown roles are rejected at actor parsing and dropped in context normalization for safety.
 - Evidence:
   - `src/application/iam/workspace-actor.test.ts`
   - `src/application/common/context.ts`
 
 4. Token refresh/rotation path documented:
+
 - Token semantics and operational guidance documented in backlog/spec references.
 - Evidence:
   - `docs/application-layer-work-backlog.md`

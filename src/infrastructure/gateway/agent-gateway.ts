@@ -26,9 +26,7 @@ type ProblemDetails = Readonly<{
   detail?: string;
 }>;
 
-export type AuthVerifier = (
-  authorizationHeader: string | undefined,
-) => Promise<AuthVerifyResult>;
+export type AuthVerifier = (authorizationHeader: string | undefined) => Promise<AuthVerifyResult>;
 
 export type AuthVerifyResult =
   | Readonly<{ ok: true; workspaceId: string; subject: string }>
@@ -70,10 +68,7 @@ export class AgentGateway {
    * Handle an inbound HTTP request. This is the top-level entry point used
    * by the HTTP server (e.g. `http.createServer(gateway.handleRequest)`).
    */
-  public handleRequest = async (
-    req: IncomingMessage,
-    res: ServerResponse,
-  ): Promise<void> => {
+  public handleRequest = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     try {
       // 1. Authenticate
       const authHeader = req.headers.authorization;
@@ -150,12 +145,7 @@ export class AgentGateway {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function sendProblem(
-  res: ServerResponse,
-  status: number,
-  title: string,
-  detail: string,
-): void {
+function sendProblem(res: ServerResponse, status: number, title: string, detail: string): void {
   const problem: ProblemDetails = {
     type: `https://portarium.dev/problems/${toKebab(title)}`,
     title,

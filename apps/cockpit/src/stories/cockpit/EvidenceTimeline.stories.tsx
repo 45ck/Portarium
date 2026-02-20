@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline'
-import type { EvidenceEntry } from '@portarium/cockpit-types'
+import type { Meta, StoryObj } from '@storybook/react';
+import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
+import type { EvidenceEntry } from '@portarium/cockpit-types';
 
 const meta: Meta<typeof EvidenceTimeline> = {
   title: 'Cockpit/EvidenceTimeline',
   component: EvidenceTimeline,
   tags: ['autodocs'],
-}
-export default meta
-type Story = StoryObj<typeof EvidenceTimeline>
+};
+export default meta;
+type Story = StoryObj<typeof EvidenceTimeline>;
 
 const sampleEntries: EvidenceEntry[] = [
   {
@@ -54,17 +54,17 @@ const sampleEntries: EvidenceEntry[] = [
     previousHash: 'ghi789',
     hashSha256: 'jkl012',
   },
-]
+];
 
 export const Default: Story = {
   args: {
     entries: sampleEntries,
   },
-}
+};
 
 export const Loading: Story = {
   args: {
     entries: [],
     loading: true,
   },
-}
+};

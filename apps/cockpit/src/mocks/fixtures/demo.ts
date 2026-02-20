@@ -9,16 +9,16 @@ import type {
   CredentialGrantV1,
   Plan,
   AdapterSummary,
-} from '@portarium/cockpit-types'
+} from '@portarium/cockpit-types';
 import type {
   RobotSummary,
   MissionSummary,
   SafetyConstraint,
   ApprovalThreshold,
   EStopAuditEntry,
-} from '@/types/robotics'
+} from '@/types/robotics';
 
-export type { RobotSummary, MissionSummary, SafetyConstraint, ApprovalThreshold, EStopAuditEntry }
+export type { RobotSummary, MissionSummary, SafetyConstraint, ApprovalThreshold, EStopAuditEntry };
 
 export const WORK_ITEMS: WorkItemSummary[] = [
   {
@@ -126,7 +126,7 @@ export const WORK_ITEMS: WorkItemSummary[] = [
     status: 'Closed',
     ownerUserId: 'user-approver-dana',
   },
-]
+];
 
 export const RUNS: RunSummary[] = [
   {
@@ -223,7 +223,7 @@ export const RUNS: RunSummary[] = [
     startedAtIso: '2026-02-15T10:00:10Z',
     endedAtIso: '2026-02-15T10:05:00Z',
   },
-]
+];
 
 export const APPROVALS: ApprovalSummary[] = [
   {
@@ -346,7 +346,7 @@ export const APPROVALS: ApprovalSummary[] = [
       irreversibility: 'full',
     },
   },
-]
+];
 
 export const PLANS: Plan[] = [
   {
@@ -359,13 +359,25 @@ export const PLANS: Plan[] = [
       {
         effectId: 'eff-1',
         operation: 'Create',
-        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4271C', externalType: 'CreditNote', displayLabel: 'Credit Note INV-4271C' },
+        target: {
+          sorName: 'Odoo',
+          portFamily: 'FinanceAccounting',
+          externalId: 'INV-4271C',
+          externalType: 'CreditNote',
+          displayLabel: 'Credit Note INV-4271C',
+        },
         summary: 'Credit note of €1,240 to ACME Repairs',
       },
       {
         effectId: 'eff-2',
         operation: 'Create',
-        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4272', externalType: 'Invoice', displayLabel: 'Corrected Invoice INV-4272' },
+        target: {
+          sorName: 'Odoo',
+          portFamily: 'FinanceAccounting',
+          externalId: 'INV-4272',
+          externalType: 'Invoice',
+          displayLabel: 'Corrected Invoice INV-4272',
+        },
         summary: 'Re-issue corrected invoice',
       },
     ],
@@ -380,19 +392,37 @@ export const PLANS: Plan[] = [
       {
         effectId: 'eff-3',
         operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-001', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — alice@acme' },
+        target: {
+          sorName: 'Okta',
+          portFamily: 'IamDirectory',
+          externalId: 'perm-fin-001',
+          externalType: 'GroupMembership',
+          displayLabel: 'Finance:ReadWrite — alice@acme',
+        },
         summary: 'Revoke excess write permission',
       },
       {
         effectId: 'eff-4',
         operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-002', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — bob@acme' },
+        target: {
+          sorName: 'Okta',
+          portFamily: 'IamDirectory',
+          externalId: 'perm-fin-002',
+          externalType: 'GroupMembership',
+          displayLabel: 'Finance:ReadWrite — bob@acme',
+        },
         summary: 'Revoke excess write permission',
       },
       {
         effectId: 'eff-5',
         operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-003', externalType: 'GroupMembership', displayLabel: 'Finance:Admin — carol@acme' },
+        target: {
+          sorName: 'Okta',
+          portFamily: 'IamDirectory',
+          externalId: 'perm-fin-003',
+          externalType: 'GroupMembership',
+          displayLabel: 'Finance:Admin — carol@acme',
+        },
         summary: 'Revoke excess admin permission',
       },
     ],
@@ -407,7 +437,13 @@ export const PLANS: Plan[] = [
       {
         effectId: 'eff-6',
         operation: 'Update',
-        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'po_1234567890', externalType: 'Payout', displayLabel: 'Payout 2026-02-17' },
+        target: {
+          sorName: 'Stripe',
+          portFamily: 'PaymentsBilling',
+          externalId: 'po_1234567890',
+          externalType: 'Payout',
+          displayLabel: 'Payout 2026-02-17',
+        },
         summary: 'Verify payout reconciliation: 142 transactions matched',
       },
     ],
@@ -422,18 +458,30 @@ export const PLANS: Plan[] = [
       {
         effectId: 'eff-7',
         operation: 'Create',
-        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'pmt-8821', externalType: 'Transfer', displayLabel: 'Transfer PO-8821' },
+        target: {
+          sorName: 'Stripe',
+          portFamily: 'PaymentsBilling',
+          externalId: 'pmt-8821',
+          externalType: 'Transfer',
+          displayLabel: 'Transfer PO-8821',
+        },
         summary: 'Initiate €14,200 supplier payment',
       },
       {
         effectId: 'eff-8',
         operation: 'Update',
-        target: { sorName: 'NetSuite', portFamily: 'FinanceAccounting', externalId: 'po-8821', externalType: 'PurchaseOrder', displayLabel: 'PO-8821' },
+        target: {
+          sorName: 'NetSuite',
+          portFamily: 'FinanceAccounting',
+          externalId: 'po-8821',
+          externalType: 'PurchaseOrder',
+          displayLabel: 'PO-8821',
+        },
         summary: 'Mark purchase order as paid',
       },
     ],
   },
-]
+];
 
 export const EVIDENCE: EvidenceEntry[] = [
   {
@@ -445,8 +493,7 @@ export const EVIDENCE: EvidenceEntry[] = [
     summary: 'Run run-2003 started by system automation',
     actor: { kind: 'System' },
     links: { runId: 'run-2003', workItemId: 'wi-1004' },
-    hashSha256:
-      'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
+    hashSha256: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
   },
   {
     schemaVersion: 1,
@@ -457,10 +504,8 @@ export const EVIDENCE: EvidenceEntry[] = [
     summary: 'Approval apr-3003 decided: Approved by user-approver-dana',
     actor: { kind: 'User', userId: 'user-approver-dana' },
     links: { runId: 'run-2003', workItemId: 'wi-1004' },
-    previousHash:
-      'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
-    hashSha256:
-      'b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3',
+    previousHash: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
+    hashSha256: 'b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3',
   },
   {
     schemaVersion: 1,
@@ -483,10 +528,8 @@ export const EVIDENCE: EvidenceEntry[] = [
         },
       ],
     },
-    previousHash:
-      'b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3',
-    hashSha256:
-      'c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4',
+    previousHash: 'b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3d4e5f6a7b2c3',
+    hashSha256: 'c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4e5f6a7b8c3d4',
   },
   {
     schemaVersion: 1,
@@ -497,35 +540,155 @@ export const EVIDENCE: EvidenceEntry[] = [
     summary: 'Plan plan-5001 generated: 2 effects planned for invoice remediation',
     actor: { kind: 'System' },
     links: { runId: 'run-2001', workItemId: 'wi-1001', planId: 'plan-5001' },
-    hashSha256:
-      'd4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5',
+    hashSha256: 'd4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5',
   },
-]
+];
 
 export const WORKFORCE_MEMBERS: WorkforceMemberSummary[] = [
-  { schemaVersion: 1, workforceMemberId: 'wfm-001', linkedUserId: 'user-approver-dana', displayName: 'Dana Approver', capabilities: ['operations.approval', 'operations.dispatch'], availabilityStatus: 'available', queueMemberships: ['queue-ops-001', 'queue-finance-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-01T00:00:00Z' },
-  { schemaVersion: 1, workforceMemberId: 'wfm-002', linkedUserId: 'user-ops-alex', displayName: 'Alex Ops', capabilities: ['operations.dispatch', 'operations.escalation'], availabilityStatus: 'busy', queueMemberships: ['queue-ops-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-01T00:00:00Z' },
-  { schemaVersion: 1, workforceMemberId: 'wfm-003', linkedUserId: 'user-ops-sam', displayName: 'Sam Operator', capabilities: ['operations.dispatch'], availabilityStatus: 'available', queueMemberships: ['queue-ops-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-15T00:00:00Z' },
-  { schemaVersion: 1, workforceMemberId: 'wfm-004', linkedUserId: 'user-admin', displayName: 'Admin User', capabilities: ['operations.dispatch', 'operations.approval', 'operations.escalation', 'robotics.supervision'], availabilityStatus: 'offline', queueMemberships: ['queue-ops-001', 'queue-finance-001'], tenantId: 'tenant-demo', createdAtIso: '2025-12-01T00:00:00Z' },
-]
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-001',
+    linkedUserId: 'user-approver-dana',
+    displayName: 'Dana Approver',
+    capabilities: ['operations.approval', 'operations.dispatch'],
+    availabilityStatus: 'available',
+    queueMemberships: ['queue-ops-001', 'queue-finance-001'],
+    tenantId: 'tenant-demo',
+    createdAtIso: '2026-01-01T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-002',
+    linkedUserId: 'user-ops-alex',
+    displayName: 'Alex Ops',
+    capabilities: ['operations.dispatch', 'operations.escalation'],
+    availabilityStatus: 'busy',
+    queueMemberships: ['queue-ops-001'],
+    tenantId: 'tenant-demo',
+    createdAtIso: '2026-01-01T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-003',
+    linkedUserId: 'user-ops-sam',
+    displayName: 'Sam Operator',
+    capabilities: ['operations.dispatch'],
+    availabilityStatus: 'available',
+    queueMemberships: ['queue-ops-001'],
+    tenantId: 'tenant-demo',
+    createdAtIso: '2026-01-15T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-004',
+    linkedUserId: 'user-admin',
+    displayName: 'Admin User',
+    capabilities: [
+      'operations.dispatch',
+      'operations.approval',
+      'operations.escalation',
+      'robotics.supervision',
+    ],
+    availabilityStatus: 'offline',
+    queueMemberships: ['queue-ops-001', 'queue-finance-001'],
+    tenantId: 'tenant-demo',
+    createdAtIso: '2025-12-01T00:00:00Z',
+  },
+];
 
 export const WORKFORCE_QUEUES: WorkforceQueueSummary[] = [
-  { schemaVersion: 1, workforceQueueId: 'queue-ops-001', name: 'Operations Queue', requiredCapabilities: ['operations.dispatch'], memberIds: ['wfm-001', 'wfm-002', 'wfm-003', 'wfm-004'], routingStrategy: 'round-robin', tenantId: 'tenant-demo' },
-  { schemaVersion: 1, workforceQueueId: 'queue-finance-001', name: 'Finance Approvals Queue', requiredCapabilities: ['operations.approval'], memberIds: ['wfm-001', 'wfm-004'], routingStrategy: 'least-busy', tenantId: 'tenant-demo' },
-]
+  {
+    schemaVersion: 1,
+    workforceQueueId: 'queue-ops-001',
+    name: 'Operations Queue',
+    requiredCapabilities: ['operations.dispatch'],
+    memberIds: ['wfm-001', 'wfm-002', 'wfm-003', 'wfm-004'],
+    routingStrategy: 'round-robin',
+    tenantId: 'tenant-demo',
+  },
+  {
+    schemaVersion: 1,
+    workforceQueueId: 'queue-finance-001',
+    name: 'Finance Approvals Queue',
+    requiredCapabilities: ['operations.approval'],
+    memberIds: ['wfm-001', 'wfm-004'],
+    routingStrategy: 'least-busy',
+    tenantId: 'tenant-demo',
+  },
+];
 
 export const AGENTS: AgentV1[] = [
-  { schemaVersion: 1, agentId: 'agent-001', workspaceId: 'ws-demo', name: 'Invoice Analyzer', modelId: 'claude-opus-4-6', endpoint: 'https://agents.portarium.io/invoice-analyzer', allowedCapabilities: ['read:external', 'analyze', 'classify'], usedByWorkflowIds: ['wf-invoice-remediation'] },
-  { schemaVersion: 1, agentId: 'agent-002', workspaceId: 'ws-demo', name: 'HR Sync Agent', modelId: 'claude-sonnet-4-6', endpoint: 'https://agents.portarium.io/hr-sync', allowedCapabilities: ['read:external', 'write:external', 'generate'], usedByWorkflowIds: ['wf-employee-onboarding'] },
-  { schemaVersion: 1, agentId: 'agent-003', workspaceId: 'ws-demo', name: 'CRM Dedup Agent', modelId: 'claude-haiku-4-5-20251001', endpoint: 'https://agents.portarium.io/crm-dedup', allowedCapabilities: ['read:external', 'analyze', 'classify'], usedByWorkflowIds: ['wf-crm-dedup'] },
-]
+  {
+    schemaVersion: 1,
+    agentId: 'agent-001',
+    workspaceId: 'ws-demo',
+    name: 'Invoice Analyzer',
+    modelId: 'claude-opus-4-6',
+    endpoint: 'https://agents.portarium.io/invoice-analyzer',
+    allowedCapabilities: ['read:external', 'analyze', 'classify'],
+    usedByWorkflowIds: ['wf-invoice-remediation'],
+  },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-002',
+    workspaceId: 'ws-demo',
+    name: 'HR Sync Agent',
+    modelId: 'claude-sonnet-4-6',
+    endpoint: 'https://agents.portarium.io/hr-sync',
+    allowedCapabilities: ['read:external', 'write:external', 'generate'],
+    usedByWorkflowIds: ['wf-employee-onboarding'],
+  },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-003',
+    workspaceId: 'ws-demo',
+    name: 'CRM Dedup Agent',
+    modelId: 'claude-haiku-4-5-20251001',
+    endpoint: 'https://agents.portarium.io/crm-dedup',
+    allowedCapabilities: ['read:external', 'analyze', 'classify'],
+    usedByWorkflowIds: ['wf-crm-dedup'],
+  },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-openclaw-001',
+    workspaceId: 'ws-demo',
+    name: 'OpenClaw Robot Controller',
+    endpoint: 'openclaw://gateway.portarium.local/robot-controller',
+    allowedCapabilities: ['machine:invoke', 'execute-code', 'notify'],
+    usedByWorkflowIds: ['wf-robot-mission'],
+  },
+];
 
 export const ADAPTERS: AdapterSummary[] = [
-  { adapterId: 'adapter-odoo-001', name: 'Odoo Finance', sorFamily: 'FinanceAccounting', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
-  { adapterId: 'adapter-stripe-001', name: 'Stripe Payments', sorFamily: 'PaymentsBilling', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
-  { adapterId: 'adapter-bamboohr-001', name: 'BambooHR HRIS', sorFamily: 'HrisHcm', status: 'healthy', lastSyncIso: '2026-02-19T23:00:00Z' },
-  { adapterId: 'adapter-salesforce-001', name: 'Salesforce CRM', sorFamily: 'CrmSales', status: 'degraded', lastSyncIso: '2026-02-19T18:00:00Z' },
-]
+  {
+    adapterId: 'adapter-odoo-001',
+    name: 'Odoo Finance',
+    sorFamily: 'FinanceAccounting',
+    status: 'healthy',
+    lastSyncIso: '2026-02-20T00:00:00Z',
+  },
+  {
+    adapterId: 'adapter-stripe-001',
+    name: 'Stripe Payments',
+    sorFamily: 'PaymentsBilling',
+    status: 'healthy',
+    lastSyncIso: '2026-02-20T00:00:00Z',
+  },
+  {
+    adapterId: 'adapter-bamboohr-001',
+    name: 'BambooHR HRIS',
+    sorFamily: 'HrisHcm',
+    status: 'healthy',
+    lastSyncIso: '2026-02-19T23:00:00Z',
+  },
+  {
+    adapterId: 'adapter-salesforce-001',
+    name: 'Salesforce CRM',
+    sorFamily: 'CrmSales',
+    status: 'degraded',
+    lastSyncIso: '2026-02-19T18:00:00Z',
+  },
+];
 
 export const CREDENTIAL_GRANTS: CredentialGrantV1[] = [
   {
@@ -569,7 +732,7 @@ export const CREDENTIAL_GRANTS: CredentialGrantV1[] = [
     expiresAtIso: '2026-07-20T00:00:00Z',
     revokedAtIso: '2026-02-05T12:30:00Z',
   },
-]
+];
 
 // ---------------------------------------------------------------------------
 // Robotics fixtures
@@ -657,7 +820,7 @@ export const ROBOTS: RobotSummary[] = [
     spiffeSvid: 'spiffe://portarium.io/robot/robot-007',
     capabilities: ['transport'],
   },
-]
+];
 
 export const MISSIONS: MissionSummary[] = [
   {
@@ -711,7 +874,7 @@ export const MISSIONS: MissionSummary[] = [
     dispatchedAtIso: '2026-02-20T13:55:00Z',
     executionTier: 'Auto',
   },
-]
+];
 
 export const SAFETY_CONSTRAINTS: SafetyConstraint[] = [
   {
@@ -735,13 +898,13 @@ export const SAFETY_CONSTRAINTS: SafetyConstraint[] = [
     enforcement: 'block',
     robotCount: 6,
   },
-]
+];
 
 export const APPROVAL_THRESHOLDS: ApprovalThreshold[] = [
   { actionClass: 'navigate_to', tier: 'Auto', notes: 'Normal environments' },
   { actionClass: 'outdoor_flight', tier: 'HumanApprove', notes: 'Requires safety_admin sign-off' },
   { actionClass: 'pick (>10 kg)', tier: 'HumanApprove', notes: 'Weight threshold gate' },
-]
+];
 
 export const ESTOP_AUDIT_LOG: EStopAuditEntry[] = [
   {
@@ -758,7 +921,7 @@ export const ESTOP_AUDIT_LOG: EStopAuditEntry[] = [
     event: 'Cleared',
     detail: 'rationale: charged + verified',
   },
-]
+];
 
 export const OBSERVABILITY_DATA = {
   runsOverTime: [
@@ -772,4 +935,4 @@ export const OBSERVABILITY_DATA = {
   ],
   successRate: 87,
   avgSlaDays: 1.4,
-}
+};

@@ -1,27 +1,36 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import type { RobotLocation } from '@/mocks/fixtures/robot-locations'
-import type { RobotStatus } from '@/types/robotics'
-import { X, Wifi, WifiOff, AlertTriangle, OctagonX, Battery, Navigation, MapPin } from 'lucide-react'
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { RobotLocation } from '@/mocks/fixtures/robot-locations';
+import type { RobotStatus } from '@/types/robotics';
+import {
+  X,
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+  OctagonX,
+  Battery,
+  Navigation,
+  MapPin,
+} from 'lucide-react';
 
 const STATUS_ICON: Record<RobotStatus, React.ReactNode> = {
   Online: <Wifi className="h-3 w-3" />,
   Degraded: <AlertTriangle className="h-3 w-3" />,
   'E-Stopped': <OctagonX className="h-3 w-3" />,
   Offline: <WifiOff className="h-3 w-3" />,
-}
+};
 
 const STATUS_BADGE_CLASS: Record<RobotStatus, string> = {
   Online: 'bg-green-100 text-green-800 border-green-200',
   Degraded: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   'E-Stopped': 'bg-red-100 text-red-800 border-red-200',
   Offline: 'bg-muted text-muted-foreground border-border',
-}
+};
 
 interface RobotDetailPanelProps {
-  robot: RobotLocation
-  onClose: () => void
+  robot: RobotLocation;
+  onClose: () => void;
 }
 
 export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
@@ -108,5 +117,5 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

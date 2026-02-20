@@ -19,7 +19,13 @@
     {
       "portFamily": "PaymentsBilling",
       "owner": "integration-finance",
-      "candidateProviders": ["stripe", "killbill", "chargebee-openapi", "square", "openapi-directory"],
+      "candidateProviders": [
+        "stripe",
+        "killbill",
+        "chargebee-openapi",
+        "square",
+        "openapi-directory"
+      ],
       "blockers": ["Resolve primary provider order between stripe and killbill."]
     },
     {

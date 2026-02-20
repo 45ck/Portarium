@@ -14,9 +14,7 @@ describe('classifyUrl', () => {
   const cpUrls = ['http://localhost:3100', 'https://api.portarium.example.com'];
 
   it('classifies control-plane URLs as routed', () => {
-    expect(classifyUrl('http://localhost:3100/api/v1/runs', cpUrls)).toBe(
-      'control-plane-routed',
-    );
+    expect(classifyUrl('http://localhost:3100/api/v1/runs', cpUrls)).toBe('control-plane-routed');
     expect(classifyUrl('https://api.portarium.example.com/api/v1/runs', cpUrls)).toBe(
       'control-plane-routed',
     );
@@ -28,9 +26,7 @@ describe('classifyUrl', () => {
   });
 
   it('is case-insensitive', () => {
-    expect(classifyUrl('HTTP://LOCALHOST:3100/api/v1/runs', cpUrls)).toBe(
-      'control-plane-routed',
-    );
+    expect(classifyUrl('HTTP://LOCALHOST:3100/api/v1/runs', cpUrls)).toBe('control-plane-routed');
   });
 });
 
@@ -62,10 +58,7 @@ describe('AgentSideEffectLogger', () => {
     });
 
     // Mock global fetch.
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response('ok', { status: 200 })),
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('ok', { status: 200 })));
   });
 
   afterEach(() => {
@@ -121,14 +114,11 @@ describe('AgentSideEffectLogger', () => {
   });
 
   it('still logs on fetch failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockRejectedValue(new Error('network error')),
-    );
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
 
-    await expect(
-      logger.instrumentedFetch('http://localhost:3100/api/v1/runs'),
-    ).rejects.toThrow('network error');
+    await expect(logger.instrumentedFetch('http://localhost:3100/api/v1/runs')).rejects.toThrow(
+      'network error',
+    );
 
     expect(sinkEntries).toHaveLength(1);
     expect(sinkEntries[0]!.statusCode).toBeUndefined();

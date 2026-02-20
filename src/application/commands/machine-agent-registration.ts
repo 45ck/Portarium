@@ -58,7 +58,11 @@ export type UpdateAgentCapabilitiesOutput = Readonly<{
 }>;
 
 export type MachineAgentRegistrationError =
-  | Forbidden | ValidationFailed | NotFound | Conflict | DependencyFailure;
+  | Forbidden
+  | ValidationFailed
+  | NotFound
+  | Conflict
+  | DependencyFailure;
 
 export interface MachineAgentRegistrationDeps {
   authorization: AuthorizationPort;
@@ -91,9 +95,11 @@ function buildEvidenceEntry(
   summary: string,
 ): Result<EvidenceEntryAppendInput, DependencyFailure> {
   const tsValue = deps.clock.nowIso();
-  if (tsValue.trim() === '') return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
+  if (tsValue.trim() === '')
+    return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
   const idValue = deps.idGenerator.generateId();
-  if (idValue.trim() === '') return err({ kind: 'DependencyFailure', message: 'Unable to generate evidence identifier.' });
+  if (idValue.trim() === '')
+    return err({ kind: 'DependencyFailure', message: 'Unable to generate evidence identifier.' });
   return ok({
     schemaVersion: 1,
     evidenceId: EvidenceId(idValue),
@@ -114,7 +120,11 @@ function ensureTenantMatch(
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
   if (WorkspaceId(workspaceId) !== ctx.tenantId) {
-    return err({ kind: 'Forbidden', action: APP_ACTIONS.machineAgentRegister, message: 'Tenant mismatch.' });
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.machineAgentRegister,
+      message: 'Tenant mismatch.',
+    });
   }
   return ok(true);
 }
@@ -124,7 +134,10 @@ function ensureAllowedToolsShape(allowedTools: readonly string[]): Result<true, 
     return err({ kind: 'ValidationFailed', message: 'allowedTools must be an array.' });
   }
   if (!allowedTools.every((tool) => typeof tool === 'string' && tool.trim() !== '')) {
-    return err({ kind: 'ValidationFailed', message: 'allowedTools entries must be non-empty strings.' });
+    return err({
+      kind: 'ValidationFailed',
+      message: 'allowedTools entries must be non-empty strings.',
+    });
   }
   return ok(true);
 }
@@ -135,7 +148,11 @@ async function ensureRegisterAllowed(
 ): Promise<Result<true, Forbidden>> {
   const allowed = await authorization.isAllowed(ctx, APP_ACTIONS.machineAgentRegister);
   if (allowed) return ok(true);
-  return err({ kind: 'Forbidden', action: APP_ACTIONS.machineAgentRegister, message: 'Caller is not permitted to register machine/agent resources.' });
+  return err({
+    kind: 'Forbidden',
+    action: APP_ACTIONS.machineAgentRegister,
+    message: 'Caller is not permitted to register machine/agent resources.',
+  });
 }
 
 export async function registerMachine(
@@ -152,7 +169,10 @@ export async function registerMachine(
   try {
     machine = parseMachineRegistrationV1(input.machine);
   } catch (error) {
-    return err({ kind: 'ValidationFailed', message: error instanceof Error ? error.message : 'Invalid machine registration payload.' });
+    return err({
+      kind: 'ValidationFailed',
+      message: error instanceof Error ? error.message : 'Invalid machine registration payload.',
+    });
   }
   const tenantMatch = ensureTenantMatch(ctx, machine.workspaceId);
   if (!tenantMatch.ok) return tenantMatch;
@@ -161,8 +181,12 @@ export async function registerMachine(
   const cached = await deps.idempotency.get<RegisterMachineOutput>(commandKey);
   if (cached) return ok(cached);
 
-  const existing = await deps.machineRegistryStore.getMachineRegistrationById(ctx.tenantId, machine.machineId);
-  if (existing !== null) return err({ kind: 'Conflict', message: `Machine ${machine.machineId} already exists.` });
+  const existing = await deps.machineRegistryStore.getMachineRegistrationById(
+    ctx.tenantId,
+    machine.machineId,
+  );
+  if (existing !== null)
+    return err({ kind: 'Conflict', message: `Machine ${machine.machineId} already exists.` });
 
   const evidence = buildEvidenceEntry(deps, ctx, `Registered machine ${machine.machineId}.`);
   if (!evidence.ok) return evidence;
@@ -180,20 +204,42 @@ export async function registerMachine(
   }
 }
 
-function checkCapabilityRoutability(agent: AgentConfigV1, machine: MachineRegistrationV1): Result<true, ValidationFailed> {
-  const handshake = establishCapabilityHandshakeV1({ machineCapabilities: machine.capabilities, agentCapabilities: agent.capabilities });
+function checkCapabilityRoutability(
+  agent: AgentConfigV1,
+  machine: MachineRegistrationV1,
+): Result<true, ValidationFailed> {
+  const handshake = establishCapabilityHandshakeV1({
+    machineCapabilities: machine.capabilities,
+    agentCapabilities: agent.capabilities,
+  });
   if (handshake.nonRoutableAgentCapabilities.length > 0) {
-    const nonRoutable = handshake.nonRoutableAgentCapabilities.map((d) => String(d.capability)).join(', ');
-    return err({ kind: 'ValidationFailed', message: `Agent capabilities are not routable on machine ${agent.machineId}: ${nonRoutable}.` });
+    const nonRoutable = handshake.nonRoutableAgentCapabilities
+      .map((d) => String(d.capability))
+      .join(', ');
+    return err({
+      kind: 'ValidationFailed',
+      message: `Agent capabilities are not routable on machine ${agent.machineId}: ${nonRoutable}.`,
+    });
   }
   return ok(true);
 }
 
-function checkAgentConflict(agent: AgentConfigV1, existing: AgentConfigV1 | null): Result<true, Conflict | ValidationFailed> {
+function checkAgentConflict(
+  agent: AgentConfigV1,
+  existing: AgentConfigV1 | null,
+): Result<true, Conflict | ValidationFailed> {
   if (existing === null) return ok(true);
-  const drift = evaluateCapabilityDriftQuarantinePolicyV1({ baselineCapabilities: existing.capabilities, observedCapabilities: agent.capabilities, source: 'ReRegistration', reviewed: false });
+  const drift = evaluateCapabilityDriftQuarantinePolicyV1({
+    baselineCapabilities: existing.capabilities,
+    observedCapabilities: agent.capabilities,
+    source: 'ReRegistration',
+    reviewed: false,
+  });
   if (drift.decision === 'Quarantine') {
-    return err({ kind: 'Conflict', message: `Agent ${agent.agentId} quarantined due to capability drift (${summarizeCapabilityDriftV1(drift.drift)}).` });
+    return err({
+      kind: 'Conflict',
+      message: `Agent ${agent.agentId} quarantined due to capability drift (${summarizeCapabilityDriftV1(drift.drift)}).`,
+    });
   }
   return err({ kind: 'Conflict', message: `Agent ${agent.agentId} already exists.` });
 }
@@ -204,16 +250,32 @@ async function resolveAgentForCreate(
   input: CreateAgentInput,
 ): Promise<Result<AgentConfigV1, MachineAgentRegistrationError>> {
   let agent: AgentConfigV1;
-  try { agent = parseAgentConfigV1(input.agent); } catch (error) {
-    return err({ kind: 'ValidationFailed', message: error instanceof Error ? error.message : 'Invalid agent payload.' });
+  try {
+    agent = parseAgentConfigV1(input.agent);
+  } catch (error) {
+    return err({
+      kind: 'ValidationFailed',
+      message: error instanceof Error ? error.message : 'Invalid agent payload.',
+    });
   }
   const tenantMatch = ensureTenantMatch(ctx, agent.workspaceId);
   if (!tenantMatch.ok) return tenantMatch;
-  const machine = await deps.machineRegistryStore.getMachineRegistrationById(ctx.tenantId, agent.machineId);
-  if (machine === null) return err({ kind: 'NotFound', resource: 'MachineRegistration', message: `Machine ${agent.machineId} not found.` });
+  const machine = await deps.machineRegistryStore.getMachineRegistrationById(
+    ctx.tenantId,
+    agent.machineId,
+  );
+  if (machine === null)
+    return err({
+      kind: 'NotFound',
+      resource: 'MachineRegistration',
+      message: `Machine ${agent.machineId} not found.`,
+    });
   const routable = checkCapabilityRoutability(agent, machine);
   if (!routable.ok) return routable;
-  const existingAgent = await deps.machineRegistryStore.getAgentConfigById(ctx.tenantId, agent.agentId);
+  const existingAgent = await deps.machineRegistryStore.getAgentConfigById(
+    ctx.tenantId,
+    agent.agentId,
+  );
   const conflict = checkAgentConflict(agent, existingAgent);
   if (!conflict.ok) return conflict;
   return ok(agent);
@@ -288,24 +350,38 @@ export async function updateAgentCapabilities(
   const agentId = AgentId(input.agentId);
   const existingAgent = await deps.machineRegistryStore.getAgentConfigById(ctx.tenantId, agentId);
   if (existingAgent === null) {
-    return err({ kind: 'NotFound', resource: 'AgentConfig', message: `Agent ${input.agentId} not found.` });
+    return err({
+      kind: 'NotFound',
+      resource: 'AgentConfig',
+      message: `Agent ${input.agentId} not found.`,
+    });
   }
 
   let updatedAgent: AgentConfigV1;
   try {
     updatedAgent = parseAgentConfigV1({ ...existingAgent, allowedTools: [...input.allowedTools] });
   } catch (error) {
-    return err({ kind: 'ValidationFailed', message: error instanceof Error ? error.message : 'Invalid agent capabilities payload.' });
+    return err({
+      kind: 'ValidationFailed',
+      message: error instanceof Error ? error.message : 'Invalid agent capabilities payload.',
+    });
   }
 
-  const evidence = buildEvidenceEntry(deps, ctx, `Updated allowed tools for agent ${updatedAgent.agentId}.`);
+  const evidence = buildEvidenceEntry(
+    deps,
+    ctx,
+    `Updated allowed tools for agent ${updatedAgent.agentId}.`,
+  );
   if (!evidence.ok) return evidence;
 
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.machineRegistryStore.saveAgentConfig(ctx.tenantId, updatedAgent);
       await deps.evidenceLog.appendEntry(ctx.tenantId, evidence.value);
-      const output: UpdateAgentCapabilitiesOutput = { agentId: updatedAgent.agentId, allowedTools: updatedAgent.allowedTools };
+      const output: UpdateAgentCapabilitiesOutput = {
+        agentId: updatedAgent.agentId,
+        allowedTools: updatedAgent.allowedTools,
+      };
       await deps.idempotency.set(commandKey, output);
       return ok(output);
     });

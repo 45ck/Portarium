@@ -44,12 +44,18 @@ type InMemoryProjectsWorkMgmtAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -87,7 +93,9 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
     this.#timeEntrySequence = this.#timeEntries.length;
   }
 
-  public async execute(input: ProjectsWorkMgmtExecuteInputV1): Promise<ProjectsWorkMgmtExecuteOutputV1> {
+  public async execute(
+    input: ProjectsWorkMgmtExecuteInputV1,
+  ): Promise<ProjectsWorkMgmtExecuteOutputV1> {
     if (!OPERATION_SET.has(input.operation as string)) {
       return {
         ok: false,
@@ -100,7 +108,10 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
       case 'listProjects':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#projects, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#projects, input),
+          },
         };
       case 'getProject':
         return this.#getTenantRef(input, this.#projects, 'projectId', 'Project', 'getProject');
@@ -128,7 +139,10 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
       case 'listSprints':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#sprints, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#sprints, input),
+          },
         };
       case 'getSprint':
         return this.#getTenantRef(input, this.#sprints, 'sprintId', 'Sprint', 'getSprint');
@@ -137,10 +151,19 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
       case 'listMilestones':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#milestones, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#milestones, input),
+          },
         };
       case 'getMilestone':
-        return this.#getTenantRef(input, this.#milestones, 'milestoneId', 'Milestone', 'getMilestone');
+        return this.#getTenantRef(
+          input,
+          this.#milestones,
+          'milestoneId',
+          'Milestone',
+          'getMilestone',
+        );
       case 'listComments':
         return this.#listComments(input);
       case 'addComment':
@@ -254,7 +277,8 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
     const statusValue = input.payload?.['status'];
     if (
       statusValue !== undefined &&
-      (typeof statusValue !== 'string' || !(TASK_STATUSES as readonly string[]).includes(statusValue))
+      (typeof statusValue !== 'string' ||
+        !(TASK_STATUSES as readonly string[]).includes(statusValue))
     ) {
       return {
         ok: false,
@@ -267,7 +291,9 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
     const task: CanonicalTaskV1 = {
       ...current,
       ...(typeof input.payload?.['title'] === 'string' ? { title: input.payload['title'] } : {}),
-      ...(typeof statusValue === 'string' ? { status: statusValue as CanonicalTaskV1['status'] } : {}),
+      ...(typeof statusValue === 'string'
+        ? { status: statusValue as CanonicalTaskV1['status'] }
+        : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
         ? { assigneeId: input.payload['assigneeId'] }
         : {}),
@@ -415,7 +441,7 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
 
   #listTimeEntries(input: ProjectsWorkMgmtExecuteInputV1): ProjectsWorkMgmtExecuteOutputV1 {
     const taskIdFilter =
-      typeof input.payload?.['taskId'] === 'string' ? (input.payload['taskId']) : null;
+      typeof input.payload?.['taskId'] === 'string' ? input.payload['taskId'] : null;
     return {
       ok: true,
       result: {
@@ -497,8 +523,7 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

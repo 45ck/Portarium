@@ -88,7 +88,7 @@ spec:
       containers:
         - name: spire-server
           image: ghcr.io/spiffe/spire-server:1.9.6
-          args: ["-config", "/run/spire/config/server.conf"]
+          args: ['-config', '/run/spire/config/server.conf']
           ports:
             - containerPort: 8081
               name: grpc
@@ -127,7 +127,7 @@ spec:
     - metadata:
         name: spire-data
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes: ['ReadWriteOnce']
         resources:
           requests:
             storage: 1Gi

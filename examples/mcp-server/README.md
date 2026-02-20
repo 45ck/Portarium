@@ -15,12 +15,12 @@ PORTARIUM_TOKEN=<jwt> \
 
 ## Exposed tools
 
-| Tool                        | Description                          |
-| --------------------------- | ------------------------------------ |
-| `portarium_start_run`       | Start a governed workflow run        |
-| `portarium_get_run`         | Query run status                     |
-| `portarium_cancel_run`      | Cancel an in-progress run            |
-| `portarium_submit_approval` | Submit an approval decision           |
+| Tool                        | Description                   |
+| --------------------------- | ----------------------------- |
+| `portarium_start_run`       | Start a governed workflow run |
+| `portarium_get_run`         | Query run status              |
+| `portarium_cancel_run`      | Cancel an in-progress run     |
+| `portarium_submit_approval` | Submit an approval decision   |
 
 ## Client configuration
 

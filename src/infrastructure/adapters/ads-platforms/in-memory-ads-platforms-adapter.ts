@@ -29,12 +29,18 @@ type InMemoryAdsPlatformsAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -91,7 +97,10 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
       case 'listAdGroups':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#adGroups, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#adGroups, input),
+          },
         };
       case 'getAdGroup':
         return this.#getTenantRef(input, this.#adGroups, 'adGroupId', 'Ad group', 'getAdGroup');
@@ -115,7 +124,10 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
       case 'listAudiences':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#audiences, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#audiences, input),
+          },
         };
       case 'createAudience':
         return this.#createAudience(input);
@@ -126,7 +138,10 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
       case 'listKeywords':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#keywords, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#keywords, input),
+          },
         };
       default:
         return {
@@ -288,7 +303,7 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
     }
     const period =
       typeof input.payload?.['period'] === 'string' && input.payload['period'].length > 0
-        ? (input.payload['period'])
+        ? input.payload['period']
         : 'last_30_days';
     const externalRef: ExternalObjectRef = {
       sorName: 'AdsSuite',
@@ -381,8 +396,7 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

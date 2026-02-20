@@ -36,7 +36,11 @@ function createDeps(overrides?: { allowed?: boolean }) {
     getAgentConfigById: vi.fn(async () => null),
     saveAgentConfig: vi.fn(async () => undefined),
     updateMachineHeartbeat: vi.fn(
-      async (_tenantId: ReturnType<typeof TenantId>, machineId: ReturnType<typeof MachineId>, hb: HeartbeatData) => {
+      async (
+        _tenantId: ReturnType<typeof TenantId>,
+        machineId: ReturnType<typeof MachineId>,
+        hb: HeartbeatData,
+      ) => {
         if (String(machineId) === 'machine-1') {
           machineHeartbeats.set(String(machineId), hb);
           return true;
@@ -45,7 +49,11 @@ function createDeps(overrides?: { allowed?: boolean }) {
       },
     ),
     updateAgentHeartbeat: vi.fn(
-      async (_tenantId: ReturnType<typeof TenantId>, agentId: ReturnType<typeof AgentId>, hb: HeartbeatData) => {
+      async (
+        _tenantId: ReturnType<typeof TenantId>,
+        agentId: ReturnType<typeof AgentId>,
+        hb: HeartbeatData,
+      ) => {
         if (String(agentId) === 'agent-1') {
           agentHeartbeats.set(String(agentId), hb);
           return true;

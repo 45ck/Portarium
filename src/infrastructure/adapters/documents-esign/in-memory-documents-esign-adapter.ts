@@ -48,12 +48,18 @@ type InMemoryDocumentsEsignAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -91,7 +97,9 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
     this.#auditSequence = this.#auditTrails.length;
   }
 
-  public async execute(input: DocumentsEsignExecuteInputV1): Promise<DocumentsEsignExecuteOutputV1> {
+  public async execute(
+    input: DocumentsEsignExecuteInputV1,
+  ): Promise<DocumentsEsignExecuteOutputV1> {
     if (!OPERATION_SET.has(input.operation as string)) {
       return {
         ok: false,
@@ -114,7 +122,10 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       case 'listFolders':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#folders, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#folders, input),
+          },
         };
       case 'moveDocument':
         return this.#moveDocument(input);
@@ -208,7 +219,7 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'])
+          ? input.payload['mimeType']
           : 'application/octet-stream',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),
@@ -277,7 +288,8 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
     }
 
     const folder = this.#folders.find(
-      (candidate) => candidate.tenantId === input.tenantId && candidate.externalRef.externalId === folderId,
+      (candidate) =>
+        candidate.tenantId === input.tenantId && candidate.externalRef.externalId === folderId,
     );
     if (folder === undefined) {
       return { ok: false, error: 'not_found', message: `Folder ${folderId} was not found.` };
@@ -465,7 +477,8 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
 
     const signed = this.#signedDocuments.find(
       (candidate) =>
-        candidate.tenantId === input.tenantId && candidate.signatureRequestId === signatureRequestId,
+        candidate.tenantId === input.tenantId &&
+        candidate.signatureRequestId === signatureRequestId,
     );
     if (signed === undefined) {
       return {
@@ -494,7 +507,7 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'])
+          ? input.payload['mimeType']
           : 'application/pdf',
       createdAtIso: this.#now().toISOString(),
     };
@@ -573,8 +586,7 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

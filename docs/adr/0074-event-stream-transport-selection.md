@@ -57,12 +57,12 @@ of the outbox dispatcher and delivers events to external subscribers.
 
 ### Stream Design
 
-| Stream | Subjects | Retention |
-|--------|----------|-----------|
-| `PORTARIUM_RUNS` | `portarium.events.runs.>` | 30 days |
-| `PORTARIUM_EVIDENCE` | `portarium.events.evidence.>` | 90 days |
-| `PORTARIUM_AGENTS` | `portarium.events.agents.>` | 7 days |
-| `PORTARIUM_TELEMETRY` | `portarium.events.telemetry.>` | 24 hours |
+| Stream                | Subjects                       | Retention |
+| --------------------- | ------------------------------ | --------- |
+| `PORTARIUM_RUNS`      | `portarium.events.runs.>`      | 30 days   |
+| `PORTARIUM_EVIDENCE`  | `portarium.events.evidence.>`  | 90 days   |
+| `PORTARIUM_AGENTS`    | `portarium.events.agents.>`    | 7 days    |
+| `PORTARIUM_TELEMETRY` | `portarium.events.telemetry.>` | 24 hours  |
 
 ### Consumer Groups
 
@@ -71,13 +71,13 @@ Pattern: `{workspaceId}-{consumerName}` (e.g., `ws-abc-cockpit-projections`).
 
 ### Delivery Semantics
 
-| Property | Value |
-|---|---|
-| Delivery guarantee | At-least-once |
-| Ack model | Consumer-driven explicit ack (AckExplicit) |
-| Ordering | Ordered per NATS subject |
-| Deduplication | JetStream message-level dedup via `Nats-Msg-Id` header (set to CloudEvent `id`) |
-| Replay | Full replay from stream start or by sequence number |
+| Property           | Value                                                                           |
+| ------------------ | ------------------------------------------------------------------------------- |
+| Delivery guarantee | At-least-once                                                                   |
+| Ack model          | Consumer-driven explicit ack (AckExplicit)                                      |
+| Ordering           | Ordered per NATS subject                                                        |
+| Deduplication      | JetStream message-level dedup via `Nats-Msg-Id` header (set to CloudEvent `id`) |
+| Replay             | Full replay from stream start or by sequence number                             |
 
 ### Subject Hierarchy
 
@@ -86,11 +86,13 @@ portarium.events.{tenantId}.{eventCategory}.{eventType}
 ```
 
 Examples:
+
 - `portarium.events.ws-acme.run.started`
 - `portarium.events.ws-acme.approval.granted`
 - `portarium.events.ws-acme.agent.heartbeat`
 
 Consumers may subscribe to:
+
 - `portarium.events.ws-acme.>` -- all events for a tenant
 - `portarium.events.*.run.>` -- all run events across tenants (ops dashboards)
 

@@ -32,8 +32,8 @@ const BASE_INVOKE_TOOL_INPUT = {
 
 describe('OpenClawGatewayMachineInvoker', () => {
   it('posts to /v1/responses with model openclaw:<agentId>', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ id: 'resp-1', output: 'ok' }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ id: 'resp-1', output: 'ok' }), { status: 200 }),
     );
     const resolveBearerToken = vi.fn(async () => 'vault-token');
     const invoker = new OpenClawGatewayMachineInvoker({
@@ -154,11 +154,9 @@ describe('OpenClawGatewayMachineInvoker', () => {
           reject(new DOMException('Aborted', 'AbortError'));
           return;
         }
-        signal?.addEventListener(
-          'abort',
-          () => reject(new DOMException('Aborted', 'AbortError')),
-          { once: true },
-        );
+        signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {
+          once: true,
+        });
       });
     });
 
@@ -198,15 +196,14 @@ describe('OpenClawGatewayMachineInvoker', () => {
       ok: false,
       errorKind: 'PolicyDenied',
       runState: 'PolicyBlocked',
-      message:
-        'Policy blocked tool "shell.exec" for tier "Auto"; requires "ManualOnly".',
+      message: 'Policy blocked tool "shell.exec" for tier "Auto"; requires "ManualOnly".',
     });
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('routes invokeTool with session key header and dry-run payload', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ accepted: true }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ accepted: true }), { status: 200 }),
     );
     const invoker = new OpenClawGatewayMachineInvoker({
       baseUrl: 'https://gateway.example',

@@ -32,6 +32,7 @@ enforcement changes -- it only adds visibility.
 For each agent runtime, add `traceparent` and `tracestate` headers to outbound HTTP calls.
 
 **OpenTelemetry SDK (recommended):**
+
 ```python
 # Python agent example
 from opentelemetry import trace
@@ -47,10 +48,11 @@ import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 
 const provider = new NodeTracerProvider();
 provider.register();
-new HttpInstrumentation().enable();  // Auto-injects traceparent on http/https
+new HttpInstrumentation().enable(); // Auto-injects traceparent on http/https
 ```
 
 **Manual injection (fallback):**
+
 ```
 traceparent: 00-{trace-id}-{span-id}-01
 ```
@@ -61,16 +63,17 @@ traceparent: 00-{trace-id}-{span-id}-01
 
 Add structured logging at the point where agents call external SoRs. Log entries must include:
 
-| Field | Description |
-|-------|-------------|
-| `agent_id` | Identifier of the calling agent |
-| `timestamp` | ISO 8601 UTC |
-| `target_sor` | SoR being called (e.g., "hubspot-crm", "odoo-accounting") |
-| `action` | Operation being performed (e.g., "invoice:create", "ticket:update") |
-| `trace_id` | W3C trace ID from traceparent header |
-| `routed_via_portarium` | `false` (in phase 1, all calls are direct) |
+| Field                  | Description                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
+| `agent_id`             | Identifier of the calling agent                                     |
+| `timestamp`            | ISO 8601 UTC                                                        |
+| `target_sor`           | SoR being called (e.g., "hubspot-crm", "odoo-accounting")           |
+| `action`               | Operation being performed (e.g., "invoice:create", "ticket:update") |
+| `trace_id`             | W3C trace ID from traceparent header                                |
+| `routed_via_portarium` | `false` (in phase 1, all calls are direct)                          |
 
 Example log entry:
+
 ```json
 {
   "level": "info",
@@ -89,11 +92,11 @@ Example log entry:
 
 Deploy Prometheus metrics or OTLP counters:
 
-| Metric | Type | Labels |
-|--------|------|--------|
-| `portarium_sor_calls_total` | Counter | `agent_id`, `target_sor`, `action`, `routed` |
-| `portarium_agent_heartbeats_total` | Counter | `agent_id` |
-| `portarium_direct_sor_ratio` | Gauge | `workspace_id` |
+| Metric                             | Type    | Labels                                       |
+| ---------------------------------- | ------- | -------------------------------------------- |
+| `portarium_sor_calls_total`        | Counter | `agent_id`, `target_sor`, `action`, `routed` |
+| `portarium_agent_heartbeats_total` | Counter | `agent_id`                                   |
+| `portarium_direct_sor_ratio`       | Gauge   | `workspace_id`                               |
 
 **Target baseline:** Record current `portarium_direct_sor_ratio` (expected: ~1.0 in phase 1).
 

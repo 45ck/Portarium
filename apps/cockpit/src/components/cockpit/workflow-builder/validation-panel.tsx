@@ -1,46 +1,46 @@
-import { useMemo } from 'react'
-import { CheckCircle2, AlertCircle } from 'lucide-react'
-import type { WorkflowNode, WorkflowEdge } from '@/hooks/use-workflow-builder'
+import { useMemo } from 'react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
+import type { WorkflowNode, WorkflowEdge } from '@/hooks/use-workflow-builder';
 
 interface ValidationCheck {
-  label: string
-  passed: boolean
+  label: string;
+  passed: boolean;
 }
 
 interface ValidationPanelProps {
-  nodes: WorkflowNode[]
-  edges: WorkflowEdge[]
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
 }
 
 function getValidationChecks(nodes: WorkflowNode[], edges: WorkflowEdge[]): ValidationCheck[] {
-  const hasStart = nodes.some((n) => n.type === 'start')
-  const hasEnd = nodes.some((n) => n.type === 'end')
+  const hasStart = nodes.some((n) => n.type === 'start');
+  const hasEnd = nodes.some((n) => n.type === 'end');
 
-  const connectedNodeIds = new Set<string>()
+  const connectedNodeIds = new Set<string>();
   for (const edge of edges) {
-    connectedNodeIds.add(edge.source)
-    connectedNodeIds.add(edge.target)
+    connectedNodeIds.add(edge.source);
+    connectedNodeIds.add(edge.target);
   }
 
-  const nonTerminalNodes = nodes.filter((n) => n.type !== 'start' && n.type !== 'end')
-  const orphanCount = nonTerminalNodes.filter((n) => !connectedNodeIds.has(n.id)).length
+  const nonTerminalNodes = nodes.filter((n) => n.type !== 'start' && n.type !== 'end');
+  const orphanCount = nonTerminalNodes.filter((n) => !connectedNodeIds.has(n.id)).length;
 
   const allConnected =
     nodes.length <= 2
       ? edges.length > 0 || nodes.length < 2
-      : nonTerminalNodes.every((n) => connectedNodeIds.has(n.id))
+      : nonTerminalNodes.every((n) => connectedNodeIds.has(n.id));
 
   return [
     { label: 'Has start node', passed: hasStart },
     { label: 'Has end node', passed: hasEnd },
     { label: 'All nodes connected', passed: allConnected },
     { label: 'No orphan nodes', passed: orphanCount === 0 },
-  ]
+  ];
 }
 
 export function ValidationPanel({ nodes, edges }: ValidationPanelProps) {
-  const checks = useMemo(() => getValidationChecks(nodes, edges), [nodes, edges])
-  const allPassed = checks.every((c) => c.passed)
+  const checks = useMemo(() => getValidationChecks(nodes, edges), [nodes, edges]);
+  const allPassed = checks.every((c) => c.passed);
 
   return (
     <div className="flex items-center gap-4 px-4 py-2 border-t border-border bg-muted/30">
@@ -67,5 +67,5 @@ export function ValidationPanel({ nodes, edges }: ValidationPanelProps) {
         )}
       </div>
     </div>
-  )
+  );
 }

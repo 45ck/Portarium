@@ -101,7 +101,10 @@ describe('InMemoryHrisHcmAdapter', () => {
     if (!fetchedTimeOff.ok || fetchedTimeOff.result.kind !== 'externalRef') return;
     expect(fetchedTimeOff.result.externalRef.externalType).toBe('time_off_request');
 
-    const structure = await adapter.execute({ tenantId: TENANT_A, operation: 'getCompanyStructure' });
+    const structure = await adapter.execute({
+      tenantId: TENANT_A,
+      operation: 'getCompanyStructure',
+    });
     expect(structure.ok).toBe(true);
     if (!structure.ok || structure.result.kind !== 'externalRef') return;
     expect(structure.result.externalRef.externalType).toBe('org_structure');

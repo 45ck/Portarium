@@ -7,20 +7,10 @@
   "displayName": "Software Change Management",
   "description": "Reference vertical pack for governed software change lifecycle with approval and evidence semantics.",
   "assets": {
-    "schemas": [
-      "schemas/change-control-extension.json"
-    ],
-    "workflows": [
-      "workflows/change-request-lifecycle.json"
-    ],
-    "uiTemplates": [
-      "ui-templates/change-request-form.json"
-    ],
-    "mappings": [
-      "mappings/change-ticket-mapping.json"
-    ],
-    "testAssets": [
-      "tests/change-evidence-fixture.json"
-    ]
+    "schemas": ["schemas/change-control-extension.json"],
+    "workflows": ["workflows/change-request-lifecycle.json"],
+    "uiTemplates": ["ui-templates/change-request-form.json"],
+    "mappings": ["mappings/change-ticket-mapping.json"],
+    "testAssets": ["tests/change-evidence-fixture.json"]
   }
 }

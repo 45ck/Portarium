@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type {
-  ActionId,
-  CorrelationId,
-  RunId,
-  TenantId,
-} from '../../domain/primitives/index.js';
+import type { ActionId, CorrelationId, RunId, TenantId } from '../../domain/primitives/index.js';
 import { ActivepiecesActionExecutor } from './activepieces-action-executor.js';
 
 const BASE_INPUT = {
@@ -22,8 +17,8 @@ const BASE_INPUT = {
 
 describe('ActivepiecesActionExecutor', () => {
   it('dispatches action to Activepieces flow endpoint with correlation headers', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ executionId: 'exec-1' }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ executionId: 'exec-1' }), { status: 200 }),
     );
     const executor = new ActivepiecesActionExecutor({
       baseUrl: 'https://activepieces.example/',
@@ -101,7 +96,9 @@ describe('ActivepiecesActionExecutor', () => {
   });
 
   it('maps 429 to RateLimited', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () => new Response('rate limited', { status: 429 }));
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response('rate limited', { status: 429 }),
+    );
     const executor = new ActivepiecesActionExecutor({
       baseUrl: 'https://activepieces.example',
       fetchImpl,
@@ -124,11 +121,9 @@ describe('ActivepiecesActionExecutor', () => {
           reject(new DOMException('Aborted', 'AbortError'));
           return;
         }
-        signal?.addEventListener(
-          'abort',
-          () => reject(new DOMException('Aborted', 'AbortError')),
-          { once: true },
-        );
+        signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {
+          once: true,
+        });
       });
     });
     const executor = new ActivepiecesActionExecutor({

@@ -2,8 +2,8 @@
 // Mock Robotics Gateways fixture
 // ---------------------------------------------------------------------------
 
-export type { GatewaySummary } from '@portarium/cockpit-types'
-import type { GatewaySummary } from '@portarium/cockpit-types'
+export type { GatewaySummary } from '@portarium/cockpit-types';
+import type { GatewaySummary } from '@portarium/cockpit-types';
 
 export const MOCK_GATEWAYS: GatewaySummary[] = [
   {

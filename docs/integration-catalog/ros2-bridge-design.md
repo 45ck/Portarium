@@ -47,15 +47,15 @@ It translates between Portarium gRPC messages and ROS 2 topics/services/actions.
 
 ### ROS 2 Topic Mappings
 
-| Portarium concept | ROS 2 interface | Direction |
-|-------------------|----------------|-----------|
-| Mission goal dispatch | `nav2_msgs/action/NavigateToPose` | CP -> Robot |
-| Mission cancellation | Action cancel request | CP -> Robot |
-| Pose telemetry | `geometry_msgs/msg/PoseStamped` on `/robot_pose` | Robot -> CP |
-| Battery telemetry | `sensor_msgs/msg/BatteryState` on `/battery_state` | Robot -> CP |
-| Diagnostics | `diagnostic_msgs/msg/DiagnosticArray` on `/diagnostics` | Robot -> CP |
-| E-stop event | `std_msgs/msg/Bool` on `/emergency_stop` | Robot -> CP |
-| Navigation feedback | Action feedback channel | Robot -> CP |
+| Portarium concept     | ROS 2 interface                                         | Direction   |
+| --------------------- | ------------------------------------------------------- | ----------- |
+| Mission goal dispatch | `nav2_msgs/action/NavigateToPose`                       | CP -> Robot |
+| Mission cancellation  | Action cancel request                                   | CP -> Robot |
+| Pose telemetry        | `geometry_msgs/msg/PoseStamped` on `/robot_pose`        | Robot -> CP |
+| Battery telemetry     | `sensor_msgs/msg/BatteryState` on `/battery_state`      | Robot -> CP |
+| Diagnostics           | `diagnostic_msgs/msg/DiagnosticArray` on `/diagnostics` | Robot -> CP |
+| E-stop event          | `std_msgs/msg/Bool` on `/emergency_stop`                | Robot -> CP |
+| Navigation feedback   | Action feedback channel                                 | Robot -> CP |
 
 ## SROS 2 PKI Provisioning
 
@@ -116,7 +116,7 @@ portarium:
   # Token provisioned via Vault agent sidecar
 
 ros2:
-  transport: dds  # "dds" for production, "rosbridge" for development
+  transport: dds # "dds" for production, "rosbridge" for development
   domain_id: 42
   sros2:
     keystore_path: /etc/portarium/sros2/keystore

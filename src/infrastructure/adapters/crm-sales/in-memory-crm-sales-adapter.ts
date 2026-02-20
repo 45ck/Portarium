@@ -39,12 +39,18 @@ type InMemoryCrmSalesAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -148,9 +154,15 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
   #getContact(input: CrmSalesExecuteInputV1): CrmSalesExecuteOutputV1 {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getContact.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getContact.',
+      };
     }
-    const contact = this.#contacts.find((item) => item.tenantId === input.tenantId && item.partyId === partyId);
+    const contact = this.#contacts.find(
+      (item) => item.tenantId === input.tenantId && item.partyId === partyId,
+    );
     if (contact === undefined) {
       return { ok: false, error: 'not_found', message: `Contact ${partyId} was not found.` };
     }
@@ -214,9 +226,15 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
   #getCompany(input: CrmSalesExecuteInputV1): CrmSalesExecuteOutputV1 {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getCompany.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getCompany.',
+      };
     }
-    const company = this.#companies.find((item) => item.tenantId === input.tenantId && item.partyId === partyId);
+    const company = this.#companies.find(
+      (item) => item.tenantId === input.tenantId && item.partyId === partyId,
+    );
     if (company === undefined) {
       return { ok: false, error: 'not_found', message: `Company ${partyId} was not found.` };
     }
@@ -262,7 +280,11 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       (item) => item.tenantId === input.tenantId && item.opportunityId === opportunityId,
     );
     if (opportunity === undefined) {
-      return { ok: false, error: 'not_found', message: `Opportunity ${opportunityId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Opportunity ${opportunityId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'opportunity', opportunity } };
   }
@@ -291,9 +313,7 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       schemaVersion: 1,
       name,
       stage:
-        (typeof input.payload?.['stage'] === 'string'
-          ? input.payload['stage']
-          : 'qualification'),
+        typeof input.payload?.['stage'] === 'string' ? input.payload['stage'] : 'qualification',
       ...(amount !== null ? { amount } : {}),
       ...(typeof input.payload?.['currencyCode'] === 'string'
         ? { currencyCode: input.payload['currencyCode'] }
@@ -324,7 +344,11 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       (item) => item.tenantId === input.tenantId && item.opportunityId === opportunityId,
     );
     if (index < 0) {
-      return { ok: false, error: 'not_found', message: `Opportunity ${opportunityId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Opportunity ${opportunityId} was not found.`,
+      };
     }
     const updated: OpportunityV1 = { ...this.#opportunities[index]!, stage };
     this.#opportunities[index] = updated;
@@ -394,9 +418,7 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       schemaVersion: 1,
       title,
       mimeType:
-        (typeof input.payload?.['mimeType'] === 'string'
-          ? input.payload['mimeType']
-          : 'text/plain'),
+        typeof input.payload?.['mimeType'] === 'string' ? input.payload['mimeType'] : 'text/plain',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       ...(typeof input.payload?.['storagePath'] === 'string'
         ? { storagePath: input.payload['storagePath'] }
@@ -407,7 +429,9 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
     return { ok: true, result: { kind: 'document', document: note } };
   }
 
-  public static seedMinimal(tenantId: CrmSalesExecuteInputV1['tenantId']): InMemoryCrmSalesAdapterSeed {
+  public static seedMinimal(
+    tenantId: CrmSalesExecuteInputV1['tenantId'],
+  ): InMemoryCrmSalesAdapterSeed {
     return {
       contacts: [
         {

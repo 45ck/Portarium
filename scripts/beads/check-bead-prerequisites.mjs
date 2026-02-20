@@ -9,7 +9,12 @@ const LINKAGE_MAP_PATH = path.join(WORKSPACE_ROOT, '.beads', 'bead-linkage-map.j
 const PHASE_GATE_MAP_PATH = path.join(WORKSPACE_ROOT, '.beads', 'phase-gate-map.json');
 
 const SPEC_TITLE_PATTERNS = [/^spec:/i, /^adr:/i];
-const REVIEW_TITLE_PATTERNS = [/^review:/i, /^code review:/i, /^closeout review:/i, /^doc review:/i];
+const REVIEW_TITLE_PATTERNS = [
+  /^review:/i,
+  /^code review:/i,
+  /^closeout review:/i,
+  /^doc review:/i,
+];
 const IMPLEMENTATION_TITLE_PATTERNS = [
   /^app:/i,
   /^infra:/i,
@@ -115,8 +120,12 @@ function normalizeLinkageEntry(raw) {
     };
   }
 
-  const specBeads = Array.isArray(raw.specBeads) ? raw.specBeads.filter((value) => typeof value === 'string') : [];
-  const specPaths = Array.isArray(raw.specPaths) ? raw.specPaths.filter((value) => typeof value === 'string') : [];
+  const specBeads = Array.isArray(raw.specBeads)
+    ? raw.specBeads.filter((value) => typeof value === 'string')
+    : [];
+  const specPaths = Array.isArray(raw.specPaths)
+    ? raw.specPaths.filter((value) => typeof value === 'string')
+    : [];
   const reviewBeads = Array.isArray(raw.reviewBeads)
     ? raw.reviewBeads.filter((value) => typeof value === 'string')
     : [];
@@ -159,7 +168,9 @@ async function loadPhaseGateMap() {
 function normalizePhaseGateRequirement(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const label = typeof raw.label === 'string' ? raw.label.trim() : '';
-  const beads = Array.isArray(raw.beads) ? raw.beads.filter((value) => typeof value === 'string') : [];
+  const beads = Array.isArray(raw.beads)
+    ? raw.beads.filter((value) => typeof value === 'string')
+    : [];
   if (label.length === 0 || beads.length === 0) return null;
 
   return {
@@ -178,7 +189,9 @@ function normalizePhaseGateDefinition(raw) {
 
   const name = typeof raw.name === 'string' ? raw.name.trim() : '';
   const requirements = Array.isArray(raw.requirements)
-    ? raw.requirements.map((entry) => normalizePhaseGateRequirement(entry)).filter((entry) => entry !== null)
+    ? raw.requirements
+        .map((entry) => normalizePhaseGateRequirement(entry))
+        .filter((entry) => entry !== null)
     : [];
 
   return {
@@ -370,7 +383,8 @@ function evaluateIssue(issue, context) {
   }
 
   const isPhaseGateIssue =
-    Object.prototype.hasOwnProperty.call(phaseGateMap, issue.id) || /^phase gate:/i.test(String(issue.title ?? ''));
+    Object.prototype.hasOwnProperty.call(phaseGateMap, issue.id) ||
+    /^phase gate:/i.test(String(issue.title ?? ''));
   if (options.phaseGate && issue.status === 'open' && isPhaseGateIssue) {
     phaseGate = resolvePhaseGate(issue, context);
 
@@ -426,7 +440,11 @@ function formatHumanReport(report) {
   lines.push(`Title: ${report.title}`);
   lines.push(`Status: ${report.status}`);
   lines.push(`Ready to start: ${report.readyToStart ? 'yes' : 'no'}`);
-  lines.push(report.blockedBy.length === 0 ? 'BlockedBy: (none)' : `BlockedBy: ${report.blockedBy.join(', ')}`);
+  lines.push(
+    report.blockedBy.length === 0
+      ? 'BlockedBy: (none)'
+      : `BlockedBy: ${report.blockedBy.join(', ')}`,
+  );
 
   if (report.linkage) {
     lines.push(
@@ -452,7 +470,9 @@ function formatHumanReport(report) {
         const states = requirement.beads
           .map((required) => `${required.beadId}:${required.status}`)
           .join(', ');
-        lines.push(`- ${requirement.label} (${requirement.satisfied ? 'closed' : 'incomplete'}): ${states}`);
+        lines.push(
+          `- ${requirement.label} (${requirement.satisfied ? 'closed' : 'incomplete'}): ${states}`,
+        );
       }
     }
   }
@@ -465,7 +485,9 @@ function formatHumanReport(report) {
       } else if (missing.type === 'blocked_by_open') {
         lines.push(`- ${missing.beadId} is still ${missing.status}: ${missing.title}`);
       } else if (missing.type === 'phase_gate_requirement_open') {
-        lines.push(`- [${missing.requirement}] ${missing.beadId} is still ${missing.status}: ${missing.title}`);
+        lines.push(
+          `- [${missing.requirement}] ${missing.beadId} is still ${missing.status}: ${missing.title}`,
+        );
       } else if (typeof missing.message === 'string') {
         lines.push(`- ${missing.message}`);
       }
@@ -538,6 +560,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exit(1);
 });

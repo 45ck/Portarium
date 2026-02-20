@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  PortariumClient,
-  PortariumApiError,
-} from './portarium-client.js';
+import { PortariumClient, PortariumApiError } from './portarium-client.js';
 
 describe('infrastructure/sdk re-export', () => {
   it('exports PortariumClient class', () => {

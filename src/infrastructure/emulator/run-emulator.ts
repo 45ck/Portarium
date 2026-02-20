@@ -83,10 +83,7 @@ export class RunEmulator {
   }
 
   /** Submit an approval decision for a pending run. */
-  public async submitApproval(
-    runId: string,
-    decision: ApprovalDecision,
-  ): Promise<EmulatorRun> {
+  public async submitApproval(runId: string, decision: ApprovalDecision): Promise<EmulatorRun> {
     const run = this.#requireRun(runId);
     if (run.status !== 'Pending') {
       throw new Error(`Run ${runId} is ${run.status}, expected Pending.`);

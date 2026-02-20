@@ -617,5 +617,3 @@ describe('startWorkflow', () => {
     expect(result.error.message).toContain('already exists');
   });
 });
-
-

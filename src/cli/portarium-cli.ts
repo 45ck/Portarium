@@ -74,9 +74,7 @@ function getToken(flags: Record<string, string | boolean>): string {
 }
 
 function getWorkspaceId(flags: Record<string, string | boolean>): string {
-  return String(
-    flags['workspace'] ?? process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-default',
-  );
+  return String(flags['workspace'] ?? process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-default');
 }
 
 // -- HTTP client helper ------------------------------------------------------
@@ -87,11 +85,7 @@ interface ApiFetchRequest {
   body?: unknown;
 }
 
-async function apiFetch(
-  baseUrl: string,
-  token: string,
-  req: ApiFetchRequest,
-): Promise<unknown> {
+async function apiFetch(baseUrl: string, token: string, req: ApiFetchRequest): Promise<unknown> {
   const { method, path, body } = req;
   const res = await fetch(`${baseUrl}${path}`, {
     method,
@@ -146,7 +140,9 @@ function handleLogin(): void {
   console.log(`  User code: ${stubCode}`);
   console.log();
   console.log('Waiting for authorization... (stub -- not yet implemented)');
-  console.log('Once implemented, the CLI will poll the token endpoint and store the token locally.');
+  console.log(
+    'Once implemented, the CLI will poll the token endpoint and store the token locally.',
+  );
 }
 
 async function handleWorkspaceSelect(flags: Record<string, string | boolean>): Promise<void> {

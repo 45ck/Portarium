@@ -1,59 +1,59 @@
-import { useMemo, useState } from 'react'
-import { createRoute, Link, useNavigate } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkflows } from '@/hooks/queries/use-workflows'
-import { useRuns } from '@/hooks/queries/use-runs'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { FilterBar } from '@/components/cockpit/filter-bar'
-import { DataTable } from '@/components/cockpit/data-table'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge'
-import { Badge } from '@/components/ui/badge'
-import type { WorkflowSummary } from '@portarium/cockpit-types'
+import { useMemo, useState } from 'react';
+import { createRoute, Link, useNavigate } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkflows } from '@/hooks/queries/use-workflows';
+import { useRuns } from '@/hooks/queries/use-runs';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { FilterBar } from '@/components/cockpit/filter-bar';
+import { DataTable } from '@/components/cockpit/data-table';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { Badge } from '@/components/ui/badge';
+import type { WorkflowSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'active' },
   { label: 'Inactive', value: 'inactive' },
-]
+];
 
 const TRIGGER_OPTIONS = [
   { label: 'Manual', value: 'Manual' },
   { label: 'Cron', value: 'Cron' },
   { label: 'Webhook', value: 'Webhook' },
   { label: 'Domain Event', value: 'DomainEvent' },
-]
+];
 
 function WorkflowsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const navigate = useNavigate()
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, string>>({
     status: 'all',
     triggerKind: 'all',
-  })
+  });
 
-  const workflows = useWorkflows(wsId)
-  const runs = useRuns(wsId)
+  const workflows = useWorkflows(wsId);
+  const runs = useRuns(wsId);
 
   const runCounts = useMemo(() => {
-    const counts = new Map<string, number>()
+    const counts = new Map<string, number>();
     for (const run of runs.data?.items ?? []) {
-      counts.set(run.workflowId, (counts.get(run.workflowId) ?? 0) + 1)
+      counts.set(run.workflowId, (counts.get(run.workflowId) ?? 0) + 1);
     }
-    return counts
-  }, [runs.data?.items])
+    return counts;
+  }, [runs.data?.items]);
 
   const items = (workflows.data?.items ?? []).filter((workflow) => {
-    if (filters.status === 'active' && !workflow.active) return false
-    if (filters.status === 'inactive' && workflow.active) return false
+    if (filters.status === 'active' && !workflow.active) return false;
+    if (filters.status === 'inactive' && workflow.active) return false;
     if (
       filters.triggerKind !== 'all' &&
       (workflow.triggerKind ?? 'Manual') !== filters.triggerKind
     ) {
-      return false
+      return false;
     }
-    return true
-  })
+    return true;
+  });
 
   const columns = [
     {
@@ -113,10 +113,12 @@ function WorkflowsPage() {
       header: 'Status',
       width: '100px',
       render: (row: WorkflowSummary) => (
-        <Badge variant={row.active ? 'default' : 'secondary'}>{row.active ? 'Active' : 'Inactive'}</Badge>
+        <Badge variant={row.active ? 'default' : 'secondary'}>
+          {row.active ? 'Active' : 'Inactive'}
+        </Badge>
       ),
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-4">
@@ -149,11 +151,11 @@ function WorkflowsPage() {
         }
       />
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workflows',
   component: WorkflowsPage,
-})
+});

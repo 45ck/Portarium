@@ -104,7 +104,9 @@ describe('InMemoryMarketingAutomationAdapter integration', () => {
     const listed = await adapter.execute({ tenantId: TENANT, operation: 'listCampaigns' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'campaigns') return;
-    expect(listed.result.campaigns.some((campaign) => campaign.campaignId === campaignId)).toBe(true);
+    expect(listed.result.campaigns.some((campaign) => campaign.campaignId === campaignId)).toBe(
+      true,
+    );
   });
 
   it('supports automation and form submission operations', async () => {

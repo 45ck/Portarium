@@ -54,7 +54,7 @@ spec:
           protocol: TCP
         - port: 50051
           protocol: TCP
-    - to: []  # DNS
+    - to: [] # DNS
       ports:
         - port: 53
           protocol: UDP
@@ -70,6 +70,7 @@ spec:
 ```
 
 **Verification:** Agent pod cannot reach external SoR endpoints directly.
+
 ```bash
 kubectl exec -n portarium-agents deploy/sales-bot -- curl -s https://api.hubspot.com
 # Expected: connection timeout or refused
@@ -87,6 +88,7 @@ kubectl exec -n portarium-agents deploy/sales-bot -- curl -s https://api.hubspot
 4. Configure Envoy sidecar (or native SPIFFE support) for mTLS
 
 SPIFFE ID convention:
+
 ```
 spiffe://portarium.io/ns/portarium-control-plane/sa/api-server
 spiffe://portarium.io/ns/portarium-agents/sa/{agent-name}
@@ -122,14 +124,14 @@ For each workspace, define an explicit tool allowlist:
 
 Ensure all control-plane endpoints enforce OpenFGA resource-level checks:
 
-| Resource | Relation | Required for |
-|----------|----------|-------------|
-| `workspace:{id}` | `member` | Any workspace access |
-| `run:{id}` | `viewer` | Read run status |
-| `run:{id}` | `operator` | Start/cancel runs |
-| `approval:{id}` | `approver` | Submit approval decisions |
-| `agent:{id}` | `owner` | Manage agent registration |
-| `credential:{id}` | `reader` | Retrieve credentials |
+| Resource          | Relation   | Required for              |
+| ----------------- | ---------- | ------------------------- |
+| `workspace:{id}`  | `member`   | Any workspace access      |
+| `run:{id}`        | `viewer`   | Read run status           |
+| `run:{id}`        | `operator` | Start/cancel runs         |
+| `approval:{id}`   | `approver` | Submit approval decisions |
+| `agent:{id}`      | `owner`    | Manage agent registration |
+| `credential:{id}` | `reader`   | Retrieve credentials      |
 
 **Verification:** Agent without required relation receives HTTP 403.
 
@@ -150,12 +152,12 @@ Run comprehensive validation:
 
 Configure alerts:
 
-| Alert | Condition | Severity |
-|-------|-----------|----------|
-| Direct SoR call detected | `portarium_direct_sor_ratio > 0` | Critical |
-| mTLS handshake failure spike | `rate(envoy_ssl_handshake_errors) > 10/min` | Warning |
-| Policy bypass attempt | `portarium_policy_bypass_attempts_total > 0` | Critical |
-| Tool allowlist violation | `portarium_tool_denied_total > 0` (new tool) | Warning |
+| Alert                        | Condition                                    | Severity |
+| ---------------------------- | -------------------------------------------- | -------- |
+| Direct SoR call detected     | `portarium_direct_sor_ratio > 0`             | Critical |
+| mTLS handshake failure spike | `rate(envoy_ssl_handshake_errors) > 10/min`  | Warning  |
+| Policy bypass attempt        | `portarium_policy_bypass_attempts_total > 0` | Critical |
+| Tool allowlist violation     | `portarium_tool_denied_total > 0` (new tool) | Warning  |
 
 **Verification:** Test alerts fire correctly by simulating each condition.
 

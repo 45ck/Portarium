@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
-import { Plus, AlertCircle, RotateCcw } from 'lucide-react';
+import { Plus, AlertCircle, RotateCcw, Bot, Brain, Code2 } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useAgents } from '@/hooks/queries/use-agents';
@@ -12,6 +12,18 @@ import { RegisterAgentDialog } from '@/components/cockpit/register-agent-dialog'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AgentV1 } from '@portarium/cockpit-types';
+
+function agentKind(agent: AgentV1): 'openclaw' | 'code' | 'llm' {
+  if (agent.allowedCapabilities.includes('machine:invoke')) return 'openclaw';
+  if (agent.allowedCapabilities.includes('execute-code')) return 'code';
+  return 'llm';
+}
+
+const KIND_ICON = {
+  openclaw: { Icon: Bot, cls: 'text-orange-500' },
+  code: { Icon: Code2, cls: 'text-violet-500' },
+  llm: { Icon: Brain, cls: 'text-blue-500' },
+} as const;
 
 function AgentsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
@@ -25,7 +37,15 @@ function AgentsPage() {
     {
       key: 'name',
       header: 'Name',
-      render: (row: AgentV1) => <span className="font-medium">{row.name}</span>,
+      render: (row: AgentV1) => {
+        const { Icon, cls } = KIND_ICON[agentKind(row)];
+        return (
+          <span className="flex items-center gap-2">
+            <Icon className={`h-4 w-4 shrink-0 ${cls}`} aria-hidden="true" />
+            <span className="font-medium">{row.name}</span>
+          </span>
+        );
+      },
     },
     {
       key: 'agentId',
@@ -73,7 +93,11 @@ function AgentsPage() {
   if (isError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Agents" description="AI agents registered in this workspace" icon={<EntityIcon entityType="agent" size="md" decorative />} />
+        <PageHeader
+          title="Agents"
+          description="AI agents registered in this workspace"
+          icon={<EntityIcon entityType="agent" size="md" decorative />}
+        />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">
@@ -111,7 +135,9 @@ function AgentsPage() {
         loading={isLoading}
         getRowKey={(row) => row.agentId}
         pagination={{ pageSize: 20 }}
-        onRowClick={(row) => navigate({ to: '/config/agents/$agentId' as string, params: { agentId: row.agentId } })}
+        onRowClick={(row) =>
+          navigate({ to: '/config/agents/$agentId' as string, params: { agentId: row.agentId } })
+        }
       />
     </div>
   );

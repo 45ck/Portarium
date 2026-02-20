@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { getAgentWorkItems } from './get-agent-work-items.js';
-import type {
-  AuthorizationPort,
-  MachineRegistryStore,
-  WorkItemStore,
-} from '../ports/index.js';
+import type { AuthorizationPort, MachineRegistryStore, WorkItemStore } from '../ports/index.js';
 import { toAppContext } from '../common/context.js';
 import { TenantId, WorkspaceId, WorkItemId, UserId } from '../../domain/primitives/index.js';
 import type { AgentConfigV1 } from '../../domain/machines/machine-registration-v1.js';

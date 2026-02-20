@@ -13,27 +13,27 @@ Source: `.beads/issues.jsonl`
 
 ## Phase Summary
 
-| Phase | Open Beads | Blocked By Open | With Evidence |
-| --- | ---: | ---: | ---: |
-| application | 3 | 1 | 0 |
-| domain | 3 | 1 | 0 |
-| governance | 4 | 4 | 0 |
-| infrastructure | 13 | 5 | 0 |
-| integration | 5 | 5 | 0 |
-| presentation | 1 | 0 | 0 |
-| security | 2 | 2 | 0 |
-| unspecified | 103 | 0 | 1 |
+| Phase          | Open Beads | Blocked By Open | With Evidence |
+| -------------- | ---------: | --------------: | ------------: |
+| application    |          3 |               1 |             0 |
+| domain         |          3 |               1 |             0 |
+| governance     |          4 |               4 |             0 |
+| infrastructure |         13 |               5 |             0 |
+| integration    |          5 |               5 |             0 |
+| presentation   |          1 |               0 |             0 |
+| security       |          2 |               2 |             0 |
+| unspecified    |        103 |               0 |             1 |
 
 ## Critical Path
 
 Longest open dependency chain length: **4**
 
-| Order | Bead | Title |
-| ---: | --- | --- |
-| 1 | bead-0515 | Infra: gRPC edge gateway adapter implementing MissionPort — prototype |
-| 2 | bead-0517 | Infra: ROS 2 Action bridge via edge gateway — Nav2 NavigateTo mission prototype |
-| 3 | bead-0519 | Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite |
-| 4 | bead-0529 | Testing: pre-emption and stop-path latency benchmark for robot missions |
+| Order | Bead      | Title                                                                                     |
+| ----: | --------- | ----------------------------------------------------------------------------------------- |
+|     1 | bead-0515 | Infra: gRPC edge gateway adapter implementing MissionPort — prototype                     |
+|     2 | bead-0517 | Infra: ROS 2 Action bridge via edge gateway — Nav2 NavigateTo mission prototype           |
+|     3 | bead-0519 | Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite |
+|     4 | bead-0529 | Testing: pre-emption and stop-path latency benchmark for robot missions                   |
 
 ## Open Dependency Graph
 
@@ -215,142 +215,142 @@ flowchart TD
 
 ## Open Beads: Dependency And Evidence Detail
 
-| Bead | Phase | Open Blockers | Review Artifacts |
-| --- | --- | --- | --- |
-| bead-0162 | unspecified | none | none |
-| bead-0163 | unspecified | none | none |
-| bead-0164 | unspecified | none | none |
-| bead-0165 | unspecified | none | none |
-| bead-0166 | unspecified | none | none |
-| bead-0167 | unspecified | none | none |
-| bead-0168 | unspecified | none | none |
-| bead-0169 | unspecified | none | none |
-| bead-0170 | unspecified | none | none |
-| bead-0171 | unspecified | none | none |
-| bead-0172 | unspecified | none | none |
-| bead-0174 | unspecified | none | none |
-| bead-0178 | unspecified | none | none |
-| bead-0179 | unspecified | none | none |
-| bead-0180 | unspecified | none | none |
-| bead-0184 | unspecified | none | none |
-| bead-0228 | unspecified | none | docs/review/bead-0228-procurement-spend-integration-closeout-review.md |
-| bead-0229 | unspecified | none | none |
-| bead-0230 | unspecified | none | none |
-| bead-0231 | unspecified | none | none |
-| bead-0232 | unspecified | none | none |
-| bead-0233 | unspecified | none | none |
-| bead-0234 | unspecified | none | none |
-| bead-0235 | unspecified | none | none |
-| bead-0236 | unspecified | none | none |
-| bead-0237 | unspecified | none | none |
-| bead-0238 | unspecified | none | none |
-| bead-0239 | unspecified | none | none |
-| bead-0240 | unspecified | none | none |
-| bead-0241 | unspecified | none | none |
-| bead-0242 | unspecified | none | none |
-| bead-0243 | unspecified | none | none |
-| bead-0244 | unspecified | none | none |
-| bead-0245 | unspecified | none | none |
-| bead-0246 | unspecified | none | none |
-| bead-0247 | unspecified | none | none |
-| bead-0248 | unspecified | none | none |
-| bead-0249 | unspecified | none | none |
-| bead-0250 | unspecified | none | none |
-| bead-0251 | unspecified | none | none |
-| bead-0252 | unspecified | none | none |
-| bead-0253 | unspecified | none | none |
-| bead-0254 | unspecified | none | none |
-| bead-0255 | unspecified | none | none |
-| bead-0256 | unspecified | none | none |
-| bead-0257 | unspecified | none | none |
-| bead-0258 | unspecified | none | none |
-| bead-0260 | unspecified | none | none |
-| bead-0261 | unspecified | none | none |
-| bead-0262 | unspecified | none | none |
-| bead-0263 | unspecified | none | none |
-| bead-0264 | unspecified | none | none |
-| bead-0298 | unspecified | none | none |
-| bead-0311 | unspecified | none | none |
-| bead-0312 | unspecified | none | none |
-| bead-0313 | unspecified | none | none |
-| bead-0315 | unspecified | none | none |
-| bead-0317 | unspecified | none | none |
-| bead-0318 | unspecified | none | none |
-| bead-0320 | application | bead-0340 | none |
-| bead-0321 | unspecified | none | none |
-| bead-0322 | unspecified | none | none |
-| bead-0323 | unspecified | none | none |
-| bead-0324 | unspecified | none | none |
-| bead-0325 | unspecified | none | none |
-| bead-0327 | unspecified | none | none |
-| bead-0328 | unspecified | none | none |
-| bead-0329 | unspecified | none | none |
-| bead-0330 | unspecified | none | none |
-| bead-0340 | application | none | none |
-| bead-0378 | unspecified | none | none |
-| bead-0379 | unspecified | none | none |
-| bead-0380 | unspecified | none | none |
-| bead-0381 | unspecified | none | none |
-| bead-0383 | unspecified | none | none |
-| bead-0384 | unspecified | none | none |
-| bead-0387 | unspecified | none | none |
-| bead-0388 | unspecified | none | none |
-| bead-0390 | unspecified | none | none |
-| bead-0392 | unspecified | none | none |
-| bead-0393 | unspecified | none | none |
-| bead-0394 | unspecified | none | none |
-| bead-0395 | unspecified | none | none |
-| bead-0396 | unspecified | none | none |
-| bead-0397 | unspecified | none | none |
-| bead-0398 | unspecified | none | none |
-| bead-0399 | unspecified | none | none |
-| bead-0403 | infrastructure | none | none |
-| bead-0404 | infrastructure | none | none |
-| bead-0405 | infrastructure | bead-0404 | none |
-| bead-0406 | unspecified | none | none |
-| bead-0407 | infrastructure | none | none |
-| bead-0408 | infrastructure | bead-0407 | none |
-| bead-0410 | unspecified | none | none |
-| bead-0411 | unspecified | none | none |
-| bead-0412 | unspecified | none | none |
-| bead-0413 | unspecified | none | none |
-| bead-0414 | unspecified | none | none |
-| bead-0415 | infrastructure | none | none |
-| bead-0420 | unspecified | none | none |
-| bead-0421 | unspecified | none | none |
-| bead-0422 | unspecified | none | none |
-| bead-0423 | unspecified | none | none |
-| bead-0424 | unspecified | none | none |
-| bead-0428 | unspecified | none | none |
-| bead-0429 | unspecified | none | none |
-| bead-0433 | application | none | none |
-| bead-0434 | unspecified | none | none |
-| bead-0435 | infrastructure | none | none |
-| bead-0436 | infrastructure | bead-0435 | none |
-| bead-0437 | infrastructure | bead-0435 | none |
-| bead-0441 | unspecified | none | none |
-| bead-0442 | unspecified | none | none |
-| bead-0444 | unspecified | none | none |
-| bead-0445 | unspecified | none | none |
-| bead-0448 | domain | none | none |
-| bead-0449 | domain | none | none |
-| bead-0451 | domain | bead-0449 | none |
-| bead-0491 | governance | bead-0415 | none |
-| bead-0493 | governance | bead-0415 | none |
-| bead-0494 | governance | bead-0340 | none |
-| bead-0495 | governance | bead-0340 | none |
-| bead-0515 | infrastructure | none | none |
-| bead-0516 | infrastructure | none | none |
-| bead-0517 | infrastructure | bead-0515 | none |
-| bead-0518 | infrastructure | none | none |
-| bead-0519 | integration | bead-0515, bead-0517 | none |
-| bead-0520 | security | bead-0517 | none |
-| bead-0521 | security | bead-0515 | none |
-| bead-0528 | integration | bead-0515, bead-0516 | none |
-| bead-0529 | integration | bead-0519 | none |
-| bead-0530 | integration | bead-0515, bead-0519 | none |
-| bead-0567 | integration | bead-0515, bead-0516 | none |
-| bead-0587 | presentation | none | none |
+| Bead      | Phase          | Open Blockers        | Review Artifacts                                                       |
+| --------- | -------------- | -------------------- | ---------------------------------------------------------------------- |
+| bead-0162 | unspecified    | none                 | none                                                                   |
+| bead-0163 | unspecified    | none                 | none                                                                   |
+| bead-0164 | unspecified    | none                 | none                                                                   |
+| bead-0165 | unspecified    | none                 | none                                                                   |
+| bead-0166 | unspecified    | none                 | none                                                                   |
+| bead-0167 | unspecified    | none                 | none                                                                   |
+| bead-0168 | unspecified    | none                 | none                                                                   |
+| bead-0169 | unspecified    | none                 | none                                                                   |
+| bead-0170 | unspecified    | none                 | none                                                                   |
+| bead-0171 | unspecified    | none                 | none                                                                   |
+| bead-0172 | unspecified    | none                 | none                                                                   |
+| bead-0174 | unspecified    | none                 | none                                                                   |
+| bead-0178 | unspecified    | none                 | none                                                                   |
+| bead-0179 | unspecified    | none                 | none                                                                   |
+| bead-0180 | unspecified    | none                 | none                                                                   |
+| bead-0184 | unspecified    | none                 | none                                                                   |
+| bead-0228 | unspecified    | none                 | docs/review/bead-0228-procurement-spend-integration-closeout-review.md |
+| bead-0229 | unspecified    | none                 | none                                                                   |
+| bead-0230 | unspecified    | none                 | none                                                                   |
+| bead-0231 | unspecified    | none                 | none                                                                   |
+| bead-0232 | unspecified    | none                 | none                                                                   |
+| bead-0233 | unspecified    | none                 | none                                                                   |
+| bead-0234 | unspecified    | none                 | none                                                                   |
+| bead-0235 | unspecified    | none                 | none                                                                   |
+| bead-0236 | unspecified    | none                 | none                                                                   |
+| bead-0237 | unspecified    | none                 | none                                                                   |
+| bead-0238 | unspecified    | none                 | none                                                                   |
+| bead-0239 | unspecified    | none                 | none                                                                   |
+| bead-0240 | unspecified    | none                 | none                                                                   |
+| bead-0241 | unspecified    | none                 | none                                                                   |
+| bead-0242 | unspecified    | none                 | none                                                                   |
+| bead-0243 | unspecified    | none                 | none                                                                   |
+| bead-0244 | unspecified    | none                 | none                                                                   |
+| bead-0245 | unspecified    | none                 | none                                                                   |
+| bead-0246 | unspecified    | none                 | none                                                                   |
+| bead-0247 | unspecified    | none                 | none                                                                   |
+| bead-0248 | unspecified    | none                 | none                                                                   |
+| bead-0249 | unspecified    | none                 | none                                                                   |
+| bead-0250 | unspecified    | none                 | none                                                                   |
+| bead-0251 | unspecified    | none                 | none                                                                   |
+| bead-0252 | unspecified    | none                 | none                                                                   |
+| bead-0253 | unspecified    | none                 | none                                                                   |
+| bead-0254 | unspecified    | none                 | none                                                                   |
+| bead-0255 | unspecified    | none                 | none                                                                   |
+| bead-0256 | unspecified    | none                 | none                                                                   |
+| bead-0257 | unspecified    | none                 | none                                                                   |
+| bead-0258 | unspecified    | none                 | none                                                                   |
+| bead-0260 | unspecified    | none                 | none                                                                   |
+| bead-0261 | unspecified    | none                 | none                                                                   |
+| bead-0262 | unspecified    | none                 | none                                                                   |
+| bead-0263 | unspecified    | none                 | none                                                                   |
+| bead-0264 | unspecified    | none                 | none                                                                   |
+| bead-0298 | unspecified    | none                 | none                                                                   |
+| bead-0311 | unspecified    | none                 | none                                                                   |
+| bead-0312 | unspecified    | none                 | none                                                                   |
+| bead-0313 | unspecified    | none                 | none                                                                   |
+| bead-0315 | unspecified    | none                 | none                                                                   |
+| bead-0317 | unspecified    | none                 | none                                                                   |
+| bead-0318 | unspecified    | none                 | none                                                                   |
+| bead-0320 | application    | bead-0340            | none                                                                   |
+| bead-0321 | unspecified    | none                 | none                                                                   |
+| bead-0322 | unspecified    | none                 | none                                                                   |
+| bead-0323 | unspecified    | none                 | none                                                                   |
+| bead-0324 | unspecified    | none                 | none                                                                   |
+| bead-0325 | unspecified    | none                 | none                                                                   |
+| bead-0327 | unspecified    | none                 | none                                                                   |
+| bead-0328 | unspecified    | none                 | none                                                                   |
+| bead-0329 | unspecified    | none                 | none                                                                   |
+| bead-0330 | unspecified    | none                 | none                                                                   |
+| bead-0340 | application    | none                 | none                                                                   |
+| bead-0378 | unspecified    | none                 | none                                                                   |
+| bead-0379 | unspecified    | none                 | none                                                                   |
+| bead-0380 | unspecified    | none                 | none                                                                   |
+| bead-0381 | unspecified    | none                 | none                                                                   |
+| bead-0383 | unspecified    | none                 | none                                                                   |
+| bead-0384 | unspecified    | none                 | none                                                                   |
+| bead-0387 | unspecified    | none                 | none                                                                   |
+| bead-0388 | unspecified    | none                 | none                                                                   |
+| bead-0390 | unspecified    | none                 | none                                                                   |
+| bead-0392 | unspecified    | none                 | none                                                                   |
+| bead-0393 | unspecified    | none                 | none                                                                   |
+| bead-0394 | unspecified    | none                 | none                                                                   |
+| bead-0395 | unspecified    | none                 | none                                                                   |
+| bead-0396 | unspecified    | none                 | none                                                                   |
+| bead-0397 | unspecified    | none                 | none                                                                   |
+| bead-0398 | unspecified    | none                 | none                                                                   |
+| bead-0399 | unspecified    | none                 | none                                                                   |
+| bead-0403 | infrastructure | none                 | none                                                                   |
+| bead-0404 | infrastructure | none                 | none                                                                   |
+| bead-0405 | infrastructure | bead-0404            | none                                                                   |
+| bead-0406 | unspecified    | none                 | none                                                                   |
+| bead-0407 | infrastructure | none                 | none                                                                   |
+| bead-0408 | infrastructure | bead-0407            | none                                                                   |
+| bead-0410 | unspecified    | none                 | none                                                                   |
+| bead-0411 | unspecified    | none                 | none                                                                   |
+| bead-0412 | unspecified    | none                 | none                                                                   |
+| bead-0413 | unspecified    | none                 | none                                                                   |
+| bead-0414 | unspecified    | none                 | none                                                                   |
+| bead-0415 | infrastructure | none                 | none                                                                   |
+| bead-0420 | unspecified    | none                 | none                                                                   |
+| bead-0421 | unspecified    | none                 | none                                                                   |
+| bead-0422 | unspecified    | none                 | none                                                                   |
+| bead-0423 | unspecified    | none                 | none                                                                   |
+| bead-0424 | unspecified    | none                 | none                                                                   |
+| bead-0428 | unspecified    | none                 | none                                                                   |
+| bead-0429 | unspecified    | none                 | none                                                                   |
+| bead-0433 | application    | none                 | none                                                                   |
+| bead-0434 | unspecified    | none                 | none                                                                   |
+| bead-0435 | infrastructure | none                 | none                                                                   |
+| bead-0436 | infrastructure | bead-0435            | none                                                                   |
+| bead-0437 | infrastructure | bead-0435            | none                                                                   |
+| bead-0441 | unspecified    | none                 | none                                                                   |
+| bead-0442 | unspecified    | none                 | none                                                                   |
+| bead-0444 | unspecified    | none                 | none                                                                   |
+| bead-0445 | unspecified    | none                 | none                                                                   |
+| bead-0448 | domain         | none                 | none                                                                   |
+| bead-0449 | domain         | none                 | none                                                                   |
+| bead-0451 | domain         | bead-0449            | none                                                                   |
+| bead-0491 | governance     | bead-0415            | none                                                                   |
+| bead-0493 | governance     | bead-0415            | none                                                                   |
+| bead-0494 | governance     | bead-0340            | none                                                                   |
+| bead-0495 | governance     | bead-0340            | none                                                                   |
+| bead-0515 | infrastructure | none                 | none                                                                   |
+| bead-0516 | infrastructure | none                 | none                                                                   |
+| bead-0517 | infrastructure | bead-0515            | none                                                                   |
+| bead-0518 | infrastructure | none                 | none                                                                   |
+| bead-0519 | integration    | bead-0515, bead-0517 | none                                                                   |
+| bead-0520 | security       | bead-0517            | none                                                                   |
+| bead-0521 | security       | bead-0515            | none                                                                   |
+| bead-0528 | integration    | bead-0515, bead-0516 | none                                                                   |
+| bead-0529 | integration    | bead-0519            | none                                                                   |
+| bead-0530 | integration    | bead-0515, bead-0519 | none                                                                   |
+| bead-0567 | integration    | bead-0515, bead-0516 | none                                                                   |
+| bead-0587 | presentation   | none                 | none                                                                   |
 
 ## Notes
 

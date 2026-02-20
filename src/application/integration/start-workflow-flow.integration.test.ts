@@ -32,7 +32,9 @@ const WORKFLOW = parseWorkflowV1({
   version: 1,
   active: true,
   executionTier: 'Auto',
-  actions: [{ actionId: 'act-1', order: 1, portFamily: 'ItsmItOps', operation: 'workflow:simulate' }],
+  actions: [
+    { actionId: 'act-1', order: 1, portFamily: 'ItsmItOps', operation: 'workflow:simulate' },
+  ],
 });
 
 const ADAPTER_REGISTRATION = parseAdapterRegistrationV1({
@@ -42,7 +44,7 @@ const ADAPTER_REGISTRATION = parseAdapterRegistrationV1({
   providerSlug: 'service-now',
   portFamily: 'ItsmItOps',
   enabled: true,
-    capabilityMatrix: [{ operation: 'workflow:simulate', requiresAuth: true }],
+  capabilityMatrix: [{ operation: 'workflow:simulate', requiresAuth: true }],
   executionPolicy: {
     tenantIsolationMode: 'PerTenantWorker',
     egressAllowlist: ['https://api.service-now.example'],
@@ -55,7 +57,11 @@ const ADAPTER_REGISTRATION = parseAdapterRegistrationV1({
 class InMemoryRunStore implements RunStore {
   readonly #byId = new Map<string, RunV1>();
 
-  public async getRunById(_tenantId: string, _workspaceId: string, runId: string): Promise<RunV1 | null> {
+  public async getRunById(
+    _tenantId: string,
+    _workspaceId: string,
+    runId: string,
+  ): Promise<RunV1 | null> {
     return this.#byId.get(runId) ?? null;
   }
 
@@ -65,7 +71,9 @@ class InMemoryRunStore implements RunStore {
 }
 
 class InMemoryWorkflowStore implements WorkflowStore {
-  public async getWorkflowById(): Promise<ReturnType<WorkflowStore['getWorkflowById']> extends Promise<infer T> ? T : never> {
+  public async getWorkflowById(): Promise<
+    ReturnType<WorkflowStore['getWorkflowById']> extends Promise<infer T> ? T : never
+  > {
     return WORKFLOW;
   }
 
@@ -222,11 +230,10 @@ describe('application integration: startWorkflow + getRun + outbox dispatch', ()
     if (!replay.ok) throw new Error('expected idempotent replay');
     expect(String(replay.value.runId)).toBe(runId);
 
-    const queried = await getRun(
-      { authorization: allowAllAuthorization(), runStore },
-      ctx,
-      { workspaceId: 'ws-1', runId },
-    );
+    const queried = await getRun({ authorization: allowAllAuthorization(), runStore }, ctx, {
+      workspaceId: 'ws-1',
+      runId,
+    });
     expect(queried.ok).toBe(true);
     if (!queried.ok) throw new Error('expected query success');
     expect(String(queried.value.runId)).toBe(runId);

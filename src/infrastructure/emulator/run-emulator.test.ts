@@ -71,7 +71,9 @@ describe('RunEmulator', () => {
   it('rejects approval on non-Pending run', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
     await emulator.submitApproval(run.runId, 'Approved');
-    await expect(emulator.submitApproval(run.runId, 'Approved')).rejects.toThrow('expected Pending');
+    await expect(emulator.submitApproval(run.runId, 'Approved')).rejects.toThrow(
+      'expected Pending',
+    );
   });
 
   it('rejects complete on non-Executing run', async () => {

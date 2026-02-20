@@ -210,7 +210,8 @@ function evaluateHazardousZoneNoSelfApprovalConstraintV1(
 ): readonly SodViolationV1[] {
   if (!context.robotContext?.hazardousZone) return [];
 
-  const missionProposerUserId = context.robotContext.missionProposerUserId ?? context.initiatorUserId;
+  const missionProposerUserId =
+    context.robotContext.missionProposerUserId ?? context.initiatorUserId;
   if (!context.approverUserIds.includes(missionProposerUserId)) return [];
 
   return [

@@ -7,12 +7,12 @@ REST (OpenAPI) remains the primary API for all governance, workflow, and CRUD op
 
 ## When to Use gRPC vs REST
 
-| Use case | Protocol | Reason |
-|----------|----------|--------|
-| Workflow lifecycle, approvals, CRUD | REST (OpenAPI) | Standard tooling, browser-friendly |
-| Robot telemetry ingestion (10-100 Hz) | gRPC streaming | High throughput, binary encoding |
-| Real-time command dispatch + feedback | gRPC bidirectional | Low latency, multiplexed |
-| Edge gateway heartbeat | gRPC unary | Lightweight keep-alive |
+| Use case                              | Protocol           | Reason                             |
+| ------------------------------------- | ------------------ | ---------------------------------- |
+| Workflow lifecycle, approvals, CRUD   | REST (OpenAPI)     | Standard tooling, browser-friendly |
+| Robot telemetry ingestion (10-100 Hz) | gRPC streaming     | High throughput, binary encoding   |
+| Real-time command dispatch + feedback | gRPC bidirectional | Low latency, multiplexed           |
+| Edge gateway heartbeat                | gRPC unary         | Lightweight keep-alive             |
 
 ## Service Definitions
 

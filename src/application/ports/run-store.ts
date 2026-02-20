@@ -21,5 +21,9 @@ export interface RunStore {
 }
 
 export interface RunQueryStore {
-  listRuns(tenantId: TenantId, workspaceId: WorkspaceId, filter: ListRunsFilter): Promise<RunListPage>;
+  listRuns(
+    tenantId: TenantId,
+    workspaceId: WorkspaceId,
+    filter: ListRunsFilter,
+  ): Promise<RunListPage>;
 }

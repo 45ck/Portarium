@@ -114,9 +114,7 @@ function validateInput(input: ListApprovalsInput): Result<void, ValidationFailed
   return ok(undefined);
 }
 
-function parseIds(
-  input: ListApprovalsInput,
-): Result<
+function parseIds(input: ListApprovalsInput): Result<
   Readonly<{
     workspaceId: WorkspaceIdType;
     runId?: RunIdType;
@@ -134,15 +132,12 @@ function parseIds(
       ...(input.planId ? { planId: PlanId(input.planId) } : {}),
       ...(input.workItemId ? { workItemId: WorkItemId(input.workItemId) } : {}),
       ...(input.assigneeUserId ? { assigneeUserId: UserId(input.assigneeUserId) } : {}),
-      ...(input.requestedByUserId
-        ? { requestedByUserId: UserId(input.requestedByUserId) }
-        : {}),
+      ...(input.requestedByUserId ? { requestedByUserId: UserId(input.requestedByUserId) } : {}),
     });
   } catch {
     return err({
       kind: 'ValidationFailed',
-      message:
-        'Invalid workspaceId/runId/planId/workItemId/assigneeUserId/requestedByUserId.',
+      message: 'Invalid workspaceId/runId/planId/workItemId/assigneeUserId/requestedByUserId.',
     });
   }
 }
@@ -171,7 +166,10 @@ function buildFilter(
 
 function parseInput(
   input: ListApprovalsInput,
-): Result<Readonly<{ workspaceId: WorkspaceIdType; filter: ListApprovalsFilter }>, ValidationFailed> {
+): Result<
+  Readonly<{ workspaceId: WorkspaceIdType; filter: ListApprovalsFilter }>,
+  ValidationFailed
+> {
   const validated = validateInput(input);
   if (!validated.ok) {
     return validated;

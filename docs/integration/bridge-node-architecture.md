@@ -17,15 +17,15 @@ production-grade fleet deployment.
 
 **Use case:** Rapid development, single-robot prototyping, CI test harnesses.
 
-| Property        | Value                                          |
-| --------------- | ---------------------------------------------- |
-| Protocol        | WebSocket (RFC 6455)                           |
-| Serialization   | JSON                                           |
-| Authentication  | None (local network only)                      |
-| Encryption      | Optional TLS (wss://)                          |
-| Latency         | ~10-50ms (JSON parse overhead)                 |
-| Scalability     | 1-5 robots                                     |
-| ROS 2 dependency| rosbridge_server package                       |
+| Property         | Value                          |
+| ---------------- | ------------------------------ |
+| Protocol         | WebSocket (RFC 6455)           |
+| Serialization    | JSON                           |
+| Authentication   | None (local network only)      |
+| Encryption       | Optional TLS (wss://)          |
+| Latency          | ~10-50ms (JSON parse overhead) |
+| Scalability      | 1-5 robots                     |
+| ROS 2 dependency | rosbridge_server package       |
 
 **Connection flow:**
 
@@ -34,11 +34,13 @@ Bridge Node  <-- WebSocket -->  rosbridge_server  <-- ROS 2 -->  Robot nodes
 ```
 
 **Advantages:**
+
 - Zero certificate management.
 - Works from any language with WebSocket support.
 - Easy to debug (human-readable JSON).
 
 **Limitations:**
+
 - No authentication or authorization at the transport layer.
 - JSON serialization overhead for high-frequency topics.
 - Single rosbridge server becomes a bottleneck beyond 5 robots.
@@ -47,15 +49,15 @@ Bridge Node  <-- WebSocket -->  rosbridge_server  <-- ROS 2 -->  Robot nodes
 
 **Use case:** Production ROS 2 deployments, fleet-scale operations.
 
-| Property        | Value                                          |
-| --------------- | ---------------------------------------------- |
-| Protocol        | RTPS (DDS)                                     |
-| Serialization   | CDR (Common Data Representation)               |
-| Authentication  | PKI (X.509 certificates via SROS 2)            |
-| Encryption      | AES-256-GCM (per DDS-Security spec)            |
-| Latency         | ~1-5ms (zero-copy capable)                     |
-| Scalability     | 100+ robots per domain                         |
-| ROS 2 dependency| Full ROS 2 stack with sros2 package            |
+| Property         | Value                               |
+| ---------------- | ----------------------------------- |
+| Protocol         | RTPS (DDS)                          |
+| Serialization    | CDR (Common Data Representation)    |
+| Authentication   | PKI (X.509 certificates via SROS 2) |
+| Encryption       | AES-256-GCM (per DDS-Security spec) |
+| Latency          | ~1-5ms (zero-copy capable)          |
+| Scalability      | 100+ robots per domain              |
+| ROS 2 dependency | Full ROS 2 stack with sros2 package |
 
 **Connection flow:**
 
@@ -66,11 +68,13 @@ Bridge Node  <-- DDS/RTPS (encrypted) -->  Robot nodes
 ```
 
 **Advantages:**
+
 - Native ROS 2 performance.
 - Per-topic access control via DDS governance policies.
 - No intermediate server (peer-to-peer).
 
 **Limitations:**
+
 - Requires SROS 2 PKI provisioning (see `ros2-bridge-architecture.md`).
 - Harder to debug (binary protocol).
 - ROS 2 installation required on bridge host.
@@ -79,15 +83,15 @@ Bridge Node  <-- DDS/RTPS (encrypted) -->  Robot nodes
 
 **Use case:** Constrained IoT devices, non-ROS edge gateways, cross-firewall.
 
-| Property        | Value                                          |
-| --------------- | ---------------------------------------------- |
-| Protocol        | MQTT 5.0                                       |
-| Serialization   | JSON or Protobuf                               |
-| Authentication  | Username/password or client certificates        |
-| Encryption      | TLS 1.3                                        |
-| Latency         | ~5-20ms                                        |
-| Scalability     | 10,000+ devices per broker                     |
-| ROS 2 dependency| None                                           |
+| Property         | Value                                    |
+| ---------------- | ---------------------------------------- |
+| Protocol         | MQTT 5.0                                 |
+| Serialization    | JSON or Protobuf                         |
+| Authentication   | Username/password or client certificates |
+| Encryption       | TLS 1.3                                  |
+| Latency          | ~5-20ms                                  |
+| Scalability      | 10,000+ devices per broker               |
+| ROS 2 dependency | None                                     |
 
 **Connection flow:**
 
@@ -98,12 +102,14 @@ IoT Device  <-- MQTT/TLS -->  Broker (Mosquitto)  <-- MQTT -->  Bridge Node
 ```
 
 **Advantages:**
+
 - Smallest footprint (runs on microcontrollers).
 - Works across NAT/firewalls.
 - Massive device scalability.
 - No ROS 2 dependency on device side.
 
 **Limitations:**
+
 - Request-response patterns require convention (reply topics).
 - Less rich QoS than DDS.
 - Requires an MQTT broker (Mosquitto, EMQX, HiveMQ).
@@ -172,16 +178,16 @@ Is the device a ROS 2 node?
 
 ### Selection matrix
 
-| Criterion              | Tier 1 (rosbridge) | Tier 2 (DDS) | Tier 3 (MQTT) |
-| ---------------------- | ------------------- | ------------- | -------------- |
-| Setup complexity       | Low                 | High          | Medium         |
-| Authentication         | None                | PKI           | Cert / Token   |
-| Latency                | Medium              | Low           | Medium         |
-| Device scalability     | 1-5                 | 100+          | 10,000+        |
-| ROS 2 required         | Yes (bridge side)   | Yes (both)    | No             |
-| Firewall-friendly      | Yes                 | No            | Yes            |
-| CPU on device          | Low                 | Medium        | Minimal        |
-| Best for               | Dev / CI            | ROS fleet     | IoT / edge     |
+| Criterion          | Tier 1 (rosbridge) | Tier 2 (DDS) | Tier 3 (MQTT) |
+| ------------------ | ------------------ | ------------ | ------------- |
+| Setup complexity   | Low                | High         | Medium        |
+| Authentication     | None               | PKI          | Cert / Token  |
+| Latency            | Medium             | Low          | Medium        |
+| Device scalability | 1-5                | 100+         | 10,000+       |
+| ROS 2 required     | Yes (bridge side)  | Yes (both)   | No            |
+| Firewall-friendly  | Yes                | No           | Yes           |
+| CPU on device      | Low                | Medium       | Minimal       |
+| Best for           | Dev / CI           | ROS fleet    | IoT / edge    |
 
 ## Bridge node internal architecture
 

@@ -1,13 +1,13 @@
 interface NavItem {
-  label: string
-  to: string
-  icon: React.ReactNode
-  badge?: number
+  label: string;
+  to: string;
+  icon: React.ReactNode;
+  badge?: number;
 }
 
 interface NavSectionProps {
-  label: string
-  items: NavItem[]
+  label: string;
+  items: NavItem[];
 }
 
 export function NavSection({ label, items }: NavSectionProps) {
@@ -32,7 +32,7 @@ export function NavSection({ label, items }: NavSectionProps) {
         </a>
       ))}
     </div>
-  )
+  );
 }
 
-export type { NavItem, NavSectionProps }
+export type { NavItem, NavSectionProps };

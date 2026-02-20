@@ -67,11 +67,12 @@ describe('SidecarProxy', () => {
 
   describe('proxy', () => {
     it('proxies allowed requests with auth and trace headers', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('{"ok":true}', {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        }),
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () =>
+          new Response('{"ok":true}', {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }),
       );
 
       const proxy = new SidecarProxy(makeConfig(), fetchImpl);
@@ -95,9 +96,7 @@ describe('SidecarProxy', () => {
       const fetchImpl = vi.fn<typeof fetch>();
       const proxy = new SidecarProxy(makeConfig(), fetchImpl);
 
-      const result = await proxy.proxy(
-        makeRequest({ url: 'https://evil.com/steal' }),
-      );
+      const result = await proxy.proxy(makeRequest({ url: 'https://evil.com/steal' }));
 
       expect(result.status).toBe(403);
       expect(fetchImpl).not.toHaveBeenCalled();
@@ -106,16 +105,12 @@ describe('SidecarProxy', () => {
     });
 
     it('does not overwrite existing auth header', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('ok', { status: 200 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response('ok', { status: 200 }));
 
       const proxy = new SidecarProxy(makeConfig(), fetchImpl);
       proxy.setToken('sidecar-token');
 
-      await proxy.proxy(
-        makeRequest({ headers: { authorization: 'Bearer existing' } }),
-      );
+      await proxy.proxy(makeRequest({ headers: { authorization: 'Bearer existing' } }));
 
       const callHeaders = fetchImpl.mock.calls[0]?.[1]?.headers as Record<string, string>;
       expect(callHeaders['authorization']).toBe('Bearer existing');
@@ -137,9 +132,7 @@ describe('SidecarProxy', () => {
     });
 
     it('proxies without auth when no token is set', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('ok', { status: 200 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response('ok', { status: 200 }));
 
       const proxy = new SidecarProxy(makeConfig(), fetchImpl);
 

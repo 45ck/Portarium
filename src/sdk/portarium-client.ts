@@ -122,7 +122,10 @@ export type EventSubscription = Readonly<{
 
 export class PortariumClient {
   readonly #config: Required<
-    Pick<PortariumClientConfig, 'baseUrl' | 'auth' | 'workspaceId' | 'timeoutMs' | 'maxRetries' | 'retryBaseDelayMs'>
+    Pick<
+      PortariumClientConfig,
+      'baseUrl' | 'auth' | 'workspaceId' | 'timeoutMs' | 'maxRetries' | 'retryBaseDelayMs'
+    >
   > & { fetchFn: typeof fetch; traceparent?: string; tracestate?: string };
 
   public readonly runs: RunsNamespace;
@@ -157,7 +160,12 @@ export class PortariumClient {
   }
 
   /** @internal */
-  async request<T>(method: string, path: string, body?: unknown, idempotencyKey?: string): Promise<T> {
+  async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+    idempotencyKey?: string,
+  ): Promise<T> {
     const url = `${this.#config.baseUrl}${path}`;
     const headers = this.#buildHeaders(idempotencyKey);
 
@@ -248,7 +256,9 @@ export class PortariumClient {
 
 class RunsNamespace {
   readonly #client: PortariumClient;
-  constructor(client: PortariumClient) { this.#client = client; }
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
 
   async start(input: StartRunInput): Promise<RunSummary> {
     const idempotencyKey = input.idempotencyKey ?? randomUUID();
@@ -277,7 +287,9 @@ class RunsNamespace {
 
 class ApprovalsNamespace {
   readonly #client: PortariumClient;
-  constructor(client: PortariumClient) { this.#client = client; }
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
 
   async submitDecision(input: ApprovalDecisionInput): Promise<void> {
     await this.#client.request<void>(
@@ -290,7 +302,9 @@ class ApprovalsNamespace {
 
 class AgentsNamespace {
   readonly #client: PortariumClient;
-  constructor(client: PortariumClient) { this.#client = client; }
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
 
   async register(input: AgentRegistrationInput): Promise<unknown> {
     return this.#client.request(
@@ -311,7 +325,9 @@ class AgentsNamespace {
 
 class MachinesNamespace {
   readonly #client: PortariumClient;
-  constructor(client: PortariumClient) { this.#client = client; }
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
 
   async register(input: MachineRegistrationInput): Promise<unknown> {
     return this.#client.request(

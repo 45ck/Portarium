@@ -10,6 +10,7 @@ Scope:
 ## Acceptance Evidence
 
 Objective:
+
 - Enforce domain-layer dependency isolation (no infrastructure/presentation leakage into `src/domain/`).
 
 Verification command:
@@ -19,9 +20,11 @@ npx depcruise --config .dependency-cruiser.cjs --include-only "^src/domain" --va
 ```
 
 Result:
+
 - `✔ no dependency violations found (181 modules, 421 dependencies cruised)`
 
 Conclusion:
+
 - Domain dependency boundary is currently enforced for the audited scope.
 
 ## Notes

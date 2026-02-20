@@ -25,16 +25,19 @@ What remained ambiguous was architectural intent at system level: whether Portar
 Portarium adopts a **hybrid orchestration/choreography architecture**:
 
 1. **Temporal orchestration for internal run lifecycle correctness**
+
 - Temporal is authoritative for internal execution state transitions of runs and approvals.
 - Control-plane invariants (policy tiers, SoD, idempotency, evidence sequencing) are enforced in the orchestrated path.
 - Orchestration is the source of truth for command-side workflow progression.
 
 2. **CloudEvents choreography for external projection and integration**
+
 - Domain outcomes are emitted as CloudEvents for downstream consumers.
 - Consumers build projections, notifications, analytics, and external automations asynchronously.
 - External consumers do not drive internal run-state correctness directly.
 
 3. **Clear boundary between the two**
+
 - Internal correctness path: command -> orchestrated execution -> persisted state/evidence.
 - External integration path: emitted CloudEvents -> subscriber-specific processing.
 - Failures in subscribers must not corrupt or roll back run-lifecycle correctness.

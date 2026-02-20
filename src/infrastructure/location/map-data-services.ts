@@ -1,5 +1,9 @@
 import type { LocationEventV1 } from '../../domain/location/location-event-v1.js';
-import { parseMapLayerV1, type MapLayerV1, type MapLayerType } from '../../domain/location/map-layer-v1.js';
+import {
+  parseMapLayerV1,
+  type MapLayerV1,
+  type MapLayerType,
+} from '../../domain/location/map-layer-v1.js';
 import type {
   LocationHistoryStore,
   LocationLatestStateCache,

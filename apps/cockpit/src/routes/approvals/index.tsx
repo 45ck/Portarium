@@ -57,14 +57,20 @@ function ApprovalsPage() {
       header: 'ID',
       width: '120px',
       render: (row: ApprovalSummary) => (
-        <span className="font-mono" title={row.approvalId}>{row.approvalId.slice(0, 12)}</span>
+        <span className="font-mono" title={row.approvalId}>
+          {row.approvalId.slice(0, 12)}
+        </span>
       ),
     },
     {
       key: 'runId',
       header: 'Run',
       width: '120px',
-      render: (row: ApprovalSummary) => <span className="font-mono" title={row.runId}>{row.runId.slice(0, 12)}</span>,
+      render: (row: ApprovalSummary) => (
+        <span className="font-mono" title={row.runId}>
+          {row.runId.slice(0, 12)}
+        </span>
+      ),
     },
     {
       key: 'prompt',
@@ -106,7 +112,10 @@ function ApprovalsPage() {
   if (isError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Approvals" icon={<EntityIcon entityType="approval" size="md" decorative />} />
+        <PageHeader
+          title="Approvals"
+          icon={<EntityIcon entityType="approval" size="md" decorative />}
+        />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">
@@ -129,7 +138,7 @@ function ApprovalsPage() {
         icon={<EntityIcon entityType="approval" size="md" decorative />}
       />
 
-      <Tabs defaultValue="pending">
+      <Tabs defaultValue="triage">
         <TabsList>
           <TabsTrigger value="pending">
             Pending
@@ -171,15 +180,18 @@ function ApprovalsPage() {
                   title="All caught up"
                   description="No pending approvals left in the triage queue."
                   icon={<CheckSquare className="h-12 w-12" />}
-                  action={triageSkipped.size > 0 ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setTriageSkipped(new Set())}
-                    >
-                      You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} — review them?
-                    </Button>
-                  ) : undefined}
+                  action={
+                    triageSkipped.size > 0 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTriageSkipped(new Set())}
+                      >
+                        You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} —
+                        review them?
+                      </Button>
+                    ) : undefined
+                  }
                 />
               </div>
             ) : (

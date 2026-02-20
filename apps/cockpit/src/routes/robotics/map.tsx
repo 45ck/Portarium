@@ -1,35 +1,35 @@
-import { useState } from 'react'
-import { createRoute } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useRobotLocations } from '@/hooks/queries/use-robot-locations'
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
-import { MapView } from '@/components/cockpit/operations-map/map-view'
-import { RobotListPanel } from '@/components/cockpit/operations-map/robot-list-panel'
-import { RobotDetailPanel } from '@/components/cockpit/operations-map/robot-detail-panel'
-import { AlertTriagePanel } from '@/components/cockpit/operations-map/alert-triage-panel'
-import { PlaybackControls } from '@/components/cockpit/operations-map/playback-controls'
-import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-toggles'
-import { MapPin, Loader2 } from 'lucide-react'
+import { useState } from 'react';
+import { createRoute } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useRobotLocations } from '@/hooks/queries/use-robot-locations';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { MapView } from '@/components/cockpit/operations-map/map-view';
+import { RobotListPanel } from '@/components/cockpit/operations-map/robot-list-panel';
+import { RobotDetailPanel } from '@/components/cockpit/operations-map/robot-detail-panel';
+import { AlertTriagePanel } from '@/components/cockpit/operations-map/alert-triage-panel';
+import { PlaybackControls } from '@/components/cockpit/operations-map/playback-controls';
+import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-toggles';
+import { MapPin, Loader2 } from 'lucide-react';
 
 function OperationsMapPage() {
-  const { activeWorkspaceId: wsId } = useUIStore()
-  const { data, isLoading } = useRobotLocations(wsId)
+  const { activeWorkspaceId: wsId } = useUIStore();
+  const { data, isLoading } = useRobotLocations(wsId);
 
-  const [selectedRobotId, setSelectedRobotId] = useState<string | null>(null)
+  const [selectedRobotId, setSelectedRobotId] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerVisibility>({
     geofences: true,
     trails: false,
     halos: true,
-  })
+  });
 
-  const locations = data?.items ?? []
-  const geofences = data?.geofences ?? []
-  const alerts = data?.alerts ?? []
+  const locations = data?.items ?? [];
+  const geofences = data?.geofences ?? [];
+  const alerts = data?.alerts ?? [];
 
   const selectedLocation = selectedRobotId
-    ? locations.find((l) => l.robotId === selectedRobotId) ?? null
-    : null
+    ? (locations.find((l) => l.robotId === selectedRobotId) ?? null)
+    : null;
 
   if (isLoading) {
     return (
@@ -39,7 +39,7 @@ function OperationsMapPage() {
           <p className="text-sm">Loading operations map...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -47,7 +47,9 @@ function OperationsMapPage() {
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
         <MapPin className="h-4 w-4 text-muted-foreground" />
-        <h1 className="text-sm font-semibold" role="heading" aria-level={1}>Operations Map</h1>
+        <h1 className="text-sm font-semibold" role="heading" aria-level={1}>
+          Operations Map
+        </h1>
         <span className="text-xs text-muted-foreground">
           {locations.length} robots &middot; {alerts.length} alerts
         </span>
@@ -93,11 +95,11 @@ function OperationsMapPage() {
         </ResizablePanelGroup>
       </div>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/robotics/map',
   component: OperationsMapPage,
-})
+});

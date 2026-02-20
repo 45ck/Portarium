@@ -42,11 +42,7 @@ export function parseSidecarConfigV1(value: unknown): SidecarConfigV1 {
     'tokenRefreshIntervalMs',
     DEFAULT_SIDECAR_CONFIG.tokenRefreshIntervalMs,
   );
-  const listenPort = requirePositiveNumber(
-    record,
-    'listenPort',
-    DEFAULT_SIDECAR_CONFIG.listenPort,
-  );
+  const listenPort = requirePositiveNumber(record, 'listenPort', DEFAULT_SIDECAR_CONFIG.listenPort);
   const mtlsCertPath = optionalString(record, 'mtlsCertPath');
 
   return {

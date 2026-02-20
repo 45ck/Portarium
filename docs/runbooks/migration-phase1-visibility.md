@@ -65,22 +65,22 @@ curl -v https://api.portarium.example.com/api/v1/runs 2>&1 | grep traceparent
 
 Create a dashboard with the following panels:
 
-| Panel                          | Query / metric                                     |
-| ------------------------------ | -------------------------------------------------- |
-| Total outbound calls           | `count(side_effect_log_entries)`                   |
-| Classification breakdown       | `group by classification`                          |
-| Direct SoR calls (trend)       | `count where classification = "direct-sor-call"`   |
-| Routing compliance %           | `routed / total * 100`                             |
-| Top direct SoR endpoints       | `group by url where classification = "direct-sor-call"` |
-| Latency by classification      | `avg(durationMs) group by classification`          |
+| Panel                     | Query / metric                                          |
+| ------------------------- | ------------------------------------------------------- |
+| Total outbound calls      | `count(side_effect_log_entries)`                        |
+| Classification breakdown  | `group by classification`                               |
+| Direct SoR calls (trend)  | `count where classification = "direct-sor-call"`        |
+| Routing compliance %      | `routed / total * 100`                                  |
+| Top direct SoR endpoints  | `group by url where classification = "direct-sor-call"` |
+| Latency by classification | `avg(durationMs) group by classification`               |
 
 ### 5. Set alerting thresholds
 
-| Alert                         | Threshold                     | Severity |
-| ----------------------------- | ----------------------------- | -------- |
-| New direct SoR endpoint seen  | Any new URL pattern           | Info     |
-| Direct SoR calls > 50% total | > 50% over 1h window          | Warning  |
-| Trace context missing         | Any call without traceparent  | Warning  |
+| Alert                        | Threshold                    | Severity |
+| ---------------------------- | ---------------------------- | -------- |
+| New direct SoR endpoint seen | Any new URL pattern          | Info     |
+| Direct SoR calls > 50% total | > 50% over 1h window         | Warning  |
+| Trace context missing        | Any call without traceparent | Warning  |
 
 ## Validation
 

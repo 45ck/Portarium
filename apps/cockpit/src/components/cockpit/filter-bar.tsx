@@ -1,32 +1,32 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { X } from 'lucide-react'
+} from '@/components/ui/select';
+import { X } from 'lucide-react';
 
 interface FilterOption {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 interface FilterConfig {
-  key: string
-  label: string
-  options: FilterOption[]
+  key: string;
+  label: string;
+  options: FilterOption[];
 }
 
 interface FilterBarProps {
-  filters: FilterConfig[]
-  values: Record<string, string>
-  onChange: (key: string, value: string) => void
+  filters: FilterConfig[];
+  values: Record<string, string>;
+  onChange: (key: string, value: string) => void;
 }
 
 export function FilterBar({ filters, values, onChange }: FilterBarProps) {
-  const hasActiveFilters = Object.values(values).some((v) => v && v !== 'all')
+  const hasActiveFilters = Object.values(values).some((v) => v && v !== 'all');
 
   return (
     <div className="flex items-center gap-2">
@@ -40,7 +40,9 @@ export function FilterBar({ filters, values, onChange }: FilterBarProps) {
             <SelectValue placeholder={filter.label} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="text-xs">All {filter.label}</SelectItem>
+            <SelectItem value="all" className="text-xs">
+              All {filter.label}
+            </SelectItem>
             {filter.options.map((opt) => (
               <SelectItem key={opt.value} value={opt.value} className="text-xs">
                 {opt.label}
@@ -61,7 +63,7 @@ export function FilterBar({ filters, values, onChange }: FilterBarProps) {
         </Button>
       )}
     </div>
-  )
+  );
 }
 
-export type { FilterOption, FilterConfig, FilterBarProps }
+export type { FilterOption, FilterConfig, FilterBarProps };

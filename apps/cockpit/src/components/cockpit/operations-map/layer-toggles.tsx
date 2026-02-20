@@ -1,23 +1,23 @@
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Hexagon, Navigation, CircleDot } from 'lucide-react'
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Hexagon, Navigation, CircleDot } from 'lucide-react';
 
 export interface LayerVisibility {
-  geofences: boolean
-  trails: boolean
-  halos: boolean
+  geofences: boolean;
+  trails: boolean;
+  halos: boolean;
 }
 
 interface LayerTogglesProps {
-  layers: LayerVisibility
-  onChange: (layers: LayerVisibility) => void
+  layers: LayerVisibility;
+  onChange: (layers: LayerVisibility) => void;
 }
 
 const LAYER_DEFS = [
   { key: 'geofences' as const, label: 'Geofences', icon: Hexagon },
   { key: 'trails' as const, label: 'Trails', icon: Navigation },
   { key: 'halos' as const, label: 'Halos', icon: CircleDot },
-]
+];
 
 export function LayerToggles({ layers, onChange }: LayerTogglesProps) {
   return (
@@ -36,5 +36,5 @@ export function LayerToggles({ layers, onChange }: LayerTogglesProps) {
         </Button>
       ))}
     </div>
-  )
+  );
 }

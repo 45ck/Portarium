@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import type { RobotLocation } from '@/mocks/fixtures/robot-locations'
-import type { RobotStatus } from '@/types/robotics'
-import { Wifi, WifiOff, AlertTriangle, OctagonX, Battery, MapPin } from 'lucide-react'
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import type { RobotLocation } from '@/mocks/fixtures/robot-locations';
+import type { RobotStatus } from '@/types/robotics';
+import { Wifi, WifiOff, AlertTriangle, OctagonX, Battery, MapPin } from 'lucide-react';
 
 const STATUS_FILTERS: Array<{ label: string; value: RobotStatus | 'All' }> = [
   { label: 'All', value: 'All' },
@@ -11,33 +11,33 @@ const STATUS_FILTERS: Array<{ label: string; value: RobotStatus | 'All' }> = [
   { label: 'Degraded', value: 'Degraded' },
   { label: 'E-Stopped', value: 'E-Stopped' },
   { label: 'Offline', value: 'Offline' },
-]
+];
 
 const STATUS_ICON: Record<RobotStatus, React.ReactNode> = {
   Online: <Wifi className="h-3 w-3" />,
   Degraded: <AlertTriangle className="h-3 w-3" />,
   'E-Stopped': <OctagonX className="h-3 w-3" />,
   Offline: <WifiOff className="h-3 w-3" />,
-}
+};
 
 const STATUS_BADGE_CLASS: Record<RobotStatus, string> = {
   Online: 'bg-green-100 text-green-800 border-green-200',
   Degraded: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   'E-Stopped': 'bg-red-100 text-red-800 border-red-200',
   Offline: 'bg-muted text-muted-foreground border-border',
-}
+};
 
 interface RobotListPanelProps {
-  locations: RobotLocation[]
-  selectedRobotId: string | null
-  onSelectRobot: (robotId: string | null) => void
+  locations: RobotLocation[];
+  selectedRobotId: string | null;
+  onSelectRobot: (robotId: string | null) => void;
 }
 
 export function RobotListPanel({ locations, selectedRobotId, onSelectRobot }: RobotListPanelProps) {
-  const [statusFilter, setStatusFilter] = useState<RobotStatus | 'All'>('All')
+  const [statusFilter, setStatusFilter] = useState<RobotStatus | 'All'>('All');
 
   const filtered =
-    statusFilter === 'All' ? locations : locations.filter((l) => l.status === statusFilter)
+    statusFilter === 'All' ? locations : locations.filter((l) => l.status === statusFilter);
 
   return (
     <div className="flex h-full flex-col">
@@ -120,5 +120,5 @@ export function RobotListPanel({ locations, selectedRobotId, onSelectRobot }: Ro
         )}
       </div>
     </div>
-  )
+  );
 }

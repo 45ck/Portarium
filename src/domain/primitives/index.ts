@@ -320,7 +320,8 @@ export const HumanTaskId = (value: string): HumanTaskId => brand<string, 'HumanT
 export const ConsentId = (value: string): ConsentId => brand<string, 'ConsentId'>(value);
 export const PrivacyPolicyId = (value: string): PrivacyPolicyId =>
   brand<string, 'PrivacyPolicyId'>(value);
-export const CapabilityKey = (value: string): CapabilityKey => brand<string, 'CapabilityKey'>(value);
+export const CapabilityKey = (value: string): CapabilityKey =>
+  brand<string, 'CapabilityKey'>(value);
 export const ExecutionEvidenceId = (value: string): ExecutionEvidenceId =>
   brand<string, 'ExecutionEvidenceId'>(value);
 export const IntentId = (value: string): IntentId => brand<string, 'IntentId'>(value);

@@ -28,7 +28,9 @@ export class ActivepiecesActionExecutor implements ActionRunnerPort {
     this.#fetchImpl = config.fetchImpl ?? fetch;
   }
 
-  public async dispatchAction(input: Parameters<ActionRunnerPort['dispatchAction']>[0]): Promise<ActionDispatchResult> {
+  public async dispatchAction(
+    input: Parameters<ActionRunnerPort['dispatchAction']>[0],
+  ): Promise<ActionDispatchResult> {
     const flowRef = input.flowRef.trim();
     if (flowRef === '') {
       return {

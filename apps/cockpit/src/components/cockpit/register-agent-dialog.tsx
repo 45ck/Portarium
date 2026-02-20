@@ -109,10 +109,7 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
             <Label>Capabilities</Label>
             <div className="grid grid-cols-2 gap-2">
               {ALL_CAPABILITIES.map((cap) => (
-                <label
-                  key={cap}
-                  className="flex items-center gap-2 text-xs cursor-pointer"
-                >
+                <label key={cap} className="flex items-center gap-2 text-xs cursor-pointer">
                   <Checkbox
                     checked={capabilities.includes(cap)}
                     onCheckedChange={() => toggleCapability(cap)}

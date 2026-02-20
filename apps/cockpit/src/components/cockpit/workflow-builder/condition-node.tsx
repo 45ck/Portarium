@@ -1,9 +1,9 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { GitBranch } from 'lucide-react'
-import type { WorkflowNodeData } from '@/hooks/use-workflow-builder'
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { GitBranch } from 'lucide-react';
+import type { WorkflowNodeData } from '@/hooks/use-workflow-builder';
 
 export function ConditionNode({ data, selected }: NodeProps) {
-  const nodeData = data as unknown as WorkflowNodeData
+  const nodeData = data as unknown as WorkflowNodeData;
   return (
     <div
       className={`min-w-[160px] rounded-lg border-2 bg-card shadow-sm transition-colors ${
@@ -34,5 +34,5 @@ export function ConditionNode({ data, selected }: NodeProps) {
         style={{ left: '70%' }}
       />
     </div>
-  )
+  );
 }

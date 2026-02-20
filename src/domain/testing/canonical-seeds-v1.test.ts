@@ -7,10 +7,7 @@ import { parsePolicyV1 } from '../policy/policy-v1.js';
 import { parseRunV1 } from '../runs/run-v1.js';
 import { parseWorkItemV1 } from '../work-items/work-item-v1.js';
 import { parseWorkspaceV1 } from '../workspaces/workspace-v1.js';
-import {
-  CANONICAL_SEED_IDS_V1,
-  createCanonicalSeedBundleV1,
-} from './canonical-seeds-v1.js';
+import { CANONICAL_SEED_IDS_V1, createCanonicalSeedBundleV1 } from './canonical-seeds-v1.js';
 
 const testHasher: EvidenceHasher = {
   sha256Hex(input: string) {

@@ -93,12 +93,12 @@ sros2_keystore/
 For local development and testing, the bridge connects to ROS 2 nodes via
 the rosbridge WebSocket protocol instead of DDS.
 
-| Aspect       | Dev mode                     | Production mode           |
-| ------------ | ---------------------------- | ------------------------- |
-| Transport    | WebSocket (ws://localhost:9090) | RTPS over DDS-Security |
-| Auth         | None (local only)            | mTLS + SROS 2 PKI        |
-| Performance  | Suitable for single robot    | Fleet-scale               |
-| Setup        | `ros2 launch rosbridge_server` | SROS 2 keystore + certs |
+| Aspect      | Dev mode                        | Production mode         |
+| ----------- | ------------------------------- | ----------------------- |
+| Transport   | WebSocket (ws://localhost:9090) | RTPS over DDS-Security  |
+| Auth        | None (local only)               | mTLS + SROS 2 PKI       |
+| Performance | Suitable for single robot       | Fleet-scale             |
+| Setup       | `ros2 launch rosbridge_server`  | SROS 2 keystore + certs |
 
 ### Dev mode configuration
 
@@ -142,22 +142,22 @@ portarium:
 
 ## Topic mapping
 
-| ROS 2 Topic                | Direction    | Portarium API                          |
-| -------------------------- | ------------ | -------------------------------------- |
-| `/robot/odom`              | Robot -> CP  | `POST /telemetry/location-events`      |
-| `/robot/battery_state`     | Robot -> CP  | `POST /telemetry/robot-diagnostics`    |
-| `/robot/diagnostics`       | Robot -> CP  | `POST /telemetry/robot-diagnostics`    |
-| `/portarium/mission_goal`  | CP -> Robot  | Nav2 `NavigateToPose` action           |
-| `/portarium/estop`         | CP -> Robot  | Direct safety-critical stop            |
+| ROS 2 Topic               | Direction   | Portarium API                       |
+| ------------------------- | ----------- | ----------------------------------- |
+| `/robot/odom`             | Robot -> CP | `POST /telemetry/location-events`   |
+| `/robot/battery_state`    | Robot -> CP | `POST /telemetry/robot-diagnostics` |
+| `/robot/diagnostics`      | Robot -> CP | `POST /telemetry/robot-diagnostics` |
+| `/portarium/mission_goal` | CP -> Robot | Nav2 `NavigateToPose` action        |
+| `/portarium/estop`        | CP -> Robot | Direct safety-critical stop         |
 
 ## Failure modes
 
-| Failure                     | Behavior                                          |
-| --------------------------- | ------------------------------------------------- |
-| Control plane unreachable   | Buffer telemetry locally, retry with backoff      |
-| DDS certificate expired     | Bridge stops publishing, alerts via diagnostics    |
-| rosbridge disconnected      | Reconnect with exponential backoff (dev mode)     |
-| Invalid command from CP     | Reject at bridge, log evidence, publish NACK       |
+| Failure                   | Behavior                                        |
+| ------------------------- | ----------------------------------------------- |
+| Control plane unreachable | Buffer telemetry locally, retry with backoff    |
+| DDS certificate expired   | Bridge stops publishing, alerts via diagnostics |
+| rosbridge disconnected    | Reconnect with exponential backoff (dev mode)   |
+| Invalid command from CP   | Reject at bridge, log evidence, publish NACK    |
 
 ## References
 

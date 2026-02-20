@@ -25,7 +25,9 @@ describe('OpenAPI operationId golden fixture', () => {
 
     const parsedOperationIds = listOperationIds(pathsObj);
     expect(findDuplicates(parsedOperationIds)).toEqual([]);
-    const expectedOperationIds = [...new Set(parsedOperationIds)].sort((a, b) => a.localeCompare(b));
+    const expectedOperationIds = [...new Set(parsedOperationIds)].sort((a, b) =>
+      a.localeCompare(b),
+    );
 
     const golden = mustRecord(JSON.parse(await readText(goldenPath)) as unknown, 'OpenAPI golden');
     expect(golden['openapiSpecPath']).toBe(OPENAPI_SPEC_RELATIVE_PATH);
@@ -49,8 +51,6 @@ describe('OpenAPI operationId golden fixture', () => {
     const operationCount = golden['operationCount'];
     expect(operationCount).toBe(operationIdsList.length);
     expect(findDuplicates(operationIdsList)).toEqual([]);
-    expect(operationIdsList).toEqual(
-      [...operationIdsList].sort((a, b) => a.localeCompare(b)),
-    );
+    expect(operationIdsList).toEqual([...operationIdsList].sort((a, b) => a.localeCompare(b)));
   });
 });

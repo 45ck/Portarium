@@ -3774,11 +3774,18 @@ tr.is-kbd-selected td {
   .drawer {
     transition: none;
   }
-  .ab-toggle { animation: none; }
+  .ab-toggle {
+    animation: none;
+  }
   .cmd-palette-backdrop,
-  .kbd-cheatsheet-backdrop { animation: none; opacity: 1; }
+  .kbd-cheatsheet-backdrop {
+    animation: none;
+    opacity: 1;
+  }
   .statusbar__toast,
-  .statusbar__chord { animation: none; }
+  .statusbar__chord {
+    animation: none;
+  }
 }
 
 /* ============================================================
@@ -3819,9 +3826,15 @@ tr.is-kbd-selected td {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.availability-dot--available { background: var(--ok); }
-.availability-dot--busy      { background: var(--warn); }
-.availability-dot--offline   { background: #aaa; }
+.availability-dot--available {
+  background: var(--ok);
+}
+.availability-dot--busy {
+  background: var(--warn);
+}
+.availability-dot--offline {
+  background: #aaa;
+}
 
 /* Workforce member card list */
 .workforce-list {
@@ -3945,7 +3958,7 @@ tr.is-kbd-selected td {
   gap: 6px;
   font-size: 12px;
 }
-.cap-grid__item input[type="checkbox"] {
+.cap-grid__item input[type='checkbox'] {
   margin: 0;
 }
 
@@ -4012,7 +4025,7 @@ tr.is-kbd-selected td {
   background: var(--panel);
   border: 2px solid var(--line);
   border-radius: var(--r-md);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   width: 280px;
   padding: 8px;
 }
@@ -4040,8 +4053,13 @@ tr.is-kbd-selected td {
 .owner-picker__item:hover {
   background: var(--bg);
 }
-.owner-picker__name { font-weight: 600; }
-.owner-picker__email { font-size: 11px; color: var(--muted); }
+.owner-picker__name {
+  font-weight: 600;
+}
+.owner-picker__email {
+  font-size: 11px;
+  color: var(--muted);
+}
 
 /* HumanTask card in Inbox */
 .human-task-card {
@@ -4146,7 +4164,9 @@ tr.is-kbd-selected td {
   font-size: 12px;
   cursor: pointer;
   color: var(--muted);
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 .triage__undo:hover {
   border-color: var(--line);
@@ -4197,11 +4217,11 @@ tr.is-kbd-selected td {
   transition: background 0.1s;
 }
 .settings-3panel__rail-item:hover {
-  background: rgba(27,27,27,0.05);
+  background: rgba(27, 27, 27, 0.05);
 }
 .settings-3panel__rail-item--active {
   border-left-color: var(--ink);
-  background: rgba(27,27,27,0.08);
+  background: rgba(27, 27, 27, 0.08);
   font-weight: 600;
 }
 .settings-3panel__content {
@@ -4278,9 +4298,18 @@ tr.is-kbd-selected td {
   font-size: 11px;
   font-weight: 600;
 }
-.cred-expiry--ok   { background: #e8f5e9; color: var(--ok); }
-.cred-expiry--warn { background: #fff3e0; color: var(--warn); }
-.cred-expiry--danger { background: #fdecea; color: var(--danger); }
+.cred-expiry--ok {
+  background: #e8f5e9;
+  color: var(--ok);
+}
+.cred-expiry--warn {
+  background: #fff3e0;
+  color: var(--warn);
+}
+.cred-expiry--danger {
+  background: #fdecea;
+  color: var(--danger);
+}
 
 /* ============================================================
    ROBOTS: LOCATION MAP OPERATIONS (Lo-Fi)
@@ -4443,14 +4472,13 @@ tr.is-kbd-selected td {
   inset: 12% 10% 16% 8%;
   border: 1px solid rgba(27, 27, 27, 0.28);
   border-radius: var(--r-sm);
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(27, 27, 27, 0.03),
-      rgba(27, 27, 27, 0.03) 8px,
-      rgba(27, 27, 27, 0.09) 8px,
-      rgba(27, 27, 27, 0.09) 16px
-    );
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(27, 27, 27, 0.03),
+    rgba(27, 27, 27, 0.03) 8px,
+    rgba(27, 27, 27, 0.09) 8px,
+    rgba(27, 27, 27, 0.09) 16px
+  );
 }
 
 .map-zone {

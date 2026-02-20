@@ -25,12 +25,18 @@ type InMemoryProcurementSpendAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -136,15 +142,13 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
       tenantId: input.tenantId,
       schemaVersion: 1,
       orderNumber:
-        (typeof input.payload?.['orderNumber'] === 'string'
+        typeof input.payload?.['orderNumber'] === 'string'
           ? input.payload['orderNumber']
-          : `PO-${this.#orderSequence}`),
+          : `PO-${this.#orderSequence}`,
       status: 'draft',
       totalAmount,
       currencyCode:
-        (typeof input.payload?.['currencyCode'] === 'string'
-          ? input.payload['currencyCode']
-          : 'USD'),
+        typeof input.payload?.['currencyCode'] === 'string' ? input.payload['currencyCode'] : 'USD',
       createdAtIso: this.#now().toISOString(),
       ...(typeof input.payload?.['lineItemCount'] === 'number'
         ? { lineItemCount: input.payload['lineItemCount'] }
@@ -204,9 +208,9 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
       externalId: `expense-${++this.#expenseSequence}`,
       externalType: 'expense_report',
       displayLabel:
-        (typeof input.payload?.['title'] === 'string'
+        typeof input.payload?.['title'] === 'string'
           ? input.payload['title']
-          : `Expense ${this.#expenseSequence}`),
+          : `Expense ${this.#expenseSequence}`,
     };
     this.#expenseReports.push(externalRef);
     return { ok: true, result: { kind: 'externalRef', externalRef } };
@@ -223,7 +227,11 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
     }
     const externalRef = this.#expenseReports.find((item) => item.externalId === externalId);
     if (externalRef === undefined) {
-      return { ok: false, error: 'not_found', message: `Expense report ${externalId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Expense report ${externalId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
@@ -239,7 +247,11 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
     }
     const externalRef = this.#expenseReports.find((item) => item.externalId === externalId);
     if (externalRef === undefined) {
-      return { ok: false, error: 'not_found', message: `Expense report ${externalId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Expense report ${externalId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'accepted', operation: 'approveExpenseReport' } };
   }
@@ -274,7 +286,11 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
   #getVendor(input: ProcurementSpendExecuteInputV1): ProcurementSpendExecuteOutputV1 {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getVendor.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getVendor.',
+      };
     }
     const vendor = this.#vendors.find(
       (item) => item.tenantId === input.tenantId && item.partyId === partyId,

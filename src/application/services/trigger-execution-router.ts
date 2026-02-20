@@ -1,8 +1,4 @@
-import type {
-  CorrelationId,
-  RunId,
-  TenantId,
-} from '../../domain/primitives/index.js';
+import type { CorrelationId, RunId, TenantId } from '../../domain/primitives/index.js';
 import type {
   CronSchedule,
   DomainEventTriggerConfig,
@@ -133,7 +129,9 @@ function flowRefFromTrigger(trigger: WorkflowTriggerV1): string {
       );
     case 'Manual': {
       const label = (trigger.config as ManualTriggerConfig).label;
-      return label === undefined ? 'manual' : nonEmpty(label, 'Manual trigger label must be non-empty.');
+      return label === undefined
+        ? 'manual'
+        : nonEmpty(label, 'Manual trigger label must be non-empty.');
     }
   }
 }

@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { createRoute } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { ThemePicker } from '@/components/cockpit/theme-picker'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { useUIStore } from '@/stores/ui-store'
-import type { DatasetId } from '@/mocks/fixtures/index'
+import { useState, useEffect } from 'react';
+import { createRoute } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { ThemePicker } from '@/components/cockpit/theme-picker';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useUIStore } from '@/stores/ui-store';
+import type { DatasetId } from '@/mocks/fixtures/index';
 
 const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
   {
@@ -26,22 +26,19 @@ const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] =
     label: 'Meridian Cold Chain \u2014 Full',
     description: '6 months enterprise scale (80 work items, 300 runs, 1 200+ evidence, 28 robots)',
   },
-]
+];
 
 function SettingsPage() {
-  const activeDataset = useUIStore((s) => s.activeDataset)
-  const setActiveDataset = useUIStore((s) => s.setActiveDataset)
+  const activeDataset = useUIStore((s) => s.activeDataset);
+  const setActiveDataset = useUIStore((s) => s.setActiveDataset);
 
   const [relativeDates, setRelativeDates] = useState(() => {
-    return localStorage.getItem('cockpit-date-format') !== 'absolute'
-  })
+    return localStorage.getItem('cockpit-date-format') !== 'absolute';
+  });
 
   useEffect(() => {
-    localStorage.setItem(
-      'cockpit-date-format',
-      relativeDates ? 'relative' : 'absolute',
-    )
-  }, [relativeDates])
+    localStorage.setItem('cockpit-date-format', relativeDates ? 'relative' : 'absolute');
+  }, [relativeDates]);
 
   return (
     <div className="p-6 space-y-4">
@@ -89,11 +86,7 @@ function SettingsPage() {
                   : 'Showing dates as "2026-02-20 09:00"'}
               </p>
             </div>
-            <Switch
-              id="date-format"
-              checked={relativeDates}
-              onCheckedChange={setRelativeDates}
-            />
+            <Switch id="date-format" checked={relativeDates} onCheckedChange={setRelativeDates} />
           </div>
         </CardContent>
       </Card>
@@ -103,8 +96,7 @@ function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-sm">Demo Dataset</CardTitle>
             <CardDescription>
-              Choose which fixture dataset the mock API serves.
-              Changing dataset reloads the page.
+              Choose which fixture dataset the mock API serves. Changing dataset reloads the page.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -135,11 +127,11 @@ function SettingsPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/config/settings',
   component: SettingsPage,
-})
+});

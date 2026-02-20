@@ -1,20 +1,20 @@
-import { useState } from 'react'
-import type { ApprovalSummary } from '@portarium/cockpit-types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
-import { format } from 'date-fns'
+import { useState } from 'react';
+import type { ApprovalSummary } from '@portarium/cockpit-types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { format } from 'date-fns';
 
 interface ApprovalGatePanelProps {
-  approval: ApprovalSummary
-  onDecide: (decision: 'Approved' | 'Denied' | 'RequestChanges', rationale: string) => void
-  loading?: boolean
+  approval: ApprovalSummary;
+  onDecide: (decision: 'Approved' | 'Denied' | 'RequestChanges', rationale: string) => void;
+  loading?: boolean;
 }
 
 export function ApprovalGatePanel({ approval, onDecide, loading }: ApprovalGatePanelProps) {
-  const [rationale, setRationale] = useState('')
-  const isPending = approval.status === 'Pending'
+  const [rationale, setRationale] = useState('');
+  const isPending = approval.status === 'Pending';
 
   return (
     <Card className="shadow-none">
@@ -91,12 +91,13 @@ export function ApprovalGatePanel({ approval, onDecide, loading }: ApprovalGateP
             {approval.decidedByUserId && (
               <div className="text-xs text-muted-foreground">
                 Decided by {approval.decidedByUserId}
-                {approval.decidedAtIso && ` on ${format(new Date(approval.decidedAtIso), 'MMM d, yyyy HH:mm')}`}
+                {approval.decidedAtIso &&
+                  ` on ${format(new Date(approval.decidedAtIso), 'MMM d, yyyy HH:mm')}`}
               </div>
             )}
           </>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -49,11 +49,7 @@ export type ComplianceGrcExecuteOutputV1 =
   | Readonly<{ ok: true; result: ComplianceGrcOperationResultV1 }>
   | Readonly<{
       ok: false;
-      error:
-        | 'unsupported_operation'
-        | 'not_found'
-        | 'validation_error'
-        | 'provider_error';
+      error: 'unsupported_operation' | 'not_found' | 'validation_error' | 'provider_error';
       message: string;
     }>;
 

@@ -26,8 +26,7 @@ export const COMMS_COLLABORATION_OPERATIONS_V1 = [
   'listFiles',
 ] as const;
 
-export type CommsCollaborationOperationV1 =
-  (typeof COMMS_COLLABORATION_OPERATIONS_V1)[number];
+export type CommsCollaborationOperationV1 = (typeof COMMS_COLLABORATION_OPERATIONS_V1)[number];
 
 export type CommsCollaborationOperationResultV1 =
   | Readonly<{ kind: 'party'; party: PartyV1 }>
@@ -51,11 +50,7 @@ export type CommsCollaborationExecuteOutputV1 =
   | Readonly<{ ok: true; result: CommsCollaborationOperationResultV1 }>
   | Readonly<{
       ok: false;
-      error:
-        | 'unsupported_operation'
-        | 'not_found'
-        | 'validation_error'
-        | 'provider_error';
+      error: 'unsupported_operation' | 'not_found' | 'validation_error' | 'provider_error';
       message: string;
     }>;
 

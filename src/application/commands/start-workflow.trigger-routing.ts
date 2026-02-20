@@ -4,13 +4,7 @@ import type {
   WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
 import { parseWorkflowTriggerV1, type WorkflowTriggerV1 } from '../../domain/schedule/index.js';
-import {
-  type AppContext,
-  err,
-  ok,
-  type Result,
-  type ValidationFailed,
-} from '../common/index.js';
+import { type AppContext, err, ok, type Result, type ValidationFailed } from '../common/index.js';
 import type { TriggerExecutionRouterPort } from '../services/trigger-execution-router.js';
 
 type TriggerValidationInput = Readonly<{

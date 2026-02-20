@@ -22,11 +22,7 @@ const PORTARIUM_WORKSPACE_ID = process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-defa
 
 // -- Portarium API client (minimal) -----------------------------------------
 
-async function portariumFetch(
-  method: string,
-  path: string,
-  body?: unknown,
-): Promise<unknown> {
+async function portariumFetch(method: string, path: string, body?: unknown): Promise<unknown> {
   const url = `${PORTARIUM_BASE_URL}${path}`;
   const res = await fetch(url, {
     method,
@@ -177,7 +173,10 @@ async function main(): Promise<void> {
       const toolArgs = (message.params?.['arguments'] ?? {}) as Record<string, unknown>;
       const handler = handlers[toolName];
       if (!handler) {
-        respond(id, { isError: true, content: [{ type: 'text', text: `Unknown tool: ${toolName}` }] });
+        respond(id, {
+          isError: true,
+          content: [{ type: 'text', text: `Unknown tool: ${toolName}` }],
+        });
       } else {
         try {
           const result = await handler(toolArgs);

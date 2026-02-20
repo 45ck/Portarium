@@ -217,7 +217,9 @@ function RunDetailPage() {
       <div className="flex flex-wrap items-center gap-3">
         <RunStatusBadge status={run.status} />
         <ExecutionTierBadge tier={run.executionTier} />
-        {(run.status === 'Running' || run.status === 'WaitingForApproval' || run.status === 'Paused') && (
+        {(run.status === 'Running' ||
+          run.status === 'WaitingForApproval' ||
+          run.status === 'Paused') && (
           <Button
             variant="destructive"
             size="sm"
@@ -277,7 +279,10 @@ function RunDetailPage() {
           <TabsContent value="effects">
             <Card className="shadow-none mt-2">
               <CardContent className="pt-4">
-                <EffectsList planned={plan?.plannedEffects ?? []} predicted={plan?.predictedEffects} />
+                <EffectsList
+                  planned={plan?.plannedEffects ?? []}
+                  predicted={plan?.predictedEffects}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -295,10 +300,15 @@ function RunDetailPage() {
           <div className="lg:sticky lg:top-6 self-start">
             <ApprovalGatePanel
               approval={pendingApproval}
-              onDecide={(decision, rationale) => approvalDecision.mutate({ decision, rationale }, {
-                onSuccess: () => toast.success('Decision submitted'),
-                onError: () => toast.error('Failed to submit decision'),
-              })}
+              onDecide={(decision, rationale) =>
+                approvalDecision.mutate(
+                  { decision, rationale },
+                  {
+                    onSuccess: () => toast.success('Decision submitted'),
+                    onError: () => toast.error('Failed to submit decision'),
+                  },
+                )
+              }
               loading={approvalDecision.isPending}
             />
           </div>

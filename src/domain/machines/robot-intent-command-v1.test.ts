@@ -86,20 +86,26 @@ describe('parseIntentCommandV1', () => {
 
   it('rejects unsupported schemaVersion', () => {
     expect(() =>
-      parseIntentCommandV1({ ...VALID_INTENT_WAYPOINT as Record<string, unknown>, schemaVersion: 2 }),
+      parseIntentCommandV1({
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
+        schemaVersion: 2,
+      }),
     ).toThrow(IntentCommandParseError);
   });
 
   it('rejects invalid commandType', () => {
     expect(() =>
-      parseIntentCommandV1({ ...VALID_INTENT_WAYPOINT as Record<string, unknown>, commandType: 'fly' }),
+      parseIntentCommandV1({
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
+        commandType: 'fly',
+      }),
     ).toThrow(IntentCommandParseError);
   });
 
   it('accepts all valid commandTypes', () => {
     for (const commandType of ['navigate', 'pick', 'place', 'inspect', 'dock']) {
       const result = parseIntentCommandV1({
-        ...VALID_INTENT_WAYPOINT as Record<string, unknown>,
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
         commandType,
       });
       expect(result.commandType).toBe(commandType);
@@ -109,7 +115,7 @@ describe('parseIntentCommandV1', () => {
   it('rejects invalid targetParams kind', () => {
     expect(() =>
       parseIntentCommandV1({
-        ...VALID_INTENT_WAYPOINT as Record<string, unknown>,
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
         targetParams: { kind: 'gps', lat: 0, lon: 0 },
       }),
     ).toThrow(IntentCommandParseError);
@@ -118,7 +124,7 @@ describe('parseIntentCommandV1', () => {
   it('rejects non-positive maxVelocityMps', () => {
     expect(() =>
       parseIntentCommandV1({
-        ...VALID_INTENT_WAYPOINT as Record<string, unknown>,
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
         safetyConstraints: { maxVelocityMps: -1, collisionAvoidance: true },
       }),
     ).toThrow(IntentCommandParseError);
@@ -127,7 +133,7 @@ describe('parseIntentCommandV1', () => {
   it('rejects missing collisionAvoidance', () => {
     expect(() =>
       parseIntentCommandV1({
-        ...VALID_INTENT_WAYPOINT as Record<string, unknown>,
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
         safetyConstraints: { maxVelocityMps: 1.0 },
       }),
     ).toThrow(IntentCommandParseError);
@@ -136,7 +142,7 @@ describe('parseIntentCommandV1', () => {
   it('rejects invalid requiredApprovalTier', () => {
     expect(() =>
       parseIntentCommandV1({
-        ...VALID_INTENT_WAYPOINT as Record<string, unknown>,
+        ...(VALID_INTENT_WAYPOINT as Record<string, unknown>),
         requiredApprovalTier: 'SuperAuto',
       }),
     ).toThrow(IntentCommandParseError);
@@ -186,7 +192,7 @@ describe('parseExecutionEvidenceV1', () => {
   it('accepts all valid execution statuses', () => {
     for (const executionStatus of ['dispatched', 'executing', 'completed', 'failed', 'aborted']) {
       const result = parseExecutionEvidenceV1({
-        ...VALID_EVIDENCE as Record<string, unknown>,
+        ...(VALID_EVIDENCE as Record<string, unknown>),
         executionStatus,
       });
       expect(result.executionStatus).toBe(executionStatus);
@@ -196,7 +202,7 @@ describe('parseExecutionEvidenceV1', () => {
   it('rejects invalid executionStatus', () => {
     expect(() =>
       parseExecutionEvidenceV1({
-        ...VALID_EVIDENCE as Record<string, unknown>,
+        ...(VALID_EVIDENCE as Record<string, unknown>),
         executionStatus: 'paused',
       }),
     ).toThrow(ExecutionEvidenceParseError);
@@ -205,14 +211,14 @@ describe('parseExecutionEvidenceV1', () => {
   it('rejects batteryPercent out of range', () => {
     expect(() =>
       parseExecutionEvidenceV1({
-        ...VALID_EVIDENCE as Record<string, unknown>,
+        ...(VALID_EVIDENCE as Record<string, unknown>),
         telemetrySnapshot: { batteryPercent: 150 },
       }),
     ).toThrow(ExecutionEvidenceParseError);
 
     expect(() =>
       parseExecutionEvidenceV1({
-        ...VALID_EVIDENCE as Record<string, unknown>,
+        ...(VALID_EVIDENCE as Record<string, unknown>),
         telemetrySnapshot: { batteryPercent: -5 },
       }),
     ).toThrow(ExecutionEvidenceParseError);
@@ -220,7 +226,10 @@ describe('parseExecutionEvidenceV1', () => {
 
   it('rejects unsupported schemaVersion', () => {
     expect(() =>
-      parseExecutionEvidenceV1({ ...VALID_EVIDENCE as Record<string, unknown>, schemaVersion: 99 }),
+      parseExecutionEvidenceV1({
+        ...(VALID_EVIDENCE as Record<string, unknown>),
+        schemaVersion: 99,
+      }),
     ).toThrow(ExecutionEvidenceParseError);
   });
 

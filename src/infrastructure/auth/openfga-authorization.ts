@@ -55,9 +55,7 @@ export class OpenFgaAuthorization implements AuthorizationPort {
         relation: toRelation(action),
         object: `workspace:${ctx.tenantId}`,
       },
-      ...(this.#authorizationModelId
-        ? { authorization_model_id: this.#authorizationModelId }
-        : {}),
+      ...(this.#authorizationModelId ? { authorization_model_id: this.#authorizationModelId } : {}),
     };
 
     try {

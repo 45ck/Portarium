@@ -54,7 +54,9 @@ describe('workforce domain rules', () => {
     expect(() => assertLinkedWorkspaceUserActive(member, activeUser)).not.toThrow();
 
     const inactiveUser = { ...activeUser, active: false };
-    expect(() => assertLinkedWorkspaceUserActive(member, inactiveUser)).toThrow(/active WorkspaceUser/i);
+    expect(() => assertLinkedWorkspaceUserActive(member, inactiveUser)).toThrow(
+      /active WorkspaceUser/i,
+    );
   });
 
   it('allows capability updates for admin only', () => {

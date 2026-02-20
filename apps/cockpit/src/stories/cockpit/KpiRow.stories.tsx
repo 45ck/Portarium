@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { KpiRow } from '@/components/cockpit/kpi-row'
+import type { Meta, StoryObj } from '@storybook/react';
+import { KpiRow } from '@/components/cockpit/kpi-row';
 
 const meta: Meta<typeof KpiRow> = {
   title: 'Cockpit/KpiRow',
   component: KpiRow,
   tags: ['autodocs'],
-}
-export default meta
-type Story = StoryObj<typeof KpiRow>
+};
+export default meta;
+type Story = StoryObj<typeof KpiRow>;
 
 export const Default: Story = {
   args: {
@@ -18,7 +18,7 @@ export const Default: Story = {
       { label: 'SLA at Risk', value: 1 },
     ],
   },
-}
+};
 
 export const WithTrends: Story = {
   args: {
@@ -28,4 +28,4 @@ export const WithTrends: Story = {
       { label: 'Throughput', value: 156, trend: 'neutral', trendValue: '0%' },
     ],
   },
-}
+};

@@ -17,16 +17,17 @@ describe('VaultCredentialStore', () => {
 
   describe('getSecret', () => {
     it('returns secret value from Vault KV v2', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response(
-          JSON.stringify({
-            data: {
-              data: { value: 'super-secret' },
-              metadata: { version: 3 },
-            },
-          }),
-          { status: 200 },
-        ),
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () =>
+          new Response(
+            JSON.stringify({
+              data: {
+                data: { value: 'super-secret' },
+                metadata: { version: 3 },
+              },
+            }),
+            { status: 200 },
+          ),
       );
 
       const store = makeStore(fetchImpl);
@@ -47,9 +48,7 @@ describe('VaultCredentialStore', () => {
     });
 
     it('returns NotFound when secret does not exist', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('', { status: 404 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response('', { status: 404 }));
       const store = makeStore(fetchImpl);
       const result = await store.getSecret(tenantId, 'missing');
 
@@ -59,8 +58,8 @@ describe('VaultCredentialStore', () => {
     });
 
     it('returns DependencyFailure on server error', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('internal error', { status: 500 }),
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () => new Response('internal error', { status: 500 }),
       );
       const store = makeStore(fetchImpl);
       const result = await store.getSecret(tenantId, 'ref');
@@ -83,11 +82,9 @@ describe('VaultCredentialStore', () => {
     });
 
     it('returns NotFound when response data lacks value key', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response(
-          JSON.stringify({ data: { data: { other: 'field' } } }),
-          { status: 200 },
-        ),
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () =>
+          new Response(JSON.stringify({ data: { data: { other: 'field' } } }), { status: 200 }),
       );
       const store = makeStore(fetchImpl);
       const result = await store.getSecret(tenantId, 'ref');
@@ -100,11 +97,8 @@ describe('VaultCredentialStore', () => {
 
   describe('rotateSecret', () => {
     it('writes new secret and returns version', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response(
-          JSON.stringify({ data: { version: 4 } }),
-          { status: 200 },
-        ),
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () => new Response(JSON.stringify({ data: { version: 4 } }), { status: 200 }),
       );
       const store = makeStore(fetchImpl);
       const result = await store.rotateSecret(tenantId, 'api-key');
@@ -120,9 +114,7 @@ describe('VaultCredentialStore', () => {
     });
 
     it('returns DependencyFailure on error', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('error', { status: 500 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response('error', { status: 500 }));
       const store = makeStore(fetchImpl);
       const result = await store.rotateSecret(tenantId, 'ref');
 
@@ -134,9 +126,7 @@ describe('VaultCredentialStore', () => {
 
   describe('revokeSecret', () => {
     it('deletes secret metadata', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response(null, { status: 204 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response(null, { status: 204 }));
       const store = makeStore(fetchImpl);
       const result = await store.revokeSecret(tenantId, 'api-key');
 
@@ -149,9 +139,7 @@ describe('VaultCredentialStore', () => {
     });
 
     it('returns NotFound when secret does not exist', async () => {
-      const fetchImpl = vi.fn<typeof fetch>(async () =>
-        new Response('', { status: 404 }),
-      );
+      const fetchImpl = vi.fn<typeof fetch>(async () => new Response('', { status: 404 }));
       const store = makeStore(fetchImpl);
       const result = await store.revokeSecret(tenantId, 'missing');
 

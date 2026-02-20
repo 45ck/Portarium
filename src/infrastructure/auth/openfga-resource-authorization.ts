@@ -96,10 +96,7 @@ export class OpenFgaResourceAuthorization {
     this.#fetchImpl = config.fetchImpl ?? fetch;
   }
 
-  public async isAllowedOnResource(
-    ctx: AppContext,
-    input: ResourceCheckInput,
-  ): Promise<boolean> {
+  public async isAllowedOnResource(ctx: AppContext, input: ResourceCheckInput): Promise<boolean> {
     const workspaceAction = resourceActionToWorkspaceAction(input.action);
     if (workspaceAction && !isAllowedWorkspaceAction({ roles: ctx.roles }, workspaceAction)) {
       return false;
@@ -112,9 +109,7 @@ export class OpenFgaResourceAuthorization {
         relation: toRelation(input.action),
         object: toObjectRef(input, ctx.tenantId.toString()),
       },
-      ...(this.#authorizationModelId
-        ? { authorization_model_id: this.#authorizationModelId }
-        : {}),
+      ...(this.#authorizationModelId ? { authorization_model_id: this.#authorizationModelId } : {}),
     };
 
     try {

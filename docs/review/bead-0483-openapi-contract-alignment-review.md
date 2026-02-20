@@ -11,12 +11,14 @@ Scope:
 ## Acceptance Criteria Check
 
 1. OpenAPI spec passes contract validation checks:
+
 - Verified with OpenAPI contract test parsing + schema validation pass.
 - Evidence:
   - `src/infrastructure/openapi/openapi-contract.test.ts`
   - `docs/spec/openapi/portarium-control-plane.v1.yaml`
 
 2. `capabilityMatrix` is required in AdapterRegistration and non-empty:
+
 - Verified and tightened in OpenAPI (`required` + `minItems: 1`), aligned with parser enforcement.
 - Evidence:
   - `docs/spec/openapi/portarium-control-plane.v1.yaml`
@@ -24,6 +26,7 @@ Scope:
   - `src/domain/adapters/adapter-registration-v1.test.ts`
 
 3. WorkItem, CredentialGrant, Policy schemas match domain parsers:
+
 - Fixed and verified parity drifts:
   - `WorkItemStatus` enum now includes `Open|InProgress|Blocked|Resolved|Closed`.
   - `CapabilityClaimV1.capability` pattern aligned to domain capability shape (`noun:verb`).
@@ -37,6 +40,7 @@ Scope:
   - `src/infrastructure/openapi/openapi-contract.test.ts`
 
 4. No regressions in existing contract tests:
+
 - Verified by targeted suite execution.
 - Evidence:
   - `src/infrastructure/openapi/openapi-contract.test.ts`

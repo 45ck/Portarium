@@ -128,7 +128,7 @@ tls:
     socketPath: /run/spire/sockets/agent.sock
     trustDomain: portarium.dev
   allowedSpiffeIds:
-    - "spiffe://portarium.dev/agent/*"
+    - 'spiffe://portarium.dev/agent/*'
 ```
 
 ### 3. Configure agents for mTLS
@@ -215,7 +215,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Direct SoR call detected after enforcement"
+          summary: 'Direct SoR call detected after enforcement'
           description: >
             Agent {{ $labels.agent_id }} in workspace {{ $labels.workspace_id }}
             made a direct SoR call to {{ $labels.url }}.
@@ -227,7 +227,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Egress policy violation in agent namespace"
+          summary: 'Egress policy violation in agent namespace'
           description: >
             Network policy blocked egress from agent pod.
 
@@ -237,7 +237,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "mTLS handshake failure detected"
+          summary: 'mTLS handshake failure detected'
 
       - alert: ToolAllowlistDenial
         expr: increase(portarium_policy_denials_total{policy_type="tool-allowlist"}[5m]) > 5
@@ -245,7 +245,7 @@ groups:
         labels:
           severity: info
         annotations:
-          summary: "Multiple tool allowlist denials"
+          summary: 'Multiple tool allowlist denials'
           description: >
             {{ $value }} tool calls denied by allowlist in the last 5 minutes.
             Review agent configuration.
@@ -253,13 +253,13 @@ groups:
 
 ### Dashboard panels
 
-| Panel                              | Metric                                              |
-| ---------------------------------- | --------------------------------------------------- |
-| Direct SoR calls (should be 0)     | `portarium_calls_total{classification="direct-sor-call"}` |
-| Egress policy drops                | `cilium_drops_total{reason="POLICY_DENIED"}`        |
-| mTLS handshake success rate        | `envoy_ssl_connection_success / total * 100`        |
-| Tool allowlist denials             | `portarium_policy_denials_total{policy_type="tool-allowlist"}` |
-| SVID rotation events               | `spire_svid_rotations_total`                        |
+| Panel                          | Metric                                                         |
+| ------------------------------ | -------------------------------------------------------------- |
+| Direct SoR calls (should be 0) | `portarium_calls_total{classification="direct-sor-call"}`      |
+| Egress policy drops            | `cilium_drops_total{reason="POLICY_DENIED"}`                   |
+| mTLS handshake success rate    | `envoy_ssl_connection_success / total * 100`                   |
+| Tool allowlist denials         | `portarium_policy_denials_total{policy_type="tool-allowlist"}` |
+| SVID rotation events           | `spire_svid_rotations_total`                                   |
 
 ## Validation
 
@@ -276,6 +276,7 @@ groups:
 Rollback is staged (most to least disruptive):
 
 1. **Tool allowlist:** Delete the policy via CLI:
+
    ```bash
    portarium policy delete --policy-id pol-tool-allowlist-ws-prod
    ```
@@ -284,9 +285,11 @@ Rollback is staged (most to least disruptive):
    Agents fall back to plain TLS.
 
 3. **Egress policy:** Delete the NetworkPolicy:
+
    ```bash
    kubectl delete netpol agent-egress-deny-default -n portarium-agents
    ```
+
    Agents regain unrestricted egress.
 
 4. **Full rollback to Phase 3:** Re-enable OpenClaw hook in audit mode

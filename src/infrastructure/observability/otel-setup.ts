@@ -32,7 +32,9 @@ export type OtelConfig = Readonly<{
   enabled: boolean;
 }>;
 
-export function resolveOtelConfig(env: Record<string, string | undefined> = process.env): OtelConfig {
+export function resolveOtelConfig(
+  env: Record<string, string | undefined> = process.env,
+): OtelConfig {
   return {
     serviceName: env['OTEL_SERVICE_NAME'] ?? 'portarium-control-plane',
     otlpEndpoint: env['OTEL_EXPORTER_OTLP_ENDPOINT'] ?? 'http://localhost:4318',

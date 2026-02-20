@@ -34,7 +34,10 @@ type InMemoryMonitoringIncidentAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -150,7 +153,10 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
       case 'listServices':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#services, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#services, input),
+          },
         };
       case 'getService':
         return this.#getTenantRef(input, this.#services, 'serviceId', 'Service', 'getService');
@@ -317,7 +323,9 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
 
     const incident: TicketV1 = {
       ...this.#incidents[index]!,
-      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] } : {}),
+      ...(typeof input.payload?.['subject'] === 'string'
+        ? { subject: input.payload['subject'] }
+        : {}),
       ...(readTicketStatus(input.payload, 'status') !== null
         ? { status: readTicketStatus(input.payload, 'status')! }
         : {}),
@@ -332,7 +340,9 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
     return { ok: true, result: { kind: 'ticket', ticket: incident } };
   }
 
-  #createOnCallSchedule(input: MonitoringIncidentExecuteInputV1): MonitoringIncidentExecuteOutputV1 {
+  #createOnCallSchedule(
+    input: MonitoringIncidentExecuteInputV1,
+  ): MonitoringIncidentExecuteOutputV1 {
     const name = readString(input.payload, 'name');
     if (name === null) {
       return {
@@ -387,11 +397,16 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
       (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === statusPageId,
     );
     if (statusPage === undefined) {
-      return { ok: false, error: 'not_found', message: `Status page ${statusPageId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Status page ${statusPageId} was not found.`,
+      };
     }
 
     const message = readString(input.payload, 'message');
-    const displayLabel = message ?? statusPage.externalRef.displayLabel ?? `Status page ${statusPageId}`;
+    const displayLabel =
+      message ?? statusPage.externalRef.displayLabel ?? `Status page ${statusPageId}`;
     const externalRef: ExternalObjectRef = {
       sorName: 'OpsMonitor',
       portFamily: 'MonitoringIncident',
@@ -463,8 +478,7 @@ export class InMemoryMonitoringIncidentAdapter implements MonitoringIncidentAdap
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

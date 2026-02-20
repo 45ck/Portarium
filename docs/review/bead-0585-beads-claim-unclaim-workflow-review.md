@@ -11,11 +11,13 @@ Scope:
 ## Acceptance Criteria Check
 
 1. Commands documented and implemented:
+
 - Verified `issue claim` and `issue unclaim` command handling, help text, claim metadata fields, and close-path claim clearing.
 - Evidence:
   - `scripts/beads/bd.mjs`
 
 2. Claim metadata and visibility:
+
 - Verified `claimedBy`/`claimedAt` fields in view/JSON output and claim suffix in non-JSON list rendering.
 - Verified claim-aware filters for `list` and `next` (`--claimed`, `--unclaimed`, `--claimed-by`).
 - Evidence:
@@ -23,11 +25,13 @@ Scope:
   - `src/infrastructure/beads/bd-cli.test.ts`
 
 3. Integration-style behavior tests:
+
 - Verified lock behavior tests for claim, conflict, forced reassignment, unclaim mismatch/force, and close-clears-claim.
 - Evidence:
   - `src/infrastructure/beads/bd-cli.test.ts`
 
 4. Contributor docs updated to require claim/unclaim flow:
+
 - Verified guidance updates in agent/project/contributor docs and development workflow docs.
 - Evidence:
   - `AGENTS.md`

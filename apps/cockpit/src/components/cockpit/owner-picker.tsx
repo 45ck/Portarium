@@ -1,11 +1,7 @@
-import { useState } from 'react'
-import { Check, ChevronsUpDown, User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { useState } from 'react';
+import { Check, ChevronsUpDown, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
@@ -13,30 +9,31 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import type { WorkforceMemberSummary } from '@portarium/cockpit-types'
+} from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import type { WorkforceMemberSummary } from '@portarium/cockpit-types';
 
 interface OwnerPickerProps {
-  members: WorkforceMemberSummary[]
-  currentMemberId?: string
-  onSelect: (memberId: string) => void
-  label?: string
+  members: WorkforceMemberSummary[];
+  currentMemberId?: string;
+  onSelect: (memberId: string) => void;
+  label?: string;
 }
 
-export function OwnerPicker({ members, currentMemberId, onSelect, label = 'Assign owner' }: OwnerPickerProps) {
-  const [open, setOpen] = useState(false)
-  const current = members.find((m) => m.workforceMemberId === currentMemberId)
+export function OwnerPicker({
+  members,
+  currentMemberId,
+  onSelect,
+  label = 'Assign owner',
+}: OwnerPickerProps) {
+  const [open, setOpen] = useState(false);
+  const current = members.find((m) => m.workforceMemberId === currentMemberId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs justify-between gap-1"
-        >
+        <Button variant="outline" size="sm" className="h-8 text-xs justify-between gap-1">
           {current ? (
             <span className="flex items-center gap-1.5">
               <User className="h-3 w-3" />
@@ -59,8 +56,8 @@ export function OwnerPicker({ members, currentMemberId, onSelect, label = 'Assig
                   key={member.workforceMemberId}
                   value={member.displayName}
                   onSelect={() => {
-                    onSelect(member.workforceMemberId)
-                    setOpen(false)
+                    onSelect(member.workforceMemberId);
+                    setOpen(false);
                   }}
                   className="text-xs"
                 >
@@ -75,7 +72,8 @@ export function OwnerPicker({ members, currentMemberId, onSelect, label = 'Assig
                         'text-[9px] ml-auto shrink-0',
                         member.availabilityStatus === 'available' && 'border-success text-success',
                         member.availabilityStatus === 'busy' && 'border-warning text-warning',
-                        member.availabilityStatus === 'offline' && 'border-muted-foreground text-muted-foreground',
+                        member.availabilityStatus === 'offline' &&
+                          'border-muted-foreground text-muted-foreground',
                       )}
                     >
                       {member.availabilityStatus}
@@ -94,5 +92,5 @@ export function OwnerPicker({ members, currentMemberId, onSelect, label = 'Assig
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

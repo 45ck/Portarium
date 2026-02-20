@@ -26,7 +26,10 @@ class InMemoryEvidenceLog implements EvidenceLogPort {
     return next;
   }
 
-  public listByWorkItem(tenantId: ReturnType<typeof TenantId>, workItemId: string): EvidenceEntryV1[] {
+  public listByWorkItem(
+    tenantId: ReturnType<typeof TenantId>,
+    workItemId: string,
+  ): EvidenceEntryV1[] {
     return (this.#entries.get(String(tenantId)) ?? []).filter(
       (entry) => String(entry.links?.workItemId ?? '') === workItemId,
     );

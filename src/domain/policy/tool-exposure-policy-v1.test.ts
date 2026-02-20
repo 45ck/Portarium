@@ -16,9 +16,7 @@ const ALL_TOOLS = [
   'portarium_agent_heartbeat',
 ];
 
-function makePolicy(
-  overrides?: Partial<ToolExposurePolicyV1>,
-): ToolExposurePolicyV1 {
+function makePolicy(overrides?: Partial<ToolExposurePolicyV1>): ToolExposurePolicyV1 {
   return {
     schemaVersion: 1,
     workspaceId: 'ws-1',

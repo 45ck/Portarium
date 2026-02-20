@@ -1,9 +1,9 @@
-import type { ExternalObjectRef } from '@portarium/cockpit-types'
-import { Badge } from '@/components/ui/badge'
-import { ExternalLink } from 'lucide-react'
+import type { ExternalObjectRef } from '@portarium/cockpit-types';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink } from 'lucide-react';
 
 interface SorRefPillProps {
-  externalRef: ExternalObjectRef
+  externalRef: ExternalObjectRef;
 }
 
 export function SorRefPill({ externalRef }: SorRefPillProps) {
@@ -15,17 +15,20 @@ export function SorRefPill({ externalRef }: SorRefPillProps) {
       )}
       {externalRef.deepLinkUrl && <ExternalLink className="h-2.5 w-2.5" />}
     </Badge>
-  )
+  );
 
-  const safeUrl = externalRef.deepLinkUrl && /^https?:\/\//.test(externalRef.deepLinkUrl) ? externalRef.deepLinkUrl : undefined
+  const safeUrl =
+    externalRef.deepLinkUrl && /^https?:\/\//.test(externalRef.deepLinkUrl)
+      ? externalRef.deepLinkUrl
+      : undefined;
 
   if (safeUrl) {
     return (
       <a href={safeUrl} target="_blank" rel="noopener noreferrer">
         {content}
       </a>
-    )
+    );
   }
 
-  return content
+  return content;
 }

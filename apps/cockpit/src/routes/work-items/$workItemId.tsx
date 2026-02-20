@@ -54,7 +54,8 @@ function WorkItemDetailPage() {
           breadcrumb={[{ label: 'Work Items', to: '/work-items' }]}
         />
         <p className="text-sm text-muted-foreground">
-          The work item <span className="font-mono">{workItemId}</span> does not exist or could not be loaded.
+          The work item <span className="font-mono">{workItemId}</span> does not exist or could not
+          be loaded.
         </p>
       </div>
     );
@@ -182,7 +183,9 @@ function WorkItemDetailPage() {
                   data={linkedRuns}
                   loading={runs.isLoading}
                   getRowKey={(row) => row.runId}
-                  onRowClick={(row) => navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })}
+                  onRowClick={(row) =>
+                    navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })
+                  }
                 />
               )}
             </CardContent>

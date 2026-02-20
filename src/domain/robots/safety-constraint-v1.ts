@@ -4,11 +4,7 @@ import {
   type RobotId as RobotIdType,
   type UserId as UserIdType,
 } from '../primitives/index.js';
-import {
-  readIsoString,
-  readRecord,
-  readString,
-} from '../validation/parse-utils.js';
+import { readIsoString, readRecord, readString } from '../validation/parse-utils.js';
 
 const SAFETY_CONSTRAINT_TYPES = [
   'Geofence',
@@ -91,7 +87,9 @@ function parseConstraintArray(value: unknown): readonly SafetyConstraintV1[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new SafetyConstraintParseError('appliedConstraints must be a non-empty array.');
   }
-  return value.map((entry, i) => parseSafetyConstraintV1WithPath(entry, `appliedConstraints[${i}]`));
+  return value.map((entry, i) =>
+    parseSafetyConstraintV1WithPath(entry, `appliedConstraints[${i}]`),
+  );
 }
 
 function parseSafetyConstraintV1WithPath(value: unknown, pathLabel: string): SafetyConstraintV1 {
@@ -123,7 +121,9 @@ function parseEnforcedBy(value: string): SafetyConstraintEnforcedBy {
   if ((SAFETY_ENFORCED_BY as readonly string[]).includes(value)) {
     return value as SafetyConstraintEnforcedBy;
   }
-  throw new SafetyConstraintParseError(`enforcedBy must be one of: ${SAFETY_ENFORCED_BY.join(', ')}.`);
+  throw new SafetyConstraintParseError(
+    `enforcedBy must be one of: ${SAFETY_ENFORCED_BY.join(', ')}.`,
+  );
 }
 
 function parseSeverity(value: string): SafetyConstraintSeverity {

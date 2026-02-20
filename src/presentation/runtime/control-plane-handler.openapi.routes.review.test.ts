@@ -119,11 +119,7 @@ async function loadOpenApiOperations(): Promise<readonly OpenApiOperation[]> {
       if (!operationUnknown) continue;
 
       const operation = toRecord(operationUnknown, `${pathTemplate}.${method}`);
-      const operationParameters = readParameters(
-        operation['parameters'],
-        doc,
-        componentParameters,
-      );
+      const operationParameters = readParameters(operation['parameters'], doc, componentParameters);
       const responses = toRecord(operation['responses'], `${pathTemplate}.${method}.responses`);
 
       const allowedStatuses = new Set<number>();
@@ -197,7 +193,10 @@ function buildRequest(operation: OpenApiOperation): {
   };
 }
 
-function hasJsonRequestBody(operation: Record<string, unknown>, rootDoc: Record<string, unknown>): boolean {
+function hasJsonRequestBody(
+  operation: Record<string, unknown>,
+  rootDoc: Record<string, unknown>,
+): boolean {
   const requestBody = resolveMaybeRef(operation['requestBody'], rootDoc);
   if (!requestBody) return false;
   const content = toRecord(requestBody['content'] ?? {}, 'requestBody.content');
@@ -220,7 +219,10 @@ function readParameters(
     const location = resolved['in'];
     if (
       !name ||
-      (location !== 'path' && location !== 'query' && location !== 'header' && location !== 'cookie')
+      (location !== 'path' &&
+        location !== 'query' &&
+        location !== 'header' &&
+        location !== 'cookie')
     ) {
       continue;
     }

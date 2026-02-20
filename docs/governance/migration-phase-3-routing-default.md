@@ -25,16 +25,17 @@ interactions should flow through Portarium.
 
 For each agent runtime, deploy the appropriate integration:
 
-| Agent type | Integration | Template |
-|-----------|-------------|----------|
-| OpenAI Agents SDK | `portarium_tool` decorator | `templates/openai-agents-sdk/` |
-| OpenClaw Gateway | `before_tool_call` hook | `templates/openclaw-hook/` |
-| LLM via MCP | MCP server | `templates/mcp-server/` |
-| Custom Python agent | `portarium-client` SDK | `docs/sdk/python-client-generation.md` |
-| Custom Go agent | `portarium-go` SDK | `docs/sdk/go-client-generation.md` |
-| Custom TypeScript agent | `PortariumClient` facade | TypeScript SDK docs |
+| Agent type              | Integration                | Template                               |
+| ----------------------- | -------------------------- | -------------------------------------- |
+| OpenAI Agents SDK       | `portarium_tool` decorator | `templates/openai-agents-sdk/`         |
+| OpenClaw Gateway        | `before_tool_call` hook    | `templates/openclaw-hook/`             |
+| LLM via MCP             | MCP server                 | `templates/mcp-server/`                |
+| Custom Python agent     | `portarium-client` SDK     | `docs/sdk/python-client-generation.md` |
+| Custom Go agent         | `portarium-go` SDK         | `docs/sdk/go-client-generation.md`     |
+| Custom TypeScript agent | `PortariumClient` facade   | TypeScript SDK docs                    |
 
 **Deployment order:**
+
 1. Start with lowest-risk agents (read-only, non-financial SoRs)
 2. Progress to medium-risk agents (operational SoRs)
 3. End with high-risk agents (financial, PII-handling SoRs)
@@ -79,13 +80,13 @@ For each routed interaction, verify the evidence trail includes:
 
 Deploy or update Grafana dashboard with:
 
-| Panel | Query |
-|-------|-------|
-| Routing ratio (gauge) | `1 - portarium_direct_sor_ratio{workspace_id="$ws"}` |
-| Routed calls/min (graph) | `rate(portarium_sor_calls_total{routed="true"}[5m])` |
-| Direct calls/min (graph) | `rate(portarium_sor_calls_total{routed="false"}[5m])` |
-| Policy decisions (pie) | `portarium_policy_decisions_total` by `decision` |
-| Approval latency (histogram) | `portarium_approval_latency_seconds` |
+| Panel                        | Query                                                 |
+| ---------------------------- | ----------------------------------------------------- |
+| Routing ratio (gauge)        | `1 - portarium_direct_sor_ratio{workspace_id="$ws"}`  |
+| Routed calls/min (graph)     | `rate(portarium_sor_calls_total{routed="true"}[5m])`  |
+| Direct calls/min (graph)     | `rate(portarium_sor_calls_total{routed="false"}[5m])` |
+| Policy decisions (pie)       | `portarium_policy_decisions_total` by `decision`      |
+| Approval latency (histogram) | `portarium_approval_latency_seconds`                  |
 
 **Target:** `portarium_direct_sor_ratio` < 0.10 within 2 weeks of full deployment.
 

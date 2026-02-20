@@ -1,9 +1,9 @@
-import { createRoute, Link } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot, MapPin, Target, ShieldCheck, Radio } from 'lucide-react'
+import { createRoute, Link } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bot, MapPin, Target, ShieldCheck, Radio } from 'lucide-react';
 
 const ROBOTICS_SECTIONS = [
   {
@@ -36,7 +36,7 @@ const ROBOTICS_SECTIONS = [
     href: '/robotics/gateways',
     icon: <Radio className="h-5 w-5" />,
   },
-]
+];
 
 function RoboticsIndexPage() {
   return (
@@ -65,11 +65,11 @@ function RoboticsIndexPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/robotics',
   component: RoboticsIndexPage,
-})
+});

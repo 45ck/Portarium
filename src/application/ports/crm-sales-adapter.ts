@@ -49,11 +49,7 @@ export type CrmSalesExecuteOutputV1 =
   | Readonly<{ ok: true; result: CrmSalesOperationResultV1 }>
   | Readonly<{
       ok: false;
-      error:
-        | 'unsupported_operation'
-        | 'not_found'
-        | 'validation_error'
-        | 'provider_error';
+      error: 'unsupported_operation' | 'not_found' | 'validation_error' | 'provider_error';
       message: string;
     }>;
 

@@ -43,7 +43,11 @@ function loadMapping(providerId, family) {
 }
 
 function loadCapability(providerId, family) {
-  const capabilityPath = path.join(capabilitiesRoot, providerId, `${family}.capability-matrix.json`);
+  const capabilityPath = path.join(
+    capabilitiesRoot,
+    providerId,
+    `${family}.capability-matrix.json`,
+  );
   if (!fileExists(capabilityPath)) return null;
   return readJson(capabilityPath);
 }
@@ -119,10 +123,14 @@ function main() {
   for (const family of families) {
     const portFamily = family.portFamily;
     const owner = family.owner;
-    const candidateProviders = Array.isArray(family.candidateProviders) ? family.candidateProviders : [];
+    const candidateProviders = Array.isArray(family.candidateProviders)
+      ? family.candidateProviders
+      : [];
     const baseBlockers = Array.isArray(family.blockers) ? family.blockers : [];
 
-    const candidates = candidateProviders.map((providerId) => verifyCandidate(providerId, portFamily));
+    const candidates = candidateProviders.map((providerId) =>
+      verifyCandidate(providerId, portFamily),
+    );
     const generatedBlockers = [];
 
     for (const candidate of candidates) {

@@ -182,7 +182,13 @@ describe('PortariumClient', () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () => Promise.resolve({ runId: 'run-1', workflowId: 'wf-1', status: 'Running', createdAtIso: '2026-02-21T00:00:00Z' }),
+          json: () =>
+            Promise.resolve({
+              runId: 'run-1',
+              workflowId: 'wf-1',
+              status: 'Running',
+              createdAtIso: '2026-02-21T00:00:00Z',
+            }),
         });
       });
 

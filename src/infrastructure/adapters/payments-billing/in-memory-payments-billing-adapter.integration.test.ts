@@ -81,9 +81,7 @@ describe('InMemoryPaymentsBillingAdapter integration', () => {
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'subscriptions') return;
     expect(
-      listed.result.subscriptions.some(
-        (sub) => sub.subscriptionId === createdSubscriptionId,
-      ),
+      listed.result.subscriptions.some((sub) => sub.subscriptionId === createdSubscriptionId),
     ).toBe(true);
   });
 

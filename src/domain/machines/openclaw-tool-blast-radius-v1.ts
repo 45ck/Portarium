@@ -55,7 +55,9 @@ const READ_ONLY_PATTERNS: readonly RegExp[] = [
   /(^|[:._-])(classify|summarize|extract|analyze)([:._-]|$)/i,
 ];
 
-export function classifyOpenClawToolBlastRadiusV1(toolName: string): OpenClawToolBlastRadiusPolicyV1 {
+export function classifyOpenClawToolBlastRadiusV1(
+  toolName: string,
+): OpenClawToolBlastRadiusPolicyV1 {
   const normalized = toolName.trim();
 
   if (matchesAny(normalized, DANGEROUS_PATTERNS)) {

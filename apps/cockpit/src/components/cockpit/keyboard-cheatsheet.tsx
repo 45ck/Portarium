@@ -4,17 +4,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog'
-import { useUIStore } from '@/stores/ui-store'
+} from '@/components/ui/dialog';
+import { useUIStore } from '@/stores/ui-store';
 
 interface ShortcutDef {
-  keys: string[]
-  description: string
+  keys: string[];
+  description: string;
 }
 
 interface ShortcutGroup {
-  label: string
-  shortcuts: ShortcutDef[]
+  label: string;
+  shortcuts: ShortcutDef[];
 }
 
 const SHORTCUT_GROUPS: ShortcutGroup[] = [
@@ -31,28 +31,24 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
   },
   {
     label: 'Actions',
-    shortcuts: [
-      { keys: ['Ctrl', 'K'], description: 'Open command palette' },
-    ],
+    shortcuts: [{ keys: ['Ctrl', 'K'], description: 'Open command palette' }],
   },
   {
     label: 'UI',
-    shortcuts: [
-      { keys: ['?'], description: 'Show keyboard shortcuts' },
-    ],
+    shortcuts: [{ keys: ['?'], description: 'Show keyboard shortcuts' }],
   },
-]
+];
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
     <kbd className="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
       {children}
     </kbd>
-  )
+  );
 }
 
 function KeyboardCheatsheet() {
-  const { keyboardCheatsheetOpen, setKeyboardCheatsheetOpen } = useUIStore()
+  const { keyboardCheatsheetOpen, setKeyboardCheatsheetOpen } = useUIStore();
 
   return (
     <Dialog open={keyboardCheatsheetOpen} onOpenChange={setKeyboardCheatsheetOpen}>
@@ -79,9 +75,7 @@ function KeyboardCheatsheet() {
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, i) => (
                         <span key={i} className="flex items-center gap-1">
-                          {i > 0 && (
-                            <span className="text-muted-foreground text-xs">+</span>
-                          )}
+                          {i > 0 && <span className="text-muted-foreground text-xs">+</span>}
                           <Kbd>{key}</Kbd>
                         </span>
                       ))}
@@ -94,7 +88,7 @@ function KeyboardCheatsheet() {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export { KeyboardCheatsheet }
+export { KeyboardCheatsheet };

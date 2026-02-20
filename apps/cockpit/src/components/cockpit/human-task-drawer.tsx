@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { format } from 'date-fns'
-import { Link } from '@tanstack/react-router'
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { Link } from '@tanstack/react-router';
 import {
   Sheet,
   SheetContent,
@@ -8,23 +8,23 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-} from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
-import { HumanTaskStatusBadge } from '@/components/cockpit/human-task-status-badge'
-import { OwnerPicker } from '@/components/cockpit/owner-picker'
-import type { HumanTaskSummary, WorkforceMemberSummary } from '@portarium/cockpit-types'
-import { ClipboardList, User, ExternalLink, AlertTriangle } from 'lucide-react'
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { HumanTaskStatusBadge } from '@/components/cockpit/human-task-status-badge';
+import { OwnerPicker } from '@/components/cockpit/owner-picker';
+import type { HumanTaskSummary, WorkforceMemberSummary } from '@portarium/cockpit-types';
+import { ClipboardList, User, ExternalLink, AlertTriangle } from 'lucide-react';
 
 interface HumanTaskDrawerProps {
-  task: HumanTaskSummary | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  workforceMembers: WorkforceMemberSummary[]
-  onAssign: (taskId: string, memberId: string) => void
-  onComplete: (taskId: string, note?: string) => void
-  onEscalate: (taskId: string, reason?: string) => void
+  task: HumanTaskSummary | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  workforceMembers: WorkforceMemberSummary[];
+  onAssign: (taskId: string, memberId: string) => void;
+  onComplete: (taskId: string, note?: string) => void;
+  onEscalate: (taskId: string, reason?: string) => void;
 }
 
 export function HumanTaskDrawer({
@@ -36,33 +36,33 @@ export function HumanTaskDrawer({
   onComplete,
   onEscalate,
 }: HumanTaskDrawerProps) {
-  const [showEscalateForm, setShowEscalateForm] = useState(false)
-  const [escalateReason, setEscalateReason] = useState('')
-  const [completionNote, setCompletionNote] = useState('')
-  const [showCompleteForm, setShowCompleteForm] = useState(false)
+  const [showEscalateForm, setShowEscalateForm] = useState(false);
+  const [escalateReason, setEscalateReason] = useState('');
+  const [completionNote, setCompletionNote] = useState('');
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
 
-  if (!task) return null
+  if (!task) return null;
 
-  const isOverdue = task.dueAt && new Date(task.dueAt) < new Date()
-  const assignee = workforceMembers.find((m) => m.workforceMemberId === task.assigneeId)
-  const canComplete = task.status === 'assigned' || task.status === 'in-progress'
-  const canEscalate = task.status !== 'completed' && task.status !== 'escalated'
-  const canAssign = task.status !== 'completed'
+  const isOverdue = task.dueAt && new Date(task.dueAt) < new Date();
+  const assignee = workforceMembers.find((m) => m.workforceMemberId === task.assigneeId);
+  const canComplete = task.status === 'assigned' || task.status === 'in-progress';
+  const canEscalate = task.status !== 'completed' && task.status !== 'escalated';
+  const canAssign = task.status !== 'completed';
 
-  const taskId = task.humanTaskId
+  const taskId = task.humanTaskId;
 
   function handleComplete() {
-    onComplete(taskId, completionNote || undefined)
-    setCompletionNote('')
-    setShowCompleteForm(false)
-    onOpenChange(false)
+    onComplete(taskId, completionNote || undefined);
+    setCompletionNote('');
+    setShowCompleteForm(false);
+    onOpenChange(false);
   }
 
   function handleEscalate() {
-    onEscalate(taskId, escalateReason || undefined)
-    setEscalateReason('')
-    setShowEscalateForm(false)
-    onOpenChange(false)
+    onEscalate(taskId, escalateReason || undefined);
+    setEscalateReason('');
+    setShowEscalateForm(false);
+    onOpenChange(false);
   }
 
   return (
@@ -194,11 +194,7 @@ export function HumanTaskDrawer({
                 <Button size="sm" onClick={handleComplete}>
                   Confirm Complete
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setShowCompleteForm(false)}
-                >
+                <Button size="sm" variant="ghost" onClick={() => setShowCompleteForm(false)}>
                   Cancel
                 </Button>
               </div>
@@ -220,11 +216,7 @@ export function HumanTaskDrawer({
                 <Button size="sm" variant="destructive" onClick={handleEscalate}>
                   Confirm Escalate
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setShowEscalateForm(false)}
-                >
+                <Button size="sm" variant="ghost" onClick={() => setShowEscalateForm(false)}>
                   Cancel
                 </Button>
               </div>
@@ -240,11 +232,7 @@ export function HumanTaskDrawer({
               </Button>
             )}
             {canEscalate && !showEscalateForm && !showCompleteForm && (
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setShowEscalateForm(true)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => setShowEscalateForm(true)}>
                 Escalate
               </Button>
             )}
@@ -252,5 +240,5 @@ export function HumanTaskDrawer({
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

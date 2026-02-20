@@ -78,17 +78,22 @@ export interface MissionStatusTransitionMap {
 export type ValidMissionStatusTransition<From extends MissionStatus = MissionStatus> =
   MissionStatusTransitionMap[From];
 
-export const MISSION_STATUS_TRANSITIONS: Readonly<Record<MissionStatus, readonly MissionStatus[]>> = {
-  Pending: ['Dispatched', 'Cancelled'],
-  Dispatched: ['Executing', 'Cancelled', 'Failed'],
-  Executing: ['WaitingPreemption', 'Succeeded', 'Failed', 'Cancelled'],
-  WaitingPreemption: ['Executing', 'Cancelled', 'Failed'],
-  Succeeded: [],
-  Failed: [],
-  Cancelled: [],
-} as const;
+export const MISSION_STATUS_TRANSITIONS: Readonly<Record<MissionStatus, readonly MissionStatus[]>> =
+  {
+    Pending: ['Dispatched', 'Cancelled'],
+    Dispatched: ['Executing', 'Cancelled', 'Failed'],
+    Executing: ['WaitingPreemption', 'Succeeded', 'Failed', 'Cancelled'],
+    WaitingPreemption: ['Executing', 'Cancelled', 'Failed'],
+    Succeeded: [],
+    Failed: [],
+    Cancelled: [],
+  } as const;
 
-export const TERMINAL_MISSION_STATUSES: readonly MissionStatus[] = ['Succeeded', 'Failed', 'Cancelled'];
+export const TERMINAL_MISSION_STATUSES: readonly MissionStatus[] = [
+  'Succeeded',
+  'Failed',
+  'Cancelled',
+];
 
 export class MissionParseError extends Error {
   public override readonly name = 'MissionParseError';
@@ -174,7 +179,9 @@ function parseFeedbackLog(value: unknown): readonly ActionExecutionFeedbackEntry
     const record = readRecord(entry, `feedbackLog[${i}]`, MissionParseError);
     const levelRaw = readString(record, 'level', MissionParseError);
     if (!(FEEDBACK_LEVELS as readonly string[]).includes(levelRaw)) {
-      throw new MissionParseError(`feedbackLog[${i}].level must be one of: ${FEEDBACK_LEVELS.join(', ')}.`);
+      throw new MissionParseError(
+        `feedbackLog[${i}].level must be one of: ${FEEDBACK_LEVELS.join(', ')}.`,
+      );
     }
 
     return {

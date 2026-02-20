@@ -128,9 +128,7 @@ function ApprovalDetailPage() {
   }
 
   if (approval.decidedByUserId) {
-    const decider = workforceMembers.find(
-      (m) => m.linkedUserId === approval.decidedByUserId,
-    );
+    const decider = workforceMembers.find((m) => m.linkedUserId === approval.decidedByUserId);
     if (decider) {
       relatedEntities.push({
         type: 'workforce',
@@ -182,12 +180,11 @@ function ApprovalDetailPage() {
           {planLoading ? (
             <Skeleton className="h-20 w-full" />
           ) : plan && plan.plannedEffects.length > 0 ? (
-            <EffectsList
-              planned={plan.plannedEffects}
-              predicted={plan.predictedEffects}
-            />
+            <EffectsList planned={plan.plannedEffects} predicted={plan.predictedEffects} />
           ) : (
-            <p className="text-xs text-muted-foreground italic">No plan attached to this approval.</p>
+            <p className="text-xs text-muted-foreground italic">
+              No plan attached to this approval.
+            </p>
           )}
         </CardContent>
       </Card>

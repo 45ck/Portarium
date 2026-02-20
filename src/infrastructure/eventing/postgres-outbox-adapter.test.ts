@@ -117,8 +117,8 @@ describe('PostgresOutboxAdapter', () => {
   });
 
   it('markFailed throws for unknown entryId', async () => {
-    await expect(adapter.markFailed('nonexistent', 'reason', new Date().toISOString())).rejects.toThrow(
-      'Outbox entry not found',
-    );
+    await expect(
+      adapter.markFailed('nonexistent', 'reason', new Date().toISOString()),
+    ).rejects.toThrow('Outbox entry not found');
   });
 });

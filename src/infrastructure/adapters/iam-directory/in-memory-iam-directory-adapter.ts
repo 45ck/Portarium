@@ -42,7 +42,10 @@ type InMemoryIamDirectoryAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -97,7 +100,10 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       case 'deactivateUser':
         return this.#deactivateUser(input);
       case 'listGroups':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listGroups(input) } };
+        return {
+          ok: true,
+          result: { kind: 'externalRefs', externalRefs: this.#listGroups(input) },
+        };
       case 'getGroup':
         return this.#getGroup(input);
       case 'createGroup':
@@ -124,7 +130,10 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       case 'verifyMFA':
         return this.#verifyMfa(input);
       case 'listAuditLogs':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listAuditLogs(input) } };
+        return {
+          ok: true,
+          result: { kind: 'externalRefs', externalRefs: this.#listAuditLogs(input) },
+        };
       default:
         return {
           ok: false,
@@ -143,7 +152,9 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
     if (partyId === null) {
       return { ok: false, error: 'validation_error', message: 'partyId is required for getUser.' };
     }
-    const user = this.#users.find((item) => item.tenantId === input.tenantId && item.partyId === partyId);
+    const user = this.#users.find(
+      (item) => item.tenantId === input.tenantId && item.partyId === partyId,
+    );
     if (user === undefined) {
       return { ok: false, error: 'not_found', message: `User ${partyId} was not found.` };
     }
@@ -272,12 +283,15 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       };
     }
 
-    const user = this.#users.find((candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId);
+    const user = this.#users.find(
+      (candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId,
+    );
     if (user === undefined) {
       return { ok: false, error: 'not_found', message: `User ${userId} was not found.` };
     }
     const group = this.#groups.find(
-      (candidate) => candidate.tenantId === input.tenantId && candidate.externalRef.externalId === groupId,
+      (candidate) =>
+        candidate.tenantId === input.tenantId && candidate.externalRef.externalId === groupId,
     );
     if (group === undefined) {
       return { ok: false, error: 'not_found', message: `Group ${groupId} was not found.` };
@@ -352,12 +366,15 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       };
     }
 
-    const user = this.#users.find((candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId);
+    const user = this.#users.find(
+      (candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId,
+    );
     if (user === undefined) {
       return { ok: false, error: 'not_found', message: `User ${userId} was not found.` };
     }
     const role = this.#roles.find(
-      (candidate) => candidate.tenantId === input.tenantId && candidate.externalRef.externalId === roleId,
+      (candidate) =>
+        candidate.tenantId === input.tenantId && candidate.externalRef.externalId === roleId,
     );
     if (role === undefined) {
       return { ok: false, error: 'not_found', message: `Role ${roleId} was not found.` };
@@ -467,7 +484,9 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       };
     }
 
-    const user = this.#users.find((candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId);
+    const user = this.#users.find(
+      (candidate) => candidate.tenantId === input.tenantId && candidate.partyId === userId,
+    );
     if (user === undefined) {
       return { ok: false, error: 'not_found', message: `User ${userId} was not found.` };
     }

@@ -1,14 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import {
-  Bot,
-  Brain,
-  FileCheck2,
-  Plug,
-  Route,
-  ShieldCheck,
-  Network,
-  User,
-} from 'lucide-react';
+import { Bot, Brain, FileCheck2, Plug, Route, ShieldCheck, Network, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 

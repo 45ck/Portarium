@@ -28,7 +28,10 @@ import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { parseLocationEventV1 } from '../../domain/location/location-event-v1.js';
-import { InMemoryLocationHistoryStore, InMemoryLocationLatestStateCache } from '../../infrastructure/location/localisation-ingestion-pipeline.js';
+import {
+  InMemoryLocationHistoryStore,
+  InMemoryLocationLatestStateCache,
+} from '../../infrastructure/location/localisation-ingestion-pipeline.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
 import {
   PostgresRunStore,
@@ -605,7 +608,11 @@ async function assertReadAccess(
   if (!isWorkforceReadable(ctx)) {
     return {
       ok: false,
-      error: { kind: 'Forbidden', action: APP_ACTIONS.workspaceRead, message: 'Read access denied.' },
+      error: {
+        kind: 'Forbidden',
+        action: APP_ACTIONS.workspaceRead,
+        message: 'Read access denied.',
+      },
     };
   }
 
@@ -693,7 +700,9 @@ function parseAssignHumanTaskBody(
   };
 }
 
-function parseCompleteHumanTaskBody(value: unknown): { ok: true; completionNote?: string } | { ok: false } {
+function parseCompleteHumanTaskBody(
+  value: unknown,
+): { ok: true; completionNote?: string } | { ok: false } {
   if (value === null) return { ok: true };
   if (typeof value !== 'object') return { ok: false };
   const record = value as { completionNote?: unknown };
@@ -713,7 +722,9 @@ function parseEscalateHumanTaskBody(
     return { ok: false };
   }
   const reason =
-    typeof record.reason === 'string' && record.reason.trim() !== '' ? record.reason.trim() : undefined;
+    typeof record.reason === 'string' && record.reason.trim() !== ''
+      ? record.reason.trim()
+      : undefined;
   return {
     ok: true,
     workforceQueueId: record.workforceQueueId.trim(),
@@ -727,7 +738,9 @@ function listRuntimeHumanTasks(workspaceId: string): HumanTaskRecord[] {
 
 function updateRuntimeHumanTask(nextTask: HumanTaskRecord): void {
   runtimeHumanTasks = runtimeHumanTasks.map((task) =>
-    task.humanTaskId === nextTask.humanTaskId && task.tenantId === nextTask.tenantId ? nextTask : task,
+    task.humanTaskId === nextTask.humanTaskId && task.tenantId === nextTask.tenantId
+      ? nextTask
+      : task,
   );
 }
 
@@ -803,7 +816,12 @@ async function handleGetRun(
     // Honour If-Match for optimistic-concurrency clients on the run resource.
     const precondition = checkIfMatch(req, etag);
     if (!precondition.ok) {
-      respondProblem(res, problemFromError(precondition.error, pathname), correlationId, traceContext);
+      respondProblem(
+        res,
+        problemFromError(precondition.error, pathname),
+        correlationId,
+        traceContext,
+      );
       return;
     }
 
@@ -869,7 +887,8 @@ async function handleGetWorkforceMember(
     traceContext: TraceContext;
   }>,
 ): Promise<void> {
-  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } = args;
+  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } =
+    args;
   const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
   if (!auth.ok) {
     respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
@@ -881,7 +900,9 @@ async function handleGetWorkforceMember(
     return;
   }
 
-  const member = listFixtureMembers(workspaceId).find((m) => m.workforceMemberId === workforceMemberId);
+  const member = listFixtureMembers(workspaceId).find(
+    (m) => m.workforceMemberId === workforceMemberId,
+  );
   if (!member) {
     respondProblem(
       res,
@@ -913,7 +934,8 @@ async function handlePatchWorkforceAvailability(
     traceContext: TraceContext;
   }>,
 ): Promise<void> {
-  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } = args;
+  const { deps, req, res, correlationId, pathname, workspaceId, workforceMemberId, traceContext } =
+    args;
   const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
   if (!auth.ok) {
     respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
@@ -935,7 +957,9 @@ async function handlePatchWorkforceAvailability(
     return;
   }
 
-  const member = listFixtureMembers(workspaceId).find((m) => m.workforceMemberId === workforceMemberId);
+  const member = listFixtureMembers(workspaceId).find(
+    (m) => m.workforceMemberId === workforceMemberId,
+  );
   if (!member) {
     respondProblem(
       res,
@@ -1084,7 +1108,9 @@ async function handleGetHumanTask(
     respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
     return;
   }
-  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  const task = listRuntimeHumanTasks(workspaceId).find(
+    (entry) => entry.humanTaskId === humanTaskId,
+  );
   if (!task) {
     respondProblem(
       res,
@@ -1146,9 +1172,7 @@ async function handleLocationEventsStream(
   const assetId = url.searchParams.get('assetId') ?? 'asset-1';
   const latest = await runtimeMapDataServices.getLatestPose(workspaceId, assetId);
   const staleAfterSeconds = 30;
-  const stale =
-    !latest ||
-    Date.now() - Date.parse(latest.observedAtIso) > staleAfterSeconds * 1000;
+  const stale = !latest || Date.now() - Date.parse(latest.observedAtIso) > staleAfterSeconds * 1000;
 
   res.statusCode = 200;
   res.setHeader('content-type', 'text/event-stream');
@@ -1338,7 +1362,9 @@ async function handleAssignHumanTask(
     );
     return;
   }
-  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  const task = listRuntimeHumanTasks(workspaceId).find(
+    (entry) => entry.humanTaskId === humanTaskId,
+  );
   if (!task) {
     respondProblem(
       res,
@@ -1422,7 +1448,9 @@ async function handleCompleteHumanTask(
     );
     return;
   }
-  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  const task = listRuntimeHumanTasks(workspaceId).find(
+    (entry) => entry.humanTaskId === humanTaskId,
+  );
   if (!task) {
     respondProblem(
       res,
@@ -1516,7 +1544,9 @@ async function handleEscalateHumanTask(
     );
     return;
   }
-  const task = listRuntimeHumanTasks(workspaceId).find((entry) => entry.humanTaskId === humanTaskId);
+  const task = listRuntimeHumanTasks(workspaceId).find(
+    (entry) => entry.humanTaskId === humanTaskId,
+  );
   if (!task) {
     respondProblem(
       res,
@@ -1614,7 +1644,14 @@ async function handleListEvidence(
 
 function parseHeartbeatBody(
   body: unknown,
-): { ok: true; status: string; metrics?: Record<string, number>; location?: { lat: number; lon: number } } | { ok: false; message: string } {
+):
+  | {
+      ok: true;
+      status: string;
+      metrics?: Record<string, number>;
+      location?: { lat: number; lon: number };
+    }
+  | { ok: false; message: string } {
   if (typeof body !== 'object' || body === null) {
     return { ok: false, message: 'Request body must be a JSON object.' };
   }
@@ -1642,8 +1679,12 @@ function parseHeartbeatBody(
   return {
     ok: true,
     status: status as string,
-    ...(metrics !== undefined && metrics !== null ? { metrics: metrics as Record<string, number> } : {}),
-    ...(location !== undefined && location !== null ? { location: location as { lat: number; lon: number } } : {}),
+    ...(metrics !== undefined && metrics !== null
+      ? { metrics: metrics as Record<string, number> }
+      : {}),
+    ...(location !== undefined && location !== null
+      ? { location: location as { lat: number; lon: number } }
+      : {}),
   };
 }
 
@@ -1953,7 +1994,9 @@ async function handleRequest(
       return;
     }
 
-    const mAgentWorkItems = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/work-items$/.exec(pathname);
+    const mAgentWorkItems = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/work-items$/.exec(
+      pathname,
+    );
     if (mAgentWorkItems) {
       await handleGetAgentWorkItems({
         deps,
@@ -1989,7 +2032,9 @@ async function handleRequest(
   }
 
   if (req.method === 'POST') {
-    const mMachineHeartbeat = /^\/v1\/workspaces\/([^/]+)\/machines\/([^/]+)\/heartbeat$/.exec(pathname);
+    const mMachineHeartbeat = /^\/v1\/workspaces\/([^/]+)\/machines\/([^/]+)\/heartbeat$/.exec(
+      pathname,
+    );
     if (mMachineHeartbeat) {
       await handleMachineHeartbeat({
         deps,
@@ -2004,7 +2049,9 @@ async function handleRequest(
       return;
     }
 
-    const mAgentHeartbeat = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/heartbeat$/.exec(pathname);
+    const mAgentHeartbeat = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/heartbeat$/.exec(
+      pathname,
+    );
     if (mAgentHeartbeat) {
       await handleAgentHeartbeat({
         deps,
@@ -2034,7 +2081,9 @@ async function handleRequest(
       return;
     }
 
-    const mCompleteTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/complete$/.exec(pathname);
+    const mCompleteTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/complete$/.exec(
+      pathname,
+    );
     if (mCompleteTask) {
       await handleCompleteHumanTask({
         deps,
@@ -2049,7 +2098,9 @@ async function handleRequest(
       return;
     }
 
-    const mEscalateTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/escalate$/.exec(pathname);
+    const mEscalateTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/escalate$/.exec(
+      pathname,
+    );
     if (mEscalateTask) {
       await handleEscalateHumanTask({
         deps,

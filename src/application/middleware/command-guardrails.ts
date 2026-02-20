@@ -43,9 +43,7 @@ export type CommandGuardrailResult = Readonly<{
  * 3. Blast-radius limit enforcement
  * 4. Policy decision integration
  */
-export function evaluateCommandGuardrails(
-  input: CommandGuardrailInput,
-): CommandGuardrailResult {
+export function evaluateCommandGuardrails(input: CommandGuardrailInput): CommandGuardrailResult {
   const violations: GuardrailViolation[] = [];
   let requiresApproval = false;
 

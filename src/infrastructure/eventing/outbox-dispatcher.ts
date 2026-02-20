@@ -87,10 +87,7 @@ export class OutboxDispatcher {
         processed++;
       } catch (error: unknown) {
         const reason = error instanceof Error ? error.message : String(error);
-        const nextRetryAtIso = computeNextRetryIso(
-          entry.retryCount,
-          this.#baseRetryDelayMs,
-        );
+        const nextRetryAtIso = computeNextRetryIso(entry.retryCount, this.#baseRetryDelayMs);
         await this.#outbox.markFailed(entry.entryId, reason, nextRetryAtIso);
       }
     }
@@ -108,7 +105,9 @@ export class OutboxDispatcher {
       }
       this.#scheduleNext();
     };
-    this.#timer = setTimeout(() => { void tick(); }, this.#pollIntervalMs);
+    this.#timer = setTimeout(() => {
+      void tick();
+    }, this.#pollIntervalMs);
   }
 }
 

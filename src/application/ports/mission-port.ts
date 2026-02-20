@@ -1,6 +1,4 @@
-import type {
-  MissionActionRequestV1,
-} from '../../domain/robots/mission-action-semantics-v1.js';
+import type { MissionActionRequestV1 } from '../../domain/robots/mission-action-semantics-v1.js';
 import type { MissionStatus } from '../../domain/robots/mission-v1.js';
 import type { CorrelationId, MissionId } from '../../domain/primitives/index.js';
 
@@ -79,5 +77,8 @@ export type MissionStatusResult = Readonly<{
 export interface MissionPort {
   dispatchMission(request: MissionDispatchRequest): Promise<MissionDispatchResult>;
   cancelMission(request: MissionCancelRequest): Promise<MissionCancelResult>;
-  getMissionStatus(missionId: MissionId, correlationId: CorrelationId): Promise<MissionStatusResult>;
+  getMissionStatus(
+    missionId: MissionId,
+    correlationId: CorrelationId,
+  ): Promise<MissionStatusResult>;
 }

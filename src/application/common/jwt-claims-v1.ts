@@ -1,6 +1,4 @@
-import type {
-  WorkspaceUserRole,
-} from '../../domain/primitives/index.js';
+import type { WorkspaceUserRole } from '../../domain/primitives/index.js';
 import { isWorkspaceUserRole } from '../../domain/primitives/index.js';
 import { err, ok, type Result } from './result.js';
 import type { Unauthorized } from './errors.js';
@@ -88,8 +86,7 @@ export function assertWorkspaceScoped(
 ): Result<string, Unauthorized> {
   const workspaceId =
     typeof payload['workspaceId'] === 'string' ? payload['workspaceId'].trim() : undefined;
-  const tenantId =
-    typeof payload['tenantId'] === 'string' ? payload['tenantId'].trim() : undefined;
+  const tenantId = typeof payload['tenantId'] === 'string' ? payload['tenantId'].trim() : undefined;
 
   const resolved = workspaceId ?? tenantId;
   if (!resolved || resolved === '') {
@@ -127,7 +124,9 @@ function optionalStringArray(
 ): readonly string[] | undefined {
   const value = record[key];
   if (!Array.isArray(value)) return undefined;
-  const result = value.filter((item): item is string => typeof item === 'string' && item.trim() !== '');
+  const result = value.filter(
+    (item): item is string => typeof item === 'string' && item.trim() !== '',
+  );
   return result.length > 0 ? result : undefined;
 }
 
@@ -173,8 +172,7 @@ function resolveRolesSource(record: Record<string, unknown>): unknown[] | undefi
 
 function filterValidRoles(source: unknown[]): WorkspaceUserRole[] {
   return source.filter(
-    (entry): entry is WorkspaceUserRole =>
-      typeof entry === 'string' && isWorkspaceUserRole(entry),
+    (entry): entry is WorkspaceUserRole => typeof entry === 'string' && isWorkspaceUserRole(entry),
   );
 }
 

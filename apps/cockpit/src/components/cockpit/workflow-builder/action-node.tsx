@@ -1,9 +1,9 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { Zap } from 'lucide-react'
-import type { WorkflowNodeData } from '@/hooks/use-workflow-builder'
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Zap } from 'lucide-react';
+import type { WorkflowNodeData } from '@/hooks/use-workflow-builder';
 
 export function ActionNode({ data, selected }: NodeProps) {
-  const nodeData = data as unknown as WorkflowNodeData
+  const nodeData = data as unknown as WorkflowNodeData;
   return (
     <div
       className={`min-w-[160px] rounded-lg border-2 bg-card shadow-sm transition-colors ${
@@ -22,5 +22,5 @@ export function ActionNode({ data, selected }: NodeProps) {
       )}
       <Handle type="source" position={Position.Bottom} className="!bg-blue-500 !w-2.5 !h-2.5" />
     </div>
-  )
+  );
 }

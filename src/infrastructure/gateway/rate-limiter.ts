@@ -46,9 +46,7 @@ export class TokenBucketRateLimiter {
     }
 
     const secondsUntilNextToken =
-      this.#refillRatePerSecond > 0
-        ? Math.ceil(1 / this.#refillRatePerSecond)
-        : 1;
+      this.#refillRatePerSecond > 0 ? Math.ceil(1 / this.#refillRatePerSecond) : 1;
 
     return { allowed: false, retryAfterSeconds: secondsUntilNextToken };
   }

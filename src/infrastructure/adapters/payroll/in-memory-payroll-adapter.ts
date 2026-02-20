@@ -29,7 +29,10 @@ type InMemoryPayrollAdapterParams = Readonly<{
   seed?: InMemoryPayrollAdapterSeed;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -80,11 +83,23 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
           'getPayrollRun',
         );
       case 'listPayrollRuns':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listForTenant(this.#payrollRuns, input) } };
+        return {
+          ok: true,
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listForTenant(this.#payrollRuns, input),
+          },
+        };
       case 'getPayStub':
         return this.#getExternalById(this.#payStubs, input, 'payStubId', 'Pay stub', 'getPayStub');
       case 'listPayStubs':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listForTenant(this.#payStubs, input) } };
+        return {
+          ok: true,
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listForTenant(this.#payStubs, input),
+          },
+        };
       case 'calculateTax':
         return this.#calculateTax(input);
       case 'getPaySchedule':
@@ -96,9 +111,21 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
           'getPaySchedule',
         );
       case 'listDeductions':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listForTenant(this.#deductions, input) } };
+        return {
+          ok: true,
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listForTenant(this.#deductions, input),
+          },
+        };
       case 'listEarnings':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listForTenant(this.#earnings, input) } };
+        return {
+          ok: true,
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listForTenant(this.#earnings, input),
+          },
+        };
       case 'submitPayrollForApproval':
         return this.#submitPayrollForApproval(input);
       case 'approvePayroll':
@@ -124,9 +151,9 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       externalId: `payrun-${++this.#payrollRunSequence}`,
       externalType: 'payroll_run',
       displayLabel:
-        (typeof input.payload?.['periodLabel'] === 'string'
+        typeof input.payload?.['periodLabel'] === 'string'
           ? input.payload['periodLabel']
-          : `Payroll Run ${this.#payrollRunSequence}`),
+          : `Payroll Run ${this.#payrollRunSequence}`,
     };
     this.#payrollRuns.push({ tenantId: input.tenantId, externalRef });
     return { ok: true, result: { kind: 'externalRef', externalRef } };
@@ -139,9 +166,9 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       externalId: `tax-${++this.#taxCalculationSequence}`,
       externalType: 'tax_calculation',
       displayLabel:
-        (typeof input.payload?.['label'] === 'string'
+        typeof input.payload?.['label'] === 'string'
           ? input.payload['label']
-          : `Tax Calculation ${this.#taxCalculationSequence}`),
+          : `Tax Calculation ${this.#taxCalculationSequence}`,
     };
     this.#taxCalculations.push({ tenantId: input.tenantId, externalRef });
     return { ok: true, result: { kind: 'externalRef', externalRef } };
@@ -160,7 +187,11 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       (run) => run.tenantId === input.tenantId && run.externalRef.externalId === payrollRunId,
     );
     if (existingRun === undefined) {
-      return { ok: false, error: 'not_found', message: `Payroll run ${payrollRunId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Payroll run ${payrollRunId} was not found.`,
+      };
     }
 
     const externalRef: ExternalObjectRef = {
@@ -194,7 +225,11 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       (run) => run.tenantId === input.tenantId && run.externalRef.externalId === payrollRunId,
     );
     if (existingRun === undefined) {
-      return { ok: false, error: 'not_found', message: `Payroll run ${payrollRunId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Payroll run ${payrollRunId} was not found.`,
+      };
     }
 
     const externalRef: ExternalObjectRef = {
@@ -243,11 +278,14 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
   #listContractorPayments(input: PayrollExecuteInputV1): readonly PaymentV1[] {
     const status = readString(input.payload, 'status');
     return this.#contractorPayments.filter(
-      (payment) => payment.tenantId === input.tenantId && (status === null || payment.status === status),
+      (payment) =>
+        payment.tenantId === input.tenantId && (status === null || payment.status === status),
     );
   }
 
-  public static seedMinimal(tenantId: PayrollExecuteInputV1['tenantId']): InMemoryPayrollAdapterSeed {
+  public static seedMinimal(
+    tenantId: PayrollExecuteInputV1['tenantId'],
+  ): InMemoryPayrollAdapterSeed {
     return {
       payrollRuns: [
         {

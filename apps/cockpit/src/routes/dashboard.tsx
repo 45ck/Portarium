@@ -88,7 +88,11 @@ function DashboardPage() {
       header: 'Run',
       width: '120px',
       render: (row: RunSummary) => (
-        <Link to={'/runs/$runId' as string} params={{ runId: row.runId }} className="font-mono text-xs text-primary hover:underline">
+        <Link
+          to={'/runs/$runId' as string}
+          params={{ runId: row.runId }}
+          className="font-mono text-xs text-primary hover:underline"
+        >
           {row.runId}
         </Link>
       ),
@@ -125,7 +129,11 @@ function DashboardPage() {
       <PageHeader
         title="Dashboard"
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
-        action={<Button size="sm" onClick={() => setStartRunOpen(true)}>New Run</Button>}
+        action={
+          <Button size="sm" onClick={() => setStartRunOpen(true)}>
+            New Run
+          </Button>
+        }
       />
 
       <SystemStateBanner state={workspaceState} />
@@ -204,7 +212,10 @@ function DashboardPage() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">Active Runs</CardTitle>
-            <Link to={'/runs' as string} className="text-xs text-muted-foreground hover:text-foreground">
+            <Link
+              to={'/runs' as string}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
               View all
             </Link>
           </div>

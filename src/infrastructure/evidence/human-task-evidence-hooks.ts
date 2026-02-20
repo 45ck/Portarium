@@ -53,7 +53,9 @@ export class HumanTaskEvidenceHooks {
     await this.#deps.payloadStore.put({ location, bytes });
 
     const retentionDays = this.#deps.retentionDays ?? DEFAULT_RETENTION_DAYS;
-    const retainUntilIso = new Date(Date.parse(event.occurredAtIso) + retentionDays * 86_400_000).toISOString();
+    const retainUntilIso = new Date(
+      Date.parse(event.occurredAtIso) + retentionDays * 86_400_000,
+    ).toISOString();
     await this.#deps.payloadStore.applyWormControls({
       location,
       retentionSchedule: {
@@ -89,7 +91,9 @@ export class HumanTaskEvidenceHooks {
   }
 }
 
-function isSupportedEvent(eventType: DomainEventV1['eventType']): eventType is SupportedHumanTaskEventType {
+function isSupportedEvent(
+  eventType: DomainEventV1['eventType'],
+): eventType is SupportedHumanTaskEventType {
   return eventType === 'HumanTaskAssigned' || eventType === 'HumanTaskCompleted';
 }
 
@@ -108,7 +112,8 @@ function parseHumanTaskEvidencePayload(event: DomainEventV1): HumanTaskEvidenceP
   }
 
   const actorId = event.actorUserId ?? 'system';
-  const completionNotes = asNonEmptyString(payload['completionNotes']) ?? asNonEmptyString(payload['completionNote']);
+  const completionNotes =
+    asNonEmptyString(payload['completionNotes']) ?? asNonEmptyString(payload['completionNote']);
   return {
     eventType: event.eventType as SupportedHumanTaskEventType,
     humanTaskId,

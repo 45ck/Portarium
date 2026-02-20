@@ -325,11 +325,7 @@ describe('PostgreSQL store adapters', () => {
     await publisher.publish(event);
     const pending = await outbox.fetchPending(10);
     const pendingEntryId = pending[0]?.entryId ?? '';
-    await outbox.markFailed(
-      pendingEntryId,
-      'transient-network-error',
-      '2099-01-01T00:00:00.000Z',
-    );
+    await outbox.markFailed(pendingEntryId, 'transient-network-error', '2099-01-01T00:00:00.000Z');
     const afterFailed = await outbox.fetchPending(10);
     await outbox.markPublished(pendingEntryId);
     const generated = idGenerator.generateId();

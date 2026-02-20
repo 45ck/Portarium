@@ -1,17 +1,17 @@
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Radio, History } from 'lucide-react'
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Radio, History } from 'lucide-react';
 
-type PlaybackMode = 'live' | 'replay'
-type PlaybackSpeed = '0.5x' | '1x' | '2x' | '5x'
+type PlaybackMode = 'live' | 'replay';
+type PlaybackSpeed = '0.5x' | '1x' | '2x' | '5x';
 
-const SPEEDS: PlaybackSpeed[] = ['0.5x', '1x', '2x', '5x']
+const SPEEDS: PlaybackSpeed[] = ['0.5x', '1x', '2x', '5x'];
 
 export function PlaybackControls() {
-  const [mode, setMode] = useState<PlaybackMode>('live')
-  const [speed, setSpeed] = useState<PlaybackSpeed>('1x')
-  const [position, setPosition] = useState(100)
+  const [mode, setMode] = useState<PlaybackMode>('live');
+  const [speed, setSpeed] = useState<PlaybackSpeed>('1x');
+  const [position, setPosition] = useState(100);
 
   return (
     <div className="absolute bottom-3 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-md backdrop-blur-sm">
@@ -22,8 +22,8 @@ export function PlaybackControls() {
           size="sm"
           className="h-6 gap-1 px-2 text-[11px]"
           onClick={() => {
-            setMode('live')
-            setPosition(100)
+            setMode('live');
+            setPosition(100);
           }}
         >
           <Radio className="h-3 w-3" />
@@ -72,5 +72,5 @@ export function PlaybackControls() {
         ))}
       </div>
     </div>
-  )
+  );
 }

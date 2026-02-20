@@ -1,18 +1,18 @@
-import { X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import type { WorkflowNode, WorkflowNodeData } from '@/hooks/use-workflow-builder'
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import type { WorkflowNode, WorkflowNodeData } from '@/hooks/use-workflow-builder';
 
-const TIER_OPTIONS = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const
+const TIER_OPTIONS = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const;
 
 interface ConfigPanelProps {
-  node: WorkflowNode
-  onUpdate: (nodeId: string, data: Partial<WorkflowNodeData>) => void
-  onClose: () => void
-  onDelete: (nodeId: string) => void
+  node: WorkflowNode;
+  onUpdate: (nodeId: string, data: Partial<WorkflowNodeData>) => void;
+  onClose: () => void;
+  onDelete: (nodeId: string) => void;
 }
 
 export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelProps) {
-  const data = node.data
+  const data = node.data;
 
   return (
     <div className="h-full overflow-y-auto p-3 space-y-4">
@@ -37,7 +37,10 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="node-label" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <label
+          htmlFor="node-label"
+          className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+        >
           Name
         </label>
         <input
@@ -50,7 +53,10 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="node-description" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <label
+          htmlFor="node-description"
+          className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+        >
           Description
         </label>
         <textarea
@@ -65,7 +71,10 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       {data.nodeType !== 'start' && data.nodeType !== 'end' && (
         <>
           <div className="space-y-1">
-            <label htmlFor="node-timeout" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <label
+              htmlFor="node-timeout"
+              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+            >
               Timeout (ms)
             </label>
             <input
@@ -80,7 +89,10 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="node-retry" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <label
+              htmlFor="node-retry"
+              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+            >
               Max Retry Attempts
             </label>
             <input
@@ -90,14 +102,15 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
               max={10}
               className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
               value={data.retryMaxAttempts ?? 3}
-              onChange={(e) =>
-                onUpdate(node.id, { retryMaxAttempts: Number(e.target.value) || 0 })
-              }
+              onChange={(e) => onUpdate(node.id, { retryMaxAttempts: Number(e.target.value) || 0 })}
             />
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="node-tier" className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <label
+              htmlFor="node-tier"
+              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+            >
               Execution Tier
             </label>
             <select
@@ -132,5 +145,5 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
         </div>
       )}
     </div>
-  )
+  );
 }

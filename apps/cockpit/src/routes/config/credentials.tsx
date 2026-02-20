@@ -30,13 +30,14 @@ import type { CredentialGrantV1 } from '@portarium/cockpit-types';
 
 type GrantStatus = 'active' | 'revoked' | 'expired';
 
-type CredentialGrantRow = CredentialGrantV1 & Readonly<{
-  adapterName: string;
-  credentialType: string;
-  credentialName: string;
-  status: GrantStatus;
-  grantedBy: string;
-}>;
+type CredentialGrantRow = CredentialGrantV1 &
+  Readonly<{
+    adapterName: string;
+    credentialType: string;
+    credentialName: string;
+    status: GrantStatus;
+    grantedBy: string;
+  }>;
 
 const statusClassName: Record<GrantStatus, string> = {
   active: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',
@@ -216,7 +217,10 @@ function CredentialsPage() {
         pagination={{ pageSize: 20 }}
       />
 
-      <AlertDialog open={pendingRevoke !== null} onOpenChange={(open) => !open && setPendingRevoke(null)}>
+      <AlertDialog
+        open={pendingRevoke !== null}
+        onOpenChange={(open) => !open && setPendingRevoke(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke credential grant?</AlertDialogTitle>

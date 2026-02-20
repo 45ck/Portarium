@@ -414,7 +414,8 @@ export type AgentCapability =
   | 'generate'
   | 'analyze'
   | 'execute-code'
-  | 'notify';
+  | 'notify'
+  | 'machine:invoke';
 
 export type ConnectionTestStatus = 'ok' | 'slow' | 'unreachable';
 

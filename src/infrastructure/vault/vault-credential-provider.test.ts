@@ -31,7 +31,9 @@ describe('VaultCredentialProvider', () => {
   };
 
   it('retrieves a credential successfully', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(vaultOkResponse('s3cr3t', 5, '2026-02-01T12:00:00Z'));
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(vaultOkResponse('s3cr3t', 5, '2026-02-01T12:00:00Z'));
     const provider = new VaultCredentialProvider({ ...baseConfig, fetchImpl });
 
     const result = await provider.getCredential(ref());

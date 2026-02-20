@@ -109,10 +109,7 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={() => createRun.mutate()}
-            disabled={!workflowId || createRun.isPending}
-          >
+          <Button onClick={() => createRun.mutate()} disabled={!workflowId || createRun.isPending}>
             {createRun.isPending ? 'Starting...' : 'Start Run'}
           </Button>
         </DialogFooter>

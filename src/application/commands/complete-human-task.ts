@@ -75,12 +75,18 @@ function validateInput(input: CompleteHumanTaskInput): Result<true, ValidationFa
     return err({ kind: 'ValidationFailed', message: 'humanTaskId must be a non-empty string.' });
   }
   if (input.completionNote?.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'completionNote must be non-empty when provided.' });
+    return err({
+      kind: 'ValidationFailed',
+      message: 'completionNote must be non-empty when provided.',
+    });
   }
   return ok(true);
 }
 
-function nextId(idGenerator: IdGenerator, kind: 'event' | 'evidence'): Result<string, DependencyFailure> {
+function nextId(
+  idGenerator: IdGenerator,
+  kind: 'event' | 'evidence',
+): Result<string, DependencyFailure> {
   const value = idGenerator.generateId();
   if (value.trim() !== '') return ok(value);
   return err({ kind: 'DependencyFailure', message: `Unable to generate ${kind} identifier.` });
@@ -146,7 +152,10 @@ export class CompleteHumanTaskUseCase {
       });
     }
 
-    const task = await this.deps.humanTaskStore.getHumanTaskById(ctx.tenantId, HumanTaskId(input.humanTaskId));
+    const task = await this.deps.humanTaskStore.getHumanTaskById(
+      ctx.tenantId,
+      HumanTaskId(input.humanTaskId),
+    );
     if (task !== null) return ok(task);
 
     return err({
@@ -162,10 +171,16 @@ export class CompleteHumanTaskUseCase {
     input: CompleteHumanTaskInput,
   ): Promise<Result<CompletionPlan, CompleteHumanTaskError>> {
     if (!task.assigneeId) {
-      return err({ kind: 'Conflict', message: 'HumanTask has no assignee and cannot be completed.' });
+      return err({
+        kind: 'Conflict',
+        message: 'HumanTask has no assignee and cannot be completed.',
+      });
     }
 
-    const assignee = await this.deps.workforceMemberStore.getWorkforceMemberById(ctx.tenantId, task.assigneeId);
+    const assignee = await this.deps.workforceMemberStore.getWorkforceMemberById(
+      ctx.tenantId,
+      task.assigneeId,
+    );
     if (assignee === null) {
       return err({
         kind: 'NotFound',

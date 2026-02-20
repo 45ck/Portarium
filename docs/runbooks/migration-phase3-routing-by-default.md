@@ -77,21 +77,21 @@ hooks:
       path: ./openclaw-hook/hook.ts
       env:
         PORTARIUM_BASE_URL: https://api.portarium.example.com
-        PORTARIUM_ENFORCE: "true"
-        PORTARIUM_ALLOWLIST: "read_file,list_directory,search_code"
+        PORTARIUM_ENFORCE: 'true'
+        PORTARIUM_ALLOWLIST: 'read_file,list_directory,search_code'
 ```
 
 ### 4. Gradual rollout
 
 Roll out in stages to minimize risk:
 
-| Stage | Scope              | Duration  | Enforce? | Criteria to advance          |
-| ----- | ------------------ | --------- | -------- | ---------------------------- |
-| 1     | Dev workspace      | 1 week    | Yes      | Zero direct SoR calls        |
-| 2     | Staging workspace  | 1 week    | Yes      | All workflows pass           |
-| 3     | 10% production     | 1 week    | Yes      | Compliance > 95%             |
-| 4     | 50% production     | 1 week    | Yes      | No regressions               |
-| 5     | 100% production    | --        | Yes      | Full routing compliance      |
+| Stage | Scope             | Duration | Enforce? | Criteria to advance     |
+| ----- | ----------------- | -------- | -------- | ----------------------- |
+| 1     | Dev workspace     | 1 week   | Yes      | Zero direct SoR calls   |
+| 2     | Staging workspace | 1 week   | Yes      | All workflows pass      |
+| 3     | 10% production    | 1 week   | Yes      | Compliance > 95%        |
+| 4     | 50% production    | 1 week   | Yes      | No regressions          |
+| 5     | 100% production   | --       | Yes      | Full routing compliance |
 
 ## OpenClaw hook configuration guide
 
@@ -122,13 +122,13 @@ PORTARIUM_ENFORCE=false
 
 ### Target: >90% routing compliance
 
-| Metric                            | Source                              | Target |
-| --------------------------------- | ----------------------------------- | ------ |
-| Routing compliance %              | Side-effect logger                  | > 90%  |
-| Direct SoR calls per hour         | Log aggregation                     | < 10   |
-| Hook block rate                   | OpenClaw hook logs                  | < 5%   |
-| SDK adoption (agents using SDK)   | Agent inventory                     | 100%   |
-| MCP server adoption               | Agent inventory (MCP agents)        | 100%   |
+| Metric                          | Source                       | Target |
+| ------------------------------- | ---------------------------- | ------ |
+| Routing compliance %            | Side-effect logger           | > 90%  |
+| Direct SoR calls per hour       | Log aggregation              | < 10   |
+| Hook block rate                 | OpenClaw hook logs           | < 5%   |
+| SDK adoption (agents using SDK) | Agent inventory              | 100%   |
+| MCP server adoption             | Agent inventory (MCP agents) | 100%   |
 
 ### Dashboard queries
 
@@ -148,12 +148,12 @@ sum(rate(openclaw_hook_blocks_total[1h]))
 
 ### Alerting
 
-| Alert                            | Threshold              | Severity |
-| -------------------------------- | ---------------------- | -------- |
-| Compliance below 90%             | < 90% over 1h         | Warning  |
-| Compliance below 80%             | < 80% over 1h         | Critical |
-| New direct SoR endpoint detected | Any new URL pattern    | Warning  |
-| Hook block rate spike            | > 20% over 15m        | Warning  |
+| Alert                            | Threshold           | Severity |
+| -------------------------------- | ------------------- | -------- |
+| Compliance below 90%             | < 90% over 1h       | Warning  |
+| Compliance below 80%             | < 80% over 1h       | Critical |
+| New direct SoR endpoint detected | Any new URL pattern | Warning  |
+| Hook block rate spike            | > 20% over 15m      | Warning  |
 
 ## Validation
 

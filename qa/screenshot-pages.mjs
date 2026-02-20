@@ -89,10 +89,11 @@ async function run() {
       // Check for critical render failures
       const bodyText = await tab.evaluate(() => document.body.innerText);
       const hasPortarium = bodyText.includes('Portarium');
-      const hasError = bodyText.includes('Something went wrong') || bodyText.includes('Cannot read properties');
+      const hasError =
+        bodyText.includes('Something went wrong') || bodyText.includes('Cannot read properties');
 
       const criticalConsoleErrors = consoleErrors.filter(
-        (e) => !e.includes('favicon') && !e.includes('ResizeObserver') && !e.includes('Warning:')
+        (e) => !e.includes('favicon') && !e.includes('ResizeObserver') && !e.includes('Warning:'),
       );
 
       const status = hasPortarium && !hasError ? 'OK' : 'FAIL';
@@ -140,7 +141,10 @@ async function run() {
 
   // Write summary report
   const reportPath = path.join(OUT_DIR, 'render-report.json');
-  fs.writeFileSync(reportPath, JSON.stringify({ results, errors, timestamp: new Date().toISOString() }, null, 2));
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify({ results, errors, timestamp: new Date().toISOString() }, null, 2),
+  );
 
   console.log('\n=== RENDER VERIFICATION REPORT ===');
   console.log(`Total pages: ${results.length}`);

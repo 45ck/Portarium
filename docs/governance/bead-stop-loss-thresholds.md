@@ -29,12 +29,12 @@ Halt the cycle when any condition below is met:
 
 ## Escalation matrix
 
-| Condition type | Primary owner | Escalation target |
-| --- | --- | --- |
-| CI/Gate failures | Stream lead | Principal engineer |
-| Dependency deadlock | Principal engineer | Product/architecture owner |
-| Security/safety decision debt | Security lead | Principal engineer + architecture owner |
-| Governance metadata drift | Governance lead | Principal engineer |
+| Condition type                | Primary owner      | Escalation target                       |
+| ----------------------------- | ------------------ | --------------------------------------- |
+| CI/Gate failures              | Stream lead        | Principal engineer                      |
+| Dependency deadlock           | Principal engineer | Product/architecture owner              |
+| Security/safety decision debt | Security lead      | Principal engineer + architecture owner |
+| Governance metadata drift     | Governance lead    | Principal engineer                      |
 
 ## Enforcement points
 

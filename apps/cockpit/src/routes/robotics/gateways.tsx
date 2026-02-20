@@ -59,16 +59,13 @@ function GatewaysPage() {
       key: 'connectedRobots',
       header: 'Robots',
       width: '80px',
-      render: (row: GatewaySummary) => (
-        <Badge variant="secondary">{row.connectedRobots}</Badge>
-      ),
+      render: (row: GatewaySummary) => <Badge variant="secondary">{row.connectedRobots}</Badge>,
     },
     {
       key: 'lastHeartbeatIso',
       header: 'Last Heartbeat',
       width: '160px',
-      render: (row: GatewaySummary) =>
-        format(new Date(row.lastHeartbeatIso), 'MMM d, yyyy HH:mm'),
+      render: (row: GatewaySummary) => format(new Date(row.lastHeartbeatIso), 'MMM d, yyyy HH:mm'),
     },
   ];
 

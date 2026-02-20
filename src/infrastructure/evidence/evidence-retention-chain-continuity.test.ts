@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { appendEvidenceEntryV1, verifyEvidenceChainV1 } from '../../domain/evidence/evidence-chain-v1.js';
-import { CorrelationId, EvidenceId, HashSha256, RunId, WorkspaceId } from '../../domain/primitives/index.js';
+import {
+  appendEvidenceEntryV1,
+  verifyEvidenceChainV1,
+} from '../../domain/evidence/evidence-chain-v1.js';
+import {
+  CorrelationId,
+  EvidenceId,
+  HashSha256,
+  RunId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import { InMemoryWormEvidencePayloadStore } from './in-memory-worm-evidence-payload-store.js';
 

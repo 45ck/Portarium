@@ -39,7 +39,11 @@ export class ActivepiecesPiecePackagePatternParseError extends Error {
 export function parseActivepiecesPiecePackagePatternV1(
   value: unknown,
 ): ActivepiecesPiecePackagePatternV1 {
-  const record = readRecord(value, 'ActivepiecesPiecePackagePatternV1', ActivepiecesPiecePackagePatternParseError);
+  const record = readRecord(
+    value,
+    'ActivepiecesPiecePackagePatternV1',
+    ActivepiecesPiecePackagePatternParseError,
+  );
 
   const schemaVersion = readInteger(
     record,
@@ -52,30 +56,16 @@ export function parseActivepiecesPiecePackagePatternV1(
     );
   }
 
-  const packageName = readString(
-    record,
-    'packageName',
-    ActivepiecesPiecePackagePatternParseError,
-  );
-  const pieceName = readString(
-    record,
-    'pieceName',
-    ActivepiecesPiecePackagePatternParseError,
-  );
-  const portFamilyRaw = readString(
-    record,
-    'portFamily',
-    ActivepiecesPiecePackagePatternParseError,
-  );
+  const packageName = readString(record, 'packageName', ActivepiecesPiecePackagePatternParseError);
+  const pieceName = readString(record, 'pieceName', ActivepiecesPiecePackagePatternParseError);
+  const portFamilyRaw = readString(record, 'portFamily', ActivepiecesPiecePackagePatternParseError);
   if (!isPortFamily(portFamilyRaw)) {
     throw new ActivepiecesPiecePackagePatternParseError('portFamily must be a valid PortFamily.');
   }
 
   const operationsRaw = record['operations'];
   if (!Array.isArray(operationsRaw) || operationsRaw.length === 0) {
-    throw new ActivepiecesPiecePackagePatternParseError(
-      'operations must be a non-empty array.',
-    );
+    throw new ActivepiecesPiecePackagePatternParseError('operations must be a non-empty array.');
   }
 
   const operations = operationsRaw.map((operation, index) =>
@@ -120,10 +110,7 @@ function parseOperation(value: unknown, path: string): ActivepiecesPieceActionPa
   };
 }
 
-function readOptionalBoolean(
-  record: Record<string, unknown>,
-  key: string,
-): boolean | undefined {
+function readOptionalBoolean(record: Record<string, unknown>, key: string): boolean | undefined {
   const raw = record[key];
   if (raw === undefined) {
     return undefined;
@@ -131,9 +118,7 @@ function readOptionalBoolean(
   if (typeof raw === 'boolean') {
     return readBoolean(record, key, ActivepiecesPiecePackagePatternParseError);
   }
-  throw new ActivepiecesPiecePackagePatternParseError(
-    `${key} must be a boolean when provided.`,
-  );
+  throw new ActivepiecesPiecePackagePatternParseError(`${key} must be a boolean when provided.`);
 }
 
 function enforceUniqueness(operations: readonly ActivepiecesPieceActionPatternV1[]): void {

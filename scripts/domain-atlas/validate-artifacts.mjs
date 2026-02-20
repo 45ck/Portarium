@@ -88,7 +88,12 @@ for (const file of sourceFiles) {
   if (!file.endsWith(`${path.sep}source.json`)) continue;
   const json = readJson(file);
   const ok = validateSourceManifest(json);
-  recordValidation(file, Boolean(ok), 'source-manifest', formatAjvErrors(validateSourceManifest.errors));
+  recordValidation(
+    file,
+    Boolean(ok),
+    'source-manifest',
+    formatAjvErrors(validateSourceManifest.errors),
+  );
   if (ok) {
     sourceByProvider.set(json.providerId, { file, json });
   }

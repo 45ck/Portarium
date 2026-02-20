@@ -32,12 +32,18 @@ type InMemoryPaymentsBillingAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -152,9 +158,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       schemaVersion: 1,
       amount,
       currencyCode:
-        typeof input.payload?.['currencyCode'] === 'string'
-          ? (input.payload['currencyCode'])
-          : 'USD',
+        typeof input.payload?.['currencyCode'] === 'string' ? input.payload['currencyCode'] : 'USD',
       status: 'completed',
       paidAtIso: this.#now().toISOString(),
     };
@@ -165,7 +169,11 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
   #getCharge(input: PaymentsBillingExecuteInputV1): PaymentsBillingExecuteOutputV1 {
     const paymentId = readString(input.payload, 'paymentId');
     if (paymentId === null) {
-      return { ok: false, error: 'validation_error', message: 'paymentId is required for getCharge.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'paymentId is required for getCharge.',
+      };
     }
     const payment = this.#charges.find(
       (item) => item.tenantId === input.tenantId && item.paymentId === paymentId,
@@ -281,14 +289,12 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       tenantId: input.tenantId,
       schemaVersion: 1,
       invoiceNumber:
-        (typeof input.payload?.['invoiceNumber'] === 'string'
+        typeof input.payload?.['invoiceNumber'] === 'string'
           ? input.payload['invoiceNumber']
-          : `PB-INV-${this.#invoiceSequence}`),
+          : `PB-INV-${this.#invoiceSequence}`,
       status: 'draft',
       currencyCode:
-        (typeof input.payload?.['currencyCode'] === 'string'
-          ? input.payload['currencyCode']
-          : 'USD'),
+        typeof input.payload?.['currencyCode'] === 'string' ? input.payload['currencyCode'] : 'USD',
       totalAmount: readNumber(input.payload, 'totalAmount') ?? 0,
       issuedAtIso: this.#now().toISOString(),
     };
@@ -299,7 +305,11 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
   #getInvoice(input: PaymentsBillingExecuteInputV1): PaymentsBillingExecuteOutputV1 {
     const invoiceId = readString(input.payload, 'invoiceId');
     if (invoiceId === null) {
-      return { ok: false, error: 'validation_error', message: 'invoiceId is required for getInvoice.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'invoiceId is required for getInvoice.',
+      };
     }
     const invoice = this.#invoices.find(
       (item) => item.tenantId === input.tenantId && item.invoiceId === invoiceId,
@@ -356,9 +366,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       schemaVersion: 1,
       amount,
       currencyCode:
-        typeof input.payload?.['currencyCode'] === 'string'
-          ? (input.payload['currencyCode'])
-          : 'USD',
+        typeof input.payload?.['currencyCode'] === 'string' ? input.payload['currencyCode'] : 'USD',
       status: 'completed',
       paidAtIso: this.#now().toISOString(),
     };
@@ -366,7 +374,9 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
     return { ok: true, result: { kind: 'payment', payment: payout } };
   }
 
-  public static seedMinimal(tenantId: PaymentsBillingExecuteInputV1['tenantId']): InMemoryPaymentsBillingAdapterSeed {
+  public static seedMinimal(
+    tenantId: PaymentsBillingExecuteInputV1['tenantId'],
+  ): InMemoryPaymentsBillingAdapterSeed {
     return {
       charges: [
         {

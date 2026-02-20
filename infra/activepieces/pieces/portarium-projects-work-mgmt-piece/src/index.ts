@@ -32,7 +32,9 @@ export type CorrelationHeaders = Readonly<{
   runId?: string;
 }>;
 
-export function buildCorrelationHeaders(input: CorrelationHeaders): Readonly<Record<string, string>> {
+export function buildCorrelationHeaders(
+  input: CorrelationHeaders,
+): Readonly<Record<string, string>> {
   const headers: Record<string, string> = {
     tenantId: requireNonEmpty(input.tenantId, 'tenantId'),
     correlationId: requireNonEmpty(input.correlationId, 'correlationId'),

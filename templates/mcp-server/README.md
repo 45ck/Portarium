@@ -36,19 +36,19 @@ mcp-server/
 
 ## Exposed Tools
 
-| Tool | Description |
-|------|-------------|
-| `portarium_start_run` | Start a workflow run in a workspace |
-| `portarium_get_run` | Get the status of a workflow run |
-| `portarium_list_approvals` | List pending approvals in a workspace |
-| `portarium_decide_approval` | Approve or deny a pending approval |
-| `portarium_query_evidence` | Query the evidence/audit trail |
+| Tool                        | Description                           |
+| --------------------------- | ------------------------------------- |
+| `portarium_start_run`       | Start a workflow run in a workspace   |
+| `portarium_get_run`         | Get the status of a workflow run      |
+| `portarium_list_approvals`  | List pending approvals in a workspace |
+| `portarium_decide_approval` | Approve or deny a pending approval    |
+| `portarium_query_evidence`  | Query the evidence/audit trail        |
 
 ## Configuration
 
-| Variable | Description |
-|----------|-------------|
-| `PORTARIUM_BASE_URL` | Portarium control plane URL |
-| `PORTARIUM_TOKEN` | Workspace-scoped JWT |
-| `PORTARIUM_WORKSPACE_ID` | Default workspace ID |
-| `MCP_PORT` | MCP server port (default: 3100) |
+| Variable                 | Description                     |
+| ------------------------ | ------------------------------- |
+| `PORTARIUM_BASE_URL`     | Portarium control plane URL     |
+| `PORTARIUM_TOKEN`        | Workspace-scoped JWT            |
+| `PORTARIUM_WORKSPACE_ID` | Default workspace ID            |
+| `MCP_PORT`               | MCP server port (default: 3100) |

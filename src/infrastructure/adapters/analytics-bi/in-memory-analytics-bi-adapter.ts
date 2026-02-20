@@ -37,7 +37,10 @@ type InMemoryAnalyticsBiAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -100,14 +103,26 @@ export class InMemoryAnalyticsBiAdapter implements AnalyticsBiAdapterPort {
       case 'listDashboards':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#dashboards, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#dashboards, input),
+          },
         };
       case 'getDashboard':
-        return this.#getTenantRef(input, this.#dashboards, 'dashboardId', 'Dashboard', 'getDashboard');
+        return this.#getTenantRef(
+          input,
+          this.#dashboards,
+          'dashboardId',
+          'Dashboard',
+          'getDashboard',
+        );
       case 'listReports':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#reports, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#reports, input),
+          },
         };
       case 'getReport':
         return this.#getTenantRef(input, this.#reports, 'reportId', 'Report', 'getReport');
@@ -118,16 +133,28 @@ export class InMemoryAnalyticsBiAdapter implements AnalyticsBiAdapterPort {
       case 'listDataSources':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#dataSources, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#dataSources, input),
+          },
         };
       case 'getDataSource':
-        return this.#getTenantRef(input, this.#dataSources, 'dataSourceId', 'Data source', 'getDataSource');
+        return this.#getTenantRef(
+          input,
+          this.#dataSources,
+          'dataSourceId',
+          'Data source',
+          'getDataSource',
+        );
       case 'createDataSource':
         return this.#createDataSource(input);
       case 'listDatasets':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#datasets, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#datasets, input),
+          },
         };
       case 'getDataset':
         return this.#getTenantRef(input, this.#datasets, 'datasetId', 'Dataset', 'getDataset');
@@ -136,7 +163,10 @@ export class InMemoryAnalyticsBiAdapter implements AnalyticsBiAdapterPort {
       case 'listMetrics':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#metrics, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#metrics, input),
+          },
         };
       case 'exportReport':
         return this.#exportReport(input);
@@ -200,7 +230,11 @@ export class InMemoryAnalyticsBiAdapter implements AnalyticsBiAdapterPort {
       (entry) => entry.tenantId === input.tenantId && entry.queryId === queryId,
     );
     if (found === undefined) {
-      return { ok: false, error: 'not_found', message: `Query results for ${queryId} were not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Query results for ${queryId} were not found.`,
+      };
     }
     return { ok: true, result: { kind: 'externalRef', externalRef: found.externalRef } };
   }
@@ -352,8 +386,7 @@ export class InMemoryAnalyticsBiAdapter implements AnalyticsBiAdapterPort {
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

@@ -65,7 +65,9 @@ describe('InMemoryFinanceAccountingAdapter', () => {
     expect(listed.result.kind).toBe('invoices');
     if (listed.result.kind !== 'invoices') return;
     expect(listed.result.invoices).toHaveLength(2);
-    expect(listed.result.invoices.some((invoice) => invoice.invoiceNumber === 'INV-2000')).toBe(true);
+    expect(listed.result.invoices.some((invoice) => invoice.invoiceNumber === 'INV-2000')).toBe(
+      true,
+    );
   });
 
   it('returns vendor not_found when missing', async () => {

@@ -68,13 +68,14 @@ export interface HumanTaskStatusTransitionMap {
 export type ValidHumanTaskStatusTransition<From extends HumanTaskStatus = HumanTaskStatus> =
   HumanTaskStatusTransitionMap[From];
 
-export const HUMAN_TASK_TRANSITIONS: Readonly<Record<HumanTaskStatus, readonly HumanTaskStatus[]>> = {
-  pending: ['assigned', 'escalated'],
-  assigned: ['in-progress', 'escalated', 'completed'],
-  'in-progress': ['completed', 'escalated'],
-  completed: [],
-  escalated: ['assigned', 'in-progress', 'completed'],
-} as const;
+export const HUMAN_TASK_TRANSITIONS: Readonly<Record<HumanTaskStatus, readonly HumanTaskStatus[]>> =
+  {
+    pending: ['assigned', 'escalated'],
+    assigned: ['in-progress', 'escalated', 'completed'],
+    'in-progress': ['completed', 'escalated'],
+    completed: [],
+    escalated: ['assigned', 'in-progress', 'completed'],
+  } as const;
 
 export class HumanTaskParseError extends Error {
   public override readonly name = 'HumanTaskParseError';
@@ -155,7 +156,11 @@ export function completeHumanTaskV1(params: {
   evidenceAnchorId: EvidenceIdType;
 }): HumanTaskV1 {
   ensureNotCompleted(params.task);
-  const completedAt = readIsoString({ completedAt: params.completedAt }, 'completedAt', HumanTaskParseError);
+  const completedAt = readIsoString(
+    { completedAt: params.completedAt },
+    'completedAt',
+    HumanTaskParseError,
+  );
   return {
     ...params.task,
     status: 'completed',

@@ -280,13 +280,13 @@ async function buildVerifiedEffectsWithTelemetry(params: {
         spanName: 'workflow.action.execute',
         attributes: actionMetrics,
         run: () =>
-          Promise.resolve(({
+          Promise.resolve({
             effectId: plannedEffect.effectId,
             operation: plannedEffect.operation,
             target: plannedEffect.target,
             summary: `Verified: ${plannedEffect.summary}`,
             verifiedAtIso: new Date().toISOString(),
-          }) satisfies VerifiedEffectV1),
+          } satisfies VerifiedEffectV1),
       });
 
       emitCounter('portarium.action.succeeded', actionMetrics);

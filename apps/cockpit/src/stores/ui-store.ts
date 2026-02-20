@@ -1,39 +1,39 @@
-import { create } from 'zustand'
-import type { DatasetId } from '@/mocks/fixtures/index'
+import { create } from 'zustand';
+import type { DatasetId } from '@/mocks/fixtures/index';
 
-const DATASET_STORAGE_KEY = 'portarium-dataset'
+const DATASET_STORAGE_KEY = 'portarium-dataset';
 
 const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
-  'demo': 'ws-demo',
+  demo: 'ws-demo',
   'meridian-demo': 'ws-meridian',
   'meridian-full': 'ws-meridian',
-}
+};
 
-export type PersonaId = 'Operator' | 'Approver' | 'Auditor' | 'Admin'
+export type PersonaId = 'Operator' | 'Approver' | 'Auditor' | 'Admin';
 
 interface UIStore {
-  sidebarCollapsed: boolean
-  commandPaletteOpen: boolean
-  startRunOpen: boolean
-  activeWorkspaceId: string
-  activeDataset: DatasetId
-  activePersona: PersonaId
-  keyboardCheatsheetOpen: boolean
-  setSidebarCollapsed: (v: boolean) => void
-  setCommandPaletteOpen: (v: boolean) => void
-  setStartRunOpen: (v: boolean) => void
-  setActiveDataset: (id: DatasetId) => void
-  setActiveWorkspaceId: (id: string) => void
-  setActivePersona: (persona: PersonaId) => void
-  setKeyboardCheatsheetOpen: (v: boolean) => void
+  sidebarCollapsed: boolean;
+  commandPaletteOpen: boolean;
+  startRunOpen: boolean;
+  activeWorkspaceId: string;
+  activeDataset: DatasetId;
+  activePersona: PersonaId;
+  keyboardCheatsheetOpen: boolean;
+  setSidebarCollapsed: (v: boolean) => void;
+  setCommandPaletteOpen: (v: boolean) => void;
+  setStartRunOpen: (v: boolean) => void;
+  setActiveDataset: (id: DatasetId) => void;
+  setActiveWorkspaceId: (id: string) => void;
+  setActivePersona: (persona: PersonaId) => void;
+  setKeyboardCheatsheetOpen: (v: boolean) => void;
 }
 
 function readStoredDataset(): DatasetId {
-  const stored = localStorage.getItem(DATASET_STORAGE_KEY)
+  const stored = localStorage.getItem(DATASET_STORAGE_KEY);
   if (stored === 'demo' || stored === 'meridian-demo' || stored === 'meridian-full') {
-    return stored
+    return stored;
   }
-  return 'meridian-demo'
+  return 'meridian-demo';
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -48,10 +48,10 @@ export const useUIStore = create<UIStore>((set) => ({
   setCommandPaletteOpen: (v) => set({ commandPaletteOpen: v }),
   setStartRunOpen: (v) => set({ startRunOpen: v }),
   setActiveDataset: (id) => {
-    localStorage.setItem(DATASET_STORAGE_KEY, id)
-    window.location.reload()
+    localStorage.setItem(DATASET_STORAGE_KEY, id);
+    window.location.reload();
   },
   setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
   setActivePersona: (persona) => set({ activePersona: persona }),
   setKeyboardCheatsheetOpen: (v) => set({ keyboardCheatsheetOpen: v }),
-}))
+}));

@@ -128,7 +128,8 @@ describe('InMemoryDocumentsEsignAdapter integration', () => {
       payload: { signatureRequestId },
     });
     expect(fetchedSignatureRequest.ok).toBe(true);
-    if (!fetchedSignatureRequest.ok || fetchedSignatureRequest.result.kind !== 'externalRef') return;
+    if (!fetchedSignatureRequest.ok || fetchedSignatureRequest.result.kind !== 'externalRef')
+      return;
     expect(fetchedSignatureRequest.result.externalRef.externalId).toBe(signatureRequestId);
 
     const listedSignatureRequests = await adapter.execute({
@@ -136,9 +137,12 @@ describe('InMemoryDocumentsEsignAdapter integration', () => {
       operation: 'listSignatureRequests',
     });
     expect(listedSignatureRequests.ok).toBe(true);
-    if (!listedSignatureRequests.ok || listedSignatureRequests.result.kind !== 'externalRefs') return;
+    if (!listedSignatureRequests.ok || listedSignatureRequests.result.kind !== 'externalRefs')
+      return;
     expect(
-      listedSignatureRequests.result.externalRefs.some((entry) => entry.externalId === signatureRequestId),
+      listedSignatureRequests.result.externalRefs.some(
+        (entry) => entry.externalId === signatureRequestId,
+      ),
     ).toBe(true);
 
     const downloadedSignedDocument = await adapter.execute({
@@ -165,7 +169,9 @@ describe('InMemoryDocumentsEsignAdapter integration', () => {
     });
     expect(secondAuditTrail.ok).toBe(true);
     if (!secondAuditTrail.ok || secondAuditTrail.result.kind !== 'externalRef') return;
-    expect(secondAuditTrail.result.externalRef.externalId).toBe(firstAuditTrail.result.externalRef.externalId);
+    expect(secondAuditTrail.result.externalRef.externalId).toBe(
+      firstAuditTrail.result.externalRef.externalId,
+    );
 
     const template = await adapter.execute({
       tenantId: TENANT,
@@ -178,7 +184,9 @@ describe('InMemoryDocumentsEsignAdapter integration', () => {
     const templates = await adapter.execute({ tenantId: TENANT, operation: 'listTemplates' });
     expect(templates.ok).toBe(true);
     if (!templates.ok || templates.result.kind !== 'documents') return;
-    expect(templates.result.documents.some((entry) => entry.title === 'Master Order Form')).toBe(true);
+    expect(templates.result.documents.some((entry) => entry.title === 'Master Order Form')).toBe(
+      true,
+    );
   });
 
   it('returns validation and not-found errors for invalid payloads', async () => {

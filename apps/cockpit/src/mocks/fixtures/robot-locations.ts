@@ -3,52 +3,52 @@
 // Positions are around the Seattle area for demo purposes.
 // ---------------------------------------------------------------------------
 
-import type { RobotStatus, RobotClass } from '@/types/robotics'
+import type { RobotStatus, RobotClass } from '@/types/robotics';
 
 export interface RobotLocation {
-  robotId: string
-  name: string
-  robotClass: RobotClass
-  status: RobotStatus
-  batteryPct: number
-  lat: number
-  lng: number
-  heading: number
-  speedMps: number
-  updatedAtIso: string
-  missionId?: string
-  trail: Array<{ lat: number; lng: number; timestampIso: string }>
+  robotId: string;
+  name: string;
+  robotClass: RobotClass;
+  status: RobotStatus;
+  batteryPct: number;
+  lat: number;
+  lng: number;
+  heading: number;
+  speedMps: number;
+  updatedAtIso: string;
+  missionId?: string;
+  trail: Array<{ lat: number; lng: number; timestampIso: string }>;
 }
 
 export interface Geofence {
-  geofenceId: string
-  label: string
-  polygon: Array<[number, number]>
-  color: string
+  geofenceId: string;
+  label: string;
+  polygon: Array<[number, number]>;
+  color: string;
 }
 
 export interface SpatialAlert {
-  alertId: string
-  robotId: string
-  type: 'geofence-violation' | 'localization-drop' | 'e-stop'
-  message: string
-  lat: number
-  lng: number
-  timestampIso: string
-  severity: 'warning' | 'critical'
+  alertId: string;
+  robotId: string;
+  type: 'geofence-violation' | 'localization-drop' | 'e-stop';
+  message: string;
+  lat: number;
+  lng: number;
+  timestampIso: string;
+  severity: 'warning' | 'critical';
 }
 
 // Seattle warehouse district area
-const BASE_LAT = 47.6062
-const BASE_LNG = -122.3321
+const BASE_LAT = 47.6062;
+const BASE_LNG = -122.3321;
 
 function trail(baseLat: number, baseLng: number, count: number): RobotLocation['trail'] {
-  const now = Date.now()
+  const now = Date.now();
   return Array.from({ length: count }, (_, i) => ({
-    lat: baseLat + (Math.sin(i * 0.4) * 0.002),
-    lng: baseLng + (i * 0.0004),
+    lat: baseLat + Math.sin(i * 0.4) * 0.002,
+    lng: baseLng + i * 0.0004,
     timestampIso: new Date(now - (count - i) * 30_000).toISOString(),
-  }))
+  }));
 }
 
 export const ROBOT_LOCATIONS: RobotLocation[] = [
@@ -147,7 +147,7 @@ export const ROBOT_LOCATIONS: RobotLocation[] = [
     updatedAtIso: new Date().toISOString(),
     trail: trail(BASE_LAT - 0.001, BASE_LNG - 0.004, 4),
   },
-]
+];
 
 export const GEOFENCES: Geofence[] = [
   {
@@ -176,14 +176,14 @@ export const GEOFENCES: Geofence[] = [
     geofenceId: 'gf-loading-yard',
     label: 'Loading Yard',
     polygon: [
-      [BASE_LAT - 0.002, BASE_LNG + 0.000],
+      [BASE_LAT - 0.002, BASE_LNG + 0.0],
       [BASE_LAT - 0.002, BASE_LNG + 0.006],
       [BASE_LAT - 0.005, BASE_LNG + 0.006],
-      [BASE_LAT - 0.005, BASE_LNG + 0.000],
+      [BASE_LAT - 0.005, BASE_LNG + 0.0],
     ],
     color: '#f59e0b',
   },
-]
+];
 
 export const SPATIAL_ALERTS: SpatialAlert[] = [
   {
@@ -216,4 +216,4 @@ export const SPATIAL_ALERTS: SpatialAlert[] = [
     timestampIso: '2026-02-20T13:45:18Z',
     severity: 'warning',
   },
-]
+];

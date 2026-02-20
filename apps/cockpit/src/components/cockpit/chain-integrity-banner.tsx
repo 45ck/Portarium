@@ -1,16 +1,19 @@
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
 
 interface ChainIntegrityBannerProps {
-  status: 'verified' | 'broken' | 'pending'
+  status: 'verified' | 'broken' | 'pending';
 }
 
-const config: Record<ChainIntegrityBannerProps['status'], {
-  icon: React.ElementType
-  title: string
-  description: string
-  variant: 'default' | 'destructive' | 'success'
-}> = {
+const config: Record<
+  ChainIntegrityBannerProps['status'],
+  {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    variant: 'default' | 'destructive' | 'success';
+  }
+> = {
   verified: {
     icon: ShieldCheck,
     title: 'Chain integrity verified',
@@ -29,15 +32,15 @@ const config: Record<ChainIntegrityBannerProps['status'], {
     description: 'Verification is in progress.',
     variant: 'default',
   },
-}
+};
 
 export function ChainIntegrityBanner({ status }: ChainIntegrityBannerProps) {
-  const { icon: Icon, title, description, variant } = config[status]
+  const { icon: Icon, title, description, variant } = config[status];
   return (
     <Alert variant={variant}>
       <Icon className="h-4 w-4" />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>
     </Alert>
-  )
+  );
 }

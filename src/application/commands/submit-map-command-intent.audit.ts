@@ -1,4 +1,8 @@
-import { EvidenceId, type CorrelationId, type EvidenceId as EvidenceIdType } from '../../domain/primitives/index.js';
+import {
+  EvidenceId,
+  type CorrelationId,
+  type EvidenceId as EvidenceIdType,
+} from '../../domain/primitives/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type { EvidenceEntryAppendInput } from '../ports/index.js';
 import type { PolicyEvaluationResultV1 } from '../../domain/services/index.js';
@@ -20,8 +24,15 @@ function buildMapCommandEvidence(params: {
   actorUserId: ParsedSubmitMapCommandIntentInput['requestedByUserId'];
   correlationId: CorrelationId;
 }): EvidenceEntryAppendInput {
-  const { commandIntentId, evidenceId, occurredAtIso, input, decision, actorUserId, correlationId } =
-    params;
+  const {
+    commandIntentId,
+    evidenceId,
+    occurredAtIso,
+    input,
+    decision,
+    actorUserId,
+    correlationId,
+  } = params;
   const mapRefId = `${input.mapContext.siteId}:${input.mapContext.floorId ?? 'all'}:${input.mapContext.zoneId ?? 'all'}`;
   const approvingActors = input.approvingActorUserIds.map((id) => id.toString()).join(',');
 

@@ -210,10 +210,7 @@ function ExploreGovernancePage() {
             <div className="mt-6 space-y-5">
               <div>
                 <div className="text-xs font-medium mb-1">Status</div>
-                <Badge
-                  variant="secondary"
-                  className={policyStatusClassName[selectedPolicy.status]}
-                >
+                <Badge variant="secondary" className={policyStatusClassName[selectedPolicy.status]}>
                   {selectedPolicy.status}
                 </Badge>
               </div>
@@ -241,14 +238,9 @@ function ExploreGovernancePage() {
               <div>
                 <div className="text-xs font-medium mb-2">Linked SoD Constraints</div>
                 {sodConstraints
-                  .filter((c) =>
-                    c.relatedPolicyIds.includes(selectedPolicy.policyId),
-                  )
+                  .filter((c) => c.relatedPolicyIds.includes(selectedPolicy.policyId))
                   .map((c) => (
-                    <div
-                      key={c.constraintId}
-                      className="flex items-center gap-2 text-xs py-1"
-                    >
+                    <div key={c.constraintId} className="flex items-center gap-2 text-xs py-1">
                       <Badge variant="secondary" className="text-[10px]">
                         {c.constraintId}
                       </Badge>

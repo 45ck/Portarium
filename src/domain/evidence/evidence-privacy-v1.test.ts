@@ -48,14 +48,14 @@ describe('Evidence privacy minimization v1', () => {
     const entry: EvidenceEntryV1WithoutHash = {
       ...validEntry(),
       links: {
-      externalRefs: [
-        {
-          sorName: 'crm',
-          portFamily: 'CrmSales',
-          externalId: 'alice@example.com',
-          externalType: 'contact',
-        },
-      ],
+        externalRefs: [
+          {
+            sorName: 'crm',
+            portFamily: 'CrmSales',
+            externalId: 'alice@example.com',
+            externalType: 'contact',
+          },
+        ],
       },
     };
     expect(() => assertEvidencePrivacyMinimizationV1(entry)).toThrow(EvidencePrivacyViolationError);

@@ -13,10 +13,7 @@ import { createCanonicalSeedBundleV1 } from '../../domain/testing/canonical-seed
 import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
 import { parseCredentialGrantV1 } from '../../domain/credentials/credential-grant-v1.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
-import {
-  HashSha256,
-  PORT_FAMILIES,
-} from '../../domain/primitives/index.js';
+import { HashSha256, PORT_FAMILIES } from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import {
   buildJsonSchemaFromComponents,
@@ -253,7 +250,9 @@ describe('OpenAPI contract', () => {
       ...adapterRegistration,
       capabilityMatrix: [],
     };
-    expect(() => parseAdapterRegistrationV1(invalidAdapterRegistration)).toThrow(/capabilityMatrix/i);
+    expect(() => parseAdapterRegistrationV1(invalidAdapterRegistration)).toThrow(
+      /capabilityMatrix/i,
+    );
     expect(validateAdapterRegistration(invalidAdapterRegistration)).toBe(false);
 
     const policySchema = buildJsonSchemaFromComponents({
@@ -267,7 +266,10 @@ describe('OpenAPI contract', () => {
     expect(() => parsePolicyV1(policy)).not.toThrow();
     expect(() => validateOrThrow(validatePolicy, policy)).not.toThrow();
 
-    const invalidPolicy = { ...policy, rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }] };
+    const invalidPolicy = {
+      ...policy,
+      rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }],
+    };
     expect(() => parsePolicyV1(invalidPolicy)).toThrow(/effect/i);
     expect(validatePolicy(invalidPolicy)).toBe(false);
   });

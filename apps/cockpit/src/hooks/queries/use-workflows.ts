@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
-import type { WorkflowDetail, WorkflowSummary } from '@portarium/cockpit-types'
+import { useQuery } from '@tanstack/react-query';
+import type { WorkflowDetail, WorkflowSummary } from '@portarium/cockpit-types';
 
 async function fetchWorkflows(wsId: string): Promise<{ items: WorkflowSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workflows`)
-  if (!res.ok) throw new Error('Failed to fetch workflows')
-  return res.json()
+  const res = await fetch(`/v1/workspaces/${wsId}/workflows`);
+  if (!res.ok) throw new Error('Failed to fetch workflows');
+  return res.json();
 }
 
 async function fetchWorkflow(wsId: string, workflowId: string): Promise<WorkflowDetail> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workflows/${workflowId}`)
-  if (!res.ok) throw new Error('Workflow not found')
-  return res.json()
+  const res = await fetch(`/v1/workspaces/${wsId}/workflows/${workflowId}`);
+  if (!res.ok) throw new Error('Workflow not found');
+  return res.json();
 }
 
 export function useWorkflows(wsId: string) {
@@ -18,7 +18,7 @@ export function useWorkflows(wsId: string) {
     queryKey: ['workflows', wsId],
     queryFn: () => fetchWorkflows(wsId),
     enabled: Boolean(wsId),
-  })
+  });
 }
 
 export function useWorkflow(wsId: string, workflowId: string) {
@@ -26,5 +26,5 @@ export function useWorkflow(wsId: string, workflowId: string) {
     queryKey: ['workflows', wsId, workflowId],
     queryFn: () => fetchWorkflow(wsId, workflowId),
     enabled: Boolean(wsId) && Boolean(workflowId),
-  })
+  });
 }

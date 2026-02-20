@@ -430,9 +430,9 @@ describe('createControlPlaneHandler', () => {
     const evidenceBody = (await evidenceRes.json()) as {
       items: { evidenceId: string; summary: string }[];
     };
-    expect(evidenceBody.items.some((entry) => entry.evidenceId === completed.evidenceAnchorId)).toBe(
-      true,
-    );
+    expect(
+      evidenceBody.items.some((entry) => entry.evidenceId === completed.evidenceAnchorId),
+    ).toBe(true);
   });
 
   it('lists location events in a bounded playback window with filters', async () => {

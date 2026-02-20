@@ -38,7 +38,10 @@ function WorkItemsPage() {
     new Map(
       items
         .filter((i) => Boolean(i.ownerUserId))
-        .map((i) => [i.ownerUserId!, { label: i.ownerUserId!.replace(/^user-/, ''), value: i.ownerUserId! }]),
+        .map((i) => [
+          i.ownerUserId!,
+          { label: i.ownerUserId!.replace(/^user-/, ''), value: i.ownerUserId! },
+        ]),
     ).values(),
   ).sort((a, b) => a.label.localeCompare(b.label));
 
@@ -60,7 +63,9 @@ function WorkItemsPage() {
       header: 'ID',
       width: '120px',
       render: (row: WorkItemSummary) => (
-        <span className="font-mono" title={row.workItemId}>{row.workItemId.slice(0, 12)}</span>
+        <span className="font-mono" title={row.workItemId}>
+          {row.workItemId.slice(0, 12)}
+        </span>
       ),
     },
     { key: 'title', header: 'Title' },
@@ -105,7 +110,10 @@ function WorkItemsPage() {
   if (isError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Work Items" icon={<EntityIcon entityType="work-item" size="md" decorative />} />
+        <PageHeader
+          title="Work Items"
+          icon={<EntityIcon entityType="work-item" size="md" decorative />}
+        />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">

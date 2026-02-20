@@ -4,11 +4,11 @@ Configuration files and deployment templates for the Portarium ROS 2 bridge node
 
 ## Contents
 
-| File                | Purpose                                        |
-| ------------------- | ---------------------------------------------- |
-| `config.dev.yaml`   | Development mode config (rosbridge WebSocket)  |
-| `config.prod.yaml`  | Production mode config (DDS-Security / SROS 2) |
-| `governance.xml`    | DDS governance policy template                 |
+| File               | Purpose                                        |
+| ------------------ | ---------------------------------------------- |
+| `config.dev.yaml`  | Development mode config (rosbridge WebSocket)  |
+| `config.prod.yaml` | Production mode config (DDS-Security / SROS 2) |
+| `governance.xml`   | DDS governance policy template                 |
 
 ## Quick start (development)
 

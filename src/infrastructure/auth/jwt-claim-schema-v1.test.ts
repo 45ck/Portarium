@@ -136,21 +136,19 @@ describe('parsePortariumJwtClaims', () => {
   });
 
   it('rejects empty roles array', () => {
-    expect(() => parsePortariumJwtClaims(validPayload({ roles: [] }))).toThrow(
-      "Claim 'roles'",
-    );
+    expect(() => parsePortariumJwtClaims(validPayload({ roles: [] }))).toThrow("Claim 'roles'");
   });
 
   it('rejects invalid role value', () => {
-    expect(() =>
-      parsePortariumJwtClaims(validPayload({ roles: ['superuser'] })),
-    ).toThrow('not a valid workspace role');
+    expect(() => parsePortariumJwtClaims(validPayload({ roles: ['superuser'] }))).toThrow(
+      'not a valid workspace role',
+    );
   });
 
   it('rejects duplicate roles', () => {
-    expect(() =>
-      parsePortariumJwtClaims(validPayload({ roles: ['admin', 'admin'] })),
-    ).toThrow('duplicate role');
+    expect(() => parsePortariumJwtClaims(validPayload({ roles: ['admin', 'admin'] }))).toThrow(
+      'duplicate role',
+    );
   });
 
   it('rejects non-string agentId', () => {
@@ -166,9 +164,9 @@ describe('parsePortariumJwtClaims', () => {
   });
 
   it('rejects non-array capabilities', () => {
-    expect(() =>
-      parsePortariumJwtClaims(validPayload({ capabilities: 'invoice:read' })),
-    ).toThrow(JwtClaimValidationError);
+    expect(() => parsePortariumJwtClaims(validPayload({ capabilities: 'invoice:read' }))).toThrow(
+      JwtClaimValidationError,
+    );
   });
 
   it('rejects capabilities with empty string entries', () => {

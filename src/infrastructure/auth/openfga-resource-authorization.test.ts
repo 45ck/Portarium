@@ -65,8 +65,8 @@ describe('OpenFgaResourceAuthorization', () => {
   });
 
   it('allows when RBAC passes and OpenFGA check allows', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ allowed: true }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ allowed: true }), { status: 200 }),
     );
     const authz = new OpenFgaResourceAuthorization({
       apiUrl: 'http://openfga.local',
@@ -91,8 +91,8 @@ describe('OpenFgaResourceAuthorization', () => {
   });
 
   it('denies when OpenFGA returns false', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ allowed: false }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ allowed: false }), { status: 200 }),
     );
     const authz = new OpenFgaResourceAuthorization({
       apiUrl: 'http://openfga.local',
@@ -134,8 +134,8 @@ describe('OpenFgaResourceAuthorization', () => {
   });
 
   it('sends correct object ref for run resources', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ allowed: true }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ allowed: true }), { status: 200 }),
     );
     const authz = new OpenFgaResourceAuthorization({
       apiUrl: 'http://openfga.local',

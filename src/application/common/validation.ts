@@ -29,10 +29,7 @@ import { err, ok, type Result } from './result.js';
  * A single validation rule.  Receives the raw input object and appends zero
  * or more violations to the shared `violations` accumulator.
  */
-export type ValidationRule<TInput> = (
-  input: TInput,
-  violations: FieldViolation[],
-) => void;
+export type ValidationRule<TInput> = (input: TInput, violations: FieldViolation[]) => void;
 
 // ---------------------------------------------------------------------------
 // Rule runner
@@ -56,9 +53,8 @@ export function validate<TInput>(
 
   return err({
     kind: 'ValidationFailed',
-    message: violations.length === 1
-      ? violations[0]!.message
-      : `${violations.length} validation errors.`,
+    message:
+      violations.length === 1 ? violations[0]!.message : `${violations.length} validation errors.`,
     errors: violations,
   });
 }

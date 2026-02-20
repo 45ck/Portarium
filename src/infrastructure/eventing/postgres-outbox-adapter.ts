@@ -1,9 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type {
-  OutboxEntry,
-  OutboxPort,
-} from '../../application/ports/outbox.js';
+import type { OutboxEntry, OutboxPort } from '../../application/ports/outbox.js';
 import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 import { parsePortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 
@@ -73,10 +70,11 @@ export class PostgresOutboxAdapter implements OutboxPort {
     const current = rows[0]!.payload;
     const updated: OutboxEntry = { ...current, status: 'Published' };
 
-    await this.#client.query(
-      `UPDATE outbox SET payload = $1, status = $2 WHERE entry_id = $3`,
-      [JSON.stringify(updated), 'Published', entryId],
-    );
+    await this.#client.query(`UPDATE outbox SET payload = $1, status = $2 WHERE entry_id = $3`, [
+      JSON.stringify(updated),
+      'Published',
+      entryId,
+    ]);
   }
 
   public async markFailed(entryId: string, reason: string, nextRetryAtIso: string): Promise<void> {
@@ -98,9 +96,10 @@ export class PostgresOutboxAdapter implements OutboxPort {
       retryCount: current.retryCount + 1,
     };
 
-    await this.#client.query(
-      `UPDATE outbox SET payload = $1, status = $2 WHERE entry_id = $3`,
-      [JSON.stringify(updated), 'Failed', entryId],
-    );
+    await this.#client.query(`UPDATE outbox SET payload = $1, status = $2 WHERE entry_id = $3`, [
+      JSON.stringify(updated),
+      'Failed',
+      entryId,
+    ]);
   }
 }

@@ -6,9 +6,7 @@ import type {
   SodViolationV1,
 } from '../policy/sod-constraints-v1.js';
 import { evaluateSodConstraintsV1 } from '../policy/sod-constraints-v1.js';
-import {
-  evaluatePolicyConditionDslV1,
-} from '../policy/policy-condition-dsl-v1.js';
+import { evaluatePolicyConditionDslV1 } from '../policy/policy-condition-dsl-v1.js';
 import type { PolicyId as PolicyIdType, UserId as UserIdType } from '../primitives/index.js';
 import {
   evaluateSafetyPolicyContext,

@@ -12,19 +12,19 @@ X.509 SVIDs (SPIFFE Verifiable Identity Documents).
 
 ## Manifests
 
-| File                       | Description                                          |
-|----------------------------|------------------------------------------------------|
-| `spire-server.yaml`        | SPIRE server StatefulSet with K8s PSAT node attestation, SQLite data store, disk key manager |
-| `spire-agent.yaml`         | SPIRE agent DaemonSet with K8s WorkloadAttestor, Unix socket at `/run/spire/sockets/agent.sock` |
-| `registration-entries.yaml` | ConfigMap documenting SPIFFE ID assignments for Portarium workloads |
+| File                        | Description                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `spire-server.yaml`         | SPIRE server StatefulSet with K8s PSAT node attestation, SQLite data store, disk key manager    |
+| `spire-agent.yaml`          | SPIRE agent DaemonSet with K8s WorkloadAttestor, Unix socket at `/run/spire/sockets/agent.sock` |
+| `registration-entries.yaml` | ConfigMap documenting SPIFFE ID assignments for Portarium workloads                             |
 
 ## SPIFFE ID assignments
 
-| Workload           | SPIFFE ID                                                        |
-|--------------------|-----------------------------------------------------------------|
-| Control Plane      | `spiffe://portarium.io/ns/portarium/sa/portarium-control-plane`  |
-| Execution Plane    | `spiffe://portarium.io/ns/portarium/sa/portarium-execution-plane`|
-| Agent              | `spiffe://portarium.io/ns/portarium/sa/portarium-agent`          |
+| Workload        | SPIFFE ID                                                         |
+| --------------- | ----------------------------------------------------------------- |
+| Control Plane   | `spiffe://portarium.io/ns/portarium/sa/portarium-control-plane`   |
+| Execution Plane | `spiffe://portarium.io/ns/portarium/sa/portarium-execution-plane` |
+| Agent           | `spiffe://portarium.io/ns/portarium/sa/portarium-agent`           |
 
 ## Trust domain
 

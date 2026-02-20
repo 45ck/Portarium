@@ -35,18 +35,21 @@ interface RunStatus {
 }
 
 async function startRun(req: StartRunRequest): Promise<RunStatus> {
-  const res = await fetch(`${PORTARIUM_BASE_URL}/api/v1/workspaces/${PORTARIUM_WORKSPACE_ID}/runs`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${PORTARIUM_TOKEN}`,
+  const res = await fetch(
+    `${PORTARIUM_BASE_URL}/api/v1/workspaces/${PORTARIUM_WORKSPACE_ID}/runs`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${PORTARIUM_TOKEN}`,
+      },
+      body: JSON.stringify({
+        workflowId: req.workflowId,
+        inputPayload: req.inputPayload ?? {},
+        correlationId: req.correlationId,
+      }),
     },
-    body: JSON.stringify({
-      workflowId: req.workflowId,
-      inputPayload: req.inputPayload ?? {},
-      correlationId: req.correlationId,
-    }),
-  });
+  );
   if (!res.ok) throw new Error(`Portarium startRun failed: ${res.status} ${await res.text()}`);
   return (await res.json()) as RunStatus;
 }

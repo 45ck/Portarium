@@ -26,9 +26,7 @@ describe('evaluateCommandGuardrails', () => {
   });
 
   it('requires approval for HumanApprove tier', () => {
-    const result = evaluateCommandGuardrails(
-      makeInput({ executionTier: 'HumanApprove' }),
-    );
+    const result = evaluateCommandGuardrails(makeInput({ executionTier: 'HumanApprove' }));
     expect(result.allowed).toBe(true);
     expect(result.requiresApproval).toBe(true);
     expect(result.violations).toHaveLength(1);
@@ -36,9 +34,7 @@ describe('evaluateCommandGuardrails', () => {
   });
 
   it('denies ManualOnly tier commands', () => {
-    const result = evaluateCommandGuardrails(
-      makeInput({ executionTier: 'ManualOnly' }),
-    );
+    const result = evaluateCommandGuardrails(makeInput({ executionTier: 'ManualOnly' }));
     expect(result.allowed).toBe(false);
     expect(result.violations.some((v) => v.code === 'POLICY_DENIED')).toBe(true);
   });
@@ -52,17 +48,13 @@ describe('evaluateCommandGuardrails', () => {
   });
 
   it('denies when policy decision is Deny', () => {
-    const result = evaluateCommandGuardrails(
-      makeInput({ policyDecision: 'Deny' }),
-    );
+    const result = evaluateCommandGuardrails(makeInput({ policyDecision: 'Deny' }));
     expect(result.allowed).toBe(false);
     expect(result.violations.some((v) => v.code === 'POLICY_DENIED')).toBe(true);
   });
 
   it('requires approval when policy decision is RequireApproval', () => {
-    const result = evaluateCommandGuardrails(
-      makeInput({ policyDecision: 'RequireApproval' }),
-    );
+    const result = evaluateCommandGuardrails(makeInput({ policyDecision: 'RequireApproval' }));
     expect(result.allowed).toBe(true);
     expect(result.requiresApproval).toBe(true);
   });

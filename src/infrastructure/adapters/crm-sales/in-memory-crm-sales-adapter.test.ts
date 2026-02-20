@@ -122,7 +122,9 @@ describe('InMemoryCrmSalesAdapter', () => {
     const listed = await adapter.execute({ tenantId: TENANT_A, operation: 'listOpportunities' });
     expect(listed.ok).toBe(true);
     if (!listed.ok || listed.result.kind !== 'opportunities') return;
-    expect(listed.result.opportunities.some((item) => item.opportunityId === opportunityId)).toBe(true);
+    expect(listed.result.opportunities.some((item) => item.opportunityId === opportunityId)).toBe(
+      true,
+    );
   });
 
   it('supports pipeline, activity, and note operations', async () => {

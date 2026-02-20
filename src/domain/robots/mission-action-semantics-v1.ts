@@ -72,15 +72,25 @@ export function parseMissionActionRequestV1(value: unknown): MissionActionReques
   const record = readRecord(value, 'MissionActionRequest', MissionActionSemanticsParseError);
   assertSchemaVersion(record, 'MissionActionRequest');
 
-  const actionType = parseActionType(readString(record, 'actionType', MissionActionSemanticsParseError));
+  const actionType = parseActionType(
+    readString(record, 'actionType', MissionActionSemanticsParseError),
+  );
   const completionMode = parseCompletionMode(
     readString(record, 'completionMode', MissionActionSemanticsParseError),
   );
   const supportsPreemption = readBoolean(record, 'supportsPreemption');
   const bypassTierEvaluation = readBoolean(record, 'bypassTierEvaluation');
   const requiresOperatorConfirmation = readBoolean(record, 'requiresOperatorConfirmation');
-  const idempotencyKey = readOptionalString(record, 'idempotencyKey', MissionActionSemanticsParseError);
-  const parameters = readRecord(record['parameters'], 'parameters', MissionActionSemanticsParseError);
+  const idempotencyKey = readOptionalString(
+    record,
+    'idempotencyKey',
+    MissionActionSemanticsParseError,
+  );
+  const parameters = readRecord(
+    record['parameters'],
+    'parameters',
+    MissionActionSemanticsParseError,
+  );
   const fleetIdRaw = readOptionalString(record, 'fleetId', MissionActionSemanticsParseError);
 
   validateMissionActionSemantics({
@@ -113,7 +123,11 @@ export function parseMissionActionRequestV1(value: unknown): MissionActionReques
 export function parseMissionManualCompletionSignalV1(
   value: unknown,
 ): MissionManualCompletionSignalV1 {
-  const record = readRecord(value, 'MissionManualCompletionSignal', MissionActionSemanticsParseError);
+  const record = readRecord(
+    value,
+    'MissionManualCompletionSignal',
+    MissionActionSemanticsParseError,
+  );
   assertSchemaVersion(record, 'MissionManualCompletionSignal');
   const note = readOptionalString(record, 'note', MissionActionSemanticsParseError);
 

@@ -134,15 +134,15 @@ CTA: [Enrol robot]
 
 ### Nielsen heuristic alignment
 
-| Heuristic | Map prototype response |
-| --- | --- |
-| Visibility of system status | Live/replay label, freshness text, stale-data banner, critical badges |
-| Match with real world | Site/floor/zone language, map frame text, geofence labels |
-| User control and freedom | Layer toggles, status filters, live/replay switching, jump from alert to map |
-| Consistency and standards | Existing chip/status/card patterns reused |
-| Error prevention | Critical alerts separated, acknowledgment explicit, details panel includes "why this matters" |
-| Recognition over recall | Synchronized list + map selection, legend always visible |
-| Flexibility and efficiency | Keyboard route: `g r`; map quick keys: `m`, `l`, `[` |
-| Aesthetic/minimalist | Overview-first with progressive disclosure instead of full telemetry walls |
-| Error recovery | Jump-to-location from alert, replay bookmarks for incident review |
-| Help/documentation | Inline policy callout and labels for uncertainty/frame context |
+| Heuristic                   | Map prototype response                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| Visibility of system status | Live/replay label, freshness text, stale-data banner, critical badges                         |
+| Match with real world       | Site/floor/zone language, map frame text, geofence labels                                     |
+| User control and freedom    | Layer toggles, status filters, live/replay switching, jump from alert to map                  |
+| Consistency and standards   | Existing chip/status/card patterns reused                                                     |
+| Error prevention            | Critical alerts separated, acknowledgment explicit, details panel includes "why this matters" |
+| Recognition over recall     | Synchronized list + map selection, legend always visible                                      |
+| Flexibility and efficiency  | Keyboard route: `g r`; map quick keys: `m`, `l`, `[`                                          |
+| Aesthetic/minimalist        | Overview-first with progressive disclosure instead of full telemetry walls                    |
+| Error recovery              | Jump-to-location from alert, replay bookmarks for incident review                             |
+| Help/documentation          | Inline policy callout and labels for uncertainty/frame context                                |

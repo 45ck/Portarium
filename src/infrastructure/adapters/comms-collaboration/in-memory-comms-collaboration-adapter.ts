@@ -46,12 +46,18 @@ type InMemoryCommsCollaborationAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -110,14 +116,20 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       case 'listMessages':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#messages, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#messages, input),
+          },
         };
       case 'getMessageThread':
         return this.#getMessageThread(input);
       case 'listChannels':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#channels, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#channels, input),
+          },
         };
       case 'createChannel':
         return this.#createChannel(input);
@@ -145,7 +157,10 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       case 'listMeetings':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#meetings, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#meetings, input),
+          },
         };
       case 'listCalendarEvents':
         return { ok: true, result: { kind: 'tasks', tasks: this.#listCalendarEvents(input) } };
@@ -214,7 +229,11 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       (candidate) => candidate.tenantId === input.tenantId && candidate.messageId === messageId,
     );
     if (thread === undefined) {
-      return { ok: false, error: 'not_found', message: `Message thread for ${messageId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Message thread for ${messageId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'externalRef', externalRef: thread.threadRef } };
   }
@@ -389,9 +408,7 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
     return this.#calendarEvents.filter((event) => event.tenantId === input.tenantId);
   }
 
-  #createCalendarEvent(
-    input: CommsCollaborationExecuteInputV1,
-  ): CommsCollaborationExecuteOutputV1 {
+  #createCalendarEvent(input: CommsCollaborationExecuteInputV1): CommsCollaborationExecuteOutputV1 {
     const title = readString(input.payload, 'title');
     if (title === null) {
       return {
@@ -444,7 +461,7 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'])
+          ? input.payload['mimeType']
           : 'application/octet-stream',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),
@@ -482,8 +499,7 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

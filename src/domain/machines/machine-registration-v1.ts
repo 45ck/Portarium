@@ -132,9 +132,7 @@ function parseExecutionPolicy(record: Record<string, unknown>): MachineExecution
 
   const workloadIdentity = readString(raw, 'workloadIdentity', MachineRegistrationParseError);
   if (workloadIdentity !== 'Required') {
-    throw new MachineRegistrationParseError(
-      'executionPolicy.workloadIdentity must be "Required".',
-    );
+    throw new MachineRegistrationParseError('executionPolicy.workloadIdentity must be "Required".');
   }
 
   return {
@@ -254,9 +252,7 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
     const summary = toolViolations
       .map((violation) => `${violation.toolName} requires ${violation.requiredTier}`)
       .join(', ');
-    throw new AgentConfigParseError(
-      `allowedTools violate policyTier ${policyTier}: ${summary}.`,
-    );
+    throw new AgentConfigParseError(`allowedTools violate policyTier ${policyTier}: ${summary}.`);
   }
 
   const registeredAtIso = readIsoString(record, 'registeredAtIso', AgentConfigParseError);

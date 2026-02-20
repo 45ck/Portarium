@@ -23,9 +23,10 @@ async function shot(page, name, fn) {
   await page.goto(FILE, { waitUntil: 'networkidle' });
 
   // Helper: navigate via sidebar link
-  const nav = (hash) => page.evaluate((h) => {
-    document.querySelector(`a[href="${h}"]`)?.click();
-  }, hash);
+  const nav = (hash) =>
+    page.evaluate((h) => {
+      document.querySelector(`a[href="${h}"]`)?.click();
+    }, hash);
 
   // Helper: set persona
   const persona = (val) => page.selectOption('#persona', val);
@@ -115,7 +116,9 @@ async function shot(page, name, fn) {
     await persona('admin');
     await nav('#settings');
     await p.waitForTimeout(200);
-    const wfTab = await p.$('[data-tab="workforce"], [href="#settings-workforce"], .tab[data-value="workforce"]');
+    const wfTab = await p.$(
+      '[data-tab="workforce"], [href="#settings-workforce"], .tab[data-value="workforce"]',
+    );
     if (wfTab) await wfTab.click();
   });
 

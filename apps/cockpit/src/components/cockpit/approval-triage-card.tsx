@@ -1,11 +1,17 @@
-import { useState, useEffect, useCallback } from 'react'
-import { format } from 'date-fns'
-import type { ApprovalSummary, PlanEffect, SodEvaluation, PolicyRule, DecisionHistoryEntry } from '@portarium/cockpit-types'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import type {
+  ApprovalSummary,
+  PlanEffect,
+  SodEvaluation,
+  PolicyRule,
+  DecisionHistoryEntry,
+} from '@portarium/cockpit-types';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   CheckCircle2,
   XCircle,
@@ -16,51 +22,51 @@ import {
   ShieldCheck,
   ShieldAlert,
   AlertTriangle,
-} from 'lucide-react'
+} from 'lucide-react';
 
 const DEFAULT_SOD_EVALUATION: SodEvaluation = {
   state: 'eligible',
   requestorId: 'unknown',
   ruleId: 'N/A',
   rolesRequired: [],
-}
+};
 
 // ---------------------------------------------------------------------------
 // SorBadge — color-coded circular badge for each system of record
 // ---------------------------------------------------------------------------
 const SOR_PALETTE: Record<string, { bg: string; text: string }> = {
-  Odoo:     { bg: 'bg-indigo-600',  text: 'text-white' },
-  Stripe:   { bg: 'bg-violet-600',  text: 'text-white' },
-  NetSuite: { bg: 'bg-blue-600',    text: 'text-white' },
-  Okta:     { bg: 'bg-sky-500',     text: 'text-white' },
-  Mautic:   { bg: 'bg-orange-500',  text: 'text-white' },
-  Zammad:   { bg: 'bg-rose-500',    text: 'text-white' },
-  Vault:    { bg: 'bg-amber-500',   text: 'text-white' },
-}
+  Odoo: { bg: 'bg-indigo-600', text: 'text-white' },
+  Stripe: { bg: 'bg-violet-600', text: 'text-white' },
+  NetSuite: { bg: 'bg-blue-600', text: 'text-white' },
+  Okta: { bg: 'bg-sky-500', text: 'text-white' },
+  Mautic: { bg: 'bg-orange-500', text: 'text-white' },
+  Zammad: { bg: 'bg-rose-500', text: 'text-white' },
+  Vault: { bg: 'bg-amber-500', text: 'text-white' },
+};
 
-const SOR_PALETTE_DEFAULT = { bg: 'bg-muted', text: 'text-muted-foreground' }
+const SOR_PALETTE_DEFAULT = { bg: 'bg-muted', text: 'text-muted-foreground' };
 
 function SorBadge({ name }: { name: string }) {
-  const palette = SOR_PALETTE[name] ?? SOR_PALETTE_DEFAULT
-  const abbr = name.slice(0, 2)
+  const palette = SOR_PALETTE[name] ?? SOR_PALETTE_DEFAULT;
+  const abbr = name.slice(0, 2);
   return (
     <span
       title={name}
       className={cn(
-        'inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0',
+        'inline-flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold shrink-0',
         palette.bg,
         palette.text,
       )}
     >
       {abbr}
     </span>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Inline triage effect row (avoids modifying shared effects-list.tsx)
 // ---------------------------------------------------------------------------
-import { opColors } from '@/components/cockpit/lib/effect-colors'
+import { opColors } from '@/components/cockpit/lib/effect-colors';
 
 function TriageEffectRow({ effect }: { effect: PlanEffect }) {
   return (
@@ -74,7 +80,7 @@ function TriageEffectRow({ effect }: { effect: PlanEffect }) {
       </span>
       <span className="flex-1 truncate text-foreground">{effect.summary}</span>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -83,33 +89,41 @@ function TriageEffectRow({ effect }: { effect: PlanEffect }) {
 function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
   if (ev.state === 'eligible') {
     return (
-      <div role="status" className="rounded-lg bg-success/10 border border-success/30 px-4 py-3 flex items-start gap-3">
+      <div
+        role="status"
+        className="rounded-lg bg-success/10 border border-success/30 px-4 py-3 flex items-start gap-3"
+      >
         <ShieldCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
           <p className="font-semibold text-success">You are eligible to approve</p>
           <p className="text-success/80">
-            Requestor:{' '}
-            <span className="font-mono">{ev.requestorId}</span> (different from you) · Rule:{' '}
-            {ev.ruleId} · Roles required: {ev.rolesRequired.join(' OR ')}
+            Requestor: <span className="font-mono">{ev.requestorId}</span> (different from you) ·
+            Rule: {ev.ruleId} · Roles required: {ev.rolesRequired.join(' OR ')}
           </p>
         </div>
       </div>
-    )
+    );
   }
   if (ev.state === 'blocked-self') {
     return (
-      <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3">
+      <div
+        role="alert"
+        className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3"
+      >
         <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
           <p className="font-semibold text-destructive">You cannot approve your own request</p>
           <p className="text-destructive/80">SoD rule {ev.ruleId} requires a different approver.</p>
         </div>
       </div>
-    )
+    );
   }
   if (ev.state === 'blocked-role') {
     return (
-      <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3">
+      <div
+        role="alert"
+        className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3"
+      >
         <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
           <p className="font-semibold text-destructive">Missing required role</p>
@@ -118,23 +132,26 @@ function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
           </p>
         </div>
       </div>
-    )
+    );
   }
   // n-of-m
   return (
-    <div role="status" className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 flex items-start gap-3">
+    <div
+      role="status"
+      className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 flex items-start gap-3"
+    >
       <ShieldCheck className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
       <div className="text-xs space-y-1">
         <p className="font-semibold text-yellow-800">
-          {ev.nRequired} of {ev.nTotal} approvers needed —{' '}
-          {(ev.nRequired ?? 0) - (ev.nSoFar ?? 0)} more required after you
+          {ev.nRequired} of {ev.nTotal} approvers needed — {(ev.nRequired ?? 0) - (ev.nSoFar ?? 0)}{' '}
+          more required after you
         </p>
         <p className="text-yellow-700">
           Rule: {ev.ruleId} · {ev.nSoFar} approval{ev.nSoFar !== 1 ? 's' : ''} recorded so far
         </p>
       </div>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -145,12 +162,12 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
     full: 'Fully irreversible',
     partial: 'Partially reversible',
     none: 'Reversible',
-  }[rule.irreversibility]
+  }[rule.irreversibility];
   const irreversibilityCls = {
     full: 'text-red-600 font-medium',
     partial: 'text-yellow-700',
     none: 'text-green-700',
-  }[rule.irreversibility]
+  }[rule.irreversibility];
 
   return (
     <div className="space-y-2">
@@ -188,7 +205,7 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
         <span className={irreversibilityCls}>{irreversibilityLabel}</span>
       </div>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +216,7 @@ function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] })
     requested: 'bg-muted-foreground/50',
     changes_requested: 'bg-yellow-500',
     resubmitted: 'bg-blue-500',
-  }
+  };
 
   return (
     <div>
@@ -231,22 +248,22 @@ function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] })
         ))}
       </ol>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
-export type TriageAction = 'Approved' | 'Denied' | 'RequestChanges' | 'Skip'
+export type TriageAction = 'Approved' | 'Denied' | 'RequestChanges' | 'Skip';
 
 interface ApprovalTriageCardProps {
-  approval: ApprovalSummary
-  index: number
-  total: number
-  hasMore: boolean
-  onAction: (approvalId: string, action: TriageAction, rationale: string) => void
-  loading?: boolean
-  plannedEffects?: PlanEffect[]
+  approval: ApprovalSummary;
+  index: number;
+  total: number;
+  hasMore: boolean;
+  onAction: (approvalId: string, action: TriageAction, rationale: string) => void;
+  loading?: boolean;
+  plannedEffects?: PlanEffect[];
 }
 
 export function ApprovalTriageCard({
@@ -258,58 +275,63 @@ export function ApprovalTriageCard({
   loading,
   plannedEffects = [],
 }: ApprovalTriageCardProps) {
-  const [rationale, setRationale] = useState('')
-  const [requestChangesMode, setRequestChangesMode] = useState(false)
-  const [requestChangesMsg, setRequestChangesMsg] = useState('')
-  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
-  const [denyAttempted, setDenyAttempted] = useState(false)
+  const [rationale, setRationale] = useState('');
+  const [requestChangesMode, setRequestChangesMode] = useState(false);
+  const [requestChangesMsg, setRequestChangesMsg] = useState('');
+  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null);
+  const [denyAttempted, setDenyAttempted] = useState(false);
 
-  const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION
-  const policyRule = approval.policyRule
-  const history = approval.decisionHistory ?? []
-  const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role'
-  const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date())
-  const triagePosition = index + 1
+  const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION;
+  const policyRule = approval.policyRule;
+  const history = approval.decisionHistory ?? [];
+  const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role';
+  const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date());
+  const triagePosition = index + 1;
 
-  const handleAction = useCallback((action: TriageAction) => {
-    if (action === 'RequestChanges') {
-      if (!requestChangesMode) {
-        setRequestChangesMode(true)
-        return
+  const handleAction = useCallback(
+    (action: TriageAction) => {
+      if (action === 'RequestChanges') {
+        if (!requestChangesMode) {
+          setRequestChangesMode(true);
+          return;
+        }
+        const dir: 'left' | 'right' = 'left';
+        setExitDir(dir);
+        setTimeout(() => {
+          setExitDir(null);
+          onAction(approval.approvalId, action, requestChangesMsg);
+        }, 320);
+        return;
       }
-      const dir: 'left' | 'right' = 'left'
-      setExitDir(dir)
+      const dir: 'left' | 'right' = action === 'Approved' ? 'right' : 'left';
+      setExitDir(dir);
       setTimeout(() => {
-        setExitDir(null)
-        onAction(approval.approvalId, action, requestChangesMsg)
-      }, 320)
-      return
-    }
-    const dir: 'left' | 'right' = action === 'Approved' ? 'right' : 'left'
-    setExitDir(dir)
-    setTimeout(() => {
-      setExitDir(null)
-      onAction(approval.approvalId, action, rationale)
-    }, 320)
-  }, [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg])
+        setExitDir(null);
+        onAction(approval.approvalId, action, rationale);
+      }, 320);
+    },
+    [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg],
+  );
 
   // Keyboard shortcuts
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement).tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return
-      if ((e.key === 'a' || e.key === 'A') && !isBlocked && !loading)
-        handleAction('Approved')
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if ((e.key === 'a' || e.key === 'A') && !isBlocked && !loading) handleAction('Approved');
       if ((e.key === 'd' || e.key === 'D') && !loading) {
-        if (!rationale.trim()) { setDenyAttempted(true); return }
-        handleAction('Denied')
+        if (!rationale.trim()) {
+          setDenyAttempted(true);
+          return;
+        }
+        handleAction('Denied');
       }
-      if ((e.key === 'r' || e.key === 'R') && !requestChangesMode) setRequestChangesMode(true)
-      if ((e.key === 's' || e.key === 'S') && !loading) handleAction('Skip')
+      if ((e.key === 'r' || e.key === 'R') && !requestChangesMode) setRequestChangesMode(true);
+      if ((e.key === 's' || e.key === 'S') && !loading) handleAction('Skip');
     }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [isBlocked, loading, rationale, requestChangesMode, handleAction])
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isBlocked, loading, rationale, requestChangesMode, handleAction]);
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
@@ -351,8 +373,8 @@ export function ApprovalTriageCard({
           className={cn(
             'relative rounded-xl border border-border bg-card shadow-md overflow-hidden',
             exitDir === 'right' && 'animate-triage-out-right',
-            exitDir === 'left'  && 'animate-triage-out-left',
-            !exitDir            && 'animate-triage-in',
+            exitDir === 'left' && 'animate-triage-out-left',
+            !exitDir && 'animate-triage-in',
           )}
           style={{ zIndex: 2 }}
         >
@@ -373,8 +395,8 @@ export function ApprovalTriageCard({
           <div className="bg-muted/20 px-5 pt-5 pb-4 border-b border-border/50">
             <div className="flex items-start gap-4">
               {/* Icon box */}
-              <div className="shrink-0 rounded-lg bg-background border border-border p-2.5">
-                <EntityIcon entityType="approval" size="md" decorative />
+              <div className="shrink-0 rounded-xl bg-background border border-border p-3 w-16 h-16 flex items-center justify-center">
+                <EntityIcon entityType="approval" size="xl" decorative />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -460,7 +482,9 @@ export function ApprovalTriageCard({
               <div className="space-y-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
                 <label className="text-xs font-semibold text-yellow-900">
                   What needs to change?{' '}
-                  <span className="text-red-500" aria-hidden>*</span>
+                  <span className="text-red-500" aria-hidden>
+                    *
+                  </span>
                 </label>
                 <Textarea
                   autoFocus
@@ -484,8 +508,8 @@ export function ApprovalTriageCard({
                     size="sm"
                     className="h-9"
                     onClick={() => {
-                      setRequestChangesMode(false)
-                      setRequestChangesMsg('')
+                      setRequestChangesMode(false);
+                      setRequestChangesMsg('');
                     }}
                   >
                     Cancel
@@ -498,20 +522,26 @@ export function ApprovalTriageCard({
                   aria-label={`Decision rationale for approval ${approval.approvalId}`}
                   className={cn(
                     'text-xs min-h-[80px] resize-none',
-                    denyAttempted && !rationale.trim() && 'border-yellow-500 focus-visible:ring-yellow-500',
+                    denyAttempted &&
+                      !rationale.trim() &&
+                      'border-yellow-500 focus-visible:ring-yellow-500',
                   )}
                   placeholder="Decision rationale — optional for approve, required for deny…"
                   value={rationale}
                   onChange={(e) => {
-                    setRationale(e.target.value)
-                    if (e.target.value.trim()) setDenyAttempted(false)
+                    setRationale(e.target.value);
+                    if (e.target.value.trim()) setDenyAttempted(false);
                   }}
                 />
                 <p className="text-xs text-muted-foreground">
                   Required when denying <span className="text-red-500">*</span>
                 </p>
 
-                <div role="group" aria-label="Make approval decision" className="grid grid-cols-4 gap-2">
+                <div
+                  role="group"
+                  aria-label="Make approval decision"
+                  className="grid grid-cols-4 gap-2"
+                >
                   <Button
                     size="sm"
                     className="h-12 flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
@@ -530,10 +560,10 @@ export function ApprovalTriageCard({
                     disabled={Boolean(loading)}
                     onClick={() => {
                       if (!rationale.trim()) {
-                        setDenyAttempted(true)
-                        return
+                        setDenyAttempted(true);
+                        return;
                       }
-                      handleAction('Denied')
+                      handleAction('Denied');
                     }}
                     title="Deny (D)"
                     aria-keyshortcuts="d"
@@ -592,5 +622,5 @@ export function ApprovalTriageCard({
         ))}
       </div>
     </div>
-  )
+  );
 }

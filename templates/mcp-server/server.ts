@@ -105,13 +105,10 @@ server.tool(
   },
   async ({ workspace_id, approval_id, decision, reason }) => {
     const wsId = workspace_id || PORTARIUM_WORKSPACE_ID;
-    const result = await portariumFetch(
-      `/v1/workspaces/${wsId}/approvals/${approval_id}/decide`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ decision, reason }),
-      },
-    );
+    const result = await portariumFetch(`/v1/workspaces/${wsId}/approvals/${approval_id}/decide`, {
+      method: 'POST',
+      body: JSON.stringify({ decision, reason }),
+    });
     return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
   },
 );

@@ -30,11 +30,17 @@ const WORKSPACE_INPUT = {
 class InMemoryWorkspaceStore implements WorkspaceStore {
   readonly #byId = new Map<string, WorkspaceV1>();
 
-  public async getWorkspaceById(_tenantId: string, workspaceId: string): Promise<WorkspaceV1 | null> {
+  public async getWorkspaceById(
+    _tenantId: string,
+    workspaceId: string,
+  ): Promise<WorkspaceV1 | null> {
     return this.#byId.get(workspaceId) ?? null;
   }
 
-  public async getWorkspaceByName(_tenantId: string, workspaceName: string): Promise<WorkspaceV1 | null> {
+  public async getWorkspaceByName(
+    _tenantId: string,
+    workspaceName: string,
+  ): Promise<WorkspaceV1 | null> {
     for (const workspace of this.#byId.values()) {
       if (workspace.name === workspaceName) {
         return workspace;

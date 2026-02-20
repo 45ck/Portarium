@@ -2,8 +2,8 @@
 // Mock Policies & SoD Constraints fixture
 // ---------------------------------------------------------------------------
 
-export type { PolicyCondition, PolicySummary, SodConstraint } from '@portarium/cockpit-types'
-import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types'
+export type { PolicyCondition, PolicySummary, SodConstraint } from '@portarium/cockpit-types';
+import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types';
 
 export const MOCK_POLICIES: PolicySummary[] = [
   {
@@ -11,7 +11,8 @@ export const MOCK_POLICIES: PolicySummary[] = [
     name: 'SOC 2 CC6.1 — Logical access controls',
     description: 'Ensures logical access controls are enforced for all system interactions.',
     status: 'Active',
-    ruleText: 'WHEN actor.role NOT IN ("Admin", "Operator") THEN DENY action.type = "write:external"',
+    ruleText:
+      'WHEN actor.role NOT IN ("Admin", "Operator") THEN DENY action.type = "write:external"',
     conditions: [
       { field: 'actor.role', operator: 'in', value: 'Admin,Operator' },
       { field: 'action.type', operator: 'eq', value: 'write:external' },
@@ -42,7 +43,8 @@ export const MOCK_POLICIES: PolicySummary[] = [
   {
     policyId: 'pol-004',
     name: 'Cold Chain Integrity — Temperature thresholds',
-    description: 'Validates temperature readings remain within acceptable range for pharmaceutical transport.',
+    description:
+      'Validates temperature readings remain within acceptable range for pharmaceutical transport.',
     status: 'Active',
     ruleText: 'WHEN sensor.tempCelsius > 8 OR sensor.tempCelsius < 2 THEN ALERT AND ESCALATE',
     conditions: [
@@ -56,9 +58,7 @@ export const MOCK_POLICIES: PolicySummary[] = [
     description: 'Prevents AI agents from exceeding execution rate limits.',
     status: 'Draft',
     ruleText: 'WHEN agent.execCount_1h > 100 THEN DENY AND NOTIFY admin',
-    conditions: [
-      { field: 'agent.execCount_1h', operator: 'gt', value: '100' },
-    ],
+    conditions: [{ field: 'agent.execCount_1h', operator: 'gt', value: '100' }],
   },
   {
     policyId: 'pol-006',
@@ -66,9 +66,7 @@ export const MOCK_POLICIES: PolicySummary[] = [
     description: 'Approvals must be resolved within the configured SLA window.',
     status: 'Active',
     ruleText: 'WHEN approval.pendingHours > 24 THEN ESCALATE to queue "urgent-approvals"',
-    conditions: [
-      { field: 'approval.pendingHours', operator: 'gt', value: '24' },
-    ],
+    conditions: [{ field: 'approval.pendingHours', operator: 'gt', value: '24' }],
   },
 ];
 

@@ -122,7 +122,9 @@ describe('InMemoryCommsCollaborationAdapter integration', () => {
     const listedMeetings = await adapter.execute({ tenantId: TENANT, operation: 'listMeetings' });
     expect(listedMeetings.ok).toBe(true);
     if (!listedMeetings.ok || listedMeetings.result.kind !== 'externalRefs') return;
-    expect(listedMeetings.result.externalRefs.some((item) => item.externalId === meetingId)).toBe(true);
+    expect(listedMeetings.result.externalRefs.some((item) => item.externalId === meetingId)).toBe(
+      true,
+    );
 
     const event = await adapter.execute({
       tenantId: TENANT,

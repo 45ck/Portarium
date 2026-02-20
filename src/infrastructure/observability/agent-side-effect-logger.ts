@@ -112,10 +112,7 @@ export class AgentSideEffectLogger {
    *
    *   const response = await logger.instrumentedFetch(url, init);
    */
-  public async instrumentedFetch(
-    input: string | URL,
-    init?: RequestInit,
-  ): Promise<Response> {
+  public async instrumentedFetch(input: string | URL, init?: RequestInit): Promise<Response> {
     const url = typeof input === 'string' ? input : input.toString();
     const method = init?.method?.toUpperCase() ?? 'GET';
     const classification = classifyUrl(url, this.#controlPlaneBaseUrls);

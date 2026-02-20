@@ -43,4 +43,3 @@ Scope: Visual differentiation of execution tiers in Run detail timeline.
 
 - Reviewer: Principal Engineer (MQCKENC)
 - Status: Approved for implementation
-

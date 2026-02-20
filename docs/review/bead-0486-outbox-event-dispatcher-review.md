@@ -11,21 +11,25 @@ Scope:
 ## Acceptance Criteria Check
 
 1. Outbox poll under transient bus failure:
+
 - Verified by dispatcher tests covering publish failure handling and continued processing of remaining entries.
 - Evidence:
   - `src/application/services/outbox-dispatcher.test.ts`
 
 2. Events consumed in order:
+
 - Verified by ordered publish assertions from fetched pending entries.
 - Evidence:
   - `src/application/services/outbox-dispatcher.test.ts`
 
 3. Idempotency key prevents duplicates:
+
 - Verified by idempotency persistence/read integration coverage and command flow wiring.
 - Evidence:
   - `src/infrastructure/postgresql/postgres-store-adapters.integration.test.ts`
 
 4. CloudEvents envelope on every dispatched event:
+
 - Verified by CloudEvents mapper tests and envelope preservation through outbox dispatcher publish path.
 - Evidence:
   - `src/application/events/cloudevent.test.ts`

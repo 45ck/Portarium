@@ -38,11 +38,11 @@ Agent  -->  portarium_start_run tool  -->  Control Plane /runs
 
 ## Environment variables
 
-| Variable                 | Required | Default                  |
-| ------------------------ | -------- | ------------------------ |
-| `PORTARIUM_BASE_URL`     | No       | `http://localhost:3100`  |
-| `PORTARIUM_TOKEN`        | Yes      | --                       |
-| `PORTARIUM_WORKSPACE_ID` | No       | `ws-default`             |
+| Variable                 | Required | Default                 |
+| ------------------------ | -------- | ----------------------- |
+| `PORTARIUM_BASE_URL`     | No       | `http://localhost:3100` |
+| `PORTARIUM_TOKEN`        | Yes      | --                      |
+| `PORTARIUM_WORKSPACE_ID` | No       | `ws-default`            |
 
 ## Production considerations
 

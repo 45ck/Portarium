@@ -155,7 +155,9 @@ describe('maxLength()', () => {
 // ---------------------------------------------------------------------------
 
 describe('requiredFiniteNumber()', () => {
-  interface WithCount { count: number }
+  interface WithCount {
+    count: number;
+  }
   it('passes for a finite number', () => {
     const r = validate({ count: 42 } as WithCount, [requiredFiniteNumber('count')]);
     expect(r.ok).toBe(true);
@@ -184,9 +186,7 @@ describe('requiredFiniteNumber()', () => {
 describe('oneOf()', () => {
   const STATUSES = ['active', 'inactive'] as const;
   it('passes for an allowed value', () => {
-    const r = validate({ name: 'x', status: 'active' } as SimpleInput, [
-      oneOf('status', STATUSES),
-    ]);
+    const r = validate({ name: 'x', status: 'active' } as SimpleInput, [oneOf('status', STATUSES)]);
     expect(r.ok).toBe(true);
   });
 

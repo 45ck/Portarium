@@ -1,20 +1,29 @@
-import { useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, Polyline, useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import type { RobotLocation, Geofence } from '@/mocks/fixtures/robot-locations'
-import type { RobotStatus } from '@/types/robotics'
-import { cn } from '@/lib/utils'
-import { LayerToggles, type LayerVisibility } from './layer-toggles'
+import { useEffect, useRef } from 'react';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Circle,
+  Polygon,
+  Polyline,
+  useMap,
+} from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import type { RobotLocation, Geofence } from '@/mocks/fixtures/robot-locations';
+import type { RobotStatus } from '@/types/robotics';
+import { cn } from '@/lib/utils';
+import { LayerToggles, type LayerVisibility } from './layer-toggles';
 
 // Fix default marker icon paths for bundlers (guarded for JSDOM/SSR)
 if (typeof window !== 'undefined' && L.Icon?.Default?.prototype) {
-  delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
+  delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
     iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  })
+  });
 }
 
 const STATUS_COLORS: Record<RobotStatus, string> = {
@@ -22,13 +31,13 @@ const STATUS_COLORS: Record<RobotStatus, string> = {
   Degraded: '#eab308',
   'E-Stopped': '#ef4444',
   Offline: '#9ca3af',
-}
+};
 
 function robotIcon(status: RobotStatus, isSelected: boolean): L.DivIcon {
-  const color = STATUS_COLORS[status]
-  const size = isSelected ? 18 : 12
-  const border = isSelected ? '3px solid white' : '2px solid white'
-  const shadow = isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.3)'
+  const color = STATUS_COLORS[status];
+  const size = isSelected ? 18 : 12;
+  const border = isSelected ? '3px solid white' : '2px solid white';
+  const shadow = isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.3)';
   return L.divIcon({
     className: '',
     html: `<div style="
@@ -38,39 +47,39 @@ function robotIcon(status: RobotStatus, isSelected: boolean): L.DivIcon {
     "></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-  })
+  });
 }
 
 function FlyToSelected({
   selectedId,
   locations,
 }: {
-  selectedId: string | null
-  locations: RobotLocation[]
+  selectedId: string | null;
+  locations: RobotLocation[];
 }) {
-  const map = useMap()
-  const prevSelectedId = useRef<string | null>(null)
+  const map = useMap();
+  const prevSelectedId = useRef<string | null>(null);
 
   useEffect(() => {
     if (selectedId && selectedId !== prevSelectedId.current) {
-      const loc = locations.find((l) => l.robotId === selectedId)
+      const loc = locations.find((l) => l.robotId === selectedId);
       if (loc) {
-        map.flyTo([loc.lat, loc.lng], Math.max(map.getZoom(), 15), { duration: 0.5 })
+        map.flyTo([loc.lat, loc.lng], Math.max(map.getZoom(), 15), { duration: 0.5 });
       }
     }
-    prevSelectedId.current = selectedId
-  }, [selectedId, locations, map])
+    prevSelectedId.current = selectedId;
+  }, [selectedId, locations, map]);
 
-  return null
+  return null;
 }
 
 interface MapViewProps {
-  locations: RobotLocation[]
-  geofences: Geofence[]
-  selectedRobotId: string | null
-  onSelectRobot: (robotId: string | null) => void
-  layers: LayerVisibility
-  onLayersChange: (layers: LayerVisibility) => void
+  locations: RobotLocation[];
+  geofences: Geofence[];
+  selectedRobotId: string | null;
+  onSelectRobot: (robotId: string | null) => void;
+  layers: LayerVisibility;
+  onLayersChange: (layers: LayerVisibility) => void;
 }
 
 export function MapView({
@@ -185,5 +194,5 @@ export function MapView({
         <LayerToggles layers={layers} onChange={onLayersChange} />
       </div>
     </div>
-  )
+  );
 }

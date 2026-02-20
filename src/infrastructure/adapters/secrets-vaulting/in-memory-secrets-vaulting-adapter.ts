@@ -31,7 +31,10 @@ type InMemorySecretsVaultingAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -80,7 +83,10 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
       case 'deleteSecret':
         return this.#deleteSecret(input);
       case 'listSecrets':
-        return { ok: true, result: { kind: 'externalRefs', externalRefs: this.#listSecrets(input) } };
+        return {
+          ok: true,
+          result: { kind: 'externalRefs', externalRefs: this.#listSecrets(input) },
+        };
       case 'rotateSecret':
         return this.#rotateSecret(input);
       case 'createCertificate':
@@ -92,7 +98,10 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
       case 'listCertificates':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#certificates, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#certificates, input),
+          },
         };
       case 'encrypt':
         return this.#cryptoOperation(input, 'encrypted_payload');
@@ -108,7 +117,10 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
       case 'getAuditLog':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#auditLogs, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#auditLogs, input),
+          },
         };
       case 'setSecretPolicy':
         return this.#setSecretPolicy(input);
@@ -126,7 +138,9 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
     if (path === null) {
       return { ok: false, error: 'validation_error', message: 'path is required for getSecret.' };
     }
-    const secret = this.#secrets.find((item) => item.tenantId === input.tenantId && item.path === path);
+    const secret = this.#secrets.find(
+      (item) => item.tenantId === input.tenantId && item.path === path,
+    );
     if (secret === undefined) {
       return { ok: false, error: 'not_found', message: `Secret at path ${path} was not found.` };
     }
@@ -177,7 +191,11 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
   #deleteSecret(input: SecretsVaultingExecuteInputV1): SecretsVaultingExecuteOutputV1 {
     const path = readString(input.payload, 'path');
     if (path === null) {
-      return { ok: false, error: 'validation_error', message: 'path is required for deleteSecret.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'path is required for deleteSecret.',
+      };
     }
     const index = this.#secrets.findIndex(
       (item) => item.tenantId === input.tenantId && item.path === path,
@@ -202,9 +220,15 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
   #rotateSecret(input: SecretsVaultingExecuteInputV1): SecretsVaultingExecuteOutputV1 {
     const path = readString(input.payload, 'path');
     if (path === null) {
-      return { ok: false, error: 'validation_error', message: 'path is required for rotateSecret.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'path is required for rotateSecret.',
+      };
     }
-    const secret = this.#secrets.find((item) => item.tenantId === input.tenantId && item.path === path);
+    const secret = this.#secrets.find(
+      (item) => item.tenantId === input.tenantId && item.path === path,
+    );
     if (secret === undefined) {
       return { ok: false, error: 'not_found', message: `Secret at path ${path} was not found.` };
     }
@@ -242,7 +266,13 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
   }
 
   #getCertificate(input: SecretsVaultingExecuteInputV1): SecretsVaultingExecuteOutputV1 {
-    return this.#getTenantRef(input, this.#certificates, 'certificateId', 'Certificate', 'getCertificate');
+    return this.#getTenantRef(
+      input,
+      this.#certificates,
+      'certificateId',
+      'Certificate',
+      'getCertificate',
+    );
   }
 
   #renewCertificate(input: SecretsVaultingExecuteInputV1): SecretsVaultingExecuteOutputV1 {
@@ -258,7 +288,11 @@ export class InMemorySecretsVaultingAdapter implements SecretsVaultingAdapterPor
       (item) => item.tenantId === input.tenantId && item.externalRef.externalId === certificateId,
     );
     if (index < 0) {
-      return { ok: false, error: 'not_found', message: `Certificate ${certificateId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Certificate ${certificateId} was not found.`,
+      };
     }
 
     const renewed: ExternalObjectRef = {

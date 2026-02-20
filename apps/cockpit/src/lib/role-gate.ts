@@ -1,4 +1,4 @@
-import type { PersonaId } from '@/stores/ui-store'
+import type { PersonaId } from '@/stores/ui-store';
 
 type Feature =
   | 'users'
@@ -8,7 +8,7 @@ type Feature =
   | 'agents:register'
   | 'runs:create'
   | 'credentials'
-  | 'settings'
+  | 'settings';
 
 const ACCESS_MATRIX: Record<Feature, PersonaId[]> = {
   users: ['Admin'],
@@ -19,8 +19,8 @@ const ACCESS_MATRIX: Record<Feature, PersonaId[]> = {
   'runs:create': ['Admin', 'Operator'],
   credentials: ['Admin'],
   settings: ['Admin'],
-}
+};
 
 export function canAccess(persona: PersonaId, feature: Feature): boolean {
-  return ACCESS_MATRIX[feature]?.includes(persona) ?? false
+  return ACCESS_MATRIX[feature]?.includes(persona) ?? false;
 }

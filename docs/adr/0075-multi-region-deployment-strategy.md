@@ -24,22 +24,22 @@ with a roadmap to active-active for workspaces that require it.
 
 ### Component Strategy
 
-| Component | Multi-Region Approach | Notes |
-|-----------|----------------------|-------|
-| **Temporal** | Multi-cluster replication | Temporal supports namespace-level replication across clusters with eventual consistency. Standby cluster replays workflow history from the primary. Failover is namespace-scoped. |
-| **PostgreSQL** | Streaming replication + logical replication | Primary writes in the active region. Synchronous streaming replication to the standby region for hot standby. Logical replication for cross-region read replicas used by query services. |
-| **MinIO (Object Store)** | Bucket replication | MinIO site replication replicates objects and metadata across regions. Evidence store objects are immutable, making replication idempotent. |
-| **NATS JetStream** | Cluster gateway + leaf nodes | NATS supports multi-cluster via gateway connections. Leaf nodes in secondary regions subscribe to streams with local caching. |
-| **Vault** | Performance replication | Vault Enterprise supports performance replication for read-heavy paths. Secrets are written to the primary; replicas serve reads. For open-source: separate Vault per region with shared configuration management. |
-| **OTel Collector** | Per-region collector fleet | Each region runs its own collector fleet. Traces and metrics are exported to both regional and central observability backends. |
+| Component                | Multi-Region Approach                       | Notes                                                                                                                                                                                                              |
+| ------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Temporal**             | Multi-cluster replication                   | Temporal supports namespace-level replication across clusters with eventual consistency. Standby cluster replays workflow history from the primary. Failover is namespace-scoped.                                  |
+| **PostgreSQL**           | Streaming replication + logical replication | Primary writes in the active region. Synchronous streaming replication to the standby region for hot standby. Logical replication for cross-region read replicas used by query services.                           |
+| **MinIO (Object Store)** | Bucket replication                          | MinIO site replication replicates objects and metadata across regions. Evidence store objects are immutable, making replication idempotent.                                                                        |
+| **NATS JetStream**       | Cluster gateway + leaf nodes                | NATS supports multi-cluster via gateway connections. Leaf nodes in secondary regions subscribe to streams with local caching.                                                                                      |
+| **Vault**                | Performance replication                     | Vault Enterprise supports performance replication for read-heavy paths. Secrets are written to the primary; replicas serve reads. For open-source: separate Vault per region with shared configuration management. |
+| **OTel Collector**       | Per-region collector fleet                  | Each region runs its own collector fleet. Traces and metrics are exported to both regional and central observability backends.                                                                                     |
 
 ### RPO/RTO Targets
 
-| Scenario | RPO | RTO | Strategy |
-|----------|-----|-----|----------|
-| Single component failure | 0 | < 30s | In-region redundancy (replicas, multi-AZ) |
-| Full region failure | < 5min | < 15min | Namespace-level failover for Temporal; DNS-based traffic routing for HTTP API |
-| Data corruption | < 1h | < 4h | Point-in-time recovery from PostgreSQL WAL archive and MinIO versioning |
+| Scenario                 | RPO    | RTO     | Strategy                                                                      |
+| ------------------------ | ------ | ------- | ----------------------------------------------------------------------------- |
+| Single component failure | 0      | < 30s   | In-region redundancy (replicas, multi-AZ)                                     |
+| Full region failure      | < 5min | < 15min | Namespace-level failover for Temporal; DNS-based traffic routing for HTTP API |
+| Data corruption          | < 1h   | < 4h    | Point-in-time recovery from PostgreSQL WAL archive and MinIO versioning       |
 
 ### Workspace Placement
 

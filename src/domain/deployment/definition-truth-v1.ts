@@ -56,7 +56,9 @@ export function parseDefinitionTruthStateV1(value: unknown): DefinitionTruthStat
   }
 
   const workspaceId = WorkspaceId(readString(record, 'workspaceId', DefinitionTruthParseError));
-  const deploymentMode = parseDeploymentMode(readString(record, 'deploymentMode', DefinitionTruthParseError));
+  const deploymentMode = parseDeploymentMode(
+    readString(record, 'deploymentMode', DefinitionTruthParseError),
+  );
   const definitionsTruthMode = parseDefinitionsTruthMode(
     readString(record, 'definitionsTruthMode', DefinitionTruthParseError),
   );
@@ -92,10 +94,15 @@ export function parseDefinitionTruthStateV1(value: unknown): DefinitionTruthStat
   const transitionLog = parseTransitionLog(record['transitionLog']);
   if (transitionLog.length > 0 && lastReconciledAtIso !== undefined) {
     const latestTransition = transitionLog[transitionLog.length - 1]!;
-    assertNotBefore(latestTransition.transitionedAtIso, lastReconciledAtIso, DefinitionTruthParseError, {
-      anchorLabel: 'transitionLog[last].transitionedAtIso',
-      laterLabel: 'lastReconciledAtIso',
-    });
+    assertNotBefore(
+      latestTransition.transitionedAtIso,
+      lastReconciledAtIso,
+      DefinitionTruthParseError,
+      {
+        anchorLabel: 'transitionLog[last].transitionedAtIso',
+        laterLabel: 'lastReconciledAtIso',
+      },
+    );
   }
 
   return {
@@ -139,7 +146,9 @@ export function transitionDefinitionsTruthModeV1(params: TransitionParams): Defi
 
   const nextGitRef = params.gitRef ?? params.state.gitRef;
   if (params.toMode === 'GitAuthoritative' && nextGitRef === undefined) {
-    throw new DefinitionTruthParseError('gitRef is required when transitioning to GitAuthoritative.');
+    throw new DefinitionTruthParseError(
+      'gitRef is required when transitioning to GitAuthoritative.',
+    );
   }
 
   const transition: TruthModeTransitionV1 = {
@@ -197,7 +206,9 @@ function parseTransitionLog(raw: unknown): readonly TruthModeTransitionV1[] {
     const fromMode = parseDefinitionsTruthMode(
       readString(record, 'fromMode', DefinitionTruthParseError),
     );
-    const toMode = parseDefinitionsTruthMode(readString(record, 'toMode', DefinitionTruthParseError));
+    const toMode = parseDefinitionsTruthMode(
+      readString(record, 'toMode', DefinitionTruthParseError),
+    );
     const reason = readString(record, 'reason', DefinitionTruthParseError);
     return {
       transitionedAtIso,
@@ -211,10 +222,15 @@ function parseTransitionLog(raw: unknown): readonly TruthModeTransitionV1[] {
   for (let i = 1; i < transitions.length; i += 1) {
     const previous = transitions[i - 1]!;
     const current = transitions[i]!;
-    assertNotBefore(previous.transitionedAtIso, current.transitionedAtIso, DefinitionTruthParseError, {
-      anchorLabel: `transitionLog[${i - 1}].transitionedAtIso`,
-      laterLabel: `transitionLog[${i}].transitionedAtIso`,
-    });
+    assertNotBefore(
+      previous.transitionedAtIso,
+      current.transitionedAtIso,
+      DefinitionTruthParseError,
+      {
+        anchorLabel: `transitionLog[${i - 1}].transitionedAtIso`,
+        laterLabel: `transitionLog[${i}].transitionedAtIso`,
+      },
+    );
   }
 
   return transitions;
@@ -233,7 +249,12 @@ function parseDefinitionsTruthMode(value: string): DefinitionsTruthModeV1 {
 }
 
 function parseDivergenceStatus(value: string): TruthDivergenceStatusV1 {
-  if (value === 'InSync' || value === 'GitAhead' || value === 'RuntimeAhead' || value === 'Conflict')
+  if (
+    value === 'InSync' ||
+    value === 'GitAhead' ||
+    value === 'RuntimeAhead' ||
+    value === 'Conflict'
+  )
     return value;
   throw new DefinitionTruthParseError(
     'divergenceStatus must be one of: InSync, GitAhead, RuntimeAhead, Conflict.',

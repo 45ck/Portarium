@@ -6,9 +6,7 @@ import {
   type EgressProxyConfig,
 } from './egress-proxy.js';
 
-function makeConfig(
-  overrides?: Partial<EgressProxyConfig>,
-): EgressProxyConfig {
+function makeConfig(overrides?: Partial<EgressProxyConfig>): EgressProxyConfig {
   return {
     allowlist: [],
     injectTraceContext: true,
@@ -54,10 +52,9 @@ describe('checkEgressAllowed', () => {
   });
 
   it('matches catch-all wildcard', () => {
-    const result = checkEgressAllowed(
-      makeConfig({ allowlist: [{ hostPattern: '*' }] }),
-      { host: 'anything.example.com' },
-    );
+    const result = checkEgressAllowed(makeConfig({ allowlist: [{ hostPattern: '*' }] }), {
+      host: 'anything.example.com',
+    });
     expect(result.allowed).toBe(true);
   });
 
@@ -75,12 +72,12 @@ describe('checkEgressAllowed', () => {
       allowlist: [{ hostPattern: 'api.example.com', allowedMethods: ['GET', 'POST'] }],
     });
 
-    expect(
-      checkEgressAllowed(config, { host: 'api.example.com', method: 'GET' }).allowed,
-    ).toBe(true);
-    expect(
-      checkEgressAllowed(config, { host: 'api.example.com', method: 'DELETE' }).allowed,
-    ).toBe(false);
+    expect(checkEgressAllowed(config, { host: 'api.example.com', method: 'GET' }).allowed).toBe(
+      true,
+    );
+    expect(checkEgressAllowed(config, { host: 'api.example.com', method: 'DELETE' }).allowed).toBe(
+      false,
+    );
   });
 
   it('is case-insensitive for host matching', () => {
@@ -113,9 +110,7 @@ describe('findBlockedDestinations', () => {
       allowlist: [{ hostPattern: '*' }],
     });
 
-    const blocked = findBlockedDestinations(config, [
-      { host: 'any.host.com' },
-    ]);
+    const blocked = findBlockedDestinations(config, [{ host: 'any.host.com' }]);
 
     expect(blocked).toHaveLength(0);
   });

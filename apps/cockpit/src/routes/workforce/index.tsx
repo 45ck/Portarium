@@ -20,7 +20,12 @@ const statusColor: Record<string, string> = {
 function WorkforcePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
-  const { data: membersData, isLoading: membersLoading, isError: membersError, refetch: refetchMembers } = useWorkforceMembers(wsId);
+  const {
+    data: membersData,
+    isLoading: membersLoading,
+    isError: membersError,
+    refetch: refetchMembers,
+  } = useWorkforceMembers(wsId);
   const { data: queuesData, isLoading: queuesLoading } = useWorkforceQueues(wsId);
 
   const members = membersData?.items ?? [];
@@ -75,7 +80,11 @@ function WorkforcePage() {
   if (membersError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Workforce" description="Human operators and their capabilities" icon={<EntityIcon entityType="workforce" size="md" decorative />} />
+        <PageHeader
+          title="Workforce"
+          description="Human operators and their capabilities"
+          icon={<EntityIcon entityType="workforce" size="md" decorative />}
+        />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">

@@ -146,8 +146,7 @@ export class AssignWorkforceMemberUseCase {
     } catch (error) {
       return err({
         kind: 'DependencyFailure',
-        message:
-          error instanceof Error ? error.message : 'Failed to persist workforce assignment.',
+        message: error instanceof Error ? error.message : 'Failed to persist workforce assignment.',
       });
     }
   }
@@ -217,7 +216,11 @@ export class AssignWorkforceMemberUseCase {
 
     return ok({
       ...artifacts.value,
-      save: async () => this.deps.workItemStore.saveWorkItem(ctx.tenantId, { ...workItem, ownerUserId: member.linkedUserId }),
+      save: async () =>
+        this.deps.workItemStore.saveWorkItem(ctx.tenantId, {
+          ...workItem,
+          ownerUserId: member.linkedUserId,
+        }),
     });
   }
 

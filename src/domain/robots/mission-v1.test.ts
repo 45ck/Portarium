@@ -27,7 +27,9 @@ describe('parseMissionV1', () => {
   });
 
   it('rejects invalid status', () => {
-    expect(() => parseMissionV1({ ...baseMission, status: 'Queued' })).toThrow(/status must be one of/i);
+    expect(() => parseMissionV1({ ...baseMission, status: 'Queued' })).toThrow(
+      /status must be one of/i,
+    );
   });
 });
 

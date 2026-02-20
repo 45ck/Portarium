@@ -89,7 +89,9 @@ export function assertLinkedWorkspaceUserActive(
   workspaceUser: WorkspaceUserV1,
 ): void {
   if (workspaceUser.userId !== member.linkedUserId) {
-    throw new WorkforceMemberParseError('WorkforceMember.linkedUserId must reference WorkspaceUser.userId.');
+    throw new WorkforceMemberParseError(
+      'WorkforceMember.linkedUserId must reference WorkspaceUser.userId.',
+    );
   }
   if (!workspaceUser.active) {
     throw new WorkforceMemberParseError('WorkforceMember must link to an active WorkspaceUser.');
@@ -109,7 +111,11 @@ export function updateWorkforceMemberCapabilitiesV1(params: {
   return {
     ...params.member,
     capabilities: dedupeCapabilities(params.nextCapabilities),
-    updatedAtIso: readIsoString({ updatedAtIso: params.updatedAtIso }, 'updatedAtIso', WorkforceMemberParseError),
+    updatedAtIso: readIsoString(
+      { updatedAtIso: params.updatedAtIso },
+      'updatedAtIso',
+      WorkforceMemberParseError,
+    ),
   };
 }
 
@@ -126,7 +132,11 @@ export function updateWorkforceMemberAvailabilityV1(params: {
   return {
     ...params.member,
     availabilityStatus: params.nextStatus,
-    updatedAtIso: readIsoString({ updatedAtIso: params.updatedAtIso }, 'updatedAtIso', WorkforceMemberParseError),
+    updatedAtIso: readIsoString(
+      { updatedAtIso: params.updatedAtIso },
+      'updatedAtIso',
+      WorkforceMemberParseError,
+    ),
   };
 }
 

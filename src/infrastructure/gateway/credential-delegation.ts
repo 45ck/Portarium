@@ -68,9 +68,7 @@ export class InMemoryCredentialDelegation implements CredentialDelegationPort {
     this.#store.set(scopeKey(scope), entry);
   }
 
-  public acquireCredential(
-    scope: CredentialScope,
-  ): Promise<CredentialDelegationResult> {
+  public acquireCredential(scope: CredentialScope): Promise<CredentialDelegationResult> {
     return Promise.resolve(this.#resolveCredential(scope));
   }
 

@@ -131,7 +131,11 @@ describe('createControlPlaneHandler machine/agent contract routes', () => {
       },
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { lastHeartbeatAtIso: string; machineId: string; status: string };
+    const body = (await res.json()) as {
+      lastHeartbeatAtIso: string;
+      machineId: string;
+      status: string;
+    };
     expect(typeof body.lastHeartbeatAtIso).toBe('string');
     expect(body.lastHeartbeatAtIso).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(body.machineId).toBe('machine-ws1-1');
@@ -159,7 +163,11 @@ describe('createControlPlaneHandler machine/agent contract routes', () => {
       },
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { agentId: string; status: string; lastHeartbeatAtIso: string };
+    const body = (await res.json()) as {
+      agentId: string;
+      status: string;
+      lastHeartbeatAtIso: string;
+    };
     expect(body.agentId).toBe('agent-ws1-1');
     expect(body.status).toBe('degraded');
     expect(typeof body.lastHeartbeatAtIso).toBe('string');
@@ -190,9 +198,7 @@ describe('createControlPlaneHandler machine/agent contract routes', () => {
       role: 'control-plane',
       host: '127.0.0.1',
       port: 0,
-      handler: createControlPlaneHandler(
-        makeDeps({ workspaceId: 'workspace-1' }),
-      ),
+      handler: createControlPlaneHandler(makeDeps({ workspaceId: 'workspace-1' })),
     });
 
     const res = await fetch(
@@ -244,9 +250,7 @@ describe('createControlPlaneHandler machine/agent contract routes', () => {
       role: 'control-plane',
       host: '127.0.0.1',
       port: 0,
-      handler: createControlPlaneHandler(
-        makeDeps({ unauthorized: true }),
-      ),
+      handler: createControlPlaneHandler(makeDeps({ unauthorized: true })),
     });
 
     const res = await fetch(

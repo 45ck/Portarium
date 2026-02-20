@@ -1,29 +1,29 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
   title: 'Foundation/Colors',
   parameters: { layout: 'padded' },
-}
-export default meta
+};
+export default meta;
 
-type Story = StoryObj
+type Story = StoryObj;
 
 const swatches = [
-  { token: '--background',        label: 'Background' },
-  { token: '--foreground',        label: 'Foreground' },
-  { token: '--card',              label: 'Card' },
-  { token: '--primary',           label: 'Primary' },
-  { token: '--primary-foreground',label: 'Primary FG' },
-  { token: '--secondary',         label: 'Secondary' },
-  { token: '--muted',             label: 'Muted' },
-  { token: '--muted-foreground',  label: 'Muted FG' },
-  { token: '--accent',            label: 'Accent' },
-  { token: '--destructive',       label: 'Destructive' },
-  { token: '--border',            label: 'Border' },
-  { token: '--success',           label: 'Success' },
-  { token: '--warning',           label: 'Warning' },
-  { token: '--info',              label: 'Info' },
-]
+  { token: '--background', label: 'Background' },
+  { token: '--foreground', label: 'Foreground' },
+  { token: '--card', label: 'Card' },
+  { token: '--primary', label: 'Primary' },
+  { token: '--primary-foreground', label: 'Primary FG' },
+  { token: '--secondary', label: 'Secondary' },
+  { token: '--muted', label: 'Muted' },
+  { token: '--muted-foreground', label: 'Muted FG' },
+  { token: '--accent', label: 'Accent' },
+  { token: '--destructive', label: 'Destructive' },
+  { token: '--border', label: 'Border' },
+  { token: '--success', label: 'Success' },
+  { token: '--warning', label: 'Warning' },
+  { token: '--info', label: 'Info' },
+];
 
 function ColorPalette() {
   return (
@@ -42,7 +42,7 @@ function ColorPalette() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export const Palette: Story = { render: () => <ColorPalette /> }
+export const Palette: Story = { render: () => <ColorPalette /> };

@@ -66,7 +66,11 @@ function AdaptersPage() {
   if (isError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title="Adapters" description="System of Record adapters" icon={<EntityIcon entityType="adapter" size="md" decorative />} />
+        <PageHeader
+          title="Adapters"
+          description="System of Record adapters"
+          icon={<EntityIcon entityType="adapter" size="md" decorative />}
+        />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">

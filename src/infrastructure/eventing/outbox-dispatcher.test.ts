@@ -57,7 +57,7 @@ class InMemoryOutbox implements OutboxPort {
     mut['status'] = 'Failed';
     mut['failedReason'] = reason;
     mut['nextRetryAtIso'] = nextRetryAtIso;
-    mut['retryCount'] = (entry.retryCount) + 1;
+    mut['retryCount'] = entry.retryCount + 1;
   }
 }
 

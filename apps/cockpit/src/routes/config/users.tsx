@@ -91,8 +91,7 @@ function UsersPage() {
       key: 'lastActiveIso',
       header: 'Last Active',
       width: '160px',
-      render: (row: UserSummary) =>
-        format(new Date(row.lastActiveIso), 'MMM d, yyyy HH:mm'),
+      render: (row: UserSummary) => format(new Date(row.lastActiveIso), 'MMM d, yyyy HH:mm'),
     },
     {
       key: 'actions',
@@ -205,10 +204,7 @@ function UsersPage() {
             <Button variant="outline" onClick={() => setInviteOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleInvite}
-              disabled={!inviteEmail || inviteMutation.isPending}
-            >
+            <Button onClick={handleInvite} disabled={!inviteEmail || inviteMutation.isPending}>
               {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
             </Button>
           </DialogFooter>

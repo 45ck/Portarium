@@ -1,16 +1,21 @@
-import type { AgentV1, RunSummary, WorkflowSummary } from '@portarium/cockpit-types'
+import type { AgentV1, RunSummary, WorkflowSummary } from '@portarium/cockpit-types';
 
-const TRIGGER_KINDS: WorkflowSummary['triggerKind'][] = ['Manual', 'Cron', 'Webhook', 'DomainEvent']
+const TRIGGER_KINDS: WorkflowSummary['triggerKind'][] = [
+  'Manual',
+  'Cron',
+  'Webhook',
+  'DomainEvent',
+];
 
 const WORKFLOW_PORT_FAMILY: Record<string, string> = {
-  'wf-order-fulfillment':         'LogisticsShipping',
-  'wf-qc-approval':               'RegulatoryCompliance',
-  'wf-maintenance-window':        'IoTTelemetry',
-  'wf-incident-report':           'Itsm',
-  'wf-supplier-invoice':          'FinanceAccounting',
-  'wf-cold-chain-deviation':      'IoTTelemetry',
+  'wf-order-fulfillment': 'LogisticsShipping',
+  'wf-qc-approval': 'RegulatoryCompliance',
+  'wf-maintenance-window': 'IoTTelemetry',
+  'wf-incident-report': 'Itsm',
+  'wf-supplier-invoice': 'FinanceAccounting',
+  'wf-cold-chain-deviation': 'IoTTelemetry',
   'wf-controlled-substance-audit': 'RegulatoryCompliance',
-}
+};
 
 export function buildMockWorkflows(
   runs: readonly RunSummary[],
@@ -18,13 +23,13 @@ export function buildMockWorkflows(
 ): WorkflowSummary[] {
   const workflowIds = Array.from(new Set(runs.map((run) => run.workflowId))).sort((a, b) =>
     a.localeCompare(b),
-  )
+  );
 
   return workflowIds.map((workflowId, index) => {
-    const workflowRuns = runs.filter((run) => run.workflowId === workflowId)
+    const workflowRuns = runs.filter((run) => run.workflowId === workflowId);
     const latestRun = workflowRuns
       .slice()
-      .sort((a, b) => b.createdAtIso.localeCompare(a.createdAtIso))[0]
+      .sort((a, b) => b.createdAtIso.localeCompare(a.createdAtIso))[0];
 
     const linkedAgentIds = Array.from(
       new Set(
@@ -32,10 +37,10 @@ export function buildMockWorkflows(
           .filter((agent) => (agent.usedByWorkflowIds ?? []).includes(workflowId))
           .map((agent) => agent.agentId),
       ),
-    )
-    const primaryAgent = linkedAgentIds[0] ?? `agent-${index + 1}`
+    );
+    const primaryAgent = linkedAgentIds[0] ?? `agent-${index + 1}`;
 
-    const actionCount = 3 + (index % 3)
+    const actionCount = 3 + (index % 3);
     const actions = Array.from({ length: actionCount }, (_, actionIndex) => ({
       actionId: `${workflowId}-action-${actionIndex + 1}`,
       order: actionIndex + 1,
@@ -46,7 +51,7 @@ export function buildMockWorkflows(
           : actionIndex === actionCount - 1
             ? 'workflow:finalize'
             : `workflow:step-${actionIndex + 1}-${primaryAgent}`,
-    }))
+    }));
 
     return {
       schemaVersion: 1,
@@ -67,8 +72,8 @@ export function buildMockWorkflows(
         backoffMultiplier: 2,
       },
       compensationMode: 'best-effort',
-    } satisfies WorkflowSummary
-  })
+    } satisfies WorkflowSummary;
+  });
 }
 
 export function findMockWorkflowById(
@@ -76,7 +81,9 @@ export function findMockWorkflowById(
   agents: readonly AgentV1[],
   workflowId: string,
 ): WorkflowSummary | null {
-  return buildMockWorkflows(runs, agents).find((workflow) => workflow.workflowId === workflowId) ?? null
+  return (
+    buildMockWorkflows(runs, agents).find((workflow) => workflow.workflowId === workflowId) ?? null
+  );
 }
 
 function humanizeWorkflowId(workflowId: string): string {
@@ -84,5 +91,5 @@ function humanizeWorkflowId(workflowId: string): string {
     .replace(/^wf-/, '')
     .split('-')
     .map((part) => (part.length === 0 ? part : part[0]!.toUpperCase() + part.slice(1)))
-    .join(' ')
+    .join(' ');
 }

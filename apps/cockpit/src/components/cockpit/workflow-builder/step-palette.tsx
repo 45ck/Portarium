@@ -1,50 +1,85 @@
-import { Play, Square, Zap, ShieldCheck, GitBranch, Bell, Brain } from 'lucide-react'
-import type { WorkflowNodeType } from '@/hooks/use-workflow-builder'
+import { Play, Square, Zap, ShieldCheck, GitBranch, Bell, Brain } from 'lucide-react';
+import type { WorkflowNodeType } from '@/hooks/use-workflow-builder';
 
 interface StepDef {
-  type: WorkflowNodeType
-  label: string
-  icon: React.ReactNode
-  color: string
+  type: WorkflowNodeType;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
 }
 
 interface StepCategory {
-  label: string
-  steps: StepDef[]
+  label: string;
+  steps: StepDef[];
 }
 
 const CATEGORIES: StepCategory[] = [
   {
     label: 'Control Flow',
     steps: [
-      { type: 'start', label: 'Start', icon: <Play className="h-3.5 w-3.5" />, color: 'text-emerald-500' },
-      { type: 'end', label: 'End', icon: <Square className="h-3.5 w-3.5" />, color: 'text-rose-500' },
-      { type: 'condition', label: 'Condition', icon: <GitBranch className="h-3.5 w-3.5" />, color: 'text-violet-500' },
+      {
+        type: 'start',
+        label: 'Start',
+        icon: <Play className="h-3.5 w-3.5" />,
+        color: 'text-emerald-500',
+      },
+      {
+        type: 'end',
+        label: 'End',
+        icon: <Square className="h-3.5 w-3.5" />,
+        color: 'text-rose-500',
+      },
+      {
+        type: 'condition',
+        label: 'Condition',
+        icon: <GitBranch className="h-3.5 w-3.5" />,
+        color: 'text-violet-500',
+      },
     ],
   },
   {
     label: 'Actions',
     steps: [
-      { type: 'action', label: 'Action', icon: <Zap className="h-3.5 w-3.5" />, color: 'text-blue-500' },
-      { type: 'approval-gate', label: 'Approval Gate', icon: <ShieldCheck className="h-3.5 w-3.5" />, color: 'text-amber-500' },
+      {
+        type: 'action',
+        label: 'Action',
+        icon: <Zap className="h-3.5 w-3.5" />,
+        color: 'text-blue-500',
+      },
+      {
+        type: 'approval-gate',
+        label: 'Approval Gate',
+        icon: <ShieldCheck className="h-3.5 w-3.5" />,
+        color: 'text-amber-500',
+      },
     ],
   },
   {
     label: 'AI',
     steps: [
-      { type: 'agent-task', label: 'Agent Task', icon: <Brain className="h-3.5 w-3.5" />, color: 'text-fuchsia-500' },
+      {
+        type: 'agent-task',
+        label: 'Agent Task',
+        icon: <Brain className="h-3.5 w-3.5" />,
+        color: 'text-fuchsia-500',
+      },
     ],
   },
   {
     label: 'Notifications',
     steps: [
-      { type: 'notification', label: 'Notification', icon: <Bell className="h-3.5 w-3.5" />, color: 'text-sky-500' },
+      {
+        type: 'notification',
+        label: 'Notification',
+        icon: <Bell className="h-3.5 w-3.5" />,
+        color: 'text-sky-500',
+      },
     ],
   },
-]
+];
 
 interface StepPaletteProps {
-  onAddNode: (type: WorkflowNodeType, label: string) => void
+  onAddNode: (type: WorkflowNodeType, label: string) => void;
 }
 
 export function StepPalette({ onAddNode }: StepPaletteProps) {
@@ -65,9 +100,9 @@ export function StepPalette({ onAddNode }: StepPaletteProps) {
                 onClick={() => onAddNode(step.type, step.label)}
                 draggable
                 onDragStart={(e) => {
-                  e.dataTransfer.setData('application/workflow-node-type', step.type)
-                  e.dataTransfer.setData('application/workflow-node-label', step.label)
-                  e.dataTransfer.effectAllowed = 'move'
+                  e.dataTransfer.setData('application/workflow-node-type', step.type);
+                  e.dataTransfer.setData('application/workflow-node-label', step.label);
+                  e.dataTransfer.effectAllowed = 'move';
                 }}
               >
                 <span className={step.color}>{step.icon}</span>
@@ -78,5 +113,5 @@ export function StepPalette({ onAddNode }: StepPaletteProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -51,7 +51,11 @@ function createRequest(opts: {
   return req;
 }
 
-function createResponse(): ServerResponse & { _body: string; _status: number; _headers: Record<string, string> } {
+function createResponse(): ServerResponse & {
+  _body: string;
+  _status: number;
+  _headers: Record<string, string>;
+} {
   const res = {
     _body: '',
     _status: 200,
@@ -68,7 +72,11 @@ function createResponse(): ServerResponse & { _body: string; _status: number; _h
       res._body = body ?? '';
     },
   };
-  return res as unknown as ServerResponse & { _body: string; _status: number; _headers: Record<string, string> };
+  return res as unknown as ServerResponse & {
+    _body: string;
+    _status: number;
+    _headers: Record<string, string>;
+  };
 }
 
 function createGateway(overrides?: {
@@ -107,8 +115,8 @@ describe('AgentGateway', () => {
 
     const [url, init] = fetchSpy.mock.calls[0]!;
     expect(url).toBe('http://control-plane:3000/api/v1/runs');
-    expect((init!).headers).toHaveProperty('x-workspace-id', 'ws-test');
-    expect((init!).headers).toHaveProperty('traceparent');
+    expect(init!.headers).toHaveProperty('x-workspace-id', 'ws-test');
+    expect(init!.headers).toHaveProperty('traceparent');
   });
 
   it('rejects unauthenticated requests with 401', async () => {
@@ -162,7 +170,7 @@ describe('AgentGateway', () => {
 
     await gateway.handleRequest(req, res);
 
-    const headers = (fetchSpy.mock.calls[0]![1]!).headers as Record<string, string>;
+    const headers = fetchSpy.mock.calls[0]![1]!.headers as Record<string, string>;
     expect(headers['traceparent']).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/);
   });
 
@@ -176,7 +184,7 @@ describe('AgentGateway', () => {
 
     await gateway.handleRequest(req, res);
 
-    const headers = (fetchSpy.mock.calls[0]![1]!).headers as Record<string, string>;
+    const headers = fetchSpy.mock.calls[0]![1]!.headers as Record<string, string>;
     expect(headers['traceparent']).toBe(traceparent);
   });
 
@@ -213,6 +221,6 @@ describe('AgentGateway', () => {
 
     expect(res._status).toBe(201);
     const [, init] = fetchSpy.mock.calls[0]!;
-    expect((init!).body).toBeDefined();
+    expect(init!.body).toBeDefined();
   });
 });

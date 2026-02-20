@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import type { EvidenceEntry } from '@portarium/cockpit-types'
+import { useQuery } from '@tanstack/react-query';
+import type { EvidenceEntry } from '@portarium/cockpit-types';
 
 async function fetchEvidence(wsId: string): Promise<{ items: EvidenceEntry[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/evidence`)
-  if (!res.ok) throw new Error('Failed to fetch evidence')
-  return res.json()
+  const res = await fetch(`/v1/workspaces/${wsId}/evidence`);
+  if (!res.ok) throw new Error('Failed to fetch evidence');
+  return res.json();
 }
 
 export function useEvidence(wsId: string) {
@@ -12,5 +12,5 @@ export function useEvidence(wsId: string) {
     queryKey: ['evidence', wsId],
     queryFn: () => fetchEvidence(wsId),
     enabled: Boolean(wsId),
-  })
+  });
 }

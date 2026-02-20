@@ -5,8 +5,8 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 service:
   type: ClusterIP
@@ -15,7 +15,7 @@ service:
 
 ingress:
   enabled: false
-  className: ""
+  className: ''
   annotations: {}
   hosts:
     - host: activepieces.local
@@ -33,15 +33,15 @@ activepieces:
   telemetry:
     enabled: false
   postgres:
-    host: ""
+    host: ''
     port: 5432
     database: activepieces
     username: activepieces
     password: activepieces
   redis:
-    host: ""
+    host: ''
     port: 6379
-    password: ""
+    password: ''
 
 postgresql:
   enabled: true
@@ -50,7 +50,7 @@ postgresql:
   username: activepieces
   storage:
     size: 8Gi
-    className: ""
+    className: ''
   resources: {}
 
 redis:

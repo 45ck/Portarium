@@ -132,9 +132,7 @@ describe('parseAdapterRegistrationV1', () => {
   it('rejects missing executionPolicy', () => {
     const invalid = { ...validFull } as Record<string, unknown>;
     delete invalid['executionPolicy'];
-    expect(() => parseAdapterRegistrationV1(invalid)).toThrow(
-      /executionPolicy must be an object/i,
-    );
+    expect(() => parseAdapterRegistrationV1(invalid)).toThrow(/executionPolicy must be an object/i);
   });
 
   it('rejects unverified sandbox policy', () => {

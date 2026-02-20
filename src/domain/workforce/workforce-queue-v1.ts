@@ -57,7 +57,9 @@ export function parseWorkforceQueueV1(value: unknown): WorkforceQueueV1 {
     name: readString(record, 'name', WorkforceQueueParseError),
     requiredCapabilities: parseCapabilities(record['requiredCapabilities']),
     memberIds: parseMemberIds(record['memberIds']),
-    routingStrategy: parseRoutingStrategy(readString(record, 'routingStrategy', WorkforceQueueParseError)),
+    routingStrategy: parseRoutingStrategy(
+      readString(record, 'routingStrategy', WorkforceQueueParseError),
+    ),
     tenantId: TenantId(readString(record, 'tenantId', WorkforceQueueParseError)),
   };
 }
@@ -130,7 +132,13 @@ function parseCapabilities(value: unknown): readonly WorkforceCapability[] {
   if (!Array.isArray(value) || value.length === 0) {
     throw new WorkforceQueueParseError('requiredCapabilities must be a non-empty array.');
   }
-  return [...new Set(value.map((entry, i) => parseWorkforceCapabilityV1(entry, `requiredCapabilities[${i}]`, WorkforceQueueParseError)))];
+  return [
+    ...new Set(
+      value.map((entry, i) =>
+        parseWorkforceCapabilityV1(entry, `requiredCapabilities[${i}]`, WorkforceQueueParseError),
+      ),
+    ),
+  ];
 }
 
 function parseMemberIds(value: unknown): readonly WorkforceMemberIdType[] {

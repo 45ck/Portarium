@@ -1,4 +1,10 @@
-import { context as otContext, metrics, propagation, SpanStatusCode, trace } from '@opentelemetry/api';
+import {
+  context as otContext,
+  metrics,
+  propagation,
+  SpanStatusCode,
+  trace,
+} from '@opentelemetry/api';
 
 import type { AppContext } from './context.js';
 
@@ -112,7 +118,8 @@ export async function observeCommandExecution<T>(args: ObserveCommandExecutionAr
             ...baseAttributes,
             'app.command.outcome': 'exception',
           } as const;
-          const message = error instanceof Error ? error.message : 'Unhandled command execution error.';
+          const message =
+            error instanceof Error ? error.message : 'Unhandled command execution error.';
 
           commandExecutionCounter.add(1, metricAttributes);
           commandDurationHistogram.record(durationMs, metricAttributes);

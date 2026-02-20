@@ -63,7 +63,10 @@ function validateMetrics(
 ): Result<true, ValidationFailed> {
   if (metrics === undefined) return ok(true);
   if (typeof metrics !== 'object' || metrics === null || Array.isArray(metrics)) {
-    return err({ kind: 'ValidationFailed', message: 'metrics must be a record of string to number.' });
+    return err({
+      kind: 'ValidationFailed',
+      message: 'metrics must be a record of string to number.',
+    });
   }
   for (const [key, val] of Object.entries(metrics)) {
     if (typeof key !== 'string' || typeof val !== 'number' || !Number.isFinite(val)) {
@@ -127,7 +130,9 @@ async function dispatchMachineHeartbeat(
     return err({ kind: 'ValidationFailed', message: 'machineId must be a non-empty string.' });
   }
   const updated = await dc.store.updateMachineHeartbeat(
-    dc.ctx.tenantId, MachineId(machineId), dc.heartbeat,
+    dc.ctx.tenantId,
+    MachineId(machineId),
+    dc.heartbeat,
   );
   if (!updated) {
     return err({
@@ -147,7 +152,9 @@ async function dispatchAgentHeartbeat(
     return err({ kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' });
   }
   const updated = await dc.store.updateAgentHeartbeat(
-    dc.ctx.tenantId, AgentId(agentId), dc.heartbeat,
+    dc.ctx.tenantId,
+    AgentId(agentId),
+    dc.heartbeat,
   );
   if (!updated) {
     return err({
@@ -192,7 +199,10 @@ export async function processHeartbeat(
   };
 
   const dc: HeartbeatDispatchContext = {
-    store: deps.machineRegistryStore, ctx, heartbeat, nowIso,
+    store: deps.machineRegistryStore,
+    ctx,
+    heartbeat,
+    nowIso,
   };
 
   if (input.machineId !== undefined) {

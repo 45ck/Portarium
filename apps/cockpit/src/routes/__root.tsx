@@ -239,8 +239,16 @@ function InboxBadge({ wsId }: { wsId: string }) {
 function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
-  const { sidebarCollapsed, setSidebarCollapsed, activeWorkspaceId, setActiveWorkspaceId, activePersona, setActivePersona, startRunOpen, setStartRunOpen } =
-    useUIStore();
+  const {
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    activeWorkspaceId,
+    setActiveWorkspaceId,
+    activePersona,
+    setActivePersona,
+    startRunOpen,
+    setStartRunOpen,
+  } = useUIStore();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -312,7 +320,12 @@ function RootLayout() {
                           )}
                         </span>
                       ) : (
-                        <NavLink key={item.to} to={item.to} collapsed={sidebarCollapsed} label={item.label}>
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          collapsed={sidebarCollapsed}
+                          label={item.label}
+                        >
                           <span className="shrink-0">{item.icon}</span>
                           {!sidebarCollapsed && (
                             <span className="flex-1 text-left truncate">{item.label}</span>
@@ -332,7 +345,10 @@ function RootLayout() {
             <div className="p-3 border-t border-border space-y-2">
               {sidebarCollapsed ? (
                 <>
-                  <span className="text-[10px] text-muted-foreground truncate block text-center" title={activePersona}>
+                  <span
+                    className="text-[10px] text-muted-foreground truncate block text-center"
+                    title={activePersona}
+                  >
                     {activePersona.slice(0, 2)}
                   </span>
                   <span className="text-[10px] text-muted-foreground truncate block text-center">
@@ -341,7 +357,10 @@ function RootLayout() {
                 </>
               ) : (
                 <>
-                  <Select value={activePersona} onValueChange={(v) => setActivePersona(v as PersonaId)}>
+                  <Select
+                    value={activePersona}
+                    onValueChange={(v) => setActivePersona(v as PersonaId)}
+                  >
                     <SelectTrigger size="sm" className="w-full text-xs h-7">
                       <SelectValue />
                     </SelectTrigger>

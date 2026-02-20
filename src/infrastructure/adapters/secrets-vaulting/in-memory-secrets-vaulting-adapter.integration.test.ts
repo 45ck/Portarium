@@ -46,8 +46,8 @@ describe('InMemorySecretsVaultingAdapter integration', () => {
     expect(list.ok).toBe(true);
     if (!list.ok || list.result.kind !== 'externalRefs') return;
     expect(
-      list.result.externalRefs.some(
-        (item) => (item.displayLabel ?? '').includes('secret/app/integration-token'),
+      list.result.externalRefs.some((item) =>
+        (item.displayLabel ?? '').includes('secret/app/integration-token'),
       ),
     ).toBe(true);
 
@@ -91,7 +91,9 @@ describe('InMemorySecretsVaultingAdapter integration', () => {
     expect(listedCerts.ok).toBe(true);
     if (!listedCerts.ok || listedCerts.result.kind !== 'externalRefs') return;
     expect(
-      listedCerts.result.externalRefs.some((candidate) => candidate.externalId === renewedCertificateId),
+      listedCerts.result.externalRefs.some(
+        (candidate) => candidate.externalId === renewedCertificateId,
+      ),
     ).toBe(true);
 
     const createdKey = await adapter.execute({
@@ -154,7 +156,10 @@ describe('InMemorySecretsVaultingAdapter integration', () => {
     if (!tenantSecrets.ok || tenantSecrets.result.kind !== 'externalRefs') return;
     expect(tenantSecrets.result.externalRefs).toHaveLength(1);
 
-    const otherSecrets = await adapter.execute({ tenantId: OTHER_TENANT, operation: 'listSecrets' });
+    const otherSecrets = await adapter.execute({
+      tenantId: OTHER_TENANT,
+      operation: 'listSecrets',
+    });
     expect(otherSecrets.ok).toBe(true);
     if (!otherSecrets.ok || otherSecrets.result.kind !== 'externalRefs') return;
     expect(otherSecrets.result.externalRefs).toHaveLength(1);

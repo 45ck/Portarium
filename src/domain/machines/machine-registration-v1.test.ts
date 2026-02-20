@@ -207,9 +207,7 @@ describe('parseMachineRegistrationV1: validation', () => {
   it('rejects missing executionPolicy', () => {
     const invalid = { ...VALID_MACHINE_REGISTRATION } as Record<string, unknown>;
     delete invalid['executionPolicy'];
-    expect(() => parseMachineRegistrationV1(invalid)).toThrow(
-      /executionPolicy must be an object/i,
-    );
+    expect(() => parseMachineRegistrationV1(invalid)).toThrow(/executionPolicy must be an object/i);
   });
 
   it('rejects non-https executionPolicy egress entries', () => {

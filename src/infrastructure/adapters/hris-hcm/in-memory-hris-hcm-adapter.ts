@@ -24,7 +24,10 @@ type InMemoryHrisHcmAdapterParams = Readonly<{
   seed?: InMemoryHrisHcmAdapterSeed;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -106,7 +109,11 @@ export class InMemoryHrisHcmAdapter implements HrisHcmAdapterPort {
   #getEmployee(input: HrisHcmExecuteInputV1): HrisHcmExecuteOutputV1 {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getEmployee.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getEmployee.',
+      };
     }
     const employee = this.#employees.find(
       (item) => item.tenantId === input.tenantId && item.partyId === partyId,
@@ -213,15 +220,17 @@ export class InMemoryHrisHcmAdapter implements HrisHcmAdapterPort {
       externalId: `timeoff-${++this.#timeOffSequence}`,
       externalType: 'time_off_request',
       displayLabel:
-        (typeof input.payload?.['label'] === 'string'
+        typeof input.payload?.['label'] === 'string'
           ? input.payload['label']
-          : `Time Off ${this.#timeOffSequence}`),
+          : `Time Off ${this.#timeOffSequence}`,
     };
     this.#timeOffRecords.push(externalRef);
     return { ok: true, result: { kind: 'externalRef', externalRef } };
   }
 
-  public static seedMinimal(tenantId: HrisHcmExecuteInputV1['tenantId']): InMemoryHrisHcmAdapterSeed {
+  public static seedMinimal(
+    tenantId: HrisHcmExecuteInputV1['tenantId'],
+  ): InMemoryHrisHcmAdapterSeed {
     return {
       employees: [
         {

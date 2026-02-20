@@ -1,17 +1,23 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Checkbox } from '@/components/ui/checkbox'
+import type { Meta, StoryObj } from '@storybook/react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const meta: Meta = {
   title: 'Primitives/Inputs',
   parameters: { layout: 'padded' },
-}
-export default meta
-type Story = StoryObj
+};
+export default meta;
+type Story = StoryObj;
 
 export const FormControls: Story = {
   render: () => (
@@ -23,7 +29,9 @@ export const FormControls: Story = {
       <div className="space-y-1.5">
         <Label>Execution Tier</Label>
         <Select>
-          <SelectTrigger><SelectValue placeholder="Select tier..." /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue placeholder="Select tier..." />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="dryrun">Dry Run</SelectItem>
             <SelectItem value="supervised">Supervised</SelectItem>
@@ -45,4 +53,4 @@ export const FormControls: Story = {
       </div>
     </div>
   ),
-}
+};

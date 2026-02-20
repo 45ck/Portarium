@@ -89,7 +89,7 @@ export const MOCK_USERS: UserSummary[] = [
   },
   {
     userId: 'user-010',
-    name: 'Kevin O\'Brien',
+    name: "Kevin O'Brien",
     email: 'kevin.obrien@meridian.io',
     role: 'Operator',
     status: 'suspended',

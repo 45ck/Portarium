@@ -81,41 +81,44 @@ The local emulator provides a standalone control plane for offline development:
 
 #### Emulator boundaries
 
-| Feature | Emulated | Not emulated |
-|---------|----------|-------------|
-| Workspace CRUD | Yes | -- |
-| Run lifecycle (start, status, cancel) | Yes | -- |
-| Approval flow | Yes | -- |
-| Policy evaluation (inline DSL) | Yes | -- |
-| Evidence recording | Yes | -- |
-| Temporal workflows | No | Uses synchronous execution |
-| NATS event stream | No | In-process event bus |
-| Vault credential storage | No | Env-var credentials |
-| gRPC telemetry/control | No | REST-only in emulator |
-| Multi-tenant isolation | No | Single workspace |
+| Feature                               | Emulated | Not emulated               |
+| ------------------------------------- | -------- | -------------------------- |
+| Workspace CRUD                        | Yes      | --                         |
+| Run lifecycle (start, status, cancel) | Yes      | --                         |
+| Approval flow                         | Yes      | --                         |
+| Policy evaluation (inline DSL)        | Yes      | --                         |
+| Evidence recording                    | Yes      | --                         |
+| Temporal workflows                    | No       | Uses synchronous execution |
+| NATS event stream                     | No       | In-process event bus       |
+| Vault credential storage              | No       | Env-var credentials        |
+| gRPC telemetry/control                | No       | REST-only in emulator      |
+| Multi-tenant isolation                | No       | Single workspace           |
 
 ## Technology Choices
 
-| Component | Choice | Reason |
-|-----------|--------|--------|
-| Static site | VitePress or Docusaurus | Markdown-first, plugin ecosystem |
-| API renderer | Scalar | Modern UI, OpenAPI 3.1 support |
-| Local emulator | Node.js + SQLite | Zero external dependencies |
-| Hosting | Vercel or Cloudflare Pages | Free tier, CDN, preview deploys |
+| Component      | Choice                     | Reason                           |
+| -------------- | -------------------------- | -------------------------------- |
+| Static site    | VitePress or Docusaurus    | Markdown-first, plugin ecosystem |
+| API renderer   | Scalar                     | Modern UI, OpenAPI 3.1 support   |
+| Local emulator | Node.js + SQLite           | Zero external dependencies       |
+| Hosting        | Vercel or Cloudflare Pages | Free tier, CDN, preview deploys  |
 
 ## Implementation Phases
 
 ### Phase 1: Static docs + API explorer
+
 - Deploy VitePress site with existing markdown docs
 - Embed Scalar API explorer with the OpenAPI spec
 - Quickstart guides for Python, Go, TypeScript
 
 ### Phase 2: Local emulator
+
 - Implement emulator as a standalone Node.js server
 - SQLite storage for workspace, run, approval, evidence entities
 - CLI integration (`portarium emulator start`)
 
 ### Phase 3: Interactive tutorials
+
 - Guided flows ("Build your first agent in 10 minutes")
 - Workspace sandbox with ephemeral workspace creation
 - Code playground with live API calls

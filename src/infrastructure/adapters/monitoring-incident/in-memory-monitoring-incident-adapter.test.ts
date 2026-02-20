@@ -105,7 +105,10 @@ describe('InMemoryMonitoringIncidentAdapter', () => {
       seed: InMemoryMonitoringIncidentAdapter.seedMinimal(TENANT_A),
     });
 
-    const schedules = await adapter.execute({ tenantId: TENANT_A, operation: 'listOnCallSchedules' });
+    const schedules = await adapter.execute({
+      tenantId: TENANT_A,
+      operation: 'listOnCallSchedules',
+    });
     expect(schedules.ok).toBe(true);
     if (!schedules.ok || schedules.result.kind !== 'externalRefs') return;
     const scheduleId = schedules.result.externalRefs[0]!.externalId;

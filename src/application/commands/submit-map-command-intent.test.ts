@@ -96,9 +96,8 @@ describe('submitMapCommandIntent', () => {
     expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
     expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
 
-    const evidenceInput = (evidenceLog.appendEntry as ReturnType<typeof vi.fn>).mock.calls[0]?.[
-      1
-    ] as {
+    const evidenceInput = (evidenceLog.appendEntry as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1] as {
       links?: {
         externalRefs?: { externalType: string; externalId: string }[];
       };

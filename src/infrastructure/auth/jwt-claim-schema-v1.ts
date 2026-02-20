@@ -7,9 +7,7 @@
  * @see .specify/specs/jwt-claim-schema-v1.md
  */
 
-import type {
-  WorkspaceUserRole,
-} from '../../domain/primitives/index.js';
+import type { WorkspaceUserRole } from '../../domain/primitives/index.js';
 import { isWorkspaceUserRole } from '../../domain/primitives/index.js';
 
 // ---------------------------------------------------------------------------
@@ -46,10 +44,7 @@ export class JwtClaimValidationError extends Error {
   public override readonly name = 'JwtClaimValidationError';
 }
 
-function requireString(
-  record: Readonly<Record<string, unknown>>,
-  key: string,
-): string {
+function requireString(record: Readonly<Record<string, unknown>>, key: string): string {
   const value = record[key];
   if (typeof value !== 'string' || value.trim() === '') {
     throw new JwtClaimValidationError(`Claim '${key}' must be a non-empty string.`);
@@ -74,9 +69,7 @@ function requireAud(record: Readonly<Record<string, unknown>>): string | readonl
   );
 }
 
-function requireRoles(
-  record: Readonly<Record<string, unknown>>,
-): readonly WorkspaceUserRole[] {
+function requireRoles(record: Readonly<Record<string, unknown>>): readonly WorkspaceUserRole[] {
   const raw = record['roles'];
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new JwtClaimValidationError("Claim 'roles' must be a non-empty array.");
@@ -126,9 +119,7 @@ function readOptionalStringArray(
   }
   for (let i = 0; i < value.length; i++) {
     if (typeof value[i] !== 'string' || (value[i] as string).trim() === '') {
-      throw new JwtClaimValidationError(
-        `Claim '${key}[${i}]' must be a non-empty string.`,
-      );
+      throw new JwtClaimValidationError(`Claim '${key}[${i}]' must be a non-empty string.`);
     }
   }
   return value.map((v: string) => v.trim());
@@ -159,9 +150,7 @@ function resolveWorkspaceId(record: Readonly<Record<string, unknown>>): string {
  *
  * @throws JwtClaimValidationError when any required claim is missing or malformed.
  */
-export function parsePortariumJwtClaims(
-  payload: unknown,
-): PortariumJwtClaimsV1 {
+export function parsePortariumJwtClaims(payload: unknown): PortariumJwtClaimsV1 {
   if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
     throw new JwtClaimValidationError('JWT payload must be a non-null object.');
   }
@@ -193,9 +182,7 @@ export function parsePortariumJwtClaims(
 /**
  * Type guard: does the payload look like it contains workspace-scoped claims?
  */
-export function hasWorkspaceScope(
-  payload: Readonly<Record<string, unknown>>,
-): boolean {
+export function hasWorkspaceScope(payload: Readonly<Record<string, unknown>>): boolean {
   const workspaceId = payload['workspaceId'];
   if (typeof workspaceId === 'string' && workspaceId.trim() !== '') return true;
   const tenantId = payload['tenantId'];

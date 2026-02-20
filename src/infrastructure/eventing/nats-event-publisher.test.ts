@@ -25,7 +25,9 @@ function makeEvent(overrides?: Partial<PortariumCloudEventV1>): PortariumCloudEv
   };
 }
 
-function makeMockJetStream(): NatsJetStreamConnection & { calls: { subject: string; data: Uint8Array }[] } {
+function makeMockJetStream(): NatsJetStreamConnection & {
+  calls: { subject: string; data: Uint8Array }[];
+} {
   const calls: { subject: string; data: Uint8Array }[] = [];
   return {
     calls,

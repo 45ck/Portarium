@@ -45,8 +45,8 @@ openai-agents-sdk/
 
 ## Configuration
 
-| Variable | Description |
-|----------|-------------|
-| `PORTARIUM_BASE_URL` | Portarium control plane URL |
-| `PORTARIUM_TOKEN` | Workspace-scoped JWT |
-| `PORTARIUM_WORKSPACE_ID` | Target workspace ID |
+| Variable                 | Description                 |
+| ------------------------ | --------------------------- |
+| `PORTARIUM_BASE_URL`     | Portarium control plane URL |
+| `PORTARIUM_TOKEN`        | Workspace-scoped JWT        |
+| `PORTARIUM_WORKSPACE_ID` | Target workspace ID         |

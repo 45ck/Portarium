@@ -51,7 +51,7 @@ async function gotoScreen(page, screen) {
       return Boolean(target && target.classList.contains('is-active'));
     },
     {},
-    `screen-${screen}`
+    `screen-${screen}`,
   );
   await sleep(120);
 }
@@ -62,7 +62,10 @@ async function capture(page, name) {
   return filePath;
 }
 
-const browser = await puppeteer.launch({ headless: true, defaultViewport: { width: 1440, height: 900 } });
+const browser = await puppeteer.launch({
+  headless: true,
+  defaultViewport: { width: 1440, height: 900 },
+});
 const page = await browser.newPage();
 
 const captured = [];

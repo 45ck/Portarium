@@ -30,7 +30,10 @@ type InMemoryItsmItOpsAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -155,9 +158,15 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
   #getIncident(input: ItsmItOpsExecuteInputV1): ItsmItOpsExecuteOutputV1 {
     const ticketId = readString(input.payload, 'ticketId');
     if (ticketId === null) {
-      return { ok: false, error: 'validation_error', message: 'ticketId is required for getIncident.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'ticketId is required for getIncident.',
+      };
     }
-    const ticket = this.#incidents.find((item) => item.tenantId === input.tenantId && item.ticketId === ticketId);
+    const ticket = this.#incidents.find(
+      (item) => item.tenantId === input.tenantId && item.ticketId === ticketId,
+    );
     if (ticket === undefined) {
       return { ok: false, error: 'not_found', message: `Incident ${ticketId} was not found.` };
     }
@@ -228,7 +237,9 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
 
     const updated: TicketV1 = {
       ...this.#incidents[index]!,
-      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] } : {}),
+      ...(typeof input.payload?.['subject'] === 'string'
+        ? { subject: input.payload['subject'] }
+        : {}),
       ...(readTicketStatus(input.payload, 'status') !== null
         ? { status: readTicketStatus(input.payload, 'status')! }
         : {}),
@@ -315,7 +326,11 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
       (ticket) => ticket.tenantId === input.tenantId && ticket.ticketId === ticketId,
     );
     if (index < 0) {
-      return { ok: false, error: 'not_found', message: `Change request ${ticketId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Change request ${ticketId} was not found.`,
+      };
     }
     const approved = decision === 'approve' || decision === 'approved';
     const next: TicketV1 = {
@@ -335,7 +350,9 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
     if (assetId === null) {
       return { ok: false, error: 'validation_error', message: 'assetId is required for getAsset.' };
     }
-    const asset = this.#assets.find((item) => item.tenantId === input.tenantId && item.assetId === assetId);
+    const asset = this.#assets.find(
+      (item) => item.tenantId === input.tenantId && item.assetId === assetId,
+    );
     if (asset === undefined) {
       return { ok: false, error: 'not_found', message: `Asset ${assetId} was not found.` };
     }
@@ -423,7 +440,9 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
         message: 'assetId is required for getCMDBItem.',
       };
     }
-    const cmdbItem = this.#cmdbItems.find((item) => item.tenantId === input.tenantId && item.assetId === assetId);
+    const cmdbItem = this.#cmdbItems.find(
+      (item) => item.tenantId === input.tenantId && item.assetId === assetId,
+    );
     if (cmdbItem === undefined) {
       return { ok: false, error: 'not_found', message: `CMDB item ${assetId} was not found.` };
     }
@@ -463,7 +482,9 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
     return this.#serviceRequests.filter((ticket) => ticket.tenantId === input.tenantId);
   }
 
-  public static seedMinimal(tenantId: ItsmItOpsExecuteInputV1['tenantId']): InMemoryItsmItOpsAdapterSeed {
+  public static seedMinimal(
+    tenantId: ItsmItOpsExecuteInputV1['tenantId'],
+  ): InMemoryItsmItOpsAdapterSeed {
     return {
       incidents: [
         {

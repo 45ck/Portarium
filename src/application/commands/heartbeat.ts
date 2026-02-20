@@ -28,21 +28,15 @@ export type HeartbeatInput = Readonly<{
   location?: Readonly<{ lat: number; lon: number }>;
 }>;
 
-export type MachineHeartbeatInput = HeartbeatInput &
-  Readonly<{ machineId: string }>;
+export type MachineHeartbeatInput = HeartbeatInput & Readonly<{ machineId: string }>;
 
-export type AgentHeartbeatInput = HeartbeatInput &
-  Readonly<{ agentId: string }>;
+export type AgentHeartbeatInput = HeartbeatInput & Readonly<{ agentId: string }>;
 
 export type HeartbeatOutput = Readonly<{
   lastHeartbeatAtIso: string;
 }>;
 
-export type HeartbeatError =
-  | Forbidden
-  | ValidationFailed
-  | NotFound
-  | DependencyFailure;
+export type HeartbeatError = Forbidden | ValidationFailed | NotFound | DependencyFailure;
 
 export interface HeartbeatDeps {
   authorization: AuthorizationPort;
@@ -78,7 +72,10 @@ function validateMetrics(
       return err({ kind: 'ValidationFailed', message: 'metrics keys must be non-empty strings.' });
     }
     if (typeof value !== 'number' || !Number.isFinite(value)) {
-      return err({ kind: 'ValidationFailed', message: `metrics["${key}"] must be a finite number.` });
+      return err({
+        kind: 'ValidationFailed',
+        message: `metrics["${key}"] must be a finite number.`,
+      });
     }
   }
   return ok(true);
@@ -105,9 +102,7 @@ function validateLocation(
   return ok(true);
 }
 
-function validateHeartbeatInput(
-  input: HeartbeatInput,
-): Result<true, ValidationFailed> {
+function validateHeartbeatInput(input: HeartbeatInput): Result<true, ValidationFailed> {
   if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
@@ -124,10 +119,7 @@ function validateHeartbeatInput(
   return ok(true);
 }
 
-function ensureTenantMatch(
-  ctx: AppContext,
-  workspaceId: string,
-): Result<true, Forbidden> {
+function ensureTenantMatch(ctx: AppContext, workspaceId: string): Result<true, Forbidden> {
   if (WorkspaceId(workspaceId) !== ctx.tenantId) {
     return err({
       kind: 'Forbidden',
@@ -138,10 +130,7 @@ function ensureTenantMatch(
   return ok(true);
 }
 
-function buildHeartbeatData(
-  input: HeartbeatInput,
-  nowIso: string,
-): HeartbeatData {
+function buildHeartbeatData(input: HeartbeatInput, nowIso: string): HeartbeatData {
   return {
     status: input.status as HeartbeatData['status'],
     lastHeartbeatAtIso: nowIso,

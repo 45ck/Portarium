@@ -156,7 +156,10 @@ function computeExponentialBackoffMs(params: {
   jitterRatio: number;
   random: () => number;
 }): number {
-  const withoutJitter = Math.min(params.maxBackoffMs, params.baseBackoffMs * 2 ** params.retryIndex);
+  const withoutJitter = Math.min(
+    params.maxBackoffMs,
+    params.baseBackoffMs * 2 ** params.retryIndex,
+  );
   const jitter = (params.random() * 2 - 1) * params.jitterRatio;
   const withJitter = Math.round(withoutJitter * (1 + jitter));
   return Math.max(1, withJitter);
@@ -182,15 +185,7 @@ function computeNextDailyResetIso(nowIso: string, resetAtUtcHour: number | undef
   const resetHour = resetAtUtcHour ?? 0;
 
   const nextReset = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      resetHour,
-      0,
-      0,
-      0,
-    ),
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), resetHour, 0, 0, 0),
   );
 
   if (nextReset.getTime() <= now.getTime()) {

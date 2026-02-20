@@ -33,7 +33,10 @@ type InMemoryComplianceGrcAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -47,7 +50,10 @@ function readTicketPriority(
   return TICKET_PRIORITIES.includes(value as TicketPriority) ? (value as TicketPriority) : null;
 }
 
-function readNumber(payload: Readonly<Record<string, unknown>> | undefined, key: string): number | null {
+function readNumber(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): number | null {
   const value = payload?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
@@ -100,7 +106,10 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       case 'listControls':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#controls, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#controls, input),
+          },
         };
       case 'getControl':
         return this.#getTenantRef(input, this.#controls, 'controlId', 'Control', 'getControl');
@@ -122,7 +131,10 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       case 'listPolicies':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#policies, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#policies, input),
+          },
         };
       case 'getPolicy':
         return this.#getTenantRef(input, this.#policies, 'policyId', 'Policy', 'getPolicy');
@@ -156,10 +168,19 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       case 'listFrameworks':
         return {
           ok: true,
-          result: { kind: 'externalRefs', externalRefs: this.#listTenantRefs(this.#frameworks, input) },
+          result: {
+            kind: 'externalRefs',
+            externalRefs: this.#listTenantRefs(this.#frameworks, input),
+          },
         };
       case 'getFramework':
-        return this.#getTenantRef(input, this.#frameworks, 'frameworkId', 'Framework', 'getFramework');
+        return this.#getTenantRef(
+          input,
+          this.#frameworks,
+          'frameworkId',
+          'Framework',
+          'getFramework',
+        );
       case 'mapControlToFramework':
         return this.#mapControlToFramework(input);
       default:
@@ -174,7 +195,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #createControl(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const name = readString(input.payload, 'name');
     if (name === null) {
-      return { ok: false, error: 'validation_error', message: 'name is required for createControl.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'name is required for createControl.',
+      };
     }
 
     const externalRef: ExternalObjectRef = {
@@ -243,7 +268,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #assessRisk(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const riskId = readString(input.payload, 'riskId');
     if (riskId === null) {
-      return { ok: false, error: 'validation_error', message: 'riskId is required for assessRisk.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'riskId is required for assessRisk.',
+      };
     }
     const risk = this.#risks.find(
       (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === riskId,
@@ -254,7 +283,8 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
     void risk;
 
     const score = readNumber(input.payload, 'score');
-    const label = score === null ? `Risk assessment for ${riskId}` : `Risk assessment ${riskId} score=${score}`;
+    const label =
+      score === null ? `Risk assessment for ${riskId}` : `Risk assessment ${riskId} score=${score}`;
     const externalRef: ExternalObjectRef = {
       sorName: 'GrcSuite',
       portFamily: 'ComplianceGrc',
@@ -268,7 +298,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #createPolicy(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const title = readString(input.payload, 'title');
     if (title === null) {
-      return { ok: false, error: 'validation_error', message: 'title is required for createPolicy.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'title is required for createPolicy.',
+      };
     }
 
     const externalRef: ExternalObjectRef = {
@@ -285,7 +319,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #publishPolicy(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const policyId = readString(input.payload, 'policyId');
     if (policyId === null) {
-      return { ok: false, error: 'validation_error', message: 'policyId is required for publishPolicy.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'policyId is required for publishPolicy.',
+      };
     }
     const policy = this.#policies.find(
       (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === policyId,
@@ -329,7 +367,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #createFinding(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const subject = readString(input.payload, 'subject');
     if (subject === null) {
-      return { ok: false, error: 'validation_error', message: 'subject is required for createFinding.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'subject is required for createFinding.',
+      };
     }
     const priority = readTicketPriority(input.payload, 'priority');
 
@@ -349,7 +391,11 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
   #uploadEvidence(input: ComplianceGrcExecuteInputV1): ComplianceGrcExecuteOutputV1 {
     const title = readString(input.payload, 'title');
     if (title === null) {
-      return { ok: false, error: 'validation_error', message: 'title is required for uploadEvidence.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'title is required for uploadEvidence.',
+      };
     }
 
     const sizeBytes = readNumber(input.payload, 'sizeBytes');
@@ -368,7 +414,7 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'])
+          ? input.payload['mimeType']
           : 'application/pdf',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),
@@ -444,8 +490,7 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       };
     }
     const found = source.find(
-      (entry) =>
-        entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
+      (entry) => entry.tenantId === input.tenantId && entry.externalRef.externalId === externalId,
     );
     if (found === undefined) {
       return { ok: false, error: 'not_found', message: `${label} ${externalId} was not found.` };

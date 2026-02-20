@@ -20,7 +20,10 @@ describe('OpenAPI operationId CI workflow', () => {
     const workflow = await loadWorkflow();
 
     const jobs = mustRecord(workflow['jobs'], 'workflow.jobs');
-    const gateJob = mustRecord(jobs['openapi_operation_ids'], 'workflow.jobs.openapi_operation_ids');
+    const gateJob = mustRecord(
+      jobs['openapi_operation_ids'],
+      'workflow.jobs.openapi_operation_ids',
+    );
 
     const steps = gateJob['steps'];
     if (!Array.isArray(steps)) {

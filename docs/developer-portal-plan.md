@@ -15,13 +15,13 @@ interactive exploration, and a local emulator for offline development.
 
 ### Components
 
-| Component               | Technology                   | Purpose                                     |
-| ----------------------- | ---------------------------- | ------------------------------------------- |
-| API Reference           | OpenAPI + Redocly/Stoplight  | Auto-generated from `openapi.yaml`          |
-| Getting Started Guides  | Markdown (Diátaxis)          | Tutorials, how-tos, explanations            |
-| Interactive API Explorer| Swagger UI / Scalar          | Try-it-out console against staging or local |
-| Local Emulator          | TypeScript (in-process)      | Simulates run lifecycle without infra        |
-| Search                  | Pagefind or Algolia          | Full-text search across docs                |
+| Component                | Technology                  | Purpose                                     |
+| ------------------------ | --------------------------- | ------------------------------------------- |
+| API Reference            | OpenAPI + Redocly/Stoplight | Auto-generated from `openapi.yaml`          |
+| Getting Started Guides   | Markdown (Diátaxis)         | Tutorials, how-tos, explanations            |
+| Interactive API Explorer | Swagger UI / Scalar         | Try-it-out console against staging or local |
+| Local Emulator           | TypeScript (in-process)     | Simulates run lifecycle without infra       |
+| Search                   | Pagefind or Algolia         | Full-text search across docs                |
 
 ### Rendering pipeline
 
@@ -91,11 +91,11 @@ start() --> Pending --> Approved --> Executing --> Completed
 
 ## Deployment
 
-| Environment | Hosting    | URL pattern                       |
-| ----------- | ---------- | --------------------------------- |
-| Production  | CDN        | `https://docs.portarium.dev/`     |
-| Preview     | PR preview | `https://pr-{n}.docs.portarium.dev/` |
-| Local       | `npm run docs:dev` | `http://localhost:4000/`  |
+| Environment | Hosting            | URL pattern                          |
+| ----------- | ------------------ | ------------------------------------ |
+| Production  | CDN                | `https://docs.portarium.dev/`        |
+| Preview     | PR preview         | `https://pr-{n}.docs.portarium.dev/` |
+| Local       | `npm run docs:dev` | `http://localhost:4000/`             |
 
 ## Roadmap
 

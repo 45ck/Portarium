@@ -72,4 +72,3 @@ export async function getApproval(
 
   return ok(approval);
 }
-

@@ -5,7 +5,12 @@ import { Route as rootRoute } from './__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useRuns } from '@/hooks/queries/use-runs';
-import { useHumanTasks, useAssignHumanTask, useCompleteHumanTask, useEscalateHumanTask } from '@/hooks/queries/use-human-tasks';
+import {
+  useHumanTasks,
+  useAssignHumanTask,
+  useCompleteHumanTask,
+  useEscalateHumanTask,
+} from '@/hooks/queries/use-human-tasks';
 import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
 import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
@@ -221,7 +226,10 @@ function InboxPage() {
           { label: 'Pending Approvals', value: approvalsLoading ? '—' : pendingApprovals.length },
           { label: 'Human Tasks', value: humanTasksLoading ? '—' : actionableHumanTasks.length },
           { label: 'Blocked Runs', value: runsLoading ? '—' : blockedRuns.length },
-          { label: 'Total Actions', value: approvalsLoading || runsLoading || humanTasksLoading ? '—' : totalItems },
+          {
+            label: 'Total Actions',
+            value: approvalsLoading || runsLoading || humanTasksLoading ? '—' : totalItems,
+          },
         ]}
       />
 
@@ -332,12 +340,8 @@ function InboxPage() {
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         workforceMembers={workforceMembers}
-        onAssign={(taskId, memberId) =>
-          assignMutation.mutate({ workforceMemberId: memberId })
-        }
-        onComplete={(taskId, note) =>
-          completeMutation.mutate({ completionNote: note })
-        }
+        onAssign={(taskId, memberId) => assignMutation.mutate({ workforceMemberId: memberId })}
+        onComplete={(taskId, note) => completeMutation.mutate({ completionNote: note })}
         onEscalate={(taskId, reason) =>
           escalateMutation.mutate({ workforceQueueId: 'queue-escalation', reason })
         }

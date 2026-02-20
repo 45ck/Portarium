@@ -1,21 +1,21 @@
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import type { SpatialAlert } from '@/mocks/fixtures/robot-locations'
-import { AlertTriangle, OctagonX, MapPin } from 'lucide-react'
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import type { SpatialAlert } from '@/mocks/fixtures/robot-locations';
+import { AlertTriangle, OctagonX, MapPin } from 'lucide-react';
 
 const ALERT_ICONS: Record<SpatialAlert['type'], React.ReactNode> = {
   'geofence-violation': <MapPin className="h-3.5 w-3.5" />,
   'localization-drop': <AlertTriangle className="h-3.5 w-3.5" />,
   'e-stop': <OctagonX className="h-3.5 w-3.5" />,
-}
+};
 
 interface AlertTriagePanelProps {
-  alerts: SpatialAlert[]
-  onJumpToRobot: (robotId: string) => void
+  alerts: SpatialAlert[];
+  onJumpToRobot: (robotId: string) => void;
 }
 
 export function AlertTriagePanel({ alerts, onJumpToRobot }: AlertTriagePanelProps) {
-  if (alerts.length === 0) return null
+  if (alerts.length === 0) return null;
 
   return (
     <div className="absolute bottom-3 left-3 right-3 z-[1000] max-h-[180px] overflow-y-auto rounded-lg border border-border bg-card/95 shadow-lg backdrop-blur-sm">
@@ -42,8 +42,7 @@ export function AlertTriagePanel({ alerts, onJumpToRobot }: AlertTriagePanelProp
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium">{alert.message}</p>
               <p className="text-[10px] text-muted-foreground">
-                {alert.robotId} &middot;{' '}
-                {new Date(alert.timestampIso).toLocaleTimeString()}
+                {alert.robotId} &middot; {new Date(alert.timestampIso).toLocaleTimeString()}
               </p>
             </div>
             <Badge
@@ -61,5 +60,5 @@ export function AlertTriagePanel({ alerts, onJumpToRobot }: AlertTriagePanelProp
         ))}
       </div>
     </div>
-  )
+  );
 }

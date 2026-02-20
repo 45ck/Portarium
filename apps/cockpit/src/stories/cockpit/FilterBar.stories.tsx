@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import type { Meta, StoryObj } from '@storybook/react'
-import { FilterBar } from '@/components/cockpit/filter-bar'
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { FilterBar } from '@/components/cockpit/filter-bar';
 
 const meta: Meta<typeof FilterBar> = {
   title: 'Cockpit/FilterBar',
   component: FilterBar,
   tags: ['autodocs'],
-}
-export default meta
-type Story = StoryObj<typeof FilterBar>
+};
+export default meta;
+type Story = StoryObj<typeof FilterBar>;
 
 const sampleFilters = [
   {
@@ -29,19 +29,19 @@ const sampleFilters = [
       { label: 'Manual Only', value: 'ManualOnly' },
     ],
   },
-]
+];
 
 function FilterBarWrapper() {
-  const [values, setValues] = useState<Record<string, string>>({})
+  const [values, setValues] = useState<Record<string, string>>({});
   return (
     <FilterBar
       filters={sampleFilters}
       values={values}
       onChange={(key, value) => setValues((prev) => ({ ...prev, [key]: value }))}
     />
-  )
+  );
 }
 
 export const Default: Story = {
   render: () => <FilterBarWrapper />,
-}
+};

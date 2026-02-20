@@ -20,11 +20,11 @@ Adopt a phased multi-region readiness strategy with explicit RPO/RTO targets per
 
 ### Availability tiers
 
-| Tier | RPO | RTO | Scope |
-|------|-----|-----|-------|
-| Tier 1 (Critical) | < 1 min | < 5 min | Control plane API, policy evaluation, approval gates |
-| Tier 2 (Important) | < 15 min | < 30 min | Workflow execution (Temporal), event stream |
-| Tier 3 (Standard) | < 1 hour | < 4 hours | Telemetry storage, analytics, developer portal |
+| Tier               | RPO      | RTO       | Scope                                                |
+| ------------------ | -------- | --------- | ---------------------------------------------------- |
+| Tier 1 (Critical)  | < 1 min  | < 5 min   | Control plane API, policy evaluation, approval gates |
+| Tier 2 (Important) | < 15 min | < 30 min  | Workflow execution (Temporal), event stream          |
+| Tier 3 (Standard)  | < 1 hour | < 4 hours | Telemetry storage, analytics, developer portal       |
 
 ### Component strategies
 
@@ -128,16 +128,19 @@ Adopt a phased multi-region readiness strategy with explicit RPO/RTO targets per
 ## Consequences
 
 ### Positive
+
 - Architectural decisions today are multi-region-compatible
 - Clear RPO/RTO targets per component guide infrastructure investment
 - Phased approach avoids premature complexity
 
 ### Negative
+
 - Active-passive adds operational complexity vs single-region
 - Cross-region replication adds cost (egress, storage)
 - Temporal multi-cluster is not trivial to operate
 
 ### Risks
+
 - Replication lag during high-load periods may exceed Tier 1 RPO targets
 - Split-brain scenarios during network partitions require manual intervention
 - Edge gateway reconnection during regional failover may cause brief telemetry gaps

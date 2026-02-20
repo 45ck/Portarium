@@ -31,8 +31,8 @@ describe('OpenFgaAuthorization', () => {
   });
 
   it('allows when OpenFGA check allows', async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(JSON.stringify({ allowed: true }), { status: 200 }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ allowed: true }), { status: 200 }),
     );
     const authz = new OpenFgaAuthorization({
       apiUrl: 'http://openfga.local/',

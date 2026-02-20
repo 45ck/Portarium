@@ -54,7 +54,11 @@ async function loadPolicies(
 ): Promise<Result<readonly PolicyV1[], NotFound>> {
   const policies: PolicyV1[] = [];
   for (const policyId of parsedInput.policyIds) {
-    const policy = await deps.policyStore.getPolicyById(ctx.tenantId, parsedInput.workspaceId, policyId);
+    const policy = await deps.policyStore.getPolicyById(
+      ctx.tenantId,
+      parsedInput.workspaceId,
+      policyId,
+    );
     if (policy === null) {
       return err({
         kind: 'NotFound',
@@ -129,7 +133,9 @@ async function persistAuditArtifacts(
     return err({
       kind: 'DependencyFailure',
       message:
-        error instanceof Error ? error.message : 'Failed to persist map command intent audit trail.',
+        error instanceof Error
+          ? error.message
+          : 'Failed to persist map command intent audit trail.',
     });
   }
 }

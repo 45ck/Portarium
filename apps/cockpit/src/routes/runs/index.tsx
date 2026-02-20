@@ -69,7 +69,11 @@ function RunsPage() {
       key: 'runId',
       header: 'Run ID',
       width: '120px',
-      render: (row: RunSummary) => <span className="font-mono" title={row.runId}>{row.runId.slice(0, 12)}</span>,
+      render: (row: RunSummary) => (
+        <span className="font-mono" title={row.runId}>
+          {row.runId.slice(0, 12)}
+        </span>
+      ),
     },
     {
       key: 'workflowId',

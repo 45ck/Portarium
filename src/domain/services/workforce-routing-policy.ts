@@ -16,11 +16,13 @@ export function hasCapabilityMismatch(
   return missingRequiredCapabilities(requiredCapabilities, memberCapabilities).length > 0;
 }
 
-export function evaluateEscalationTriggers(input: Readonly<{
-  dueAtIso?: string;
-  nowIso: string;
-  assigneeAvailabilityStatus?: WorkforceAvailabilityStatus;
-}>): readonly WorkforceEscalationReason[] {
+export function evaluateEscalationTriggers(
+  input: Readonly<{
+    dueAtIso?: string;
+    nowIso: string;
+    assigneeAvailabilityStatus?: WorkforceAvailabilityStatus;
+  }>,
+): readonly WorkforceEscalationReason[] {
   const reasons: WorkforceEscalationReason[] = [];
 
   if (input.assigneeAvailabilityStatus === 'offline') {
@@ -38,10 +40,12 @@ export function evaluateEscalationTriggers(input: Readonly<{
   return reasons;
 }
 
-export function hasApproverAssigneeSodViolation(input: Readonly<{
-  approverUserIds: readonly string[];
-  assigneeUserId?: string;
-}>): boolean {
+export function hasApproverAssigneeSodViolation(
+  input: Readonly<{
+    approverUserIds: readonly string[];
+    assigneeUserId?: string;
+  }>,
+): boolean {
   if (!input.assigneeUserId) return false;
   return input.approverUserIds.includes(input.assigneeUserId);
 }

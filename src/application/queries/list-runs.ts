@@ -18,7 +18,12 @@ import {
   ok,
   type Result,
 } from '../common/index.js';
-import type { AuthorizationPort, ListRunsFilter, RunListPage, RunQueryStore } from '../ports/index.js';
+import type {
+  AuthorizationPort,
+  ListRunsFilter,
+  RunListPage,
+  RunQueryStore,
+} from '../ports/index.js';
 
 const RUN_STATUSES = [
   'Pending',
@@ -111,9 +116,7 @@ function validateInput(input: ListRunsInput): Result<void, ValidationFailed> {
   return ok(undefined);
 }
 
-function parseIds(
-  input: ListRunsInput,
-): Result<
+function parseIds(input: ListRunsInput): Result<
   Readonly<{
     workspaceId: WorkspaceIdType;
     workflowId?: WorkflowIdType;
@@ -157,10 +160,7 @@ function buildFilter(
 
 function parseInput(
   input: ListRunsInput,
-): Result<
-  Readonly<{ workspaceId: WorkspaceIdType; filter: ListRunsFilter }>,
-  ValidationFailed
-> {
+): Result<Readonly<{ workspaceId: WorkspaceIdType; filter: ListRunsFilter }>, ValidationFailed> {
   const validated = validateInput(input);
   if (!validated.ok) {
     return validated;
@@ -196,6 +196,10 @@ export async function listRuns(
     return parsed;
   }
 
-  const page = await deps.runStore.listRuns(ctx.tenantId, parsed.value.workspaceId, parsed.value.filter);
+  const page = await deps.runStore.listRuns(
+    ctx.tenantId,
+    parsed.value.workspaceId,
+    parsed.value.filter,
+  );
   return ok(page);
 }

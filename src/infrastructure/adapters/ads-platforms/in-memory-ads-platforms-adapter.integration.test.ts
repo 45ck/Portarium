@@ -114,7 +114,9 @@ describe('InMemoryAdsPlatformsAdapter integration', () => {
     const audiences = await adapter.execute({ tenantId: TENANT, operation: 'listAudiences' });
     expect(audiences.ok).toBe(true);
     if (!audiences.ok || audiences.result.kind !== 'externalRefs') return;
-    expect(audiences.result.externalRefs.some((entry) => entry.externalId === audienceId)).toBe(true);
+    expect(audiences.result.externalRefs.some((entry) => entry.externalId === audienceId)).toBe(
+      true,
+    );
 
     const budget = await adapter.execute({
       tenantId: TENANT,

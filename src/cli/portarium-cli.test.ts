@@ -35,7 +35,13 @@ describe('Portarium CLI argument parsing', () => {
   });
 
   it('parses --flag=value syntax', () => {
-    const result = parseArgs(['node', 'portarium', 'approve', '--approval-id=apr-1', '--decision=Approved']);
+    const result = parseArgs([
+      'node',
+      'portarium',
+      'approve',
+      '--approval-id=apr-1',
+      '--decision=Approved',
+    ]);
     expect(result.command).toBe('approve');
     expect(result.flags['approval-id']).toBe('apr-1');
     expect(result.flags['decision']).toBe('Approved');

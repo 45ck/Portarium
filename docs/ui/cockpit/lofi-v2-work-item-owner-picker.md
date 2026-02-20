@@ -40,4 +40,3 @@ Scope: Work Item owner assignment UX using workforce picker.
 
 - Reviewer: Principal Engineer (MQCKENC)
 - Status: Approved for implementation
-

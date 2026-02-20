@@ -42,7 +42,10 @@ type InMemoryCustomerSupportAdapterParams = Readonly<{
   now?: () => Date;
 }>;
 
-function readString(payload: Readonly<Record<string, unknown>> | undefined, key: string): string | null {
+function readString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | null {
   const value = payload?.[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -162,9 +165,15 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
   #getTicket(input: CustomerSupportExecuteInputV1): CustomerSupportExecuteOutputV1 {
     const ticketId = readString(input.payload, 'ticketId');
     if (ticketId === null) {
-      return { ok: false, error: 'validation_error', message: 'ticketId is required for getTicket.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'ticketId is required for getTicket.',
+      };
     }
-    const ticket = this.#tickets.find((item) => item.tenantId === input.tenantId && item.ticketId === ticketId);
+    const ticket = this.#tickets.find(
+      (item) => item.tenantId === input.tenantId && item.ticketId === ticketId,
+    );
     if (ticket === undefined) {
       return { ok: false, error: 'not_found', message: `Ticket ${ticketId} was not found.` };
     }
@@ -233,7 +242,9 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
 
     const updated: TicketV1 = {
       ...this.#tickets[index]!,
-      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] } : {}),
+      ...(typeof input.payload?.['subject'] === 'string'
+        ? { subject: input.payload['subject'] }
+        : {}),
       ...(readTicketStatus(input.payload, 'status') !== null
         ? { status: readTicketStatus(input.payload, 'status')! }
         : {}),
@@ -290,7 +301,9 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
       };
     }
 
-    const agent = this.#agents.find((candidate) => candidate.tenantId === input.tenantId && candidate.partyId === assigneeId);
+    const agent = this.#agents.find(
+      (candidate) => candidate.tenantId === input.tenantId && candidate.partyId === assigneeId,
+    );
     if (agent === undefined) {
       return { ok: false, error: 'not_found', message: `Agent ${assigneeId} was not found.` };
     }
@@ -323,7 +336,9 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
         message: 'content is required for addComment.',
       };
     }
-    const ticket = this.#tickets.find((candidate) => candidate.tenantId === input.tenantId && candidate.ticketId === ticketId);
+    const ticket = this.#tickets.find(
+      (candidate) => candidate.tenantId === input.tenantId && candidate.ticketId === ticketId,
+    );
     if (ticket === undefined) {
       return { ok: false, error: 'not_found', message: `Ticket ${ticketId} was not found.` };
     }
@@ -387,7 +402,11 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
       (item) => item.tenantId === input.tenantId && item.documentId === documentId,
     );
     if (article === undefined) {
-      return { ok: false, error: 'not_found', message: `Knowledge article ${documentId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Knowledge article ${documentId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'document', document: article } };
   }
@@ -405,9 +424,15 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
         message: 'ticketId is required for getSLA.',
       };
     }
-    const sla = this.#slaRefs.find((item) => item.tenantId === input.tenantId && item.ticketId === ticketId);
+    const sla = this.#slaRefs.find(
+      (item) => item.tenantId === input.tenantId && item.ticketId === ticketId,
+    );
     if (sla === undefined) {
-      return { ok: false, error: 'not_found', message: `SLA for ticket ${ticketId} was not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `SLA for ticket ${ticketId} was not found.`,
+      };
     }
     return { ok: true, result: { kind: 'externalRef', externalRef: sla.externalRef } };
   }

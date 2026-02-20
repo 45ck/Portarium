@@ -1,23 +1,23 @@
-import { createRoute, Link } from '@tanstack/react-router'
-import { Route as rootRoute } from '../__root'
-import { useUIStore } from '@/stores/ui-store'
-import { useWorkflow } from '@/hooks/queries/use-workflows'
-import { useRuns } from '@/hooks/queries/use-runs'
-import { PageHeader } from '@/components/cockpit/page-header'
-import { EntityIcon } from '@/components/domain/entity-icon'
-import { DataTable } from '@/components/cockpit/data-table'
-import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { RunSummary, WorkflowActionSummary } from '@portarium/cockpit-types'
+import { createRoute, Link } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useUIStore } from '@/stores/ui-store';
+import { useWorkflow } from '@/hooks/queries/use-workflows';
+import { useRuns } from '@/hooks/queries/use-runs';
+import { PageHeader } from '@/components/cockpit/page-header';
+import { EntityIcon } from '@/components/domain/entity-icon';
+import { DataTable } from '@/components/cockpit/data-table';
+import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { RunSummary, WorkflowActionSummary } from '@portarium/cockpit-types';
 
 function WorkflowDetailPage() {
-  const { workflowId } = Route.useParams()
-  const { activeWorkspaceId: wsId } = useUIStore()
+  const { workflowId } = Route.useParams();
+  const { activeWorkspaceId: wsId } = useUIStore();
 
-  const workflow = useWorkflow(wsId, workflowId)
-  const runs = useRuns(wsId)
+  const workflow = useWorkflow(wsId, workflowId);
+  const runs = useRuns(wsId);
 
   if (workflow.isLoading) {
     return (
@@ -25,7 +25,7 @@ function WorkflowDetailPage() {
         <Skeleton className="h-6 w-64" />
         <Skeleton className="h-40 w-full" />
       </div>
-    )
+    );
   }
 
   if (!workflow.data) {
@@ -42,13 +42,13 @@ function WorkflowDetailPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  const workflowRuns = (runs.data?.items ?? []).filter((run) => run.workflowId === workflowId)
+  const workflowRuns = (runs.data?.items ?? []).filter((run) => run.workflowId === workflowId);
   const versionHistory = [workflow.data.version, Math.max(1, workflow.data.version - 1)].filter(
     (value, index, all) => all.indexOf(value) === index,
-  )
+  );
 
   const actionColumns = [
     {
@@ -85,7 +85,7 @@ function WorkflowDetailPage() {
         <span className="text-muted-foreground">{deriveBinding(row.operation)}</span>
       ),
     },
-  ]
+  ];
 
   const runColumns = [
     {
@@ -120,7 +120,7 @@ function WorkflowDetailPage() {
       header: 'Created',
       render: (row: RunSummary) => <span>{new Date(row.createdAtIso).toLocaleString()}</span>,
     },
-  ]
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -223,24 +223,24 @@ function WorkflowDetailPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function deriveActionType(operation: string): string {
-  if (operation.startsWith('agent:')) return 'Agent Task'
-  if (operation.includes('tool') || operation.includes('invoke')) return 'Tool'
-  if (operation.startsWith('workflow:')) return 'Workflow'
-  return 'Action'
+  if (operation.startsWith('agent:')) return 'Agent Task';
+  if (operation.includes('tool') || operation.includes('invoke')) return 'Tool';
+  if (operation.startsWith('workflow:')) return 'Workflow';
+  return 'Action';
 }
 
 function deriveBinding(operation: string): string {
-  if (operation.startsWith('agent:task')) return 'agent-runtime'
-  const [resource] = operation.split(':')
-  return resource ?? 'n/a'
+  if (operation.startsWith('agent:task')) return 'agent-runtime';
+  const [resource] = operation.split(':');
+  return resource ?? 'n/a';
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workflows/$workflowId',
   component: WorkflowDetailPage,
-})
+});
