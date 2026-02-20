@@ -35,9 +35,12 @@ Then open `http://localhost:4174`.
 - Map renderer now uses `Leaflet` in low-fidelity mode with static fallback when CDN is unavailable.
 - Map controls include:
   - Site/floor filters
+  - Explicit floor switching with cross-floor context callout
+  - 2D default view with optional 3D beta toggle for ramp/mezzanine context
   - Status filter chips
   - Layer toggles (occupancy, geofences, trails, uncertainty, clusters)
   - Live/replay timeline with incident bookmarks
+- Performance budget callout is shown inline for desktop/mobile map rendering expectations.
 - Alert triage includes map jump and acknowledge actions.
 - Details-on-demand panel updates from map/list/alert selection.
 - Degraded realtime state shows a map staleness banner.

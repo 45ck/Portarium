@@ -9578,6 +9578,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                   <select id="mapFloor" class="control__select">
                     <option value="all">All floors</option>
                     <option value="f1" selected>f1</option>
+                    <option value="f2">f2 mezzanine</option>
                     <option value="yard">yard level</option>
                   </select>
                 </label>
@@ -9588,6 +9589,26 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <option value="detail">Sector detail</option>
                   </select>
                 </label>
+              </div>
+
+              <div class="map-view-toggle" role="group" aria-label="Map view mode">
+                <button
+                  class="chip chip--active js-map-view"
+                  type="button"
+                  data-map-view="2d"
+                  aria-pressed="true"
+                >
+                  2D
+                </button>
+                <button class="chip js-map-view" type="button" data-map-view="3d" aria-pressed="false">
+                  3D (beta)
+                </button>
+                <span id="mapPerfBudget" class="subtle map-perf-budget" aria-live="polite"></span>
+              </div>
+
+              <div class="callout callout--policy js-map-cross-floor" role="status" hidden>
+                Selected robot is on <strong id="mapCrossFloorLabel">another floor</strong>.
+                <button class="btn btn--small js-map-cross-floor-switch" type="button">Switch floor</button>
               </div>
 
               <div class="map-ops__toggles" role="group" aria-label="Map layers">
@@ -9851,6 +9872,26 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     </button>
 
                     <button
+                      class="map-marker map-marker--normal js-map-marker"
+                      type="button"
+                      data-map-robot-id="robot-013"
+                      data-map-status="normal"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f2"
+                      data-map-label="robot-013"
+                      style="left: 36%; top: 32%"
+                      aria-label="robot-013, normal, mezzanine transfer lane"
+                    >
+                      <span
+                        class="map-marker__uncertainty"
+                        data-map-layer-target="uncertainty"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="map-marker__dot" aria-hidden="true"></span>
+                      <span class="map-marker__label">robot-013</span>
+                    </button>
+
+                    <button
                       class="map-cluster js-map-cluster"
                       type="button"
                       data-map-layer-target="clusters"
@@ -9935,6 +9976,19 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                       <span class="map-row__id">robot-009</span>
                       <span class="status status--danger">Critical</span>
                       <span class="map-row__meta">Cell 2 | E-Stop active</span>
+                    </button>
+                    <button
+                      class="map-row js-map-row"
+                      type="button"
+                      data-map-robot-id="robot-013"
+                      data-map-status="normal"
+                      data-map-site="warehouse-a"
+                      data-map-floor="f2"
+                      data-map-label="robot-013"
+                    >
+                      <span class="map-row__id">robot-013</span>
+                      <span class="status">Normal</span>
+                      <span class="map-row__meta">Mezzanine ramp | cross-floor transfer</span>
                     </button>
                     <button
                       class="map-row js-map-row"

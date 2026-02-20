@@ -126,6 +126,13 @@ For each primary screen, show dedicated state components for:
 - Workforce availability mutation controls must be role-gated; edit controls are admin-only, and non-admin personas are read-only.
 - Inbox must support Human Task visibility and actions using contract routes (`list`, `complete`, `escalate`) and preserve persona defaults.
 
+### R11 Multi-level map support and view mode fallback
+
+- Robots map must expose explicit floor switching and preserve selected robot context when the active floor changes.
+- When selected robot is off the currently viewed floor, UI must show a cross-floor context callout with one-click floor switch.
+- 2D rendering remains the default/fallback; optional 3D mode is additive and must not block 2D operation.
+- Map surface must display a visible performance budget note for desktop/mobile rendering expectations.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

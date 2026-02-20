@@ -4318,6 +4318,20 @@ tr.is-kbd-selected td {
   gap: 8px;
   margin-bottom: 12px;
 }
+.map-view-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.map-perf-budget {
+  margin-left: auto;
+  font-size: 11px;
+}
+.js-map-cross-floor {
+  margin-bottom: 10px;
+}
 
 .map-ops__layout {
   display: grid;
@@ -4350,6 +4364,27 @@ tr.is-kbd-selected td {
     linear-gradient(130deg, rgba(255, 255, 255, 0.95), rgba(238, 244, 255, 0.8)),
     radial-gradient(circle at 20% 15%, rgba(37, 87, 167, 0.08), transparent 50%),
     radial-gradient(circle at 82% 75%, rgba(31, 122, 54, 0.08), transparent 48%);
+}
+.map-canvas--mode-3d {
+  perspective: 900px;
+  transform-style: preserve-3d;
+  background:
+    linear-gradient(170deg, rgba(255, 255, 255, 0.95), rgba(225, 237, 255, 0.85)),
+    radial-gradient(circle at 18% 12%, rgba(37, 87, 167, 0.13), transparent 54%),
+    radial-gradient(circle at 84% 80%, rgba(31, 122, 54, 0.12), transparent 52%);
+}
+.map-canvas--mode-3d .map-canvas__grid,
+.map-canvas--mode-3d .map-canvas__occupancy,
+.map-canvas--mode-3d .map-zone,
+.map-canvas--mode-3d .map-trail {
+  transform: rotateX(48deg) translateZ(-8px) translateY(-12px);
+  transform-origin: center top;
+}
+.map-canvas--mode-3d .map-marker {
+  box-shadow: 0 6px 0 rgba(27, 27, 27, 0.26);
+}
+.map-canvas--mode-3d .map-cluster {
+  transform: translate(-50%, -50%) translateZ(10px);
 }
 .map-canvas__leaflet {
   position: absolute;

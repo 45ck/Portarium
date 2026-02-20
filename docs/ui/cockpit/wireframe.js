@@ -3586,11 +3586,30 @@ function main() {
       freshness: '3s ago',
       why: 'Clustered normal traffic. Details hidden in overview mode to reduce clutter.',
     },
+    'robot-013': {
+      robot: 'robot-013',
+      status: 'Normal',
+      location: 'Mezzanine transfer lane (x:36.1, y:32.0)',
+      siteFloor: 'warehouse-a / f2',
+      heading: 'NW (318 deg)',
+      speed: '0.41 m/s',
+      uncertainty: 'q=0.88, covariance=small',
+      frame: 'map -> mezzanine_frame -> base_link',
+      mission: 'mis-0410 transfer pallet to lift-2',
+      freshness: '4s ago',
+      why: 'Cross-floor transfer mission. Keep 2D default or use 3D beta for ramp context.',
+    },
   };
   var mapLeaflet = null;
   var mapLeafletEnabled = false;
   var mapLeafletGroups = null;
   var mapLastFilterState = null;
+  var mapViewMode = '2d';
+  var mapRendererBaseText = 'Renderer: static fallback';
+  var MAP_PERF_BUDGET = {
+    desktop2d: 'Desktop p95 <= 16ms frame | Mobile p95 <= 33ms frame',
+    desktop3d: 'Desktop p95 <= 22ms frame | Mobile fallback to 2D',
+  };
 
   var MAP_ROBOT_GEOMETRY = {
     'robot-001': { x: 23, y: 61 },
@@ -3598,12 +3617,14 @@ function main() {
     'robot-007': { x: 72, y: 24 },
     'robot-009': { x: 56, y: 72 },
     'robot-011': { x: 79, y: 37 },
+    'robot-013': { x: 36, y: 32 },
   };
 
   var MAP_TRAIL_GEOMETRY = [
     { robotId: 'robot-001', from: { x: 20, y: 54 }, to: { x: 34, y: 72 } },
     { robotId: 'robot-003', from: { x: 44, y: 44 }, to: { x: 56, y: 60 } },
     { robotId: 'robot-007', from: { x: 68, y: 18 }, to: { x: 81, y: 36 } },
+    { robotId: 'robot-013', from: { x: 28, y: 24 }, to: { x: 40, y: 36 } },
   ];
 
   var MAP_ZONE_GEOMETRY = [
@@ -3632,8 +3653,59 @@ function main() {
   var MAP_CLUSTER_GEOMETRY = { x: 79, y: 37, label: '9 robots' };
 
   function setMapRendererStatus(text) {
+    mapRendererBaseText = text;
+    renderMapRendererStatus();
+  }
+
+  function renderMapRendererStatus() {
     var status = document.querySelector('.js-map-renderer-status');
-    if (status) status.textContent = text;
+    if (!status) return;
+    var modeLabel = mapViewMode === '3d' ? '3D beta' : '2D';
+    status.textContent = mapRendererBaseText + ' | View: ' + modeLabel;
+  }
+
+  function updateMapPerformanceBudget() {
+    var perf = document.getElementById('mapPerfBudget');
+    if (!perf) return;
+    perf.textContent = mapViewMode === '3d' ? MAP_PERF_BUDGET.desktop3d : MAP_PERF_BUDGET.desktop2d;
+  }
+
+  function applyMapViewMode() {
+    var canvas = document.querySelector('.js-map-canvas');
+    if (canvas) {
+      canvas.classList.toggle('map-canvas--mode-3d', mapViewMode === '3d');
+    }
+    document.querySelectorAll('.js-map-view').forEach(function (btn) {
+      var active = btn.dataset.mapView === mapViewMode;
+      btn.classList.toggle('chip--active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+    renderMapRendererStatus();
+    updateMapPerformanceBudget();
+  }
+
+  function updateMapCrossFloorContext(activeFloor) {
+    var currentFloor = null;
+    var selectedRow = document.querySelector('.js-map-row.map-row--selected');
+    if (selectedRow) {
+      currentFloor = selectedRow.dataset.mapFloor || null;
+    }
+    var selectedMarker = document.querySelector('.js-map-marker.map-marker--selected');
+    if (!currentFloor && selectedMarker) {
+      currentFloor = selectedMarker.dataset.mapFloor || null;
+    }
+    var callout = document.querySelector('.js-map-cross-floor');
+    var label = document.getElementById('mapCrossFloorLabel');
+    var switchBtn = document.querySelector('.js-map-cross-floor-switch');
+    if (!callout || !label || !switchBtn) return;
+    var isCrossFloor = !!currentFloor && activeFloor !== 'all' && currentFloor !== activeFloor;
+    if (!isCrossFloor) {
+      callout.hidden = true;
+      return;
+    }
+    label.textContent = currentFloor;
+    switchBtn.dataset.targetFloor = currentFloor;
+    callout.hidden = false;
   }
 
   function mapStatusToColor(status) {
@@ -4029,8 +4101,10 @@ function main() {
     }
 
     if (visibleRowIds.length > 0 && visibleRowIds.indexOf(mapSelectedRobotId) === -1) {
-      selectMapRobot(visibleRowIds[0]);
+      updateMapCrossFloorContext(floor);
+      return;
     }
+    updateMapCrossFloorContext(floor);
   }
 
   document.addEventListener('click', function (e) {
@@ -4052,6 +4126,13 @@ function main() {
         chip.classList.toggle('chip--active', chip === statusChip);
       });
       applyMapFilters();
+      return;
+    }
+
+    var viewBtn = e.target.closest('.js-map-view');
+    if (viewBtn) {
+      mapViewMode = viewBtn.dataset.mapView === '3d' ? '3d' : '2d';
+      applyMapViewMode();
       return;
     }
 
@@ -4121,6 +4202,17 @@ function main() {
       var scaleSelect = document.getElementById('mapScale');
       if (scaleSelect) {
         scaleSelect.value = 'detail';
+        applyMapFilters();
+      }
+      return;
+    }
+
+    var crossFloorBtn = e.target.closest('.js-map-cross-floor-switch');
+    if (crossFloorBtn) {
+      var targetFloor = crossFloorBtn.dataset.targetFloor;
+      var floorSelect = document.getElementById('mapFloor');
+      if (targetFloor && floorSelect) {
+        floorSelect.value = targetFloor;
         applyMapFilters();
       }
       return;
@@ -4332,6 +4424,7 @@ function main() {
 
   /* ---- Robotics map initial state ---- */
   initLeafletMap();
+  applyMapViewMode();
   setMapTimeline(100);
   applyMapFilters();
   selectMapRobot(mapSelectedRobotId);
