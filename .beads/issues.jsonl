@@ -242,10 +242,10 @@
 {"id":"bead-0242","title":"Closeout review: SecretsVaulting port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:10.499Z","updatedAt":"2026-02-20T03:51:19.354Z"}
 {"id":"bead-0243","title":"Closeout review: MarketingAutomation port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:10.760Z","updatedAt":"2026-02-20T03:51:14.108Z"}
 {"id":"bead-0244","title":"Closeout review: MarketingAutomation port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:11.020Z","updatedAt":"2026-02-20T03:51:56.390Z"}
-{"id":"bead-0245","title":"Closeout review: AdsPlatforms port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:11.308Z","updatedAt":"2026-02-20T03:52:14.967Z"}
+{"id":"bead-0245","title":"Closeout review: AdsPlatforms port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:11.308Z","updatedAt":"2026-02-20T03:52:55.249Z"}
 {"id":"bead-0246","title":"Closeout review: AdsPlatforms port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:11.569Z","updatedAt":"2026-02-20T03:52:45.609Z"}
-{"id":"bead-0247","title":"Closeout review: CommsCollaboration port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:11.854Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0248","title":"Closeout review: CommsCollaboration port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:12.116Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0247","title":"Closeout review: CommsCollaboration port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:11.854Z","updatedAt":"2026-02-20T03:53:35.005Z"}
+{"id":"bead-0248","title":"Closeout review: CommsCollaboration port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:12.116Z","updatedAt":"2026-02-20T03:53:26.447Z","claimedBy":"codex","claimedAt":"2026-02-20T03:53:26.447Z"}
 {"id":"bead-0249","title":"Closeout review: ProjectsWorkMgmt port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:12.399Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0250","title":"Closeout review: ProjectsWorkMgmt port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:12.673Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0251","title":"Closeout review: DocumentsEsign port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:12.932Z","updatedAt":"2026-02-17T20:18:23.090Z"}
