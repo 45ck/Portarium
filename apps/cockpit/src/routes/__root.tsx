@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet, Link } from '@tanstack/react-router'
+import { createRootRoute, Outlet, Link, type LinkProps } from '@tanstack/react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { queryClient } from '@/lib/query-client'
@@ -119,7 +119,7 @@ function RootLayout() {
                     section.items?.map((item) => (
                       <Link
                         key={item.to}
-                        to={item.to}
+                        {...{ to: item.to } as Record<string, unknown>}
                         className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                         activeProps={{
                           className: 'bg-accent text-accent-foreground font-medium',

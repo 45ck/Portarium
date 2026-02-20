@@ -37,7 +37,7 @@ function hasCloseCriteria(issue) {
   if (readString(issue.closeCriteria)) return true;
   const body = readString(issue.body);
   if (!body) return false;
-  return /\bAC:\b/i.test(body) || /acceptance criteria/i.test(body);
+  return /(?:^|\s)AC:/i.test(body) || /acceptance criteria/i.test(body);
 }
 
 function hasRollbackTrigger(issue) {

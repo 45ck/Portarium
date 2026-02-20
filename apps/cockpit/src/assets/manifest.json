@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:23:17.446Z",
+  "generatedAt": "2026-02-20T02:30:09.324Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -382,7 +382,7 @@
       "promptRef": "CB-IMG-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:28:02.652Z",
         "operator": "@45ck",
         "seed": 61101
       },
@@ -420,7 +420,7 @@
       "promptRef": "CB-IMG-02",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:28:02.652Z",
         "operator": "@45ck",
         "seed": 61102
       },
@@ -458,7 +458,7 @@
       "promptRef": "CB-IMG-03",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:28:02.652Z",
         "operator": "@45ck",
         "seed": 61103
       },
@@ -496,7 +496,7 @@
       "promptRef": "CB-IMG-04",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:28:02.652Z",
         "operator": "@45ck",
         "seed": 61104
       },
@@ -530,7 +530,7 @@
       "promptRef": "CB-ILL-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:30:09.324Z",
         "operator": "@45ck",
         "seed": 61201
       },
