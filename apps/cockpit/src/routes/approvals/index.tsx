@@ -155,6 +155,7 @@ function ApprovalsPage() {
                 approval={currentApproval!}
                 index={pendingItems.length - triageQueue.length}
                 total={pendingItems.length}
+                hasMore={triageQueue.length > 1}
                 onAction={handleTriageAction}
                 loading={deciding}
               />

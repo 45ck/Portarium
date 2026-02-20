@@ -260,6 +260,20 @@ export const APPROVALS: ApprovalSummary[] = [
     decidedByUserId: 'user-approver-dana',
     rationale: 'Amounts reconcile with bank statement. Proceeding.',
   },
+  {
+    schemaVersion: 1,
+    approvalId: 'apr-3004',
+    workspaceId: 'ws-demo',
+    runId: 'run-2007',
+    planId: 'plan-5004',
+    workItemId: 'wi-1007',
+    prompt:
+      'Approve large supplier payment: €14,200 to Global Parts GmbH against PO-8821. Exceeds auto-approve threshold.',
+    status: 'Pending',
+    requestedAtIso: '2026-02-20T08:05:00Z',
+    requestedByUserId: 'user-approver-dana',
+    assigneeUserId: 'user-approver-dana',
+  },
 ]
 
 export const EVIDENCE: EvidenceEntry[] = [
