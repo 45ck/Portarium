@@ -1,4 +1,4 @@
-import { createRouter } from '@tanstack/react-router'
+import { createRouter, type RouterHistory } from '@tanstack/react-router'
 
 // Root
 import { Route as rootRoute } from './routes/__root'
@@ -50,7 +50,7 @@ import { Route as roboticsMissionsRoute } from './routes/robotics/missions'
 import { Route as roboticsSafetyRoute } from './routes/robotics/safety'
 import { Route as roboticsGatewaysRoute } from './routes/robotics/gateways'
 
-const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren([
   indexRoute,
   inboxRoute,
   dashboardRoute,
@@ -78,10 +78,15 @@ const routeTree = rootRoute.addChildren([
   roboticsGatewaysRoute,
 ])
 
-export const router = createRouter({
-  routeTree,
-  defaultPreload: 'intent',
-})
+export function createCockpitRouter(options?: { history?: RouterHistory }) {
+  return createRouter({
+    routeTree,
+    defaultPreload: 'intent',
+    ...(options?.history ? { history: options.history } : {}),
+  })
+}
+
+export const router = createCockpitRouter()
 
 declare module '@tanstack/react-router' {
   interface Register {

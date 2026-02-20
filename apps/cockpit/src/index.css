@@ -91,6 +91,24 @@
     from { height: var(--radix-accordion-content-height); }
     to   { height: 0; }
   }
+
+  /* Triage card swipe animations */
+  @keyframes triage-out-right {
+    to { transform: translateX(110%) rotate(6deg); opacity: 0; }
+  }
+  @keyframes triage-out-left {
+    to { transform: translateX(-110%) rotate(-6deg); opacity: 0; }
+  }
+  @keyframes triage-in {
+    from { transform: translateY(24px) scale(0.96); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+}
+
+@layer utilities {
+  .animate-triage-out-right { animation: triage-out-right 0.32s ease-in forwards; }
+  .animate-triage-out-left  { animation: triage-out-left  0.32s ease-in forwards; }
+  .animate-triage-in        { animation: triage-in        0.28s ease-out both; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

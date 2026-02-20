@@ -16,6 +16,8 @@ interface AdapterRecord {
   lastSyncIso: string;
 }
 
+type AdaptersResponse = AdapterRecord[] | { items: AdapterRecord[] };
+
 const statusColor: Record<string, string> = {
   healthy: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',
   degraded: 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950',
@@ -29,7 +31,9 @@ function AdaptersPage() {
     queryKey: ['adapters', wsId],
     queryFn: async () => {
       const res = await fetch(`/v1/workspaces/${wsId}/adapters`);
-      return res.json() as Promise<AdapterRecord[]>;
+      if (!res.ok) throw new Error('Failed to fetch adapters');
+      const payload = (await res.json()) as AdaptersResponse;
+      return Array.isArray(payload) ? payload : payload.items;
     },
   });
 
