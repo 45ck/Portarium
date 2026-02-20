@@ -9,6 +9,7 @@ Architecture Decision Records live in `docs/adr/`.
 - CloudEvents envelope: `docs/adr/0032-event-stream-cloudevents.md`
 - Infrastructure baseline: `docs/adr/0056-infrastructure-reference-architecture.md`
 - External execution plane strategy: `docs/adr/0065-external-execution-plane-strategy.md`
+- Hybrid orchestration/choreography model: `docs/adr/0070-hybrid-orchestration-choreography-architecture.md`
 
 ## Working rule
 

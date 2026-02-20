@@ -14,6 +14,7 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - For UI/user-flow changes: run `/qa-agent-browser` and attach traces/screenshots.
 - Domain code (`src/domain/`) must have zero external dependencies (no infra, no presentation imports).
 - All domain types use branded primitives from `src/domain/primitives/`.
+- Hybrid architecture boundary is fixed: orchestration for run correctness + CloudEvents for external choreography (ADR-0070).
 
 ## Architecture layers (enforced by dependency-cruiser)
 
