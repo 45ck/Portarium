@@ -6,6 +6,8 @@ import type {
   WorkforceMemberSummary,
   WorkforceQueueSummary,
   AgentV1,
+  CredentialGrantV1,
+  Plan,
 } from '@portarium/cockpit-types'
 import type {
   RobotSummary,
@@ -137,6 +139,8 @@ export const RUNS: RunSummary[] = [
     status: 'WaitingForApproval',
     createdAtIso: '2026-02-20T00:12:00Z',
     startedAtIso: '2026-02-20T00:12:05Z',
+    agentIds: ['agent-001'],
+    workforceMemberIds: ['wfm-001'],
   },
   {
     schemaVersion: 1,
@@ -149,6 +153,9 @@ export const RUNS: RunSummary[] = [
     status: 'Running',
     createdAtIso: '2026-02-19T15:05:00Z',
     startedAtIso: '2026-02-19T15:05:10Z',
+    agentIds: ['agent-002'],
+    robotIds: ['robot-002'],
+    workforceMemberIds: ['wfm-003'],
   },
   {
     schemaVersion: 1,
@@ -162,6 +169,8 @@ export const RUNS: RunSummary[] = [
     createdAtIso: '2026-02-18T09:10:00Z',
     startedAtIso: '2026-02-18T09:10:05Z',
     endedAtIso: '2026-02-18T09:18:42Z',
+    agentIds: ['agent-001'],
+    workforceMemberIds: ['wfm-001', 'wfm-002'],
   },
   {
     schemaVersion: 1,
@@ -175,6 +184,7 @@ export const RUNS: RunSummary[] = [
     createdAtIso: '2026-02-19T11:35:00Z',
     startedAtIso: '2026-02-19T11:35:10Z',
     endedAtIso: '2026-02-19T11:38:55Z',
+    agentIds: ['agent-003'],
   },
   {
     schemaVersion: 1,
@@ -276,6 +286,93 @@ export const APPROVALS: ApprovalSummary[] = [
   },
 ]
 
+export const PLANS: Plan[] = [
+  {
+    schemaVersion: 1,
+    planId: 'plan-5001',
+    workspaceId: 'ws-demo',
+    createdAtIso: '2026-02-20T00:12:30Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-1',
+        operation: 'Create',
+        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4271C', externalType: 'CreditNote', displayLabel: 'Credit Note INV-4271C' },
+        summary: 'Credit note of €1,240 to ACME Repairs',
+      },
+      {
+        effectId: 'eff-2',
+        operation: 'Create',
+        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4272', externalType: 'Invoice', displayLabel: 'Corrected Invoice INV-4272' },
+        summary: 'Re-issue corrected invoice',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-5002',
+    workspaceId: 'ws-demo',
+    createdAtIso: '2026-02-17T14:28:00Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-3',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-001', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — alice@acme' },
+        summary: 'Revoke excess write permission',
+      },
+      {
+        effectId: 'eff-4',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-002', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — bob@acme' },
+        summary: 'Revoke excess write permission',
+      },
+      {
+        effectId: 'eff-5',
+        operation: 'Delete',
+        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-003', externalType: 'GroupMembership', displayLabel: 'Finance:Admin — carol@acme' },
+        summary: 'Revoke excess admin permission',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-5003',
+    workspaceId: 'ws-demo',
+    createdAtIso: '2026-02-18T09:11:00Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-6',
+        operation: 'Update',
+        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'po_1234567890', externalType: 'Payout', displayLabel: 'Payout 2026-02-17' },
+        summary: 'Verify payout reconciliation: 142 transactions matched',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-5004',
+    workspaceId: 'ws-demo',
+    createdAtIso: '2026-02-20T08:04:00Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-7',
+        operation: 'Create',
+        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'pmt-8821', externalType: 'Transfer', displayLabel: 'Transfer PO-8821' },
+        summary: 'Initiate €14,200 supplier payment',
+      },
+      {
+        effectId: 'eff-8',
+        operation: 'Update',
+        target: { sorName: 'NetSuite', portFamily: 'FinanceAccounting', externalId: 'po-8821', externalType: 'PurchaseOrder', displayLabel: 'PO-8821' },
+        summary: 'Mark purchase order as paid',
+      },
+    ],
+  },
+]
+
 export const EVIDENCE: EvidenceEntry[] = [
   {
     schemaVersion: 1,
@@ -366,6 +463,50 @@ export const ADAPTERS = [
   { adapterId: 'adapter-stripe-001', name: 'Stripe Payments', sorFamily: 'PaymentsBilling', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
   { adapterId: 'adapter-bamboohr-001', name: 'BambooHR HRIS', sorFamily: 'HrisHcm', status: 'healthy', lastSyncIso: '2026-02-19T23:00:00Z' },
   { adapterId: 'adapter-salesforce-001', name: 'Salesforce CRM', sorFamily: 'CrmSales', status: 'degraded', lastSyncIso: '2026-02-19T18:00:00Z' },
+]
+
+export const CREDENTIAL_GRANTS: CredentialGrantV1[] = [
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-7001',
+    workspaceId: 'ws-demo',
+    adapterId: 'adapter-odoo-001',
+    credentialsRef: 'vault://ws-demo/finance/odoo-primary',
+    scope: 'invoice:read invoice:write',
+    issuedAtIso: '2026-02-01T10:00:00Z',
+    expiresAtIso: '2026-06-01T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-7002',
+    workspaceId: 'ws-demo',
+    adapterId: 'adapter-salesforce-001',
+    credentialsRef: 'vault://ws-demo/crm/salesforce-api',
+    scope: 'party:read opportunity:write',
+    issuedAtIso: '2026-01-10T08:00:00Z',
+    expiresAtIso: '2026-04-10T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-7003',
+    workspaceId: 'ws-demo',
+    adapterId: 'adapter-stripe-001',
+    credentialsRef: 'vault://ws-demo/payments/stripe-secret-key',
+    scope: 'charge:read charge:write refund:write',
+    issuedAtIso: '2025-12-01T08:00:00Z',
+    expiresAtIso: '2026-01-15T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-7004',
+    workspaceId: 'ws-demo',
+    adapterId: 'adapter-bamboohr-001',
+    credentialsRef: 'vault://ws-demo/hris/bamboohr-token',
+    scope: 'employee:read employee:write',
+    issuedAtIso: '2026-01-20T08:00:00Z',
+    expiresAtIso: '2026-07-20T00:00:00Z',
+    revokedAtIso: '2026-02-05T12:30:00Z',
+  },
 ]
 
 // ---------------------------------------------------------------------------
