@@ -30,16 +30,30 @@ export interface ListWorkspacesDeps {
   workspaceStore: WorkspaceQueryStore;
 }
 
-function validateInput(input: ListWorkspacesInput): Result<ListWorkspacesFilter, ValidationFailed> {
-  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
+function validatePositiveLimit(limit: number | undefined): Result<void, ValidationFailed> {
+  if (limit !== undefined && (!Number.isInteger(limit) || limit <= 0)) {
     return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
   }
-  if (input.cursor !== undefined && input.cursor.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'cursor must be a non-empty string.' });
+  return ok(undefined);
+}
+
+function validateOptionalNonEmptyString(
+  value: string | undefined,
+  field: 'cursor' | 'nameQuery',
+): Result<void, ValidationFailed> {
+  if (value?.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
   }
-  if (input.nameQuery !== undefined && input.nameQuery.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'nameQuery must be a non-empty string.' });
-  }
+  return ok(undefined);
+}
+
+function validateInput(input: ListWorkspacesInput): Result<ListWorkspacesFilter, ValidationFailed> {
+  const limitValid = validatePositiveLimit(input.limit);
+  if (!limitValid.ok) return limitValid;
+  const cursorValid = validateOptionalNonEmptyString(input.cursor, 'cursor');
+  if (!cursorValid.ok) return cursorValid;
+  const nameQueryValid = validateOptionalNonEmptyString(input.nameQuery, 'nameQuery');
+  if (!nameQueryValid.ok) return nameQueryValid;
 
   return ok({
     ...(input.nameQuery ? { nameQuery: input.nameQuery } : {}),
@@ -73,4 +87,3 @@ export async function listWorkspaces(
     ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}),
   });
 }
-

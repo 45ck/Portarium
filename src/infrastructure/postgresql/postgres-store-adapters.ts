@@ -315,20 +315,20 @@ function matchRunFilter(run: RunV1, filter: ListRunsFilter): boolean {
 }
 
 function matchApprovalFilter(approval: ApprovalV1, filter: ListApprovalsFilter): boolean {
-  if (filter.status && approval.status !== filter.status) return false;
-  if (filter.runId && String(approval.runId) !== String(filter.runId)) return false;
-  if (filter.planId && String(approval.planId) !== String(filter.planId)) return false;
-  if (filter.workItemId && String(approval.workItemId) !== String(filter.workItemId)) return false;
-  if (filter.assigneeUserId && String(approval.assigneeUserId) !== String(filter.assigneeUserId)) {
+  if (filter.status && approval.status !== filter.status) {
     return false;
   }
-  if (
-    filter.requestedByUserId &&
-    String(approval.requestedByUserId) !== String(filter.requestedByUserId)
-  ) {
-    return false;
-  }
-  return true;
+  const checks: ReadonlyArray<readonly [string | undefined, string]> = [
+    [filter.runId ? String(filter.runId) : undefined, String(approval.runId)],
+    [filter.planId ? String(filter.planId) : undefined, String(approval.planId)],
+    [filter.workItemId ? String(filter.workItemId) : undefined, String(approval.workItemId)],
+    [filter.assigneeUserId ? String(filter.assigneeUserId) : undefined, String(approval.assigneeUserId)],
+    [
+      filter.requestedByUserId ? String(filter.requestedByUserId) : undefined,
+      String(approval.requestedByUserId),
+    ],
+  ];
+  return checks.every(([expected, actual]) => expected === undefined || actual === expected);
 }
 
 function pageByCursor<T>(

@@ -50,16 +50,24 @@ export interface ListApprovalsDeps {
   approvalStore: ApprovalQueryStore;
 }
 
-function parseInput(
-  input: ListApprovalsInput,
-): Result<Readonly<{ workspaceId: WorkspaceIdType; filter: ListApprovalsFilter }>, ValidationFailed> {
+function ensureNonEmptyString(
+  value: string | undefined,
+  field: string,
+): Result<void, ValidationFailed> {
+  if (value?.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
+  }
+  return ok(undefined);
+}
+
+function validateInput(input: ListApprovalsInput): Result<void, ValidationFailed> {
   if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
   if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
     return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
   }
-  if (input.cursor !== undefined && input.cursor.trim() === '') {
+  if (input.cursor?.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'cursor must be a non-empty string.' });
   }
   if (input.status !== undefined && !APPROVAL_STATUSES.includes(input.status)) {
@@ -73,24 +81,39 @@ function parseInput(
     ['assigneeUserId', input.assigneeUserId],
     ['requestedByUserId', input.requestedByUserId],
   ] as const) {
-    if (value !== undefined && value.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
+    const validString = ensureNonEmptyString(value, field);
+    if (!validString.ok) {
+      return validString;
     }
   }
 
-  let workspaceId: WorkspaceIdType;
-  let runId: RunIdType | undefined;
-  let planId: PlanIdType | undefined;
-  let workItemId: WorkItemIdType | undefined;
-  let assigneeUserId: UserIdType | undefined;
-  let requestedByUserId: UserIdType | undefined;
+  return ok(undefined);
+}
+
+function parseIds(
+  input: ListApprovalsInput,
+): Result<
+  Readonly<{
+    workspaceId: WorkspaceIdType;
+    runId?: RunIdType;
+    planId?: PlanIdType;
+    workItemId?: WorkItemIdType;
+    assigneeUserId?: UserIdType;
+    requestedByUserId?: UserIdType;
+  }>,
+  ValidationFailed
+> {
   try {
-    workspaceId = WorkspaceId(input.workspaceId);
-    runId = input.runId ? RunId(input.runId) : undefined;
-    planId = input.planId ? PlanId(input.planId) : undefined;
-    workItemId = input.workItemId ? WorkItemId(input.workItemId) : undefined;
-    assigneeUserId = input.assigneeUserId ? UserId(input.assigneeUserId) : undefined;
-    requestedByUserId = input.requestedByUserId ? UserId(input.requestedByUserId) : undefined;
+    return ok({
+      workspaceId: WorkspaceId(input.workspaceId),
+      ...(input.runId ? { runId: RunId(input.runId) } : {}),
+      ...(input.planId ? { planId: PlanId(input.planId) } : {}),
+      ...(input.workItemId ? { workItemId: WorkItemId(input.workItemId) } : {}),
+      ...(input.assigneeUserId ? { assigneeUserId: UserId(input.assigneeUserId) } : {}),
+      ...(input.requestedByUserId
+        ? { requestedByUserId: UserId(input.requestedByUserId) }
+        : {}),
+    });
   } catch {
     return err({
       kind: 'ValidationFailed',
@@ -98,19 +121,46 @@ function parseInput(
         'Invalid workspaceId/runId/planId/workItemId/assigneeUserId/requestedByUserId.',
     });
   }
+}
+
+function buildFilter(
+  input: ListApprovalsInput,
+  parsed: Readonly<{
+    runId?: RunIdType;
+    planId?: PlanIdType;
+    workItemId?: WorkItemIdType;
+    assigneeUserId?: UserIdType;
+    requestedByUserId?: UserIdType;
+  }>,
+): ListApprovalsFilter {
+  return {
+    ...(input.status ? { status: input.status } : {}),
+    ...(parsed.runId ? { runId: parsed.runId } : {}),
+    ...(parsed.planId ? { planId: parsed.planId } : {}),
+    ...(parsed.workItemId ? { workItemId: parsed.workItemId } : {}),
+    ...(parsed.assigneeUserId ? { assigneeUserId: parsed.assigneeUserId } : {}),
+    ...(parsed.requestedByUserId ? { requestedByUserId: parsed.requestedByUserId } : {}),
+    ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    ...(input.cursor ? { cursor: input.cursor } : {}),
+  };
+}
+
+function parseInput(
+  input: ListApprovalsInput,
+): Result<Readonly<{ workspaceId: WorkspaceIdType; filter: ListApprovalsFilter }>, ValidationFailed> {
+  const validated = validateInput(input);
+  if (!validated.ok) {
+    return validated;
+  }
+
+  const parsed = parseIds(input);
+  if (!parsed.ok) {
+    return parsed;
+  }
 
   return ok({
-    workspaceId,
-    filter: {
-      ...(input.status ? { status: input.status } : {}),
-      ...(runId ? { runId } : {}),
-      ...(planId ? { planId } : {}),
-      ...(workItemId ? { workItemId } : {}),
-      ...(assigneeUserId ? { assigneeUserId } : {}),
-      ...(requestedByUserId ? { requestedByUserId } : {}),
-      ...(input.limit !== undefined ? { limit: input.limit } : {}),
-      ...(input.cursor ? { cursor: input.cursor } : {}),
-    },
+    workspaceId: parsed.value.workspaceId,
+    filter: buildFilter(input, parsed.value),
   });
 }
 
@@ -140,4 +190,3 @@ export async function listApprovals(
   );
   return ok(page);
 }
-
