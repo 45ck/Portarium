@@ -5,3 +5,4 @@ export * from './submit-approval.js';
 export * from './submit-map-command-intent.js';
 export * from './assign-workforce-member.js';
 export * from './complete-human-task.js';
+export * from './machine-agent-registration.js';

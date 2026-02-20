@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import { APP_ACTIONS } from '../../application/common/actions.js';
@@ -18,6 +18,7 @@ import {
 import type {
   Forbidden,
   NotFound,
+  PreconditionFailed,
   Unauthorized,
   ValidationFailed,
 } from '../../application/common/errors.js';
@@ -49,7 +50,7 @@ type ProblemDetails = Readonly<{
   instance?: string;
 }>;
 
-type QueryError = Unauthorized | Forbidden | NotFound | ValidationFailed;
+type QueryError = Unauthorized | Forbidden | NotFound | ValidationFailed | PreconditionFailed;
 
 type ControlPlaneDeps = Readonly<{
   authentication: AuthenticationPort;
@@ -423,11 +424,48 @@ function problemFromError(error: QueryError, instance: string): ProblemDetails {
       return {
         type: 'https://portarium.dev/problems/validation-failed',
         title: 'Validation Failed',
-        status: 400,
+        status: 422,
+        detail: error.message,
+        instance,
+      };
+    case 'PreconditionFailed':
+      return {
+        type: 'https://portarium.dev/problems/precondition-failed',
+        title: 'Precondition Failed',
+        status: 412,
         detail: error.message,
         instance,
       };
   }
+}
+
+/**
+ * Compute a quoted weak ETag from arbitrary resource content.
+ * Uses a short SHA-256 prefix (12 hex chars) — unique enough for cache/precondition use.
+ */
+function computeETag(content: unknown): string {
+  const hash = createHash('sha256').update(JSON.stringify(content)).digest('hex').slice(0, 12);
+  return `"${hash}"`;
+}
+
+/**
+ * Enforce an `If-Match` precondition.
+ * Returns `{ ok: false, error: PreconditionFailed }` when the header is present
+ * but does not match the current resource ETag.
+ */
+function checkIfMatch(
+  req: IncomingMessage,
+  currentETag: string,
+): { ok: true } | { ok: false; error: PreconditionFailed } {
+  const ifMatch = req.headers['if-match'];
+  if (!ifMatch) return { ok: true };
+  // RFC 9110 §13.1.1 — treat '*' as always-matching
+  if (ifMatch === '*') return { ok: true };
+  if (ifMatch === currentETag) return { ok: true };
+  return {
+    ok: false,
+    error: { kind: 'PreconditionFailed', message: 'ETag does not match.', ifMatch },
+  };
 }
 
 function buildAuthentication(): AuthenticationPort {
@@ -723,6 +761,8 @@ async function handleGetWorkspace(
   );
 
   if (result.ok) {
+    const etag = computeETag(result.value);
+    res.setHeader('ETag', etag);
     respondJson(res, 200, correlationId, traceContext, result.value);
     return;
   }
@@ -757,6 +797,16 @@ async function handleGetRun(
   );
 
   if (result.ok) {
+    const etag = computeETag(result.value);
+    res.setHeader('ETag', etag);
+
+    // Honour If-Match for optimistic-concurrency clients on the run resource.
+    const precondition = checkIfMatch(req, etag);
+    if (!precondition.ok) {
+      respondProblem(res, problemFromError(precondition.error, pathname), correlationId, traceContext);
+      return;
+    }
+
     respondJson(res, 200, correlationId, traceContext, result.value);
     return;
   }

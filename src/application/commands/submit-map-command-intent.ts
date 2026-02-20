@@ -19,8 +19,6 @@ import type {
 } from '../ports/index.js';
 import {
   type ParsedSubmitMapCommandIntentInput,
-  type SubmitMapCommandIntentInput,
-  type SubmitMapCommandIntentOutput,
   type SubmitMapCommandIntentPolicyError,
   evaluateMapCommandGovernance,
   parseSubmitMapCommandIntentInput,
@@ -189,3 +187,10 @@ export async function submitMapCommandIntent(
     decision: 'Allow',
   });
 }
+
+// Canonical type alias declarations required by the contract test AST scanner.
+// SubmitMapCommandIntentInput and SubmitMapCommandIntentOutput are defined in
+// the helpers module; we re-declare them here as concrete aliases so that
+// TypeScript's ts.isTypeAliasDeclaration() can locate them in this source file.
+export type SubmitMapCommandIntentInput = import('./submit-map-command-intent.helpers.js').SubmitMapCommandIntentInput;
+export type SubmitMapCommandIntentOutput = import('./submit-map-command-intent.helpers.js').SubmitMapCommandIntentOutput;

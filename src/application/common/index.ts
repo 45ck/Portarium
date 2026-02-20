@@ -3,3 +3,4 @@ export * from './context.js';
 export * from './trace-context.js';
 export * from './errors.js';
 export * from './actions.js';
+export * from './validation.js';

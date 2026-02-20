@@ -10,7 +10,9 @@ export type ActionKey =
   | 'workforceAssign'
   | 'workforceComplete'
   | 'workspaceRegister'
-  | 'workspaceRead';
+  | 'workspaceRead'
+  | 'agentHeartbeat'
+  | 'machineAgentRegister';
 
 export type OperationContract = Readonly<{
   kind: OperationKind;
@@ -100,7 +102,7 @@ export const APPLICATION_OPERATION_CONTRACTS = [
     kind: 'command',
     name: 'registerMachine',
     sourcePath: 'src/application/commands/machine-agent-registration.ts',
-    actionKey: 'workspaceRegister',
+    actionKey: 'machineAgentRegister',
     types: {
       input: 'RegisterMachineInput',
       output: 'RegisterMachineOutput',
@@ -111,7 +113,7 @@ export const APPLICATION_OPERATION_CONTRACTS = [
     kind: 'command',
     name: 'createAgent',
     sourcePath: 'src/application/commands/machine-agent-registration.ts',
-    actionKey: 'workspaceRegister',
+    actionKey: 'machineAgentRegister',
     types: {
       input: 'CreateAgentInput',
       output: 'CreateAgentOutput',
@@ -122,7 +124,7 @@ export const APPLICATION_OPERATION_CONTRACTS = [
     kind: 'command',
     name: 'updateAgentCapabilities',
     sourcePath: 'src/application/commands/machine-agent-registration.ts',
-    actionKey: 'workspaceRegister',
+    actionKey: 'machineAgentRegister',
     types: {
       input: 'UpdateAgentCapabilitiesInput',
       output: 'UpdateAgentCapabilitiesOutput',

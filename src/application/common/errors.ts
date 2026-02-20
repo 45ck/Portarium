@@ -19,10 +19,19 @@ export type Forbidden = Readonly<{
   message: string;
 }>;
 
+/** A single field-level violation, serialised into RFC 9457 `errors` extension. */
+export type FieldViolation = Readonly<{
+  field: string;
+  message: string;
+}>;
+
 export type ValidationFailed = Readonly<{
   kind: 'ValidationFailed';
   message: string;
+  /** Legacy single-field pointer — prefer `errors` for new code. */
   field?: string;
+  /** Structured per-field violations for RFC 9457 Problem Details. */
+  errors?: readonly FieldViolation[];
 }>;
 
 export type Conflict = Readonly<{
@@ -41,13 +50,25 @@ export type DependencyFailure = Readonly<{
   message: string;
 }>;
 
+/**
+ * HTTP 412 Precondition Failed — the `If-Match` ETag provided by the caller
+ * does not match the current resource version.
+ */
+export type PreconditionFailed = Readonly<{
+  kind: 'PreconditionFailed';
+  message: string;
+  /** The ETag that was expected (as sent in `If-Match`). */
+  ifMatch: string;
+}>;
+
 export type AppError =
   | Unauthorized
   | Forbidden
   | ValidationFailed
   | Conflict
   | NotFound
-  | DependencyFailure;
+  | DependencyFailure
+  | PreconditionFailed;
 
 /** Map an application error kind to its canonical HTTP status code. */
 export function toHttpStatus(error: AppError): number {
@@ -64,6 +85,8 @@ export function toHttpStatus(error: AppError): number {
       return 404;
     case 'DependencyFailure':
       return 502;
+    case 'PreconditionFailed':
+      return 412;
   }
 }
 
@@ -77,6 +100,7 @@ export function isAppError(value: unknown): value is AppError {
     candidate['kind'] === 'ValidationFailed' ||
     candidate['kind'] === 'Conflict' ||
     candidate['kind'] === 'NotFound' ||
-    candidate['kind'] === 'DependencyFailure'
+    candidate['kind'] === 'DependencyFailure' ||
+    candidate['kind'] === 'PreconditionFailed'
   );
 }

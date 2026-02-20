@@ -31,6 +31,12 @@ const DEPENDENCY_FAILURE: AppError = {
   message: 'Downstream failed.',
 };
 
+const PRECONDITION_FAILED: AppError = {
+  kind: 'PreconditionFailed',
+  message: 'ETag mismatch.',
+  ifMatch: '"abc123"',
+};
+
 describe('toHttpStatus', () => {
   it('maps Forbidden → 403', () => {
     expect(toHttpStatus(FORBIDDEN)).toBe(403);
@@ -51,6 +57,10 @@ describe('toHttpStatus', () => {
   it('maps DependencyFailure → 502', () => {
     expect(toHttpStatus(DEPENDENCY_FAILURE)).toBe(502);
   });
+
+  it('maps PreconditionFailed → 412', () => {
+    expect(toHttpStatus(PRECONDITION_FAILED)).toBe(412);
+  });
 });
 
 describe('isAppError', () => {
@@ -60,6 +70,7 @@ describe('isAppError', () => {
     expect(isAppError(CONFLICT)).toBe(true);
     expect(isAppError(NOT_FOUND)).toBe(true);
     expect(isAppError(DEPENDENCY_FAILURE)).toBe(true);
+    expect(isAppError(PRECONDITION_FAILED)).toBe(true);
   });
 
   it('returns false for null', () => {

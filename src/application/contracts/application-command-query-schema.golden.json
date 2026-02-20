@@ -71,11 +71,11 @@
       "types": {
         "input": {
           "name": "SubmitMapCommandIntentInput",
-          "sha256": "c39c05df552e2f2cad1175a5bf1cc660f6b86a2fabe7c0547e79f0ca8724a1e6"
+          "sha256": "9c6afe999f932a50fa79b293ea23b947f72692c6f2e17bb91a7d549fb13c0c45"
         },
         "output": {
           "name": "SubmitMapCommandIntentOutput",
-          "sha256": "e00d75f3b566814c277c7d7dfa90992d9f64f73c8e0b13bf6abe53359ab3fa11"
+          "sha256": "dc18a4a0a3397c0184ba4e979ad7a8545d0a73eb0c5997db8c43f1e0d8ff1781"
         },
         "error": {
           "name": "SubmitMapCommandIntentError",
@@ -127,7 +127,7 @@
       "kind": "command",
       "name": "registerMachine",
       "sourcePath": "src/application/commands/machine-agent-registration.ts",
-      "action": "workspace:register",
+      "action": "machine-agent:register",
       "types": {
         "input": {
           "name": "RegisterMachineInput",
@@ -147,7 +147,7 @@
       "kind": "command",
       "name": "createAgent",
       "sourcePath": "src/application/commands/machine-agent-registration.ts",
-      "action": "workspace:register",
+      "action": "machine-agent:register",
       "types": {
         "input": {
           "name": "CreateAgentInput",
@@ -167,7 +167,7 @@
       "kind": "command",
       "name": "updateAgentCapabilities",
       "sourcePath": "src/application/commands/machine-agent-registration.ts",
-      "action": "workspace:register",
+      "action": "machine-agent:register",
       "types": {
         "input": {
           "name": "UpdateAgentCapabilitiesInput",

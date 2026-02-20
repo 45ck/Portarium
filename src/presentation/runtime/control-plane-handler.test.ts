@@ -156,7 +156,7 @@ describe('createControlPlaneHandler', () => {
         tracestate: 'vendor=value',
       },
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
     expect(res.headers.get('x-correlation-id')).toBe('corr-fixed');
     expect(res.headers.get('traceparent')).toBe(
       '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
@@ -164,7 +164,7 @@ describe('createControlPlaneHandler', () => {
     expect(res.headers.get('tracestate')).toBe('vendor=value');
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/validation-failed/);
-    expect(body.status).toBe(400);
+    expect(body.status).toBe(422);
   });
 
   it('maps Forbidden to 403', async () => {
@@ -265,7 +265,7 @@ describe('createControlPlaneHandler', () => {
       `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce?capability=operations.approval&availability=available`,
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { items: Array<{ workforceMemberId: string }> };
+    const body = (await res.json()) as { items: { workforceMemberId: string }[] };
     expect(body.items).toHaveLength(1);
     expect(body.items[0]!.workforceMemberId).toBe('wm-1');
   });
@@ -379,7 +379,7 @@ describe('createControlPlaneHandler', () => {
       `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/human-tasks?assigneeId=wm-1&status=assigned`,
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { items: Array<{ humanTaskId: string }> };
+    const body = (await res.json()) as { items: { humanTaskId: string }[] };
     expect(body.items).toHaveLength(1);
     expect(body.items[0]!.humanTaskId).toBe('ht-1');
   });
@@ -428,7 +428,7 @@ describe('createControlPlaneHandler', () => {
     );
     expect(evidenceRes.status).toBe(200);
     const evidenceBody = (await evidenceRes.json()) as {
-      items: Array<{ evidenceId: string; summary: string }>;
+      items: { evidenceId: string; summary: string }[];
     };
     expect(evidenceBody.items.some((entry) => entry.evidenceId === completed.evidenceAnchorId)).toBe(
       true,
@@ -466,7 +466,7 @@ describe('createControlPlaneHandler', () => {
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      items: Array<{ locationEventId: string; tenantId: string; sourceType: string }>;
+      items: { locationEventId: string; tenantId: string; sourceType: string }[];
       nextCursor?: string;
     };
     expect(body.items).toHaveLength(1);
@@ -542,7 +542,7 @@ describe('createControlPlaneHandler', () => {
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      items: Array<{ tenantId: string; mapLayerId: string; version: number }>;
+      items: { tenantId: string; mapLayerId: string; version: number }[];
     };
     expect(body.items).toHaveLength(1);
     expect(body.items[0]!.tenantId).toBe('workspace-2');

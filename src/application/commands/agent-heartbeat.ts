@@ -51,8 +51,43 @@ function ensureTenantMatch(
   if (WorkspaceId(workspaceId) !== ctx.tenantId) {
     return err({
       kind: 'Forbidden',
-      action: APP_ACTIONS.workspaceRegister,
+      action: APP_ACTIONS.agentHeartbeat,
       message: 'Tenant mismatch.',
+    });
+  }
+  return ok(true);
+}
+
+function validateMetrics(
+  metrics: Readonly<Record<string, number>> | undefined,
+): Result<true, ValidationFailed> {
+  if (metrics === undefined) return ok(true);
+  if (typeof metrics !== 'object' || metrics === null || Array.isArray(metrics)) {
+    return err({ kind: 'ValidationFailed', message: 'metrics must be a record of string to number.' });
+  }
+  for (const [key, val] of Object.entries(metrics)) {
+    if (typeof key !== 'string' || typeof val !== 'number' || !Number.isFinite(val)) {
+      return err({ kind: 'ValidationFailed', message: 'metrics values must be finite numbers.' });
+    }
+  }
+  return ok(true);
+}
+
+function validateLocation(
+  location: Readonly<{ lat: number; lon: number }> | undefined,
+): Result<true, ValidationFailed> {
+  if (location === undefined) return ok(true);
+  if (
+    typeof location !== 'object' ||
+    location === null ||
+    typeof location.lat !== 'number' ||
+    typeof location.lon !== 'number' ||
+    !Number.isFinite(location.lat) ||
+    !Number.isFinite(location.lon)
+  ) {
+    return err({
+      kind: 'ValidationFailed',
+      message: 'location must contain finite lat and lon numbers.',
     });
   }
   return ok(true);
@@ -68,34 +103,55 @@ function validateHeartbeatInput(
     });
   }
 
-  if (input.metrics !== undefined) {
-    if (typeof input.metrics !== 'object' || input.metrics === null || Array.isArray(input.metrics)) {
-      return err({ kind: 'ValidationFailed', message: 'metrics must be a record of string to number.' });
-    }
-    for (const [key, val] of Object.entries(input.metrics)) {
-      if (typeof key !== 'string' || typeof val !== 'number' || !Number.isFinite(val)) {
-        return err({ kind: 'ValidationFailed', message: 'metrics values must be finite numbers.' });
-      }
-    }
-  }
+  const metricsResult = validateMetrics(input.metrics);
+  if (!metricsResult.ok) return metricsResult;
 
-  if (input.location !== undefined) {
-    if (
-      typeof input.location !== 'object' ||
-      input.location === null ||
-      typeof input.location.lat !== 'number' ||
-      typeof input.location.lon !== 'number' ||
-      !Number.isFinite(input.location.lat) ||
-      !Number.isFinite(input.location.lon)
-    ) {
-      return err({
-        kind: 'ValidationFailed',
-        message: 'location must contain finite lat and lon numbers.',
-      });
-    }
-  }
+  const locationResult = validateLocation(input.location);
+  if (!locationResult.ok) return locationResult;
 
   return ok({ status: input.status as HeartbeatStatus });
+}
+
+async function dispatchMachineHeartbeat(
+  store: HeartbeatDeps['machineRegistryStore'],
+  ctx: AppContext,
+  machineId: string,
+  heartbeat: HeartbeatData,
+  nowIso: string,
+): Promise<Result<HeartbeatOutput, HeartbeatError>> {
+  if (typeof machineId !== 'string' || machineId.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: 'machineId must be a non-empty string.' });
+  }
+  const updated = await store.updateMachineHeartbeat(ctx.tenantId, MachineId(machineId), heartbeat);
+  if (!updated) {
+    return err({
+      kind: 'NotFound',
+      resource: 'MachineRegistration',
+      message: `Machine ${machineId} not found.`,
+    });
+  }
+  return ok({ acknowledgedAtIso: nowIso });
+}
+
+async function dispatchAgentHeartbeat(
+  store: HeartbeatDeps['machineRegistryStore'],
+  ctx: AppContext,
+  agentId: string,
+  heartbeat: HeartbeatData,
+  nowIso: string,
+): Promise<Result<HeartbeatOutput, HeartbeatError>> {
+  if (typeof agentId !== 'string' || agentId.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' });
+  }
+  const updated = await store.updateAgentHeartbeat(ctx.tenantId, AgentId(agentId), heartbeat);
+  if (!updated) {
+    return err({
+      kind: 'NotFound',
+      resource: 'AgentConfig',
+      message: `Agent ${agentId} not found.`,
+    });
+  }
+  return ok({ acknowledgedAtIso: nowIso });
 }
 
 export async function processHeartbeat(
@@ -106,11 +162,11 @@ export async function processHeartbeat(
   const tenantMatch = ensureTenantMatch(ctx, input.workspaceId);
   if (!tenantMatch.ok) return tenantMatch;
 
-  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.workspaceRegister);
+  const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.agentHeartbeat);
   if (!allowed) {
     return err({
       kind: 'Forbidden',
-      action: APP_ACTIONS.workspaceRegister,
+      action: APP_ACTIONS.agentHeartbeat,
       message: 'Caller is not permitted to send heartbeats.',
     });
   }
@@ -131,41 +187,15 @@ export async function processHeartbeat(
   };
 
   if (input.machineId !== undefined) {
-    if (typeof input.machineId !== 'string' || input.machineId.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: 'machineId must be a non-empty string.' });
-    }
-    const updated = await deps.machineRegistryStore.updateMachineHeartbeat(
-      ctx.tenantId,
-      MachineId(input.machineId),
-      heartbeat,
+    return dispatchMachineHeartbeat(
+      deps.machineRegistryStore, ctx, input.machineId, heartbeat, nowIso,
     );
-    if (!updated) {
-      return err({
-        kind: 'NotFound',
-        resource: 'MachineRegistration',
-        message: `Machine ${input.machineId} not found.`,
-      });
-    }
-    return ok({ acknowledgedAtIso: nowIso });
   }
 
   if (input.agentId !== undefined) {
-    if (typeof input.agentId !== 'string' || input.agentId.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' });
-    }
-    const updated = await deps.machineRegistryStore.updateAgentHeartbeat(
-      ctx.tenantId,
-      AgentId(input.agentId),
-      heartbeat,
+    return dispatchAgentHeartbeat(
+      deps.machineRegistryStore, ctx, input.agentId, heartbeat, nowIso,
     );
-    if (!updated) {
-      return err({
-        kind: 'NotFound',
-        resource: 'AgentConfig',
-        message: `Agent ${input.agentId} not found.`,
-      });
-    }
-    return ok({ acknowledgedAtIso: nowIso });
   }
 
   return err({

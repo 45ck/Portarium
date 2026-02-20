@@ -82,6 +82,14 @@
         },
         "safety": { "$ref": "#/$defs/safety" },
         "constraints": { "$ref": "#/$defs/constraints" },
+        "compensationOperation": {
+          "type": "string",
+          "description": "Identifier of the compensation operation to invoke on saga rollback."
+        },
+        "compensationInputSchema": {
+          "type": "object",
+          "description": "JSON Schema describing the input required by the compensation operation."
+        },
         "notes": { "type": "string" }
       }
     },

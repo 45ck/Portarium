@@ -156,7 +156,7 @@ function ensureTenantMatch(
   if (WorkspaceId(workspaceId) !== ctx.tenantId) {
     return err({
       kind: 'Forbidden',
-      action: APP_ACTIONS.workspaceRegister,
+      action: APP_ACTIONS.machineAgentRegister,
       message: 'Tenant mismatch.',
     });
   }
@@ -180,11 +180,11 @@ async function ensureWorkspaceRegisterAllowed(
   authorization: AuthorizationPort,
   ctx: AppContext,
 ): Promise<Result<true, Forbidden>> {
-  const allowed = await authorization.isAllowed(ctx, APP_ACTIONS.workspaceRegister);
+  const allowed = await authorization.isAllowed(ctx, APP_ACTIONS.machineAgentRegister);
   if (allowed) return ok(true);
   return err({
     kind: 'Forbidden',
-    action: APP_ACTIONS.workspaceRegister,
+    action: APP_ACTIONS.machineAgentRegister,
     message: 'Caller is not permitted to register machine/agent resources.',
   });
 }
@@ -244,6 +244,47 @@ export async function registerMachine(
   }
 }
 
+function checkCapabilityRoutability(
+  agent: AgentConfigV1,
+  machine: MachineRegistrationV1,
+): Result<true, ValidationFailed> {
+  const handshake = establishCapabilityHandshakeV1({
+    machineCapabilities: machine.capabilities,
+    agentCapabilities: agent.capabilities,
+  });
+  if (handshake.nonRoutableAgentCapabilities.length > 0) {
+    const nonRoutable = handshake.nonRoutableAgentCapabilities
+      .map((descriptor) => String(descriptor.capability))
+      .join(', ');
+    return err({
+      kind: 'ValidationFailed',
+      message: `Agent capabilities are not routable on machine ${agent.machineId}: ${nonRoutable}.`,
+    });
+  }
+  return ok(true);
+}
+
+function checkAgentConflict(
+  agent: AgentConfigV1,
+  existingAgent: AgentConfigV1 | null,
+): Result<true, Conflict | ValidationFailed> {
+  if (existingAgent === null) return ok(true);
+  const driftDecision = evaluateCapabilityDriftQuarantinePolicyV1({
+    baselineCapabilities: existingAgent.capabilities,
+    observedCapabilities: agent.capabilities,
+    source: 'ReRegistration',
+    reviewed: false,
+  });
+  if (driftDecision.decision === 'Quarantine') {
+    const driftSummary = summarizeCapabilityDriftV1(driftDecision.drift);
+    return err({
+      kind: 'Conflict',
+      message: `Agent ${agent.agentId} quarantined due to capability drift (${driftSummary}).`,
+    });
+  }
+  return err({ kind: 'Conflict', message: `Agent ${agent.agentId} already exists.` });
+}
+
 export async function createAgent(
   deps: MachineAgentRegistrationDeps,
   ctx: AppContext,
@@ -273,54 +314,21 @@ export async function createAgent(
   if (cached) return ok(cached);
 
   const machine = await deps.machineRegistryStore.getMachineRegistrationById(
-    ctx.tenantId,
-    agent.machineId,
+    ctx.tenantId, agent.machineId,
   );
   if (machine === null) {
-    return err({
-      kind: 'NotFound',
-      resource: 'MachineRegistration',
-      message: `Machine ${agent.machineId} not found.`,
-    });
+    return err({ kind: 'NotFound', resource: 'MachineRegistration',
+      message: `Machine ${agent.machineId} not found.` });
   }
 
-  const handshake = establishCapabilityHandshakeV1({
-    machineCapabilities: machine.capabilities,
-    agentCapabilities: agent.capabilities,
-  });
-  if (handshake.nonRoutableAgentCapabilities.length > 0) {
-    const nonRoutable = handshake.nonRoutableAgentCapabilities
-      .map((descriptor) => String(descriptor.capability))
-      .join(', ');
-    return err({
-      kind: 'ValidationFailed',
-      message: `Agent capabilities are not routable on machine ${agent.machineId}: ${nonRoutable}.`,
-    });
-  }
+  const routableResult = checkCapabilityRoutability(agent, machine);
+  if (!routableResult.ok) return routableResult;
 
   const existingAgent = await deps.machineRegistryStore.getAgentConfigById(
-    ctx.tenantId,
-    agent.agentId,
+    ctx.tenantId, agent.agentId,
   );
-  if (existingAgent !== null) {
-    const driftDecision = evaluateCapabilityDriftQuarantinePolicyV1({
-      baselineCapabilities: existingAgent.capabilities,
-      observedCapabilities: agent.capabilities,
-      source: 'ReRegistration',
-      reviewed: false,
-    });
-    if (driftDecision.decision === 'Quarantine') {
-      const driftSummary = summarizeCapabilityDriftV1(driftDecision.drift);
-      return err({
-        kind: 'Conflict',
-        message: `Agent ${agent.agentId} quarantined due to capability drift (${driftSummary}).`,
-      });
-    }
-    return err({
-      kind: 'Conflict',
-      message: `Agent ${agent.agentId} already exists.`,
-    });
-  }
+  const conflictResult = checkAgentConflict(agent, existingAgent);
+  if (!conflictResult.ok) return conflictResult;
 
   const evidence = buildEvidenceEntry(deps, ctx, `Created agent ${agent.agentId}.`);
   if (!evidence.ok) return evidence;
