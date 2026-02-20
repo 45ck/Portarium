@@ -8,6 +8,7 @@ import type {
   AgentV1,
   CredentialGrantV1,
   Plan,
+  AdapterSummary,
 } from '@portarium/cockpit-types'
 import type {
   RobotSummary,
@@ -519,7 +520,7 @@ export const AGENTS: AgentV1[] = [
   { schemaVersion: 1, agentId: 'agent-003', workspaceId: 'ws-demo', name: 'CRM Dedup Agent', modelId: 'claude-haiku-4-5-20251001', endpoint: 'https://agents.portarium.io/crm-dedup', allowedCapabilities: ['read:external', 'analyze', 'classify'], usedByWorkflowIds: ['wf-crm-dedup'] },
 ]
 
-export const ADAPTERS = [
+export const ADAPTERS: AdapterSummary[] = [
   { adapterId: 'adapter-odoo-001', name: 'Odoo Finance', sorFamily: 'FinanceAccounting', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
   { adapterId: 'adapter-stripe-001', name: 'Stripe Payments', sorFamily: 'PaymentsBilling', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
   { adapterId: 'adapter-bamboohr-001', name: 'BambooHR HRIS', sorFamily: 'HrisHcm', status: 'healthy', lastSyncIso: '2026-02-19T23:00:00Z' },
