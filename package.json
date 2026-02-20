@@ -4,10 +4,17 @@
   "type": "module",
   "version": "0.1.0",
   "description": "Portarium -- open-source multi-tenant control plane for governable business operations",
+  "workspaces": [
+    "apps/*"
+  ],
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
+    "cockpit:dev": "npm run -w apps/cockpit dev",
+    "cockpit:storybook": "npm run -w apps/cockpit storybook",
+    "cockpit:build": "npm run -w apps/cockpit build",
+    "cockpit:build-storybook": "npm run -w apps/cockpit build-storybook",
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -86,6 +93,7 @@
     "@stryker-mutator/typescript-checker": "^9.4.0",
     "@stryker-mutator/vitest-runner": "^9.4.0",
     "@types/node": "^25.2.3",
+    "@types/pg": "^8.16.0",
     "@vitest/coverage-v8": "^4.0.18",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
@@ -117,6 +125,7 @@
     "@temporalio/client": "^1.14.1",
     "@temporalio/worker": "^1.14.1",
     "@temporalio/workflow": "^1.14.1",
-    "jose": "^6.1.3"
+    "jose": "^6.1.3",
+    "pg": "^8.18.0"
   }
 }

@@ -9,6 +9,7 @@ import type {
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
+import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import type { RunV1 } from '../../domain/runs/run-v1.js';
@@ -34,12 +35,22 @@ export class PostgresWorkspaceStore implements WorkspaceStore {
     this.#documents = new PostgresJsonDocumentStore(client);
   }
 
-  public async getWorkspaceById(tenantId: string, workspaceId: string): Promise<WorkspaceV1 | null> {
-    const payload = await this.#documents.get(String(tenantId), COLLECTION_WORKSPACES, String(workspaceId));
+  public async getWorkspaceById(
+    tenantId: string,
+    workspaceId: string,
+  ): Promise<WorkspaceV1 | null> {
+    const payload = await this.#documents.get(
+      String(tenantId),
+      COLLECTION_WORKSPACES,
+      String(workspaceId),
+    );
     return payload === null ? null : parseWorkspaceV1(payload);
   }
 
-  public async getWorkspaceByName(tenantId: string, workspaceName: string): Promise<WorkspaceV1 | null> {
+  public async getWorkspaceByName(
+    tenantId: string,
+    workspaceName: string,
+  ): Promise<WorkspaceV1 | null> {
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       collection: COLLECTION_WORKSPACES,
@@ -70,7 +81,11 @@ export class PostgresRunStore implements RunStore {
     this.#documents = new PostgresJsonDocumentStore(client);
   }
 
-  public async getRunById(tenantId: string, workspaceId: string, runId: string): Promise<RunV1 | null> {
+  public async getRunById(
+    tenantId: string,
+    workspaceId: string,
+    runId: string,
+  ): Promise<RunV1 | null> {
     const payload = await this.#documents.get(String(tenantId), COLLECTION_RUNS, String(runId));
     if (payload === null) {
       return null;
@@ -98,7 +113,11 @@ export class PostgresWorkflowStore implements WorkflowStore {
   }
 
   public async getWorkflowById(tenantId: string, workspaceId: string, workflowId: string) {
-    const payload = await this.#documents.get(String(tenantId), COLLECTION_WORKFLOWS, String(workflowId));
+    const payload = await this.#documents.get(
+      String(tenantId),
+      COLLECTION_WORKFLOWS,
+      String(workflowId),
+    );
     if (payload === null) {
       return null;
     }
@@ -144,7 +163,11 @@ export class PostgresApprovalStore implements ApprovalStore {
   }
 
   public async getApprovalById(tenantId: string, workspaceId: string, approvalId: string) {
-    const payload = await this.#documents.get(String(tenantId), COLLECTION_APPROVALS, String(approvalId));
+    const payload = await this.#documents.get(
+      String(tenantId),
+      COLLECTION_APPROVALS,
+      String(approvalId),
+    );
     if (payload === null) {
       return null;
     }
@@ -152,7 +175,7 @@ export class PostgresApprovalStore implements ApprovalStore {
     return String(parsed.workspaceId) === String(workspaceId) ? parsed : null;
   }
 
-  public saveApproval(tenantId: string, approval: ReturnType<typeof parseApprovalV1>): Promise<void> {
+  public saveApproval(tenantId: string, approval: ApprovalV1): Promise<void> {
     return this.#documents.upsert({
       tenantId: String(tenantId),
       workspaceId: String(approval.workspaceId),
@@ -171,7 +194,11 @@ export class PostgresPolicyStore implements PolicyStore {
   }
 
   public async getPolicyById(tenantId: string, workspaceId: string, policyId: string) {
-    const payload = await this.#documents.get(String(tenantId), COLLECTION_POLICIES, String(policyId));
+    const payload = await this.#documents.get(
+      String(tenantId),
+      COLLECTION_POLICIES,
+      String(policyId),
+    );
     if (payload === null) {
       return null;
     }

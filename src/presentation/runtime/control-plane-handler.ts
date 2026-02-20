@@ -27,6 +27,11 @@ import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { parseLocationEventV1 } from '../../domain/location/location-event-v1.js';
 import { InMemoryLocationHistoryStore, InMemoryLocationLatestStateCache } from '../../infrastructure/location/localisation-ingestion-pipeline.js';
+import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
+import {
+  PostgresRunStore,
+  PostgresWorkspaceStore,
+} from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import {
   InMemoryLocationMapLayerStore,
   MapDataServices,
@@ -450,7 +455,15 @@ function buildDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization: AuthorizationPort = new WorkspaceRbacAuthorization();
 
-  // TODO(beads): replace with real persistence adapters (DB).
+  const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
+  const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
+  if (usePostgresStores && connectionString) {
+    const sqlClient = new NodePostgresSqlClient({ connectionString });
+    const workspaceStore: WorkspaceStore = new PostgresWorkspaceStore(sqlClient);
+    const runStore: RunStore = new PostgresRunStore(sqlClient);
+    return { authentication, authorization, workspaceStore, runStore };
+  }
+
   const workspaceStore: WorkspaceStore = {
     getWorkspaceById: () => Promise.resolve(null),
     getWorkspaceByName: () => Promise.resolve(null),

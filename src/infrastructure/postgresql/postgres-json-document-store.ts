@@ -36,11 +36,7 @@ DO UPDATE SET workspace_id = EXCLUDED.workspace_id, payload = EXCLUDED.payload, 
     );
   }
 
-  public async get(
-    tenantId: string,
-    collection: string,
-    documentId: string,
-  ): Promise<unknown | null> {
+  public async get(tenantId: string, collection: string, documentId: string): Promise<unknown> {
     const result = await this.#client.query<{ payload: unknown }>(
       `${SQL_JSON_DOC_SELECT_ONE}
 SELECT payload
@@ -56,7 +52,9 @@ LIMIT 1;`,
     return result.rows[0]?.payload ?? null;
   }
 
-  public async list(params: Readonly<{ tenantId: string; collection: string; workspaceId?: string }>): Promise<readonly unknown[]> {
+  public async list(
+    params: Readonly<{ tenantId: string; collection: string; workspaceId?: string }>,
+  ): Promise<readonly unknown[]> {
     const result = await this.#client.query<{ payload: unknown }>(
       `${SQL_JSON_DOC_SELECT_MANY}
 SELECT payload

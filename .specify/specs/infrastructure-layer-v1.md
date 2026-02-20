@@ -96,6 +96,16 @@ ADR-0056 and existing domain invariants:
   tracking per target.
 - Deploy automation must run migration tooling before workload rollout.
 
+### 7) Application port persistence adapters
+
+- Store/query ports are implemented in infrastructure adapters backed by PostgreSQL.
+- Adapter wiring must preserve application-layer boundaries:
+  - application code imports only port interfaces,
+  - PostgreSQL-specific code lives under `src/infrastructure/`.
+- Evidence log append operations must preserve hash-chain continuity when persisted.
+- Event publication infrastructure includes an outbox-backed publisher adapter.
+- ID generation infrastructure provides collision-resistant IDs suitable for distributed writes.
+
 - Container images for the Control Plane and Execution Plane are built by
   `.github/workflows/ci-images.yml` and promoted through environment overlays.
 - CI/CD must avoid long-lived cloud credentials; OIDC federation is preferred.
