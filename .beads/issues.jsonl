@@ -235,14 +235,14 @@
 {"id":"bead-0235","title":"Closeout review: CustomerSupport port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:08.635Z","updatedAt":"2026-02-20T03:43:30.731Z"}
 {"id":"bead-0236","title":"Closeout review: CustomerSupport port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:08.906Z","updatedAt":"2026-02-20T03:46:06.672Z"}
 {"id":"bead-0237","title":"Closeout review: ItsmItOps port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:09.176Z","updatedAt":"2026-02-20T03:47:41.161Z"}
-{"id":"bead-0238","title":"Closeout review: ItsmItOps port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:09.451Z","updatedAt":"2026-02-20T03:48:18.039Z"}
-{"id":"bead-0239","title":"Closeout review: IamDirectory port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:09.718Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0240","title":"Closeout review: IamDirectory port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:09.983Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0241","title":"Closeout review: SecretsVaulting port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:10.240Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0242","title":"Closeout review: SecretsVaulting port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:10.499Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0243","title":"Closeout review: MarketingAutomation port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:10.760Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0244","title":"Closeout review: MarketingAutomation port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:11.020Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0245","title":"Closeout review: AdsPlatforms port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:11.308Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0238","title":"Closeout review: ItsmItOps port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:09.451Z","updatedAt":"2026-02-20T03:48:53.126Z"}
+{"id":"bead-0239","title":"Closeout review: IamDirectory port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:09.718Z","updatedAt":"2026-02-20T03:49:57.192Z"}
+{"id":"bead-0240","title":"Closeout review: IamDirectory port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:09.983Z","updatedAt":"2026-02-20T03:49:42.111Z"}
+{"id":"bead-0241","title":"Closeout review: SecretsVaulting port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:10.240Z","updatedAt":"2026-02-20T03:50:13.919Z"}
+{"id":"bead-0242","title":"Closeout review: SecretsVaulting port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:10.499Z","updatedAt":"2026-02-20T03:51:19.354Z"}
+{"id":"bead-0243","title":"Closeout review: MarketingAutomation port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:10.760Z","updatedAt":"2026-02-20T03:51:14.108Z"}
+{"id":"bead-0244","title":"Closeout review: MarketingAutomation port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:11.020Z","updatedAt":"2026-02-20T03:51:56.390Z"}
+{"id":"bead-0245","title":"Closeout review: AdsPlatforms port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:11.308Z","updatedAt":"2026-02-20T03:52:00.646Z","claimedBy":"codex-agent","claimedAt":"2026-02-20T03:52:00.646Z"}
 {"id":"bead-0246","title":"Closeout review: AdsPlatforms port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:11.569Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0247","title":"Closeout review: CommsCollaboration port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:11.854Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0248","title":"Closeout review: CommsCollaboration port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:12.116Z","updatedAt":"2026-02-17T20:18:23.090Z"}
