@@ -3610,6 +3610,51 @@ function main() {
     desktop2d: 'Desktop p95 <= 16ms frame | Mobile p95 <= 33ms frame',
     desktop3d: 'Desktop p95 <= 22ms frame | Mobile fallback to 2D',
   };
+  var MAP_ANALYTICS_WINDOW_CONFIG = {
+    '15m': {
+      label: 'Last 15 minutes',
+      sampling: 'Sampling: 5s cadence, low-confidence points excluded.',
+      limits: 'Query limits: max 25k points per request; map overlay refresh budget 350ms.',
+    },
+    '1h': {
+      label: 'Last 1 hour',
+      sampling: 'Sampling: 15s cadence, low-confidence points excluded.',
+      limits: 'Query limits: max 100k points per request; aggregation refresh budget 650ms.',
+    },
+    '4h': {
+      label: 'Last 4 hours',
+      sampling: 'Sampling: 30s cadence, low-confidence points excluded.',
+      limits: 'Query limits: max 300k points per request; aggregation refresh budget 1.2s.',
+    },
+    '24h': {
+      label: 'Last 24 hours',
+      sampling: 'Sampling: 120s cadence, low-confidence points excluded.',
+      limits: 'Query limits: max 1M points per request; aggregation refresh budget 2.5s.',
+    },
+  };
+  var MAP_ZONE_UTILISATION = {
+    '15m': {
+      aisle: { coverage: '81%', dwell: '7m', util: '74%', statusClass: 'status--ok' },
+      crossing: { coverage: '63%', dwell: '11m', util: '68%', statusClass: 'status--warn' },
+      yard: { coverage: '39%', dwell: '9m', util: '37%', statusClass: '' },
+    },
+    '1h': {
+      aisle: { coverage: '85%', dwell: '9m', util: '78%', statusClass: 'status--ok' },
+      crossing: { coverage: '71%', dwell: '14m', util: '72%', statusClass: 'status--warn' },
+      yard: { coverage: '46%', dwell: '12m', util: '44%', statusClass: '' },
+    },
+    '4h': {
+      aisle: { coverage: '89%', dwell: '13m', util: '81%', statusClass: 'status--ok' },
+      crossing: { coverage: '76%', dwell: '17m', util: '75%', statusClass: 'status--warn' },
+      yard: { coverage: '52%', dwell: '16m', util: '48%', statusClass: '' },
+    },
+    '24h': {
+      aisle: { coverage: '92%', dwell: '20m', util: '84%', statusClass: 'status--ok' },
+      crossing: { coverage: '79%', dwell: '24m', util: '77%', statusClass: 'status--warn' },
+      yard: { coverage: '58%', dwell: '22m', util: '52%', statusClass: '' },
+    },
+  };
+  var mapAnalyticsWindow = '15m';
 
   var MAP_ROBOT_GEOMETRY = {
     'robot-001': { x: 23, y: 61 },
@@ -3649,6 +3694,33 @@ function main() {
       },
     },
   ];
+  var MAP_COVERAGE_GEOMETRY = [
+    {
+      name: 'Aisle 3',
+      intensity: 'high',
+      bounds: { left: 16, top: 52, right: 32, bottom: 68 },
+    },
+    {
+      name: 'Crossing',
+      intensity: 'medium',
+      bounds: { left: 38, top: 40, right: 52, bottom: 54 },
+    },
+    {
+      name: 'No-fly edge',
+      intensity: 'low',
+      bounds: { left: 62, top: 16, right: 76, bottom: 28 },
+    },
+    {
+      name: 'Mezz lane',
+      intensity: 'medium',
+      bounds: { left: 28, top: 24, right: 40, bottom: 36 },
+    },
+  ];
+  var MAP_DWELL_HOTSPOTS = [
+    { name: 'Cell 2', dwell: '14m dwell', severity: 'critical', point: { x: 56, y: 70 } },
+    { name: 'Yard no-fly-2', dwell: '9m dwell', severity: 'critical', point: { x: 72, y: 24 } },
+    { name: 'Crossing', dwell: '6m dwell', severity: 'warning', point: { x: 46, y: 48 } },
+  ];
 
   var MAP_CLUSTER_GEOMETRY = { x: 79, y: 37, label: '9 robots' };
 
@@ -3668,6 +3740,64 @@ function main() {
     var perf = document.getElementById('mapPerfBudget');
     if (!perf) return;
     perf.textContent = mapViewMode === '3d' ? MAP_PERF_BUDGET.desktop3d : MAP_PERF_BUDGET.desktop2d;
+  }
+
+  function readMapAnalyticsWindow() {
+    var select = document.getElementById('mapWindow');
+    var next = select ? select.value : '15m';
+    if (!MAP_ANALYTICS_WINDOW_CONFIG[next]) next = '15m';
+    mapAnalyticsWindow = next;
+    return next;
+  }
+
+  function renderMapUtilisationSummary(windowKey) {
+    var key = windowKey || mapAnalyticsWindow;
+    var util = MAP_ZONE_UTILISATION[key] || MAP_ZONE_UTILISATION['15m'];
+    var mappings = [
+      { id: 'Aisle', zone: util.aisle },
+      { id: 'Crossing', zone: util.crossing },
+      { id: 'Yard', zone: util.yard },
+    ];
+
+    mappings.forEach(function (entry) {
+      var coverage = document.getElementById('mapUtil' + entry.id + 'Coverage');
+      var dwell = document.getElementById('mapUtil' + entry.id + 'Dwell');
+      var status = document.getElementById('mapUtil' + entry.id + 'Status');
+      if (coverage) coverage.textContent = entry.zone.coverage;
+      if (dwell) dwell.textContent = entry.zone.dwell;
+      if (status) {
+        status.textContent = entry.zone.util + ' util';
+        status.className = 'status ' + entry.zone.statusClass;
+      }
+    });
+  }
+
+  function updateMapAnalyticsCopy() {
+    var windowKey = readMapAnalyticsWindow();
+    var config = MAP_ANALYTICS_WINDOW_CONFIG[windowKey] || MAP_ANALYTICS_WINDOW_CONFIG['15m'];
+    var labels = [
+      'mapWindowLabel',
+      'mapWindowLegend',
+      'mapWindowTitle',
+      'mapUtilisationWindowLabel',
+    ];
+
+    labels.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (id === 'mapWindowLegend' || id === 'mapUtilisationWindowLabel') {
+        el.textContent = 'Window: ' + config.label;
+      } else {
+        el.textContent = config.label;
+      }
+    });
+
+    var sampling = document.getElementById('mapSamplingCaveat');
+    if (sampling) sampling.textContent = config.sampling;
+    var limits = document.getElementById('mapQueryLimits');
+    if (limits) limits.textContent = config.limits;
+
+    renderMapUtilisationSummary(windowKey);
   }
 
   function applyMapViewMode() {
@@ -3749,6 +3879,8 @@ function main() {
     mapLeafletGroups = {
       base: window.L.layerGroup().addTo(mapLeaflet),
       occupancy: window.L.layerGroup().addTo(mapLeaflet),
+      coverage: window.L.layerGroup().addTo(mapLeaflet),
+      dwell: window.L.layerGroup().addTo(mapLeaflet),
       zones: window.L.layerGroup().addTo(mapLeaflet),
       trails: window.L.layerGroup().addTo(mapLeaflet),
       uncertainty: window.L.layerGroup().addTo(mapLeaflet),
@@ -3781,6 +3913,8 @@ function main() {
     if (!mapLeafletEnabled || !mapLeaflet || !mapLeafletGroups || !filterState) return;
 
     mapLeafletGroups.occupancy.clearLayers();
+    mapLeafletGroups.coverage.clearLayers();
+    mapLeafletGroups.dwell.clearLayers();
     mapLeafletGroups.zones.clearLayers();
     mapLeafletGroups.trails.clearLayers();
     mapLeafletGroups.uncertainty.clearLayers();
@@ -3801,6 +3935,52 @@ function main() {
           interactive: false,
         },
       ).addTo(mapLeafletGroups.occupancy);
+    }
+
+    if (isMapLayerEnabled('coverage')) {
+      MAP_COVERAGE_GEOMETRY.forEach(function (cell) {
+        var color = cell.intensity === 'high' ? 'rgba(179, 38, 30, 0.36)' : cell.intensity === 'medium' ? 'rgba(164, 107, 0, 0.32)' : 'rgba(31, 122, 54, 0.28)';
+        window.L.rectangle(
+          [
+            [cell.bounds.top, cell.bounds.left],
+            [cell.bounds.bottom, cell.bounds.right],
+          ],
+          {
+            color: 'rgba(27, 27, 27, 0.2)',
+            weight: 1,
+            fillColor: color,
+            fillOpacity: 0.8,
+            interactive: false,
+          },
+        )
+          .bindTooltip(cell.name, {
+            permanent: true,
+            direction: 'center',
+            className: 'leaflet-robot-label',
+            opacity: 1,
+          })
+          .addTo(mapLeafletGroups.coverage);
+      });
+    }
+
+    if (isMapLayerEnabled('dwell')) {
+      MAP_DWELL_HOTSPOTS.forEach(function (hotspot) {
+        var color = hotspot.severity === 'critical' ? '#b3261e' : '#a46b00';
+        window.L.circleMarker([hotspot.point.y, hotspot.point.x], {
+          radius: 12,
+          color: color,
+          weight: 2,
+          fillColor: '#ffffff',
+          fillOpacity: 0.9,
+          interactive: false,
+        })
+          .bindTooltip(hotspot.name + ' | ' + hotspot.dwell, {
+            permanent: true,
+            direction: 'right',
+            className: 'leaflet-robot-label',
+          })
+          .addTo(mapLeafletGroups.dwell);
+      });
     }
 
     if (isMapLayerEnabled('geofences')) {
@@ -4095,6 +4275,7 @@ function main() {
       visibleRowIds: visibleRowIds.slice(),
     };
 
+    updateMapAnalyticsCopy();
     setMapLayerVisibility();
     if (mapLeafletEnabled) {
       renderLeafletMapState(mapLastFilterState);
@@ -4232,7 +4413,12 @@ function main() {
   });
 
   document.addEventListener('change', function (e) {
-    if (e.target.id === 'mapSite' || e.target.id === 'mapFloor' || e.target.id === 'mapScale') {
+    if (
+      e.target.id === 'mapSite' ||
+      e.target.id === 'mapFloor' ||
+      e.target.id === 'mapScale' ||
+      e.target.id === 'mapWindow'
+    ) {
       applyMapFilters();
     }
   });

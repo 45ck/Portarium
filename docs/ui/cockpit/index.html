@@ -9589,6 +9589,15 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <option value="detail">Sector detail</option>
                   </select>
                 </label>
+                <label class="control">
+                  <span class="control__label">Analytics window</span>
+                  <select id="mapWindow" class="control__select" aria-label="Analytics time window">
+                    <option value="15m" selected>Last 15 minutes</option>
+                    <option value="1h">Last 1 hour</option>
+                    <option value="4h">Last 4 hours</option>
+                    <option value="24h">Last 24 hours</option>
+                  </select>
+                </label>
               </div>
 
               <div class="map-view-toggle" role="group" aria-label="Map view mode">
@@ -9652,6 +9661,36 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                 >
                   Clusters
                 </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="coverage"
+                  aria-pressed="true"
+                >
+                  Coverage heatmap
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="dwell"
+                  aria-pressed="true"
+                >
+                  Dwell hotspots
+                </button>
+                <button
+                  class="chip chip--active js-map-layer"
+                  type="button"
+                  data-map-layer="utilisation"
+                  aria-pressed="true"
+                >
+                  Utilisation by zone
+                </button>
+              </div>
+              <div class="callout" id="mapAnalyticsCaveat" style="margin-bottom: 12px">
+                <strong>Analytics window:</strong>
+                <span id="mapWindowTitle">Last 15 minutes</span>.
+                <span id="mapSamplingCaveat">Sampling: 5s cadence, low-confidence points excluded.</span>
+                <span id="mapQueryLimits">Query limits: max 25k points per request; map overlay refresh budget 350ms.</span>
               </div>
 
               <div class="map-playback" role="group" aria-label="Playback controls">
@@ -9712,7 +9751,7 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <div>
                       <div class="card__title">Live Operations Map</div>
                       <div class="subtle">
-                        Frame: map | Window: last 15 minutes | Site: warehouse-a |
+                        Frame: map | Window: <span id="mapWindowLabel">Last 15 minutes</span> | Site: warehouse-a |
                         <span class="js-map-renderer-status">Renderer: static fallback</span>
                       </div>
                     </div>
@@ -9756,6 +9795,23 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                       data-map-layer-target="occupancy"
                       aria-hidden="true"
                     ></div>
+                    <div class="map-analytics-coverage" data-map-layer-target="coverage" aria-hidden="true">
+                      <div class="map-analytics-coverage__cell map-analytics-coverage__cell--high" style="left: 22%; top: 58%">Aisle 3</div>
+                      <div class="map-analytics-coverage__cell map-analytics-coverage__cell--medium" style="left: 45%; top: 42%">Crossing</div>
+                      <div class="map-analytics-coverage__cell map-analytics-coverage__cell--low" style="left: 66%; top: 20%">No-fly edge</div>
+                      <div class="map-analytics-coverage__cell map-analytics-coverage__cell--medium" style="left: 34%; top: 28%">Mezz lane</div>
+                    </div>
+                    <div class="map-analytics-dwell" data-map-layer-target="dwell" aria-hidden="true">
+                      <div class="map-analytics-dwell__hotspot" style="left: 56%; top: 70%">
+                        <span>Cell 2</span><small>14m dwell</small>
+                      </div>
+                      <div class="map-analytics-dwell__hotspot" style="left: 72%; top: 24%">
+                        <span>Yard no-fly-2</span><small>9m dwell</small>
+                      </div>
+                      <div class="map-analytics-dwell__hotspot map-analytics-dwell__hotspot--warn" style="left: 46%; top: 48%">
+                        <span>Crossing</span><small>6m dwell</small>
+                      </div>
+                    </div>
 
                     <div
                       class="map-zone map-zone--restricted"
@@ -9910,6 +9966,9 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     >
                     <span><span class="map-legend__line"></span>Trail</span>
                     <span><span class="map-legend__halo"></span>Uncertainty</span>
+                    <span><span class="map-legend__heat map-legend__heat--high"></span>Coverage high</span>
+                    <span><span class="map-legend__hotspot"></span>Dwell hotspot</span>
+                    <span id="mapWindowLegend">Window: Last 15 minutes</span>
                   </div>
                 </article>
 
@@ -10098,6 +10157,36 @@ You are an invoice classification agent for Portarium. Given an invoice record, 
                     <button class="btn btn--small js-estop-robot" type="button" data-robot-id="robot-001">
                       Send E-Stop
                     </button>
+                  </div>
+                </article>
+
+                <article class="card" data-map-layer-target="utilisation">
+                  <div class="card__title">Zone Utilisation Summary</div>
+                  <div class="subtle" id="mapUtilisationWindowLabel" style="margin-bottom: 8px">
+                    Window: Last 15 minutes
+                  </div>
+                  <div class="list">
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Aisle 3</div>
+                        <div class="row__subtle">coverage <span id="mapUtilAisleCoverage">81%</span> | dwell p95 <span id="mapUtilAisleDwell">7m</span></div>
+                      </div>
+                      <div class="row__right"><span class="status status--ok" id="mapUtilAisleStatus">74% util</span></div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Crossing</div>
+                        <div class="row__subtle">coverage <span id="mapUtilCrossingCoverage">63%</span> | dwell p95 <span id="mapUtilCrossingDwell">11m</span></div>
+                      </div>
+                      <div class="row__right"><span class="status status--warn" id="mapUtilCrossingStatus">68% util</span></div>
+                    </div>
+                    <div class="row row--static">
+                      <div class="row__main">
+                        <div class="row__title">Yard no-fly-2 edge</div>
+                        <div class="row__subtle">coverage <span id="mapUtilYardCoverage">39%</span> | dwell p95 <span id="mapUtilYardDwell">9m</span></div>
+                      </div>
+                      <div class="row__right"><span class="status" id="mapUtilYardStatus">37% util</span></div>
+                    </div>
                   </div>
                 </article>
               </div>

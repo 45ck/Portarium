@@ -133,6 +133,17 @@ For each primary screen, show dedicated state components for:
 - 2D rendering remains the default/fallback; optional 3D mode is additive and must not block 2D operation.
 - Map surface must display a visible performance budget note for desktop/mobile rendering expectations.
 
+### R12 Robotics analytics overlays and window semantics
+
+- Robots map must expose independent toggles for analytics overlays: coverage heatmap, dwell hotspots, and utilisation summary by zone.
+- Analytics surfaces must always display the active time window in title/legend copy.
+- Analytics surfaces must render explicit sampling caveats and query-limit constraints to avoid over-interpretation.
+- Default prototype query/performance constraints:
+  - 15m window: max 25k points, target overlay refresh <= 350ms
+  - 1h window: max 100k points, target overlay refresh <= 650ms
+  - 4h window: max 300k points, target overlay refresh <= 1.2s
+  - 24h window: max 1M points, target overlay refresh <= 2.5s
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

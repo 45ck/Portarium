@@ -38,9 +38,16 @@ Then open `http://localhost:4174`.
   - Explicit floor switching with cross-floor context callout
   - 2D default view with optional 3D beta toggle for ramp/mezzanine context
   - Status filter chips
-  - Layer toggles (occupancy, geofences, trails, uncertainty, clusters)
+  - Layer toggles (occupancy, geofences, trails, uncertainty, clusters, coverage heatmap, dwell hotspots, utilisation summary)
+  - Analytics window selector (15m / 1h / 4h / 24h) with explicit legend/title window labels
+  - Sampling caveat + query-limit notes rendered inline to reduce analytics misinterpretation
   - Live/replay timeline with incident bookmarks
 - Performance budget callout is shown inline for desktop/mobile map rendering expectations.
+- Analytics query constraints are documented in-surface:
+  - `15m` max `25k` points, target overlay refresh `<= 350ms`
+  - `1h` max `100k` points, target refresh `<= 650ms`
+  - `4h` max `300k` points, target refresh `<= 1.2s`
+  - `24h` max `1M` points, target refresh `<= 2.5s`
 - Alert triage includes map jump and acknowledge actions.
 - Details-on-demand panel updates from map/list/alert selection.
 - Degraded realtime state shows a map staleness banner.

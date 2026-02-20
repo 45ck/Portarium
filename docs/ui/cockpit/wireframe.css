@@ -4399,6 +4399,8 @@ tr.is-kbd-selected td {
 .map-canvas--leaflet .map-canvas__occupancy,
 .map-canvas--leaflet .map-zone,
 .map-canvas--leaflet .map-trail,
+.map-canvas--leaflet .map-analytics-coverage,
+.map-canvas--leaflet .map-analytics-dwell,
 .map-canvas--leaflet .map-marker,
 .map-canvas--leaflet .map-cluster {
   display: none !important;
@@ -4584,6 +4586,72 @@ tr.is-kbd-selected td {
   border-radius: 999px;
   border: 2px solid rgba(37, 87, 167, 0.34);
 }
+.map-legend__heat {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(27, 27, 27, 0.2);
+}
+.map-legend__heat--high {
+  background: rgba(179, 38, 30, 0.42);
+}
+.map-legend__hotspot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(179, 38, 30, 0.7);
+  background: rgba(179, 38, 30, 0.15);
+}
+
+.map-analytics-coverage,
+.map-analytics-dwell {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.map-analytics-coverage__cell {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(27, 27, 27, 0.2);
+  border-radius: var(--r-sm);
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #1b1b1b;
+}
+.map-analytics-coverage__cell--high {
+  background: rgba(179, 38, 30, 0.28);
+}
+.map-analytics-coverage__cell--medium {
+  background: rgba(164, 107, 0, 0.24);
+}
+.map-analytics-coverage__cell--low {
+  background: rgba(31, 122, 54, 0.2);
+}
+.map-analytics-dwell__hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 2px solid rgba(179, 38, 30, 0.72);
+  border-radius: 999px;
+  padding: 6px 8px;
+  background: rgba(255, 246, 246, 0.95);
+  color: #7a1f1b;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+.map-analytics-dwell__hotspot small {
+  font-size: 9px;
+  color: #6b6b6b;
+}
+.map-analytics-dwell__hotspot--warn {
+  border-color: rgba(164, 107, 0, 0.72);
+  background: rgba(255, 249, 236, 0.95);
+  color: #7a5200;
+}
 
 .map-list-card {
   display: flex;
@@ -4627,7 +4695,7 @@ tr.is-kbd-selected td {
 
 .map-ops__lower {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 .map-detail-grid {
