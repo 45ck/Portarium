@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:29:43.744Z
+Generated: 2026-02-20T02:31:41.878Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -8,7 +8,7 @@ Source: `.beads/issues.jsonl`
 - Total beads: 585
 - Fully compliant beads: 0
 - Non-compliant beads: 585
-- Missing owner: 583
+- Missing owner: 584
 - Missing close criteria: 455
 - Missing rollback trigger: 583
 
@@ -201,7 +201,7 @@ Source: `.beads/issues.jsonl`
 | bead-0183 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: tie each spec in .specify/specs to at least one implementation and one test bead |
 | bead-0184 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition |
 | bead-0185 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE audit: generate weekly report of orphaned Beads and dependency deadlocks |
-| bead-0186 | open | codex-agent | closeCriteria, rollbackTrigger | PE audit: verify no Bead exists without owner, close criteria, and rollback trigger |
+| bead-0186 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE audit: verify no Bead exists without owner, close criteria, and rollback trigger |
 | bead-0187 | open | (none) | owner, closeCriteria, rollbackTrigger | Onboarding: explain CLAUDE.md, docs, beading schema, and review/closure requirements |
 | bead-0188 | open | (none) | owner, closeCriteria, rollbackTrigger | Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline |
 | bead-0189 | open | (none) | owner, closeCriteria, rollbackTrigger | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |

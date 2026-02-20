@@ -81,6 +81,21 @@ const NAV_SECTIONS: NavSectionDef[] = [
   },
 ]
 
+// Wrapper to avoid TS errors while child routes are not yet registered.
+// Once all route files are in place the router's type map will include
+// every path and this cast will be redundant but harmless.
+function NavLink({ to, collapsed, children }: { to: string; collapsed: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to as '.'}
+      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+      activeProps={{ className: 'bg-accent text-accent-foreground font-medium' }}
+    >
+      {children}
+    </Link>
+  )
+}
+
 function RootLayout() {
   useTheme()
   const { sidebarCollapsed } = useUIStore()
@@ -117,19 +132,12 @@ function RootLayout() {
                     </p>
                   ) : (
                     section.items?.map((item) => (
-                      <Link
-                        key={item.to}
-                        {...{ to: item.to } as Record<string, unknown>}
-                        className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-                        activeProps={{
-                          className: 'bg-accent text-accent-foreground font-medium',
-                        }}
-                      >
+                      <NavLink key={item.to} to={item.to} collapsed={sidebarCollapsed}>
                         <span className="shrink-0">{item.icon}</span>
                         {!sidebarCollapsed && (
                           <span className="flex-1 text-left truncate">{item.label}</span>
                         )}
-                      </Link>
+                      </NavLink>
                     ))
                   )}
                 </div>

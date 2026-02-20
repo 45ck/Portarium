@@ -1,15 +1,15 @@
 # Weekly PE Audit: Orphaned Beads And Dependency Deadlocks
 
-Generated: 2026-02-20T02:29:43.744Z
+Generated: 2026-02-20T02:31:41.878Z
 Week of: 2026-02-16
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 178
+- Open beads: 177
 - Open dependency edges: 25
 - Open beads blocked by open prerequisites: 20
-- Orphaned beads: 149
+- Orphaned beads: 148
 - Deadlock cycles: 0
 - Beads participating in deadlocks: 0
 
@@ -40,7 +40,6 @@ Source: `.beads/issues.jsonl`
 | bead-0182 | -- | unspecified | Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure |
 | bead-0183 | -- | unspecified | Review: tie each spec in .specify/specs to at least one implementation and one test bead |
 | bead-0184 | -- | unspecified | Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition |
-| bead-0186 | -- | unspecified | PE audit: verify no Bead exists without owner, close criteria, and rollback trigger |
 | bead-0187 | -- | unspecified | Onboarding: explain CLAUDE.md, docs, beading schema, and review/closure requirements |
 | bead-0188 | -- | unspecified | Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline |
 | bead-0189 | -- | unspecified | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
