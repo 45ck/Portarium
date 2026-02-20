@@ -50,6 +50,13 @@ erDiagram
         string endedAtIso
     }
 
+    PlanV1 {
+        string planId PK
+        string workspaceId FK
+        string createdByUserId
+        string createdAtIso
+    }
+
     ApprovalV1 {
         string approvalId PK
         string workspaceId FK
@@ -60,6 +67,16 @@ erDiagram
         string requestedAtIso
         string decidedByUserId
         string decidedAtIso
+    }
+
+    EvidenceEntryV1 {
+        string evidenceId PK
+        string workspaceId FK
+        string correlationId
+        string category
+        string occurredAtIso
+        string hashSha256
+        string previousHash
     }
 
     ArtifactV1 {
@@ -123,7 +140,10 @@ erDiagram
     WorkflowV1 ||--o{ RunV1 : executes_as
 
     RunV1 ||--o{ ApprovalV1 : gates
+    RunV1 ||--o{ PlanV1 : proposes
+    RunV1 ||--o{ EvidenceEntryV1 : records
     RunV1 ||--o{ ArtifactV1 : emits
+    EvidenceEntryV1 ||--o{ ArtifactV1 : links_payload
 
     AdapterRegistrationV1 ||--o{ CredentialGrantV1 : authenticated_by
 ```

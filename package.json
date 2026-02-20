@@ -56,6 +56,11 @@
     "domain-atlas:validate": "node scripts/domain-atlas/validate-artifacts.mjs",
     "domain-atlas:ci": "npm run domain-atlas:index && npm run domain-atlas:ops-stubs && npm run domain-atlas:validate && npm run domain-atlas:readiness && npm run domain-atlas:ops-stubs:verify && git diff --exit-code -- docs/research/index.md",
     "bd": "node scripts/beads/bd.mjs",
+    "beads:audit:weekly": "node scripts/beads/generate-weekly-pe-audit.mjs",
+    "beads:audit:weekly:check": "node scripts/beads/generate-weekly-pe-audit.mjs --check",
+    "beads:audit:metadata": "node scripts/beads/generate-bead-metadata-audit.mjs",
+    "beads:audit:metadata:check": "node scripts/beads/generate-bead-metadata-audit.mjs --check",
+    "beads:audit:metadata:enforce": "node scripts/beads/generate-bead-metadata-audit.mjs --enforce",
     "ci:gates": "node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",
     "migrate:check": "tsx src/infrastructure/migrations/cli.ts check",
@@ -121,16 +126,4 @@
     "shadcn": "^3.8.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
-    "vitest": "^4.0.18",
-    "yaml": "^2.8.2"
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.893.0",
-    "@temporalio/client": "^1.14.1",
-    "@temporalio/worker": "^1.14.1",
-    "@temporalio/workflow": "^1.14.1",
-    "jose": "^6.1.3",
-    "pg": "^8.18.0"
-  }
-}
+    "typescript-eslint": 

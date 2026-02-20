@@ -4,6 +4,11 @@ import {
   RUNS,
   APPROVALS,
   EVIDENCE,
+  WORKFORCE_MEMBERS,
+  WORKFORCE_QUEUES,
+  AGENTS,
+  ADAPTERS,
+  OBSERVABILITY_DATA,
 } from './fixtures/demo'
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types'
 
@@ -63,5 +68,28 @@ export const handlers = [
   // Evidence
   http.get('/v1/workspaces/:wsId/evidence', () =>
     HttpResponse.json({ items: EVIDENCE }),
+  ),
+
+  // Workforce
+  http.get('/v1/workspaces/:wsId/workforce/members', () =>
+    HttpResponse.json({ items: WORKFORCE_MEMBERS }),
+  ),
+  http.get('/v1/workspaces/:wsId/workforce/queues', () =>
+    HttpResponse.json({ items: WORKFORCE_QUEUES }),
+  ),
+
+  // Agents
+  http.get('/v1/workspaces/:wsId/agents', () =>
+    HttpResponse.json({ items: AGENTS }),
+  ),
+
+  // Adapters
+  http.get('/v1/workspaces/:wsId/adapters', () =>
+    HttpResponse.json({ items: ADAPTERS }),
+  ),
+
+  // Observability
+  http.get('/v1/workspaces/:wsId/observability', () =>
+    HttpResponse.json(OBSERVABILITY_DATA),
   ),
 ]

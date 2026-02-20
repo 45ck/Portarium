@@ -30,45 +30,30 @@ This approach gives VAOP three benefits:
 
 ## The Canonical Set
 
-| Canonical Object      | Replaces                                  | SoR Examples                                                      | Key Fields (conceptual)                                                                                                         | Justification                                                                                                                                                                    |
-| --------------------- | ----------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Party**             | Customer, Lead, Vendor, Employee, Contact | Salesforce Contact, HubSpot Contact, Workday Worker, QBO Customer | `id`, `tenantId`, `roles (PartyRole[])`, `displayName`, `email?`, `externalRefs`                                                | Every SoR has person/org entities. A unified model with role tags avoids 5+ duplicate types and matches how real organisations work (a contact can be both customer and vendor). |
-| **Ticket**            | Ticket, Case, Incident, ServiceRequest    | Zendesk Ticket, ServiceNow Incident, Jira Issue, Freshdesk Ticket | `id`, `tenantId`, `title`, `status (TicketStatus)`, `priority?`, `assignee (PartyId?)`, `externalRefs`                          | Universal across helpdesk and ITSM. Status and priority semantics vary but the core structure is stable.                                                                         |
-| **Invoice**           | Invoice, Bill, CreditNote                 | QBO Invoice, Xero Bill, Stripe Invoice, NetSuite Invoice          | `id`, `tenantId`, `direction (receivable/payable)`, `status (InvoiceStatus)`, `total`, `currency`, `lineItems?`, `externalRefs` | Universal across accounting and billing. Direction flag handles both AR and AP without separate types.                                                                           |
-| **Payment**           | Payment, Charge, Refund, Transfer         | Stripe Charge, PayPal Payment, QBO Payment, Adyen Payment         | `id`, `tenantId`, `amount`, `currency`, `status (PaymentStatus)`, `type (charge/refund/payout)`, `externalRefs`                 | Universal across finance and payments. Type flag distinguishes charges, refunds, and payouts.                                                                                    |
-| **Task**              | Task, WorkItem, Issue, ToDo               | Jira Issue, Asana Task, ClickUp Task, Monday.com Item             | `id`, `tenantId`, `title`, `status`, `assignee (PartyId?)`, `dueDate?`, `externalRefs`                                          | Universal across project management and work management. Every PM tool has a concept of an assignable work item.                                                                 |
-| **Campaign**          | Campaign, Email Campaign, Ad Campaign     | Mailchimp Campaign, HubSpot Campaign, Google Ads Campaign         | `id`, `tenantId`, `name`, `type`, `status`, `startDate?`, `endDate?`, `externalRefs`                                            | Universal across marketing automation and ads platforms. Type field distinguishes email, social, paid, etc.                                                                      |
-| **Asset**             | Asset, CI, Device, InventoryItem          | ServiceNow CI, Snipe-IT Asset, GLPI Computer, Jamf Device         | `id`, `tenantId`, `name`, `type`, `status`, `serialNumber?`, `externalRefs`                                                     | Universal across ITSM and asset management. Covers both IT assets (laptops, servers) and fixed assets.                                                                           |
-| **Document**          | Document, File, Attachment                | Google Drive File, SharePoint DriveItem, Box File, Dropbox File   | `id`, `tenantId`, `name`, `mimeType`, `url?`, `externalRefs`                                                                    | Universal across ECM, DMS, and e-signature platforms. Minimal metadata; content stays in the SoR.                                                                                |
-| **Subscription**      | Subscription, Contract, Agreement         | Stripe Subscription, DocuSign Envelope, Coupa Contract            | `id`, `tenantId`, `status`, `startDate`, `endDate?`, `renewalDate?`, `externalRefs`                                             | Universal across billing, procurement, and contract management. Covers recurring billing and legal agreements.                                                                   |
-| **Opportunity**       | Opportunity, Deal, Pipeline Item          | Salesforce Opportunity, HubSpot Deal, Pipedrive Deal              | `id`, `tenantId`, `name`, `stage`, `amount?`, `currency?`, `probability?`, `externalRefs`                                       | Universal across CRM. Every sales pipeline has staged opportunities with expected value.                                                                                         |
-| **Product**           | Product, Service, Item, SKU               | Stripe Product, Salesforce Product, ERPNext Item, Shopify Product | `id`, `tenantId`, `name`, `sku?`, `unitPrice?`, `currency?`, `externalRefs`                                                     | Universal across ERP, commerce, and billing. The thing being sold or procured.                                                                                                   |
-| **Order**             | Order, SalesOrder, PurchaseOrder          | Salesforce Order, Shopify Order, ERPNext PurchaseOrder            | `id`, `tenantId`, `type (sales/purchase)`, `status (OrderStatus)`, `total`, `currency`, `lineItems?`, `externalRefs`            | Universal across ERP and commerce. Type flag handles both sales and purchase orders.                                                                                             |
-| **Account**           | Account, GLAccount, FinancialAccount      | QBO Account, Xero Account, NetSuite Account                       | `id`, `tenantId`, `name`, `type (asset/liability/equity/revenue/expense)`, `currency?`, `externalRefs`                          | Universal across accounting. Every double-entry system has a chart of accounts with typed entries.                                                                               |
-| **ExternalObjectRef** | _(primitive)_                             | Any SoR entity                                                    | `sorName`, `portFamily`, `externalId`, `externalType`, `deepLinkUrl?`, `displayLabel?`                                          | First-class deep link for entities that do not map to a canonical object. The escape hatch that keeps the canonical model minimal.                                               |
+| Canonical Object      | Runtime Contract (`src/domain/canonical`)      | Key Runtime Fields                                                                                                                                         |
+| --------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Party**             | `party-v1.ts` (`PartyV1`)                      | `partyId`, `tenantId`, `displayName`, `roles`, `email?`, `phone?`, `externalRefs?`                                                                         |
+| **Ticket**            | `ticket-v1.ts` (`TicketV1`)                    | `ticketId`, `tenantId`, `subject`, `status`, `priority?`, `assigneeId?`, `createdAtIso`, `externalRefs?`                                                   |
+| **Invoice**           | `invoice-v1.ts` (`InvoiceV1`)                  | `invoiceId`, `tenantId`, `invoiceNumber`, `status`, `currencyCode`, `totalAmount`, `issuedAtIso`, `dueDateIso?`, `externalRefs?`                           |
+| **Payment**           | `payment-v1.ts` (`PaymentV1`)                  | `paymentId`, `tenantId`, `amount`, `currencyCode`, `status`, `paidAtIso?`, `externalRefs?`                                                                 |
+| **Task**              | `task-v1.ts` (`CanonicalTaskV1`)               | `canonicalTaskId`, `tenantId`, `title`, `status`, `assigneeId?`, `dueAtIso?`, `externalRefs?`                                                              |
+| **Campaign**          | `campaign-v1.ts` (`CampaignV1`)                | `campaignId`, `tenantId`, `name`, `status`, `channelType?`, `startDateIso?`, `endDateIso?`, `externalRefs?`                                                |
+| **Asset**             | `asset-v1.ts` (`AssetV1`)                      | `assetId`, `tenantId`, `name`, `assetType`, `status`, `serialNumber?`, `externalRefs?`                                                                     |
+| **Document**          | `document-v1.ts` (`DocumentV1`)                | `documentId`, `tenantId`, `title`, `mimeType`, `createdAtIso`, `sizeBytes?`, `storagePath?`, `externalRefs?`                                               |
+| **Subscription**      | `subscription-v1.ts` (`SubscriptionV1`)        | `subscriptionId`, `tenantId`, `planName`, `status`, `currencyCode?`, `recurringAmount?`, `currentPeriodStartIso?`, `currentPeriodEndIso?`, `externalRefs?` |
+| **Opportunity**       | `opportunity-v1.ts` (`OpportunityV1`)          | `opportunityId`, `tenantId`, `name`, `stage`, `amount?`, `currencyCode?`, `closeDate?`, `probability?`, `externalRefs?`                                    |
+| **Product**           | `product-v1.ts` (`ProductV1`)                  | `productId`, `tenantId`, `name`, `active`, `sku?`, `unitPrice?`, `currencyCode?`, `externalRefs?`                                                          |
+| **Order**             | `order-v1.ts` (`OrderV1`)                      | `orderId`, `tenantId`, `orderNumber`, `status`, `totalAmount`, `currencyCode`, `lineItemCount?`, `createdAtIso`, `externalRefs?`                           |
+| **Account**           | `account-v1.ts` (`AccountV1`)                  | `accountId`, `tenantId`, `accountName`, `accountCode`, `accountType`, `currencyCode`, `isActive`, `externalRefs?`                                          |
+| **ExternalObjectRef** | `external-object-ref.ts` (`ExternalObjectRef`) | `sorName`, `portFamily`, `externalId`, `externalType`, `deepLinkUrl?`, `displayLabel?`                                                                     |
 
 ## Cross-References Between Canonical Objects
 
-Canonical objects reference each other where the relationship is universally observed across SoRs:
+Current runtime contracts keep canonical objects intentionally thin and mostly independent. Direct cross-object links are limited to lightweight identifiers and `ExternalObjectRef`:
 
-```
-Invoice  -->  Party       (billed to / billed from)
-Payment  -->  Invoice     (settles)
-Payment  -->  Party       (paid by / paid to)
-Order    -->  Party       (placed by / fulfilled by)
-Order    -->  Product     (contains, via line items)
-Opportunity -> Party      (associated with)
-Subscription -> Party     (held by)
-Subscription -> Product   (covers)
-Ticket   -->  Party       (raised by / assigned to)
-Task     -->  Party       (assigned to)
-Campaign -->  Party       (targets)
-Asset    -->  Party       (owned by / assigned to)
-```
-
-These references use branded IDs (e.g., `assignee: PartyId`) rather than embedding the full object. The consuming code can resolve the referenced object through a port read if needed.
-
-> Field names above are conceptual summaries. Runtime source-of-truth contracts are the parser types in `src/domain/canonical/*-v1.ts`.
+- `TicketV1.assigneeId?` and `CanonicalTaskV1.assigneeId?` hold assignment references.
+- `externalRefs?: ExternalObjectRef[]` is the primary SoR linkage mechanism across all canonical objects.
+- Rich cross-object joins (for example invoice->party or payment->invoice) are handled at application/query composition layers, not inside canonical parser contracts.
 
 ## Cross-Port Entity Coverage
 

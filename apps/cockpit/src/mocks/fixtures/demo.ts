@@ -3,6 +3,9 @@ import type {
   RunSummary,
   ApprovalSummary,
   EvidenceEntry,
+  WorkforceMemberSummary,
+  WorkforceQueueSummary,
+  AgentV1,
 } from '@portarium/cockpit-types'
 
 export const WORK_ITEMS: WorkItemSummary[] = [
@@ -316,3 +319,42 @@ export const EVIDENCE: EvidenceEntry[] = [
       'd4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5',
   },
 ]
+
+export const WORKFORCE_MEMBERS: WorkforceMemberSummary[] = [
+  { schemaVersion: 1, workforceMemberId: 'wfm-001', linkedUserId: 'user-approver-dana', displayName: 'Dana Approver', capabilities: ['operations.approval', 'operations.dispatch'], availabilityStatus: 'available', queueMemberships: ['queue-ops-001', 'queue-finance-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-01T00:00:00Z' },
+  { schemaVersion: 1, workforceMemberId: 'wfm-002', linkedUserId: 'user-ops-alex', displayName: 'Alex Ops', capabilities: ['operations.dispatch', 'operations.escalation'], availabilityStatus: 'busy', queueMemberships: ['queue-ops-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-01T00:00:00Z' },
+  { schemaVersion: 1, workforceMemberId: 'wfm-003', linkedUserId: 'user-ops-sam', displayName: 'Sam Operator', capabilities: ['operations.dispatch'], availabilityStatus: 'available', queueMemberships: ['queue-ops-001'], tenantId: 'tenant-demo', createdAtIso: '2026-01-15T00:00:00Z' },
+  { schemaVersion: 1, workforceMemberId: 'wfm-004', linkedUserId: 'user-admin', displayName: 'Admin User', capabilities: ['operations.dispatch', 'operations.approval', 'operations.escalation', 'robotics.supervision'], availabilityStatus: 'offline', queueMemberships: ['queue-ops-001', 'queue-finance-001'], tenantId: 'tenant-demo', createdAtIso: '2025-12-01T00:00:00Z' },
+]
+
+export const WORKFORCE_QUEUES: WorkforceQueueSummary[] = [
+  { schemaVersion: 1, workforceQueueId: 'queue-ops-001', name: 'Operations Queue', requiredCapabilities: ['operations.dispatch'], memberIds: ['wfm-001', 'wfm-002', 'wfm-003', 'wfm-004'], routingStrategy: 'round-robin', tenantId: 'tenant-demo' },
+  { schemaVersion: 1, workforceQueueId: 'queue-finance-001', name: 'Finance Approvals Queue', requiredCapabilities: ['operations.approval'], memberIds: ['wfm-001', 'wfm-004'], routingStrategy: 'least-busy', tenantId: 'tenant-demo' },
+]
+
+export const AGENTS: AgentV1[] = [
+  { schemaVersion: 1, agentId: 'agent-001', workspaceId: 'ws-demo', name: 'Invoice Analyzer', modelId: 'claude-opus-4-6', endpoint: 'https://agents.portarium.io/invoice-analyzer', allowedCapabilities: ['read:external', 'analyze', 'classify'], usedByWorkflowIds: ['wf-invoice-remediation'] },
+  { schemaVersion: 1, agentId: 'agent-002', workspaceId: 'ws-demo', name: 'HR Sync Agent', modelId: 'claude-sonnet-4-6', endpoint: 'https://agents.portarium.io/hr-sync', allowedCapabilities: ['read:external', 'write:external', 'generate'], usedByWorkflowIds: ['wf-employee-onboarding'] },
+  { schemaVersion: 1, agentId: 'agent-003', workspaceId: 'ws-demo', name: 'CRM Dedup Agent', modelId: 'claude-haiku-4-5-20251001', endpoint: 'https://agents.portarium.io/crm-dedup', allowedCapabilities: ['read:external', 'analyze', 'classify'], usedByWorkflowIds: ['wf-crm-dedup'] },
+]
+
+export const ADAPTERS = [
+  { adapterId: 'adapter-odoo-001', name: 'Odoo Finance', sorFamily: 'FinanceAccounting', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
+  { adapterId: 'adapter-stripe-001', name: 'Stripe Payments', sorFamily: 'PaymentsBilling', status: 'healthy', lastSyncIso: '2026-02-20T00:00:00Z' },
+  { adapterId: 'adapter-bamboohr-001', name: 'BambooHR HRIS', sorFamily: 'HrisHcm', status: 'healthy', lastSyncIso: '2026-02-19T23:00:00Z' },
+  { adapterId: 'adapter-salesforce-001', name: 'Salesforce CRM', sorFamily: 'CrmSales', status: 'degraded', lastSyncIso: '2026-02-19T18:00:00Z' },
+]
+
+export const OBSERVABILITY_DATA = {
+  runsOverTime: [
+    { date: '2026-02-14', succeeded: 12, failed: 2, waitingForApproval: 1 },
+    { date: '2026-02-15', succeeded: 18, failed: 1, waitingForApproval: 2 },
+    { date: '2026-02-16', succeeded: 15, failed: 3, waitingForApproval: 1 },
+    { date: '2026-02-17', succeeded: 22, failed: 0, waitingForApproval: 3 },
+    { date: '2026-02-18', succeeded: 19, failed: 2, waitingForApproval: 2 },
+    { date: '2026-02-19', succeeded: 14, failed: 4, waitingForApproval: 1 },
+    { date: '2026-02-20', succeeded: 8, failed: 1, waitingForApproval: 2 },
+  ],
+  successRate: 87,
+  avgSlaDays: 1.4,
+}
