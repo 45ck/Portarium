@@ -4,22 +4,26 @@
  * Subcommands: list, decide
  */
 
-export async function handleApproveList(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _pending?: boolean,
-): Promise<void> {
+export interface ApproveListArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  pending?: boolean;
+}
+
+export interface ApproveDecideArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  approvalId: string;
+  decision: string;
+  reason?: string;
+}
+
+export function handleApproveList(_args: ApproveListArgs): void {
   console.log('Listing approvals... (stub)');
 }
 
-export async function handleApproveDecide(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _approvalId: string,
-  _decision: string,
-  _reason?: string,
-): Promise<void> {
+export function handleApproveDecide(_args: ApproveDecideArgs): void {
   console.log('Deciding approval... (stub)');
 }

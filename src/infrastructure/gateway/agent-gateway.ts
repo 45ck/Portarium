@@ -76,7 +76,7 @@ export class AgentGateway {
   ): Promise<void> => {
     try {
       // 1. Authenticate
-      const authHeader = req.headers['authorization'] as string | undefined;
+      const authHeader = req.headers.authorization;
       const authResult = await this.#authVerifier(authHeader);
       if (!authResult.ok) {
         return sendProblem(res, 401, 'Unauthorized', authResult.reason);
@@ -92,7 +92,7 @@ export class AgentGateway {
       // 3. Validate request shape
       const method = (req.method ?? 'GET').toUpperCase();
       const path = req.url ?? '/';
-      const contentType = req.headers['content-type'] as string | undefined;
+      const contentType = req.headers['content-type'];
       const bodyChunks: Buffer[] = [];
       for await (const chunk of req) {
         bodyChunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);

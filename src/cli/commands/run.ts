@@ -4,39 +4,40 @@
  * Subcommands: start, status, cancel, list
  */
 
-export async function handleRunStart(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _workflowId: string,
-  _input?: Record<string, unknown>,
-): Promise<void> {
+export interface RunStartArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  workflowId: string;
+  input?: Record<string, unknown>;
+}
+
+export interface RunStatusArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  runId: string;
+}
+
+export interface RunListArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  status?: string;
+}
+
+export function handleRunStart(_args: RunStartArgs): void {
   console.log('Starting run... (stub)');
 }
 
-export async function handleRunStatus(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _runId: string,
-): Promise<void> {
+export function handleRunStatus(_args: RunStatusArgs): void {
   console.log('Getting run status... (stub)');
 }
 
-export async function handleRunCancel(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _runId: string,
-): Promise<void> {
+export function handleRunCancel(_args: RunStatusArgs): void {
   console.log('Cancelling run... (stub)');
 }
 
-export async function handleRunList(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _status?: string,
-): Promise<void> {
+export function handleRunList(_args: RunListArgs): void {
   console.log('Listing runs... (stub)');
 }

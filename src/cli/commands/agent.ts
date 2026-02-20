@@ -4,28 +4,34 @@
  * Subcommands: register, list, heartbeat
  */
 
-export async function handleAgentRegister(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _name: string,
-): Promise<void> {
+export interface AgentRegisterArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  name: string;
+}
+
+export function handleAgentRegister(_args: AgentRegisterArgs): void {
   console.log('Registering agent... (stub)');
 }
 
-export async function handleAgentList(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-): Promise<void> {
+export interface AgentListArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+}
+
+export function handleAgentList(_args: AgentListArgs): void {
   console.log('Listing agents... (stub)');
 }
 
-export async function handleAgentHeartbeat(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _agentId: string,
-): Promise<void> {
+export interface AgentHeartbeatArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  agentId: string;
+}
+
+export function handleAgentHeartbeat(_args: AgentHeartbeatArgs): void {
   console.log('Sending heartbeat... (stub)');
 }

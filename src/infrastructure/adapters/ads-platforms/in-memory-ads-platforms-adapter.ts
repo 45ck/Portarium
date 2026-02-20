@@ -175,7 +175,7 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
       name,
       status: 'draft',
       ...(typeof input.payload?.['channelType'] === 'string'
-        ? { channelType: input.payload['channelType'] as string }
+        ? { channelType: input.payload['channelType'] }
         : {}),
     };
     this.#campaigns.push(campaign);
@@ -201,9 +201,9 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
     const current = this.#campaigns[index]!;
     const next: CampaignV1 = {
       ...current,
-      ...(typeof input.payload?.['name'] === 'string' ? { name: input.payload['name'] as string } : {}),
+      ...(typeof input.payload?.['name'] === 'string' ? { name: input.payload['name'] } : {}),
       ...(typeof input.payload?.['channelType'] === 'string'
-        ? { channelType: input.payload['channelType'] as string }
+        ? { channelType: input.payload['channelType'] }
         : {}),
       ...(typeof input.payload?.['status'] === 'string'
         ? { status: input.payload['status'] as CampaignV1['status'] }
@@ -288,7 +288,7 @@ export class InMemoryAdsPlatformsAdapter implements AdsPlatformsAdapterPort {
     }
     const period =
       typeof input.payload?.['period'] === 'string' && input.payload['period'].length > 0
-        ? (input.payload['period'] as string)
+        ? (input.payload['period'])
         : 'last_30_days';
     const externalRef: ExternalObjectRef = {
       sorName: 'AdsSuite',

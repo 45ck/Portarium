@@ -35,7 +35,7 @@ describe('RunEmulator', () => {
   it('transitions Executing -> Completed', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
     await emulator.submitApproval(run.runId, 'Approved');
-    const completed = await emulator.completeRun(run.runId, { output: 42 });
+    const completed = emulator.completeRun(run.runId, { output: 42 });
     expect(completed.status).toBe('Completed');
     expect(completed.result).toEqual({ output: 42 });
   });
@@ -43,29 +43,29 @@ describe('RunEmulator', () => {
   it('transitions Executing -> Failed', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
     await emulator.submitApproval(run.runId, 'Approved');
-    const failed = await emulator.failRun(run.runId, 'timeout');
+    const failed = emulator.failRun(run.runId, 'timeout');
     expect(failed.status).toBe('Failed');
     expect(failed.error).toBe('timeout');
   });
 
   it('cancels a Pending run', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
-    const cancelled = await emulator.cancelRun(run.runId);
+    const cancelled = emulator.cancelRun(run.runId);
     expect(cancelled.status).toBe('Cancelled');
   });
 
   it('cancels an Executing run', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
     await emulator.submitApproval(run.runId, 'Approved');
-    const cancelled = await emulator.cancelRun(run.runId);
+    const cancelled = emulator.cancelRun(run.runId);
     expect(cancelled.status).toBe('Cancelled');
   });
 
   it('rejects cancel on Completed run', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
     await emulator.submitApproval(run.runId, 'Approved');
-    await emulator.completeRun(run.runId);
-    await expect(emulator.cancelRun(run.runId)).rejects.toThrow('cannot cancel');
+    emulator.completeRun(run.runId);
+    expect(() => emulator.cancelRun(run.runId)).toThrow('cannot cancel');
   });
 
   it('rejects approval on non-Pending run', async () => {
@@ -76,7 +76,7 @@ describe('RunEmulator', () => {
 
   it('rejects complete on non-Executing run', async () => {
     const run = await emulator.startRun({ workspaceId: 'ws-1', workflowId: 'wf-1' });
-    await expect(emulator.completeRun(run.runId)).rejects.toThrow('expected Executing');
+    expect(() => emulator.completeRun(run.runId)).toThrow('expected Executing');
   });
 
   it('throws for unknown run ID', async () => {

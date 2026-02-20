@@ -15,6 +15,18 @@ function mockFetch(status: number, body?: unknown): typeof fetch {
   });
 }
 
+/** Extract typed fetch call args from a vitest mock. */
+function getCallArgs(fetchFn: typeof fetch, callIndex = 0): [string, RequestInit] {
+  const mock = fetchFn as ReturnType<typeof vi.fn>;
+  const args = mock.mock.calls[callIndex] as [string, RequestInit];
+  return args;
+}
+
+/** Get headers from a RequestInit as a plain Record. */
+function getHeaders(options: RequestInit): Record<string, string> {
+  return options.headers as Record<string, string>;
+}
+
 function makeClient(overrides?: Partial<PortariumClientConfig>): PortariumClient {
   return new PortariumClient({
     baseUrl: 'https://api.portarium.test',
@@ -47,14 +59,15 @@ describe('PortariumClient', () => {
       expect(result.runId).toBe('run-1');
       expect(fetchFn).toHaveBeenCalledOnce();
 
-      const [url, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const [url, options] = getCallArgs(fetchFn);
+      const headers = getHeaders(options);
       expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/runs');
       expect(options.method).toBe('POST');
-      expect(options.headers['authorization']).toBe('Bearer test-token');
-      expect(options.headers['traceparent']).toBe('00-abc123-def456-01');
-      expect(options.headers['tracestate']).toBe('portarium=v1');
-      expect(options.headers['idempotency-key']).toBeDefined();
-      expect(options.headers['x-correlation-id']).toBeDefined();
+      expect(headers['authorization']).toBe('Bearer test-token');
+      expect(headers['traceparent']).toBe('00-abc123-def456-01');
+      expect(headers['tracestate']).toBe('portarium=v1');
+      expect(headers['idempotency-key']).toBeDefined();
+      expect(headers['x-correlation-id']).toBeDefined();
     });
   });
 
@@ -71,7 +84,7 @@ describe('PortariumClient', () => {
       const result = await client.runs.get('run-1');
 
       expect(result.status).toBe('Running');
-      const [url] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const [url] = getCallArgs(fetchFn);
       expect(url).toContain('/runs/run-1');
     });
   });
@@ -83,7 +96,7 @@ describe('PortariumClient', () => {
 
       await client.runs.cancel('run-1');
 
-      const [url, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const [url, options] = getCallArgs(fetchFn);
       expect(url).toContain('/runs/run-1/cancel');
       expect(options.method).toBe('POST');
     });
@@ -100,9 +113,9 @@ describe('PortariumClient', () => {
         reason: 'Looks good',
       });
 
-      const [url, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const [url, options] = getCallArgs(fetchFn);
       expect(url).toContain('/approvals/appr-1/decision');
-      const body = JSON.parse(options.body);
+      const body = JSON.parse(options.body as string) as { decision: string; reason: string };
       expect(body.decision).toBe('Approved');
       expect(body.reason).toBe('Looks good');
     });
@@ -119,7 +132,7 @@ describe('PortariumClient', () => {
         capabilities: ['invoice:read'],
       });
 
-      const [url, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
+      const [url, options] = getCallArgs(fetchFn);
       expect(url).toContain('/agents');
       expect(options.method).toBe('POST');
     });
@@ -188,8 +201,9 @@ describe('PortariumClient', () => {
 
       await client.runs.get('run-1');
 
-      const [, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
-      expect(options.headers['x-correlation-id']).toMatch(
+      const [, options] = getCallArgs(fetchFn);
+      const headers = getHeaders(options);
+      expect(headers['x-correlation-id']).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
       );
     });
@@ -205,9 +219,10 @@ describe('PortariumClient', () => {
 
       await client.runs.get('run-1');
 
-      const [, options] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0]!;
-      expect(options.headers['authorization']).toBe('Bearer mtls-token');
-      expect(options.headers['x-client-cert']).toBe('cert-pem');
+      const [, options] = getCallArgs(fetchFn);
+      const headers = getHeaders(options);
+      expect(headers['authorization']).toBe('Bearer mtls-token');
+      expect(headers['x-client-cert']).toBe('cert-pem');
     });
   });
 

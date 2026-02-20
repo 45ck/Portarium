@@ -172,8 +172,8 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       schemaVersion: 1,
       displayName,
       roles: ['contact'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#contacts.push(contact);
     return { ok: true, result: { kind: 'party', party: contact } };
@@ -198,10 +198,10 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
     const next: PartyV1 = {
       ...current,
       ...(typeof input.payload?.['displayName'] === 'string'
-        ? { displayName: input.payload['displayName'] as string }
+        ? { displayName: input.payload['displayName'] }
         : {}),
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#contacts[index] = next;
     return { ok: true, result: { kind: 'party', party: next } };
@@ -238,8 +238,8 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       schemaVersion: 1,
       displayName,
       roles: ['org'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#companies.push(company);
     return { ok: true, result: { kind: 'party', party: company } };
@@ -293,10 +293,10 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       stage:
         (typeof input.payload?.['stage'] === 'string'
           ? input.payload['stage']
-          : 'qualification') as string,
+          : 'qualification'),
       ...(amount !== null ? { amount } : {}),
       ...(typeof input.payload?.['currencyCode'] === 'string'
-        ? { currencyCode: input.payload['currencyCode'] as string }
+        ? { currencyCode: input.payload['currencyCode'] }
         : {}),
     };
     this.#opportunities.push(opportunity);
@@ -358,7 +358,7 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       title,
       status: readTaskStatus(input.payload) ?? 'todo',
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
     };
     this.#activities.push(task);
@@ -396,10 +396,10 @@ export class InMemoryCrmSalesAdapter implements CrmSalesAdapterPort {
       mimeType:
         (typeof input.payload?.['mimeType'] === 'string'
           ? input.payload['mimeType']
-          : 'text/plain') as string,
+          : 'text/plain'),
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       ...(typeof input.payload?.['storagePath'] === 'string'
-        ? { storagePath: input.payload['storagePath'] as string }
+        ? { storagePath: input.payload['storagePath'] }
         : {}),
       createdAtIso: this.#now().toISOString(),
     };

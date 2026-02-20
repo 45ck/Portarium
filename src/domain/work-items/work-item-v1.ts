@@ -138,6 +138,15 @@ function parseWorkItemSlaV1(value: unknown, createdAtIso: string): WorkItemSlaV1
   };
 }
 
+function parseOptionalIds<T>(
+  record: Record<string, unknown>,
+  field: string,
+  brand: (s: string) => T,
+): readonly T[] | undefined {
+  const raw = record[field];
+  return raw === undefined ? undefined : parseIds(raw, field, brand);
+}
+
 function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
   const record = readRecord(value, 'links', WorkItemParseError);
   assertOnlyKeys(
@@ -149,21 +158,10 @@ function parseWorkItemLinksV1(value: unknown): WorkItemLinksV1 {
   const externalRefsRaw = record['externalRefs'];
   const externalRefs =
     externalRefsRaw === undefined ? undefined : parseExternalRefs(externalRefsRaw);
-
-  const runIdsRaw = record['runIds'];
-  const runIds = runIdsRaw === undefined ? undefined : parseIds(runIdsRaw, 'runIds', RunId);
-
-  const workflowIdsRaw = record['workflowIds'];
-  const workflowIds =
-    workflowIdsRaw === undefined ? undefined : parseIds(workflowIdsRaw, 'workflowIds', WorkflowId);
-
-  const approvalIdsRaw = record['approvalIds'];
-  const approvalIds =
-    approvalIdsRaw === undefined ? undefined : parseIds(approvalIdsRaw, 'approvalIds', ApprovalId);
-
-  const evidenceIdsRaw = record['evidenceIds'];
-  const evidenceIds =
-    evidenceIdsRaw === undefined ? undefined : parseIds(evidenceIdsRaw, 'evidenceIds', EvidenceId);
+  const runIds = parseOptionalIds(record, 'runIds', RunId);
+  const workflowIds = parseOptionalIds(record, 'workflowIds', WorkflowId);
+  const approvalIds = parseOptionalIds(record, 'approvalIds', ApprovalId);
+  const evidenceIds = parseOptionalIds(record, 'evidenceIds', EvidenceId);
 
   return {
     ...(externalRefs ? { externalRefs } : {}),

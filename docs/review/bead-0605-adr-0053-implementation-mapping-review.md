@@ -44,5 +44,5 @@ Evidence pointers added in ADR:
 
 Remaining-gap traceability:
 
-- Added follow-up bead `bead-0642` for compliance-profile asset enforcement at pack
+- Added follow-up bead `bead-0688` for compliance-profile asset enforcement at pack
   enablement and reference-pack profile linkage.

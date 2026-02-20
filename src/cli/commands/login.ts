@@ -5,7 +5,7 @@
  * a --token flag for service-account usage.
  */
 
-export async function handleLogin(_flags: Record<string, string | boolean>): Promise<void> {
+export function handleLogin(_flags: Record<string, string | boolean>): void {
   console.log('OAuth2 Device Authorization Flow');
   console.log('--------------------------------');
   console.log('1. Visit: https://auth.portarium.dev/device');
@@ -17,6 +17,6 @@ export async function handleLogin(_flags: Record<string, string | boolean>): Pro
   console.log('Waiting for authorization... (stub -- not yet implemented)');
 }
 
-export async function handleLogout(): Promise<void> {
+export function handleLogout(): void {
   console.log('Logged out. Credentials cleared from ~/.portarium/credentials.json');
 }

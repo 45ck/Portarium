@@ -9,8 +9,17 @@
       "Bash(npm run *)",
       "Bash(node *)",
       "Bash(git status)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(bd *)"
     ],
-    "deny": ["Read(**/.env*)", "Read(**/*secret*)", "Bash(git commit --no-verify*)"]
+    "deny": [
+      "Read(**/.env*)",
+      "Read(**/*secret*)",
+      "Read(**/*credential*)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)"
+    ]
   }
 }

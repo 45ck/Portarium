@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { IncomingMessage, ServerResponse } from 'node:http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Socket } from 'node:net';
 import { Readable } from 'node:stream';
 
@@ -107,8 +107,8 @@ describe('AgentGateway', () => {
 
     const [url, init] = fetchSpy.mock.calls[0]!;
     expect(url).toBe('http://control-plane:3000/api/v1/runs');
-    expect((init as RequestInit).headers).toHaveProperty('x-workspace-id', 'ws-test');
-    expect((init as RequestInit).headers).toHaveProperty('traceparent');
+    expect((init!).headers).toHaveProperty('x-workspace-id', 'ws-test');
+    expect((init!).headers).toHaveProperty('traceparent');
   });
 
   it('rejects unauthenticated requests with 401', async () => {
@@ -162,7 +162,7 @@ describe('AgentGateway', () => {
 
     await gateway.handleRequest(req, res);
 
-    const headers = (fetchSpy.mock.calls[0]![1] as RequestInit).headers as Record<string, string>;
+    const headers = (fetchSpy.mock.calls[0]![1]!).headers as Record<string, string>;
     expect(headers['traceparent']).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/);
   });
 
@@ -176,7 +176,7 @@ describe('AgentGateway', () => {
 
     await gateway.handleRequest(req, res);
 
-    const headers = (fetchSpy.mock.calls[0]![1] as RequestInit).headers as Record<string, string>;
+    const headers = (fetchSpy.mock.calls[0]![1]!).headers as Record<string, string>;
     expect(headers['traceparent']).toBe(traceparent);
   });
 
@@ -213,6 +213,6 @@ describe('AgentGateway', () => {
 
     expect(res._status).toBe(201);
     const [, init] = fetchSpy.mock.calls[0]!;
-    expect((init as RequestInit).body).toBeDefined();
+    expect((init!).body).toBeDefined();
   });
 });

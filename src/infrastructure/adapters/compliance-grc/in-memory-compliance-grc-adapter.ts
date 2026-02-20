@@ -368,7 +368,7 @@ export class InMemoryComplianceGrcAdapter implements ComplianceGrcAdapterPort {
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'] as string)
+          ? (input.payload['mimeType'])
           : 'application/pdf',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),

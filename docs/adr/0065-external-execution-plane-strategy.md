@@ -113,3 +113,52 @@ Connector and agent runtimes are treated as **untrusted execution** relative to 
   - Rejected: workable for small coverage but does not provide a connector ecosystem or a strong plugin development story.
 - **Single “one size fits all” runtime for connectors and agents**
   - Rejected: connectors and agentic graphs have different needs; separation improves containment and operability.
+
+## Implementation Mapping
+
+ADR-0065 implementation/review coverage maps to:
+
+- `bead-0402` (closed): Temporal SDK and orchestration adapter baseline.
+- `bead-0425` (closed): Temporal worker execution loop for governed run lifecycle.
+- `bead-0409` (closed): application action-runner dispatch contract.
+- `bead-0411` (closed): trigger-to-execution-plane routing.
+- `bead-0404` (closed): Activepieces runtime deployment baseline.
+- `bead-0405` (closed): Activepieces action execution adapter.
+- `bead-0406` (closed): Activepieces DomainEvent trigger publisher.
+- `bead-0407` (closed): Langflow isolated deployment hardening.
+- `bead-0408` (closed): Langflow agent-flow action runner.
+- `bead-0412` (closed): Kestra runtime fit assessment.
+- `bead-0413` (closed): StackStorm runtime fit assessment.
+- `bead-0414` (closed): runtime licensing and compliance audit.
+- `bead-0620` (open): ADR closure mapping bead for implementation/evidence linkage.
+- `bead-0621` (open): ADR linkage verification review bead.
+
+## Acceptance Evidence
+
+- Application execution-plane dispatch contracts:
+  - `src/application/ports/action-runner.ts`
+  - `src/application/services/trigger-execution-router.ts`
+  - `src/application/services/trigger-execution-router.test.ts`
+- Activepieces integration path:
+  - `src/infrastructure/activepieces/activepieces-action-executor.ts`
+  - `src/infrastructure/activepieces/activepieces-action-executor.test.ts`
+  - `src/infrastructure/eventing/activepieces-domain-event-trigger-publisher.ts`
+  - `src/infrastructure/eventing/activepieces-domain-event-trigger-publisher.test.ts`
+- Langflow integration path:
+  - `src/infrastructure/langflow/langflow-agent-flow-action-runner.ts`
+  - `src/infrastructure/langflow/langflow-agent-flow-action-runner.test.ts`
+- Temporal orchestration baseline:
+  - `src/infrastructure/temporal/temporal-worker.ts`
+  - `src/infrastructure/temporal/temporal-worker.test.ts`
+- Governance/research artifacts:
+  - `docs/governance/external-execution-platform-license-audit.md`
+  - `docs/research/bead-0412-kestra-spike.md`
+  - `docs/research/bead-0413-stackstorm-spike.md`
+- Review artifact:
+  - `docs/review/bead-0620-adr-0065-implementation-mapping-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0428` (open): OTel collector production OTLP pipelines, alerting, and cross-signal
+  correlation maturity.
+- `bead-0393` (open): execution-plane SLO dashboards and alerting coverage.

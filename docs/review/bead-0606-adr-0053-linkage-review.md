@@ -31,4 +31,4 @@ Low:
 - Confirmed implementation closure evidence remains captured in:
   - `docs/review/bead-0605-adr-0053-implementation-mapping-review.md`
 - Confirmed remaining-gap tracking remains explicit via:
-  - `bead-0642`
+  - `bead-0688`

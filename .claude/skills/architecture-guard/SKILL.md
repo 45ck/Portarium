@@ -1,21 +1,23 @@
 ---
 name: architecture-guard
-description: Validate architecture boundaries (dependency-cruiser) and generate a dependency graph.
+description: Enforce architecture boundaries using dependency-cruiser and generate a dependency graph.
 disable-model-invocation: true
-argument-hint: ''
+argument-hint: "[scope=src]"
 allowed-tools: Read, Grep, Glob, Bash(npm run depcruise), Bash(npm run depgraph:mermaid)
 ---
 
 # Architecture Guard
 
-## Commands
+## Outputs
+- `reports/architecture/ARCH_REPORT.md`
+- `reports/architecture/dependency-graph.mmd`
 
-- Validate: `npm run depcruise`
-- Graph: `npm run depgraph:mermaid`
-
-## Evidence
-
-- Write `reports/architecture/ARCH_REPORT.md` with:
-  - Cycle count (must be 0)
-  - Boundary violations (must be 0)
-  - Notes for any exemptions (require ADR)
+## Steps
+1. Run `npm run depcruise` — fail if any error-severity violations.
+2. Run `npm run depgraph:mermaid` — generate Mermaid dependency graph.
+3. Write `reports/architecture/ARCH_REPORT.md` summarising:
+   - Cycle count (must be 0)
+   - Boundary violations (must be 0)
+   - Layer compliance status
+   - Fan-in/fan-out hotspots (if detectable)
+   - Link to dependency graph

@@ -224,10 +224,10 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
       title,
       status: 'todo',
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
       ...(typeof input.payload?.['dueAtIso'] === 'string'
-        ? { dueAtIso: input.payload['dueAtIso'] as string }
+        ? { dueAtIso: input.payload['dueAtIso'] }
         : {}),
     };
     this.#tasks.push(task);
@@ -266,13 +266,13 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
     const current = this.#tasks[index]!;
     const task: CanonicalTaskV1 = {
       ...current,
-      ...(typeof input.payload?.['title'] === 'string' ? { title: input.payload['title'] as string } : {}),
+      ...(typeof input.payload?.['title'] === 'string' ? { title: input.payload['title'] } : {}),
       ...(typeof statusValue === 'string' ? { status: statusValue as CanonicalTaskV1['status'] } : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
       ...(typeof input.payload?.['dueAtIso'] === 'string'
-        ? { dueAtIso: input.payload['dueAtIso'] as string }
+        ? { dueAtIso: input.payload['dueAtIso'] }
         : {}),
     };
     this.#tasks[index] = task;
@@ -415,7 +415,7 @@ export class InMemoryProjectsWorkMgmtAdapter implements ProjectsWorkMgmtAdapterP
 
   #listTimeEntries(input: ProjectsWorkMgmtExecuteInputV1): ProjectsWorkMgmtExecuteOutputV1 {
     const taskIdFilter =
-      typeof input.payload?.['taskId'] === 'string' ? (input.payload['taskId'] as string) : null;
+      typeof input.payload?.['taskId'] === 'string' ? (input.payload['taskId']) : null;
     return {
       ok: true,
       result: {

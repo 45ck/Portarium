@@ -34,3 +34,15 @@ Options: Full SSR (Next.js), CSR SPA, hybrid (Astro/Remix), static shell + dynam
 - Suspense boundaries provide UX feedback with skeleton screens
 - Static deployment (S3 + CloudFront) — no server runtime required
 - If SSR is needed later, migration to Remix is the natural path (ADR to supersede this)
+
+## Implementation Mapping
+
+- Closed implementation coverage:
+  - `bead-0354`
+  - `bead-0370`
+- ADR linkage verification review bead:
+  - `bead-0615`
+
+## Review Linkage
+
+- `docs/review/bead-0615-adr-0059-linkage-review.md`

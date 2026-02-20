@@ -56,47 +56,71 @@ export interface HeartbeatDeps {
 
 const VALID_STATUSES = ['ok', 'degraded'] as const;
 
+function validateStatus(status: string): Result<true, ValidationFailed> {
+  if (typeof status !== 'string' || !(VALID_STATUSES as readonly string[]).includes(status)) {
+    return err({
+      kind: 'ValidationFailed',
+      message: `status must be one of: ${VALID_STATUSES.join(', ')}.`,
+    });
+  }
+  return ok(true);
+}
+
+function validateMetrics(
+  metrics: Readonly<Record<string, number>> | undefined,
+): Result<true, ValidationFailed> {
+  if (metrics === undefined) return ok(true);
+  if (typeof metrics !== 'object' || metrics === null || Array.isArray(metrics)) {
+    return err({ kind: 'ValidationFailed', message: 'metrics must be a record of numbers.' });
+  }
+  for (const [key, value] of Object.entries(metrics)) {
+    if (typeof key !== 'string' || key.trim() === '') {
+      return err({ kind: 'ValidationFailed', message: 'metrics keys must be non-empty strings.' });
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return err({ kind: 'ValidationFailed', message: `metrics["${key}"] must be a finite number.` });
+    }
+  }
+  return ok(true);
+}
+
+function validateLocation(
+  location: Readonly<{ lat: number; lon: number }> | undefined,
+): Result<true, ValidationFailed> {
+  if (location === undefined) return ok(true);
+  if (
+    typeof location !== 'object' ||
+    location === null ||
+    typeof location.lat !== 'number' ||
+    typeof location.lon !== 'number'
+  ) {
+    return err({ kind: 'ValidationFailed', message: 'location must have numeric lat and lon.' });
+  }
+  if (location.lat < -90 || location.lat > 90) {
+    return err({ kind: 'ValidationFailed', message: 'location.lat must be between -90 and 90.' });
+  }
+  if (location.lon < -180 || location.lon > 180) {
+    return err({ kind: 'ValidationFailed', message: 'location.lon must be between -180 and 180.' });
+  }
+  return ok(true);
+}
+
 function validateHeartbeatInput(
   input: HeartbeatInput,
 ): Result<true, ValidationFailed> {
   if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
   }
-  if (typeof input.status !== 'string' || !(VALID_STATUSES as readonly string[]).includes(input.status)) {
-    return err({
-      kind: 'ValidationFailed',
-      message: `status must be one of: ${VALID_STATUSES.join(', ')}.`,
-    });
-  }
-  if (input.metrics !== undefined) {
-    if (typeof input.metrics !== 'object' || input.metrics === null || Array.isArray(input.metrics)) {
-      return err({ kind: 'ValidationFailed', message: 'metrics must be a record of numbers.' });
-    }
-    for (const [key, value] of Object.entries(input.metrics)) {
-      if (typeof key !== 'string' || key.trim() === '') {
-        return err({ kind: 'ValidationFailed', message: 'metrics keys must be non-empty strings.' });
-      }
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        return err({ kind: 'ValidationFailed', message: `metrics["${key}"] must be a finite number.` });
-      }
-    }
-  }
-  if (input.location !== undefined) {
-    if (
-      typeof input.location !== 'object' ||
-      input.location === null ||
-      typeof input.location.lat !== 'number' ||
-      typeof input.location.lon !== 'number'
-    ) {
-      return err({ kind: 'ValidationFailed', message: 'location must have numeric lat and lon.' });
-    }
-    if (input.location.lat < -90 || input.location.lat > 90) {
-      return err({ kind: 'ValidationFailed', message: 'location.lat must be between -90 and 90.' });
-    }
-    if (input.location.lon < -180 || input.location.lon > 180) {
-      return err({ kind: 'ValidationFailed', message: 'location.lon must be between -180 and 180.' });
-    }
-  }
+
+  const statusResult = validateStatus(input.status);
+  if (!statusResult.ok) return statusResult;
+
+  const metricsResult = validateMetrics(input.metrics);
+  if (!metricsResult.ok) return metricsResult;
+
+  const locationResult = validateLocation(input.location);
+  if (!locationResult.ok) return locationResult;
+
   return ok(true);
 }
 

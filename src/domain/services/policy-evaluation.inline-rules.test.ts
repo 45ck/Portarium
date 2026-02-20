@@ -82,7 +82,7 @@ describe('evaluatePolicy inline rules', () => {
 
     expect(result.decision).toBe('Deny');
     expect(result.inlineRuleErrors).toEqual(
-      expect.arrayContaining([expect.stringContaining('ParseError')]),
+      expect.arrayContaining([expect.stringContaining('Unsupported token')]),
     );
   });
 
@@ -105,7 +105,7 @@ describe('evaluatePolicy inline rules', () => {
 
     expect(result.decision).toBe('Deny');
     expect(result.inlineRuleErrors).toEqual(
-      expect.arrayContaining([expect.stringContaining('Timeout')]),
+      expect.arrayContaining([expect.stringContaining('timed out')]),
     );
   });
 
@@ -141,7 +141,7 @@ describe('evaluatePolicy inline rules', () => {
 
     expect(result.decision).toBe('Deny');
     expect(result.inlineRuleErrors).toEqual(
-      expect.arrayContaining([expect.stringContaining('ParseError')]),
+      expect.arrayContaining([expect.stringContaining('Unsupported token')]),
     );
   });
 });

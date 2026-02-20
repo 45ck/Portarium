@@ -408,10 +408,10 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       title,
       status: 'todo',
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
       ...(typeof input.payload?.['dueAtIso'] === 'string'
-        ? { dueAtIso: input.payload['dueAtIso'] as string }
+        ? { dueAtIso: input.payload['dueAtIso'] }
         : {}),
     };
     this.#calendarEvents.push(task);
@@ -444,7 +444,7 @@ export class InMemoryCommsCollaborationAdapter implements CommsCollaborationAdap
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'] as string)
+          ? (input.payload['mimeType'])
           : 'application/octet-stream',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),

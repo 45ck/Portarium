@@ -68,9 +68,13 @@ export class InMemoryCredentialDelegation implements CredentialDelegationPort {
     this.#store.set(scopeKey(scope), entry);
   }
 
-  public async acquireCredential(
+  public acquireCredential(
     scope: CredentialScope,
   ): Promise<CredentialDelegationResult> {
+    return Promise.resolve(this.#resolveCredential(scope));
+  }
+
+  #resolveCredential(scope: CredentialScope): CredentialDelegationResult {
     const entry = this.#store.get(scopeKey(scope));
     if (!entry) {
       return {
@@ -96,8 +100,9 @@ export class InMemoryCredentialDelegation implements CredentialDelegationPort {
     };
   }
 
-  public async revokeCredential(scope: CredentialScope): Promise<void> {
+  public revokeCredential(scope: CredentialScope): Promise<void> {
     this.#store.delete(scopeKey(scope));
+    return Promise.resolve();
   }
 }
 

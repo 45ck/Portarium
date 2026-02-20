@@ -18,7 +18,7 @@
  * to a no-op configuration.
  */
 
-import { type Span, type Tracer, trace, context, SpanStatusCode } from '@opentelemetry/api';
+import { type Span, type Tracer, trace, SpanStatusCode } from '@opentelemetry/api';
 import type { MetricAttributes } from './metrics-hooks.js';
 import { type MetricsHooks, setMetricsHooksForTest } from './metrics-hooks.js';
 

@@ -166,8 +166,8 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
       schemaVersion: 1,
       displayName,
       roles: ['user'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#users.push(user);
     return { ok: true, result: { kind: 'party', party: user } };
@@ -193,10 +193,10 @@ export class InMemoryIamDirectoryAdapter implements IamDirectoryAdapterPort {
     const updated: PartyV1 = {
       ...this.#users[index]!,
       ...(typeof input.payload?.['displayName'] === 'string'
-        ? { displayName: input.payload['displayName'] as string }
+        ? { displayName: input.payload['displayName'] }
         : {}),
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#users[index] = updated;
     return { ok: true, result: { kind: 'party', party: updated } };

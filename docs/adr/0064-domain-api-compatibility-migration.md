@@ -117,3 +117,34 @@ a precise signal even when no adapters are registered.
   cleaner rename but still a breaking change for all existing payloads.
 - **Accept any `entity:verb` string as `capability`** — loses the family-level
   validation that gives `operation_not_in_family` its meaning.
+
+## Implementation Mapping
+
+ADR-0064 implementation/review coverage maps to:
+
+- `bead-0305` (closed): canonical capability enforcement across workflow actions and adapter claims.
+- `bead-0307` (closed): provider-selection compatibility guardrails and deterministic failure semantics.
+- `bead-0309` (closed): domain API compatibility migration baseline and rollback safety.
+- `bead-0447` (closed): OpenAPI/domain contract alignment for capability matrices and related schemas.
+- `bead-0618` (open): ADR closure mapping bead for implementation/evidence linkage.
+- `bead-0619` (open): ADR linkage verification review bead.
+
+## Acceptance Evidence
+
+- Adapter capability-claim compatibility invariants:
+  - `src/domain/adapters/adapter-registration-v1.ts`
+  - `src/domain/adapters/adapter-registration-v1.test.ts`
+- Canonical capability resolution and legacy fallback handling:
+  - `src/domain/services/capability-enforcement.ts`
+  - `src/domain/services/capability-enforcement.test.ts`
+- Port-family guardrails in provider selection:
+  - `src/domain/services/provider-selection.ts`
+  - `src/domain/services/provider-selection.test.ts`
+  - `src/domain/ports/port-family-capabilities-v1.ts`
+- Review artifact:
+  - `docs/review/bead-0618-adr-0064-implementation-mapping-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0689` (open): schemaVersion:2 cutover to remove legacy `operation`-only compatibility
+  mode and fully enforce capability-first contracts.

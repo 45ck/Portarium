@@ -138,16 +138,16 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
       orderNumber:
         (typeof input.payload?.['orderNumber'] === 'string'
           ? input.payload['orderNumber']
-          : `PO-${this.#orderSequence}`) as string,
+          : `PO-${this.#orderSequence}`),
       status: 'draft',
       totalAmount,
       currencyCode:
         (typeof input.payload?.['currencyCode'] === 'string'
           ? input.payload['currencyCode']
-          : 'USD') as string,
+          : 'USD'),
       createdAtIso: this.#now().toISOString(),
       ...(typeof input.payload?.['lineItemCount'] === 'number'
-        ? { lineItemCount: input.payload['lineItemCount'] as number }
+        ? { lineItemCount: input.payload['lineItemCount'] }
         : {}),
     };
 
@@ -206,7 +206,7 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
       displayLabel:
         (typeof input.payload?.['title'] === 'string'
           ? input.payload['title']
-          : `Expense ${this.#expenseSequence}`) as string,
+          : `Expense ${this.#expenseSequence}`),
     };
     this.#expenseReports.push(externalRef);
     return { ok: true, result: { kind: 'externalRef', externalRef } };
@@ -264,8 +264,8 @@ export class InMemoryProcurementSpendAdapter implements ProcurementSpendAdapterP
       schemaVersion: 1,
       displayName,
       roles: ['vendor'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#vendors.push(vendor);
     return { ok: true, result: { kind: 'vendor', vendor } };

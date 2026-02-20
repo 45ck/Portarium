@@ -91,7 +91,7 @@ export function assertWorkspaceScoped(
   const tenantId =
     typeof payload['tenantId'] === 'string' ? payload['tenantId'].trim() : undefined;
 
-  const resolved = workspaceId || tenantId;
+  const resolved = workspaceId ?? tenantId;
   if (!resolved || resolved === '') {
     return err({
       kind: 'Unauthorized',
@@ -158,32 +158,38 @@ function readWorkspaceIdClaim(
   return undefined;
 }
 
+function resolveRolesSource(record: Record<string, unknown>): unknown[] | undefined {
+  const raw = record['roles'];
+  if (Array.isArray(raw)) return raw as unknown[];
+
+  const realmAccess = record['realm_access'];
+  if (typeof realmAccess === 'object' && realmAccess !== null) {
+    const realmRoles = (realmAccess as Record<string, unknown>)['roles'];
+    if (Array.isArray(realmRoles)) return realmRoles as unknown[];
+  }
+
+  return undefined;
+}
+
+function filterValidRoles(source: unknown[]): WorkspaceUserRole[] {
+  return source.filter(
+    (entry): entry is WorkspaceUserRole =>
+      typeof entry === 'string' && isWorkspaceUserRole(entry),
+  );
+}
+
 function readRolesClaim(
   record: Record<string, unknown>,
   errors: JwtClaimValidationError[],
 ): readonly WorkspaceUserRole[] | undefined {
-  const raw = record['roles'];
-
-  // Support Keycloak-style realm_access.roles
-  const realmAccess = record['realm_access'];
-  const realmRoles =
-    typeof realmAccess === 'object' && realmAccess !== null
-      ? (realmAccess as Record<string, unknown>)['roles']
-      : undefined;
-
-  const source = Array.isArray(raw) ? raw : Array.isArray(realmRoles) ? realmRoles : undefined;
+  const source = resolveRolesSource(record);
 
   if (!source || source.length === 0) {
     errors.push({ field: 'roles', message: 'must be a non-empty array of workspace roles' });
     return undefined;
   }
 
-  const validRoles: WorkspaceUserRole[] = [];
-  for (const entry of source) {
-    if (typeof entry === 'string' && isWorkspaceUserRole(entry)) {
-      validRoles.push(entry);
-    }
-  }
+  const validRoles = filterValidRoles(source);
 
   if (validRoles.length === 0) {
     errors.push({ field: 'roles', message: 'must contain at least one valid workspace role' });

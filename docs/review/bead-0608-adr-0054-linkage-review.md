@@ -30,5 +30,5 @@ Low:
   - `docs/review/bead-0608-adr-0054-linkage-review.md`
 - Confirmed implementation closure evidence is captured in:
   - `docs/review/bead-0607-adr-0054-implementation-mapping-review.md`
-- Confirmed follow-up gap tracking remains explicit via:
-  - `bead-0641`
+- Confirmed ADR-0054 remaining-gap tracking explicitly references:
+  - `bead-0687`

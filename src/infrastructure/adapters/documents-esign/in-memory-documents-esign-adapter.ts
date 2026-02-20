@@ -208,7 +208,7 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'] as string)
+          ? (input.payload['mimeType'])
           : 'application/octet-stream',
       ...(sizeBytes !== null ? { sizeBytes } : {}),
       createdAtIso: this.#now().toISOString(),
@@ -494,7 +494,7 @@ export class InMemoryDocumentsEsignAdapter implements DocumentsEsignAdapterPort 
       title,
       mimeType:
         typeof input.payload?.['mimeType'] === 'string'
-          ? (input.payload['mimeType'] as string)
+          ? (input.payload['mimeType'])
           : 'application/pdf',
       createdAtIso: this.#now().toISOString(),
     };

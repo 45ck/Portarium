@@ -41,8 +41,8 @@ describe('Trace propagation: SDK -> Gateway -> Control Plane', () => {
     await client.runs.start({ workflowId: 'wf-onboard' });
 
     expect(fetchFn).toHaveBeenCalledOnce();
-    const [, options] = fetchFn.mock.calls[0]!;
-    const headers = options.headers as Record<string, string>;
+    const [, rawOptions] = fetchFn.mock.calls[0]! as [string, RequestInit];
+    const headers = rawOptions.headers as Record<string, string>;
 
     // W3C trace context headers
     expect(headers['traceparent']).toBe(traceparent);
@@ -59,7 +59,7 @@ describe('Trace propagation: SDK -> Gateway -> Control Plane', () => {
     const correlationIds: string[] = [];
     const fetchFn = vi.fn().mockImplementation((_url: string, options: RequestInit) => {
       const headers = options.headers as Record<string, string>;
-      correlationIds.push(headers['x-correlation-id']);
+      correlationIds.push(headers['x-correlation-id']!);
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -111,8 +111,8 @@ describe('Trace propagation: SDK -> Gateway -> Control Plane', () => {
 
     await client.runs.start({ workflowId: 'wf-1', idempotencyKey: 'idem-abc' });
 
-    const [, options] = fetchFn.mock.calls[0]!;
-    const headers = options.headers as Record<string, string>;
+    const [, rawOptions] = fetchFn.mock.calls[0]! as [string, RequestInit];
+    const headers = rawOptions.headers as Record<string, string>;
     expect(headers['idempotency-key']).toBe('idem-abc');
   });
 
@@ -139,8 +139,8 @@ describe('Trace propagation: SDK -> Gateway -> Control Plane', () => {
 
     await client.runs.start({ workflowId: 'wf-1' });
 
-    const [, options] = fetchFn.mock.calls[0]!;
-    const headers = options.headers as Record<string, string>;
+    const [, rawOptions] = fetchFn.mock.calls[0]! as [string, RequestInit];
+    const headers = rawOptions.headers as Record<string, string>;
     expect(headers['idempotency-key']).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
     );

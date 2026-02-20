@@ -73,7 +73,7 @@ describe('validatePortariumJwtClaimsV1', () => {
   });
 
   it('falls back to tenantId when workspaceId is missing', () => {
-    const { workspaceId: _, ...rest } = validClaims;
+    const { workspaceId: _workspaceId, ...rest } = validClaims;
     const result = validatePortariumJwtClaimsV1({ ...rest, tenantId: 'tenant-1' });
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('Expected success');

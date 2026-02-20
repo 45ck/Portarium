@@ -126,7 +126,7 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       displayLabel:
         (typeof input.payload?.['periodLabel'] === 'string'
           ? input.payload['periodLabel']
-          : `Payroll Run ${this.#payrollRunSequence}`) as string,
+          : `Payroll Run ${this.#payrollRunSequence}`),
     };
     this.#payrollRuns.push({ tenantId: input.tenantId, externalRef });
     return { ok: true, result: { kind: 'externalRef', externalRef } };
@@ -141,7 +141,7 @@ export class InMemoryPayrollAdapter implements PayrollAdapterPort {
       displayLabel:
         (typeof input.payload?.['label'] === 'string'
           ? input.payload['label']
-          : `Tax Calculation ${this.#taxCalculationSequence}`) as string,
+          : `Tax Calculation ${this.#taxCalculationSequence}`),
     };
     this.#taxCalculations.push({ tenantId: input.tenantId, externalRef });
     return { ok: true, result: { kind: 'externalRef', externalRef } };

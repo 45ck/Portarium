@@ -112,17 +112,23 @@ function validateHeartbeatInput(
   return ok({ status: input.status as HeartbeatStatus });
 }
 
+type HeartbeatDispatchContext = Readonly<{
+  store: HeartbeatDeps['machineRegistryStore'];
+  ctx: AppContext;
+  heartbeat: HeartbeatData;
+  nowIso: string;
+}>;
+
 async function dispatchMachineHeartbeat(
-  store: HeartbeatDeps['machineRegistryStore'],
-  ctx: AppContext,
+  dc: HeartbeatDispatchContext,
   machineId: string,
-  heartbeat: HeartbeatData,
-  nowIso: string,
 ): Promise<Result<HeartbeatOutput, HeartbeatError>> {
   if (typeof machineId !== 'string' || machineId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'machineId must be a non-empty string.' });
   }
-  const updated = await store.updateMachineHeartbeat(ctx.tenantId, MachineId(machineId), heartbeat);
+  const updated = await dc.store.updateMachineHeartbeat(
+    dc.ctx.tenantId, MachineId(machineId), dc.heartbeat,
+  );
   if (!updated) {
     return err({
       kind: 'NotFound',
@@ -130,20 +136,19 @@ async function dispatchMachineHeartbeat(
       message: `Machine ${machineId} not found.`,
     });
   }
-  return ok({ acknowledgedAtIso: nowIso });
+  return ok({ acknowledgedAtIso: dc.nowIso });
 }
 
 async function dispatchAgentHeartbeat(
-  store: HeartbeatDeps['machineRegistryStore'],
-  ctx: AppContext,
+  dc: HeartbeatDispatchContext,
   agentId: string,
-  heartbeat: HeartbeatData,
-  nowIso: string,
 ): Promise<Result<HeartbeatOutput, HeartbeatError>> {
   if (typeof agentId !== 'string' || agentId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' });
   }
-  const updated = await store.updateAgentHeartbeat(ctx.tenantId, AgentId(agentId), heartbeat);
+  const updated = await dc.store.updateAgentHeartbeat(
+    dc.ctx.tenantId, AgentId(agentId), dc.heartbeat,
+  );
   if (!updated) {
     return err({
       kind: 'NotFound',
@@ -151,7 +156,7 @@ async function dispatchAgentHeartbeat(
       message: `Agent ${agentId} not found.`,
     });
   }
-  return ok({ acknowledgedAtIso: nowIso });
+  return ok({ acknowledgedAtIso: dc.nowIso });
 }
 
 export async function processHeartbeat(
@@ -186,16 +191,16 @@ export async function processHeartbeat(
     ...(input.location !== undefined ? { location: input.location } : {}),
   };
 
+  const dc: HeartbeatDispatchContext = {
+    store: deps.machineRegistryStore, ctx, heartbeat, nowIso,
+  };
+
   if (input.machineId !== undefined) {
-    return dispatchMachineHeartbeat(
-      deps.machineRegistryStore, ctx, input.machineId, heartbeat, nowIso,
-    );
+    return dispatchMachineHeartbeat(dc, input.machineId);
   }
 
   if (input.agentId !== undefined) {
-    return dispatchAgentHeartbeat(
-      deps.machineRegistryStore, ctx, input.agentId, heartbeat, nowIso,
-    );
+    return dispatchAgentHeartbeat(dc, input.agentId);
   }
 
   return err({

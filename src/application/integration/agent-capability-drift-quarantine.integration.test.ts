@@ -12,6 +12,7 @@ import type {
   AuthorizationPort,
   Clock,
   EvidenceLogPort,
+  HeartbeatData,
   IdGenerator,
   IdempotencyKey,
   IdempotencyStore,
@@ -54,7 +55,7 @@ class InMemoryMachineRegistryStore implements MachineRegistryStore {
   public async updateMachineHeartbeat(
     _tenantId: ReturnType<typeof TenantId>,
     _machineId: MachineRegistrationV1['machineId'],
-    _heartbeat: import('../ports/machine-registry-store.js').HeartbeatData,
+    _heartbeat: HeartbeatData,
   ): Promise<boolean> {
     return true;
   }
@@ -62,7 +63,7 @@ class InMemoryMachineRegistryStore implements MachineRegistryStore {
   public async updateAgentHeartbeat(
     _tenantId: ReturnType<typeof TenantId>,
     _agentId: AgentConfigV1['agentId'],
-    _heartbeat: import('../ports/machine-registry-store.js').HeartbeatData,
+    _heartbeat: HeartbeatData,
   ): Promise<boolean> {
     return true;
   }

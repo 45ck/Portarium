@@ -153,7 +153,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       amount,
       currencyCode:
         typeof input.payload?.['currencyCode'] === 'string'
-          ? (input.payload['currencyCode'] as string)
+          ? (input.payload['currencyCode'])
           : 'USD',
       status: 'completed',
       paidAtIso: this.#now().toISOString(),
@@ -283,12 +283,12 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       invoiceNumber:
         (typeof input.payload?.['invoiceNumber'] === 'string'
           ? input.payload['invoiceNumber']
-          : `PB-INV-${this.#invoiceSequence}`) as string,
+          : `PB-INV-${this.#invoiceSequence}`),
       status: 'draft',
       currencyCode:
         (typeof input.payload?.['currencyCode'] === 'string'
           ? input.payload['currencyCode']
-          : 'USD') as string,
+          : 'USD'),
       totalAmount: readNumber(input.payload, 'totalAmount') ?? 0,
       issuedAtIso: this.#now().toISOString(),
     };
@@ -357,7 +357,7 @@ export class InMemoryPaymentsBillingAdapter implements PaymentsBillingAdapterPor
       amount,
       currencyCode:
         typeof input.payload?.['currencyCode'] === 'string'
-          ? (input.payload['currencyCode'] as string)
+          ? (input.payload['currencyCode'])
           : 'USD',
       status: 'completed',
       paidAtIso: this.#now().toISOString(),

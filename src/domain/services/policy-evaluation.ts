@@ -6,6 +6,9 @@ import type {
   SodViolationV1,
 } from '../policy/sod-constraints-v1.js';
 import { evaluateSodConstraintsV1 } from '../policy/sod-constraints-v1.js';
+import {
+  evaluatePolicyConditionDslV1,
+} from '../policy/policy-condition-dsl-v1.js';
 import type { PolicyId as PolicyIdType, UserId as UserIdType } from '../primitives/index.js';
 import {
   evaluateSafetyPolicyContext,
@@ -57,6 +60,27 @@ export function evaluatePolicy(params: {
   const safety = evaluateSafetyPolicyContext(context);
   const evaluatedPolicyIds = [policy.policyId] as const;
 
+  // --- Inline rule evaluation ---
+  const inlineResult = evaluateInlineRules(policy, context);
+  if (inlineResult.errors.length > 0) {
+    // Fail closed: any parse/timeout error → Deny
+    return {
+      decision: 'Deny',
+      violations: [],
+      evaluatedPolicyIds,
+      inlineRuleErrors: inlineResult.errors,
+    };
+  }
+  if (inlineResult.decision !== null) {
+    return buildPolicyResult({
+      baseDecision: inlineResult.decision,
+      violations: [],
+      evaluatedPolicyIds,
+      safety,
+    });
+  }
+
+  // --- SoD constraint evaluation ---
   if (!policy.sodConstraints || policy.sodConstraints.length === 0) {
     return buildPolicyResult({
       baseDecision: 'Allow',
@@ -104,14 +128,39 @@ export function evaluatePolicies(params: {
 
   const allViolations: SodViolationV1[] = [];
   const allPolicyIds: PolicyIdType[] = [];
+  const allInlineErrors: string[] = [];
+  let strongestPolicyDecision: PolicyDecisionV1 = 'Allow';
+
   for (const policy of policies) {
     const result = evaluatePolicy({ policy, context });
     allViolations.push(...result.violations);
     allPolicyIds.push(...result.evaluatedPolicyIds);
+    if (result.inlineRuleErrors) {
+      allInlineErrors.push(...result.inlineRuleErrors);
+    }
+    if (DECISION_SEVERITY[result.decision] > DECISION_SEVERITY[strongestPolicyDecision]) {
+      strongestPolicyDecision = result.decision;
+    }
   }
 
+  // Fail closed: if any policy had inline rule errors, propagate Deny
+  if (allInlineErrors.length > 0) {
+    return {
+      decision: 'Deny',
+      violations: allViolations,
+      evaluatedPolicyIds: allPolicyIds,
+      inlineRuleErrors: allInlineErrors,
+    };
+  }
+
+  const sodBaseDecision = decisionFromViolations(allViolations);
+  const baseDecision =
+    DECISION_SEVERITY[strongestPolicyDecision] > DECISION_SEVERITY[sodBaseDecision]
+      ? strongestPolicyDecision
+      : sodBaseDecision;
+
   return buildPolicyResult({
-    baseDecision: decisionFromViolations(allViolations),
+    baseDecision,
     violations: allViolations,
     evaluatedPolicyIds: allPolicyIds,
     safety,
@@ -133,6 +182,87 @@ export function toPolicyEvaluationEvidenceV1(
       : {}),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Inline rule evaluation helpers
+// ---------------------------------------------------------------------------
+
+type InlineRuleEvalResult = Readonly<{
+  decision: PolicyDecisionV1 | null;
+  errors: readonly string[];
+}>;
+
+/**
+ * Builds the flattened context object passed to the inline rule expression
+ * evaluator. The context exposes:
+ *   - every top-level scalar field of PolicyEvaluationContextV1
+ *   - every key from ruleContext (merged at the top level)
+ *   - a `run` object with `tier` aliased to `executionTier`
+ */
+function buildRuleEvaluationContext(
+  context: PolicyEvaluationContextV1,
+): Readonly<Record<string, unknown>> {
+  const base: Record<string, unknown> = {
+    executionTier: context.executionTier,
+    actionOperation: context.actionOperation ?? null,
+    run: { tier: context.executionTier },
+  };
+
+  if (context.ruleContext) {
+    for (const [key, value] of Object.entries(context.ruleContext)) {
+      base[key] = value;
+    }
+  }
+
+  return base;
+}
+
+function evaluateInlineRules(
+  policy: PolicyV1,
+  context: PolicyEvaluationContextV1,
+): InlineRuleEvalResult {
+  if (!policy.rules || policy.rules.length === 0) {
+    return { decision: null, errors: [] };
+  }
+
+  const evalCtx = buildRuleEvaluationContext(context);
+  const maxOps = context.ruleEvaluationMaxOperations ?? 1000;
+  const errors: string[] = [];
+  let strongestDecision: PolicyDecisionV1 | null = null;
+
+  for (const rule of policy.rules) {
+    const evalResult = evaluatePolicyConditionDslV1({
+      condition: rule.condition,
+      context: evalCtx,
+      maxOperations: maxOps,
+    });
+
+    if (!evalResult.ok) {
+      errors.push(evalResult.message);
+      continue;
+    }
+
+    if (evalResult.value) {
+      const ruleDecision: PolicyDecisionV1 = rule.effect === 'Deny' ? 'Deny' : 'Allow';
+      if (
+        strongestDecision === null ||
+        DECISION_SEVERITY[ruleDecision] > DECISION_SEVERITY[strongestDecision]
+      ) {
+        strongestDecision = ruleDecision;
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    return { decision: null, errors };
+  }
+
+  return { decision: strongestDecision, errors: [] };
+}
+
+// ---------------------------------------------------------------------------
+// SoD helpers
+// ---------------------------------------------------------------------------
 
 function decisionFromViolations(violations: readonly SodViolationV1[]): PolicyDecisionV1 {
   let worst: PolicyDecisionV1 = 'Allow';

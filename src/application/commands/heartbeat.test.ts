@@ -30,17 +30,17 @@ function createDeps(overrides?: { allowed?: boolean }) {
   };
 
   const machineRegistryStore: MachineRegistryStore = {
-    getMachineRegistrationById: vi.fn(async () => null),
-    saveMachineRegistration: vi.fn(async () => {}),
-    getAgentConfigById: vi.fn(async () => null),
-    saveAgentConfig: vi.fn(async () => {}),
-    updateMachineHeartbeat: vi.fn(async (_tenantId, machineId, heartbeat) => {
+    getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+    saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+    getAgentConfigById: vi.fn().mockResolvedValue(null),
+    saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+    updateMachineHeartbeat: vi.fn(async (_tenantId, machineId, heartbeat: HeartbeatData) => {
       const key = String(machineId);
       if (key === 'machine-missing') return false;
       machineHeartbeats.set(key, heartbeat);
       return true;
     }),
-    updateAgentHeartbeat: vi.fn(async (_tenantId, agentId, heartbeat) => {
+    updateAgentHeartbeat: vi.fn(async (_tenantId, agentId, heartbeat: HeartbeatData) => {
       const key = String(agentId);
       if (key === 'agent-missing') return false;
       agentHeartbeats.set(key, heartbeat);

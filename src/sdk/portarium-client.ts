@@ -148,7 +148,7 @@ export class PortariumClient {
     this.approvals = new ApprovalsNamespace(this);
     this.agents = new AgentsNamespace(this);
     this.machines = new MachinesNamespace(this);
-    this.events = new EventsNamespace(this);
+    this.events = new EventsNamespace();
   }
 
   /** @internal */
@@ -159,33 +159,7 @@ export class PortariumClient {
   /** @internal */
   async request<T>(method: string, path: string, body?: unknown, idempotencyKey?: string): Promise<T> {
     const url = `${this.#config.baseUrl}${path}`;
-    const correlationId = randomUUID();
-    const headers: Record<string, string> = {
-      'content-type': 'application/json',
-      accept: 'application/json',
-      'x-correlation-id': correlationId,
-    };
-
-    // Auth
-    if (this.#config.auth.kind === 'bearerToken') {
-      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
-    } else {
-      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
-      headers['x-client-cert'] = this.#config.auth.clientCert;
-    }
-
-    // W3C trace context
-    if (this.#config.traceparent) {
-      headers['traceparent'] = this.#config.traceparent;
-    }
-    if (this.#config.tracestate) {
-      headers['tracestate'] = this.#config.tracestate;
-    }
-
-    // Idempotency
-    if (idempotencyKey) {
-      headers['idempotency-key'] = idempotencyKey;
-    }
+    const headers = this.#buildHeaders(idempotencyKey);
 
     let lastError: Error | undefined;
     for (let attempt = 0; attempt <= this.#config.maxRetries; attempt++) {
@@ -193,40 +167,78 @@ export class PortariumClient {
         const delay = this.#config.retryBaseDelayMs * 2 ** (attempt - 1);
         await sleep(delay);
       }
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs);
-
       try {
-        const response = await this.#config.fetchFn(url, {
-          method,
-          headers,
-          signal: controller.signal,
-          ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-        });
-
-        if (response.ok) {
-          if (response.status === 204) return undefined as T;
-          return (await response.json()) as T;
-        }
-
-        // Parse RFC 7807 problem
-        const problem = await parseProblemResponse(response);
-        if (!isRetryableStatus(response.status)) {
-          throw new PortariumApiError(problem);
-        }
-        lastError = new PortariumApiError(problem);
+        return await this.#attemptRequest<T>(url, method, headers, body);
       } catch (error) {
-        if (error instanceof PortariumApiError && !isRetryableStatus(error.problem.status)) {
-          throw error;
+        const err = error instanceof Error ? error : new Error(String(error));
+        if (err instanceof PortariumApiError && !isRetryableStatus(err.problem.status)) {
+          throw err;
         }
-        lastError = error instanceof Error ? error : new Error(String(error));
-      } finally {
-        clearTimeout(timeout);
+        lastError = err;
       }
     }
 
     throw lastError ?? new Error('Request failed after retries');
+  }
+
+  #buildHeaders(idempotencyKey?: string): Record<string, string> {
+    const correlationId = randomUUID();
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      'x-correlation-id': correlationId,
+    };
+
+    if (this.#config.auth.kind === 'bearerToken') {
+      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
+    } else {
+      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
+      headers['x-client-cert'] = this.#config.auth.clientCert;
+    }
+
+    if (this.#config.traceparent) {
+      headers['traceparent'] = this.#config.traceparent;
+    }
+    if (this.#config.tracestate) {
+      headers['tracestate'] = this.#config.tracestate;
+    }
+    if (idempotencyKey) {
+      headers['idempotency-key'] = idempotencyKey;
+    }
+
+    return headers;
+  }
+
+  async #attemptRequest<T>(
+    url: string,
+    method: string,
+    headers: Record<string, string>,
+    body: unknown,
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs);
+
+    try {
+      const response = await this.#config.fetchFn(url, {
+        method,
+        headers,
+        signal: controller.signal,
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
+
+      if (response.ok) {
+        if (response.status === 204) return undefined as T;
+        return (await response.json()) as T;
+      }
+
+      const problem = await parseProblemResponse(response);
+      throw new PortariumApiError(problem);
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw new Error(String(error));
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
 
@@ -319,14 +331,13 @@ class MachinesNamespace {
 }
 
 class EventsNamespace {
-  constructor(_client: PortariumClient) {}
-
   subscribe(onEvent: (event: unknown) => void): EventSubscription {
     // Placeholder: real implementation uses NATS or SSE subscription
     return {
       onEvent,
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unsubscribe() {},
+      unsubscribe() {
+        // No-op until NATS/SSE subscription lifecycle is wired
+      },
     };
   }
 }

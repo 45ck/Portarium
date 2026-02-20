@@ -133,7 +133,7 @@ export class InMemoryHrisHcmAdapter implements HrisHcmAdapterPort {
       schemaVersion: 1,
       displayName,
       roles: ['employee'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
     };
     this.#employees.push(employee);
     return { ok: true, result: { kind: 'employee', employee } };
@@ -158,10 +158,10 @@ export class InMemoryHrisHcmAdapter implements HrisHcmAdapterPort {
     const next: PartyV1 = {
       ...current,
       ...(typeof input.payload?.['displayName'] === 'string'
-        ? { displayName: input.payload['displayName'] as string }
+        ? { displayName: input.payload['displayName'] }
         : {}),
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#employees[index] = next;
     return { ok: true, result: { kind: 'employee', employee: next } };
@@ -215,7 +215,7 @@ export class InMemoryHrisHcmAdapter implements HrisHcmAdapterPort {
       displayLabel:
         (typeof input.payload?.['label'] === 'string'
           ? input.payload['label']
-          : `Time Off ${this.#timeOffSequence}`) as string,
+          : `Time Off ${this.#timeOffSequence}`),
     };
     this.#timeOffRecords.push(externalRef);
     return { ok: true, result: { kind: 'externalRef', externalRef } };

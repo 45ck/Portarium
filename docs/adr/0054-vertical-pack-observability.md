@@ -37,8 +37,8 @@ ADR-0054 implementation now spans baseline observability plus pack-aware telemet
 - `bead-0043` (closed): OTel context propagation across request/workflow/adapter/machine paths.
 - `bead-0313` (closed): command-level observability hooks and security-safe attributes.
 - `bead-0385` (closed): local OTel collector stack wiring for development observability.
-- `bead-0641` (closed): pack-aware workflow/action telemetry attributes, per-pack success/failure/
-  latency metrics, and dashboard/regression detector artifacts.
+- `bead-0687` (open): tenant/pack-aware observability hardening and telemetry traceability
+  completion.
 
 ## Acceptance Evidence
 
@@ -61,8 +61,9 @@ ADR-0054 implementation now spans baseline observability plus pack-aware telemet
   - `infra/otel/README.md`
 - Specification and review linkage:
   - `.specify/specs/pack-observability-telemetry-v1.md`
-  - `docs/review/bead-0641-pack-aware-observability-review.md`
+  - `docs/review/bead-0607-adr-0054-implementation-mapping-review.md`
 
 ## Remaining Gap Tracking
 
-- none.
+- `bead-0687` (open): finalize tenant-aware telemetry linkage and close remaining ADR-0054
+  observability traceability drift.

@@ -17,7 +17,7 @@ import type {
 } from '../ports/index.js';
 import type { EvidenceEntryAppendInput } from '../ports/evidence-log.js';
 import { toAppContext } from '../common/context.js';
-import { TenantId } from '../../domain/primitives/index.js';
+import { HashSha256, TenantId } from '../../domain/primitives/index.js';
 import type {
   AgentConfigV1,
   MachineRegistrationV1,
@@ -104,11 +104,11 @@ function createDeps(overrides?: { allowed?: boolean; idGeneratorValues?: string[
     execute: vi.fn(async (fn) => fn()),
   };
   const evidenceLog: EvidenceLogPort = {
-    appendEntry: vi.fn(async (_tenantId, entry) => {
+    appendEntry: vi.fn(async (_tenantId, entry: EvidenceEntryAppendInput) => {
       evidenceAppends.push(entry);
       return {
         ...entry,
-        hashSha256: 'a'.repeat(64),
+        hashSha256: HashSha256('a'.repeat(64)),
       };
     }),
   };

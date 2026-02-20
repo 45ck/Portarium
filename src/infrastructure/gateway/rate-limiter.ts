@@ -17,10 +17,10 @@ export type RateLimitResult =
   | Readonly<{ allowed: true }>
   | Readonly<{ allowed: false; retryAfterSeconds: number }>;
 
-type Bucket = {
+interface Bucket {
   tokens: number;
   lastRefillTime: number;
-};
+}
 
 export class TokenBucketRateLimiter {
   readonly #maxTokens: number;

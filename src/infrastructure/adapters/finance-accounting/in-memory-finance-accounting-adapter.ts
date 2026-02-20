@@ -191,13 +191,13 @@ export class InMemoryFinanceAccountingAdapter implements FinanceAccountingAdapte
     const output: InvoiceV1 = {
       ...record,
       ...(typeof input.payload?.['currencyCode'] === 'string'
-        ? { currencyCode: input.payload['currencyCode'] as string }
+        ? { currencyCode: input.payload['currencyCode'] }
         : {}),
       ...(typeof input.payload?.['totalAmount'] === 'number'
-        ? { totalAmount: input.payload['totalAmount'] as number }
+        ? { totalAmount: input.payload['totalAmount'] }
         : {}),
       ...(typeof input.payload?.['invoiceNumber'] === 'string'
-        ? { invoiceNumber: input.payload['invoiceNumber'] as string }
+        ? { invoiceNumber: input.payload['invoiceNumber'] }
         : {}),
     };
 

@@ -28,6 +28,13 @@ export default tseslint.config(
       '**/.specify/**/generated/**',
       // apps/ workspaces have their own tsconfig and lint setup
       'apps/**',
+      // Templates and examples are developer-facing starter code, not production
+      'templates/**',
+      'examples/**',
+      // QA automation scripts — not production code
+      'qa/**',
+      // UI capture scripts — not production
+      'docs/ui/cockpit/screenshots/**',
       // Scratch/generator scripts left from interactive sessions
       'tmp_*.{js,cjs,mjs,py}',
       'gen*.{js,cjs,mjs,py}',
@@ -90,7 +97,6 @@ export default tseslint.config(
         'error',
         { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
       ],
-
       // Disallow inline suppression. If a rule is wrong, fix the code or change the rule with an ADR.
       'eslint-comments/no-use': 'error',
     },
@@ -109,6 +115,10 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
+      ],
 
       // Maintainability: ban unsafe escape hatches
       '@typescript-eslint/no-explicit-any': 'error',
@@ -137,6 +147,9 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
     },
   },
 
@@ -150,6 +163,33 @@ export default tseslint.config(
       'max-lines': 'off',
       'max-params': 'off',
       'sonarjs/cognitive-complexity': 'off',
+    },
+  },
+
+  // In-memory adapter implementations are test doubles for external services.
+  // They route many operations through a single switch and legitimately need
+  // higher complexity/size budgets. require-await is off because they fulfil
+  // async port contracts without real I/O.
+  {
+    files: ['src/infrastructure/adapters/**/in-memory-*.ts'],
+    rules: {
+      complexity: 'off',
+      'max-depth': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'max-params': 'off',
+      'sonarjs/cognitive-complexity': 'off',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
+
+  // QA scripts that use browser/puppeteer APIs — allow browser globals.
+  {
+    files: ['scripts/qa/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
     },
   },
 

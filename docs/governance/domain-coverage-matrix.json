@@ -52,7 +52,7 @@
       "canonicalObjects": ["Payment", "Invoice", "Subscription", "Product", "Account", "Party"],
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0225", "bead-0226"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active implementation bead is open for provider-specific PaymentsBilling parity.",
         "Mapping-evidence gate remains open before adapter work can be promoted."
@@ -64,7 +64,7 @@
       "canonicalObjects": ["Order", "Invoice", "Payment", "Party", "Subscription", "Document"],
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0227", "bead-0228"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active implementation bead is open for ProcurementSpend adapter parity.",
         "Cross-family integration gate remains open."
@@ -76,7 +76,7 @@
       "canonicalObjects": ["Party", "Subscription"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0229", "bead-0230"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active implementation bead is open for HRIS/HCM adapter progression.",
         "Mapping-evidence gate remains open before adapter work can proceed."
@@ -88,7 +88,7 @@
       "canonicalObjects": ["Party", "Payment"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0231", "bead-0232"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active Payroll adapter implementation bead is currently open.",
         "Integration gate remains open for release-level readiness."
@@ -108,7 +108,7 @@
       ],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0233", "bead-0234"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active CRM/Sales provider implementation bead is open.",
         "Mapping-evidence and integration gates remain unresolved."
@@ -132,7 +132,7 @@
       "canonicalObjects": ["Ticket", "Asset", "Party", "Document", "Subscription", "Product"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0237", "bead-0238"],
-      "gapBeads": ["bead-0413", "bead-0166"],
+      "gapBeads": ["bead-0164", "bead-0166"],
       "gaps": [
         "Event-driven IT ops execution-platform fit is still under spike evaluation.",
         "Integration gate remains open for rollout readiness."
@@ -180,7 +180,7 @@
       "canonicalObjects": ["Campaign", "Document"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0245", "bead-0246"],
-      "gapBeads": ["bead-0403", "bead-0166"],
+      "gapBeads": ["bead-0164", "bead-0166"],
       "gaps": [
         "Platform coverage and piece selection are still in spike status.",
         "Integration gate remains open before family promotion."
@@ -192,7 +192,7 @@
       "canonicalObjects": ["Party", "Task", "Document"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0247", "bead-0248"],
-      "gapBeads": ["bead-0403", "bead-0166"],
+      "gapBeads": ["bead-0164", "bead-0166"],
       "gaps": [
         "Execution-platform capability coverage is still in evaluation for this family.",
         "Integration gate remains open for release readiness."
@@ -216,7 +216,7 @@
       "canonicalObjects": ["Document", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0251", "bead-0252"],
-      "gapBeads": ["bead-0166", "bead-0174"],
+      "gapBeads": ["bead-0166", "bead-0163"],
       "gaps": [
         "No active implementation bead is open for Documents/ESign adapter parity.",
         "Mapping-evidence and integration gates remain open."
@@ -240,7 +240,7 @@
       "canonicalObjects": ["Ticket", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0255", "bead-0256"],
-      "gapBeads": ["bead-0413", "bead-0393"],
+      "gapBeads": ["bead-0164", "bead-0393"],
       "gaps": [
         "IT-ops automation platform evaluation is still open.",
         "SLO and alerting implementation for incident visibility remains open."
@@ -252,7 +252,7 @@
       "canonicalObjects": ["Ticket", "Asset", "Document", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0257", "bead-0258"],
-      "gapBeads": ["bead-0414", "bead-0167"],
+      "gapBeads": ["bead-0167", "bead-0168"],
       "gaps": [
         "License and compliance governance for external execution platforms remains open.",
         "Security phase gate remains open before governance closeout."

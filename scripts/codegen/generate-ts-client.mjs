@@ -42,7 +42,7 @@ try {
     `npx openapi-typescript "${OPENAPI_SPEC}" --output "${OUTPUT_FILE}"`,
     { cwd: REPO_ROOT, stdio: 'inherit' },
   );
-} catch (error) {
+} catch {
   console.error('ERROR: openapi-typescript generation failed.');
   process.exit(1);
 }

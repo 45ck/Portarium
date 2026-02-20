@@ -40,7 +40,7 @@ ADR implementation linkage added:
   - `bead-0043`
   - `bead-0313`
   - `bead-0385`
-  - `bead-0641`
+  - `bead-0687`
 
 Evidence pointers added in ADR:
 
@@ -51,4 +51,4 @@ Evidence pointers added in ADR:
 
 Remaining-gap traceability:
 
-- none.
+- `bead-0687`

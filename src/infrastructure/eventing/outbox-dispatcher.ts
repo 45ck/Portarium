@@ -100,14 +100,15 @@ export class OutboxDispatcher {
 
   #scheduleNext(): void {
     if (!this.#running) return;
-    this.#timer = setTimeout(async () => {
+    const tick = async (): Promise<void> => {
       try {
         await this.pollOnce();
       } catch {
         // Swallow errors from the poll cycle; next cycle will retry.
       }
       this.#scheduleNext();
-    }, this.#pollIntervalMs);
+    };
+    this.#timer = setTimeout(() => { void tick(); }, this.#pollIntervalMs);
   }
 }
 

@@ -77,3 +77,31 @@ Adopt a reference baseline that is intentionally cloud-neutral while still concr
   - Rejected for v1 due lack of policy enforcement primitives needed for egress control, RBAC boundaries, and horizontal worker isolation.
 - **Cloud-specific IaC only**
   - Rejected to preserve migration paths and avoid early lock-in in the repository's design stage.
+
+## Implementation Mapping
+
+ADR-0056 baseline architecture is implemented through the infrastructure baseline and hardening
+closure beads:
+
+- `bead-0294` (closed): infrastructure baseline ADR implementation, local compose baseline, and
+  infrastructure spec linkage.
+- `bead-0297` (closed): hardened infrastructure scaffolding, runnable image manifests, and
+  deployment-path validation improvements.
+
+## Acceptance Evidence
+
+- Infrastructure baseline and architecture linkage:
+  - `infra/README.md`
+  - `.specify/specs/infrastructure-layer-v1.md`
+- Local dependency/runtime parity:
+  - `docker-compose.yml`
+  - `docker-compose.local.yml`
+- Cloud-neutral IaC baseline and first provider implementation:
+  - `infra/terraform/README.md`
+  - `infra/terraform/aws/README.md`
+- Review linkage:
+  - `docs/review/bead-0611-adr-0056-linkage-review.md`
+
+## Remaining Gap Tracking
+
+- none.

@@ -118,7 +118,7 @@ export async function startRunActivity(input: StartRunActivityInput): Promise<vo
       ...runMetrics,
       'workflow.id': input.workflowId,
     },
-    run: async () => {
+    run: () => {
       emitCounter('portarium.run.started', runMetrics);
 
       ensureRunState(input.tenantId, input.runId, 'Pending');
@@ -137,6 +137,7 @@ export async function startRunActivity(input: StartRunActivityInput): Promise<vo
           runId: RunId(input.runId),
         },
       });
+      return Promise.resolve();
     },
   });
 }
@@ -278,14 +279,14 @@ async function buildVerifiedEffectsWithTelemetry(params: {
       const verifiedEffect = await observeTemporalSpan({
         spanName: 'workflow.action.execute',
         attributes: actionMetrics,
-        run: async () =>
-          ({
+        run: () =>
+          Promise.resolve(({
             effectId: plannedEffect.effectId,
             operation: plannedEffect.operation,
             target: plannedEffect.target,
             summary: `Verified: ${plannedEffect.summary}`,
             verifiedAtIso: new Date().toISOString(),
-          }) satisfies VerifiedEffectV1,
+          }) satisfies VerifiedEffectV1),
       });
 
       emitCounter('portarium.action.succeeded', actionMetrics);

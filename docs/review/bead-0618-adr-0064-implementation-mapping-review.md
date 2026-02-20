@@ -45,5 +45,5 @@ Evidence pointers added in ADR:
 
 Remaining-gap traceability:
 
-- Added follow-up bead `bead-0646` for schemaVersion:2 cutover to remove legacy
+- Added follow-up bead `bead-0689` for schemaVersion:2 cutover to remove legacy
   `operation`-only compatibility mode.

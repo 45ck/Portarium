@@ -36,3 +36,14 @@ Mixing these in a single store causes stale-data bugs and unnecessary complexity
 - Devtools available for both (TanStack Query Devtools, Zustand devtools middleware)
 - No Redux boilerplate; no Context value re-render cascades for server state
 - Migration path: if needs grow, Zustand slices can be extracted without breaking TanStack Query layer
+
+## Implementation Mapping
+
+- Closed implementation coverage:
+  - `bead-0363`
+- ADR linkage verification review bead:
+  - `bead-0616`
+
+## Review Linkage
+
+- `docs/review/bead-0616-adr-0060-linkage-review.md`

@@ -58,3 +58,18 @@ Preload submission after 6-month stable operation.
 - HSTS prevents protocol downgrade attacks
 - SameSite=Strict cookies eliminate CSRF without token management
 - Report-only stage catches legitimate inline script usage before enforcement breaks UX
+
+## Implementation Mapping
+
+- Closed implementation coverage:
+  - `bead-0356`
+  - `bead-0357`
+  - `bead-0358`
+  - `bead-0367`
+  - `bead-0368`
+- ADR linkage verification review bead:
+  - `bead-0617`
+
+## Review Linkage
+
+- `docs/review/bead-0617-adr-0061-linkage-review.md`

@@ -184,7 +184,7 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
         ? { priority: readTicketPriority(input.payload, 'priority')! }
         : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
       createdAtIso: this.#now().toISOString(),
     };
@@ -228,7 +228,7 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
 
     const updated: TicketV1 = {
       ...this.#incidents[index]!,
-      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] as string } : {}),
+      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] } : {}),
       ...(readTicketStatus(input.payload, 'status') !== null
         ? { status: readTicketStatus(input.payload, 'status')! }
         : {}),
@@ -236,7 +236,7 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
         ? { priority: readTicketPriority(input.payload, 'priority')! }
         : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
     };
     this.#incidents[index] = updated;
@@ -395,12 +395,12 @@ export class InMemoryItsmItOpsAdapter implements ItsmItOpsAdapterPort {
 
     const updated: AssetV1 = {
       ...this.#assets[index]!,
-      ...(typeof input.payload?.['name'] === 'string' ? { name: input.payload['name'] as string } : {}),
+      ...(typeof input.payload?.['name'] === 'string' ? { name: input.payload['name'] } : {}),
       ...(typeof input.payload?.['assetType'] === 'string'
-        ? { assetType: input.payload['assetType'] as string }
+        ? { assetType: input.payload['assetType'] }
         : {}),
       ...(typeof input.payload?.['serialNumber'] === 'string'
-        ? { serialNumber: input.payload['serialNumber'] as string }
+        ? { serialNumber: input.payload['serialNumber'] }
         : {}),
       ...(readAssetStatus(input.payload, 'status') !== null
         ? { status: readAssetStatus(input.payload, 'status')! }

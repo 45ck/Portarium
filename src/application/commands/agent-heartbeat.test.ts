@@ -8,7 +8,7 @@ import type {
   MachineRegistryStore,
 } from '../ports/index.js';
 import { toAppContext } from '../common/context.js';
-import { TenantId, AgentId, MachineId } from '../../domain/primitives/index.js';
+import type { TenantId, AgentId, MachineId } from '../../domain/primitives/index.js';
 
 function makeCtx(workspaceId = 'ws-1') {
   return toAppContext({

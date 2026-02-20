@@ -49,3 +49,33 @@ Adopt a first-pass `ops-cockpit` presentation package under `src/presentation/` 
   - Rejected: slows down API contract validation and blocks trust-UI rollout for planned/predicted/verified effects.
 - **Use a separate ADR for each component**
   - Rejected: unnecessary overhead for a shared foundational implementation package.
+
+## Implementation Mapping
+
+- Closed implementation coverage:
+  - `bead-0295`
+  - `bead-0336`
+  - `bead-0333`
+  - `bead-0349`
+  - `bead-0353`
+  - `bead-0427`
+  - `bead-0441`
+- Remaining follow-up gap for full live-data parity:
+  - `bead-0590`
+- ADR closure implementation mapping bead:
+  - `bead-0612`
+- ADR linkage verification review bead:
+  - `bead-0613`
+
+## Evidence References
+
+- `src/presentation/ops-cockpit/http-client.ts`
+- `src/presentation/ops-cockpit/http-client.test.ts`
+- `src/presentation/ops-cockpit/problem-details.ts`
+- `src/presentation/ops-cockpit/problem-details.test.ts`
+- `src/presentation/runtime/control-plane-handler.ts`
+- `src/presentation/runtime/control-plane-handler.test.ts`
+- `src/presentation/runtime/control-plane-handler.machine-agent.contract.test.ts`
+- `src/presentation/runtime/control-plane-handler.openapi.routes.review.test.ts`
+- `.specify/specs/presentation-layer-reference-cockpit-v1.md`
+- `docs/review/bead-0612-adr-0057-implementation-mapping-review.md`

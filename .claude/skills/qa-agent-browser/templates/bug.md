@@ -1,38 +1,33 @@
-# <bug-id>: <title>
+# <BUGID>: <title>
 
-## Scenario
-
-- Base URL:
-- Date:
-- Story/spec reference:
+## Story / Scenario
+- Story: <id or name>
+- Scenario: <short name>
+- Base URL: <baseUrl>
+- Date: <YYYY-MM-DD>
 
 ## Expected
-
-...
+<what should happen>
 
 ## Actual
+<what happened>
 
-...
-
-## Steps To Reproduce
-
-1.
-2.
-3.
+## Steps to reproduce (agent-browser)
+```bash
+# paste the exact command sequence here
+```
 
 ## Evidence
+- Screenshot: qa-artifacts/<date>/screenshots/<file>.png
+- Trace: qa-artifacts/<date>/traces/<file>.zip
+- Console (summary): <paste key lines>
+- Page errors (summary): <paste key lines>
 
-- Screenshot:
-- Trace:
-- Console/errors:
+## Suspected area
+- Components/routes: <guess, with file paths if known>
+- Hypothesis: <guess>
 
-## Suspected Area
-
-- Files/components:
-- Hypothesis:
-
-## Fix / Verification
-
+## Fix / Verification (if fixed)
 - Root cause:
 - Fix summary:
 - Verification evidence:

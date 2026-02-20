@@ -4,12 +4,14 @@
  * Subcommands: tail
  */
 
-export async function handleEventsTail(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-  _runId?: string,
-  _type?: string,
-): Promise<void> {
+export interface EventsTailArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+  runId?: string;
+  type?: string;
+}
+
+export function handleEventsTail(_args: EventsTailArgs): void {
   console.log('Tailing events via SSE... (stub)');
 }

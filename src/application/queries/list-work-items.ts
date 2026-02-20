@@ -74,7 +74,7 @@ export async function listWorkItems(
     ['approvalId', input.approvalId],
     ['evidenceId', input.evidenceId],
   ] as const) {
-    if (value !== undefined && value.trim() === '') {
+    if (value?.trim() === '') {
       return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
     }
   }

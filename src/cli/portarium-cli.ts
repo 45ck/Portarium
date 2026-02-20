@@ -81,13 +81,18 @@ function getWorkspaceId(flags: Record<string, string | boolean>): string {
 
 // -- HTTP client helper ------------------------------------------------------
 
+interface ApiFetchRequest {
+  method: string;
+  path: string;
+  body?: unknown;
+}
+
 async function apiFetch(
   baseUrl: string,
   token: string,
-  method: string,
-  path: string,
-  body?: unknown,
+  req: ApiFetchRequest,
 ): Promise<unknown> {
+  const { method, path, body } = req;
   const res = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
@@ -130,7 +135,7 @@ Global flags:
 `);
 }
 
-async function handleLogin(): Promise<void> {
+function handleLogin(): void {
   console.log('OAuth2 Device Authorization Flow');
   console.log('--------------------------------');
   console.log('1. Visit: https://auth.portarium.dev/device');
@@ -147,7 +152,7 @@ async function handleLogin(): Promise<void> {
 async function handleWorkspaceSelect(flags: Record<string, string | boolean>): Promise<void> {
   const baseUrl = getBaseUrl(flags);
   const token = getToken(flags);
-  const result = await apiFetch(baseUrl, token, 'GET', '/api/v1/workspaces');
+  const result = await apiFetch(baseUrl, token, { method: 'GET', path: '/api/v1/workspaces' });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -156,9 +161,10 @@ async function handleAgentRegister(flags: Record<string, string | boolean>): Pro
   const token = getToken(flags);
   const ws = getWorkspaceId(flags);
   const name = String(flags['name'] ?? 'cli-agent');
-  const result = await apiFetch(baseUrl, token, 'POST', `/api/v1/workspaces/${ws}/agents`, {
-    name,
-    capabilities: [],
+  const result = await apiFetch(baseUrl, token, {
+    method: 'POST',
+    path: `/api/v1/workspaces/${ws}/agents`,
+    body: { name, capabilities: [] },
   });
   console.log(JSON.stringify(result, null, 2));
 }
@@ -173,12 +179,10 @@ async function handleAgentHeartbeat(flags: Record<string, string | boolean>): Pr
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(
-    baseUrl,
-    token,
-    'POST',
-    `/api/v1/workspaces/${ws}/agents/${encodeURIComponent(agentId)}/heartbeat`,
-  );
+  const result = await apiFetch(baseUrl, token, {
+    method: 'POST',
+    path: `/api/v1/workspaces/${ws}/agents/${encodeURIComponent(agentId)}/heartbeat`,
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -192,9 +196,10 @@ async function handleRunStart(flags: Record<string, string | boolean>): Promise<
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(baseUrl, token, 'POST', `/api/v1/workspaces/${ws}/runs`, {
-    workflowId,
-    inputPayload: {},
+  const result = await apiFetch(baseUrl, token, {
+    method: 'POST',
+    path: `/api/v1/workspaces/${ws}/runs`,
+    body: { workflowId, inputPayload: {} },
   });
   console.log(JSON.stringify(result, null, 2));
 }
@@ -209,12 +214,10 @@ async function handleRunStatus(flags: Record<string, string | boolean>): Promise
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(
-    baseUrl,
-    token,
-    'GET',
-    `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}`,
-  );
+  const result = await apiFetch(baseUrl, token, {
+    method: 'GET',
+    path: `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}`,
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -228,12 +231,10 @@ async function handleRunCancel(flags: Record<string, string | boolean>): Promise
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(
-    baseUrl,
-    token,
-    'POST',
-    `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}/cancel`,
-  );
+  const result = await apiFetch(baseUrl, token, {
+    method: 'POST',
+    path: `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}/cancel`,
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -249,13 +250,11 @@ async function handleApprove(flags: Record<string, string | boolean>): Promise<v
     return;
   }
   const reason = flags['reason'] ? String(flags['reason']) : undefined;
-  const result = await apiFetch(
-    baseUrl,
-    token,
-    'POST',
-    `/api/v1/workspaces/${ws}/approvals/${encodeURIComponent(approvalId)}/decisions`,
-    { decision, ...(reason ? { reason } : {}) },
-  );
+  const result = await apiFetch(baseUrl, token, {
+    method: 'POST',
+    path: `/api/v1/workspaces/${ws}/approvals/${encodeURIComponent(approvalId)}/decisions`,
+    body: { decision, ...(reason ? { reason } : {}) },
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 
@@ -305,7 +304,7 @@ export async function run(argv: string[]): Promise<void> {
       printUsage();
       break;
     case 'login':
-      await handleLogin();
+      handleLogin();
       break;
     case 'workspace':
       if (parsed.subcommand === 'select') {

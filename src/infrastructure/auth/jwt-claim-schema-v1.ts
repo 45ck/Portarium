@@ -84,7 +84,7 @@ function requireRoles(
   const seen = new Set<string>();
   const out: WorkspaceUserRole[] = [];
   for (let i = 0; i < raw.length; i++) {
-    const entry = raw[i];
+    const entry: unknown = raw[i];
     if (typeof entry !== 'string' || entry.trim() === '') {
       throw new JwtClaimValidationError(`Claim 'roles[${i}]' must be a non-empty string.`);
     }

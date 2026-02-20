@@ -193,8 +193,8 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
       schemaVersion: 1,
       displayName,
       roles: ['lead'],
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#contacts.push(contact);
     return { ok: true, result: { kind: 'party', party: contact } };
@@ -220,10 +220,10 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
     const next: PartyV1 = {
       ...current,
       ...(typeof input.payload?.['displayName'] === 'string'
-        ? { displayName: input.payload['displayName'] as string }
+        ? { displayName: input.payload['displayName'] }
         : {}),
-      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] as string } : {}),
-      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] as string } : {}),
+      ...(typeof input.payload?.['email'] === 'string' ? { email: input.payload['email'] } : {}),
+      ...(typeof input.payload?.['phone'] === 'string' ? { phone: input.payload['phone'] } : {}),
     };
     this.#contacts[index] = next;
     return { ok: true, result: { kind: 'party', party: next } };
@@ -350,7 +350,7 @@ export class InMemoryMarketingAutomationAdapter implements MarketingAutomationAd
       name,
       status: 'draft',
       ...(typeof input.payload?.['channelType'] === 'string'
-        ? { channelType: input.payload['channelType'] as string }
+        ? { channelType: input.payload['channelType'] }
         : {}),
     };
     this.#campaigns.push(campaign);

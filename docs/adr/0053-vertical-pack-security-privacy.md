@@ -27,3 +27,37 @@ Packs declare required compliance profiles (e.g., `edu.child-data-protection`, `
 
 - **"Compliance handled by customers"** -- reduces marketability; undermines control plane value
 - **Hard-code one jurisdiction** -- blocks expansion
+
+## Implementation Mapping
+
+ADR-0053 implementation coverage currently maps to:
+
+- `bead-0001` (closed): versioned vertical-pack contracts and registry/resolver baseline.
+- `bead-0016` (closed): workspace IAM/RBAC baseline.
+- `bead-0034` (closed): PII minimization and retention/disposition verification.
+- `bead-0035` (closed): tamper-evident evidence chain and signature hooks.
+- `bead-0045` (closed): containment and least-privilege boundary hardening.
+- `bead-0605` (closed): ADR closure mapping bead for implementation/evidence linkage.
+- `bead-0606` (open): ADR linkage verification review bead.
+
+## Acceptance Evidence
+
+- Pack security/compliance contract types:
+  - `src/domain/packs/pack-manifest.ts`
+  - `src/domain/packs/pack-compliance-profile-v1.ts`
+- Compliance enablement policy evaluator:
+  - `src/domain/packs/pack-enablement-compliance-v1.ts`
+  - `src/domain/packs/pack-enablement-compliance-v1.test.ts`
+  - `.specify/specs/pack-compliance-enablement-policy-v1.md`
+- Workspace authorization baseline:
+  - `src/application/iam/rbac/workspace-rbac.ts`
+- Privacy and evidence-chain controls:
+  - `src/domain/evidence/evidence-privacy-v1.ts`
+  - `src/domain/evidence/evidence-chain-v1.ts`
+- Review artifact:
+  - `docs/review/bead-0605-adr-0053-implementation-mapping-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0688` (open): wire compliance profile assets end-to-end in the reference pack manifest
+  and parsing tests to fully align ADR evidence with runtime pack artefacts.

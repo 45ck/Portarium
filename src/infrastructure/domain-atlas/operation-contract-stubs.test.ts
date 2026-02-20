@@ -10,7 +10,7 @@ function resolveRepoRoot(): string {
   return path.resolve(testDir, '../../..');
 }
 
-type OperationStub = {
+interface OperationStub {
   readonly schemaVersion: string;
   readonly portFamily: string;
   readonly sourceCatalog: string;
@@ -19,7 +19,7 @@ type OperationStub = {
     readonly description: string;
     readonly idempotent: boolean;
   }[];
-};
+}
 
 describe('Domain Atlas operation contract stubs', () => {
   it('contains machine-readable operation stubs for all 18 standard families', async () => {

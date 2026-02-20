@@ -31,3 +31,36 @@ Every pack major bump must ship with automated or semi-automated migration tooli
 
 - **Big-bang enablement for all tenants** -- high risk, unacceptable for regulated industries
 - **No migration tooling** -- forces manual upgrades, doesn't scale
+
+## Implementation Mapping
+
+ADR-0055 rollout and migration strategy is implemented across tenant-scoped pack resolution and
+schema migration orchestration:
+
+- `bead-0001` (closed): versioned pack manifest/registry/resolver baseline.
+- `bead-0309` (closed): tenant-scoped pack version resolution and lock materialization.
+- `bead-0362` (closed): migration planning semantics for staged rollout and rollback safety.
+- `bead-0377` (closed): migration executor behavior for expand/contract phases.
+- `bead-0391` (closed): migration rollback and failure-path handling.
+- `bead-0609` (closed): ADR-0055 implementation mapping closure.
+- `bead-0610` (closed): ADR-0055 linkage verification review.
+
+## Acceptance Evidence
+
+- Tenant-scoped version/lock resolution:
+  - `src/domain/packs/pack-resolver.ts`
+  - `src/domain/packs/pack-resolver.test.ts`
+- Expand/contract migration planning and rollback behavior:
+  - `src/infrastructure/migrations/schema-migrator.ts`
+  - `src/infrastructure/migrations/schema-migrator.test.ts`
+  - `src/infrastructure/migrations/default-migrations.ts`
+- Rollout policy/runbook context:
+  - `docs/vertical-packs/README.md`
+- Review linkage:
+  - `docs/review/bead-0609-adr-0055-implementation-mapping-review.md`
+  - `docs/review/bead-0610-adr-0055-linkage-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0644`: tenant-ring promotion orchestration, canary rollback triggers, and major-version
+  migration execution hooks.

@@ -190,7 +190,7 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
         ? { priority: readTicketPriority(input.payload, 'priority')! }
         : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
       createdAtIso: this.#now().toISOString(),
     };
@@ -233,7 +233,7 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
 
     const updated: TicketV1 = {
       ...this.#tickets[index]!,
-      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] as string } : {}),
+      ...(typeof input.payload?.['subject'] === 'string' ? { subject: input.payload['subject'] } : {}),
       ...(readTicketStatus(input.payload, 'status') !== null
         ? { status: readTicketStatus(input.payload, 'status')! }
         : {}),
@@ -241,7 +241,7 @@ export class InMemoryCustomerSupportAdapter implements CustomerSupportAdapterPor
         ? { priority: readTicketPriority(input.payload, 'priority')! }
         : {}),
       ...(typeof input.payload?.['assigneeId'] === 'string'
-        ? { assigneeId: input.payload['assigneeId'] as string }
+        ? { assigneeId: input.payload['assigneeId'] }
         : {}),
     };
     this.#tickets[index] = updated;

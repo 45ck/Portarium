@@ -110,14 +110,14 @@ export class RunEmulator {
     }
 
     if (this.#options.autoComplete) {
-      await this.completeRun(runId, { success: true });
+      this.completeRun(runId, { success: true });
     }
 
     return { ...run };
   }
 
   /** Mark an executing run as completed. */
-  public async completeRun(runId: string, result?: unknown): Promise<EmulatorRun> {
+  public completeRun(runId: string, result?: unknown): EmulatorRun {
     const run = this.#requireRun(runId);
     if (run.status !== 'Executing') {
       throw new Error(`Run ${runId} is ${run.status}, expected Executing.`);
@@ -129,7 +129,7 @@ export class RunEmulator {
   }
 
   /** Mark an executing run as failed. */
-  public async failRun(runId: string, error: string): Promise<EmulatorRun> {
+  public failRun(runId: string, error: string): EmulatorRun {
     const run = this.#requireRun(runId);
     if (run.status !== 'Executing') {
       throw new Error(`Run ${runId} is ${run.status}, expected Executing.`);
@@ -141,7 +141,7 @@ export class RunEmulator {
   }
 
   /** Cancel a run that is not yet completed or failed. */
-  public async cancelRun(runId: string): Promise<EmulatorRun> {
+  public cancelRun(runId: string): EmulatorRun {
     const run = this.#requireRun(runId);
     if (run.status === 'Completed' || run.status === 'Failed' || run.status === 'Cancelled') {
       throw new Error(`Run ${runId} is ${run.status}, cannot cancel.`);

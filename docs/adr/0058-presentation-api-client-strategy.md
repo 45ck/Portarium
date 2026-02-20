@@ -28,3 +28,15 @@ Generate a typed API client from the OpenAPI spec using `openapi-typescript` (sc
 - Frontend never accesses raw `any`-typed responses
 - Adding a new endpoint requires only an OpenAPI spec change; the client updates automatically
 - Zod schemas add a small runtime cost; scoped to network boundary only
+
+## Implementation Mapping
+
+- Closed implementation coverage:
+  - `bead-0342`
+  - `bead-0382`
+- ADR linkage verification review bead:
+  - `bead-0614`
+
+## Review Linkage
+
+- `docs/review/bead-0614-adr-0058-linkage-review.md`

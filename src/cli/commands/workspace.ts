@@ -4,21 +4,25 @@
  * Subcommands: list, select, current
  */
 
-export async function handleWorkspaceList(
-  _baseUrl: string,
-  _token: string,
-): Promise<void> {
+export interface WorkspaceListArgs {
+  baseUrl: string;
+  token: string;
+}
+
+export interface WorkspaceSelectArgs {
+  baseUrl: string;
+  token: string;
+  workspaceId: string;
+}
+
+export function handleWorkspaceList(_args: WorkspaceListArgs): void {
   console.log('Listing workspaces... (stub)');
 }
 
-export async function handleWorkspaceSelect(
-  _baseUrl: string,
-  _token: string,
-  _workspaceId: string,
-): Promise<void> {
+export function handleWorkspaceSelect(_args: WorkspaceSelectArgs): void {
   console.log('Selecting workspace... (stub)');
 }
 
-export async function handleWorkspaceCurrent(): Promise<void> {
+export function handleWorkspaceCurrent(): void {
   console.log('Current workspace: (stub -- reads from ~/.portarium/context.json)');
 }

@@ -6,6 +6,7 @@ import {
   WorkflowId,
 } from '../../domain/primitives/index.js';
 import { parseRunV1, type RunV1 } from '../../domain/runs/index.js';
+import { parseWorkflowTriggerV1, type WorkflowTriggerV1 } from '../../domain/schedule/index.js';
 import type { WorkflowV1 } from '../../domain/workflows/index.js';
 import { parseWorkflowV1 } from '../../domain/workflows/index.js';
 import {
@@ -35,6 +36,7 @@ import type {
   WorkflowOrchestrator,
   WorkflowStore,
 } from '../ports/index.js';
+import type { TriggerExecutionRouterPort } from '../services/trigger-execution-router.js';
 import {
   ensureRunIdIsUnique,
   ensureSingleActiveAdapterPerPort,
@@ -73,6 +75,7 @@ export interface StartWorkflowDeps {
   runStore: RunStore;
   orchestrator: WorkflowOrchestrator;
   eventPublisher: EventPublisher;
+  triggerRouter?: TriggerExecutionRouterPort;
 }
 
 type Err<E> = Readonly<{ ok: false; error: E }>;
@@ -112,6 +115,34 @@ function validateInput(input: StartWorkflowInput): Result<ParsedIds, StartWorkfl
   } catch {
     return err({ kind: 'ValidationFailed', message: 'Invalid workflow identifiers.' });
   }
+}
+
+function parseTriggerFromInput(
+  raw: unknown,
+  ids: ParsedIds,
+): Result<WorkflowTriggerV1 | undefined, ValidationFailed> {
+  if (raw === undefined || raw === null) {
+    return ok(undefined);
+  }
+
+  let trigger: WorkflowTriggerV1;
+  try {
+    trigger = parseWorkflowTriggerV1(raw);
+  } catch {
+    return err({ kind: 'ValidationFailed', message: 'Invalid trigger payload.' });
+  }
+
+  if (
+    trigger.workspaceId.toString() !== ids.workspaceId.toString() ||
+    trigger.workflowId.toString() !== ids.workflowId.toString()
+  ) {
+    return err({
+      kind: 'ValidationFailed',
+      message: 'trigger workspaceId/workflowId must match the command workspaceId/workflowId.',
+    });
+  }
+
+  return ok(trigger);
 }
 
 async function checkAuthorization(
@@ -275,6 +306,7 @@ type NewStartWorkflowPlan = Readonly<{
   generated: GeneratedValues;
   run: RunV1;
   commandKey: IdempotencyKey;
+  trigger?: WorkflowTriggerV1;
 }>;
 
 type CachedStartWorkflowPlan = Readonly<{
@@ -305,6 +337,10 @@ async function buildStartWorkflowPlan(
   if (cached) {
     return ok({ kind: 'cached', output: cached });
   }
+
+  // Validate and parse trigger before doing expensive lookups
+  const triggerResult = parseTriggerFromInput(input.trigger, idsResult.value);
+  if (!triggerResult.ok) return triggerResult;
 
   const workflowResult = await resolveWorkflow(
     deps.workflowStore,
@@ -357,6 +393,7 @@ async function buildStartWorkflowPlan(
     generated: genResult.value,
     run: runResult.value,
     commandKey,
+    ...(triggerResult.value !== undefined ? { trigger: triggerResult.value } : {}),
   });
 }
 
@@ -376,5 +413,22 @@ export async function startWorkflow(
     return ok(plan.output);
   }
 
-  return executeTransaction(deps, ctx, plan);
+  const txResult = await executeTransaction(deps, ctx, plan);
+  if (!txResult.ok) return txResult;
+
+  // Route trigger if one was provided and a router is configured
+  if (plan.trigger && deps.triggerRouter) {
+    await deps.triggerRouter.routeAtWorkflowStart({
+      trigger: plan.trigger,
+      tenantId: ctx.tenantId,
+      runId: txResult.value.runId,
+      correlationId: ctx.correlationId,
+      payload: {
+        workflowId: plan.ids.workflowId.toString(),
+        workspaceId: plan.ids.workspaceId.toString(),
+      },
+    });
+  }
+
+  return txResult;
 }
