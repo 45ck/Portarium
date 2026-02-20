@@ -250,9 +250,11 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 - STORY-V09.3 — bead-0189
   - Runbook: rollback plan for failing cycle.
   - AC: freeze scope, rollback scope, communication template documented.
+  - Artifact: `docs/governance/failing-cycle-rollback-runbook.md`
 - STORY-V09.4 — bead-0190
   - Runbook review: validate rollback includes data, evidence, and credential cleanup.
   - AC: review passed.
+  - Artifact: `docs/review/bead-0190-rollback-cleanup-validation.md`
 
 ## New beads created for this backlog
 

@@ -10,14 +10,14 @@ for the four critical delivery streams:
 
 ## Owner Assignments
 
-| Role | Primary owner scope | Backup owner scope |
-| --- | --- | --- |
-| Principal Engineer (PE) | Cross-stream sequencing, dependency enforcement, gate readiness | Any blocked stream triage |
-| Domain Atlas Lead | Upstream intake, CIF extraction, mapping quality, contract stubs | Adapter stream input quality |
-| Control-Plane API Lead | OpenAPI contract, handler parity, auth/error envelopes | API release readiness checks |
-| Evidence Pipeline Lead | Plan/diff/evidence chain, outbox dispatch, immutability controls | Audit and retention evidence |
-| Adapter Family Leads | Per-family implementation and tests across port families | Family-level regression triage |
-| QA and Review Lead | Review-bead closure evidence, doc-review closure, QA sign-off | Release gate evidence collation |
+| Role                    | Primary owner scope                                              | Backup owner scope              |
+| ----------------------- | ---------------------------------------------------------------- | ------------------------------- |
+| Principal Engineer (PE) | Cross-stream sequencing, dependency enforcement, gate readiness  | Any blocked stream triage       |
+| Domain Atlas Lead       | Upstream intake, CIF extraction, mapping quality, contract stubs | Adapter stream input quality    |
+| Control-Plane API Lead  | OpenAPI contract, handler parity, auth/error envelopes           | API release readiness checks    |
+| Evidence Pipeline Lead  | Plan/diff/evidence chain, outbox dispatch, immutability controls | Audit and retention evidence    |
+| Adapter Family Leads    | Per-family implementation and tests across port families         | Family-level regression triage  |
+| QA and Review Lead      | Review-bead closure evidence, doc-review closure, QA sign-off    | Release gate evidence collation |
 
 ## Global Rules
 
@@ -169,3 +169,7 @@ Sequence:
 - Relevant runbook/spec/ADR references are updated.
 - Review evidence document exists for completed bead(s).
 - `ci:pr` attempted and outcome captured.
+
+## Related Runbooks
+
+- Rollback plan: `docs/governance/failing-cycle-rollback-runbook.md`

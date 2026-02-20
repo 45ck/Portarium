@@ -21,6 +21,8 @@ Use this page to pick the shortest path for what you are trying to do.
 3. `docs/how-to/run-quality-gates.md`
 4. `docs/glossary.md`
 5. `docs/development-start-here.md`
+6. `docs/governance/execution-order-runbook.md`
+7. `docs/governance/failing-cycle-rollback-runbook.md`
 
 ## I Want Contracts and Technical Facts
 

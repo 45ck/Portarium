@@ -34,6 +34,7 @@ Edge safety controller owns:
 - collision avoidance and speed/zone enforcement
 - hard geofence limits and keep-out zones
 - real-time closed-loop motion control
+- ISO 13849-1 safety-related control function implementation and validation scope (SRP/CS boundary)
 
 ## RACI
 

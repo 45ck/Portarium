@@ -24,21 +24,35 @@ This guideline covers visual assets for the high-fidelity cockpit app in `apps/c
 
 - IDs: kebab-case (`icon-robot-ground`, `image-agent-ops-analyst`)
 - Paths:
-  - `/assets/icons/domain/*.svg`
-  - `/assets/images/robots/*.(webp|png|svg)`
-  - `/assets/images/agents/*.(webp|png|svg)`
-  - `/assets/illustrations/*.(webp|png|svg)`
+  - `/assets/icons/domain/*.png`
+  - `/assets/images/robots/*.(webp|png)`
+  - `/assets/images/agents/*.(webp|png)`
+  - `/assets/illustrations/*.(webp|png)`
+
+## Background and transparency rules
+
+- Domain icons should be committed as transparent PNGs.
+- Generation can use white/green/blue backgrounds when needed, then convert with:
+  - `npm run cockpit:assets:icons:transparent`
+- Optional controls:
+  - `--background auto|white|green|blue|#RRGGBB` (`auto` samples corner pixels)
+  - `--threshold <number>`
+  - `--softness <number>`
+  - `--dry-run`
 
 ## Generation workflow
 
 1. Add/update prompt in `docs/assets/prompts/cockpit-entity-assets.yml`.
-2. Generate images manually in Gemini/Nano Banana Pro.
-3. Curate outputs and place selected files under `apps/cockpit/public/assets/...`.
-4. Update manifest entries (paths, alt, generator metadata, promptRef, status).
-5. Run:
+2. Generate images with:
+   - `npm run cockpit:assets:generate -- --kind <icon|image|illustration> [--ids ...] [--background white]`
+3. Convert icon backgrounds to transparency:
+   - `npm run cockpit:assets:icons:transparent`
+4. Curate outputs under `apps/cockpit/public/assets/...`.
+5. Update manifest entries (paths, alt, generator metadata, promptRef, status).
+6. Run:
    - `npm run cockpit:assets:check`
    - `npm run cockpit:assets:optimize`
-6. Commit assets, manifest changes, and prompt updates together.
+7. Commit assets, manifest changes, and prompt updates together.
 
 ## Quality checks
 

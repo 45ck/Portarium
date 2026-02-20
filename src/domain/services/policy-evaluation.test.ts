@@ -7,6 +7,7 @@ import {
   evaluatePolicy,
   evaluatePolicies,
   type PolicyEvaluationContextV1,
+  toPolicyEvaluationEvidenceV1,
 } from './policy-evaluation.js';
 
 // ---------------------------------------------------------------------------
@@ -166,6 +167,11 @@ describe('evaluatePolicy', () => {
 
     expect(result.decision).toBe('RequireApproval');
     expect(result.safetyTierRecommendation).toBe('HumanApprove');
+    expect(result.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'SpeedOrForceConstraint', standardsRef: 'ISO 13849-1' }),
+      ]),
+    );
   });
 
   it('recommends ManualOnly when OperatorRequired constraint is active', () => {
@@ -193,6 +199,109 @@ describe('evaluatePolicy', () => {
 
     expect(result.decision).toBe('RequireApproval');
     expect(result.safetyTierRecommendation).toBe('ManualOnly');
+    expect(result.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'OperatorRequiredConstraint',
+          standardsRef: 'ISO 13849-1',
+        }),
+      ]),
+    );
+  });
+
+  it('enforces ManualOnly for robot:estop_request and records hazard classification', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy(),
+      context: makeContext({
+        executionTier: 'Auto',
+        actionOperation: 'robot:estop_request',
+      }),
+    });
+
+    expect(result.decision).toBe('RequireApproval');
+    expect(result.safetyTierRecommendation).toBe('ManualOnly');
+    expect(result.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'RobotEstopRequest',
+          standardsRef: 'ISO 13849-1',
+        }),
+      ]),
+    );
+  });
+
+  it('requires HumanApprove for robot:execute_action in proximity zones while still running SoD checks', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy({
+        sodConstraints: [{ kind: 'MakerChecker' }],
+      }),
+      context: makeContext({
+        executionTier: 'Auto',
+        actionOperation: 'robot:execute_action',
+        proximityZoneActive: true,
+        initiatorUserId: UserId('user-1'),
+        approverUserIds: [UserId('user-1')],
+      }),
+    });
+
+    expect(result.decision).toBe('RequireApproval');
+    expect(result.safetyTierRecommendation).toBe('HumanApprove');
+    expect(result.violations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: 'MakerCheckerViolation' })]),
+    );
+    expect(result.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'RobotExecuteInProximityZone',
+          standardsRef: 'ISO 13849-1',
+        }),
+      ]),
+    );
+  });
+
+  it('requires HumanApprove for actuator:set_state on non-reversible safety-classified states', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy(),
+      context: makeContext({
+        executionTier: 'Assisted',
+        actionOperation: 'actuator:set_state',
+        nonReversibleActuatorState: true,
+        robotHazardClass: 'High',
+      }),
+    });
+
+    expect(result.decision).toBe('RequireApproval');
+    expect(result.safetyTierRecommendation).toBe('HumanApprove');
+    expect(result.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'ActuatorSafetyClassifiedStateChange',
+          standardsRef: 'ISO 13849-1',
+        }),
+      ]),
+    );
+  });
+
+  it('emits hazard classifications in policy evaluation evidence payload', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy(),
+      context: makeContext({
+        executionTier: 'Auto',
+        actionOperation: 'robot:estop_request',
+      }),
+    });
+
+    const evidence = toPolicyEvaluationEvidenceV1(result);
+    expect(evidence.decision).toBe('RequireApproval');
+    expect(evidence.safetyTierRecommendation).toBe('ManualOnly');
+    expect(evidence.hazardClassifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'RobotEstopRequest',
+          standardsRef: 'ISO 13849-1',
+        }),
+      ]),
+    );
   });
 });
 

@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:37:19.425Z
+Generated: 2026-02-20T02:38:44.034Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -8,7 +8,7 @@ Source: `.beads/issues.jsonl`
 - Total beads: 586
 - Fully compliant beads: 0
 - Non-compliant beads: 586
-- Missing owner: 586
+- Missing owner: 583
 - Missing close criteria: 456
 - Missing rollback trigger: 584
 
@@ -204,7 +204,7 @@ Source: `.beads/issues.jsonl`
 | bead-0186 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE audit: verify no Bead exists without owner, close criteria, and rollback trigger |
 | bead-0187 | closed | (none) | owner, closeCriteria, rollbackTrigger | Onboarding: explain CLAUDE.md, docs, beading schema, and review/closure requirements |
 | bead-0188 | closed | (none) | owner, closeCriteria, rollbackTrigger | Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline |
-| bead-0189 | open | (none) | owner, closeCriteria, rollbackTrigger | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
+| bead-0189 | open | codex-agent | closeCriteria, rollbackTrigger | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
 | bead-0190 | open | (none) | owner, closeCriteria, rollbackTrigger | Runbook review: validate rollback plan includes data, evidence, and credential cleanup actions |
 | bead-0191 | open | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define acceptance scorecard for each Bead (spec alignment, tests, review, docs, security, performance) |
 | bead-0192 | open | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
@@ -537,7 +537,7 @@ Source: `.beads/issues.jsonl`
 | bead-0519 | open | (none) | owner, rollbackTrigger | Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite |
 | bead-0520 | open | (none) | owner, rollbackTrigger | Security: SROS2 and DDS-Security hardening for ROS 2 mission traffic across trust boundaries |
 | bead-0521 | open | (none) | owner, rollbackTrigger | Security: mTLS workload identity for robot gateways using SPIFFE/SPIRE |
-| bead-0522 | open | (none) | owner, rollbackTrigger | Governance: safety-aware policy tiers — HumanApprove mandatory for hazardous robot actions |
+| bead-0522 | open | codex-agent | rollbackTrigger | Governance: safety-aware policy tiers — HumanApprove mandatory for hazardous robot actions |
 | bead-0523 | open | (none) | owner, rollbackTrigger | Governance: SoD constraints for robot control — operator cannot approve own mission in hazardous zones |
 | bead-0524 | closed | (none) | owner, rollbackTrigger | Governance: machinery compliance planning — ISO 12100 risk assessment and EU/UK/US regulations timeline |
 | bead-0525 | closed | (none) | owner, rollbackTrigger | Presentation: Cockpit Robots and Fleet screen — enrolment, health, connectivity, capability matrix |
@@ -601,7 +601,7 @@ Source: `.beads/issues.jsonl`
 | bead-0583 | closed | (none) | owner, closeCriteria, rollbackTrigger | Cockpit demo: fix approval submit rebinding and follow-up evidence entry |
 | bead-0584 | closed | (none) | owner, closeCriteria, rollbackTrigger | Cockpit asset pipeline: generated icons and entity imagery (hi-fi prototype) |
 | bead-0585 | closed | (none) | owner, rollbackTrigger | Beads: add claim/unclaim workflow and update contributor docs |
-| bead-0586 | open | (none) | owner, closeCriteria, rollbackTrigger | Cockpit assets: domain icon gap expansion + transparent icon pipeline |
+| bead-0586 | open | codex-agent | closeCriteria, rollbackTrigger | Cockpit assets: domain icon gap expansion + transparent icon pipeline |
 
 ## Rules
 

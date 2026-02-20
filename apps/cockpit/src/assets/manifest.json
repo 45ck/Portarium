@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:30:09.324Z",
+  "generatedAt": "2026-02-20T02:39:51.272Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -925,11 +925,11 @@
       "promptRef": "CB-ICON-17",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T02:39:51.272Z",
         "operator": "@45ck",
         "seed": 61017
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
       "tags": [
         "domain",
@@ -969,11 +969,11 @@
       "promptRef": "CB-ICON-18",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T02:39:51.272Z",
         "operator": "@45ck",
         "seed": 61018
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
       "tags": [
         "domain",
@@ -1013,11 +1013,11 @@
       "promptRef": "CB-ICON-19",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T02:39:51.272Z",
         "operator": "@45ck",
         "seed": 61019
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
       "tags": [
         "domain",
@@ -1057,11 +1057,11 @@
       "promptRef": "CB-ICON-20",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:35:00.965Z",
+        "createdAt": "2026-02-20T02:39:51.272Z",
         "operator": "@45ck",
         "seed": 61020
       },
-      "status": "draft",
+      "status": "approved",
       "license": "internal-generated",
       "tags": [
         "domain",

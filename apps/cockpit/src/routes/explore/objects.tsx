@@ -71,7 +71,7 @@ function ExploreObjectsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {groupedBySor[sorName].map((ref, i) => (
+                    {(groupedBySor[sorName] ?? []).map((ref, i) => (
                       <TableRow key={`${ref.externalId}-${i}`}>
                         <TableCell className="text-xs">{ref.externalType}</TableCell>
                         <TableCell className="text-xs">{ref.displayLabel ?? '-'}</TableCell>
