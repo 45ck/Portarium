@@ -31,7 +31,11 @@ function createTempRepo(issues: IssueSeed[], linkageMap: Record<string, unknown>
   fs.mkdirSync(beadsDir, { recursive: true });
   const lines = issues.map((issue) => JSON.stringify(issue));
   fs.writeFileSync(path.join(beadsDir, 'issues.jsonl'), `${lines.join('\n')}\n`, 'utf8');
-  fs.writeFileSync(path.join(beadsDir, 'bead-linkage-map.json'), JSON.stringify(linkageMap, null, 2), 'utf8');
+  fs.writeFileSync(
+    path.join(beadsDir, 'bead-linkage-map.json'),
+    JSON.stringify(linkageMap, null, 2),
+    'utf8',
+  );
   return repo;
 }
 
@@ -96,6 +100,7 @@ describe('generate-bead-acceptance-scorecard', () => {
       summary: {
         openBeads: number;
         green: number;
+        amber: number;
         red: number;
         missingTests: number;
         missingDocs: number;
@@ -105,12 +110,13 @@ describe('generate-bead-acceptance-scorecard', () => {
 
     expect(report.summary.openBeads).toBe(2);
     expect(report.summary.green).toBe(1);
-    expect(report.summary.red).toBe(1);
+    expect(report.summary.amber).toBe(1);
+    expect(report.summary.red).toBe(0);
     expect(report.summary.missingTests).toBe(1);
-    expect(report.summary.missingDocs).toBe(1);
+    expect(report.summary.missingDocs).toBe(0);
     expect(report.entries.map((entry) => entry.id)).toEqual(['bead-0001', 'bead-0002']);
     expect(report.entries[0]?.band).toBe('green');
-    expect(report.entries[1]?.band).toBe('red');
+    expect(report.entries[1]?.band).toBe('amber');
   });
 
   it('writes the scorecard artifact and supports check mode', () => {

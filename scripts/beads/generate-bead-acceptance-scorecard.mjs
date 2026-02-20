@@ -7,6 +7,7 @@ const ISSUES_PATH = path.join(WORKSPACE_ROOT, '.beads', 'issues.jsonl');
 const LINKAGE_PATH = path.join(WORKSPACE_ROOT, '.beads', 'bead-linkage-map.json');
 const OUTPUT_PATH = path.join(WORKSPACE_ROOT, 'docs', 'governance', 'bead-acceptance-scorecard.md');
 
+// cspell:ignore badr
 const SPEC_PATTERN = /\bspec\b|\badr\b/i;
 const TEST_PATTERN = /\btest(?:ing)?\b|\bcoverage\b|\bmutation\b|\bfault(?:-| )?injection\b|\bsmoke\b/i;
 const REVIEW_PATTERN = /\breview\b/i;
@@ -160,6 +161,8 @@ function buildMarkdown(report) {
   const lines = [
     '# Bead Acceptance Scorecard',
     '',
+    '<!-- cspell:disable -->',
+    '',
     `Generated: ${report.generatedAtIso}`,
     'Source: `.beads/issues.jsonl` + optional `.beads/bead-linkage-map.json`',
     '',
@@ -206,6 +209,8 @@ function buildMarkdown(report) {
   lines.push('  - `green`: all always-required criteria pass and score >= 80%.');
   lines.push('  - `amber`: score >= 60% but not green.');
   lines.push('  - `red`: score < 60%.');
+  lines.push('');
+  lines.push('<!-- cspell:enable -->');
   lines.push('');
   return lines.join('\n');
 }

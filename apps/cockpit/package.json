@@ -79,5 +79,10 @@
     "typescript": "^5.9.3",
     "vite": "^6.0.0",
     "vitest": "^4.0.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "apps\\cockpit\\public"
+    ]
   }
 }

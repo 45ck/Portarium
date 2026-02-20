@@ -112,7 +112,11 @@ function getPromptText(promptDef, options) {
   }
 
   const backgroundInstruction = options.background
-    ? `Background requirement: use a ${options.background} background only.`
+    ? [
+        `Background requirement: use a ${options.background} background only.`,
+        'Use a flat, uniform background with no gradient, no texture, and no vignette.',
+        'Keep one centered subject and clear margin around it for post-processing transparency extraction.',
+      ].join(' ')
     : ''
   const negatives = Array.isArray(promptDef.negative_prompts)
     ? promptDef.negative_prompts.join('; ')
