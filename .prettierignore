@@ -2,6 +2,11 @@ dist
 coverage
 reports
 .tsbuildinfo
+apps/*/node_modules
+apps/*/dist
+apps/*/coverage
+apps/*/storybook-static
+apps/*/public/mockServiceWorker.js
 .beads
 research/sources
 domain-atlas/upstreams

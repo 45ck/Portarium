@@ -1,0 +1,67 @@
+import { http, HttpResponse } from 'msw'
+import {
+  WORK_ITEMS,
+  RUNS,
+  APPROVALS,
+  EVIDENCE,
+} from './fixtures/demo'
+import type { ApprovalDecisionRequest } from '@portarium/cockpit-types'
+
+// In-memory mutable state for mutation demo
+let approvals = [...APPROVALS]
+
+export const handlers = [
+  // Work Items
+  http.get('/v1/workspaces/:wsId/work-items', () =>
+    HttpResponse.json({ items: WORK_ITEMS }),
+  ),
+  http.get('/v1/workspaces/:wsId/work-items/:wiId', ({ params }) => {
+    const item = WORK_ITEMS.find((w) => w.workItemId === params['wiId'])
+    if (!item) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(item)
+  }),
+
+  // Runs
+  http.get('/v1/workspaces/:wsId/runs', () =>
+    HttpResponse.json({ items: RUNS }),
+  ),
+  http.get('/v1/workspaces/:wsId/runs/:runId', ({ params }) => {
+    const run = RUNS.find((r) => r.runId === params['runId'])
+    if (!run) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(run)
+  }),
+
+  // Approvals
+  http.get('/v1/workspaces/:wsId/approvals', () =>
+    HttpResponse.json({ items: approvals }),
+  ),
+  http.get('/v1/workspaces/:wsId/approvals/:id', ({ params }) => {
+    const approval = approvals.find((a) => a.approvalId === params['id'])
+    if (!approval) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(approval)
+  }),
+  http.post(
+    '/v1/workspaces/:wsId/approvals/:id/decision',
+    async ({ request, params }) => {
+      const body = (await request.json()) as ApprovalDecisionRequest
+      approvals = approvals.map((a) =>
+        a.approvalId === params['id']
+          ? {
+              ...a,
+              status: body.decision,
+              decidedAtIso: new Date().toISOString(),
+              decidedByUserId: 'user-approver-dana',
+              rationale: body.rationale,
+            }
+          : a,
+      )
+      const updated = approvals.find((a) => a.approvalId === params['id'])
+      return HttpResponse.json(updated)
+    },
+  ),
+
+  // Evidence
+  http.get('/v1/workspaces/:wsId/evidence', () =>
+    HttpResponse.json({ items: EVIDENCE }),
+  ),
+]

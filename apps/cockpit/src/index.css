@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* ---- Base palette (mapped from docs/ui/lofi/wireframe.css) ---- */
+    --background: 246 246 243; /* #f6f6f3 */
+    --foreground: 27 27 27; /* #1b1b1b */
+    --muted: 107 107 107; /* #6b6b6b */
+    --card: 255 255 255;
+    --card-foreground: 27 27 27;
+    --popover: 255 255 255;
+    --popover-foreground: 27 27 27;
+    --primary: 10 102 255; /* --focus: #0a66ff */
+    --primary-foreground: 255 255 255;
+    --secondary: 246 246 243;
+    --secondary-foreground: 27 27 27;
+    --muted-foreground: 107 107 107;
+    --accent: 246 246 243;
+    --accent-foreground: 27 27 27;
+    --destructive: 179 38 30; /* --danger */
+    --destructive-foreground: 255 255 255;
+    --border: 27 27 27; /* --line */
+    --border-soft: rgba(27, 27, 27, 0.2); /* --line-soft */
+    --input: 255 255 255;
+    --ring: 10 102 255;
+
+    /* ---- Status semantic tokens ---- */
+    --status-ok: 31 122 54; /* --ok: #1f7a36 */
+    --status-warn: 164 107 0; /* --warn: #a46b00 */
+    --status-danger: 179 38 30; /* --danger: #b3261e */
+    --status-info: 37 87 167; /* --info: #2557a7 */
+
+    /* ---- Layout tokens ---- */
+    --sidebar-width: 280px;
+    --topbar-height: 52px;
+    --statusbar-height: 32px;
+
+    /* ---- Radius ---- */
+    --radius: 0.75rem; /* 12px = --r-md */
+    --radius-sm: 0.5rem; /* 8px = --r-sm */
+
+    /* ---- Shadow ---- */
+    --shadow-card: 0 3px 0 rgba(27, 27, 27, 0.15);
+  }
+
+  .dark {
+    --background: 20 20 20;
+    --foreground: 240 240 240;
+    --card: 30 30 30;
+    --card-foreground: 240 240 240;
+    --popover: 30 30 30;
+    --popover-foreground: 240 240 240;
+    --primary: 79 140 255;
+    --primary-foreground: 10 10 10;
+    --secondary: 40 40 40;
+    --secondary-foreground: 200 200 200;
+    --muted: 80 80 80;
+    --muted-foreground: 160 160 160;
+    --accent: 40 40 40;
+    --accent-foreground: 200 200 200;
+    --destructive: 220 60 50;
+    --destructive-foreground: 255 255 255;
+    --border: 60 60 60;
+    --input: 40 40 40;
+    --ring: 79 140 255;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
+  }
+}

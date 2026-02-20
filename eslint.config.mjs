@@ -26,6 +26,8 @@ export default tseslint.config(
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
+      // apps/ workspaces have their own tsconfig and lint setup
+      'apps/**',
       // Scratch/generator scripts left from interactive sessions
       'tmp_*.{js,cjs,mjs,py}',
       'gen*.{js,cjs,mjs,py}',

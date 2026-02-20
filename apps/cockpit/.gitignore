@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+storybook-static
+*.js
+!.storybook/*.ts
+!src/**/*.ts
+!src/**/*.tsx
+!vite.config.ts
