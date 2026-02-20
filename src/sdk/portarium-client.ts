@@ -201,8 +201,8 @@ export class PortariumClient {
         const response = await this.#config.fetchFn(url, {
           method,
           headers,
-          body: body !== undefined ? JSON.stringify(body) : undefined,
           signal: controller.signal,
+          ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
         });
 
         if (response.ok) {
@@ -319,15 +319,14 @@ class MachinesNamespace {
 }
 
 class EventsNamespace {
-  readonly #client: PortariumClient;
-  constructor(client: PortariumClient) { this.#client = client; }
+  constructor(_client: PortariumClient) {}
 
   subscribe(onEvent: (event: unknown) => void): EventSubscription {
     // Placeholder: real implementation uses NATS or SSE subscription
-    let active = true;
     return {
       onEvent,
-      unsubscribe() { active = false; },
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      unsubscribe() {},
     };
   }
 }
