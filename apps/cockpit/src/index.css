@@ -1,6 +1,21 @@
 @import "tailwindcss";
-@import "geist/dist/fonts/geist-sans/geist-sans.css";
-@import "geist/dist/fonts/geist-mono/geist-mono.css";
+
+/* Geist variable fonts — served from /public/fonts/ */
+@font-face {
+  font-family: "Geist Sans";
+  src: url("/fonts/Geist-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -274,3 +289,62 @@
 }
 
 /* shadcn sidebar overrides removed — sidebar tokens live in each theme block above */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Theme 4 — "Quantum" (Shakuro Arctic Ops reference)
+   Light grey canvas · Quantum Blue accent · neutral foreground · 12px radius
+   Reference: Shakuro dashboard palette (#F4F4F4 / #141517 / #2563EB / #707179)
+───────────────────────────────────────────────────────────────────────────── */
+.theme-quantum {
+  --background:            hsl(0 0% 95.7%);    /* #F4F4F4 */
+  --foreground:            hsl(220 7% 8.4%);   /* #141517 */
+
+  --card:                  hsl(0 0% 100%);
+  --card-foreground:       hsl(220 7% 8.4%);
+
+  --popover:               hsl(0 0% 100%);
+  --popover-foreground:    hsl(220 7% 8.4%);
+
+  --primary:               hsl(221.2 83.2% 53.3%);  /* #2563EB Quantum Blue */
+  --primary-foreground:    hsl(0 0% 100%);
+
+  --secondary:             hsl(0 0% 91%);
+  --secondary-foreground:  hsl(220 7% 8.4%);
+
+  --muted:                 hsl(0 0% 91%);
+  --muted-foreground:      hsl(233.3 3.9% 45.7%);  /* #707179 */
+
+  --accent:                hsl(221.2 83.2% 96%);   /* very light blue tint */
+  --accent-foreground:     hsl(221.2 83.2% 53.3%);
+
+  --destructive:           hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border:                hsl(0 0% 88%);
+  --input:                 hsl(0 0% 88%);
+  --ring:                  hsl(221.2 83.2% 53.3%);
+
+  --success:               oklch(0.72 0.19 150);
+  --success-foreground:    oklch(0.98 0.02 150);
+  --warning:               oklch(0.84 0.16 84);
+  --warning-foreground:    oklch(0.28 0.07 46);
+  --info:                  oklch(0.78 0.14 230);
+  --info-foreground:       oklch(0.18 0.05 230);
+
+  --chart-1: hsl(221.2 83.2% 53.3%);
+  --chart-2: oklch(0.72 0.19 150);
+  --chart-3: oklch(0.84 0.16 84);
+  --chart-4: oklch(0.78 0.14 230);
+  --chart-5: hsl(0 72% 51%);
+
+  --sidebar:               hsl(0 0% 92%);
+  --sidebar-foreground:    hsl(220 7% 8.4%);
+  --sidebar-primary:       hsl(221.2 83.2% 53.3%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent:        hsl(0 0% 89%);
+  --sidebar-accent-foreground: hsl(220 7% 8.4%);
+  --sidebar-border:        hsl(0 0% 86%);
+  --sidebar-ring:          hsl(221.2 83.2% 53.3%);
+
+  --radius: 0.75rem;
+}

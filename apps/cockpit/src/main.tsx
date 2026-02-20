@@ -30,6 +30,7 @@ const THEMES = [
   { id: 'theme-arctic',   label: 'Arctic Ops',  description: 'Cool white · electric blue · clean' },
   { id: 'theme-midnight', label: 'Midnight',     description: 'Dark navy · cyan accent · focused' },
   { id: 'theme-warm',     label: 'Warm Slate',   description: 'Cream · violet · approachable' },
+  { id: 'theme-quantum',  label: 'Quantum',      description: 'Grey canvas · Quantum Blue · precise' },
 ] as const
 
 type ThemeId = (typeof THEMES)[number]['id']
@@ -443,7 +444,7 @@ function App() {
           {mode === 'compare' ? '← Single view' : 'Compare all ↔'}
         </button>
         <div className="ml-auto text-[11px] text-gray-400">
-          {mode === 'single' ? THEMES.find(t => t.id === activeTheme)?.description : '3-up comparison'}
+          {mode === 'single' ? THEMES.find(t => t.id === activeTheme)?.description : '4-up comparison'}
         </div>
       </div>
 
