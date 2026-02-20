@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createRoute, useNavigate } from '@tanstack/react-router';
+import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { format, differenceInMinutes } from 'date-fns';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
@@ -10,6 +10,8 @@ import { FilterBar } from '@/components/cockpit/filter-bar';
 import { DataTable } from '@/components/cockpit/data-table';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { AlertCircle, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { RunSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
@@ -46,7 +48,7 @@ function RunsPage() {
     tier: 'all',
   });
 
-  const { data, isLoading } = useRuns(wsId);
+  const { data, isLoading, isError, refetch } = useRuns(wsId);
   const items = data?.items ?? [];
 
   const filtered = items.filter((run) => {
@@ -62,13 +64,20 @@ function RunsPage() {
       key: 'runId',
       header: 'Run ID',
       width: '120px',
-      render: (row: RunSummary) => <span className="font-mono">{row.runId.slice(0, 12)}</span>,
+      render: (row: RunSummary) => <span className="font-mono" title={row.runId}>{row.runId.slice(0, 12)}</span>,
     },
     {
       key: 'workflowId',
       header: 'Workflow',
       render: (row: RunSummary) => (
-        <span className="font-mono text-muted-foreground">{row.workflowId}</span>
+        <Link
+          to={'/workflows/$workflowId' as string}
+          params={{ workflowId: row.workflowId }}
+          className="font-mono text-primary hover:underline"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {row.workflowId}
+        </Link>
       ),
     },
     {
@@ -98,6 +107,25 @@ function RunsPage() {
     },
   ];
 
+  if (isError) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader title="Runs" icon={<EntityIcon entityType="run" size="md" decorative />} />
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load runs</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-4">
       <PageHeader title="Runs" icon={<EntityIcon entityType="run" size="md" decorative />} />
@@ -119,6 +147,7 @@ function RunsPage() {
         onRowClick={(row) =>
           navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })
         }
+        pagination={{ pageSize: 20 }}
       />
     </div>
   );

@@ -25,11 +25,13 @@ const config: Record<RunStatus, { icon: React.ElementType; label: string; classN
   Cancelled:           { icon: Ban,          label: 'Cancelled',     variant: 'secondary',    className: '' },
 }
 
+const fallback = { icon: Clock, label: 'Unknown', variant: 'secondary' as const, className: '' }
+
 export function RunStatusBadge({ status }: RunStatusBadgeProps) {
-  const { icon: Icon, label, variant, className } = config[status]
+  const { icon: Icon, label, variant, className } = config[status] ?? fallback
   return (
     <Badge variant={variant} className={cn('text-[10px]', className)}>
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>
   )

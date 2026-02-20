@@ -9,6 +9,8 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { FilterBar } from '@/components/cockpit/filter-bar';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, RotateCcw } from 'lucide-react';
 import type { WorkItemSummary } from '@portarium/cockpit-types';
 
 const STATUS_FILTERS = [
@@ -30,7 +32,7 @@ function WorkItemsPage() {
     owner: 'all',
   });
 
-  const { data, isLoading } = useWorkItems(wsId);
+  const { data, isLoading, isError, refetch } = useWorkItems(wsId);
   const items = data?.items ?? [];
 
   const filtered = items.filter((item) => {
@@ -51,7 +53,7 @@ function WorkItemsPage() {
       header: 'ID',
       width: '120px',
       render: (row: WorkItemSummary) => (
-        <span className="font-mono">{row.workItemId.slice(0, 12)}</span>
+        <span className="font-mono" title={row.workItemId}>{row.workItemId.slice(0, 12)}</span>
       ),
     },
     { key: 'title', header: 'Title' },
@@ -93,6 +95,25 @@ function WorkItemsPage() {
     },
   ];
 
+  if (isError) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader title="Work Items" icon={<EntityIcon entityType="work-item" size="md" decorative />} />
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load work items</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-4">
       <PageHeader
@@ -120,6 +141,7 @@ function WorkItemsPage() {
             params: { workItemId: row.workItemId },
           })
         }
+        pagination={{ pageSize: 20 }}
       />
     </div>
   );

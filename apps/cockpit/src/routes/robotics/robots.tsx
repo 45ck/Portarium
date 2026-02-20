@@ -23,9 +23,9 @@ const CLASS_FILTERS: Array<{ label: string; value: RobotClass | 'All' }> = [
 
 function RobotStatusBadge({ status }: { status: RobotSummary['status'] }) {
   const config = {
-    Online: { label: 'Online', icon: <Wifi className="h-3 w-3" />, className: 'bg-green-100 text-green-800 border-green-200' },
-    Degraded: { label: 'Degraded', icon: <AlertTriangle className="h-3 w-3" />, className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-    'E-Stopped': { label: 'E-Stopped', icon: <OctagonX className="h-3 w-3" />, className: 'bg-red-100 text-red-800 border-red-200' },
+    Online: { label: 'Online', icon: <Wifi className="h-3 w-3" />, className: 'bg-success/10 text-success border-success/30' },
+    Degraded: { label: 'Degraded', icon: <AlertTriangle className="h-3 w-3" />, className: 'bg-warning/10 text-warning border-warning/30' },
+    'E-Stopped': { label: 'E-Stopped', icon: <OctagonX className="h-3 w-3" />, className: 'bg-destructive/10 text-destructive border-destructive/30' },
     Offline: { label: 'Offline', icon: <WifiOff className="h-3 w-3" />, className: 'bg-muted text-muted-foreground border-border' },
   }[status]
 
@@ -164,7 +164,7 @@ function RobotsPage() {
     <div className="p-6 space-y-6">
       <PageHeader title="Robots" description="Fleet overview and per-robot controls" />
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Total', value: isLoading ? '—' : stats.total },
           { label: 'Online', value: isLoading ? '—' : stats.online },
@@ -181,6 +181,7 @@ function RobotsPage() {
       <div className="flex flex-wrap gap-2" aria-label="Filter by robot class">
         {CLASS_FILTERS.map((f) => (
           <button key={f.value} onClick={() => setClassFilter(f.value)}
+            aria-pressed={classFilter === f.value}
             className={cn('px-3 py-1 rounded-full text-xs font-medium border transition-colors',
               classFilter === f.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/40'
             )}>

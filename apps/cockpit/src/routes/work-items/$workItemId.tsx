@@ -1,11 +1,12 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, useNavigate, Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import { useWorkItem } from '@/hooks/queries/use-work-items';
+import { useWorkItem, useUpdateWorkItem } from '@/hooks/queries/use-work-items';
 import { useRuns } from '@/hooks/queries/use-runs';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useEvidence } from '@/hooks/queries/use-evidence';
+import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
@@ -14,19 +15,26 @@ import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { SorRefPill } from '@/components/cockpit/sor-ref-pill';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
+import { OwnerPicker } from '@/components/cockpit/owner-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { User } from 'lucide-react';
 import type { RunSummary } from '@portarium/cockpit-types';
 
 function WorkItemDetailPage() {
   const { workItemId } = Route.useParams();
   const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
 
   const { data: item, isLoading: itemLoading } = useWorkItem(wsId, workItemId);
   const runs = useRuns(wsId);
   const approvals = useApprovals(wsId);
   const evidence = useEvidence(wsId);
+  const { data: membersData } = useWorkforceMembers(wsId);
+  const updateWorkItem = useUpdateWorkItem(wsId, workItemId);
+  const workforceMembers = membersData?.items ?? [];
+  const ownerMember = workforceMembers.find((m) => m.linkedUserId === item?.ownerUserId);
 
   if (itemLoading || !item) {
     return (
@@ -98,12 +106,28 @@ function WorkItemDetailPage() {
                 <span className="text-muted-foreground">Created by</span>
                 <span>{item.createdByUserId}</span>
               </div>
-              {item.ownerUserId && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Owner</span>
-                  <span>{item.ownerUserId}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Owner</span>
+                <div className="flex items-center gap-2">
+                  {item.ownerUserId ? (
+                    <span className="inline-flex items-center gap-1">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      {ownerMember?.displayName ?? item.ownerUserId}
+                    </span>
+                  ) : null}
+                  <OwnerPicker
+                    members={workforceMembers}
+                    currentMemberId={ownerMember?.workforceMemberId}
+                    onSelect={(memberId) => {
+                      const member = workforceMembers.find((m) => m.workforceMemberId === memberId);
+                      if (member) {
+                        updateWorkItem.mutate({ ownerUserId: member.linkedUserId });
+                      }
+                    }}
+                    label={item.ownerUserId ? 'Change' : 'Assign owner'}
+                  />
                 </div>
-              )}
+              </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Created</span>
                 <span>{format(new Date(item.createdAtIso), 'MMM d, yyyy HH:mm')}</span>
@@ -143,6 +167,7 @@ function WorkItemDetailPage() {
                   data={linkedRuns}
                   loading={runs.isLoading}
                   getRowKey={(row) => row.runId}
+                  onRowClick={(row) => navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })}
                 />
               )}
             </CardContent>
@@ -158,12 +183,17 @@ function WorkItemDetailPage() {
               ) : (
                 <div className="space-y-2">
                   {linkedApprovals.map((a) => (
-                    <div key={a.approvalId} className="flex items-start justify-between gap-2 py-1">
+                    <Link
+                      key={a.approvalId}
+                      to={'/approvals/$approvalId' as string}
+                      params={{ approvalId: a.approvalId }}
+                      className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
+                    >
                       <div className="min-w-0 flex-1">
                         <p className="text-xs truncate">{a.prompt}</p>
                       </div>
                       <ApprovalStatusBadge status={a.status} />
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

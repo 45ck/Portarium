@@ -10,6 +10,7 @@ import {
   AGENTS,
   APPROVALS,
   APPROVAL_THRESHOLDS,
+  CREDENTIAL_GRANTS,
   ESTOP_AUDIT_LOG,
   EVIDENCE,
   MISSIONS,
@@ -21,6 +22,13 @@ import {
   WORKFORCE_QUEUES,
   WORK_ITEMS,
 } from '@/mocks/fixtures/demo'
+import { buildMockWorkflows } from '@/mocks/fixtures/workflows'
+import { buildMockHumanTasks } from '@/mocks/fixtures/human-tasks'
+import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from '@/mocks/fixtures/robot-locations'
+
+const HUMAN_TASKS = buildMockHumanTasks(RUNS, WORK_ITEMS, WORKFORCE_MEMBERS)
+
+const WORKFLOWS = buildMockWorkflows(RUNS, AGENTS)
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>()
@@ -77,6 +85,17 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return run ? json(run) : json({ error: 'not-found' }, 404)
   }
 
+  if (/^\/v1\/workspaces\/[^/]+\/workflows$/.test(pathname)) {
+    return json({ items: WORKFLOWS })
+  }
+
+  const workflowMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/workflows\/([^/]+)$/)
+  const workflowId = workflowMatch?.[1]
+  if (workflowId) {
+    const workflow = WORKFLOWS.find((item) => item.workflowId === workflowId)
+    return workflow ? json(workflow) : json({ error: 'not-found' }, 404)
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/approvals$/.test(pathname)) {
     return json({ items: APPROVALS })
   }
@@ -117,8 +136,20 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: ADAPTERS })
   }
 
+  if (/^\/v1\/workspaces\/[^/]+\/credential-grants$/.test(pathname)) {
+    return json({ items: CREDENTIAL_GRANTS })
+  }
+
+  if (/^\/v1\/workspaces\/[^/]+\/human-tasks$/.test(pathname)) {
+    return json({ items: HUMAN_TASKS })
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/observability$/.test(pathname)) {
     return json(OBSERVABILITY_DATA)
+  }
+
+  if (/^\/v1\/workspaces\/[^/]+\/robotics\/robot-locations$/.test(pathname)) {
+    return json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS })
   }
 
   if (/^\/v1\/workspaces\/[^/]+\/robotics\/robots$/.test(pathname)) {
@@ -175,6 +206,9 @@ const PAGE_CASES = [
   { path: '/work-items/wi-1001', heading: 'Invoice mismatch: requires remediation approval' },
   { path: '/runs', heading: 'Runs' },
   { path: '/runs/run-2001', heading: 'Run: run-2001' },
+  { path: '/workflows', heading: 'Workflows' },
+  { path: '/workflows/wf-invoice-remediation', heading: 'Workflow: wf-invoice-remediation' },
+  { path: '/workflows/builder', heading: 'Workflow Builder' },
   { path: '/approvals', heading: 'Approvals' },
   { path: '/approvals/apr-3001', heading: 'Approval Request' },
   { path: '/evidence', heading: 'Evidence' },
@@ -183,12 +217,14 @@ const PAGE_CASES = [
   { path: '/workforce/queues', heading: 'Queues' },
   { path: '/config/agents', heading: 'Agents' },
   { path: '/config/adapters', heading: 'Adapters' },
+  { path: '/config/credentials', heading: 'Credentials' },
   { path: '/config/settings', heading: 'Settings' },
   { path: '/explore/objects', heading: 'Objects' },
   { path: '/explore/events', heading: 'Events' },
   { path: '/explore/observability', heading: 'Observability' },
   { path: '/explore/governance', heading: 'Governance' },
   { path: '/robotics', heading: 'Robotics' },
+  { path: '/robotics/map', heading: 'Operations Map' },
   { path: '/robotics/robots', heading: 'Robots' },
   { path: '/robotics/missions', heading: 'Missions' },
   { path: '/robotics/safety', heading: 'Safety & E-Stop' },

@@ -1,18 +1,24 @@
+import { useState } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { Route as rootRoute } from './__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useRuns } from '@/hooks/queries/use-runs';
+import { useHumanTasks, useAssignHumanTask, useCompleteHumanTask, useEscalateHumanTask } from '@/hooks/queries/use-human-tasks';
+import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
+import { HumanTaskStatusBadge } from '@/components/cockpit/human-task-status-badge';
+import { HumanTaskDrawer } from '@/components/cockpit/human-task-drawer';
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
 import { KpiRow } from '@/components/cockpit/kpi-row';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
-import { CheckSquare, AlertCircle, ShieldAlert, Clock } from 'lucide-react';
+import type { ApprovalSummary, RunSummary, HumanTaskSummary } from '@portarium/cockpit-types';
+import { CheckSquare, AlertCircle, Clock, ClipboardList, User } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Section header
@@ -77,6 +83,55 @@ function PendingApprovalRow({
 }
 
 // ---------------------------------------------------------------------------
+// Human task row
+// ---------------------------------------------------------------------------
+function HumanTaskRow({
+  task,
+  assigneeName,
+  onClick,
+}: {
+  task: HumanTaskSummary;
+  assigneeName?: string;
+  onClick: () => void;
+}) {
+  const isOverdue = task.dueAt && new Date(task.dueAt) < new Date();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left flex items-start gap-3 px-3 py-3 rounded-md hover:bg-muted/50 transition-colors border border-transparent hover:border-border"
+    >
+      <ClipboardList className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <p className="text-sm truncate">{task.description}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+          {assigneeName ? (
+            <span className="inline-flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {assigneeName}
+            </span>
+          ) : (
+            <Badge variant="outline" className="text-[9px] h-4">
+              Unassigned
+            </Badge>
+          )}
+          <span className="font-mono">{task.runId}</span>
+          <span className="font-mono">{task.workItemId}</span>
+          {task.dueAt && (
+            <span className={isOverdue ? 'text-red-600 font-medium' : undefined}>
+              <Clock className="inline h-3 w-3 mr-0.5" />
+              Due {format(new Date(task.dueAt), 'MMM d, HH:mm')}
+              {isOverdue ? ' — overdue' : ''}
+            </span>
+          )}
+        </div>
+      </div>
+      <HumanTaskStatusBadge status={task.status} />
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Failed / blocked run rows
 // ---------------------------------------------------------------------------
 function BlockedRunRow({ run, onClick }: { run: RunSummary; onClick: () => void }) {
@@ -100,44 +155,8 @@ function BlockedRunRow({ run, onClick }: { run: RunSummary; onClick: () => void 
 }
 
 // ---------------------------------------------------------------------------
-// Mock policy violations (in production these come from evidence/governance)
+// Policy violations — placeholder for governance/evidence API integration
 // ---------------------------------------------------------------------------
-const MOCK_VIOLATIONS = [
-  {
-    id: 'pv-001',
-    title: 'CRM dedup run exceeded write:external quota (run-2004)',
-    severity: 'Medium',
-    detectedAt: '2026-02-19T11:38:55Z',
-  },
-  {
-    id: 'pv-002',
-    title: 'IAM access change without SoD-compliant approver (wi-1005)',
-    severity: 'High',
-    detectedAt: '2026-02-17T14:30:00Z',
-  },
-];
-
-function PolicyViolationRow({ violation }: { violation: (typeof MOCK_VIOLATIONS)[number] }) {
-  const severityCls =
-    violation.severity === 'High'
-      ? 'bg-red-100 text-red-800 border-red-200'
-      : 'bg-yellow-100 text-yellow-800 border-yellow-200';
-
-  return (
-    <div className="flex items-start gap-3 px-3 py-3 rounded-md border border-transparent hover:bg-muted/50 transition-colors">
-      <ShieldAlert className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
-      <div className="flex-1 min-w-0 space-y-0.5">
-        <p className="text-sm">{violation.title}</p>
-        <p className="text-xs text-muted-foreground">
-          Detected {format(new Date(violation.detectedAt), 'MMM d, HH:mm')}
-        </p>
-      </div>
-      <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${severityCls}`}>
-        {violation.severity}
-      </span>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Inbox page
@@ -147,19 +166,43 @@ function InboxPage() {
   const navigate = useNavigate();
   const { data: approvalsData, isLoading: approvalsLoading } = useApprovals(wsId);
   const { data: runsData, isLoading: runsLoading } = useRuns(wsId);
+  const { data: humanTasksData, isLoading: humanTasksLoading } = useHumanTasks(wsId);
+  const { data: membersData } = useWorkforceMembers(wsId);
+
+  const [selectedTask, setSelectedTask] = useState<HumanTaskSummary | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const pendingApprovals = (approvalsData?.items ?? []).filter((a) => a.status === 'Pending');
   const blockedRuns = (runsData?.items ?? []).filter(
     (r) => r.status === 'Failed' || r.status === 'WaitingForApproval' || r.status === 'Paused',
   );
+  const actionableHumanTasks = (humanTasksData?.items ?? []).filter(
+    (t) => t.status === 'pending' || t.status === 'assigned' || t.status === 'in-progress',
+  );
+  const workforceMembers = membersData?.items ?? [];
 
-  const totalItems = pendingApprovals.length + blockedRuns.length + MOCK_VIOLATIONS.length;
+  const totalItems = pendingApprovals.length + blockedRuns.length + actionableHumanTasks.length;
+
+  // Mutation hooks — use the selected task ID or a fallback
+  const assignMutation = useAssignHumanTask(wsId, selectedTask?.humanTaskId ?? '');
+  const completeMutation = useCompleteHumanTask(wsId, selectedTask?.humanTaskId ?? '');
+  const escalateMutation = useEscalateHumanTask(wsId, selectedTask?.humanTaskId ?? '');
+
+  function handleOpenTask(task: HumanTaskSummary) {
+    setSelectedTask(task);
+    setDrawerOpen(true);
+  }
+
+  function getAssigneeName(assigneeId?: string): string | undefined {
+    if (!assigneeId) return undefined;
+    return workforceMembers.find((m) => m.workforceMemberId === assigneeId)?.displayName;
+  }
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title="Inbox"
-        description="Your workspace triage surface — approvals, blocked runs, and policy alerts"
+        description="Your workspace triage surface — approvals, human tasks, blocked runs, and policy alerts"
         icon={<EntityIcon entityType="queue" size="md" decorative />}
       />
 
@@ -168,9 +211,9 @@ function InboxPage() {
       <KpiRow
         stats={[
           { label: 'Pending Approvals', value: approvalsLoading ? '—' : pendingApprovals.length },
+          { label: 'Human Tasks', value: humanTasksLoading ? '—' : actionableHumanTasks.length },
           { label: 'Blocked Runs', value: runsLoading ? '—' : blockedRuns.length },
-          { label: 'Policy Violations', value: MOCK_VIOLATIONS.length },
-          { label: 'Total Actions', value: approvalsLoading || runsLoading ? '—' : totalItems },
+          { label: 'Total Actions', value: approvalsLoading || runsLoading || humanTasksLoading ? '—' : totalItems },
         ]}
       />
 
@@ -217,7 +260,34 @@ function InboxPage() {
         </div>
       </section>
 
-      {/* Section 2: Failed / blocked runs */}
+      {/* Section 2: Human Tasks */}
+      <section>
+        <SectionHeader
+          icon={<ClipboardList className="h-4 w-4" />}
+          title="Human Tasks"
+          count={actionableHumanTasks.length}
+        />
+        <div className="rounded-md border border-border divide-y divide-border">
+          {humanTasksLoading ? (
+            <div className="p-4 text-sm text-muted-foreground animate-pulse">Loading…</div>
+          ) : actionableHumanTasks.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground italic">
+              No actionable human tasks.
+            </div>
+          ) : (
+            actionableHumanTasks.map((t) => (
+              <HumanTaskRow
+                key={t.humanTaskId}
+                task={t}
+                assigneeName={getAssigneeName(t.assigneeId)}
+                onClick={() => handleOpenTask(t)}
+              />
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Section 3: Failed / blocked runs */}
       <section>
         <SectionHeader
           icon={<AlertCircle className="h-4 w-4" />}
@@ -248,19 +318,22 @@ function InboxPage() {
         </div>
       </section>
 
-      {/* Section 3: Policy violations */}
-      <section>
-        <SectionHeader
-          icon={<ShieldAlert className="h-4 w-4" />}
-          title="Policy Violations"
-          count={MOCK_VIOLATIONS.length}
-        />
-        <div className="rounded-md border border-border divide-y divide-border">
-          {MOCK_VIOLATIONS.map((v) => (
-            <PolicyViolationRow key={v.id} violation={v} />
-          ))}
-        </div>
-      </section>
+      {/* Human Task Detail Drawer */}
+      <HumanTaskDrawer
+        task={selectedTask}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        workforceMembers={workforceMembers}
+        onAssign={(taskId, memberId) =>
+          assignMutation.mutate({ workforceMemberId: memberId })
+        }
+        onComplete={(taskId, note) =>
+          completeMutation.mutate({ completionNote: note })
+        }
+        onEscalate={(taskId, reason) =>
+          escalateMutation.mutate({ workforceQueueId: 'queue-escalation', reason })
+        }
+      />
     </div>
   );
 }

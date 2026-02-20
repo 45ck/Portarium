@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,12 +25,14 @@ export function PageHeader({ title, description, action, breadcrumb, icon }: Pag
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumb.map((item, i) => (
-                <BreadcrumbItem key={i}>
+                <BreadcrumbItem key={item.label}>
                   {i > 0 && <BreadcrumbSeparator />}
                   {i === breadcrumb.length - 1 ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   ) : item.to ? (
-                    <BreadcrumbLink href={item.to}>{item.label}</BreadcrumbLink>
+                    <BreadcrumbLink asChild>
+                      <Link to={item.to}>{item.label}</Link>
+                    </BreadcrumbLink>
                   ) : (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   )}

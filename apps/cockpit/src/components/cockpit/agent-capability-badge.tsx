@@ -20,7 +20,7 @@ export function AgentCapabilityBadge({ capability }: AgentCapabilityBadgeProps) 
   const { icon: Icon, label } = config[capability]
   return (
     <Badge variant="secondary" className="text-[10px]">
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>
   )

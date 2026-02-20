@@ -1,4 +1,5 @@
 import { createRoute, Link } from '@tanstack/react-router';
+import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApproval, useApprovalDecision } from '@/hooks/queries/use-approvals';
@@ -34,7 +35,13 @@ function ApprovalDetailPage() {
   const { data: workforceData } = useWorkforceMembers(wsId);
 
   const handleDecide = (decision: 'Approved' | 'Denied' | 'RequestChanges', rationale: string) => {
-    mutation.mutate({ decision, rationale });
+    mutation.mutate(
+      { decision, rationale },
+      {
+        onSuccess: () => toast.success('Decision submitted'),
+        onError: () => toast.error('Failed to submit decision'),
+      },
+    );
   };
 
   if (approvalLoading) {

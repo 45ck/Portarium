@@ -6,7 +6,6 @@ import { useUIStore } from '@/stores/ui-store';
 import { useRuns } from '@/hooks/queries/use-runs';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
-import { useEvidence } from '@/hooks/queries/use-evidence';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
@@ -14,17 +13,18 @@ import { KpiRow } from '@/components/cockpit/kpi-row';
 import { DataTable } from '@/components/cockpit/data-table';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { WorkItemSummary, ApprovalSummary } from '@portarium/cockpit-types';
+import type { WorkItemSummary, ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
 
 function DashboardPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
+  const [startRunOpen, setStartRunOpen] = useState(false);
   const runs = useRuns(wsId);
   const approvals = useApprovals(wsId);
   const workItems = useWorkItems(wsId);
-  const evidence = useEvidence(wsId);
-
   const runsList = runs.data?.items ?? [];
   const approvalsList = approvals.data?.items ?? [];
   const workItemsList = workItems.data?.items ?? [];
@@ -73,13 +73,57 @@ function DashboardPage() {
     },
   ];
 
+  const activeRunRows = runsList
+    .filter((run) => run.status === 'Running' || run.status === 'WaitingForApproval')
+    .slice(0, 6);
+
+  const activeRunColumns = [
+    {
+      key: 'runId',
+      header: 'Run',
+      width: '120px',
+      render: (row: RunSummary) => (
+        <Link to={'/runs/$runId' as string} params={{ runId: row.runId }} className="font-mono text-xs text-primary hover:underline">
+          {row.runId}
+        </Link>
+      ),
+    },
+    {
+      key: 'workflowId',
+      header: 'Workflow',
+      render: (row: RunSummary) => (
+        <Link
+          to={'/workflows/$workflowId' as string}
+          params={{ workflowId: row.workflowId }}
+          className="font-mono text-xs text-primary hover:underline"
+        >
+          {row.workflowId}
+        </Link>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '130px',
+      render: (row: RunSummary) => <RunStatusBadge status={row.status} />,
+    },
+    {
+      key: 'executionTier',
+      header: 'Tier',
+      width: '130px',
+      render: (row: RunSummary) => <ExecutionTierBadge tier={row.executionTier} />,
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title="Dashboard"
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
-        action={<Button size="sm">New Run</Button>}
+        action={<Button size="sm" onClick={() => setStartRunOpen(true)}>New Run</Button>}
       />
+
+      <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
 
       <SystemStateBanner state="healthy" />
 
@@ -152,6 +196,25 @@ function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="shadow-none">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Active Runs</CardTitle>
+            <Link to={'/runs' as string} className="text-xs text-muted-foreground hover:text-foreground">
+              View all
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={activeRunColumns}
+            data={activeRunRows}
+            loading={runs.isLoading}
+            getRowKey={(row) => row.runId}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

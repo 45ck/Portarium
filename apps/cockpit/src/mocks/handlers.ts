@@ -2,10 +2,17 @@ import { http, HttpResponse } from 'msw'
 import type { MeridianDataset } from './fixtures/meridian-seed'
 import type {
   ApprovalDecisionRequest,
+  AssignHumanTaskRequest,
+  CompleteHumanTaskRequest,
+  EscalateHumanTaskRequest,
   CreateCredentialGrantRequest,
   CredentialGrantV1,
+  HumanTaskSummary,
+  UpdateWorkItemCommand,
 } from '@portarium/cockpit-types'
 import { buildMockWorkflows, findMockWorkflowById } from './fixtures/workflows'
+import { buildMockHumanTasks } from './fixtures/human-tasks'
+import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from './fixtures/robot-locations'
 
 // ---------------------------------------------------------------------------
 // Mutable dataset reference — replaced at bootstrap via loadActiveDataset()
@@ -16,6 +23,8 @@ let data: MeridianDataset | null = null
 // In-memory mutable state for mutation demo
 let approvals: MeridianDataset['APPROVALS'] = []
 let credentialGrants: CredentialGrantV1[] = []
+let humanTasks: HumanTaskSummary[] = []
+let workItems: MeridianDataset['WORK_ITEMS'] = []
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index')
@@ -24,23 +33,31 @@ export async function loadActiveDataset(): Promise<void> {
   const entry = (DATASETS.find((d) => d.id === stored) ?? DATASETS[0])!
   data = await entry.load()
   approvals = [...data.APPROVALS]
-  const maybeGrants = (
-    data as MeridianDataset & {
-      CREDENTIAL_GRANTS?: CredentialGrantV1[]
-    }
-  ).CREDENTIAL_GRANTS
-  credentialGrants = Array.isArray(maybeGrants) ? [...maybeGrants] : []
+  workItems = [...data.WORK_ITEMS]
+  credentialGrants = [...data.CREDENTIAL_GRANTS]
+  humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS)
 }
 
 export const handlers = [
   // Work Items
   http.get('/v1/workspaces/:wsId/work-items', () =>
-    HttpResponse.json({ items: data?.WORK_ITEMS ?? [] }),
+    HttpResponse.json({ items: workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? []) }),
   ),
   http.get('/v1/workspaces/:wsId/work-items/:wiId', ({ params }) => {
-    const item = data?.WORK_ITEMS.find((w) => w.workItemId === params['wiId'])
+    const list = workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? [])
+    const item = list.find((w) => w.workItemId === params['wiId'])
     if (!item) return HttpResponse.json(null, { status: 404 })
     return HttpResponse.json(item)
+  }),
+  http.patch('/v1/workspaces/:wsId/work-items/:wiId', async ({ request, params }) => {
+    const body = (await request.json()) as UpdateWorkItemCommand
+    const wiId = String(params['wiId'] ?? '')
+    workItems = workItems.map((w) =>
+      w.workItemId === wiId ? { ...w, ...body } : w,
+    )
+    const updated = workItems.find((w) => w.workItemId === wiId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
   }),
 
   // Runs
@@ -162,9 +179,53 @@ export const handlers = [
     return HttpResponse.json(revoked)
   }),
 
+  // Human Tasks
+  http.get('/v1/workspaces/:wsId/human-tasks', () =>
+    HttpResponse.json({ items: humanTasks }),
+  ),
+  http.post('/v1/workspaces/:wsId/human-tasks/:taskId/assign', async ({ request, params }) => {
+    const body = (await request.json()) as AssignHumanTaskRequest
+    const taskId = String(params['taskId'] ?? '')
+    humanTasks = humanTasks.map((t) =>
+      t.humanTaskId === taskId
+        ? { ...t, assigneeId: body.workforceMemberId, status: 'assigned' as const }
+        : t,
+    )
+    const updated = humanTasks.find((t) => t.humanTaskId === taskId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+  http.post('/v1/workspaces/:wsId/human-tasks/:taskId/complete', async ({ params }) => {
+    const taskId = String(params['taskId'] ?? '')
+    humanTasks = humanTasks.map((t) =>
+      t.humanTaskId === taskId
+        ? { ...t, status: 'completed' as const, completedAt: new Date().toISOString() }
+        : t,
+    )
+    const updated = humanTasks.find((t) => t.humanTaskId === taskId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+  http.post('/v1/workspaces/:wsId/human-tasks/:taskId/escalate', async ({ params }) => {
+    const taskId = String(params['taskId'] ?? '')
+    humanTasks = humanTasks.map((t) =>
+      t.humanTaskId === taskId
+        ? { ...t, status: 'escalated' as const }
+        : t,
+    )
+    const updated = humanTasks.find((t) => t.humanTaskId === taskId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+
   // Observability
   http.get('/v1/workspaces/:wsId/observability', () =>
     HttpResponse.json(data?.OBSERVABILITY_DATA ?? {}),
+  ),
+
+  // Robotics — Robot Locations (map)
+  http.get('/v1/workspaces/:wsId/robotics/robot-locations', () =>
+    HttpResponse.json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS }),
   ),
 
   // Robotics — Robots

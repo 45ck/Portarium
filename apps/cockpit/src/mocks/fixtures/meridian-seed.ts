@@ -18,6 +18,7 @@ import type {
   Plan,
   PlanEffect,
   EffectOperation,
+  CredentialGrantV1,
 } from '@portarium/cockpit-types'
 import type {
   RobotSummary,
@@ -336,7 +337,8 @@ export interface MeridianDataset {
   WORK_ITEMS: WorkItemSummary[]
   RUNS: RunSummary[]
   APPROVALS: ApprovalSummary[]
-  PLANS?: Plan[]
+  PLANS: Plan[]
+  CREDENTIAL_GRANTS: CredentialGrantV1[]
   EVIDENCE: EvidenceEntry[]
   WORKFORCE_MEMBERS: WorkforceMemberSummary[]
   WORKFORCE_QUEUES: WorkforceQueueSummary[]
@@ -776,6 +778,39 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
   }
   ESTOP_AUDIT_LOG.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 
+  // ---- Credential Grants -------------------------------------------------
+  const SCOPE_BY_SOR_FAMILY: Record<string, string> = {
+    Itsm:                  'incident:read incident:write change:read change:write',
+    FinanceAccounting:     'invoice:read invoice:write payment:read',
+    CrmSales:              'contact:read opportunity:read opportunity:write',
+    PaymentsBilling:       'charge:read charge:write refund:write',
+    MarketingComms:        'campaign:read email:read email:write',
+    IdentityAccess:        'user:read user:write role:read',
+    SecretsManagement:     'secret:read secret:write lease:manage',
+    CustomerSupport:       'ticket:read ticket:write',
+    DocumentManagement:    'document:read document:write',
+    RegulatoryCompliance:  'report:read report:write submission:write',
+    IoTTelemetry:          'telemetry:read alert:read alert:write',
+    LogisticsShipping:     'shipment:read tracking:read',
+    LaboratoryInfo:        'sample:read result:read result:write',
+  }
+  const CREDENTIAL_GRANTS: CredentialGrantV1[] = adapterSlice.map((a, i) => {
+    const issuedAt = randomIso(rand, cfg.startIso, cfg.endIso)
+    const expiresAt = new Date(new Date(issuedAt).getTime() + 180 * 86_400_000).toISOString()
+    const isRevoked = i === 2
+    return {
+      schemaVersion: 1 as const,
+      credentialGrantId: `cg-m${String(i + 1).padStart(3, '0')}`,
+      workspaceId: WS,
+      adapterId: a.id,
+      credentialsRef: `vault://${WS}/${a.sorFamily.toLowerCase()}/${a.id.replace('adapter-', '')}`,
+      scope: SCOPE_BY_SOR_FAMILY[a.sorFamily] ?? 'read write',
+      issuedAtIso: issuedAt,
+      expiresAtIso: expiresAt,
+      ...(isRevoked ? { revokedAtIso: addMinutes(issuedAt, Math.floor(rand() * 43200 + 1440)) } : {}),
+    }
+  })
+
   // ---- Observability Data ------------------------------------------------
   const runsOverTime: { date: string; succeeded: number; failed: number; waitingForApproval: number }[] = []
   const startDate = new Date(cfg.startIso)
@@ -814,6 +849,7 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     RUNS,
     APPROVALS,
     PLANS,
+    CREDENTIAL_GRANTS,
     EVIDENCE,
     WORKFORCE_MEMBERS,
     WORKFORCE_QUEUES,

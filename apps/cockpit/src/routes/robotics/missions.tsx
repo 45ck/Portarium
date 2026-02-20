@@ -140,7 +140,7 @@ function MissionsPage() {
           </div>
         ))}
       </div>
-      <DataTable columns={columns} data={missions} loading={isLoading} getRowKey={(row) => row.missionId} onRowClick={setSelectedMission} />
+      <DataTable columns={columns} data={missions} loading={isLoading} getRowKey={(row) => row.missionId} onRowClick={setSelectedMission} pagination={{ pageSize: 20 }} />
       <MissionDetailSheet mission={selectedMission} open={selectedMission !== null} onClose={() => setSelectedMission(null)} />
     </div>
   )

@@ -9,6 +9,7 @@ import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banne
 import { FilterBar } from '@/components/cockpit/filter-bar';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
 import { EmptyState } from '@/components/cockpit/empty-state';
+import { Button } from '@/components/ui/button';
 
 const CATEGORY_OPTIONS = [
   { label: 'Plan', value: 'Plan' },
@@ -18,12 +19,15 @@ const CATEGORY_OPTIONS = [
   { label: 'System', value: 'System' },
 ];
 
+const EVIDENCE_PAGE_SIZE = 20;
+
 function EvidencePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading } = useEvidence(wsId);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     category: 'all',
   });
+  const [visibleCount, setVisibleCount] = useState(EVIDENCE_PAGE_SIZE);
 
   const items = data?.items ?? [];
   const filtered = items.filter((entry) => {
@@ -35,6 +39,9 @@ function EvidencePage() {
       return false;
     return true;
   });
+
+  const visibleEntries = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   return (
     <div className="p-6 space-y-4">
@@ -49,13 +56,32 @@ function EvidencePage() {
       <FilterBar
         filters={[{ key: 'category', label: 'Category', options: CATEGORY_OPTIONS }]}
         values={filterValues}
-        onChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
+        onChange={(key, value) => {
+          setFilterValues((prev) => ({ ...prev, [key]: value }));
+          setVisibleCount(EVIDENCE_PAGE_SIZE);
+        }}
       />
 
       {!isLoading && filtered.length === 0 ? (
         <EmptyState title="No evidence" description="No evidence entries match your filters." />
       ) : (
-        <EvidenceTimeline entries={filtered} loading={isLoading} />
+        <>
+          <EvidenceTimeline entries={visibleEntries} loading={isLoading} />
+          {!isLoading && hasMore && (
+            <div className="flex flex-col items-center gap-1 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setVisibleCount((c) => c + EVIDENCE_PAGE_SIZE)}
+              >
+                Show more
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Showing {visibleEntries.length} of {filtered.length} entries
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

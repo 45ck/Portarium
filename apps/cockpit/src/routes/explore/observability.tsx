@@ -1,22 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, lazy, Suspense } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { KpiRow } from '@/components/cockpit/kpi-row';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ObservabilityChart = lazy(() =>
+  import('./observability-chart').then((m) => ({ default: m.ObservabilityChart })),
+);
 
 interface ObservabilityData {
   runsOverTime: {
@@ -32,7 +26,7 @@ interface ObservabilityData {
 function ExploreObservabilityPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
 
-  const { data, isLoading } = useQuery<ObservabilityData>({
+  const { data, isLoading, isError } = useQuery<ObservabilityData>({
     queryKey: ['observability', wsId],
     queryFn: async () => {
       const r = await fetch(`/v1/workspaces/${wsId}/observability`);
@@ -58,7 +52,9 @@ function ExploreObservabilityPage() {
       />
 
       {isLoading ? (
-        <div className="text-xs text-muted-foreground">Loading...</div>
+        <Skeleton className="h-4 w-1/2" />
+      ) : isError ? (
+        <div className="text-xs text-destructive">Failed to load observability data.</div>
       ) : data ? (
         <>
           <KpiRow
@@ -69,49 +65,9 @@ function ExploreObservabilityPage() {
             ]}
           />
 
-          <Card className="shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Runs Over Time (Last 7 Days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={data.runsOverTime}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="succeeded"
-                    stackId="1"
-                    stroke="var(--color-chart-1)"
-                    fill="var(--color-chart-1)"
-                    fillOpacity={0.6}
-                    name="Succeeded"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="failed"
-                    stackId="1"
-                    stroke="var(--color-chart-2)"
-                    fill="var(--color-chart-2)"
-                    fillOpacity={0.6}
-                    name="Failed"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="waitingForApproval"
-                    stackId="1"
-                    stroke="var(--color-chart-3)"
-                    fill="var(--color-chart-3)"
-                    fillOpacity={0.6}
-                    name="Waiting"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <ObservabilityChart runsOverTime={data.runsOverTime} />
+          </Suspense>
         </>
       ) : null}
     </div>

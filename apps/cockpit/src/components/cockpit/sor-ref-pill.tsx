@@ -17,9 +17,11 @@ export function SorRefPill({ externalRef }: SorRefPillProps) {
     </Badge>
   )
 
-  if (externalRef.deepLinkUrl) {
+  const safeUrl = externalRef.deepLinkUrl && /^https?:\/\//.test(externalRef.deepLinkUrl) ? externalRef.deepLinkUrl : undefined
+
+  if (safeUrl) {
     return (
-      <a href={externalRef.deepLinkUrl} target="_blank" rel="noopener noreferrer">
+      <a href={safeUrl} target="_blank" rel="noopener noreferrer">
         {content}
       </a>
     )

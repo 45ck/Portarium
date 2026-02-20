@@ -10,7 +10,7 @@ import type { EvidenceEntry } from '@portarium/cockpit-types';
 function ExploreEventsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, dataUpdatedAt } = useQuery({
     queryKey: ['evidence', wsId],
     queryFn: async () => {
       const r = await fetch(`/v1/workspaces/${wsId}/evidence`);
@@ -34,6 +34,11 @@ function ExploreEventsPage() {
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
         </span>
         <span className="text-xs font-medium text-green-600">LIVE</span>
+        {dataUpdatedAt > 0 && (
+          <span className="text-xs text-muted-foreground">
+            Last updated {Math.round((Date.now() - dataUpdatedAt) / 1000)}s ago
+          </span>
+        )}
       </div>
 
       <EvidenceTimeline entries={data?.items ?? []} loading={isLoading} />

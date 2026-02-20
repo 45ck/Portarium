@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
-import type { ApprovalSummary, PlanEffect } from '@portarium/cockpit-types'
+import type { ApprovalSummary, PlanEffect, SodEvaluation, PolicyRule, DecisionHistoryEntry } from '@portarium/cockpit-types'
 import { EntityIcon } from '@/components/domain/entity-icon'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,183 +18,11 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 
-// ---------------------------------------------------------------------------
-// SoD evaluation types + mock
-// ---------------------------------------------------------------------------
-type SodState = 'eligible' | 'blocked-self' | 'blocked-role' | 'n-of-m'
-
-interface SodEvaluation {
-  state: SodState
-  requestorId: string
-  ruleId: string
-  rolesRequired: string[]
-  nRequired?: number
-  nTotal?: number
-  nSoFar?: number
-}
-
-function getSodEvaluation(approval: ApprovalSummary): SodEvaluation {
-  if (approval.approvalId === 'apr-3002') {
-    return {
-      state: 'n-of-m',
-      requestorId: approval.requestedByUserId,
-      ruleId: 'SOD-IAM-002',
-      rolesRequired: ['approver', 'admin'],
-      nRequired: 2,
-      nTotal: 3,
-      nSoFar: 1,
-    }
-  }
-  if (approval.approvalId === 'apr-3004') {
-    return {
-      state: 'blocked-self',
-      requestorId: 'user-approver-dana',
-      ruleId: 'SOD-FINANCE-003',
-      rolesRequired: ['approver'],
-    }
-  }
-  return {
-    state: 'eligible',
-    requestorId: approval.requestedByUserId,
-    ruleId: 'SOD-FINANCE-001',
-    rolesRequired: ['approver', 'admin'],
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Policy rule types + mock
-// ---------------------------------------------------------------------------
-interface PolicyRule {
-  ruleId: string
-  trigger: string
-  tier: string
-  blastRadius: string[]
-  irreversibility: 'full' | 'partial' | 'none'
-}
-
-function getPolicyRule(approval: ApprovalSummary): PolicyRule {
-  if (approval.approvalId === 'apr-3002') {
-    return {
-      ruleId: 'IAM-APPROVAL-002',
-      trigger: 'write:iam AND access_change',
-      tier: 'HumanApprove',
-      blastRadius: ['Okta', '3 records'],
-      irreversibility: 'partial',
-    }
-  }
-  if (approval.approvalId === 'apr-3004') {
-    return {
-      ruleId: 'FINANCE-APPROVAL-003',
-      trigger: 'write:finance AND amount > $10,000',
-      tier: 'HumanApprove',
-      blastRadius: ['Stripe', 'NetSuite', '12 records'],
-      irreversibility: 'full',
-    }
-  }
-  return {
-    ruleId: 'FINANCE-APPROVAL-001',
-    trigger: 'write:finance AND amount > $1,000',
-    tier: 'HumanApprove',
-    blastRadius: ['Odoo', '1 record'],
-    irreversibility: 'full',
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Request-changes history
-// ---------------------------------------------------------------------------
-interface HistoryEntry {
-  timestamp: string
-  type: 'requested' | 'changes_requested' | 'resubmitted'
-  actor: string
-  message: string
-}
-
-function getHistory(approval: ApprovalSummary): HistoryEntry[] {
-  if (approval.approvalId === 'apr-3002') {
-    return [
-      {
-        timestamp: '2026-02-17T14:30:00Z',
-        type: 'requested',
-        actor: 'system',
-        message: 'Approval requested',
-      },
-      {
-        timestamp: '2026-02-18T09:35:00Z',
-        type: 'changes_requested',
-        actor: 'user-approver-dana',
-        message: 'Changes requested: "Need audit trail for each permission revocation"',
-      },
-      {
-        timestamp: '2026-02-18T10:12:00Z',
-        type: 'resubmitted',
-        actor: 'system',
-        message: 'Plan revised and resubmitted with per-record audit refs',
-      },
-    ]
-  }
-  return []
-}
-
-// ---------------------------------------------------------------------------
-// Mock planned effects per approval
-// ---------------------------------------------------------------------------
-function getMockEffects(approval: ApprovalSummary): PlanEffect[] {
-  if (approval.approvalId === 'apr-3001') {
-    return [
-      {
-        effectId: 'eff-1',
-        operation: 'Create',
-        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4271C', externalType: 'CreditNote', displayLabel: 'Credit Note INV-4271C' },
-        summary: 'Credit note of €1,240 to ACME Repairs',
-      },
-      {
-        effectId: 'eff-2',
-        operation: 'Create',
-        target: { sorName: 'Odoo', portFamily: 'FinanceAccounting', externalId: 'INV-4272', externalType: 'Invoice', displayLabel: 'Corrected Invoice INV-4272' },
-        summary: 'Re-issue corrected invoice',
-      },
-    ]
-  }
-  if (approval.approvalId === 'apr-3002') {
-    return [
-      {
-        effectId: 'eff-3',
-        operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-001', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — alice@acme' },
-        summary: 'Revoke excess write permission',
-      },
-      {
-        effectId: 'eff-4',
-        operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-002', externalType: 'GroupMembership', displayLabel: 'Finance:ReadWrite — bob@acme' },
-        summary: 'Revoke excess write permission',
-      },
-      {
-        effectId: 'eff-5',
-        operation: 'Delete',
-        target: { sorName: 'Okta', portFamily: 'IamDirectory', externalId: 'perm-fin-003', externalType: 'GroupMembership', displayLabel: 'Finance:Admin — carol@acme' },
-        summary: 'Revoke excess admin permission',
-      },
-    ]
-  }
-  if (approval.approvalId === 'apr-3004') {
-    return [
-      {
-        effectId: 'eff-6',
-        operation: 'Create',
-        target: { sorName: 'Stripe', portFamily: 'PaymentsBilling', externalId: 'pmt-8821', externalType: 'Transfer', displayLabel: 'Transfer PO-8821' },
-        summary: 'Initiate €14,200 supplier payment',
-      },
-      {
-        effectId: 'eff-7',
-        operation: 'Update',
-        target: { sorName: 'NetSuite', portFamily: 'FinanceAccounting', externalId: 'po-8821', externalType: 'PurchaseOrder', displayLabel: 'PO-8821' },
-        summary: 'Mark purchase order as paid',
-      },
-    ]
-  }
-  return []
+const DEFAULT_SOD_EVALUATION: SodEvaluation = {
+  state: 'eligible',
+  requestorId: 'unknown',
+  ruleId: 'N/A',
+  rolesRequired: [],
 }
 
 // ---------------------------------------------------------------------------
@@ -232,12 +60,7 @@ function SorBadge({ name }: { name: string }) {
 // ---------------------------------------------------------------------------
 // Inline triage effect row (avoids modifying shared effects-list.tsx)
 // ---------------------------------------------------------------------------
-const opColors: Record<string, string> = {
-  Create: 'bg-success text-success-foreground',
-  Update: 'bg-info text-info-foreground',
-  Delete: 'bg-destructive text-white',
-  Upsert: 'bg-warning text-warning-foreground',
-}
+import { opColors } from '@/components/cockpit/lib/effect-colors'
 
 function TriageEffectRow({ effect }: { effect: PlanEffect }) {
   return (
@@ -260,11 +83,11 @@ function TriageEffectRow({ effect }: { effect: PlanEffect }) {
 function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
   if (ev.state === 'eligible') {
     return (
-      <div role="status" className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 flex items-start gap-3">
-        <ShieldCheck className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+      <div role="status" className="rounded-lg bg-success/10 border border-success/30 px-4 py-3 flex items-start gap-3">
+        <ShieldCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
-          <p className="font-semibold text-green-800">You are eligible to approve</p>
-          <p className="text-green-700">
+          <p className="font-semibold text-success">You are eligible to approve</p>
+          <p className="text-success/80">
             Requestor:{' '}
             <span className="font-mono">{ev.requestorId}</span> (different from you) · Rule:{' '}
             {ev.ruleId} · Roles required: {ev.rolesRequired.join(' OR ')}
@@ -275,22 +98,22 @@ function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
   }
   if (ev.state === 'blocked-self') {
     return (
-      <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex items-start gap-3">
-        <ShieldAlert className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+      <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3">
+        <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
-          <p className="font-semibold text-red-800">You cannot approve your own request</p>
-          <p className="text-red-700">SoD rule {ev.ruleId} requires a different approver.</p>
+          <p className="font-semibold text-destructive">You cannot approve your own request</p>
+          <p className="text-destructive/80">SoD rule {ev.ruleId} requires a different approver.</p>
         </div>
       </div>
     )
   }
   if (ev.state === 'blocked-role') {
     return (
-      <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex items-start gap-3">
-        <ShieldAlert className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+      <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3">
+        <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
         <div className="text-xs space-y-1">
-          <p className="font-semibold text-red-800">Missing required role</p>
-          <p className="text-red-700">
+          <p className="font-semibold text-destructive">Missing required role</p>
+          <p className="text-destructive/80">
             Requires: {ev.rolesRequired.join(' OR ')} — rule {ev.ruleId}
           </p>
         </div>
@@ -371,8 +194,8 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
 // ---------------------------------------------------------------------------
 // RequestChangesHistory — timeline trail
 // ---------------------------------------------------------------------------
-function RequestChangesHistory({ history }: { history: HistoryEntry[] }) {
-  const dotCls: Record<HistoryEntry['type'], string> = {
+function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] }) {
+  const dotCls: Record<DecisionHistoryEntry['type'], string> = {
     requested: 'bg-muted-foreground/50',
     changes_requested: 'bg-yellow-500',
     resubmitted: 'bg-blue-500',
@@ -384,8 +207,8 @@ function RequestChangesHistory({ history }: { history: HistoryEntry[] }) {
         Decision History
       </p>
       <ol className="relative border-l border-border ml-3 space-y-3 pl-4">
-        {history.map((entry, i) => (
-          <li key={i} className="relative">
+        {history.map((entry) => (
+          <li key={`${entry.timestamp}-${entry.actor}`} className="relative">
             <div
               className={cn(
                 'absolute -left-[1.375rem] w-2.5 h-2.5 rounded-full border-2 border-background',
@@ -423,6 +246,7 @@ interface ApprovalTriageCardProps {
   hasMore: boolean
   onAction: (approvalId: string, action: TriageAction, rationale: string) => void
   loading?: boolean
+  plannedEffects?: PlanEffect[]
 }
 
 export function ApprovalTriageCard({
@@ -432,21 +256,21 @@ export function ApprovalTriageCard({
   hasMore,
   onAction,
   loading,
+  plannedEffects = [],
 }: ApprovalTriageCardProps) {
   const [rationale, setRationale] = useState('')
   const [requestChangesMode, setRequestChangesMode] = useState(false)
   const [requestChangesMsg, setRequestChangesMsg] = useState('')
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
 
-  const sodEval = getSodEvaluation(approval)
-  const policyRule = getPolicyRule(approval)
-  const history = getHistory(approval)
-  const mockEffects = getMockEffects(approval)
+  const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION
+  const policyRule = approval.policyRule
+  const history = approval.decisionHistory ?? []
   const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role'
   const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date())
   const triagePosition = index + 1
 
-  function handleAction(action: TriageAction) {
+  const handleAction = useCallback((action: TriageAction) => {
     if (action === 'RequestChanges') {
       if (!requestChangesMode) {
         setRequestChangesMode(true)
@@ -466,7 +290,7 @@ export function ApprovalTriageCard({
       setExitDir(null)
       onAction(approval.approvalId, action, rationale)
     }, 320)
-  }
+  }, [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -482,7 +306,7 @@ export function ApprovalTriageCard({
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  })
+  }, [isBlocked, loading, rationale, requestChangesMode, handleAction])
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
@@ -494,7 +318,7 @@ export function ApprovalTriageCard({
         <div className="flex gap-1.5">
           {Array.from({ length: total }).map((_, i) => (
             <div
-              key={i}
+              key={`${approval.approvalId}-${i}`}
               className={cn(
                 'h-1.5 rounded-full transition-all duration-300',
                 i < index ? 'w-5 bg-green-500' : i === index ? 'w-8 bg-primary' : 'w-5 bg-muted',
@@ -600,10 +424,12 @@ export function ApprovalTriageCard({
             {/* SoD evaluation — always visible */}
             <SodBanner eval={sodEval} />
 
-            {/* Policy rule — always visible */}
-            <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
-              <PolicyRulePanel rule={policyRule} />
-            </div>
+            {/* Policy rule — shown when available */}
+            {policyRule && (
+              <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
+                <PolicyRulePanel rule={policyRule} />
+              </div>
+            )}
 
             {/* History trail — shown when request-changes cycle exists */}
             {history.length > 0 && (
@@ -613,13 +439,13 @@ export function ApprovalTriageCard({
             )}
 
             {/* Planned effects panel */}
-            {mockEffects.length > 0 && (
+            {plannedEffects.length > 0 && (
               <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                   What will happen if approved
                 </p>
                 <div className="divide-y divide-border/40">
-                  {mockEffects.map((e) => (
+                  {plannedEffects.map((e) => (
                     <TriageEffectRow key={e.effectId} effect={e} />
                   ))}
                 </div>
@@ -683,6 +509,7 @@ export function ApprovalTriageCard({
                     disabled={isBlocked || Boolean(loading)}
                     onClick={() => handleAction('Approved')}
                     title="Approve (A)"
+                    aria-keyshortcuts="a"
                   >
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="text-[11px]">Approve</span>
@@ -694,6 +521,7 @@ export function ApprovalTriageCard({
                     disabled={!rationale.trim() || Boolean(loading)}
                     onClick={() => handleAction('Denied')}
                     title="Deny (D)"
+                    aria-keyshortcuts="d"
                   >
                     <XCircle className="h-5 w-5" />
                     <span className="text-[11px]">Deny</span>
@@ -705,6 +533,7 @@ export function ApprovalTriageCard({
                     disabled={Boolean(loading)}
                     onClick={() => handleAction('RequestChanges')}
                     title="Request changes (R)"
+                    aria-keyshortcuts="r"
                   >
                     <RotateCcw className="h-5 w-5" />
                     <span className="text-[11px]">Changes</span>
@@ -716,6 +545,7 @@ export function ApprovalTriageCard({
                     disabled={Boolean(loading)}
                     onClick={() => handleAction('Skip')}
                     title="Skip (S)"
+                    aria-keyshortcuts="s"
                   >
                     <SkipForward className="h-5 w-5" />
                     <span className="text-[11px]">Skip</span>

@@ -23,6 +23,7 @@ export const WORK_ITEMS = dataset.WORK_ITEMS
 export const RUNS = dataset.RUNS
 export const APPROVALS = dataset.APPROVALS
 export const PLANS = dataset.PLANS
+export const CREDENTIAL_GRANTS = dataset.CREDENTIAL_GRANTS
 export const EVIDENCE = dataset.EVIDENCE
 export const WORKFORCE_MEMBERS = dataset.WORKFORCE_MEMBERS
 export const WORKFORCE_QUEUES = dataset.WORKFORCE_QUEUES

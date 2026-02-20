@@ -78,6 +78,7 @@ function WorkforceQueuesPage() {
         data={queues}
         loading={queuesLoading || membersLoading}
         getRowKey={(row) => row.workforceQueueId}
+        pagination={{ pageSize: 20 }}
       />
     </div>
   );

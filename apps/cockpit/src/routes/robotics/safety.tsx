@@ -15,8 +15,8 @@ import { ShieldAlert, CheckCircle2, AlertTriangle } from 'lucide-react'
 
 function EnforcementBadge({ mode }: { mode: EnforcementMode }) {
   const config: Record<EnforcementMode, { label: string; className: string }> = {
-    block: { label: 'Block', className: 'bg-red-100 text-red-800 border-red-200' },
-    warn: { label: 'Warn', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    block: { label: 'Block', className: 'bg-destructive/10 text-destructive border-destructive/30' },
+    warn: { label: 'Warn', className: 'bg-warning/10 text-warning border-warning/30' },
     log: { label: 'Log', className: 'bg-muted text-muted-foreground border-border' },
   }
   const c = config[mode] ?? config['log']
@@ -24,7 +24,7 @@ function EnforcementBadge({ mode }: { mode: EnforcementMode }) {
 }
 
 function TierBadge({ tier }: { tier: string }) {
-  const cls = tier === 'HumanApprove' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : tier === 'Auto' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground border-border'
+  const cls = tier === 'HumanApprove' ? 'bg-warning/10 text-warning border-warning/30' : tier === 'Auto' ? 'bg-success/10 text-success border-success/30' : 'bg-muted text-muted-foreground border-border'
   return <Badge variant="outline" className={cn('text-[11px]', cls)}>{tier}</Badge>
 }
 
@@ -120,12 +120,12 @@ function SafetyPage() {
                 <tr>{['Timestamp', 'Actor', 'Robot', 'Event', 'Detail'].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{h}</th>)}</tr>
               </thead>
               <tbody>
-                {auditLog.map((entry: EStopAuditEntry, idx) => (
-                  <tr key={idx} className="border-t border-border hover:bg-muted/20">
+                {auditLog.map((entry: EStopAuditEntry) => (
+                  <tr key={`${entry.timestamp}-${entry.event}`} className="border-t border-border hover:bg-muted/20">
                     <td className="px-3 py-2 text-xs"><time dateTime={entry.timestamp}>{format(new Date(entry.timestamp), 'yyyy-MM-dd HH:mm')}</time></td>
                     <td className="px-3 py-2 text-xs">{entry.actor}</td>
                     <td className="px-3 py-2 font-mono text-xs">{entry.robotId}</td>
-                    <td className="px-3 py-2"><Badge variant="outline" className={cn('text-[11px]', entry.event === 'Sent' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-green-100 text-green-800 border-green-200')}>{entry.event}</Badge></td>
+                    <td className="px-3 py-2"><Badge variant="outline" className={cn('text-[11px]', entry.event === 'Sent' ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-success/10 text-success border-success/30')}>{entry.event}</Badge></td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{entry.detail}</td>
                   </tr>
                 ))}

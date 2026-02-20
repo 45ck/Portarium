@@ -15,7 +15,7 @@ interface KpiRowProps {
 
 export function KpiRow({ stats }: KpiRowProps) {
   return (
-    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {stats.map((stat) => (
         <Card key={stat.label} className="shadow-none">
           <CardContent className="pt-3 pb-3">

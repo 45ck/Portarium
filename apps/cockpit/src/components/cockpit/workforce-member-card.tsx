@@ -1,3 +1,4 @@
+import React from 'react'
 import type { WorkforceMemberSummary } from '@portarium/cockpit-types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -24,6 +25,16 @@ export function WorkforceMemberCard({ member, onClick }: WorkforceMemberCardProp
     <Card
       className={cn('shadow-none', onClick && 'cursor-pointer hover:bg-muted/50')}
       onClick={onClick}
+      {...(onClick ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onClick()
+          }
+        },
+      } : {})}
     >
       <CardContent className="flex items-center gap-3 py-3">
         <div className="relative">

@@ -40,6 +40,7 @@ export function ThemePicker() {
           <button
             key={id}
             onClick={() => setTheme(id)}
+            aria-pressed={isActive}
             className={cn(
               'rounded-lg border p-3 text-left transition-all',
               isActive

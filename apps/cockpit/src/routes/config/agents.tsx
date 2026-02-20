@@ -1,5 +1,6 @@
-import { createRoute } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { createRoute, useNavigate } from '@tanstack/react-router';
+import { Plus, AlertCircle, RotateCcw } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useAgents } from '@/hooks/queries/use-agents';
@@ -7,13 +8,16 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
+import { RegisterAgentDialog } from '@/components/cockpit/register-agent-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AgentV1 } from '@portarium/cockpit-types';
 
 function AgentsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useAgents(wsId);
+  const { data, isLoading, isError, refetch } = useAgents(wsId);
+  const navigate = useNavigate();
+  const [registerOpen, setRegisterOpen] = useState(false);
 
   const agents = data?.items ?? [];
 
@@ -66,6 +70,25 @@ function AgentsPage() {
     },
   ];
 
+  if (isError) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader title="Agents" description="AI agents registered in this workspace" icon={<EntityIcon entityType="agent" size="md" decorative />} />
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load agents</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-4">
       <PageHeader
@@ -73,18 +96,22 @@ function AgentsPage() {
         description="AI agents registered in this workspace"
         icon={<EntityIcon entityType="agent" size="md" decorative />}
         action={
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => setRegisterOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             Register Agent
           </Button>
         }
       />
 
+      <RegisterAgentDialog open={registerOpen} onOpenChange={setRegisterOpen} />
+
       <DataTable
         columns={columns}
         data={agents}
         loading={isLoading}
         getRowKey={(row) => row.agentId}
+        pagination={{ pageSize: 20 }}
+        onRowClick={(row) => navigate({ to: '/config/agents/$agentId' as string, params: { agentId: row.agentId } })}
       />
     </div>
   );

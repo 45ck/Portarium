@@ -239,6 +239,19 @@ export const APPROVALS: ApprovalSummary[] = [
     requestedByUserId: 'system',
     assigneeUserId: 'user-approver-dana',
     dueAtIso: '2026-02-21T12:00:00Z',
+    sodEvaluation: {
+      state: 'eligible',
+      requestorId: 'system',
+      ruleId: 'SOD-FINANCE-001',
+      rolesRequired: ['approver', 'admin'],
+    },
+    policyRule: {
+      ruleId: 'FINANCE-APPROVAL-001',
+      trigger: 'write:finance AND amount > $1,000',
+      tier: 'HumanApprove',
+      blastRadius: ['Odoo', '1 record'],
+      irreversibility: 'full',
+    },
   },
   {
     schemaVersion: 1,
@@ -254,6 +267,42 @@ export const APPROVALS: ApprovalSummary[] = [
     requestedByUserId: 'system',
     assigneeUserId: 'user-approver-dana',
     dueAtIso: '2026-02-28T17:00:00Z',
+    sodEvaluation: {
+      state: 'n-of-m',
+      requestorId: 'system',
+      ruleId: 'SOD-IAM-002',
+      rolesRequired: ['approver', 'admin'],
+      nRequired: 2,
+      nTotal: 3,
+      nSoFar: 1,
+    },
+    policyRule: {
+      ruleId: 'IAM-APPROVAL-002',
+      trigger: 'write:iam AND access_change',
+      tier: 'HumanApprove',
+      blastRadius: ['Okta', '3 records'],
+      irreversibility: 'partial',
+    },
+    decisionHistory: [
+      {
+        timestamp: '2026-02-17T14:30:00Z',
+        type: 'requested',
+        actor: 'system',
+        message: 'Approval requested',
+      },
+      {
+        timestamp: '2026-02-18T09:35:00Z',
+        type: 'changes_requested',
+        actor: 'user-approver-dana',
+        message: 'Changes requested: "Need audit trail for each permission revocation"',
+      },
+      {
+        timestamp: '2026-02-18T10:12:00Z',
+        type: 'resubmitted',
+        actor: 'system',
+        message: 'Plan revised and resubmitted with per-record audit refs',
+      },
+    ],
   },
   {
     schemaVersion: 1,
@@ -283,6 +332,19 @@ export const APPROVALS: ApprovalSummary[] = [
     requestedAtIso: '2026-02-20T08:05:00Z',
     requestedByUserId: 'user-approver-dana',
     assigneeUserId: 'user-approver-dana',
+    sodEvaluation: {
+      state: 'blocked-self',
+      requestorId: 'user-approver-dana',
+      ruleId: 'SOD-FINANCE-003',
+      rolesRequired: ['approver'],
+    },
+    policyRule: {
+      ruleId: 'FINANCE-APPROVAL-003',
+      trigger: 'write:finance AND amount > $10,000',
+      tier: 'HumanApprove',
+      blastRadius: ['Stripe', 'NetSuite', '12 records'],
+      irreversibility: 'full',
+    },
   },
 ]
 
