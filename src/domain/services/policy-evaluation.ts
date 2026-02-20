@@ -145,6 +145,9 @@ function violationToDecision(violation: SodViolationV1): PolicyDecisionV1 {
       return 'Deny';
     case 'MakerCheckerViolation':
     case 'DistinctApproversViolation':
+    case 'HazardousZoneNoSelfApprovalViolation':
+    case 'SafetyClassifiedZoneDualApprovalViolation':
+    case 'RemoteEstopRequesterSeparationViolation':
       return 'RequireApproval';
   }
 }
