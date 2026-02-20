@@ -8,6 +8,7 @@ import {
 } from 'jose';
 
 import { appContextFromWorkspaceAuthClaims } from '../../application/iam/claims-to-context.js';
+import { isWorkspaceUserRole } from '../../domain/primitives/index.js';
 import type {
   AuthenticateBearerTokenInput,
   AuthenticationPort,
@@ -72,6 +73,61 @@ function parseScopes(payload: Record<string, unknown>): readonly string[] {
   }
 
   return [];
+}
+
+function readWorkspaceId(payload: Record<string, unknown>): string | undefined {
+  const workspaceId = payload['workspaceId'];
+  if (typeof workspaceId === 'string' && workspaceId.trim() !== '') {
+    return workspaceId.trim();
+  }
+
+  const tenantId = payload['tenantId'];
+  if (typeof tenantId === 'string' && tenantId.trim() !== '') {
+    return tenantId.trim();
+  }
+
+  return undefined;
+}
+
+function readRoles(payload: Record<string, unknown>): readonly string[] {
+  const rolesClaim = payload['roles'];
+  if (Array.isArray(rolesClaim)) {
+    return rolesClaim.filter((entry): entry is string => typeof entry === 'string');
+  }
+
+  const realmAccess = payload['realm_access'];
+  if (typeof realmAccess !== 'object' || realmAccess === null) {
+    return [];
+  }
+  const realmRoles = (realmAccess as Record<string, unknown>)['roles'];
+  if (!Array.isArray(realmRoles)) {
+    return [];
+  }
+  return realmRoles.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function parseWorkspaceRoles(payload: Record<string, unknown>): readonly string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const entry of readRoles(payload)) {
+    const role = entry.trim();
+    if (!isWorkspaceUserRole(role) || seen.has(role)) {
+      continue;
+    }
+    seen.add(role);
+    out.push(role);
+  }
+  return out;
+}
+
+function normalizeWorkspaceClaims(payload: Record<string, unknown>): Record<string, unknown> {
+  const workspaceId = readWorkspaceId(payload);
+  const roles = parseWorkspaceRoles(payload);
+  return {
+    ...payload,
+    ...(workspaceId ? { workspaceId } : {}),
+    ...(roles.length > 0 ? { roles } : {}),
+  };
 }
 
 function isReadonlyStringArray(value: unknown): value is readonly string[] {
@@ -162,9 +218,10 @@ export class JoseJwtAuthentication implements AuthenticationPort {
     if (!payloadResult.ok) return payloadResult;
 
     const payload = payloadResult.value;
+    const normalizedClaims = normalizeWorkspaceClaims(payload);
 
     const { actor, ctx } = appContextFromWorkspaceAuthClaims({
-      claims: payload,
+      claims: normalizedClaims,
       correlationId: input.correlationId,
       ...(input.traceparent ? { traceparent: input.traceparent } : {}),
       ...(input.tracestate ? { tracestate: input.tracestate } : {}),

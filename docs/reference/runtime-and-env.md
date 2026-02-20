@@ -13,6 +13,10 @@
 - `PORTARIUM_JWKS_URI` (enables JWT auth)
 - `PORTARIUM_JWT_ISSUER` (optional)
 - `PORTARIUM_JWT_AUDIENCE` (optional)
+- `PORTARIUM_OPENFGA_API_URL` (optional; enables OpenFGA-backed AuthorizationPort when set with store id)
+- `PORTARIUM_OPENFGA_STORE_ID` (optional; required with OpenFGA API URL)
+- `PORTARIUM_OPENFGA_AUTHORIZATION_MODEL_ID` (optional)
+- `PORTARIUM_OPENFGA_API_TOKEN` (optional bearer token for OpenFGA API)
 
 ## Worker env
 

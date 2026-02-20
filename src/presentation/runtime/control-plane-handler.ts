@@ -25,6 +25,7 @@ import { err } from '../../application/common/result.js';
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
+import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { parseLocationEventV1 } from '../../domain/location/location-event-v1.js';
 import { InMemoryLocationHistoryStore, InMemoryLocationLatestStateCache } from '../../infrastructure/location/localisation-ingestion-pipeline.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
@@ -451,9 +452,27 @@ function buildAuthentication(): AuthenticationPort {
   };
 }
 
+function buildAuthorization(): AuthorizationPort {
+  const apiUrl = process.env['PORTARIUM_OPENFGA_API_URL']?.trim();
+  const storeId = process.env['PORTARIUM_OPENFGA_STORE_ID']?.trim();
+  const authorizationModelId = process.env['PORTARIUM_OPENFGA_AUTHORIZATION_MODEL_ID']?.trim();
+  const apiToken = process.env['PORTARIUM_OPENFGA_API_TOKEN']?.trim();
+
+  if (apiUrl && storeId) {
+    return new OpenFgaAuthorization({
+      apiUrl,
+      storeId,
+      ...(authorizationModelId ? { authorizationModelId } : {}),
+      ...(apiToken ? { apiToken } : {}),
+    });
+  }
+
+  return new WorkspaceRbacAuthorization();
+}
+
 function buildDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
-  const authorization: AuthorizationPort = new WorkspaceRbacAuthorization();
+  const authorization = buildAuthorization();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
