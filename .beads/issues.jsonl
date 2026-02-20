@@ -235,7 +235,7 @@
 {"id":"bead-0235","title":"Closeout review: CustomerSupport port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:08.635Z","updatedAt":"2026-02-20T03:43:30.731Z"}
 {"id":"bead-0236","title":"Closeout review: CustomerSupport port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:08.906Z","updatedAt":"2026-02-20T03:46:06.672Z"}
 {"id":"bead-0237","title":"Closeout review: ItsmItOps port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:09.176Z","updatedAt":"2026-02-20T03:47:41.161Z"}
-{"id":"bead-0238","title":"Closeout review: ItsmItOps port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:09.451Z","updatedAt":"2026-02-20T03:47:08.191Z","claimedBy":"codex","claimedAt":"2026-02-20T03:47:08.191Z"}
+{"id":"bead-0238","title":"Closeout review: ItsmItOps port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:09.451Z","updatedAt":"2026-02-20T03:48:18.039Z"}
 {"id":"bead-0239","title":"Closeout review: IamDirectory port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:09.718Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0240","title":"Closeout review: IamDirectory port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:09.983Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0241","title":"Closeout review: SecretsVaulting port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:10.240Z","updatedAt":"2026-02-17T20:18:23.090Z"}
