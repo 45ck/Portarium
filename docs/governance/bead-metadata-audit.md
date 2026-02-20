@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:31:41.878Z
+Generated: 2026-02-20T02:33:03.273Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -8,7 +8,7 @@ Source: `.beads/issues.jsonl`
 - Total beads: 585
 - Fully compliant beads: 0
 - Non-compliant beads: 585
-- Missing owner: 584
+- Missing owner: 585
 - Missing close criteria: 455
 - Missing rollback trigger: 583
 
@@ -188,9 +188,9 @@ Source: `.beads/issues.jsonl`
 | bead-0170 | open | (none) | owner, closeCriteria, rollbackTrigger | Per-ADR closure: ADR-001 through ADR-0040 must each have implementation, review, and verification evidence before any dependent Bead close |
 | bead-0171 | open | (none) | owner, closeCriteria, rollbackTrigger | Per-ADR closure: ADR-0041 through ADR-0043 must be promoted from proposed/accepted states before GA release |
 | bead-0172 | open | (none) | owner, closeCriteria, rollbackTrigger | Per-ADR closure: ADR-0048 to ADR-0138 legacy gaps from research pipeline must be mapped to implementation and review Beads |
-| bead-0173 | open | codex-agent | closeCriteria, rollbackTrigger | Reconcile docs/domain/canonical-objects.md with runtime entity model and canonical mapping contracts before further adapter work |
+| bead-0173 | closed | (none) | owner, closeCriteria, rollbackTrigger | Reconcile docs/domain/canonical-objects.md with runtime entity model and canonical mapping contracts before further adapter work |
 | bead-0174 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: verify no adapter work starts without canonical-to-provider mapping evidence and operation matrix completeness |
-| bead-0175 | open | (none) | owner, closeCriteria, rollbackTrigger | Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer |
+| bead-0175 | closed | (none) | owner, closeCriteria, rollbackTrigger | Reconcile docs/domain/erd.md with aggregate ID and reference invariants in repository layer |
 | bead-0176 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: reconcile docs/domain/aggregates.md invariants with all aggregate event streams and state-transition Beads |
 | bead-0177 | open | (none) | owner, closeCriteria, rollbackTrigger | Cross-layer: enforce domain zero-external-dependencies across domain packages via architecture-guard evidence |
 | bead-0178 | open | (none) | owner, closeCriteria, rollbackTrigger | Code review: validate architecture boundaries for every new scaffold file before code merge |

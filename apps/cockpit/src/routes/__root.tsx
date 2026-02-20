@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet, Link, type LinkProps } from '@tanstack/react-router'
+import { createRootRoute, Outlet, Link } from '@tanstack/react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { queryClient } from '@/lib/query-client'
@@ -85,14 +85,17 @@ const NAV_SECTIONS: NavSectionDef[] = [
 // Once all route files are in place the router's type map will include
 // every path and this cast will be redundant but harmless.
 function NavLink({ to, collapsed, children }: { to: string; collapsed: boolean; children: React.ReactNode }) {
+  // Cast via `unknown` so the nav works before all routes are registered in the tree.
+  // Once router.ts wires every route the cast becomes redundant but stays harmless.
+  const TypedLink = Link as React.ComponentType<{ to: string; className?: string; activeProps?: { className?: string }; children?: React.ReactNode }>
   return (
-    <Link
-      to={to as '.'}
+    <TypedLink
+      to={to}
       className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
       activeProps={{ className: 'bg-accent text-accent-foreground font-medium' }}
     >
       {children}
-    </Link>
+    </TypedLink>
   )
 }
 
