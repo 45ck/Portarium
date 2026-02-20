@@ -29,6 +29,10 @@ describe('Workspace RBAC (IAM MVP)', () => {
     expect(isAllowedWorkspaceAction(actor(['approver']), 'approval:submit')).toBe(true);
   });
 
+  it('allows auditor for approval:read', () => {
+    expect(isAllowedWorkspaceAction(actor(['auditor']), 'approval:read')).toBe(true);
+  });
+
   it('denies auditor for approval:submit', () => {
     expect(isAllowedWorkspaceAction(actor(['auditor']), 'approval:submit')).toBe(false);
   });

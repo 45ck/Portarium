@@ -1,10 +1,19 @@
 import type {
   AdapterRegistrationStore,
+  ApprovalListPage,
+  ApprovalQueryStore,
   ApprovalStore,
   IdempotencyKey,
   IdempotencyStore,
+  ListApprovalsFilter,
+  ListRunsFilter,
+  ListWorkspacesFilter,
   PolicyStore,
+  RunListPage,
+  RunQueryStore,
   RunStore,
+  WorkspaceListPage,
+  WorkspaceQueryStore,
   WorkflowStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -28,7 +37,7 @@ const COLLECTION_APPROVALS = 'approvals';
 const COLLECTION_POLICIES = 'policies';
 const COLLECTION_IDEMPOTENCY = 'idempotency';
 
-export class PostgresWorkspaceStore implements WorkspaceStore {
+export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQueryStore {
   readonly #documents: PostgresJsonDocumentStore;
 
   public constructor(client: SqlClient) {
@@ -72,9 +81,29 @@ export class PostgresWorkspaceStore implements WorkspaceStore {
       payload: workspace,
     });
   }
+
+  public async listWorkspaces(
+    tenantId: string,
+    filter: ListWorkspacesFilter,
+  ): Promise<WorkspaceListPage> {
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      collection: COLLECTION_WORKSPACES,
+    });
+
+    const byName = filter.nameQuery?.toLowerCase();
+    const items = payloads
+      .map((payload) => parseWorkspaceV1(payload))
+      .filter((workspace) =>
+        byName ? workspace.name.toLowerCase().includes(byName) : true,
+      )
+      .sort((left, right) => String(left.workspaceId).localeCompare(String(right.workspaceId)));
+
+    return pageByCursor(items, String, filter.limit, filter.cursor);
+  }
 }
 
-export class PostgresRunStore implements RunStore {
+export class PostgresRunStore implements RunStore, RunQueryStore {
   readonly #documents: PostgresJsonDocumentStore;
 
   public constructor(client: SqlClient) {
@@ -102,6 +131,25 @@ export class PostgresRunStore implements RunStore {
       documentId: String(run.runId),
       payload: run,
     });
+  }
+
+  public async listRuns(
+    tenantId: string,
+    workspaceId: string,
+    filter: ListRunsFilter,
+  ): Promise<RunListPage> {
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_RUNS,
+    });
+
+    const items = payloads
+      .map((payload) => parseRunV1(payload))
+      .filter((run) => matchRunFilter(run, filter))
+      .sort((left, right) => String(left.runId).localeCompare(String(right.runId)));
+
+    return pageByCursor(items, (run) => String(run.runId), filter.limit, filter.cursor);
   }
 }
 
@@ -155,7 +203,7 @@ export class PostgresAdapterRegistrationStore implements AdapterRegistrationStor
   }
 }
 
-export class PostgresApprovalStore implements ApprovalStore {
+export class PostgresApprovalStore implements ApprovalStore, ApprovalQueryStore {
   readonly #documents: PostgresJsonDocumentStore;
 
   public constructor(client: SqlClient) {
@@ -183,6 +231,25 @@ export class PostgresApprovalStore implements ApprovalStore {
       documentId: String(approval.approvalId),
       payload: approval,
     });
+  }
+
+  public async listApprovals(
+    tenantId: string,
+    workspaceId: string,
+    filter: ListApprovalsFilter,
+  ): Promise<ApprovalListPage> {
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_APPROVALS,
+    });
+
+    const items = payloads
+      .map((payload) => parseApprovalV1(payload))
+      .filter((approval) => matchApprovalFilter(approval, filter))
+      .sort((left, right) => String(left.approvalId).localeCompare(String(right.approvalId)));
+
+    return pageByCursor(items, (approval) => String(approval.approvalId), filter.limit, filter.cursor);
   }
 }
 
@@ -235,4 +302,49 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
 
 function formatIdempotencyDocumentId(key: IdempotencyKey): string {
   return `${key.commandName}:${key.requestKey}`;
+}
+
+function matchRunFilter(run: RunV1, filter: ListRunsFilter): boolean {
+  if (filter.status && run.status !== filter.status) return false;
+  if (filter.workflowId && String(run.workflowId) !== String(filter.workflowId)) return false;
+  if (filter.initiatedByUserId && String(run.initiatedByUserId) !== String(filter.initiatedByUserId)) {
+    return false;
+  }
+  if (filter.correlationId && String(run.correlationId) !== String(filter.correlationId)) return false;
+  return true;
+}
+
+function matchApprovalFilter(approval: ApprovalV1, filter: ListApprovalsFilter): boolean {
+  if (filter.status && approval.status !== filter.status) return false;
+  if (filter.runId && String(approval.runId) !== String(filter.runId)) return false;
+  if (filter.planId && String(approval.planId) !== String(filter.planId)) return false;
+  if (filter.workItemId && String(approval.workItemId) !== String(filter.workItemId)) return false;
+  if (filter.assigneeUserId && String(approval.assigneeUserId) !== String(filter.assigneeUserId)) {
+    return false;
+  }
+  if (
+    filter.requestedByUserId &&
+    String(approval.requestedByUserId) !== String(filter.requestedByUserId)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function pageByCursor<T>(
+  items: readonly T[],
+  idOf: (item: T) => string,
+  limit?: number,
+  cursor?: string,
+): Readonly<{ items: readonly T[]; nextCursor?: string }> {
+  const cursorId = cursor?.trim();
+  const filtered = cursorId ? items.filter((item) => idOf(item) > cursorId) : [...items];
+
+  if (limit === undefined || filtered.length <= limit) {
+    return { items: filtered };
+  }
+
+  const paged = filtered.slice(0, limit);
+  const nextCursor = idOf(paged[paged.length - 1]!);
+  return { items: paged, nextCursor };
 }

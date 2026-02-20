@@ -1,4 +1,5 @@
 export const APP_ACTIONS = {
+  approvalRead: 'approval:read',
   approvalSubmit: 'approval:submit',
   runRead: 'run:read',
   workItemRead: 'work-item:read',
