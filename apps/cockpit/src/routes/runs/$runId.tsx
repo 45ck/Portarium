@@ -253,7 +253,7 @@ function RunDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <ChainIntegrityBanner status="verified" />
+      <ChainIntegrityBanner status={evidence.isLoading ? 'pending' : 'verified'} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         <Tabs defaultValue="steps">

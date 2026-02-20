@@ -2,14 +2,8 @@
 // Mock Robotics Gateways fixture
 // ---------------------------------------------------------------------------
 
-export interface GatewaySummary {
-  gatewayId: string;
-  url: string;
-  status: 'Online' | 'Offline' | 'Degraded';
-  connectedRobots: number;
-  lastHeartbeatIso: string;
-  region: string;
-}
+export type { GatewaySummary } from '@portarium/cockpit-types'
+import type { GatewaySummary } from '@portarium/cockpit-types'
 
 export const MOCK_GATEWAYS: GatewaySummary[] = [
   {

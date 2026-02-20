@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { GatewaySummary } from '@/mocks/fixtures/gateways'
+import type { GatewaySummary } from '@portarium/cockpit-types'
 
 async function fetchGateways(wsId: string): Promise<{ items: GatewaySummary[] }> {
   const res = await fetch(`/v1/workspaces/${wsId}/robotics/gateways`)
@@ -8,5 +8,9 @@ async function fetchGateways(wsId: string): Promise<{ items: GatewaySummary[] }>
 }
 
 export function useGateways(wsId: string) {
-  return useQuery({ queryKey: ['gateways', wsId], queryFn: () => fetchGateways(wsId) })
+  return useQuery({
+    queryKey: ['gateways', wsId],
+    queryFn: () => fetchGateways(wsId),
+    enabled: Boolean(wsId),
+  })
 }

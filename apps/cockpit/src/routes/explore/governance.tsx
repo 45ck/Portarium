@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import type { PolicySummary, SodConstraint } from '@/mocks/fixtures/policies';
+import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types';
 
 const policyStatusClassName: Record<string, string> = {
   Active: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',

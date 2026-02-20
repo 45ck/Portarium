@@ -8,5 +8,9 @@ async function fetchEvidence(wsId: string): Promise<{ items: EvidenceEntry[] }> 
 }
 
 export function useEvidence(wsId: string) {
-  return useQuery({ queryKey: ['evidence', wsId], queryFn: () => fetchEvidence(wsId) })
+  return useQuery({
+    queryKey: ['evidence', wsId],
+    queryFn: () => fetchEvidence(wsId),
+    enabled: Boolean(wsId),
+  })
 }

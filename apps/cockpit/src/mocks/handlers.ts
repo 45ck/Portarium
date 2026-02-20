@@ -138,7 +138,10 @@ export const handlers = [
               ...a,
               status: body.decision,
               decidedAtIso: new Date().toISOString(),
-              decidedByUserId: 'user-approver-dana',
+              decidedByUserId:
+                approvals.find((a) => a.approvalId === params['id'])?.assigneeUserId ??
+                data?.WORKFORCE_MEMBERS[0]?.linkedUserId ??
+                'user-system',
               rationale: body.rationale,
             }
           : a,

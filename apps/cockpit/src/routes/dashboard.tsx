@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useRuns } from '@/hooks/queries/use-runs';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
+import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
@@ -25,6 +26,13 @@ function DashboardPage() {
   const runs = useRuns(wsId);
   const approvals = useApprovals(wsId);
   const workItems = useWorkItems(wsId);
+  const adapters = useAdapters(wsId);
+  const adapterItems = adapters.data?.items ?? [];
+  const workspaceState = adapterItems.some((a) => a.status === 'unhealthy')
+    ? 'incident'
+    : adapterItems.some((a) => a.status === 'degraded')
+      ? 'degraded'
+      : 'healthy';
   const runsList = runs.data?.items ?? [];
   const approvalsList = approvals.data?.items ?? [];
   const workItemsList = workItems.data?.items ?? [];
@@ -125,7 +133,7 @@ function DashboardPage() {
 
       <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
 
-      <SystemStateBanner state="healthy" />
+      <SystemStateBanner state={workspaceState} />
 
       <KpiRow
         stats={[

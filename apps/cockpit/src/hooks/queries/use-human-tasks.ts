@@ -58,6 +58,7 @@ export function useHumanTasks(wsId: string) {
   return useQuery({
     queryKey: ['human-tasks', wsId],
     queryFn: () => fetchHumanTasks(wsId),
+    enabled: Boolean(wsId),
   })
 }
 

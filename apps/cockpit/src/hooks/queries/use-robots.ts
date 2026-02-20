@@ -14,9 +14,17 @@ async function fetchRobot(wsId: string, robotId: string): Promise<RobotSummary> 
 }
 
 export function useRobots(wsId: string) {
-  return useQuery({ queryKey: ['robots', wsId], queryFn: () => fetchRobots(wsId) })
+  return useQuery({
+    queryKey: ['robots', wsId],
+    queryFn: () => fetchRobots(wsId),
+    enabled: Boolean(wsId),
+  })
 }
 
 export function useRobot(wsId: string, robotId: string) {
-  return useQuery({ queryKey: ['robots', wsId, robotId], queryFn: () => fetchRobot(wsId, robotId) })
+  return useQuery({
+    queryKey: ['robots', wsId, robotId],
+    queryFn: () => fetchRobot(wsId, robotId),
+    enabled: Boolean(wsId) && Boolean(robotId),
+  })
 }

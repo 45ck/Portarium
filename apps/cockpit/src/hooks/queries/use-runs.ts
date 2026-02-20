@@ -14,9 +14,17 @@ async function fetchRun(wsId: string, runId: string): Promise<RunSummary> {
 }
 
 export function useRuns(wsId: string) {
-  return useQuery({ queryKey: ['runs', wsId], queryFn: () => fetchRuns(wsId) })
+  return useQuery({
+    queryKey: ['runs', wsId],
+    queryFn: () => fetchRuns(wsId),
+    enabled: Boolean(wsId),
+  })
 }
 
 export function useRun(wsId: string, runId: string) {
-  return useQuery({ queryKey: ['runs', wsId, runId], queryFn: () => fetchRun(wsId, runId) })
+  return useQuery({
+    queryKey: ['runs', wsId, runId],
+    queryFn: () => fetchRun(wsId, runId),
+    enabled: Boolean(wsId) && Boolean(runId),
+  })
 }

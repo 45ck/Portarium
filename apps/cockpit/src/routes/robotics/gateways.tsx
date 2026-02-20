@@ -15,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import type { GatewaySummary } from '@/mocks/fixtures/gateways';
+import type { GatewaySummary } from '@portarium/cockpit-types';
 
 const statusClassName: Record<string, string> = {
   Online: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',

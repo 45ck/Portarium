@@ -2,28 +2,8 @@
 // Mock Policies & SoD Constraints fixture
 // ---------------------------------------------------------------------------
 
-export interface PolicySummary {
-  policyId: string;
-  name: string;
-  description: string;
-  status: 'Active' | 'Draft' | 'Archived';
-  ruleText: string;
-  conditions: PolicyCondition[];
-}
-
-export interface PolicyCondition {
-  field: string;
-  operator: 'eq' | 'neq' | 'in' | 'gt' | 'lt';
-  value: string;
-}
-
-export interface SodConstraint {
-  constraintId: string;
-  name: string;
-  description: string;
-  status: 'Active' | 'Inactive';
-  relatedPolicyIds: string[];
-}
+export type { PolicyCondition, PolicySummary, SodConstraint } from '@portarium/cockpit-types'
+import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types'
 
 export const MOCK_POLICIES: PolicySummary[] = [
   {

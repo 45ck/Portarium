@@ -19,6 +19,7 @@ import type {
   PlanEffect,
   EffectOperation,
   CredentialGrantV1,
+  AdapterSummary,
 } from '@portarium/cockpit-types'
 import type {
   RobotSummary,
@@ -343,7 +344,7 @@ export interface MeridianDataset {
   WORKFORCE_MEMBERS: WorkforceMemberSummary[]
   WORKFORCE_QUEUES: WorkforceQueueSummary[]
   AGENTS: AgentV1[]
-  ADAPTERS: { adapterId: string; name: string; sorFamily: string; status: string; lastSyncIso: string }[]
+  ADAPTERS: AdapterSummary[]
   ROBOTS: RobotSummary[]
   MISSIONS: MissionSummary[]
   SAFETY_CONSTRAINTS: SafetyConstraint[]
@@ -367,7 +368,7 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     adapterId: a.id,
     name: a.name,
     sorFamily: a.sorFamily,
-    status: rand() < 0.8 ? 'healthy' : rand() < 0.5 ? 'degraded' : 'unhealthy',
+    status: (rand() < 0.8 ? 'healthy' : rand() < 0.5 ? 'degraded' : 'unhealthy') as AdapterSummary['status'],
     lastSyncIso: randomIso(rand, cfg.startIso, cfg.endIso),
   }))
 
@@ -555,6 +556,18 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     }
     if (wi) {
       wi.links!.approvalIds!.push(approvalId)
+    }
+  }
+
+  // Guarantee at least 3 Pending approvals so triage page always has data.
+  const pendingCount = APPROVALS.filter((a) => a.status === 'Pending').length
+  if (pendingCount < 3) {
+    const toPromote = APPROVALS.filter((a) => a.status !== 'Pending').slice(0, 3 - pendingCount)
+    for (const a of toPromote) {
+      a.status = 'Pending'
+      a.decidedAtIso = undefined
+      a.decidedByUserId = undefined
+      a.rationale = undefined
     }
   }
 

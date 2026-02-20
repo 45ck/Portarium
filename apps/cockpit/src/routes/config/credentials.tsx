@@ -105,7 +105,11 @@ function CredentialsPage() {
         credentialType: parsedRef.credentialType,
         credentialName: parsedRef.credentialName,
         status: deriveGrantStatus(grant, nowMs),
-        grantedBy: grant.credentialGrantId.startsWith('cg-auto-') ? 'system' : 'user-admin',
+        grantedBy: grant.credentialGrantId.startsWith('cg-auto-')
+          ? 'system'
+          : grant.credentialsRef.startsWith('vault://')
+            ? 'vault'
+            : 'provisioned',
       };
     });
   }, [adapterNameById, grantsData?.items]);

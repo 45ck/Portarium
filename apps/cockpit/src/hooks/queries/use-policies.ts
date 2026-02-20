@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { PolicySummary, SodConstraint } from '@/mocks/fixtures/policies'
+import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types'
 
 async function fetchPolicies(wsId: string): Promise<{ items: PolicySummary[] }> {
   const res = await fetch(`/v1/workspaces/${wsId}/policies`)
@@ -20,7 +20,11 @@ async function fetchSodConstraints(wsId: string): Promise<{ items: SodConstraint
 }
 
 export function usePolicies(wsId: string) {
-  return useQuery({ queryKey: ['policies', wsId], queryFn: () => fetchPolicies(wsId) })
+  return useQuery({
+    queryKey: ['policies', wsId],
+    queryFn: () => fetchPolicies(wsId),
+    enabled: Boolean(wsId),
+  })
 }
 
 export function usePolicy(wsId: string, policyId: string) {
@@ -35,5 +39,6 @@ export function useSodConstraints(wsId: string) {
   return useQuery({
     queryKey: ['sod-constraints', wsId],
     queryFn: () => fetchSodConstraints(wsId),
+    enabled: Boolean(wsId),
   })
 }

@@ -51,7 +51,7 @@ function EvidencePage() {
         icon={<EntityIcon entityType="evidence" size="md" decorative />}
       />
 
-      <ChainIntegrityBanner status="verified" />
+      <ChainIntegrityBanner status={isLoading ? 'pending' : 'verified'} />
 
       <FilterBar
         filters={[{ key: 'category', label: 'Category', options: CATEGORY_OPTIONS }]}

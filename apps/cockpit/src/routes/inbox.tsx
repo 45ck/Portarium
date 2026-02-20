@@ -7,6 +7,7 @@ import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useRuns } from '@/hooks/queries/use-runs';
 import { useHumanTasks, useAssignHumanTask, useCompleteHumanTask, useEscalateHumanTask } from '@/hooks/queries/use-human-tasks';
 import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
+import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
@@ -168,6 +169,13 @@ function InboxPage() {
   const { data: runsData, isLoading: runsLoading } = useRuns(wsId);
   const { data: humanTasksData, isLoading: humanTasksLoading } = useHumanTasks(wsId);
   const { data: membersData } = useWorkforceMembers(wsId);
+  const adapters = useAdapters(wsId);
+  const adapterItems = adapters.data?.items ?? [];
+  const workspaceState = adapterItems.some((a) => a.status === 'unhealthy')
+    ? 'incident'
+    : adapterItems.some((a) => a.status === 'degraded')
+      ? 'degraded'
+      : 'healthy';
 
   const [selectedTask, setSelectedTask] = useState<HumanTaskSummary | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -206,7 +214,7 @@ function InboxPage() {
         icon={<EntityIcon entityType="queue" size="md" decorative />}
       />
 
-      <SystemStateBanner state="healthy" />
+      <SystemStateBanner state={workspaceState} />
 
       <KpiRow
         stats={[

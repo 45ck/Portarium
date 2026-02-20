@@ -60,9 +60,47 @@ export interface RunSummary {
   createdAtIso: string;
   startedAtIso?: string;
   endedAtIso?: string;
+  agentIds?: string[];
+  robotIds?: string[];
+  workforceMemberIds?: string[];
 }
 
 export type RunDetail = RunSummary;
+
+export type WorkflowTriggerKind = 'Manual' | 'Cron' | 'Webhook' | 'DomainEvent';
+
+export interface WorkflowActionSummary {
+  actionId: string;
+  order: number;
+  portFamily: string;
+  operation: string;
+  executionTierOverride?: RunSummary['executionTier'];
+}
+
+export interface WorkflowRetryPolicy {
+  maxAttempts: number;
+  initialBackoffMs: number;
+  maxBackoffMs: number;
+  backoffMultiplier: number;
+}
+
+export interface WorkflowSummary {
+  schemaVersion: number;
+  workflowId: string;
+  workspaceId: string;
+  name: string;
+  description?: string;
+  version: number;
+  active: boolean;
+  executionTier: RunSummary['executionTier'];
+  actions: WorkflowActionSummary[];
+  triggerKind?: WorkflowTriggerKind;
+  timeoutMs?: number;
+  retryPolicy?: WorkflowRetryPolicy;
+  compensationMode?: 'best-effort' | 'strict' | 'none';
+}
+
+export type WorkflowDetail = WorkflowSummary;
 
 export interface WorkItemSla {
   dueAtIso?: string;
@@ -146,6 +184,33 @@ export interface EvidenceEntry {
 
 export type ApprovalStatus = 'Pending' | 'Approved' | 'Denied' | 'RequestChanges';
 
+export type SodState = 'eligible' | 'blocked-self' | 'blocked-role' | 'n-of-m';
+
+export interface SodEvaluation {
+  state: SodState;
+  requestorId: string;
+  ruleId: string;
+  rolesRequired: string[];
+  nRequired?: number;
+  nTotal?: number;
+  nSoFar?: number;
+}
+
+export interface PolicyRule {
+  ruleId: string;
+  trigger: string;
+  tier: string;
+  blastRadius: string[];
+  irreversibility: 'full' | 'partial' | 'none';
+}
+
+export interface DecisionHistoryEntry {
+  timestamp: string;
+  type: 'requested' | 'changes_requested' | 'resubmitted';
+  actor: string;
+  message: string;
+}
+
 export interface ApprovalSummary {
   schemaVersion: number;
   approvalId: string;
@@ -162,6 +227,29 @@ export interface ApprovalSummary {
   decidedAtIso?: string;
   decidedByUserId?: string;
   rationale?: string;
+  sodEvaluation?: SodEvaluation;
+  policyRule?: PolicyRule;
+  decisionHistory?: DecisionHistoryEntry[];
+}
+
+export interface CredentialGrantV1 {
+  schemaVersion: 1;
+  credentialGrantId: string;
+  workspaceId: string;
+  adapterId: string;
+  credentialsRef: string;
+  scope: string;
+  issuedAtIso: string;
+  expiresAtIso?: string;
+  lastRotatedAtIso?: string;
+  revokedAtIso?: string;
+}
+
+export interface CreateCredentialGrantRequest {
+  adapterId: string;
+  credentialsRef: string;
+  scope: string;
+  expiresAtIso?: string;
 }
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
@@ -388,3 +476,55 @@ export interface UpdateAgentRequest {
 }
 
 export type ListAgentsRequest = CursorPaginationRequest;
+
+// ---------------------------------------------------------------------------
+// Policies & SoD Constraints
+// ---------------------------------------------------------------------------
+
+export interface PolicyCondition {
+  field: string;
+  operator: 'eq' | 'neq' | 'in' | 'gt' | 'lt';
+  value: string;
+}
+
+export interface PolicySummary {
+  policyId: string;
+  name: string;
+  description: string;
+  status: 'Active' | 'Draft' | 'Archived';
+  ruleText: string;
+  conditions: PolicyCondition[];
+}
+
+export interface SodConstraint {
+  constraintId: string;
+  name: string;
+  description: string;
+  status: 'Active' | 'Inactive';
+  relatedPolicyIds: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Adapters
+// ---------------------------------------------------------------------------
+
+export interface AdapterSummary {
+  adapterId: string;
+  name: string;
+  sorFamily: string;
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  lastSyncIso: string;
+}
+
+// ---------------------------------------------------------------------------
+// Robotics Gateways
+// ---------------------------------------------------------------------------
+
+export interface GatewaySummary {
+  gatewayId: string;
+  url: string;
+  status: 'Online' | 'Offline' | 'Degraded';
+  connectedRobots: number;
+  lastHeartbeatIso: string;
+  region: string;
+}
