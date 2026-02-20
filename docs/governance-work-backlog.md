@@ -175,6 +175,7 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.3 — bead-0183
   - Review: tie each spec in .specify/specs to at least one implementation and test bead.
   - AC: traceability matrix complete.
+  - Artifact: `docs/review/bead-0183-spec-traceability-matrix.md`
 - STORY-V07.4 — bead-0184
   - Review: tie each implementation bead to test evidence and code-review bead.
   - AC: no bead closes without linked evidence.
