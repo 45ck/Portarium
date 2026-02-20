@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "github",
+  "providerName": "GitHub",
+  "portFamily": "ProjectsWorkMgmt",
+  "adapterVersion": "0.1.0",
+  "auth": {
+    "modes": ["oauth2", "api_key"],
+    "notes": "Supports GitHub App OAuth and token-based auth (classic/fine-grained PAT)."
+  },
+  "limits": {
+    "rateLimit": {
+      "requestsPerMinute": 75,
+      "notes": "Primary REST limits are token and installation dependent; adapters must read response headers and back off."
+    },
+    "notes": "Secondary abuse limits require jittered retries and concurrency control."
+  },
+  "events": {
+    "supportsWebhooks": true,
+    "supportsPolling": true,
+    "supportsEventStream": false,
+    "notes": "Webhook-first, polling fallback for repositories where webhook installation is unavailable."
+  },
+  "idempotency": {
+    "supportsIdempotencyKey": false,
+    "notes": "No global idempotency-key contract; adapters enforce dedupe with natural identifiers and evidence records."
+  },
+  "diff": {
+    "supportsPlan": true,
+    "supportsPredictedEffects": false,
+    "supportsVerifiedEffects": true,
+    "notes": "Write operations are verified via post-write fetches and timeline/event evidence."
+  },
+  "capabilities": [
+    {
+      "capability": "task:read",
+      "supported": true,
+      "operations": ["listPullRequests", "getPullRequest", "listPullRequestReviews"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "PR/issue read surfaces are low-risk and suitable for automatic execution."
+    },
+    {
+      "capability": "task:write",
+      "supported": true,
+      "operations": [
+        "createPullRequest",
+        "updatePullRequest",
+        "mergePullRequest",
+        "addPullRequestComment"
+      ],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsRollback": false,
+        "supportsCompensation": true
+      },
+      "compensationOperation": "task:compensate",
+      "compensationInputSchema": {
+        "type": "object",
+        "required": ["repository", "pullRequestNumber", "reason"],
+        "properties": {
+          "repository": { "type": "string" },
+          "pullRequestNumber": { "type": "integer", "minimum": 1 },
+          "reason": { "type": "string" }
+        }
+      },
+      "notes": "Compensation is best-effort (for example revert commit, restore branch protection state, follow-up corrective PR)."
+    },
+    {
+      "capability": "task:compensate",
+      "supported": true,
+      "operations": ["revertMergeCommit", "restoreBranchProtection"],
+      "safety": {
+        "defaultTier": "HumanApprove",
+        "requiresApproval": true,
+        "idempotent": false,
+        "supportsCompensation": false
+      },
+      "notes": "Compensation actions remain human-approved due potential blast radius."
+    },
+    {
+      "capability": "project:read",
+      "supported": true,
+      "operations": ["listRepositories", "getRepository", "listProjects"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "project:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      },
+      "notes": "Project/board mutation is deferred until project-v2 semantics and governance tiering are finalized."
+    },
+    {
+      "capability": "workflow:read",
+      "supported": true,
+      "operations": ["listWorkflowRuns", "getWorkflowRun", "listCheckRuns"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      },
+      "notes": "Used for delivery telemetry and quality gate evidence."
+    },
+    {
+      "capability": "workflow:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      },
+      "notes": "Workflow dispatch/re-run remains manual until explicit blast-radius policy is approved."
+    },
+    {
+      "capability": "deployment:read",
+      "supported": true,
+      "operations": ["listDeployments", "listDeploymentStatuses"],
+      "safety": {
+        "defaultTier": "Auto",
+        "requiresApproval": false,
+        "idempotent": true
+      }
+    },
+    {
+      "capability": "deployment:write",
+      "supported": false,
+      "operations": [],
+      "safety": {
+        "defaultTier": "ManualOnly",
+        "requiresApproval": true,
+        "idempotent": false
+      },
+      "notes": "Creating deployments/statuses can impact external release automation and remains manual for MVP."
+    }
+  ]
+}

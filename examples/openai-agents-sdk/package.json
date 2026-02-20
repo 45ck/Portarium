@@ -1,0 +1,17 @@
+{
+  "name": "@portarium/example-openai-agents-sdk",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Example: wrap Portarium runs as an OpenAI Agents SDK tool",
+  "scripts": {
+    "start": "tsx index.ts"
+  },
+  "dependencies": {
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -27,3 +27,31 @@ The core connector runtime supports multiple protocol styles: REST, GraphQL, and
 
 - **Hand-coded connector per vertical/vendor** -- faster initially but scales poorly
 - **Rely only on file-based ingest** -- works for some education flows (CSV) but not for realtime operations
+
+## Implementation Mapping
+
+- Closed implementation beads:
+  - `bead-0001`
+  - `bead-0055`
+  - `bead-0335`
+  - `bead-0404`
+  - `bead-0405`
+- Open connector-module versioning and adapter coverage follow-ups:
+  - `bead-0410`
+  - `bead-0421`
+  - `bead-0422`
+  - `bead-0423`
+  - `bead-0424`
+- ADR closure implementation mapping bead:
+  - `bead-0599`
+- ADR linkage verification review bead:
+  - `bead-0600`
+
+## Evidence References
+
+- `src/domain/packs/pack-connector-mapping-v1.ts`
+- `src/domain/packs/pack-connector-mapping-v1.test.ts`
+- `vertical-packs/software-change-management/mappings/change-ticket-mapping.json`
+- `src/domain/packs/software-change-management-reference-pack.test.ts`
+- `src/infrastructure/activepieces/activepieces-action-executor.ts`
+- `docs/review/bead-0599-adr-0050-implementation-mapping-review.md`

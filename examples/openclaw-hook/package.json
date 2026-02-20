@@ -1,0 +1,14 @@
+{
+  "name": "@portarium/example-openclaw-hook",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Example: OpenClaw hook that blocks non-Portarium tool calls",
+  "scripts": {
+    "start": "tsx hook.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.0"
+  }
+}

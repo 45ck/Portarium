@@ -1,0 +1,40 @@
+name: Vertical Pack Publish Gate
+
+on:
+  pull_request:
+    paths:
+      - 'vertical-packs/**'
+      - 'scripts/ci/vertical-pack-publish-gate.mjs'
+      - '.github/workflows/vertical-pack-publish-gate.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  merge_group:
+    paths:
+      - 'vertical-packs/**'
+      - 'scripts/ci/vertical-pack-publish-gate.mjs'
+      - '.github/workflows/vertical-pack-publish-gate.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  publish-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run reference pack publish gate
+        run: npm run pack:publish-gate:reference

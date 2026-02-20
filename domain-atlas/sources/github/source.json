@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DONE",
+  "tracking": {
+    "workItem": "bead-0589"
+  },
+  "providerId": "github",
+  "providerName": "GitHub",
+  "portFamilies": ["ProjectsWorkMgmt"],
+  "upstream": {
+    "kind": "openapi",
+    "repoUrl": "https://github.com/github/rest-api-description",
+    "version": "pinned-by-commit",
+    "commit": "6c6f1b2a1c8d9ef01a2b3c4d5e6f708192a3b4c5",
+    "retrievedAt": "2026-02-20T07:00:00.000Z"
+  },
+  "license": {
+    "spdxId": "CC-BY-4.0",
+    "classification": "safe_to_reuse",
+    "notes": "GitHub REST API descriptions are documentation/spec artifacts; keep provider code out of Portarium core and preserve attribution in generated evidence."
+  },
+  "extraction": {
+    "modelSources": [
+      "descriptions/api.github.com/api.github.com.json",
+      "REST pull requests, deployments, checks, and workflows endpoints"
+    ],
+    "notes": "Initial CIF is curated from GitHub REST API reference surfaces required for PR lifecycle, deployment telemetry, and DORA-style signals."
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "providerId": "github",
+    "providerName": "GitHub",
+    "upstream": {
+      "repoUrl": "https://github.com/github/rest-api-description",
+      "commit": "6c6f1b2a1c8d9ef01a2b3c4d5e6f708192a3b4c5",
+      "version": "pinned-by-commit"
+    }
+  },
+  "extractedAt": "2026-02-20T07:00:00.000Z",
+  "entities": [
+    {
+      "name": "Repository",
+      "description": "GitHub repository metadata for work-item scoping and external linking.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "full_name", "type": "string", "required": true },
+        { "name": "private", "type": "boolean", "required": true },
+        { "name": "default_branch", "type": "string", "required": false, "nullable": true }
+      ]
+    },
+    {
+      "name": "PullRequest",
+      "description": "PR lifecycle object used as the canonical task anchor for software delivery flows.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "number", "type": "integer", "required": true },
+        { "name": "title", "type": "string", "required": true },
+        { "name": "state", "type": "string", "required": true },
+        { "name": "merged", "type": "boolean", "required": true },
+        { "name": "updated_at", "type": "datetime", "required": true },
+        { "name": "repository_id", "type": "integer", "required": true },
+        { "name": "author_id", "type": "integer", "required": false, "nullable": true }
+      ]
+    },
+    {
+      "name": "WorkflowRun",
+      "description": "CI workflow execution state used for run status and lead-time evidence.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "name", "type": "string", "required": false, "nullable": true },
+        { "name": "status", "type": "string", "required": true },
+        { "name": "conclusion", "type": "string", "required": false, "nullable": true },
+        { "name": "run_number", "type": "integer", "required": true },
+        { "name": "workflow_id", "type": "integer", "required": true },
+        { "name": "pull_request_id", "type": "integer", "required": false, "nullable": true }
+      ]
+    },
+    {
+      "name": "Deployment",
+      "description": "Deployment records for release and DORA deployment-frequency signals.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "environment", "type": "string", "required": true },
+        { "name": "state", "type": "string", "required": false, "nullable": true },
+        { "name": "creator_id", "type": "integer", "required": false, "nullable": true },
+        { "name": "created_at", "type": "datetime", "required": true },
+        { "name": "repository_id", "type": "integer", "required": true }
+      ]
+    },
+    {
+      "name": "CheckRun",
+      "description": "Granular check status linked to pull requests and workflow telemetry.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "name", "type": "string", "required": true },
+        { "name": "status", "type": "string", "required": true },
+        { "name": "conclusion", "type": "string", "required": false, "nullable": true },
+        { "name": "started_at", "type": "datetime", "required": false, "nullable": true },
+        { "name": "completed_at", "type": "datetime", "required": false, "nullable": true },
+        { "name": "pull_request_id", "type": "integer", "required": false, "nullable": true }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "GitHub account identity used for assignee/reviewer/author role mapping.",
+      "primaryKeys": ["id"],
+      "fields": [
+        { "name": "id", "type": "integer", "required": true },
+        { "name": "login", "type": "string", "required": true },
+        { "name": "html_url", "type": "string", "required": false, "nullable": true }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromEntity": "PullRequest",
+      "toEntity": "Repository",
+      "kind": "many_to_one",
+      "fromField": "repository_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "WorkflowRun",
+      "toEntity": "PullRequest",
+      "kind": "many_to_one",
+      "fromField": "pull_request_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "Deployment",
+      "toEntity": "Repository",
+      "kind": "many_to_one",
+      "fromField": "repository_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "CheckRun",
+      "toEntity": "PullRequest",
+      "kind": "many_to_one",
+      "fromField": "pull_request_id",
+      "toField": "id"
+    },
+    {
+      "fromEntity": "PullRequest",
+      "toEntity": "User",
+      "kind": "many_to_one",
+      "fromField": "author_id",
+      "toField": "id"
+    }
+  ],
+  "actions": [
+    {
+      "name": "listPullRequests",
+      "kind": "workflow",
+      "entities": ["PullRequest"],
+      "idempotency": { "supported": true, "notes": "Read-only list API." }
+    },
+    {
+      "name": "createPullRequest",
+      "kind": "create",
+      "entities": ["PullRequest"],
+      "idempotency": {
+        "supported": false,
+        "notes": "No global idempotency key; adapters use natural key checks."
+      }
+    },
+    {
+      "name": "updatePullRequest",
+      "kind": "update",
+      "entities": ["PullRequest"],
+      "idempotency": { "supported": false }
+    },
+    {
+      "name": "mergePullRequest",
+      "kind": "workflow",
+      "entities": ["PullRequest"],
+      "idempotency": { "supported": false }
+    },
+    {
+      "name": "listWorkflowRuns",
+      "kind": "workflow",
+      "entities": ["WorkflowRun"],
+      "idempotency": { "supported": true }
+    },
+    {
+      "name": "listDeployments",
+      "kind": "workflow",
+      "entities": ["Deployment"],
+      "idempotency": { "supported": true }
+    }
+  ],
+  "events": [
+    {
+      "name": "pull_request",
+      "delivery": "webhook",
+      "entities": ["PullRequest"],
+      "notes": "Primary PR lifecycle event stream."
+    },
+    {
+      "name": "workflow_run",
+      "delivery": "webhook",
+      "entities": ["WorkflowRun"]
+    },
+    {
+      "name": "deployment_status",
+      "delivery": "webhook",
+      "entities": ["Deployment"]
+    }
+  ],
+  "extensionPoints": {
+    "customFields": {
+      "supported": false,
+      "notes": "GitHub issue/PR custom fields are surfaced through repository/project features and treated as provider-specific extension objects."
+    },
+    "tags": {
+      "supported": true,
+      "notes": "Labels are available and mapped through extension metadata."
+    },
+    "comments": {
+      "supported": true,
+      "notes": "PR comments and reviews are captured as external references and linked evidence."
+    },
+    "activities": {
+      "supported": true,
+      "notes": "Timeline events and checks support audit-grade evidence trails."
+    }
+  }
+}

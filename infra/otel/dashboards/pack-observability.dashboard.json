@@ -1,0 +1,81 @@
+{
+  "title": "Portarium Pack Observability",
+  "uid": "portarium-pack-observability",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["portarium", "pack", "observability"],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "pack_id",
+        "type": "query",
+        "label": "Pack ID",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(portarium_run_started_total, pack_id)",
+        "includeAll": true,
+        "multi": true,
+        "refresh": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Run Success Rate by Pack",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (pack_id) (rate(portarium_run_succeeded_total{pack_id=~\"$pack_id\"}[5m])) / clamp_min(sum by (pack_id) (rate(portarium_run_started_total{pack_id=~\"$pack_id\"}[5m])), 0.0001)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Run Failure Rate by Pack",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (pack_id, error_kind) (rate(portarium_run_failed_total{pack_id=~\"$pack_id\"}[5m]))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Run Latency p95 (ms) by Pack",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, pack_id) (rate(portarium_run_duration_ms_bucket{pack_id=~\"$pack_id\"}[5m])))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Action Latency p95 (ms) by Pack",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, pack_id, action_operation) (rate(portarium_action_duration_ms_bucket{pack_id=~\"$pack_id\"}[5m])))"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Action Failure Rate by Pack",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (pack_id, action_operation, error_kind) (rate(portarium_action_failed_total{pack_id=~\"$pack_id\"}[5m]))"
+        }
+      ]
+    }
+  ]
+}

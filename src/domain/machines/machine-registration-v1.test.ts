@@ -25,6 +25,7 @@ const VALID_AGENT_CONFIG = {
   workspaceId: 'ws-1',
   machineId: 'machine-1',
   displayName: 'Classifier Agent',
+  capabilities: ['run:workflow'],
   policyTier: 'Auto',
   allowedTools: ['classify', 'read:external'],
   registeredAtIso: '2026-02-18T00:00:00.000Z',
@@ -44,7 +45,7 @@ describe('parseMachineRegistrationV1: happy path', () => {
     expect(reg.endpointUrl).toBe('https://api.example.com/v1');
     expect(reg.active).toBe(true);
     expect(reg.displayName).toBe('Production Runner');
-    expect(reg.capabilities).toEqual(['run:workflow', 'run:sync']);
+    expect(reg.capabilities).toEqual([{ capability: 'run:workflow' }, { capability: 'run:sync' }]);
     expect(reg.registeredAtIso).toBe('2026-02-17T00:00:00.000Z');
     expect(reg.executionPolicy.isolationMode).toBe('PerTenantWorker');
     expect(reg.authConfig).toEqual({ kind: 'bearer', secretRef: 'grants/cg-1' });
@@ -60,7 +61,7 @@ describe('parseMachineRegistrationV1: happy path', () => {
       ...VALID_MACHINE_REGISTRATION,
       capabilities: ['run:workflow'],
     });
-    expect(reg.capabilities).toEqual(['run:workflow']);
+    expect(reg.capabilities).toEqual([{ capability: 'run:workflow' }]);
   });
 
   it('parses authConfig: bearer kind with secretRef', () => {
@@ -156,15 +157,24 @@ describe('parseMachineRegistrationV1: validation', () => {
     expect(() =>
       parseMachineRegistrationV1({
         ...VALID_MACHINE_REGISTRATION,
-        capabilities: ['valid', ''],
+        capabilities: ['invalid'],
       }),
-    ).toThrow(/capabilities\[1\]/i);
+    ).toThrow(/capabilities\[0\].*entity:verb/i);
     expect(() =>
       parseMachineRegistrationV1({
         ...VALID_MACHINE_REGISTRATION,
         capabilities: [123],
       }),
     ).toThrow(/capabilities\[0\]/i);
+  });
+
+  it('rejects duplicate capabilities', () => {
+    expect(() =>
+      parseMachineRegistrationV1({
+        ...VALID_MACHINE_REGISTRATION,
+        capabilities: ['run:workflow', { capability: 'run:workflow' }],
+      }),
+    ).toThrow(/must not contain duplicate capabilities/i);
   });
 
   it('rejects invalid registeredAtIso', () => {
@@ -246,6 +256,7 @@ describe('parseAgentConfigV1: happy path', () => {
     expect(agent.workspaceId).toBe('ws-1');
     expect(agent.machineId).toBe('machine-1');
     expect(agent.displayName).toBe('Classifier Agent');
+    expect(agent.capabilities).toEqual([{ capability: 'run:workflow' }]);
     expect(agent.policyTier).toBe('Auto');
     expect(agent.allowedTools).toEqual(['classify', 'read:external']);
     expect(agent.registeredAtIso).toBe('2026-02-18T00:00:00.000Z');
@@ -286,6 +297,9 @@ describe('parseAgentConfigV1: validation', () => {
     expect(() => parseAgentConfigV1({ ...VALID_AGENT_CONFIG, displayName: undefined })).toThrow(
       /displayName/i,
     );
+    expect(() => parseAgentConfigV1({ ...VALID_AGENT_CONFIG, capabilities: undefined })).toThrow(
+      /capabilities/i,
+    );
   });
 
   it('rejects invalid policyTier', () => {
@@ -304,6 +318,25 @@ describe('parseAgentConfigV1: validation', () => {
     expect(() =>
       parseAgentConfigV1({ ...VALID_AGENT_CONFIG, allowedTools: ['valid', ''] }),
     ).toThrow(/allowedTools\[1\]/i);
+  });
+
+  it('rejects duplicate capability declarations', () => {
+    expect(() =>
+      parseAgentConfigV1({
+        ...VALID_AGENT_CONFIG,
+        capabilities: ['run:workflow', { capability: 'run:workflow' }],
+      }),
+    ).toThrow(/must not contain duplicate capabilities/i);
+  });
+
+  it('rejects tools above policy tier blast radius', () => {
+    expect(() =>
+      parseAgentConfigV1({
+        ...VALID_AGENT_CONFIG,
+        policyTier: 'Auto',
+        allowedTools: ['shell.exec'],
+      }),
+    ).toThrow(/allowedTools violate policyTier Auto/i);
   });
 
   it('rejects invalid registeredAtIso', () => {

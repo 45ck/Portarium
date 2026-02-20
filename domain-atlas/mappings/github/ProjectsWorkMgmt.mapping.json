@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "providerId": "github",
+  "portFamily": "ProjectsWorkMgmt",
+  "mappings": [
+    {
+      "canonicalObject": "Task",
+      "vendorEntity": "PullRequest",
+      "fieldMappings": {
+        "externalId": "id",
+        "title": "title",
+        "status": "state",
+        "updatedAtIso": "updated_at"
+      },
+      "notes": "GitHub pull requests are normalized into canonical Task for cross-system workflow tracking."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Repository",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Repository",
+        "displayLabel": "full_name"
+      },
+      "notes": "Repository remains provider-specific context attached to canonical task flows."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "WorkflowRun",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "WorkflowRun",
+        "displayLabel": "name"
+      },
+      "notes": "Workflow runs are linked as evidence-bearing execution artifacts."
+    },
+    {
+      "canonicalObject": "ExternalObjectRef",
+      "vendorEntity": "Deployment",
+      "fieldMappings": {
+        "externalId": "id",
+        "externalType": "Deployment",
+        "displayLabel": "environment"
+      },
+      "notes": "Deployment records are preserved as external references for DORA and release telemetry."
+    },
+    {
+      "canonicalObject": "Party",
+      "vendorEntity": "User",
+      "fieldMappings": {
+        "externalId": "id",
+        "displayName": "login"
+      },
+      "notes": "Authors/reviewers/assignees are represented as Party entities with adapter-managed role tags."
+    }
+  ]
+}

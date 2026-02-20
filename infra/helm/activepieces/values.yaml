@@ -1,0 +1,65 @@
+replicaCount: 1
+
+image:
+  repository: activepieces/activepieces
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: activepieces.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+activepieces:
+  environment: prod
+  frontendUrl: http://activepieces.local
+  executionMode: UNSANDBOXED
+  encryptionKey: replace-with-32-byte-encryption-key
+  jwtSecret: replace-with-jwt-secret
+  telemetry:
+    enabled: false
+  postgres:
+    host: ""
+    port: 5432
+    database: activepieces
+    username: activepieces
+    password: activepieces
+  redis:
+    host: ""
+    port: 6379
+    password: ""
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: activepieces
+  username: activepieces
+  storage:
+    size: 8Gi
+    className: ""
+  resources: {}
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  port: 6379
+  resources: {}
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

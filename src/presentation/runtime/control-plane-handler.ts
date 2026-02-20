@@ -515,6 +515,22 @@ async function authenticate(
   return { ok: false, error: auth.error };
 }
 
+function assertWorkspaceScope(
+  ctx: AppContext,
+  workspaceId: string,
+): { ok: true } | { ok: false; error: Forbidden } {
+  if (String(ctx.tenantId) !== workspaceId) {
+    return {
+      ok: false,
+      error: {
+        kind: 'Forbidden',
+        message: `Token workspace does not match requested workspace: ${workspaceId}`,
+      },
+    };
+  }
+  return { ok: true };
+}
+
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -1545,6 +1561,180 @@ async function handleListEvidence(
   respondJson(res, 200, correlationId, traceContext, body);
 }
 
+function parseHeartbeatBody(
+  body: unknown,
+): { ok: true; status: string; metrics?: Record<string, number>; location?: { lat: number; lon: number } } | { ok: false; message: string } {
+  if (typeof body !== 'object' || body === null) {
+    return { ok: false, message: 'Request body must be a JSON object.' };
+  }
+  const record = body as Record<string, unknown>;
+  const status = record['status'];
+  if (status !== 'ok' && status !== 'degraded') {
+    return { ok: false, message: 'status must be "ok" or "degraded".' };
+  }
+  const metrics = record['metrics'];
+  if (metrics !== undefined && metrics !== null) {
+    if (typeof metrics !== 'object' || Array.isArray(metrics)) {
+      return { ok: false, message: 'metrics must be a record of numbers.' };
+    }
+  }
+  const location = record['location'];
+  if (location !== undefined && location !== null) {
+    if (typeof location !== 'object' || Array.isArray(location)) {
+      return { ok: false, message: 'location must have lat and lon.' };
+    }
+    const loc = location as Record<string, unknown>;
+    if (typeof loc['lat'] !== 'number' || typeof loc['lon'] !== 'number') {
+      return { ok: false, message: 'location must have numeric lat and lon.' };
+    }
+  }
+  return {
+    ok: true,
+    status: status as string,
+    ...(metrics !== undefined && metrics !== null ? { metrics: metrics as Record<string, number> } : {}),
+    ...(location !== undefined && location !== null ? { location: location as { lat: number; lon: number } } : {}),
+  };
+}
+
+async function handleMachineHeartbeat(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    machineId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, machineId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  if (!scopeCheck.ok) {
+    respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const parsed = parseHeartbeatBody(await readJsonBody(req));
+  if (!parsed.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: parsed.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  respondJson(res, 200, correlationId, traceContext, {
+    machineId,
+    lastHeartbeatAtIso: nowIso,
+    status: parsed.status,
+    ...(parsed.metrics ? { metrics: parsed.metrics } : {}),
+    ...(parsed.location ? { location: parsed.location } : {}),
+  });
+}
+
+async function handleAgentHeartbeat(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    agentId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, agentId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  if (!scopeCheck.ok) {
+    respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const parsed = parseHeartbeatBody(await readJsonBody(req));
+  if (!parsed.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: parsed.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  respondJson(res, 200, correlationId, traceContext, {
+    agentId,
+    lastHeartbeatAtIso: nowIso,
+    status: parsed.status,
+    ...(parsed.metrics ? { metrics: parsed.metrics } : {}),
+    ...(parsed.location ? { location: parsed.location } : {}),
+  });
+}
+
+async function handleGetAgentWorkItems(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    req: IncomingMessage;
+    res: ServerResponse;
+    correlationId: string;
+    pathname: string;
+    workspaceId: string;
+    agentId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, agentId, traceContext } = args;
+  const auth = await authenticate(deps, req, correlationId, traceContext, workspaceId);
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  if (!scopeCheck.ok) {
+    respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  // Return an empty page for now; real store wiring happens with infrastructure adapter
+  respondJson(res, 200, correlationId, traceContext, { items: [], agentId });
+}
+
 async function handleRequest(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
@@ -1711,6 +1901,21 @@ async function handleRequest(
       });
       return;
     }
+
+    const mAgentWorkItems = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/work-items$/.exec(pathname);
+    if (mAgentWorkItems) {
+      await handleGetAgentWorkItems({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mAgentWorkItems[1] ?? ''),
+        agentId: decodeURIComponent(mAgentWorkItems[2] ?? ''),
+      });
+      return;
+    }
   }
 
   if (req.method === 'PATCH') {
@@ -1733,6 +1938,36 @@ async function handleRequest(
   }
 
   if (req.method === 'POST') {
+    const mMachineHeartbeat = /^\/v1\/workspaces\/([^/]+)\/machines\/([^/]+)\/heartbeat$/.exec(pathname);
+    if (mMachineHeartbeat) {
+      await handleMachineHeartbeat({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mMachineHeartbeat[1] ?? ''),
+        machineId: decodeURIComponent(mMachineHeartbeat[2] ?? ''),
+      });
+      return;
+    }
+
+    const mAgentHeartbeat = /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/heartbeat$/.exec(pathname);
+    if (mAgentHeartbeat) {
+      await handleAgentHeartbeat({
+        deps,
+        req,
+        res,
+        correlationId,
+        traceContext,
+        pathname,
+        workspaceId: decodeURIComponent(mAgentHeartbeat[1] ?? ''),
+        agentId: decodeURIComponent(mAgentHeartbeat[2] ?? ''),
+      });
+      return;
+    }
+
     const mAssignTask = /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/assign$/.exec(pathname);
     if (mAssignTask) {
       await handleAssignHumanTask({

@@ -1,0 +1,32 @@
+name: OpenAPI OperationId Gate
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: openapi-operation-ids-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  openapi_operation_ids:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Verify OpenAPI operationId golden fixture parity
+        run: npm run openapi:operation-ids:check
+
+      - name: Run OpenAPI parity contract tests
+        run: npm run test -- src/infrastructure/openapi/openapi-operation-ids-golden.test.ts src/infrastructure/openapi/openapi-operation-ids-workflow.test.ts

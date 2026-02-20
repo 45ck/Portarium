@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "toolName": "read:file",
+  "dryRun": false,
+  "result": {
+    "path": "/tmp/data.json",
+    "contentType": "application/json",
+    "sha256": "6ce6b5ef6a10ee18dcf6f90bcf5490b50f8f35f7cf43ea367e95f89bf4e217e3"
+  }
+}

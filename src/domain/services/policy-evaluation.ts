@@ -19,6 +19,7 @@ export type PolicyEvaluationContextV1 = Readonly<{
   approverUserIds: readonly UserIdType[];
   performedDuties?: readonly PerformedDutyV1[];
   robotContext?: RobotSodContextV1;
+  ruleContext?: Readonly<Record<string, unknown>>;
 }> &
   SafetyPolicyContextV1;
 
@@ -30,6 +31,7 @@ export type PolicyEvaluationResultV1 = Readonly<{
   evaluatedPolicyIds: readonly PolicyIdType[];
   safetyTierRecommendation?: SafetyTierRecommendation;
   hazardClassifications?: readonly HazardClassificationV1[];
+  inlineRuleErrors?: readonly string[];
 }>;
 
 export type PolicyEvaluationEvidenceV1 = Readonly<{

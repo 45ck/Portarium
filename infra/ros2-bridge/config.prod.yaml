@@ -1,0 +1,46 @@
+# Portarium ROS 2 Bridge -- Production configuration
+# Uses DDS-Security (SROS 2) for authenticated ROS 2 connectivity.
+
+mode: production
+
+dds:
+  domainId: 42
+  sros2KeystorePath: /etc/portarium/sros2_keystore
+  enclaveName: portarium_bridge
+  # QoS profile for telemetry topics.
+  qos:
+    reliability: BEST_EFFORT
+    durability: VOLATILE
+    historyDepth: 10
+
+portarium:
+  baseUrl: https://api.portarium.example.com
+  workspaceId: ${WORKSPACE_ID}
+  mtls:
+    certPath: /etc/portarium/tls/cert.pem
+    keyPath: /etc/portarium/tls/key.pem
+    caPath: /etc/portarium/tls/ca.pem
+  heartbeatIntervalMs: 15000
+
+telemetry:
+  topics:
+    - name: /robot/odom
+      type: nav_msgs/msg/Odometry
+      mapping: location-event
+    - name: /robot/battery_state
+      type: sensor_msgs/msg/BatteryState
+      mapping: robot-diagnostics
+    - name: /robot/diagnostics
+      type: diagnostic_msgs/msg/DiagnosticArray
+      mapping: robot-diagnostics
+  bufferOnDisconnect: true
+  maxBufferSizeMb: 50
+
+commands:
+  missionGoalTopic: /portarium/mission_goal
+  estopTopic: /portarium/estop
+
+certificates:
+  autoRenew: true
+  renewBeforeExpiryDays: 30
+  ttlDays: 90

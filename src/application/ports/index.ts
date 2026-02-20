@@ -41,3 +41,6 @@ export * from './documents-esign-adapter.js';
 export * from './analytics-bi-adapter.js';
 export * from './monitoring-incident-adapter.js';
 export * from './compliance-grc-adapter.js';
+export * from './credential-store.js';
+export * from './credential-provider.js';
+export * from './machine-registry-store.js';

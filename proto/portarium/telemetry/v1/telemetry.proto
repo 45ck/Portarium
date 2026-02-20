@@ -1,0 +1,133 @@
+// Portarium Telemetry Service v1
+//
+// Robot telemetry ingestion, command acknowledgements, and heartbeat.
+// This service handles high-frequency data from edge gateways and robots.
+//
+// Beads: bead-0644 (bead-0664 original reference)
+
+syntax = "proto3";
+
+package portarium.telemetry.v1;
+
+option go_package = "github.com/portarium/portarium-go/telemetry/v1;telemetryv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// ---------------------------------------------------------------------------
+// Telemetry ingestion
+// ---------------------------------------------------------------------------
+
+// TelemetryService handles robot telemetry ingestion and command acks.
+service TelemetryService {
+  // IngestTelemetry accepts a stream of telemetry frames from an edge gateway.
+  // The gateway batches sensor data and streams it to the control plane.
+  rpc IngestTelemetry(stream TelemetryFrame) returns (IngestTelemetryResponse);
+
+  // AckCommand acknowledges receipt and execution status of a command
+  // previously dispatched to a robot or fleet.
+  rpc AckCommand(CommandAck) returns (CommandAckResponse);
+
+  // Heartbeat is a lightweight keep-alive from edge gateways.
+  // Returns the server timestamp for clock-drift detection.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // StreamTelemetry opens a server-side stream of telemetry frames
+  // for a given workspace and optional robot/fleet filter.
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryFrame);
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+// ---------------------------------------------------------------------------
+
+// TelemetryFrame is a single telemetry sample from a robot or sensor.
+message TelemetryFrame {
+  // Workspace-scoped context.
+  string workspace_id = 1;
+
+  // Source robot identifier.
+  string robot_id = 2;
+
+  // Source gateway identifier (edge device that forwarded this frame).
+  string gateway_id = 3;
+
+  // Telemetry type (e.g., "pose", "battery", "diagnostics", "lidar_scan").
+  string telemetry_type = 4;
+
+  // Timestamp at the source (robot clock).
+  google.protobuf.Timestamp source_timestamp = 5;
+
+  // Timestamp at the gateway (gateway clock).
+  google.protobuf.Timestamp gateway_timestamp = 6;
+
+  // Sequence number for ordering and gap detection.
+  uint64 sequence = 7;
+
+  // Telemetry payload (schema depends on telemetry_type).
+  google.protobuf.Struct payload = 8;
+
+  // Optional correlation ID linking this frame to an active mission/run.
+  string correlation_id = 9;
+}
+
+message IngestTelemetryResponse {
+  // Number of frames accepted in this stream session.
+  uint64 frames_accepted = 1;
+
+  // Number of frames rejected (e.g., schema validation failure).
+  uint64 frames_rejected = 2;
+
+  // Server-side timestamp of last accepted frame.
+  google.protobuf.Timestamp server_timestamp = 3;
+}
+
+// CommandAck reports the execution status of a dispatched command.
+message CommandAck {
+  string workspace_id = 1;
+  string robot_id = 2;
+  string command_id = 3;
+  string mission_id = 4;
+
+  CommandAckStatus status = 5;
+
+  // Human-readable detail (e.g., error message on failure).
+  string detail = 6;
+
+  google.protobuf.Timestamp ack_timestamp = 7;
+}
+
+enum CommandAckStatus {
+  COMMAND_ACK_STATUS_UNSPECIFIED = 0;
+  COMMAND_ACK_STATUS_RECEIVED = 1;
+  COMMAND_ACK_STATUS_EXECUTING = 2;
+  COMMAND_ACK_STATUS_SUCCEEDED = 3;
+  COMMAND_ACK_STATUS_FAILED = 4;
+  COMMAND_ACK_STATUS_REJECTED = 5;
+  COMMAND_ACK_STATUS_PREEMPTED = 6;
+}
+
+message CommandAckResponse {
+  bool accepted = 1;
+}
+
+message HeartbeatRequest {
+  string workspace_id = 1;
+  string gateway_id = 2;
+  google.protobuf.Timestamp client_timestamp = 3;
+}
+
+message HeartbeatResponse {
+  google.protobuf.Timestamp server_timestamp = 1;
+}
+
+message StreamTelemetryRequest {
+  string workspace_id = 1;
+
+  // Optional filters. Empty means "all robots in workspace".
+  string robot_id = 2;
+  string fleet_id = 3;
+
+  // Optional telemetry type filter (e.g., "pose").
+  string telemetry_type = 4;
+}

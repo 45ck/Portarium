@@ -1,0 +1,9 @@
+# OpenClaw hook configuration for Portarium integration
+portarium:
+  base_url: https://portarium.example.com
+  workspace_id: ws-your-workspace
+  # Token is read from PORTARIUM_TOKEN environment variable
+
+hooks:
+  before_tool_call: hooks:before_tool_call
+  after_tool_call: hooks:after_tool_call

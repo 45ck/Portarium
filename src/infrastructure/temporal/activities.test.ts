@@ -4,7 +4,13 @@ import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.
 import { verifyEvidenceChainV1 } from '../../domain/evidence/evidence-chain-v1.js';
 import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 
-import { __test, completeRunActivity, startRunActivity } from './activities.js';
+import {
+  __test,
+  completeRunActivity,
+  resetTemporalTelemetryHooksForTest,
+  setTemporalTelemetryHooksForTest,
+  startRunActivity,
+} from './activities.js';
 import {
   resetMetricsHooksForTest,
   setMetricsHooksForTest,
@@ -35,6 +41,7 @@ describe('Temporal activities (in-memory execution loop)', () => {
 
   afterEach(() => {
     resetMetricsHooksForTest();
+    resetTemporalTelemetryHooksForTest();
   });
 
   it('reaches Succeeded and writes a valid evidence hash chain', async () => {
@@ -74,7 +81,8 @@ describe('Temporal activities (in-memory execution loop)', () => {
 
   it('emits metrics hooks for run start and success', async () => {
     const incrementCounter = vi.fn();
-    setMetricsHooksForTest({ incrementCounter });
+    const recordHistogram = vi.fn();
+    setMetricsHooksForTest({ incrementCounter, recordHistogram });
 
     await startRunActivity({
       runId: 'run-2',
@@ -83,6 +91,8 @@ describe('Temporal activities (in-memory execution loop)', () => {
       workflow: WORKFLOW,
       initiatedByUserId: 'user-1',
       correlationId: 'corr-2',
+      packId: 'scm.change-management',
+      packVersion: '1.2.3',
       executionTier: 'Auto',
     });
 
@@ -93,11 +103,117 @@ describe('Temporal activities (in-memory execution loop)', () => {
       workflow: WORKFLOW,
       initiatedByUserId: 'user-1',
       correlationId: 'corr-2',
+      packId: 'scm.change-management',
+      packVersion: '1.2.3',
     });
 
     expect(incrementCounter).toHaveBeenCalledWith('portarium.run.started', {
-      executionTier: 'Auto',
+      'pack.id': 'scm.change-management',
+      'pack.version': '1.2.3',
+      'workflow.execution_tier': 'Auto',
+      'telemetry.pii_safe': true,
     });
-    expect(incrementCounter).toHaveBeenCalledWith('portarium.run.succeeded');
+    expect(incrementCounter).toHaveBeenCalledWith('portarium.action.succeeded', {
+      'pack.id': 'scm.change-management',
+      'pack.version': '1.2.3',
+      'workflow.execution_tier': 'Auto',
+      'action.id': 'act-1',
+      'action.operation': 'workflow:noop',
+      'action.port_family': 'ItsmItOps',
+      'telemetry.pii_safe': true,
+    });
+    expect(incrementCounter).toHaveBeenCalledWith('portarium.run.succeeded', {
+      'pack.id': 'scm.change-management',
+      'pack.version': '1.2.3',
+      'workflow.execution_tier': 'Auto',
+      'telemetry.pii_safe': true,
+    });
+
+    expect(recordHistogram).toHaveBeenCalledWith(
+      'portarium.action.duration.ms',
+      expect.any(Number),
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+        'pack.version': '1.2.3',
+        'action.outcome': 'succeeded',
+      }),
+    );
+    expect(recordHistogram).toHaveBeenCalledWith(
+      'portarium.run.duration.ms',
+      expect.any(Number),
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+        'pack.version': '1.2.3',
+        'run.outcome': 'succeeded',
+      }),
+    );
+  });
+
+  it('emits workflow and action spans with pack telemetry attributes only', async () => {
+    const onSpanStart = vi.fn();
+    const onSpanEnd = vi.fn();
+    setTemporalTelemetryHooksForTest({ onSpanStart, onSpanEnd });
+
+    await startRunActivity({
+      runId: 'run-3',
+      tenantId: 'tenant-1',
+      workflowId: 'wf-1',
+      workflow: WORKFLOW,
+      initiatedByUserId: 'user-1',
+      correlationId: 'corr-3',
+      executionTier: 'Auto',
+      packId: 'scm.change-management',
+      packVersion: '1.2.3',
+    });
+
+    await completeRunActivity({
+      runId: 'run-3',
+      tenantId: 'tenant-1',
+      workflowId: 'wf-1',
+      workflow: WORKFLOW,
+      initiatedByUserId: 'user-1',
+      correlationId: 'corr-3',
+      packId: 'scm.change-management',
+      packVersion: '1.2.3',
+    });
+
+    expect(onSpanStart).toHaveBeenCalledWith(
+      'workflow.run.start',
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+        'pack.version': '1.2.3',
+      }),
+    );
+    expect(onSpanStart).toHaveBeenCalledWith(
+      'workflow.run.complete',
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+        'pack.version': '1.2.3',
+      }),
+    );
+    expect(onSpanStart).toHaveBeenCalledWith(
+      'workflow.action.execute',
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+        'pack.version': '1.2.3',
+      }),
+    );
+
+    const actionSpanStartAttributes = onSpanStart.mock.calls.find(
+      (call) => call[0] === 'workflow.action.execute',
+    )?.[1] as Record<string, unknown>;
+    expect(Object.keys(actionSpanStartAttributes)).toContain('pack.id');
+    expect(actionSpanStartAttributes).not.toHaveProperty('tenantId');
+    expect(actionSpanStartAttributes).not.toHaveProperty('initiatedByUserId');
+    expect(actionSpanStartAttributes).not.toHaveProperty('correlationId');
+
+    expect(onSpanEnd).toHaveBeenCalledWith(
+      'workflow.action.execute',
+      'ok',
+      expect.any(Number),
+      expect.objectContaining({
+        'pack.id': 'scm.change-management',
+      }),
+    );
   });
 });

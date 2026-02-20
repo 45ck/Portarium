@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profileId": "scm.change-governance",
+  "packId": "scm.change-management",
+  "namespace": "scm",
+  "jurisdiction": "multi-jurisdiction",
+  "constraints": [
+    {
+      "constraintId": "retention-chain-required",
+      "rule": "evidence-chain-required",
+      "severity": "high"
+    },
+    {
+      "constraintId": "approval-gate-required",
+      "rule": "high-risk-change-needs-human-approve",
+      "severity": "high"
+    }
+  ]
+}

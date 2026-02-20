@@ -1,0 +1,158 @@
+# NetworkPolicy: controlled egress for execution-plane worker pods.
+#
+# Workers execute adapter calls to external SoR systems. Egress is
+# deny-by-default with explicit allowances for:
+# - Control plane API
+# - Vault (credential retrieval)
+# - Temporal server (workflow orchestration)
+# - OTel collector (telemetry export)
+# - DNS
+# - External SoR endpoints (via egressAllowlist per MachineExecutionPolicy)
+#
+# Bead: bead-0673
+# See: .specify/specs/egress-network-policy-v1.md
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-deny-default
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-deny-default
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress: []
+
+---
+# Allow workers to reach the control plane.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-control-plane
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Allow workers to reach Vault.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-vault
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-vault
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+
+---
+# Allow workers to reach Temporal server.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-temporal
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-temporal
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: temporal
+      ports:
+        - protocol: TCP
+          port: 7233
+
+---
+# Allow workers to reach the OTel collector.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-otel
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-otel
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+---
+# Allow workers to resolve DNS.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-dns
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-dns
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

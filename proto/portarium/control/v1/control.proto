@@ -1,0 +1,194 @@
+// Portarium Control Service v1
+//
+// High-frequency control lane for robot command dispatch, mission lifecycle,
+// and real-time feedback streaming.
+//
+// Beads: bead-0644 (bead-0664 original reference)
+
+syntax = "proto3";
+
+package portarium.control.v1;
+
+option go_package = "github.com/portarium/portarium-go/control/v1;controlv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// ---------------------------------------------------------------------------
+// Control service
+// ---------------------------------------------------------------------------
+
+// ControlService handles low-latency command dispatch and feedback for robots.
+service ControlService {
+  // DispatchCommand sends a single command to a robot via its edge gateway.
+  rpc DispatchCommand(DispatchCommandRequest) returns (DispatchCommandResponse);
+
+  // StreamFeedback opens a bidirectional stream between the control plane
+  // and an edge gateway for real-time command dispatch and feedback.
+  rpc StreamFeedback(stream FeedbackMessage) returns (stream ControlMessage);
+
+  // GetMissionStatus returns the current status of a mission.
+  rpc GetMissionStatus(GetMissionStatusRequest) returns (MissionStatus);
+
+  // CancelMission requests cancellation of an active mission.
+  rpc CancelMission(CancelMissionRequest) returns (CancelMissionResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Command dispatch
+// ---------------------------------------------------------------------------
+
+message DispatchCommandRequest {
+  string workspace_id = 1;
+  string robot_id = 2;
+  string mission_id = 3;
+
+  // Command type (e.g., "navigate_to", "dock", "undock", "estop", "resume").
+  string command_type = 4;
+
+  // Command parameters (schema depends on command_type).
+  google.protobuf.Struct parameters = 5;
+
+  // Priority for command scheduling at the gateway.
+  CommandPriority priority = 6;
+
+  // Idempotency key to prevent duplicate command dispatch.
+  string idempotency_key = 7;
+
+  // Correlation ID linking to the parent workflow run.
+  string correlation_id = 8;
+}
+
+enum CommandPriority {
+  COMMAND_PRIORITY_UNSPECIFIED = 0;
+  COMMAND_PRIORITY_LOW = 1;
+  COMMAND_PRIORITY_NORMAL = 2;
+  COMMAND_PRIORITY_HIGH = 3;
+  COMMAND_PRIORITY_CRITICAL = 4;  // Safety-related, preempts lower priority
+}
+
+message DispatchCommandResponse {
+  string command_id = 1;
+  bool accepted = 2;
+  string rejection_reason = 3;
+  google.protobuf.Timestamp dispatched_at = 4;
+}
+
+// ---------------------------------------------------------------------------
+// Bidirectional feedback stream
+// ---------------------------------------------------------------------------
+
+// FeedbackMessage is sent from the edge gateway to the control plane.
+message FeedbackMessage {
+  string workspace_id = 1;
+  string gateway_id = 2;
+  string robot_id = 3;
+
+  oneof payload {
+    MissionFeedback mission_feedback = 4;
+    SafetyEvent safety_event = 5;
+    NavigationProgress navigation_progress = 6;
+  }
+
+  google.protobuf.Timestamp timestamp = 7;
+}
+
+// ControlMessage is sent from the control plane to the edge gateway.
+message ControlMessage {
+  string workspace_id = 1;
+
+  oneof payload {
+    DispatchCommandRequest command = 2;
+    MissionCancellation cancellation = 3;
+    ConfigUpdate config_update = 4;
+  }
+
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message MissionFeedback {
+  string mission_id = 1;
+  MissionPhase phase = 2;
+  double progress_pct = 3;  // 0.0 to 1.0
+  string detail = 4;
+  google.protobuf.Struct metadata = 5;
+}
+
+enum MissionPhase {
+  MISSION_PHASE_UNSPECIFIED = 0;
+  MISSION_PHASE_QUEUED = 1;
+  MISSION_PHASE_NAVIGATING = 2;
+  MISSION_PHASE_EXECUTING_ACTION = 3;
+  MISSION_PHASE_WAITING_APPROVAL = 4;
+  MISSION_PHASE_RETURNING = 5;
+  MISSION_PHASE_COMPLETED = 6;
+  MISSION_PHASE_FAILED = 7;
+  MISSION_PHASE_CANCELLED = 8;
+}
+
+message SafetyEvent {
+  string robot_id = 1;
+  SafetyEventType event_type = 2;
+  string detail = 3;
+  google.protobuf.Struct metadata = 4;
+}
+
+enum SafetyEventType {
+  SAFETY_EVENT_TYPE_UNSPECIFIED = 0;
+  SAFETY_EVENT_TYPE_ESTOP_TRIGGERED = 1;
+  SAFETY_EVENT_TYPE_ESTOP_RELEASED = 2;
+  SAFETY_EVENT_TYPE_COLLISION_DETECTED = 3;
+  SAFETY_EVENT_TYPE_GEOFENCE_BREACH = 4;
+  SAFETY_EVENT_TYPE_BATTERY_CRITICAL = 5;
+  SAFETY_EVENT_TYPE_SENSOR_FAULT = 6;
+}
+
+message NavigationProgress {
+  string mission_id = 1;
+  double current_x = 2;  // meters, map frame
+  double current_y = 3;
+  double current_yaw = 4;  // radians
+  double remaining_distance = 5;  // meters
+  double estimated_time_remaining = 6;  // seconds
+}
+
+message MissionCancellation {
+  string mission_id = 1;
+  string reason = 2;
+}
+
+message ConfigUpdate {
+  // Gateway-level config pushed from control plane.
+  google.protobuf.Struct config = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Mission queries
+// ---------------------------------------------------------------------------
+
+message GetMissionStatusRequest {
+  string workspace_id = 1;
+  string mission_id = 2;
+}
+
+message MissionStatus {
+  string mission_id = 1;
+  string robot_id = 2;
+  MissionPhase phase = 3;
+  double progress_pct = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  string detail = 7;
+}
+
+message CancelMissionRequest {
+  string workspace_id = 1;
+  string mission_id = 2;
+  string reason = 3;
+  string correlation_id = 4;
+}
+
+message CancelMissionResponse {
+  bool accepted = 1;
+  string rejection_reason = 2;
+}

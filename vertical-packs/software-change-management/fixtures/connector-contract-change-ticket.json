@@ -1,0 +1,24 @@
+{
+  "contractId": "connector-contract-scm-change-ticket-v1",
+  "provider": "github",
+  "operations": [
+    {
+      "operation": "createIssue",
+      "request": {
+        "title": "Deploy change CHG-1001"
+      },
+      "expected": {
+        "status": "accepted"
+      }
+    },
+    {
+      "operation": "addIssueComment",
+      "request": {
+        "comment": "Change approved by CAB."
+      },
+      "expected": {
+        "status": "accepted"
+      }
+    }
+  ]
+}

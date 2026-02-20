@@ -16,6 +16,13 @@ resources:
   - networking.yaml
   - ingress.yaml
   - rbac.yaml
+  - agent-network-policy.yaml
+  - execution-plane-network-policy.yaml
+  - network-policies/agent-egress-deny.yaml
+  - network-policies/execution-plane-egress.yaml
+  - spire/spire-server.yaml
+  - spire/spire-agent.yaml
+  - spire/registration-entries.yaml
 
 images:
   - name: ghcr.io/your-org/portarium-control-plane

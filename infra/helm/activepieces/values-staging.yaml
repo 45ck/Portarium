@@ -1,0 +1,38 @@
+replicaCount: 2
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+  hosts:
+    - host: activepieces.staging.portarium.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+activepieces:
+  frontendUrl: https://activepieces.staging.portarium.local
+  encryptionKey: replace-with-staging-encryption-key
+  jwtSecret: replace-with-staging-jwt-secret
+  postgres:
+    host: activepieces-postgresql.staging.svc.cluster.local
+    password: replace-with-staging-postgres-password
+  redis:
+    host: activepieces-redis.staging.svc.cluster.local
+    password: replace-with-staging-redis-password
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 1Gi

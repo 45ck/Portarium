@@ -1,0 +1,396 @@
+asyncapi: 3.0.0
+info:
+  title: Portarium Event Stream
+  version: 1.0.0
+  description: |
+    AsyncAPI definition for Portarium CloudEvents published over NATS JetStream.
+    All events use the CloudEvents v1.0 structured-mode JSON envelope with
+    Portarium-specific extension attributes (tenantid, correlationid, runid, actionid).
+
+    Transport: NATS JetStream (ADR-0074).
+    Envelope: CloudEvents v1.0 (ADR-0032).
+    Architecture: Hybrid orchestration/choreography (ADR-0070).
+
+defaultContentType: application/cloudevents+json
+
+servers:
+  local:
+    host: localhost:4222
+    protocol: nats
+    description: Local development NATS server
+
+channels:
+  runs:
+    address: portarium.events.{tenantId}.run.{eventType}
+    description: |
+      Run lifecycle events. Subscribers can filter by tenantId and eventType.
+      Wildcard subscriptions: portarium.events.*.run.> (all tenants, all run events).
+    parameters:
+      tenantId:
+        description: Workspace/tenant identifier for subject-level filtering
+      eventType:
+        description: 'The specific run event: started, completed, failed, paused, resumed'
+    messages:
+      runStarted:
+        $ref: '#/components/messages/RunStarted'
+      runCompleted:
+        $ref: '#/components/messages/RunCompleted'
+      runFailed:
+        $ref: '#/components/messages/RunFailed'
+      runPaused:
+        $ref: '#/components/messages/RunPaused'
+      runResumed:
+        $ref: '#/components/messages/RunResumed'
+
+  approvals:
+    address: portarium.events.{tenantId}.approval.{eventType}
+    description: |
+      Approval lifecycle events. Emitted when approval gates are triggered, resolved, or expire.
+      Subscribers can filter by tenantId and eventType.
+    parameters:
+      tenantId:
+        description: Workspace/tenant identifier
+      eventType:
+        description: 'The specific approval event: requested, granted, denied, expired'
+    messages:
+      approvalRequested:
+        $ref: '#/components/messages/ApprovalRequested'
+      approvalGranted:
+        $ref: '#/components/messages/ApprovalGranted'
+      approvalDenied:
+        $ref: '#/components/messages/ApprovalDenied'
+      approvalExpired:
+        $ref: '#/components/messages/ApprovalExpired'
+
+  evidence:
+    address: portarium.events.{tenantId}.evidence.{eventType}
+    description: |
+      Evidence chain events. Emitted when evidence entries are appended or chain integrity is verified.
+    parameters:
+      tenantId:
+        description: Workspace/tenant identifier
+      eventType:
+        description: 'The specific evidence event: appended, chain-verified'
+    messages:
+      evidenceAppended:
+        $ref: '#/components/messages/EvidenceAppended'
+      evidenceChainVerified:
+        $ref: '#/components/messages/EvidenceChainVerified'
+
+  agents:
+    address: portarium.events.{tenantId}.agent.{eventType}
+    description: |
+      Agent status events. Subscribers can filter by tenantId and eventType.
+    parameters:
+      tenantId:
+        description: Workspace/tenant identifier
+      eventType:
+        description: 'The specific agent event: registered, heartbeat, deregistered, quarantined'
+    messages:
+      agentRegistered:
+        $ref: '#/components/messages/AgentRegistered'
+      agentHeartbeat:
+        $ref: '#/components/messages/AgentHeartbeat'
+      agentDeregistered:
+        $ref: '#/components/messages/AgentDeregistered'
+      agentQuarantined:
+        $ref: '#/components/messages/AgentQuarantined'
+
+  telemetry:
+    address: portarium.events.{tenantId}.telemetry.{eventType}
+    description: |
+      Telemetry events (location, sensor, metric). Short retention (24h).
+    parameters:
+      tenantId:
+        description: Workspace/tenant identifier
+      eventType:
+        description: 'The specific telemetry event: location, metric'
+    messages:
+      telemetryLocation:
+        $ref: '#/components/messages/TelemetryLocation'
+
+operations:
+  publishRunEvents:
+    action: send
+    channel:
+      $ref: '#/channels/runs'
+    summary: Publish run lifecycle events
+    description: |
+      Subscriber expectations:
+      - Events are delivered at-least-once; consumers must be idempotent.
+      - Ordering is guaranteed per subject (tenantId + eventType).
+      - Filter by workspace: subscribe to portarium.events.{tenantId}.run.>
+      - Filter by runId: inspect the runid field in the CloudEvent payload.
+    messages:
+      - $ref: '#/channels/runs/messages/runStarted'
+      - $ref: '#/channels/runs/messages/runCompleted'
+      - $ref: '#/channels/runs/messages/runFailed'
+      - $ref: '#/channels/runs/messages/runPaused'
+      - $ref: '#/channels/runs/messages/runResumed'
+
+  publishApprovalEvents:
+    action: send
+    channel:
+      $ref: '#/channels/approvals'
+    summary: Publish approval lifecycle events
+    description: |
+      Subscriber expectations:
+      - Events are delivered at-least-once.
+      - Filter by workspace: subscribe to portarium.events.{tenantId}.approval.>
+    messages:
+      - $ref: '#/channels/approvals/messages/approvalRequested'
+      - $ref: '#/channels/approvals/messages/approvalGranted'
+      - $ref: '#/channels/approvals/messages/approvalDenied'
+      - $ref: '#/channels/approvals/messages/approvalExpired'
+
+  publishEvidenceEvents:
+    action: send
+    channel:
+      $ref: '#/channels/evidence'
+    summary: Publish evidence chain events
+    messages:
+      - $ref: '#/channels/evidence/messages/evidenceAppended'
+      - $ref: '#/channels/evidence/messages/evidenceChainVerified'
+
+  publishAgentEvents:
+    action: send
+    channel:
+      $ref: '#/channels/agents'
+    summary: Publish agent lifecycle events
+    messages:
+      - $ref: '#/channels/agents/messages/agentRegistered'
+      - $ref: '#/channels/agents/messages/agentHeartbeat'
+      - $ref: '#/channels/agents/messages/agentDeregistered'
+      - $ref: '#/channels/agents/messages/agentQuarantined'
+
+  publishTelemetryEvents:
+    action: send
+    channel:
+      $ref: '#/channels/telemetry'
+    summary: Publish telemetry events
+    messages:
+      - $ref: '#/channels/telemetry/messages/telemetryLocation'
+
+components:
+  messages:
+    RunStarted:
+      name: RunStarted
+      title: Run Started
+      summary: Emitted when a workflow run transitions to Running state
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+      headers:
+        $ref: '#/components/schemas/CloudEventHeaders'
+      examples:
+        - name: run-started-example
+          payload:
+            specversion: '1.0'
+            id: 'evt-001'
+            source: 'portarium/control-plane'
+            type: 'com.portarium.runs.started'
+            tenantid: 'ws-acme'
+            correlationid: 'corr-abc'
+            runid: 'run-123'
+            time: '2026-02-21T10:00:00.000Z'
+            datacontenttype: 'application/json'
+            data:
+              workflowId: 'wf-onboard'
+              executionTier: 'HumanApprove'
+
+    RunCompleted:
+      name: RunCompleted
+      title: Run Completed
+      summary: Emitted when a workflow run reaches Succeeded state
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    RunFailed:
+      name: RunFailed
+      title: Run Failed
+      summary: Emitted when a workflow run reaches Failed state
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    RunPaused:
+      name: RunPaused
+      title: Run Paused
+      summary: Emitted when a workflow run is paused for approval or manual gate
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    RunResumed:
+      name: RunResumed
+      title: Run Resumed
+      summary: Emitted when a paused workflow run is resumed after approval
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    ApprovalRequested:
+      name: ApprovalRequested
+      title: Approval Requested
+      summary: Emitted when a run requires human approval to proceed
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    ApprovalGranted:
+      name: ApprovalGranted
+      title: Approval Granted
+      summary: Emitted when an approval decision is granted
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    ApprovalDenied:
+      name: ApprovalDenied
+      title: Approval Denied
+      summary: Emitted when an approval decision is denied
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    ApprovalExpired:
+      name: ApprovalExpired
+      title: Approval Expired
+      summary: Emitted when an approval request expires without decision
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    EvidenceAppended:
+      name: EvidenceAppended
+      title: Evidence Appended
+      summary: Emitted when a new evidence entry is appended to the chain
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    EvidenceChainVerified:
+      name: EvidenceChainVerified
+      title: Evidence Chain Verified
+      summary: Emitted when evidence chain integrity verification completes
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    AgentRegistered:
+      name: AgentRegistered
+      title: Agent Registered
+      summary: Emitted when a new agent registers with the control plane
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    AgentHeartbeat:
+      name: AgentHeartbeat
+      title: Agent Heartbeat
+      summary: Periodic heartbeat from an active agent
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    AgentDeregistered:
+      name: AgentDeregistered
+      title: Agent Deregistered
+      summary: Emitted when an agent is deregistered from the control plane
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    AgentQuarantined:
+      name: AgentQuarantined
+      title: Agent Quarantined
+      summary: Emitted when an agent is quarantined due to policy violation
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumCloudEvent'
+
+    TelemetryLocation:
+      name: TelemetryLocation
+      title: Telemetry Location
+      summary: Location telemetry event from a robot or mobile asset
+      contentType: application/cloudevents+json
+      payload:
+        $ref: '#/components/schemas/PortariumRobotCloudEvent'
+
+  schemas:
+    CloudEventHeaders:
+      type: object
+      properties:
+        ce-specversion:
+          type: string
+          const: '1.0'
+        ce-id:
+          type: string
+        ce-source:
+          type: string
+        ce-type:
+          type: string
+
+    PortariumCloudEvent:
+      type: object
+      required:
+        - specversion
+        - id
+        - source
+        - type
+        - tenantid
+        - correlationid
+      properties:
+        specversion:
+          type: string
+          const: '1.0'
+        id:
+          type: string
+          description: Unique event identifier
+        source:
+          type: string
+          description: Event source URI
+        type:
+          type: string
+          description: 'CloudEvents type, e.g. com.portarium.runs.started'
+        subject:
+          type: string
+        time:
+          type: string
+          format: date-time
+        datacontenttype:
+          type: string
+        dataschema:
+          type: string
+        data:
+          type: object
+          description: Event payload
+        tenantid:
+          type: string
+          description: Workspace/tenant identifier (Portarium extension)
+        correlationid:
+          type: string
+          description: Correlation identifier for traceability (Portarium extension)
+        runid:
+          type: string
+          description: Run identifier when event relates to a specific run
+        actionid:
+          type: string
+          description: Action identifier when event relates to a specific action
+
+    PortariumRobotCloudEvent:
+      allOf:
+        - $ref: '#/components/schemas/PortariumCloudEvent'
+        - type: object
+          required:
+            - robotid
+            - fleetid
+            - missionid
+          properties:
+            robotid:
+              type: string
+            fleetid:
+              type: string
+            missionid:
+              type: string

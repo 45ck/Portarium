@@ -1,0 +1,102 @@
+# Tenant-Aware Observability -- OTel Collector Routing Processor
+#
+# Beads: bead-0680
+#
+# This configuration demonstrates routing traces and logs by tenant attributes
+# using the OTel Collector routing processor. In production, each tenant's
+# telemetry can be directed to separate backends or storage tiers.
+#
+# Usage: Include this processor in the OTel Collector pipeline configuration.
+
+# ---------------------------------------------------------------------------
+# Routing processor: route telemetry by tenant.id attribute
+# ---------------------------------------------------------------------------
+#
+# The routing processor evaluates OTTL expressions on resource attributes and
+# forwards matching telemetry to tenant-specific exporters. Unmatched
+# telemetry falls through to the default exporter.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Redact sensitive fields before routing (shared across all tenants)
+  attributes/redact:
+    actions:
+      - key: tenant.id
+        action: hash
+      - key: user.email
+        action: delete
+      - key: user.ip
+        action: delete
+      - key: http.request.header.authorization
+        action: delete
+
+  batch:
+    timeout: 1s
+
+  # Route traces by tenant.id attribute to tenant-specific exporters.
+  # This is a reference configuration -- production deployments will
+  # configure tenant-specific OTLP endpoints or storage backends.
+  routing/traces:
+    from_attribute: tenant.id
+    attribute_source: resource
+    table:
+      # Example: route premium tenant traces to a dedicated Tempo instance
+      # - value: tenant-premium-1
+      #   exporters: [otlp/tempo-premium]
+      # Default: all tenants go to shared Tempo
+      - value: '*'
+        exporters: [otlp/tempo-shared]
+
+exporters:
+  # Shared Tempo instance (default for all tenants)
+  otlp/tempo-shared:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  logging:
+    verbosity: basic
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [attributes/redact, batch]
+      exporters: [otlp/tempo-shared, logging]
+    logs:
+      receivers: [otlp]
+      processors: [attributes/redact, batch]
+      exporters: [logging]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+
+# ---------------------------------------------------------------------------
+# Per-Tenant Retention Policy
+# ---------------------------------------------------------------------------
+#
+# Retention is enforced at the storage tier, not the collector:
+#
+# | Tier     | Trace retention | Log retention | Metric retention |
+# |----------|----------------|---------------|------------------|
+# | Free     | 7 days         | 7 days        | 30 days          |
+# | Standard | 30 days        | 30 days       | 90 days          |
+# | Premium  | 90 days        | 90 days       | 365 days         |
+#
+# Implementation approach:
+# 1. Collector routes tenant telemetry to tier-specific storage (separate
+#    Tempo instances, Loki tenants, or Mimir tenants).
+# 2. Each storage backend is configured with tier-appropriate retention.
+# 3. The tenant's subscription tier is resolved from the workspace metadata
+#    and injected as a resource attribute by the control plane.
+#
+# For local development, all tenants share a single Tempo instance with
+# default retention (no per-tenant differentiation).

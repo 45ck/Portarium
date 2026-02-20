@@ -1,0 +1,10 @@
+{
+  "scenarioId": "evidence-change-request-approved",
+  "runId": "run-scm-change-001",
+  "eventType": "ChangeRequestApproved",
+  "evidence": {
+    "artifactId": "evd-scm-approval-001",
+    "hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "recordedBy": "workflow:change-request-lifecycle"
+  }
+}

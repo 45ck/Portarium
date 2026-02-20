@@ -30,6 +30,8 @@ export type MachineInvokerFailure = Readonly<{
   ok: false;
   errorKind: MachineInvokerErrorKind;
   message: string;
+  /** Optional extended state for openclaw or other gateway errors. */
+  runState?: unknown;
 }>;
 
 export type MachineInvokerResult = MachineInvokerSuccess | MachineInvokerFailure;
@@ -73,6 +75,12 @@ export type InvokeToolInput = InvocationCorrelation &
     toolName: string;
     /** Arbitrary tool-specific input parameters. */
     parameters: Record<string, unknown>;
+    /** Optional policy tier override for the invocation. */
+    policyTier?: string;
+    /** Optional session key for stateful gateway sessions. */
+    sessionKey?: string;
+    /** If true, perform a dry-run without side effects. */
+    dryRun?: boolean;
   }>;
 
 // ---------------------------------------------------------------------------

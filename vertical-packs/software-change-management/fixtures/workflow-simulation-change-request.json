@@ -1,0 +1,36 @@
+{
+  "scenarioId": "workflow-sim-change-request-approved",
+  "triggerEvent": {
+    "type": "ticket.updated",
+    "workspaceId": "workspace-default",
+    "ticketId": "chg-1001"
+  },
+  "expectedTasks": [
+    {
+      "stepId": "step-plan",
+      "actionType": "plan:generate"
+    },
+    {
+      "stepId": "step-approval",
+      "actionType": "approval:submit"
+    },
+    {
+      "stepId": "step-evidence",
+      "actionType": "evidence:append"
+    },
+    {
+      "stepId": "step-deploy",
+      "actionType": "deployment:trigger"
+    }
+  ],
+  "expectedEvidence": [
+    {
+      "eventType": "ChangePlanGenerated",
+      "required": true
+    },
+    {
+      "eventType": "ChangeRequestApproved",
+      "required": true
+    }
+  ]
+}

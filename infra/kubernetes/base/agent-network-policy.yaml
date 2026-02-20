@@ -1,0 +1,55 @@
+---
+# Deny-all egress for agent workloads by default.
+# Only the Portarium control-plane service is reachable from agent pods.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-deny-all-egress
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: agent-egress
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/workload: agent
+  policyTypes:
+    - Egress
+  egress: []
+
+---
+# Allow agent pods to reach the control-plane service only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-allow-control-plane-egress
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: agent-egress
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/workload: agent
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress to control-plane pods.
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 3000
+    # Allow DNS resolution (kube-dns / CoreDNS).
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

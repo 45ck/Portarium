@@ -1,0 +1,106 @@
+// Portarium Telemetry gRPC Service Definitions
+//
+// Beads: bead-0664
+//
+// These definitions cover high-frequency robot telemetry and command
+// acknowledgment paths that benefit from gRPC's binary framing and
+// bidirectional streaming.
+//
+// The control-plane HTTP API remains authoritative for all governance
+// operations (runs, approvals, evidence). gRPC is reserved for latency-
+// sensitive telemetry and command-ack paths only.
+
+syntax = "proto3";
+
+package portarium.telemetry.v1;
+
+option go_package = "github.com/portarium/portarium/gen/go/telemetry/v1";
+
+import "google/protobuf/timestamp.proto";
+
+// ---------------------------------------------------------------------------
+// Robot Telemetry Service
+// ---------------------------------------------------------------------------
+
+service RobotTelemetryService {
+  // Stream location telemetry from a robot to the control plane.
+  // Client-streaming: the robot pushes location updates continuously.
+  rpc StreamLocation(stream LocationUpdate) returns (LocationAck);
+
+  // Stream sensor telemetry from a robot to the control plane.
+  rpc StreamSensorData(stream SensorUpdate) returns (SensorAck);
+}
+
+message LocationUpdate {
+  string workspace_id = 1;
+  string robot_id = 2;
+  string fleet_id = 3;
+  string mission_id = 4;
+  double latitude = 5;
+  double longitude = 6;
+  double altitude_m = 7;
+  double heading_deg = 8;
+  double speed_mps = 9;
+  google.protobuf.Timestamp timestamp = 10;
+  string traceparent = 11;
+}
+
+message LocationAck {
+  int64 accepted_count = 1;
+  google.protobuf.Timestamp server_timestamp = 2;
+}
+
+message SensorUpdate {
+  string workspace_id = 1;
+  string robot_id = 2;
+  string sensor_id = 3;
+  string sensor_type = 4;
+  double value = 5;
+  string unit = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  string traceparent = 8;
+}
+
+message SensorAck {
+  int64 accepted_count = 1;
+  google.protobuf.Timestamp server_timestamp = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Command Acknowledgment Service
+// ---------------------------------------------------------------------------
+
+service CommandAckService {
+  // Bidirectional streaming for command dispatch and acknowledgment.
+  // Control plane sends commands; robot acknowledges execution.
+  rpc CommandStream(stream CommandAckMessage) returns (stream CommandDispatch);
+}
+
+message CommandDispatch {
+  string command_id = 1;
+  string workspace_id = 2;
+  string robot_id = 3;
+  string intent_id = 4;
+  string action = 5;
+  bytes payload = 6;
+  google.protobuf.Timestamp issued_at = 7;
+  string traceparent = 8;
+}
+
+message CommandAckMessage {
+  string command_id = 1;
+  string workspace_id = 2;
+  string robot_id = 3;
+  CommandAckStatus status = 4;
+  string detail = 5;
+  google.protobuf.Timestamp acked_at = 6;
+}
+
+enum CommandAckStatus {
+  COMMAND_ACK_STATUS_UNSPECIFIED = 0;
+  COMMAND_ACK_STATUS_RECEIVED = 1;
+  COMMAND_ACK_STATUS_EXECUTING = 2;
+  COMMAND_ACK_STATUS_COMPLETED = 3;
+  COMMAND_ACK_STATUS_FAILED = 4;
+  COMMAND_ACK_STATUS_REJECTED = 5;
+}

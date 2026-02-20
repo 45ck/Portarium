@@ -1,0 +1,283 @@
+{
+  "version": 1,
+  "review": {
+    "cycleId": "2026-W08",
+    "reviewedAt": "2026-02-20",
+    "reviewedBy": "codex-agent",
+    "cadence": "weekly"
+  },
+  "sourceOfTruth": {
+    "portFamilies": "src/domain/primitives/index.ts#PORT_FAMILIES",
+    "canonicalObjects": "docs/domain/canonical-objects.md",
+    "beads": ".beads/issues.jsonl"
+  },
+  "operationalDomains": [
+    {
+      "id": "marketing",
+      "name": "Marketing operations"
+    },
+    {
+      "id": "finance",
+      "name": "Finance operations"
+    },
+    {
+      "id": "accounting",
+      "name": "Accounting operations"
+    },
+    {
+      "id": "it-support",
+      "name": "IT support operations"
+    },
+    {
+      "id": "software-delivery",
+      "name": "Software delivery operations"
+    }
+  ],
+  "families": [
+    {
+      "portFamily": "FinanceAccounting",
+      "operationalDomains": ["finance", "accounting"],
+      "canonicalObjects": ["Account", "Invoice", "Payment", "Party", "Order"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0223", "bead-0224"],
+      "gapBeads": ["bead-0422", "bead-0166"],
+      "gaps": [
+        "Reference adapter implementation for production-grade FinanceAccounting flows remains open.",
+        "Integration phase gate is still open for cross-family release readiness."
+      ]
+    },
+    {
+      "portFamily": "PaymentsBilling",
+      "operationalDomains": ["finance", "accounting"],
+      "canonicalObjects": ["Payment", "Invoice", "Subscription", "Product", "Account", "Party"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0225", "bead-0226"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active implementation bead is open for provider-specific PaymentsBilling parity.",
+        "Mapping-evidence gate remains open before adapter work can be promoted."
+      ]
+    },
+    {
+      "portFamily": "ProcurementSpend",
+      "operationalDomains": ["finance", "accounting"],
+      "canonicalObjects": ["Order", "Invoice", "Payment", "Party", "Subscription", "Document"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0227", "bead-0228"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active implementation bead is open for ProcurementSpend adapter parity.",
+        "Cross-family integration gate remains open."
+      ]
+    },
+    {
+      "portFamily": "HrisHcm",
+      "operationalDomains": ["software-delivery"],
+      "canonicalObjects": ["Party", "Subscription"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0229", "bead-0230"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active implementation bead is open for HRIS/HCM adapter progression.",
+        "Mapping-evidence gate remains open before adapter work can proceed."
+      ]
+    },
+    {
+      "portFamily": "Payroll",
+      "operationalDomains": ["finance", "accounting"],
+      "canonicalObjects": ["Party", "Payment"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0231", "bead-0232"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active Payroll adapter implementation bead is currently open.",
+        "Integration gate remains open for release-level readiness."
+      ]
+    },
+    {
+      "portFamily": "CrmSales",
+      "operationalDomains": ["marketing"],
+      "canonicalObjects": [
+        "Party",
+        "Opportunity",
+        "Task",
+        "Campaign",
+        "Product",
+        "Order",
+        "Invoice"
+      ],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0233", "bead-0234"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active CRM/Sales provider implementation bead is open.",
+        "Mapping-evidence and integration gates remain unresolved."
+      ]
+    },
+    {
+      "portFamily": "CustomerSupport",
+      "operationalDomains": ["it-support"],
+      "canonicalObjects": ["Ticket", "Party", "Document"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0235", "bead-0236"],
+      "gapBeads": ["bead-0423", "bead-0166"],
+      "gaps": [
+        "Zammad reference adapter implementation bead remains open.",
+        "Integration gate remains open for family completion."
+      ]
+    },
+    {
+      "portFamily": "ItsmItOps",
+      "operationalDomains": ["it-support", "software-delivery"],
+      "canonicalObjects": ["Ticket", "Asset", "Party", "Document", "Subscription", "Product"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0237", "bead-0238"],
+      "gapBeads": ["bead-0413", "bead-0166"],
+      "gaps": [
+        "Event-driven IT ops execution-platform fit is still under spike evaluation.",
+        "Integration gate remains open for rollout readiness."
+      ]
+    },
+    {
+      "portFamily": "IamDirectory",
+      "operationalDomains": ["it-support", "software-delivery"],
+      "canonicalObjects": ["Party", "Asset"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0239", "bead-0240"],
+      "gapBeads": ["bead-0328", "bead-0167"],
+      "gaps": [
+        "Production AuthN/AuthZ hardening bead remains open.",
+        "Security phase gate remains open before closure."
+      ]
+    },
+    {
+      "portFamily": "SecretsVaulting",
+      "operationalDomains": ["software-delivery"],
+      "canonicalObjects": [],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0241", "bead-0242"],
+      "gapBeads": ["bead-0327", "bead-0167"],
+      "gaps": [
+        "Execution-plane Vault workload-auth hardening is still open.",
+        "Security phase gate remains open for final sign-off."
+      ]
+    },
+    {
+      "portFamily": "MarketingAutomation",
+      "operationalDomains": ["marketing"],
+      "canonicalObjects": ["Party", "Campaign", "Document"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0243", "bead-0244"],
+      "gapBeads": ["bead-0421", "bead-0166"],
+      "gaps": [
+        "Mautic reference adapter implementation bead remains open.",
+        "Integration gate remains open for family closure."
+      ]
+    },
+    {
+      "portFamily": "AdsPlatforms",
+      "operationalDomains": ["marketing"],
+      "canonicalObjects": ["Campaign", "Document"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0245", "bead-0246"],
+      "gapBeads": ["bead-0403", "bead-0166"],
+      "gaps": [
+        "Platform coverage and piece selection are still in spike status.",
+        "Integration gate remains open before family promotion."
+      ]
+    },
+    {
+      "portFamily": "CommsCollaboration",
+      "operationalDomains": ["it-support", "software-delivery"],
+      "canonicalObjects": ["Party", "Task", "Document"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0247", "bead-0248"],
+      "gapBeads": ["bead-0403", "bead-0166"],
+      "gaps": [
+        "Execution-platform capability coverage is still in evaluation for this family.",
+        "Integration gate remains open for release readiness."
+      ]
+    },
+    {
+      "portFamily": "ProjectsWorkMgmt",
+      "operationalDomains": ["software-delivery"],
+      "canonicalObjects": ["Task", "Party", "Document"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0249", "bead-0250"],
+      "gapBeads": ["bead-0424", "bead-0166"],
+      "gaps": [
+        "Software-delivery reference adapter implementation remains open.",
+        "Integration gate remains open for family completion."
+      ]
+    },
+    {
+      "portFamily": "DocumentsEsign",
+      "operationalDomains": ["software-delivery", "finance", "accounting"],
+      "canonicalObjects": ["Document", "Party"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0251", "bead-0252"],
+      "gapBeads": ["bead-0166", "bead-0174"],
+      "gaps": [
+        "No active implementation bead is open for Documents/ESign adapter parity.",
+        "Mapping-evidence and integration gates remain open."
+      ]
+    },
+    {
+      "portFamily": "AnalyticsBi",
+      "operationalDomains": ["marketing", "finance", "accounting", "software-delivery"],
+      "canonicalObjects": ["Party"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0253", "bead-0254"],
+      "gapBeads": ["bead-0428", "bead-0166"],
+      "gaps": [
+        "Production observability analytics pipeline bead remains open.",
+        "Integration gate remains open for release qualification."
+      ]
+    },
+    {
+      "portFamily": "MonitoringIncident",
+      "operationalDomains": ["it-support", "software-delivery"],
+      "canonicalObjects": ["Ticket", "Party"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0255", "bead-0256"],
+      "gapBeads": ["bead-0413", "bead-0393"],
+      "gaps": [
+        "IT-ops automation platform evaluation is still open.",
+        "SLO and alerting implementation for incident visibility remains open."
+      ]
+    },
+    {
+      "portFamily": "ComplianceGrc",
+      "operationalDomains": ["it-support", "software-delivery", "finance", "accounting"],
+      "canonicalObjects": ["Ticket", "Asset", "Document", "Party"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0257", "bead-0258"],
+      "gapBeads": ["bead-0414", "bead-0167"],
+      "gaps": [
+        "License and compliance governance for external execution platforms remains open.",
+        "Security phase gate remains open before governance closeout."
+      ]
+    },
+    {
+      "portFamily": "RoboticsActuation",
+      "operationalDomains": ["it-support", "software-delivery"],
+      "canonicalObjects": ["Asset", "ExternalObjectRef"],
+      "coverageStatus": "partial",
+      "coverageBeads": ["bead-0505", "bead-0513", "bead-0553"],
+      "gapBeads": [
+        "bead-0515",
+        "bead-0516",
+        "bead-0517",
+        "bead-0518",
+        "bead-0519",
+        "bead-0520",
+        "bead-0521",
+        "bead-0567"
+      ],
+      "gaps": [
+        "Gateway adapter implementations and simulation harness remain open.",
+        "Security hardening for robotics identity and transport remains open."
+      ]
+    }
+  ]
+}

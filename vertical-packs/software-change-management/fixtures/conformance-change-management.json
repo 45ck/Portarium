@@ -1,0 +1,6 @@
+{
+  "hookId": "conformance-scm-not-applicable",
+  "standard": "none",
+  "status": "not_applicable",
+  "rationale": "Software change management reference pack does not target a domain interoperability standard such as OneRoster."
+}

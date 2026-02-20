@@ -119,6 +119,38 @@ services:
       interval: 10s
       timeout: 5s
       retries: 18
+    depends_on:
+      tempo:
+        condition: service_started
+    networks:
+      - portarium-control
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: portarium-tempo
+    command: ['-config.file=/etc/tempo.yaml']
+    volumes:
+      - ./infra/otel/tempo-config.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - '3200:3200'
+    networks:
+      - portarium-control
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: portarium-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: portarium
+      GF_AUTH_ANONYMOUS_ENABLED: 'true'
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    ports:
+      - '3100:3000'
+    volumes:
+      - ./infra/otel/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - tempo
     networks:
       - portarium-control
 
@@ -129,6 +161,8 @@ volumes:
   evidence-db-data:
   evidence-store-data:
   temporal-data:
+  tempo-data:
+  grafana-data:
 
 networks:
   portarium-control:

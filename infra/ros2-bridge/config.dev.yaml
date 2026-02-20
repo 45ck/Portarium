@@ -1,0 +1,31 @@
+# Portarium ROS 2 Bridge -- Development configuration
+# Uses rosbridge WebSocket for local ROS 2 connectivity.
+
+mode: development
+
+rosbridge:
+  url: ws://localhost:9090
+  reconnectIntervalMs: 3000
+  maxReconnectAttempts: 10
+
+portarium:
+  baseUrl: http://localhost:3100
+  workspaceId: ws-default
+  # Token is read from PORTARIUM_TOKEN environment variable.
+  heartbeatIntervalMs: 30000
+
+telemetry:
+  topics:
+    - name: /robot/odom
+      type: nav_msgs/msg/Odometry
+      mapping: location-event
+    - name: /robot/battery_state
+      type: sensor_msgs/msg/BatteryState
+      mapping: robot-diagnostics
+    - name: /robot/diagnostics
+      type: diagnostic_msgs/msg/DiagnosticArray
+      mapping: robot-diagnostics
+
+commands:
+  missionGoalTopic: /portarium/mission_goal
+  estopTopic: /portarium/estop

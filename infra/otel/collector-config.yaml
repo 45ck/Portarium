@@ -2,7 +2,9 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 extensions:
   health_check:
@@ -12,9 +14,27 @@ exporters:
   logging:
     verbosity: basic
 
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
 processors:
   batch:
     timeout: 1s
+
+  # Redaction processor: obfuscate sensitive tenant/user fields in log attributes.
+  # tenantId is hashed rather than removed so traces remain joinable.
+  attributes/redact:
+    actions:
+      - key: tenant.id
+        action: hash
+      - key: user.email
+        action: delete
+      - key: user.ip
+        action: delete
+      - key: http.request.header.authorization
+        action: delete
 
 service:
   extensions:
@@ -31,13 +51,16 @@ service:
       receivers:
         - otlp
       processors:
+        - attributes/redact
         - batch
       exporters:
         - logging
+        - otlp/tempo
     logs:
       receivers:
         - otlp
       processors:
+        - attributes/redact
         - batch
       exporters:
         - logging

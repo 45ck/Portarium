@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture-scm-conformance-hook",
+  "packId": "scm.change-management",
+  "kind": "conformance-hook-fixture",
+  "dataPath": "fixtures/conformance-change-management.json"
+}

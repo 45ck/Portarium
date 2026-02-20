@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture-scm-connector-contract",
+  "packId": "scm.change-management",
+  "kind": "connector-contract-fixture",
+  "dataPath": "fixtures/connector-contract-change-ticket.json"
+}

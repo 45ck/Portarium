@@ -1,0 +1,21 @@
+{
+  "id": "resp_01HZX7A2N4M1YF3K4E5Q6R7S8T",
+  "type": "response",
+  "status": "completed",
+  "output": [
+    {
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Agent completed task successfully."
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 42,
+    "output_tokens": 17
+  }
+}

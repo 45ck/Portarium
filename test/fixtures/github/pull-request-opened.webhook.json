@@ -1,0 +1,20 @@
+{
+  "action": "opened",
+  "repository": {
+    "id": 1296269,
+    "name": "hello-world",
+    "full_name": "octocat/hello-world",
+    "private": false
+  },
+  "pull_request": {
+    "id": 1,
+    "number": 1347,
+    "state": "open",
+    "title": "Improve onboarding runbook",
+    "updated_at": "2026-02-20T07:00:00Z"
+  },
+  "sender": {
+    "id": 1,
+    "login": "octocat"
+  }
+}

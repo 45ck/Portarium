@@ -1,0 +1,187 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portarium-langflow
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-langflow
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-langflow
+      app.kubernetes.io/part-of: portarium
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-langflow
+        app.kubernetes.io/part-of: portarium
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: langflow
+          image: langflowai/langflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 7860
+          env:
+            - name: LANGFLOW_HOST
+              value: 0.0.0.0
+            - name: LANGFLOW_PORT
+              value: '7860'
+            - name: LANGFLOW_AUTO_LOGIN
+              value: 'false'
+            - name: LANGFLOW_NEW_USER_IS_ACTIVE
+              value: 'false'
+            - name: LANGFLOW_ENABLE_SUPERUSER_CLI
+              value: 'false'
+            - name: LANGFLOW_SUPERUSER
+              value: portarium-admin
+            - name: LANGFLOW_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: portarium-runtime-secrets
+                  key: langflow_superuser_password
+            - name: LANGFLOW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: portarium-runtime-secrets
+                  key: langflow_secret_key
+            - name: LANGFLOW_API_KEY_SOURCE
+              value: env
+            - name: LANGFLOW_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: portarium-runtime-secrets
+                  key: langflow_api_key
+            - name: LANGFLOW_CONFIG_DIR
+              value: /app/langflow
+            - name: LANGFLOW_DATABASE_URL
+              value: sqlite:////app/langflow/langflow.db
+          command:
+            - langflow
+            - run
+            - --host
+            - 0.0.0.0
+            - --port
+            - '7860'
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          startupProbe:
+            httpGet:
+              path: /
+              port: 7860
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: langflow-data
+              mountPath: /app/langflow
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: langflow-data
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portarium-langflow-proxy
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-langflow-proxy
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-langflow-proxy
+      app.kubernetes.io/part-of: portarium
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-langflow-proxy
+        app.kubernetes.io/part-of: portarium
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: langflow-proxy
+          image: nginxinc/nginx-unprivileged:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: langflow-proxy-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: langflow-proxy-config
+          configMap:
+            name: portarium-langflow-proxy-config

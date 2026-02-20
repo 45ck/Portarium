@@ -1,0 +1,100 @@
+---
+# Deny-all egress for execution-plane workers by default.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-deny-all-egress
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: execution-plane-egress
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/workload: execution-plane
+  policyTypes:
+    - Egress
+  egress: []
+
+---
+# Allow execution-plane workers to reach the control-plane, Temporal,
+# evidence store, Vault, and explicitly allowlisted SoR endpoints.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-allow-egress
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: execution-plane-egress
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/workload: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    # Control-plane API.
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Temporal workflow engine.
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: temporal
+      ports:
+        - protocol: TCP
+          port: 7233
+
+    # Evidence store (MinIO / S3).
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: evidence-store
+      ports:
+        - protocol: TCP
+          port: 9000
+
+    # Vault (credential retrieval).
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+
+    # OTel collector (telemetry export).
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # DNS resolution.
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # SoR egress: HTTPS only to external Systems of Record.
+    # In production, restrict using ipBlock CIDRs or external-name services.
+    - ports:
+        - protocol: TCP
+          port: 443

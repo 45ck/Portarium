@@ -226,6 +226,21 @@ export type WorkforceQueueId = Branded<string, 'WorkforceQueueId'>;
 /** Unique identifier for a human task. */
 export type HumanTaskId = Branded<string, 'HumanTaskId'>;
 
+/** Unique identifier for a consent record. */
+export type ConsentId = Branded<string, 'ConsentId'>;
+
+/** Unique identifier for a privacy policy. */
+export type PrivacyPolicyId = Branded<string, 'PrivacyPolicyId'>;
+
+/** A capability token in "entity:verb" format. */
+export type CapabilityKey = Branded<string, 'CapabilityKey'>;
+
+/** Unique identifier for an execution evidence entry. */
+export type ExecutionEvidenceId = Branded<string, 'ExecutionEvidenceId'>;
+
+/** Unique identifier for an intent command. */
+export type IntentId = Branded<string, 'IntentId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -302,6 +317,13 @@ export const WorkforceMemberId = (value: string): WorkforceMemberId =>
 export const WorkforceQueueId = (value: string): WorkforceQueueId =>
   brand<string, 'WorkforceQueueId'>(value);
 export const HumanTaskId = (value: string): HumanTaskId => brand<string, 'HumanTaskId'>(value);
+export const ConsentId = (value: string): ConsentId => brand<string, 'ConsentId'>(value);
+export const PrivacyPolicyId = (value: string): PrivacyPolicyId =>
+  brand<string, 'PrivacyPolicyId'>(value);
+export const CapabilityKey = (value: string): CapabilityKey => brand<string, 'CapabilityKey'>(value);
+export const ExecutionEvidenceId = (value: string): ExecutionEvidenceId =>
+  brand<string, 'ExecutionEvidenceId'>(value);
+export const IntentId = (value: string): IntentId => brand<string, 'IntentId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families

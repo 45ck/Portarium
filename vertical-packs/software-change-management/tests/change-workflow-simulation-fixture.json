@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture-scm-workflow-simulation",
+  "packId": "scm.change-management",
+  "kind": "workflow-simulation-fixture",
+  "dataPath": "fixtures/workflow-simulation-change-request.json"
+}

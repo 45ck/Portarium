@@ -1,0 +1,55 @@
+---
+# SPIRE registration entries for Portarium workloads.
+#
+# These entries define the SPIFFE IDs assigned to each workload based on
+# Kubernetes service account attestation. Apply them after the SPIRE server
+# is running using:
+#
+#   kubectl exec -n portarium spire-server-0 -- \
+#     /opt/spire/bin/spire-server entry create \
+#     -spiffeID <spiffeID> \
+#     -parentID <parentID> \
+#     -selector <selector>
+#
+# This file documents the intended registration entries for reference.
+# A future automation script or CRD operator will apply them automatically.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-registration-entries
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: spire
+    app.kubernetes.io/part-of: portarium
+data:
+  entries.json: |
+    [
+      {
+        "comment": "Control Plane workload identity",
+        "spiffeId": "spiffe://portarium.io/ns/portarium/sa/portarium-control-plane",
+        "parentId": "spiffe://portarium.io/spire/agent/k8s_psat/portarium-cluster",
+        "selectors": [
+          "k8s:ns:portarium",
+          "k8s:sa:portarium-control-plane"
+        ]
+      },
+      {
+        "comment": "Execution Plane workload identity",
+        "spiffeId": "spiffe://portarium.io/ns/portarium/sa/portarium-execution-plane",
+        "parentId": "spiffe://portarium.io/spire/agent/k8s_psat/portarium-cluster",
+        "selectors": [
+          "k8s:ns:portarium",
+          "k8s:sa:portarium-execution-plane"
+        ]
+      },
+      {
+        "comment": "Agent workload identity",
+        "spiffeId": "spiffe://portarium.io/ns/portarium/sa/portarium-agent",
+        "parentId": "spiffe://portarium.io/spire/agent/k8s_psat/portarium-cluster",
+        "selectors": [
+          "k8s:ns:portarium",
+          "k8s:sa:portarium-agent"
+        ]
+      }
+    ]

@@ -48,6 +48,7 @@ export type StartWorkflowInput = Readonly<{
   idempotencyKey: string;
   workspaceId: string;
   workflowId: string;
+  trigger?: string;
 }>;
 
 export type StartWorkflowOutput = Readonly<{

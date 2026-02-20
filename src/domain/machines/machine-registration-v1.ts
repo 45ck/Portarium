@@ -17,6 +17,11 @@ import {
   readString,
   readStringArray,
 } from '../validation/parse-utils.js';
+import {
+  parseCapabilityDescriptorsV1,
+  type CapabilityDescriptorV1,
+} from './capability-handshake-v1.js';
+import { validateOpenClawToolPolicyTierV1 } from './openclaw-tool-blast-radius-v1.js';
 
 // ---------------------------------------------------------------------------
 // Machine auth configuration
@@ -49,8 +54,8 @@ export type MachineRegistrationV1 = Readonly<{
   endpointUrl: string;
   active: boolean;
   displayName: string;
-  /** Capability allowlist — only these capability strings may be invoked on this machine. */
-  capabilities: readonly string[];
+  /** Capability allowlist — only these canonical capabilities may be invoked on this machine. */
+  capabilities: readonly CapabilityDescriptorV1[];
   registeredAtIso: string;
   executionPolicy: MachineExecutionPolicyV1;
   /** Authentication configuration for the machine endpoint (absent = no auth required). */
@@ -84,9 +89,12 @@ export function parseMachineRegistrationV1(value: unknown): MachineRegistrationV
   const endpointUrl = readString(record, 'endpointUrl', MachineRegistrationParseError);
   const active = readBoolean(record, 'active', MachineRegistrationParseError);
   const displayName = readString(record, 'displayName', MachineRegistrationParseError);
-  const capabilities = readStringArray(record, 'capabilities', MachineRegistrationParseError, {
-    minLength: 1,
-  });
+  const capabilities = parseCapabilityDescriptorsV1(
+    record['capabilities'],
+    'capabilities',
+    MachineRegistrationParseError,
+    { minLength: 1 },
+  );
   const registeredAtIso = readIsoString(record, 'registeredAtIso', MachineRegistrationParseError);
   const executionPolicy = parseExecutionPolicy(record);
   const authConfig = parseMachineAuthConfig(record['authConfig']);
@@ -182,6 +190,8 @@ export type AgentConfigV1 = Readonly<{
   workspaceId: WorkspaceIdType;
   machineId: MachineIdType;
   displayName: string;
+  /** Canonical capability declarations used for route eligibility checks. */
+  capabilities: readonly CapabilityDescriptorV1[];
   /**
    * Execution tier controlling approval requirements for actions dispatched
    * through this agent (matches WorkflowActionV1.executionTier semantics).
@@ -225,9 +235,29 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
     );
   }
 
+  const capabilities = parseCapabilityDescriptorsV1(
+    record['capabilities'],
+    'capabilities',
+    AgentConfigParseError,
+    { minLength: 1 },
+  );
+
   const allowedTools = readStringArray(record, 'allowedTools', AgentConfigParseError, {
     minLength: 0,
   });
+  const policyTier = policyTierRaw as ExecutionTier;
+  const toolViolations = validateOpenClawToolPolicyTierV1({
+    policyTier,
+    allowedTools,
+  });
+  if (toolViolations.length > 0) {
+    const summary = toolViolations
+      .map((violation) => `${violation.toolName} requires ${violation.requiredTier}`)
+      .join(', ');
+    throw new AgentConfigParseError(
+      `allowedTools violate policyTier ${policyTier}: ${summary}.`,
+    );
+  }
 
   const registeredAtIso = readIsoString(record, 'registeredAtIso', AgentConfigParseError);
 
@@ -237,7 +267,8 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
     workspaceId,
     machineId,
     displayName,
-    policyTier: policyTierRaw as ExecutionTier,
+    capabilities,
+    policyTier,
     allowedTools,
     registeredAtIso,
   };

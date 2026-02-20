@@ -1,0 +1,103 @@
+# NetworkPolicy: deny-by-default egress for agent pods.
+#
+# Agent pods (AI agents, LLM-based workflows) must not have unrestricted
+# egress. This policy denies all outbound traffic by default. Controlled
+# egress is granted via explicit allow policies.
+#
+# Bead: bead-0673
+# See: .specify/specs/egress-network-policy-v1.md
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-egress-deny-default
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-deny-default
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: agent
+  policyTypes:
+    - Egress
+  # Empty egress list = deny all outbound traffic.
+  egress: []
+
+---
+# Allow agent pods to reach the control-plane API (for heartbeats, work-item
+# discovery, evidence submission).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-egress-allow-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-control-plane
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: agent
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Allow agent pods to reach Vault for credential retrieval.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-egress-allow-vault
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-vault
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: agent
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+
+---
+# Allow agent pods to resolve DNS (required for service discovery).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-egress-allow-dns
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-dns
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: agent
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

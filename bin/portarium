@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+/**
+ * Portarium CLI entry point.
+ *
+ * Usage:
+ *   npx portarium <command> [subcommand] [options]
+ *   node bin/portarium <command> [subcommand] [options]
+ *   tsx bin/portarium <command> [subcommand] [options]
+ */
+
+import('../src/cli/portarium-cli.ts').then(({ run }) => run(process.argv));

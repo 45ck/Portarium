@@ -1,14 +1,23 @@
 import { randomUUID } from 'node:crypto';
 
-import { diffEffects, type VerifiedEffectV1 } from '../../domain/services/diff.js';
+import { SpanStatusCode, trace } from '@opentelemetry/api';
+
+import {
+  diffEffects,
+  type EffectDiffResultV1,
+  type VerifiedEffectV1,
+} from '../../domain/services/diff.js';
 import { buildPlanFromWorkflow, validatePlanEffectIds } from '../../domain/services/planning.js';
 import { assertValidRunStatusTransition } from '../../domain/services/run-status-transitions.js';
 import type { RunStatus } from '../../domain/runs/run-v1.js';
 import type { PlanV1, PlannedEffectV1 } from '../../domain/plan/plan-v1.js';
-import type { EffectDiffResultV1 } from '../../domain/services/diff.js';
 import type { WorkflowActionV1, WorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
-import { emitCounter } from '../observability/metrics-hooks.js';
+import {
+  emitCounter,
+  emitHistogram,
+  type MetricAttributes,
+} from '../observability/metrics-hooks.js';
 import {
   appendEvidenceEntryV1,
   verifyEvidenceChainV1,
@@ -33,32 +42,10 @@ export type StartRunActivityInput = Readonly<{
   correlationId: string;
   traceparent?: string;
   tracestate?: string;
+  packId?: string;
+  packVersion?: string;
   executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 }>;
-
-export function startRunActivity(input: StartRunActivityInput): Promise<void> {
-  emitCounter('portarium.run.started', { executionTier: input.executionTier });
-
-  ensureRunState(input.tenantId, input.runId, 'Pending');
-  transitionRun(input.tenantId, input.runId, 'Running');
-
-  appendEvidence(input.tenantId, {
-    schemaVersion: 1,
-    evidenceId: EvidenceId(randomUUID()),
-    workspaceId: WorkspaceId(input.tenantId),
-    correlationId: CorrelationId(input.correlationId),
-    occurredAtIso: new Date().toISOString(),
-    category: 'System',
-    summary: `Run started for workflow ${input.workflowId}.`,
-    actor: { kind: 'System' },
-    links: {
-      runId: RunId(input.runId),
-    },
-  });
-
-  // This is an application-level placeholder. Later beads will persist state to DB.
-  return Promise.resolve();
-}
 
 export type CompleteRunActivityInput = Readonly<{
   runId: string;
@@ -69,96 +56,27 @@ export type CompleteRunActivityInput = Readonly<{
   correlationId: string;
   traceparent?: string;
   tracestate?: string;
+  packId?: string;
+  packVersion?: string;
 }>;
 
-export function completeRunActivity(input: CompleteRunActivityInput): Promise<void> {
-  ensureRunState(input.tenantId, input.runId, 'Running');
+type TemporalTelemetryAttributes = Readonly<Record<string, string | number | boolean>>;
+type TemporalSpanOutcome = 'ok' | 'error';
 
-  const nowIso = new Date().toISOString();
-
-  const plan = buildPlanFromWorkflow({
-    workflow: input.workflow,
-    workspaceId: WorkspaceId(input.tenantId),
-    createdByUserId: UserId(input.initiatedByUserId),
-    planId: PlanId(randomUUID()),
-    createdAtIso: nowIso,
-    effectFactory: actionToPlannedEffect,
-  });
-
-  const validation = validatePlanEffectIds(plan);
-  if (!validation.ok) {
-    throw new Error(`Duplicate effect IDs in plan: ${validation.duplicateEffectIds.join(', ')}`);
-  }
-
-  setRunPlan(input.tenantId, input.runId, plan);
-
-  appendEvidence(input.tenantId, {
-    schemaVersion: 1,
-    evidenceId: EvidenceId(randomUUID()),
-    workspaceId: WorkspaceId(input.tenantId),
-    correlationId: CorrelationId(input.correlationId),
-    occurredAtIso: nowIso,
-    category: 'Plan',
-    summary: `Plan built with ${plan.plannedEffects.length} effects.`,
-    actor: { kind: 'System' },
-    links: {
-      runId: RunId(input.runId),
-      planId: plan.planId,
-    },
-  });
-
-  // Execute actions (placeholder): treat each planned effect as verified success.
-  const verified = plan.plannedEffects.map(
-    (p): VerifiedEffectV1 => ({
-      effectId: p.effectId,
-      operation: p.operation,
-      target: p.target,
-      summary: `Verified: ${p.summary}`,
-      verifiedAtIso: nowIso,
-    }),
-  );
-
-  const diff = diffEffects({ planned: plan.plannedEffects, verified });
-  setRunDiff(input.tenantId, input.runId, diff);
-
-  appendEvidence(input.tenantId, {
-    schemaVersion: 1,
-    evidenceId: EvidenceId(randomUUID()),
-    workspaceId: WorkspaceId(input.tenantId),
-    correlationId: CorrelationId(input.correlationId),
-    occurredAtIso: nowIso,
-    category: 'System',
-    summary: `Planned vs verified diff computed (clean=${diff.isClean}).`,
-    actor: { kind: 'System' },
-    links: {
-      runId: RunId(input.runId),
-      planId: plan.planId,
-    },
-    payloadRefs: [
-      {
-        kind: 'Diff',
-        uri: `memory://runs/${encodeURIComponent(input.runId)}/diff`,
-        contentType: 'application/json',
-      },
-    ],
-  });
-
-  transitionRun(input.tenantId, input.runId, 'Succeeded');
-  emitCounter('portarium.run.succeeded');
-
-  // Verify chain integrity (defensive) to keep regressions visible early.
-  const chain = getEvidenceChain(input.tenantId, input.runId);
-  const verify = verifyEvidenceChainV1(chain, hasher);
-  if (!verify.ok) {
-    throw new Error(`Evidence chain invalid: ${verify.reason} (index=${verify.index})`);
-  }
-
-  return Promise.resolve();
+interface TemporalTelemetryHooks {
+  onSpanStart(spanName: string, attributes: TemporalTelemetryAttributes): void;
+  onSpanEnd(
+    spanName: string,
+    outcome: TemporalSpanOutcome,
+    durationMs: number,
+    attributes: TemporalTelemetryAttributes,
+  ): void;
 }
 
-// ---------------------------------------------------------------------------
-// In-memory state (temporary scaffolding until persistence beads land)
-// ---------------------------------------------------------------------------
+type PackTelemetryContext = Readonly<{
+  packId: string;
+  packVersion: string;
+}>;
 
 interface RunExecutionState {
   status: RunStatus;
@@ -167,8 +85,310 @@ interface RunExecutionState {
   diff?: EffectDiffResultV1;
 }
 
+const tracer = trace.getTracer('portarium.infrastructure.temporal.activities');
 const hasher = new NodeCryptoEvidenceHasher();
 const runs = new Map<string, RunExecutionState>();
+const DEFAULT_PACK_TELEMETRY_CONTEXT: PackTelemetryContext = {
+  packId: 'core.unscoped',
+  packVersion: '0.0.0',
+};
+
+const NOOP_TEMPORAL_TELEMETRY_HOOKS: TemporalTelemetryHooks = {
+  onSpanStart() {
+    // no-op by default
+  },
+  onSpanEnd() {
+    // no-op by default
+  },
+};
+
+let activeTemporalTelemetryHooks: TemporalTelemetryHooks = NOOP_TEMPORAL_TELEMETRY_HOOKS;
+
+export async function startRunActivity(input: StartRunActivityInput): Promise<void> {
+  const packTelemetry = resolvePackTelemetryContext(
+    input.workflow,
+    input.packId,
+    input.packVersion,
+  );
+  const runMetrics = buildRunMetricAttributes(packTelemetry, input.executionTier);
+
+  await observeTemporalSpan({
+    spanName: 'workflow.run.start',
+    attributes: {
+      ...runMetrics,
+      'workflow.id': input.workflowId,
+    },
+    run: async () => {
+      emitCounter('portarium.run.started', runMetrics);
+
+      ensureRunState(input.tenantId, input.runId, 'Pending');
+      transitionRun(input.tenantId, input.runId, 'Running');
+
+      appendEvidence(input.tenantId, {
+        schemaVersion: 1,
+        evidenceId: EvidenceId(randomUUID()),
+        workspaceId: WorkspaceId(input.tenantId),
+        correlationId: CorrelationId(input.correlationId),
+        occurredAtIso: new Date().toISOString(),
+        category: 'System',
+        summary: `Run started for workflow ${input.workflowId}.`,
+        actor: { kind: 'System' },
+        links: {
+          runId: RunId(input.runId),
+        },
+      });
+    },
+  });
+}
+
+export async function completeRunActivity(input: CompleteRunActivityInput): Promise<void> {
+  const packTelemetry = resolvePackTelemetryContext(
+    input.workflow,
+    input.packId,
+    input.packVersion,
+  );
+  const runMetrics = buildRunMetricAttributes(packTelemetry, input.workflow.executionTier);
+  const runStartedAtMs = Date.now();
+
+  await observeTemporalSpan({
+    spanName: 'workflow.run.complete',
+    attributes: {
+      ...runMetrics,
+      'workflow.id': input.workflowId,
+    },
+    run: async () => {
+      try {
+        ensureRunState(input.tenantId, input.runId, 'Running');
+
+        const nowIso = new Date().toISOString();
+
+        const plan = buildPlanFromWorkflow({
+          workflow: input.workflow,
+          workspaceId: WorkspaceId(input.tenantId),
+          createdByUserId: UserId(input.initiatedByUserId),
+          planId: PlanId(randomUUID()),
+          createdAtIso: nowIso,
+          effectFactory: actionToPlannedEffect,
+        });
+
+        const validation = validatePlanEffectIds(plan);
+        if (!validation.ok) {
+          throw new Error(
+            `Duplicate effect IDs in plan: ${validation.duplicateEffectIds.join(', ')}`,
+          );
+        }
+
+        setRunPlan(input.tenantId, input.runId, plan);
+
+        appendEvidence(input.tenantId, {
+          schemaVersion: 1,
+          evidenceId: EvidenceId(randomUUID()),
+          workspaceId: WorkspaceId(input.tenantId),
+          correlationId: CorrelationId(input.correlationId),
+          occurredAtIso: nowIso,
+          category: 'Plan',
+          summary: `Plan built with ${plan.plannedEffects.length} effects.`,
+          actor: { kind: 'System' },
+          links: {
+            runId: RunId(input.runId),
+            planId: plan.planId,
+          },
+        });
+
+        const verified = await buildVerifiedEffectsWithTelemetry({
+          workflow: input.workflow,
+          plannedEffects: plan.plannedEffects,
+          workflowExecutionTier: input.workflow.executionTier,
+          packTelemetry,
+        });
+
+        const diff = diffEffects({ planned: plan.plannedEffects, verified });
+        setRunDiff(input.tenantId, input.runId, diff);
+
+        appendEvidence(input.tenantId, {
+          schemaVersion: 1,
+          evidenceId: EvidenceId(randomUUID()),
+          workspaceId: WorkspaceId(input.tenantId),
+          correlationId: CorrelationId(input.correlationId),
+          occurredAtIso: nowIso,
+          category: 'System',
+          summary: `Planned vs verified diff computed (clean=${diff.isClean}).`,
+          actor: { kind: 'System' },
+          links: {
+            runId: RunId(input.runId),
+            planId: plan.planId,
+          },
+          payloadRefs: [
+            {
+              kind: 'Diff',
+              uri: `memory://runs/${encodeURIComponent(input.runId)}/diff`,
+              contentType: 'application/json',
+            },
+          ],
+        });
+
+        transitionRun(input.tenantId, input.runId, 'Succeeded');
+        emitCounter('portarium.run.succeeded', runMetrics);
+        emitHistogram('portarium.run.duration.ms', Date.now() - runStartedAtMs, {
+          ...runMetrics,
+          'run.outcome': 'succeeded',
+        });
+
+        verifyEvidenceChainOrThrow(input.tenantId, input.runId);
+      } catch (error) {
+        emitCounter('portarium.run.failed', {
+          ...runMetrics,
+          errorKind: 'UnhandledException',
+        });
+        emitHistogram('portarium.run.duration.ms', Date.now() - runStartedAtMs, {
+          ...runMetrics,
+          'run.outcome': 'exception',
+        });
+        throw error;
+      }
+    },
+  });
+}
+
+async function buildVerifiedEffectsWithTelemetry(params: {
+  workflow: WorkflowV1;
+  plannedEffects: readonly PlannedEffectV1[];
+  workflowExecutionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+  packTelemetry: PackTelemetryContext;
+}): Promise<readonly VerifiedEffectV1[]> {
+  const plannedByActionId = new Map<string, PlannedEffectV1>(
+    params.plannedEffects.map((effect) => [String(effect.effectId), effect]),
+  );
+  const verified: VerifiedEffectV1[] = [];
+
+  for (const action of params.workflow.actions) {
+    const plannedEffect = plannedByActionId.get(String(action.actionId));
+    if (!plannedEffect) {
+      continue;
+    }
+
+    const actionMetrics = buildActionMetricAttributes(
+      params.packTelemetry,
+      params.workflowExecutionTier,
+      action,
+    );
+    const actionStartedAtMs = Date.now();
+
+    try {
+      const verifiedEffect = await observeTemporalSpan({
+        spanName: 'workflow.action.execute',
+        attributes: actionMetrics,
+        run: async () =>
+          ({
+            effectId: plannedEffect.effectId,
+            operation: plannedEffect.operation,
+            target: plannedEffect.target,
+            summary: `Verified: ${plannedEffect.summary}`,
+            verifiedAtIso: new Date().toISOString(),
+          }) satisfies VerifiedEffectV1,
+      });
+
+      emitCounter('portarium.action.succeeded', actionMetrics);
+      emitHistogram('portarium.action.duration.ms', Date.now() - actionStartedAtMs, {
+        ...actionMetrics,
+        'action.outcome': 'succeeded',
+      });
+      verified.push(verifiedEffect);
+    } catch (error) {
+      emitCounter('portarium.action.failed', {
+        ...actionMetrics,
+        errorKind: 'UnhandledException',
+      });
+      emitHistogram('portarium.action.duration.ms', Date.now() - actionStartedAtMs, {
+        ...actionMetrics,
+        'action.outcome': 'exception',
+      });
+      throw error;
+    }
+  }
+
+  return verified;
+}
+
+async function observeTemporalSpan<T>(params: {
+  spanName: string;
+  attributes: TemporalTelemetryAttributes;
+  run: () => Promise<T>;
+}): Promise<T> {
+  return tracer.startActiveSpan(
+    params.spanName,
+    { attributes: params.attributes },
+    async (span) => {
+      activeTemporalTelemetryHooks.onSpanStart(params.spanName, params.attributes);
+      const startedAtMs = Date.now();
+
+      try {
+        const value = await params.run();
+        const durationMs = Date.now() - startedAtMs;
+        span.setStatus({ code: SpanStatusCode.OK });
+        activeTemporalTelemetryHooks.onSpanEnd(
+          params.spanName,
+          'ok',
+          durationMs,
+          params.attributes,
+        );
+        return value;
+      } catch (error) {
+        const durationMs = Date.now() - startedAtMs;
+        const message =
+          error instanceof Error ? error.message : 'Unhandled Temporal activity error.';
+        span.recordException(error instanceof Error ? error : new Error(message));
+        span.setStatus({ code: SpanStatusCode.ERROR, message });
+        activeTemporalTelemetryHooks.onSpanEnd(
+          params.spanName,
+          'error',
+          durationMs,
+          params.attributes,
+        );
+        throw error;
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+function resolvePackTelemetryContext(
+  _workflow: WorkflowV1,
+  packId: string | undefined,
+  packVersion: string | undefined,
+): PackTelemetryContext {
+  if (packId && packVersion) {
+    return { packId, packVersion };
+  }
+
+  return DEFAULT_PACK_TELEMETRY_CONTEXT;
+}
+
+function buildRunMetricAttributes(
+  packTelemetry: PackTelemetryContext,
+  executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly',
+): MetricAttributes {
+  return {
+    'pack.id': packTelemetry.packId,
+    'pack.version': packTelemetry.packVersion,
+    'workflow.execution_tier': executionTier,
+    'telemetry.pii_safe': true,
+  };
+}
+
+function buildActionMetricAttributes(
+  packTelemetry: PackTelemetryContext,
+  executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly',
+  action: WorkflowActionV1,
+): MetricAttributes {
+  return {
+    ...buildRunMetricAttributes(packTelemetry, executionTier),
+    'action.id': String(action.actionId),
+    'action.operation': action.operation,
+    'action.port_family': action.portFamily,
+  };
+}
 
 function runKey(tenantId: string, runId: string): string {
   return `${tenantId}/${runId}`;
@@ -215,6 +435,13 @@ function getEvidenceChain(tenantId: string, runId: string): readonly EvidenceEnt
   return state.evidence;
 }
 
+function verifyEvidenceChainOrThrow(tenantId: string, runId: string): void {
+  const verify = verifyEvidenceChainV1(getEvidenceChain(tenantId, runId), hasher);
+  if (!verify.ok) {
+    throw new Error(`Evidence chain invalid: ${verify.reason} (index=${verify.index})`);
+  }
+}
+
 function actionToPlannedEffect(action: WorkflowActionV1): PlannedEffectV1 {
   // Current workflow schema does not yet encode a typed effect operation.
   // Treat every action as an Upsert into an external system reference.
@@ -233,9 +460,18 @@ function actionToPlannedEffect(action: WorkflowActionV1): PlannedEffectV1 {
   };
 }
 
+export function setTemporalTelemetryHooksForTest(hooks: TemporalTelemetryHooks): void {
+  activeTemporalTelemetryHooks = hooks;
+}
+
+export function resetTemporalTelemetryHooksForTest(): void {
+  activeTemporalTelemetryHooks = NOOP_TEMPORAL_TELEMETRY_HOOKS;
+}
+
 export const __test = {
   reset(): void {
     runs.clear();
+    resetTemporalTelemetryHooksForTest();
   },
   getRunStatus(tenantId: string, runId: string): RunStatus | undefined {
     return runs.get(runKey(tenantId, runId))?.status;

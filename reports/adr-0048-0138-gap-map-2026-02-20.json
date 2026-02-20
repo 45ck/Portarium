@@ -1,0 +1,1130 @@
+{
+  "generatedAt": "2026-02-20T09:12:55.627Z",
+  "source": {
+    "issuesFile": ".beads/issues.jsonl",
+    "adrDir": "docs/adr",
+    "range": "ADR-0048..ADR-0138",
+    "legacyRangeMapping": {
+      "range": "ADR-0074..ADR-0138",
+      "implementationBead": "bead-0636",
+      "reviewBead": "bead-0637"
+    }
+  },
+  "summary": {
+    "total": 91,
+    "mapped": 26,
+    "legacy-adr-missing-mapped-via-range": 65
+  },
+  "rows": [
+    {
+      "adrId": "ADR-0048",
+      "number": 48,
+      "adrFile": "docs/adr/0048-vertical-pack-ui-templating.md",
+      "implBeads": [
+        "bead-0596"
+      ],
+      "reviewBeads": [
+        "bead-0172"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0049",
+      "number": 49,
+      "adrFile": "docs/adr/0049-vertical-pack-data-storage-tenancy.md",
+      "implBeads": [
+        "bead-0597"
+      ],
+      "reviewBeads": [
+        "bead-0598"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0050",
+      "number": 50,
+      "adrFile": "docs/adr/0050-vertical-pack-connector-mapping.md",
+      "implBeads": [
+        "bead-0599"
+      ],
+      "reviewBeads": [
+        "bead-0600"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0051",
+      "number": 51,
+      "adrFile": "docs/adr/0051-vertical-pack-testing-cicd.md",
+      "implBeads": [
+        "bead-0601"
+      ],
+      "reviewBeads": [
+        "bead-0602"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0052",
+      "number": 52,
+      "adrFile": "docs/adr/0052-vertical-pack-lifecycle-policy.md",
+      "implBeads": [
+        "bead-0603"
+      ],
+      "reviewBeads": [
+        "bead-0604"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0053",
+      "number": 53,
+      "adrFile": "docs/adr/0053-vertical-pack-security-privacy.md",
+      "implBeads": [
+        "bead-0605"
+      ],
+      "reviewBeads": [
+        "bead-0606"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0054",
+      "number": 54,
+      "adrFile": "docs/adr/0054-vertical-pack-observability.md",
+      "implBeads": [
+        "bead-0607"
+      ],
+      "reviewBeads": [
+        "bead-0608"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0055",
+      "number": 55,
+      "adrFile": "docs/adr/0055-vertical-pack-rollout-migration.md",
+      "implBeads": [
+        "bead-0609"
+      ],
+      "reviewBeads": [
+        "bead-0610"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0056",
+      "number": 56,
+      "adrFile": "docs/adr/0056-infrastructure-reference-architecture.md",
+      "implBeads": [
+        "bead-0294",
+        "bead-0297"
+      ],
+      "reviewBeads": [
+        "bead-0611"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0057",
+      "number": 57,
+      "adrFile": "docs/adr/0057-reference-cockpit-presentation-layer.md",
+      "implBeads": [
+        "bead-0612"
+      ],
+      "reviewBeads": [
+        "bead-0613"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0058",
+      "number": 58,
+      "adrFile": "docs/adr/0058-presentation-api-client-strategy.md",
+      "implBeads": [
+        "bead-0342",
+        "bead-0382"
+      ],
+      "reviewBeads": [
+        "bead-0614"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0059",
+      "number": 59,
+      "adrFile": "docs/adr/0059-presentation-rendering-strategy.md",
+      "implBeads": [
+        "bead-0326",
+        "bead-0354",
+        "bead-0370"
+      ],
+      "reviewBeads": [
+        "bead-0615"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0060",
+      "number": 60,
+      "adrFile": "docs/adr/0060-presentation-state-management.md",
+      "implBeads": [
+        "bead-0363"
+      ],
+      "reviewBeads": [
+        "bead-0616"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0061",
+      "number": 61,
+      "adrFile": "docs/adr/0061-presentation-security-controls.md",
+      "implBeads": [
+        "bead-0356",
+        "bead-0357",
+        "bead-0358",
+        "bead-0367",
+        "bead-0368",
+        "bead-0439"
+      ],
+      "reviewBeads": [
+        "bead-0617"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0062",
+      "number": 62,
+      "adrFile": "docs/adr/0062-presentation-testing-strategy.md",
+      "implBeads": [
+        "bead-0359",
+        "bead-0360",
+        "bead-0361",
+        "bead-0364",
+        "bead-0374",
+        "bead-0443"
+      ],
+      "reviewBeads": [
+        "bead-0369"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0063",
+      "number": 63,
+      "adrFile": "docs/adr/0063-presentation-observability-deployment.md",
+      "implBeads": [
+        "bead-0362",
+        "bead-0365",
+        "bead-0371",
+        "bead-0375",
+        "bead-0376"
+      ],
+      "reviewBeads": [
+        "bead-0377"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0064",
+      "number": 64,
+      "adrFile": "docs/adr/0064-domain-api-compatibility-migration.md",
+      "implBeads": [
+        "bead-0618"
+      ],
+      "reviewBeads": [
+        "bead-0619"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0065",
+      "number": 65,
+      "adrFile": "docs/adr/0065-external-execution-plane-strategy.md",
+      "implBeads": [
+        "bead-0620"
+      ],
+      "reviewBeads": [
+        "bead-0621"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0066",
+      "number": 66,
+      "adrFile": "docs/adr/0066-robotics-integration-architecture.md",
+      "implBeads": [
+        "bead-0622"
+      ],
+      "reviewBeads": [
+        "bead-0623"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0067",
+      "number": 67,
+      "adrFile": "docs/adr/0067-robotics-safety-boundary.md",
+      "implBeads": [
+        "bead-0624"
+      ],
+      "reviewBeads": [
+        "bead-0625"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0068",
+      "number": 68,
+      "adrFile": "docs/adr/0068-database-schema-migration-framework.md",
+      "implBeads": [
+        "bead-0626"
+      ],
+      "reviewBeads": [
+        "bead-0627"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0069",
+      "number": 69,
+      "adrFile": "docs/adr/0069-postgresql-store-adapter-contract.md",
+      "implBeads": [
+        "bead-0628"
+      ],
+      "reviewBeads": [
+        "bead-0629"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0070",
+      "number": 70,
+      "adrFile": "docs/adr/0070-hybrid-orchestration-choreography-architecture.md",
+      "implBeads": [
+        "bead-0630"
+      ],
+      "reviewBeads": [
+        "bead-0631"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0071",
+      "number": 71,
+      "adrFile": "docs/adr/0071-policy-inline-rule-language.md",
+      "implBeads": [
+        "bead-0632"
+      ],
+      "reviewBeads": [
+        "bead-0633"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0072",
+      "number": 72,
+      "adrFile": "docs/adr/0072-openclaw-gateway-multi-tenant-isolation.md",
+      "implBeads": [
+        "bead-0634"
+      ],
+      "reviewBeads": [
+        "bead-0635"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0073",
+      "number": 73,
+      "adrFile": "docs/adr/0073-all-roads-through-control-plane-enforcement.md",
+      "implBeads": [
+        "bead-0647"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "mapped"
+    },
+    {
+      "adrId": "ADR-0074",
+      "number": 74,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0075",
+      "number": 75,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0076",
+      "number": 76,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0077",
+      "number": 77,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0078",
+      "number": 78,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0079",
+      "number": 79,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0080",
+      "number": 80,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0081",
+      "number": 81,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0082",
+      "number": 82,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0083",
+      "number": 83,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0084",
+      "number": 84,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0085",
+      "number": 85,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0086",
+      "number": 86,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0087",
+      "number": 87,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0088",
+      "number": 88,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0089",
+      "number": 89,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0090",
+      "number": 90,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0091",
+      "number": 91,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0092",
+      "number": 92,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0093",
+      "number": 93,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0094",
+      "number": 94,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0095",
+      "number": 95,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0096",
+      "number": 96,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0097",
+      "number": 97,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0098",
+      "number": 98,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0099",
+      "number": 99,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0100",
+      "number": 100,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0101",
+      "number": 101,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0102",
+      "number": 102,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0103",
+      "number": 103,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0104",
+      "number": 104,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0105",
+      "number": 105,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0106",
+      "number": 106,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0107",
+      "number": 107,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0108",
+      "number": 108,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0109",
+      "number": 109,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0110",
+      "number": 110,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0111",
+      "number": 111,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0112",
+      "number": 112,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0113",
+      "number": 113,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0114",
+      "number": 114,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0115",
+      "number": 115,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0116",
+      "number": 116,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0117",
+      "number": 117,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0118",
+      "number": 118,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0119",
+      "number": 119,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0120",
+      "number": 120,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0121",
+      "number": 121,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0122",
+      "number": 122,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0123",
+      "number": 123,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0124",
+      "number": 124,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0125",
+      "number": 125,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0126",
+      "number": 126,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0127",
+      "number": 127,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0128",
+      "number": 128,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0129",
+      "number": 129,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0130",
+      "number": 130,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0131",
+      "number": 131,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0132",
+      "number": 132,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0133",
+      "number": 133,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0134",
+      "number": 134,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0135",
+      "number": 135,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0136",
+      "number": 136,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0137",
+      "number": 137,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    },
+    {
+      "adrId": "ADR-0138",
+      "number": 138,
+      "adrFile": null,
+      "implBeads": [
+        "bead-0636"
+      ],
+      "reviewBeads": [
+        "bead-0637"
+      ],
+      "status": "legacy-adr-missing-mapped-via-range"
+    }
+  ]
+}

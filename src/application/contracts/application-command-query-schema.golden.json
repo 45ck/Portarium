@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "specPath": ".specify/specs/application-command-query-contract-v1.md",
+  "operationCount": 17,
+  "operations": [
+    {
+      "kind": "command",
+      "name": "registerWorkspace",
+      "sourcePath": "src/application/commands/register-workspace.ts",
+      "action": "workspace:register",
+      "types": {
+        "input": {
+          "name": "RegisterWorkspaceInput",
+          "sha256": "1acc24bd94bae871e8514be2cfcc0a192698f7cd6efae6587c8057aa27ac300d"
+        },
+        "output": {
+          "name": "RegisterWorkspaceOutput",
+          "sha256": "f79a3ce6a61b36f2c4c96a597ab491cd49a35c4c3054cc29d6eba3fb2ecd40d2"
+        },
+        "error": {
+          "name": "RegisterWorkspaceError",
+          "sha256": "71b641b2255a36c35e7fb454371d1d7aef1362cd4426543b3633cfd578812ddb"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "startWorkflow",
+      "sourcePath": "src/application/commands/start-workflow.ts",
+      "action": "run:start",
+      "types": {
+        "input": {
+          "name": "StartWorkflowInput",
+          "sha256": "39eed886d665caa29f2ab29339a5f93cf08d7fe93a5cbe36435c11ebee637cbf"
+        },
+        "output": {
+          "name": "StartWorkflowOutput",
+          "sha256": "4eac477f76e813734b5e187accbc47b0e4a522327378fc88e4ce167fb801766f"
+        },
+        "error": {
+          "name": "StartWorkflowError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "submitApproval",
+      "sourcePath": "src/application/commands/submit-approval.ts",
+      "action": "approval:submit",
+      "types": {
+        "input": {
+          "name": "SubmitApprovalInput",
+          "sha256": "974c6276c665c9d837c73fd6ea902d2f7a2c9c45bafbbfe64c26d71755b789ab"
+        },
+        "output": {
+          "name": "SubmitApprovalOutput",
+          "sha256": "92d1eea6d4998354eb3c676859606349c30c4e0f1e2d7231c9e269ea1f76a583"
+        },
+        "error": {
+          "name": "SubmitApprovalError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "submitMapCommandIntent",
+      "sourcePath": "src/application/commands/submit-map-command-intent.ts",
+      "action": "map-command:submit",
+      "types": {
+        "input": {
+          "name": "SubmitMapCommandIntentInput",
+          "sha256": "c39c05df552e2f2cad1175a5bf1cc660f6b86a2fabe7c0547e79f0ca8724a1e6"
+        },
+        "output": {
+          "name": "SubmitMapCommandIntentOutput",
+          "sha256": "e00d75f3b566814c277c7d7dfa90992d9f64f73c8e0b13bf6abe53359ab3fa11"
+        },
+        "error": {
+          "name": "SubmitMapCommandIntentError",
+          "sha256": "55e5a3b352e76a13d367e347bf393c50bb882347cde3865da79b334bea0af342"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "assignWorkforceMember",
+      "sourcePath": "src/application/commands/assign-workforce-member.ts",
+      "action": "workforce:assign",
+      "types": {
+        "input": {
+          "name": "AssignWorkforceMemberInput",
+          "sha256": "ee9eac372ab0d5c60eb7bcc094fbb8f5f7394813aaa0d9067968bf74245688e6"
+        },
+        "output": {
+          "name": "AssignWorkforceMemberOutput",
+          "sha256": "ba7d751009f2157f3369827d72aef567e7f62635088042ee5e0a30cae110cb01"
+        },
+        "error": {
+          "name": "AssignWorkforceMemberError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "completeHumanTask",
+      "sourcePath": "src/application/commands/complete-human-task.ts",
+      "action": "workforce:complete",
+      "types": {
+        "input": {
+          "name": "CompleteHumanTaskInput",
+          "sha256": "5348e4b58bacf56f13744e46b93d83f324adce0fb23cd5b9fc757dc6b1fcd99a"
+        },
+        "output": {
+          "name": "CompleteHumanTaskOutput",
+          "sha256": "093571ccab2685d4bb62e0263611b4439759938867e89b6f229d4a5ca1c0f3b9"
+        },
+        "error": {
+          "name": "CompleteHumanTaskError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "registerMachine",
+      "sourcePath": "src/application/commands/machine-agent-registration.ts",
+      "action": "workspace:register",
+      "types": {
+        "input": {
+          "name": "RegisterMachineInput",
+          "sha256": "a2cfaf7cb4f67593e4fca4f03cffc26865d8e602c57a3576f6dbf55955da19e9"
+        },
+        "output": {
+          "name": "RegisterMachineOutput",
+          "sha256": "d934b3778efa1c1bf8389ef0eea5858fcdc887f0344cda470c7d1b52564c56c6"
+        },
+        "error": {
+          "name": "MachineAgentRegistrationError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "createAgent",
+      "sourcePath": "src/application/commands/machine-agent-registration.ts",
+      "action": "workspace:register",
+      "types": {
+        "input": {
+          "name": "CreateAgentInput",
+          "sha256": "23e78a42105c3108456f65fe153970ff52a510d32e11c0691027ebc88d765015"
+        },
+        "output": {
+          "name": "CreateAgentOutput",
+          "sha256": "c41858fe7da09e9aa651199bf439bb546a9822c26e09fefd6c38a5151fa51755"
+        },
+        "error": {
+          "name": "MachineAgentRegistrationError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "updateAgentCapabilities",
+      "sourcePath": "src/application/commands/machine-agent-registration.ts",
+      "action": "workspace:register",
+      "types": {
+        "input": {
+          "name": "UpdateAgentCapabilitiesInput",
+          "sha256": "eb89a745b9ba8502fe79e1aebb3a2136d79f6dd171a288506742f6c66eee751d"
+        },
+        "output": {
+          "name": "UpdateAgentCapabilitiesOutput",
+          "sha256": "91bbd7ab5aec026ccb6f9087f76b707f85c46af0d509f593ff76394c30646df1"
+        },
+        "error": {
+          "name": "MachineAgentRegistrationError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getWorkspace",
+      "sourcePath": "src/application/queries/get-workspace.ts",
+      "action": "workspace:read",
+      "types": {
+        "input": {
+          "name": "GetWorkspaceInput",
+          "sha256": "934ea7c94b76772eefca11763cbf108962dd1be26083267dc1cc20d8f505c7cd"
+        },
+        "output": {
+          "name": "GetWorkspaceOutput",
+          "sha256": "f81fbeb5c13b3f395a0672a6997389ca99a05e4fc5dffe6828aac7850516744b"
+        },
+        "error": {
+          "name": "GetWorkspaceError",
+          "sha256": "607ae6f297b2d7d27533020191946bfcc3c8ae56c8aaa3101e5ca034f27882f5"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listWorkspaces",
+      "sourcePath": "src/application/queries/list-workspaces.ts",
+      "action": "workspace:read",
+      "types": {
+        "input": {
+          "name": "ListWorkspacesInput",
+          "sha256": "2e90baf5abe1de1d099e0273d9fc95dc250453d1b508c0bbbc35aee983b638ea"
+        },
+        "output": {
+          "name": "ListWorkspacesOutput",
+          "sha256": "503f1c9305c2cf205933e8d63afc0d1d1c7fe3ea05f2381d912ef8fd00383cdf"
+        },
+        "error": {
+          "name": "ListWorkspacesError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getRun",
+      "sourcePath": "src/application/queries/get-run.ts",
+      "action": "run:read",
+      "types": {
+        "input": {
+          "name": "GetRunInput",
+          "sha256": "28e2e065ef32f29c3606e38cee633465da2d8023089f3a94cc1a7212cd7d6415"
+        },
+        "output": {
+          "name": "GetRunOutput",
+          "sha256": "f575834fe3933668b4d1c0b4124301551b6fe7c42d263b3640ebd5e6255100ee"
+        },
+        "error": {
+          "name": "GetRunError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listRuns",
+      "sourcePath": "src/application/queries/list-runs.ts",
+      "action": "run:read",
+      "types": {
+        "input": {
+          "name": "ListRunsInput",
+          "sha256": "8ad1c6c231c7845b85a313637ad450e09476310d9285a656ea78905cf0334572"
+        },
+        "output": {
+          "name": "ListRunsOutput",
+          "sha256": "2d7e6060e9e06c6e0b42b76fd2f68d5b55a1a591c36d204e2811465b4fc9c460"
+        },
+        "error": {
+          "name": "ListRunsError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getApproval",
+      "sourcePath": "src/application/queries/get-approval.ts",
+      "action": "approval:read",
+      "types": {
+        "input": {
+          "name": "GetApprovalInput",
+          "sha256": "746d21493ae1bced7fccbfc4c230dafcfa3ec9c61c7e2685fda7fbfe97c62a8e"
+        },
+        "output": {
+          "name": "GetApprovalOutput",
+          "sha256": "10379845e514ff0295d82bb711b203640091f50e6316599b9635fbd3b354a821"
+        },
+        "error": {
+          "name": "GetApprovalError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listApprovals",
+      "sourcePath": "src/application/queries/list-approvals.ts",
+      "action": "approval:read",
+      "types": {
+        "input": {
+          "name": "ListApprovalsInput",
+          "sha256": "c949bf92f7699801c968b1ee324977907bc9a230ca3bda0c08178816270cd061"
+        },
+        "output": {
+          "name": "ListApprovalsOutput",
+          "sha256": "053102d020906678462cff78f165431e261a51da62b6493263af6ff99a5d2a74"
+        },
+        "error": {
+          "name": "ListApprovalsError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getWorkItem",
+      "sourcePath": "src/application/queries/get-work-item.ts",
+      "action": "work-item:read",
+      "types": {
+        "input": {
+          "name": "GetWorkItemInput",
+          "sha256": "94bcfdba573c24f7c41a26a219a7fe2ea0551adc89d66b78977084ac73c7e9c1"
+        },
+        "output": {
+          "name": "GetWorkItemOutput",
+          "sha256": "3a9c8ca5af22974dd164b7064f6827d4672bbf0628f85db07917959ffe756bcd"
+        },
+        "error": {
+          "name": "GetWorkItemError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listWorkItems",
+      "sourcePath": "src/application/queries/list-work-items.ts",
+      "action": "work-item:read",
+      "types": {
+        "input": {
+          "name": "ListWorkItemsInput",
+          "sha256": "3aad91882585c336fadb7c70ebce75b919754a55597065010733e8dc8aac28a8"
+        },
+        "output": {
+          "name": "ListWorkItemsOutput",
+          "sha256": "9c547421c9fad0c7d20bc8c17f0e9784b9c656ae3b2e7860705b6e0064ec2dc4"
+        },
+        "error": {
+          "name": "ListWorkItemsError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    }
+  ]
+}

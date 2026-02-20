@@ -1,0 +1,18 @@
+{
+  "name": "@portarium/piece-projects-work-mgmt",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portarium Activepieces custom piece package pattern example for ProjectsWorkMgmt.",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json"
+  }
+}

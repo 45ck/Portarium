@@ -1,0 +1,151 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spire-server
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: spire-server
+    app.kubernetes.io/part-of: portarium
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-server-config
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: spire-server
+    app.kubernetes.io/part-of: portarium
+data:
+  server.conf: |
+    server {
+      bind_address = "0.0.0.0"
+      bind_port = "8081"
+      trust_domain = "portarium.io"
+      data_dir = "/run/spire/data"
+      log_level = "INFO"
+      ca_ttl = "24h"
+      default_x509_svid_ttl = "1h"
+
+      ca_subject {
+        country = ["US"]
+        organization = ["Portarium"]
+        common_name = "Portarium SPIRE CA"
+      }
+    }
+
+    plugins {
+      DataStore "sql" {
+        plugin_data {
+          database_type = "sqlite3"
+          connection_string = "/run/spire/data/datastore.sqlite3"
+        }
+      }
+
+      NodeAttestor "k8s_psat" {
+        plugin_data {
+          clusters = {
+            "portarium-cluster" = {
+              service_account_allow_list = [
+                "portarium:spire-agent"
+              ]
+            }
+          }
+        }
+      }
+
+      KeyManager "disk" {
+        plugin_data {
+          keys_path = "/run/spire/data/keys.json"
+        }
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spire-server
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: spire-server
+    app.kubernetes.io/part-of: portarium
+    portarium.io/component: spire-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spire-server
+  serviceName: spire-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spire-server
+        portarium.io/component: spire-server
+    spec:
+      serviceAccountName: spire-server
+      containers:
+        - name: spire-server
+          image: ghcr.io/spiffe/spire-server:1.9.6
+          args: ["-config", "/run/spire/config/server.conf"]
+          ports:
+            - containerPort: 8081
+              name: grpc
+          volumeMounts:
+            - name: spire-config
+              mountPath: /run/spire/config
+              readOnly: true
+            - name: spire-data
+              mountPath: /run/spire/data
+          livenessProbe:
+            exec:
+              command:
+                - /opt/spire/bin/spire-server
+                - healthcheck
+            initialDelaySeconds: 15
+            periodSeconds: 60
+          readinessProbe:
+            exec:
+              command:
+                - /opt/spire/bin/spire-server
+                - healthcheck
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: spire-config
+          configMap:
+            name: spire-server-config
+  volumeClaimTemplates:
+    - metadata:
+        name: spire-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spire-server
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: spire-server
+    app.kubernetes.io/part-of: portarium
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 8081
+      targetPort: 8081
+  selector:
+    app.kubernetes.io/name: spire-server

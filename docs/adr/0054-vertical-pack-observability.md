@@ -29,3 +29,40 @@ Implement pack-aware telemetry extending the OpenTelemetry foundation from ADR-0
 
 - **Vendor-specific monitoring only** -- poor portability and hard correlation
 - **No pack-level telemetry** -- makes debugging composed workflows extremely difficult
+
+## Implementation Mapping
+
+ADR-0054 implementation now spans baseline observability plus pack-aware telemetry coverage:
+
+- `bead-0043` (closed): OTel context propagation across request/workflow/adapter/machine paths.
+- `bead-0313` (closed): command-level observability hooks and security-safe attributes.
+- `bead-0385` (closed): local OTel collector stack wiring for development observability.
+- `bead-0641` (closed): pack-aware workflow/action telemetry attributes, per-pack success/failure/
+  latency metrics, and dashboard/regression detector artifacts.
+
+## Acceptance Evidence
+
+- Workflow/action pack-aware spans and metrics:
+  - `src/infrastructure/temporal/activities.ts`
+  - `src/infrastructure/temporal/activities.test.ts`
+  - `src/infrastructure/observability/metrics-hooks.ts`
+- Pack-context propagation through workflow orchestration:
+  - `src/domain/workflows/workflow-v1.ts`
+  - `src/domain/workflows/workflow-v1.test.ts`
+  - `src/application/commands/start-workflow.ts`
+  - `src/application/ports/workflow-orchestrator.ts`
+  - `src/infrastructure/temporal/temporal-workflow-orchestrator.ts`
+  - `src/infrastructure/temporal/temporal-workflow-orchestrator.test.ts`
+  - `src/infrastructure/temporal/workflows.ts`
+  - `src/infrastructure/temporal/workflows.test.ts`
+- Per-pack dashboard and regression detector assets:
+  - `infra/otel/dashboards/pack-observability.dashboard.json`
+  - `infra/otel/alerts/pack-regression-detectors.yaml`
+  - `infra/otel/README.md`
+- Specification and review linkage:
+  - `.specify/specs/pack-observability-telemetry-v1.md`
+  - `docs/review/bead-0641-pack-aware-observability-review.md`
+
+## Remaining Gap Tracking
+
+- none.

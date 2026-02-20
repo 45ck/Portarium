@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "activepieces.fullname" . }}
+  labels:
+    {{- include "activepieces.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "activepieces.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "activepieces.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: activepieces
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: AP_ENVIRONMENT
+              value: {{ .Values.activepieces.environment | quote }}
+            - name: AP_FRONTEND_URL
+              value: {{ .Values.activepieces.frontendUrl | quote }}
+            - name: AP_EXECUTION_MODE
+              value: {{ .Values.activepieces.executionMode | quote }}
+            - name: AP_TELEMETRY_ENABLED
+              value: {{ ternary "true" "false" .Values.activepieces.telemetry.enabled | quote }}
+            - name: AP_DB_TYPE
+              value: POSTGRES
+            - name: AP_POSTGRES_HOST
+              value: {{ include "activepieces.postgresqlHost" . | quote }}
+            - name: AP_POSTGRES_PORT
+              value: {{ .Values.activepieces.postgres.port | quote }}
+            - name: AP_POSTGRES_DATABASE
+              value: {{ .Values.activepieces.postgres.database | quote }}
+            - name: AP_POSTGRES_USERNAME
+              value: {{ .Values.activepieces.postgres.username | quote }}
+            - name: AP_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "activepieces.fullname" . }}-secrets
+                  key: ap-postgres-password
+            - name: AP_REDIS_HOST
+              value: {{ include "activepieces.redisHost" . | quote }}
+            - name: AP_REDIS_PORT
+              value: {{ .Values.activepieces.redis.port | quote }}
+            - name: AP_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "activepieces.fullname" . }}-secrets
+                  key: ap-redis-password
+            - name: AP_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "activepieces.fullname" . }}-secrets
+                  key: ap-encryption-key
+            - name: AP_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "activepieces.fullname" . }}-secrets
+                  key: ap-jwt-secret
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
