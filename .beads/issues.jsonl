@@ -254,8 +254,8 @@
 {"id":"bead-0254","title":"Closeout review: AnalyticsBi port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:13.727Z","updatedAt":"2026-02-20T03:58:47.766Z"}
 {"id":"bead-0255","title":"Closeout review: MonitoringIncident port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:13.990Z","updatedAt":"2026-02-20T03:58:14.746Z"}
 {"id":"bead-0256","title":"Closeout review: MonitoringIncident port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:14.243Z","updatedAt":"2026-02-20T03:59:25.624Z"}
-{"id":"bead-0257","title":"Closeout review: ComplianceGrc port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:14.501Z","updatedAt":"2026-02-20T03:58:59.118Z","claimedBy":"codex","claimedAt":"2026-02-20T03:58:59.118Z"}
-{"id":"bead-0258","title":"Closeout review: ComplianceGrc port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:14.753Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0257","title":"Closeout review: ComplianceGrc port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:14.501Z","updatedAt":"2026-02-20T03:59:28.880Z"}
+{"id":"bead-0258","title":"Closeout review: ComplianceGrc port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:14.753Z","updatedAt":"2026-02-20T04:00:08.852Z"}
 {"id":"bead-0259","title":"Closeout review: PE: master execution DAG — encode open beads by phase, dependency, and evidence","status":"closed","createdAt":"2026-02-17T03:50:15.013Z","updatedAt":"2026-02-20T03:37:34.571Z"}
 {"id":"bead-0260","title":"Closeout review: Phase gate: Foundation complete — requires gate, security baseline, and API contract beads are closed","status":"open","createdAt":"2026-02-17T03:50:15.269Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0261","title":"Closeout review: Phase gate: Domain complete — requires aggregate invariants, parser coverage, domain factory, and ADR traceability beads are closed","status":"open","createdAt":"2026-02-17T03:50:15.608Z","updatedAt":"2026-02-17T20:18:23.090Z"}
