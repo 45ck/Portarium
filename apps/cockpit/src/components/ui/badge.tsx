@@ -1,27 +1,32 @@
-import * as React from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border-2 px-2 py-0.5 text-xs font-black transition-colors',
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          'border-[rgb(var(--border))] bg-white text-[rgb(var(--foreground))]',
-        ok: 'border-[rgb(var(--status-ok))] bg-white text-[rgb(var(--status-ok))]',
-        warn: 'border-[rgb(var(--status-warn))] bg-white text-[rgb(var(--status-warn))]',
-        danger:
-          'border-[rgb(var(--status-danger))] bg-white text-[rgb(var(--status-danger))]',
-        info: 'border-[rgb(var(--status-info))] bg-white text-[rgb(var(--status-info))]',
-        muted:
-          'border-[rgb(var(--border-soft))] bg-transparent text-[rgb(var(--muted))]',
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        // Cockpit semantic variants
+        ok: "border-transparent bg-[rgb(var(--status-ok))] text-white",
+        warn: "border-transparent bg-[rgb(var(--status-warn))] text-white",
+        danger: "border-transparent bg-[rgb(var(--status-danger))] text-white",
+        info: "border-transparent bg-[rgb(var(--status-info))] text-white",
+        muted: "border-transparent bg-[rgb(var(--muted))] text-white",
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: "default",
     },
-  },
+  }
 )
 
 export interface BadgeProps
