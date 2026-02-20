@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { createRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
@@ -10,6 +9,7 @@ import {
   useGrantCredential,
   useRevokeCredentialGrant,
 } from '@/hooks/queries/use-credential-grants';
+import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
@@ -28,12 +28,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { CredentialGrantV1 } from '@portarium/cockpit-types';
 
-interface AdapterRecord {
-  adapterId: string;
-  name: string;
-}
-
-type AdaptersResponse = AdapterRecord[] | { items: AdapterRecord[] };
 type GrantStatus = 'active' | 'revoked' | 'expired';
 
 type CredentialGrantRow = CredentialGrantV1 & Readonly<{
@@ -79,15 +73,8 @@ function CredentialsPage() {
   const [pendingRevoke, setPendingRevoke] = useState<CredentialGrantRow | null>(null);
 
   const { data: grantsData, isLoading: grantsLoading } = useCredentialGrants(wsId);
-  const { data: adaptersData } = useQuery({
-    queryKey: ['adapters', wsId],
-    queryFn: async () => {
-      const res = await fetch(`/v1/workspaces/${wsId}/adapters`);
-      if (!res.ok) throw new Error('Failed to fetch adapters');
-      const payload = (await res.json()) as AdaptersResponse;
-      return Array.isArray(payload) ? payload : payload.items;
-    },
-  });
+  const { data: adaptersResponse } = useAdapters(wsId);
+  const adaptersData = adaptersResponse?.items ?? [];
   const grantMutation = useGrantCredential(wsId);
   const revokeMutation = useRevokeCredentialGrant(wsId);
 
