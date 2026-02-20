@@ -60,8 +60,8 @@ describe('getWorkspace', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('Expected success response.');
-    expect(result.value.workspaceId).toBe('ws-1');
-    expect(result.value.name).toBe('Primary Workspace');
+    expect(result.value.workspaceId).toBe(WORKSPACE.workspaceId);
+    expect(result.value.name).toBe(WORKSPACE.name);
   });
 
   it('is denied without workspace:read capability', async () => {

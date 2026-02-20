@@ -36,7 +36,7 @@ describe('getRun', () => {
     if (!result.ok) {
       throw new Error('Expected success response.');
     }
-    expect(result.value.runId).toBe('run-1');
+    expect(result.value.runId).toBe(RUN.runId);
   });
 
   it('returns NotFound when missing', async () => {

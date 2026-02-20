@@ -32,7 +32,7 @@ describe('getWorkItem', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('Expected success response.');
-    expect(result.value.links?.workflowIds).toEqual(['wf-1']);
+    expect(result.value.links?.workflowIds).toEqual(WORK_ITEM.links?.workflowIds);
   });
 
   it('returns NotFound when missing', async () => {
