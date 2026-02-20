@@ -99,9 +99,11 @@
   }
 
   function findPrimaryWorkItem(snapshot) {
-    return snapshot.workItems.find(function (item) {
-      return item.code === 'WI-1099';
-    }) ?? snapshot.workItems[0];
+    return (
+      snapshot.workItems.find(function (item) {
+        return item.code === 'WI-1099';
+      }) ?? snapshot.workItems[0]
+    );
   }
 
   function findPrimaryRun(snapshot, workItem) {
@@ -219,9 +221,7 @@
     }).length;
     text(
       'demoApprovalsHeroText',
-      'You have ' +
-        pendingCount +
-        ' approvals waiting for your decision. Review each and decide.',
+      'You have ' + pendingCount + ' approvals waiting for your decision. Review each and decide.',
     );
     text('demoApprovalsPagination', 'Page 1 of 1 · ' + pendingCount + ' pending');
 
@@ -249,10 +249,15 @@
       if (idEl) idEl.textContent = primaryApproval.code;
       if (titleEl) titleEl.textContent = primaryApproval.title;
       if (metaItems[0]) {
-        metaItems[0].textContent = (primaryWorkItem?.code ?? '--') + ' ' + (primaryWorkItem?.title ?? '');
+        metaItems[0].textContent =
+          (primaryWorkItem?.code ?? '--') + ' ' + (primaryWorkItem?.title ?? '');
       }
       if (metaItems[1]) {
-        metaItems[1].textContent = (primaryRun?.code ?? '--') + ' (' + (RUN_STATUS_META[primaryRun?.status]?.label ?? 'pending') + ')';
+        metaItems[1].textContent =
+          (primaryRun?.code ?? '--') +
+          ' (' +
+          (RUN_STATUS_META[primaryRun?.status]?.label ?? 'pending') +
+          ')';
       }
       if (metaItems[2]) {
         metaItems[2].textContent = primaryApproval.requestedBy || '--';
@@ -266,7 +271,8 @@
   function renderEvidence(snapshot, primaryRun) {
     const chainTitle = document.getElementById('demoChainIntegrityTitle');
     if (chainTitle) {
-      chainTitle.textContent = '✓ Chain Integrity: All ' + snapshot.evidence.length + ' entries verified';
+      chainTitle.textContent =
+        '✓ Chain Integrity: All ' + snapshot.evidence.length + ' entries verified';
     }
 
     const chainMeta = document.getElementById('demoChainIntegrityMeta');
@@ -274,7 +280,10 @@
       const latest = snapshot.evidence[0];
       const latestTime = latest ? formatRelativePhrase(latest.occurredAt) : '--';
       chainMeta.textContent =
-        'Entries loaded: ' + snapshot.evidence.length + ' · SHA-256 hash chain · Last verified: ' + latestTime;
+        'Entries loaded: ' +
+        snapshot.evidence.length +
+        ' · SHA-256 hash chain · Last verified: ' +
+        latestTime;
     }
 
     const evidenceList = document.getElementById('demoEvidenceList');
@@ -388,6 +397,10 @@
     const approval = getCurrentApproval();
     if (!approval) {
       showToast('No pending approval was found.');
+      return;
+    }
+    if (approval.status !== 'pending') {
+      showToast('Primary approval is already decided. Reset demo state to replay.');
       return;
     }
 

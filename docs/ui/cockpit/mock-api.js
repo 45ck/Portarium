@@ -103,7 +103,9 @@
   }
 
   function normalizeDecision(decision) {
-    const value = String(decision ?? '').trim().toLowerCase();
+    const value = String(decision ?? '')
+      .trim()
+      .toLowerCase();
     if (value === 'approve') return 'approve';
     if (value === 'deny') return 'deny';
     if (value === 'request changes') return 'request_changes';
@@ -147,8 +149,7 @@
     const evidenceEntry = {
       id: 'ev_decision_' + Date.now().toString(36),
       type: 'approval_decided',
-      message:
-        'Approval decision submitted (' + labelForDecision(decision).replace('_', ' ') + ')',
+      message: 'Approval decision submitted (' + labelForDecision(decision).replace('_', ' ') + ')',
       workItemId: approval.workItemId,
       runId: approval.runId,
       approvalId: approval.id,
@@ -311,7 +312,11 @@
       const requiresRationale = decision === 'deny' || decision === 'request_changes';
       if (requiresRationale && rationale.length < 10) {
         return jsonResponse(
-          problem(400, 'Rationale required', 'Provide at least 10 characters for deny or request changes.'),
+          problem(
+            400,
+            'Rationale required',
+            'Provide at least 10 characters for deny or request changes.',
+          ),
           400,
         );
       }
@@ -331,7 +336,10 @@
 
   window.fetch = async function mockFetch(input, init) {
     const requestInit = init ?? {};
-    const requestUrl = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
+    const requestUrl = new URL(
+      typeof input === 'string' ? input : input.url,
+      window.location.origin,
+    );
     if (!requestUrl.pathname.startsWith('/api/')) {
       return nativeFetch(input, init);
     }
