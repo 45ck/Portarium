@@ -182,6 +182,7 @@ Goal: layered quality assurance with traceability.
 - STORY-V07.6 — bead-0194
   - E2E data-model: synthetic evidence and retention fixtures for proof-of-retention.
   - AC: legal-hold workflow exercised with fixtures.
+  - Artifact: `src/domain/testing/synthetic-evidence-retention-fixtures-v1.ts`
 - STORY-V07.7 — bead-0195
   - Tenant-isolated fixture factories for every aggregate and port operation.
   - AC: cross-tenant leakage blocked in tests.
