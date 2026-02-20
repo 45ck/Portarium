@@ -41,12 +41,13 @@ function CommandPalette() {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setCommandPaletteOpen(!commandPaletteOpen)
+        const current = useUIStore.getState().commandPaletteOpen
+        useUIStore.getState().setCommandPaletteOpen(!current)
       }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [commandPaletteOpen, setCommandPaletteOpen])
+  }, [])
 
   function nav(to: string) {
     setCommandPaletteOpen(false)

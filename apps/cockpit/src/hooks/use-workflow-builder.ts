@@ -34,10 +34,8 @@ export interface WorkflowNodeData {
 export type WorkflowNode = Node<WorkflowNodeData>
 export type WorkflowEdge = Edge
 
-let nodeIdCounter = 0
 function nextNodeId(): string {
-  nodeIdCounter += 1
-  return `node-${nodeIdCounter}`
+  return `node-${crypto.randomUUID().slice(0, 8)}`
 }
 
 const DEFAULT_NODES: WorkflowNode[] = [

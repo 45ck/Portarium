@@ -40,7 +40,11 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
     mutationFn: async () => {
       let parameters: Record<string, unknown> | undefined;
       if (parametersJson.trim()) {
-        parameters = JSON.parse(parametersJson);
+        try {
+          parameters = JSON.parse(parametersJson);
+        } catch {
+          throw new Error('Invalid JSON in parameters field');
+        }
       }
       const res = await fetch(`/v1/workspaces/${wsId}/runs`, {
         method: 'POST',

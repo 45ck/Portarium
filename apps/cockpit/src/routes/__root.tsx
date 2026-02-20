@@ -69,7 +69,6 @@ const NAV_SECTIONS: NavSectionDef[] = [
         label: 'Workflows',
         to: '/workflows',
         icon: <EntityIcon entityType="workflow" size="sm" decorative />,
-        comingSoon: true,
       },
       {
         label: 'Builder',

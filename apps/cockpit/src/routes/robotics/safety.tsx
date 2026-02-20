@@ -65,7 +65,7 @@ function SafetyPage() {
       <section>
         <h2 className="text-sm font-semibold mb-3">Per-Site Constraints</h2>
         {constraintsLoading ? <div className="h-24 rounded-md bg-muted/30 animate-pulse" /> : (
-          <div className="rounded-md border border-border overflow-hidden">
+          <div className="overflow-x-auto rounded-md border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr>{['Site', 'Constraint', 'Enforcement', 'Robots', 'Action'].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{h}</th>)}</tr>
@@ -90,7 +90,7 @@ function SafetyPage() {
       <section>
         <h2 className="text-sm font-semibold mb-3">Approval Policy Thresholds</h2>
         {thresholdsLoading ? <div className="h-20 rounded-md bg-muted/30 animate-pulse" /> : (
-          <div className="rounded-md border border-border overflow-hidden">
+          <div className="overflow-x-auto rounded-md border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr>{['Action Class', 'Tier', 'Notes'].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{h}</th>)}</tr>
@@ -114,7 +114,7 @@ function SafetyPage() {
         {logLoading ? <div className="h-24 rounded-md bg-muted/30 animate-pulse" /> : auditLog.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">No E-Stop events recorded.</p>
         ) : (
-          <div className="rounded-md border border-border overflow-hidden">
+          <div className="overflow-x-auto rounded-md border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr>{['Timestamp', 'Actor', 'Robot', 'Event', 'Detail'].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">{h}</th>)}</tr>

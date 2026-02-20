@@ -127,7 +127,7 @@ function MissionsPage() {
   return (
     <div className="p-6 space-y-6">
       <PageHeader title="Missions" description="Robot mission dispatch and monitoring" />
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Active', value: isLoading ? '—' : stats.active },
           { label: 'Pending', value: isLoading ? '—' : stats.pending },

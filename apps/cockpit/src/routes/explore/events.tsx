@@ -10,7 +10,7 @@ import type { EvidenceEntry } from '@portarium/cockpit-types';
 function ExploreEventsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
 
-  const { data, isLoading, dataUpdatedAt } = useQuery({
+  const { data, isLoading, isError, dataUpdatedAt } = useQuery({
     queryKey: ['evidence', wsId],
     queryFn: async () => {
       const r = await fetch(`/v1/workspaces/${wsId}/evidence`);
@@ -41,7 +41,13 @@ function ExploreEventsPage() {
         )}
       </div>
 
-      <EvidenceTimeline entries={data?.items ?? []} loading={isLoading} />
+      {isError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          Failed to load events. The stream will retry automatically.
+        </div>
+      ) : (
+        <EvidenceTimeline entries={data?.items ?? []} loading={isLoading} />
+      )}
     </div>
   );
 }
