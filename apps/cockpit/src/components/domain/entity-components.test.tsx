@@ -7,7 +7,7 @@ describe('EntityIcon', () => {
   it('renders a generated icon image for known domain entities', () => {
     const html = renderToStaticMarkup(<EntityIcon entityType="robot" />);
     expect(html).toContain('img');
-    expect(html).toContain('/assets/icons/domain/robot-ground.svg');
+    expect(html).toContain('/assets/icons/domain/robot-ground.png');
   });
 
   it('falls back to lucide icon for unknown entity type mapping', () => {
@@ -20,7 +20,7 @@ describe('EntityImage', () => {
   it('renders known entity images', () => {
     const html = renderToStaticMarkup(<EntityImage entityId="robot-ground-alpha" />);
     expect(html).toContain('img');
-    expect(html).toContain('/assets/images/robots/robot-ground-alpha.svg');
+    expect(html).toContain('/assets/images/robots/robot-ground-alpha.png');
   });
 
   it('falls back to icon placeholder when image id is missing', () => {

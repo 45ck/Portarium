@@ -26,6 +26,40 @@ const fallbackEnvFiles = [
   'C:/Projects/content-machine/.env',
 ]
 
+function parseArgs(argv) {
+  const options = {
+    kind: undefined,
+    ids: undefined,
+    background: undefined,
+  }
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index]
+    if (arg === '--kind') {
+      options.kind = argv[index + 1]
+      index += 1
+      continue
+    }
+    if (arg === '--ids') {
+      const rawIds = argv[index + 1]
+      options.ids = rawIds
+        ? rawIds
+            .split(',')
+            .map((value) => value.trim())
+            .filter(Boolean)
+        : undefined
+      index += 1
+      continue
+    }
+    if (arg === '--background') {
+      options.background = argv[index + 1]
+      index += 1
+    }
+  }
+
+  return options
+}
+
 function parseDotEnv(raw) {
   const values = new Map()
   for (const line of raw.split(/\r?\n/u)) {
@@ -72,16 +106,20 @@ function inferImageConfig(asset, promptDef) {
   return { aspectRatio, imageSize }
 }
 
-function getPromptText(promptDef) {
+function getPromptText(promptDef, options) {
   if (!promptDef?.prompt || typeof promptDef.prompt !== 'string') {
     throw new Error(`Missing prompt text for promptRef ${String(promptDef?.id ?? 'unknown')}`)
   }
+
+  const backgroundInstruction = options.background
+    ? `Background requirement: use a ${options.background} background only.`
+    : ''
   const negatives = Array.isArray(promptDef.negative_prompts)
     ? promptDef.negative_prompts.join('; ')
     : ''
-  return negatives
-    ? `${promptDef.prompt}\n\nStrict constraints: ${negatives}.`
-    : promptDef.prompt
+  return [promptDef.prompt, backgroundInstruction, negatives ? `Strict constraints: ${negatives}.` : '']
+    .filter(Boolean)
+    .join('\n\n')
 }
 
 function resolveOutputPath(asset) {
@@ -155,6 +193,7 @@ async function generateImage({ apiKey, promptText, imageConfig, temperature }) {
 }
 
 async function main() {
+  const cli = parseArgs(process.argv.slice(2))
   const apiKey = await loadGeminiApiKey()
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY not found in env or fallback env files')
@@ -170,6 +209,9 @@ async function main() {
   const now = new Date().toISOString()
 
   for (const asset of manifest.assets) {
+    if (cli.kind && asset.kind !== cli.kind) continue
+    if (Array.isArray(cli.ids) && cli.ids.length > 0 && !cli.ids.includes(asset.id)) continue
+
     const promptDef = promptMap.get(asset.promptRef)
     if (!promptDef) {
       throw new Error(`Missing prompt definition for ${asset.id} promptRef=${asset.promptRef}`)
@@ -182,7 +224,7 @@ async function main() {
       Object.values(asset.paths).filter((p) => typeof p === 'string'),
     )
 
-    const promptText = getPromptText(promptDef)
+    const promptText = getPromptText(promptDef, cli)
     const imageConfig = inferImageConfig(asset, promptDef)
     const temperature = promptDef.temperature
 

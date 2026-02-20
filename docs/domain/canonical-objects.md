@@ -18,7 +18,7 @@ This approach gives VAOP three benefits:
 
 1. **Minimal fields (intersection, not union)** -- Canonical objects carry only fields that appear in the majority of SoRs for a domain. If a field is specific to one vendor (e.g., Salesforce `RecordTypeId`), it stays in the SoR and is accessible via `ExternalObjectRef`.
 
-2. **ExternalObjectRef for SoR-specific data** -- Every canonical object has an `externalRefs: readonly ExternalObjectRef[]` array. This is the escape hatch for anything not in the canonical model. Adapters populate these refs; consuming code can follow them when it needs vendor-specific detail.
+2. **ExternalObjectRef for SoR-specific data** -- Canonical objects support `externalRefs?: readonly ExternalObjectRef[]` as the escape hatch for anything not in the canonical model. Adapters populate these refs when source mappings are available.
 
 3. **Branded IDs** -- Every canonical object has a branded ID type (`PartyId`, `TicketId`, `InvoiceId`, etc.) that prevents accidental mixing. These are defined in `src/domain/primitives/canonical-ids.ts`.
 
@@ -30,7 +30,7 @@ This approach gives VAOP three benefits:
 
 ## The Canonical Set
 
-| Canonical Object      | Replaces                                  | SoR Examples                                                      | Key Fields                                                                                                                      | Justification                                                                                                                                                                    |
+| Canonical Object      | Replaces                                  | SoR Examples                                                      | Key Fields (conceptual)                                                                                                         | Justification                                                                                                                                                                    |
 | --------------------- | ----------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Party**             | Customer, Lead, Vendor, Employee, Contact | Salesforce Contact, HubSpot Contact, Workday Worker, QBO Customer | `id`, `tenantId`, `roles (PartyRole[])`, `displayName`, `email?`, `externalRefs`                                                | Every SoR has person/org entities. A unified model with role tags avoids 5+ duplicate types and matches how real organisations work (a contact can be both customer and vendor). |
 | **Ticket**            | Ticket, Case, Incident, ServiceRequest    | Zendesk Ticket, ServiceNow Incident, Jira Issue, Freshdesk Ticket | `id`, `tenantId`, `title`, `status (TicketStatus)`, `priority?`, `assignee (PartyId?)`, `externalRefs`                          | Universal across helpdesk and ITSM. Status and priority semantics vary but the core structure is stable.                                                                         |
@@ -67,6 +67,8 @@ Asset    -->  Party       (owned by / assigned to)
 ```
 
 These references use branded IDs (e.g., `assignee: PartyId`) rather than embedding the full object. The consuming code can resolve the referenced object through a port read if needed.
+
+> Field names above are conceptual summaries. Runtime source-of-truth contracts are the parser types in `src/domain/canonical/*-v1.ts`.
 
 ## Cross-Port Entity Coverage
 

@@ -127,6 +127,43 @@ describe('bd claim workflow', () => {
     expect(unclaimedIssues.map((issue) => issue.id)).toEqual(['bead-0002']);
   });
 
+  it('supports claimed-by filtering and shows claim owner in plain-text output', () => {
+    const repo = createTempRepo([
+      {
+        id: 'bead-0001',
+        title: 'Claimed by agent-a',
+        status: 'open',
+        createdAt: BASE_TIMESTAMP,
+        updatedAt: BASE_TIMESTAMP,
+      },
+      {
+        id: 'bead-0002',
+        title: 'Claimed by agent-b',
+        status: 'open',
+        createdAt: BASE_TIMESTAMP,
+        updatedAt: BASE_TIMESTAMP,
+      },
+    ]);
+
+    expect(runBd(repo, ['claim', 'bead-0001', '--by', 'agent-a']).status).toBe(0);
+    expect(runBd(repo, ['claim', 'bead-0002', '--by', 'agent-b']).status).toBe(0);
+
+    const claimedByAgentA = runBd(repo, ['list', '--open', '--claimed-by', 'agent-a', '--json']);
+    expect(claimedByAgentA.status).toBe(0);
+    const filteredIssues = parseStdoutJson(claimedByAgentA) as { id: string }[];
+    expect(filteredIssues.map((issue) => issue.id)).toEqual(['bead-0001']);
+
+    const listText = runBd(repo, ['list', '--open']);
+    expect(listText.status).toBe(0);
+    expect(listText.stdout).toContain('[claimed:agent-a]');
+    expect(listText.stdout).toContain('[claimed:agent-b]');
+
+    const nextText = runBd(repo, ['next', '--claimed']);
+    expect(nextText.status).toBe(0);
+    expect(nextText.stdout).toContain('[claimed:agent-a]');
+    expect(nextText.stdout).toContain('[claimed:agent-b]');
+  });
+
   it('unclaims and auto-clears claim metadata when a bead is closed', () => {
     const repo = createTempRepo([
       {
@@ -165,4 +202,7 @@ describe('bd claim workflow', () => {
       claimedAt?: string;
     };
     expect(closedIssue.status).toBe('closed');
-    expect(closedIssue.claimedBy).toBeUndefine
+    expect(closedIssue.claimedBy).toBeUndefined();
+    expect(closedIssue.claimedAt).toBeUndefined();
+  });
+});

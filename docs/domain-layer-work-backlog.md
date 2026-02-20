@@ -233,16 +233,16 @@ Goal: domain layer completion evidence.
 | bead-0175 | open   | Reconcile erd.md                                                       |
 | bead-0176 | open   | Reconcile aggregates.md                                                |
 | bead-0177 | open   | Cross-layer: domain zero-external-dependencies                         |
-| bead-0302 | open   | Domain parsing/validation toolkit                                      |
-| bead-0303 | open   | Temporal invariants and ordering checks                                |
-| bead-0304 | open   | Tenancy identity unification                                           |
-| bead-0305 | open   | Canonical capability enforcement                                       |
-| bead-0306 | open   | Domain events correlation                                              |
-| bead-0307 | open   | Provider-selection hardening                                           |
-| bead-0309 | open   | Domain API compatibility                                               |
+| bead-0302 | closed | Domain parsing/validation toolkit                                      |
+| bead-0303 | closed | Temporal invariants and ordering checks                                |
+| bead-0304 | closed | Tenancy identity unification                                           |
+| bead-0305 | closed | Canonical capability enforcement                                       |
+| bead-0306 | closed | Domain events correlation                                              |
+| bead-0307 | closed | Provider-selection hardening                                           |
+| bead-0309 | closed | Domain API compatibility                                               |
 | bead-0311 | open   | Closeout review: domain hardening gate                                 |
-| bead-0337 | open   | State machine: workflow run lifecycle                                  |
-| bead-0338 | open   | Harden ErrorFactory pattern                                            |
+| bead-0337 | closed | State machine: workflow run lifecycle                                  |
+| bead-0338 | closed | Harden ErrorFactory pattern                                            |
 
 ## Delivery notes
 

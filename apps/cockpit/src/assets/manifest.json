@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "version": "1.0.0",
-  "generatedAt": "2026-02-20T02:16:16.660Z",
+  "generatedAt": "2026-02-20T02:23:17.446Z",
   "assets": [
     {
       "id": "icon-robot-ground",
@@ -35,7 +35,7 @@
       "promptRef": "CB-ICON-01",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61001
       },
@@ -79,7 +79,7 @@
       "promptRef": "CB-ICON-02",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61002
       },
@@ -123,7 +123,7 @@
       "promptRef": "CB-ICON-03",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61003
       },
@@ -167,7 +167,7 @@
       "promptRef": "CB-ICON-04",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61004
       },
@@ -211,7 +211,7 @@
       "promptRef": "CB-ICON-05",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61005
       },
@@ -255,7 +255,7 @@
       "promptRef": "CB-ICON-06",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61006
       },
@@ -299,7 +299,7 @@
       "promptRef": "CB-ICON-07",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61007
       },
@@ -343,7 +343,7 @@
       "promptRef": "CB-ICON-08",
       "generator": {
         "model": "gemini-3-pro-image-preview",
-        "createdAt": "2026-02-20T02:16:16.660Z",
+        "createdAt": "2026-02-20T02:23:17.446Z",
         "operator": "@45ck",
         "seed": 61008
       },
