@@ -230,8 +230,8 @@
 {"id":"bead-0230","title":"Closeout review: HrisHcm port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:07.294Z","updatedAt":"2026-02-20T03:39:52.876Z"}
 {"id":"bead-0231","title":"Closeout review: Payroll port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:07.560Z","updatedAt":"2026-02-20T03:41:08.497Z"}
 {"id":"bead-0232","title":"Closeout review: Payroll port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:07.826Z","updatedAt":"2026-02-20T03:41:46.958Z"}
-{"id":"bead-0233","title":"Closeout review: CrmSales port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:08.089Z","updatedAt":"2026-02-17T20:18:23.090Z"}
-{"id":"bead-0234","title":"Closeout review: CrmSales port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:08.356Z","updatedAt":"2026-02-17T20:18:23.090Z"}
+{"id":"bead-0233","title":"Closeout review: CrmSales port adapter foundation","status":"closed","createdAt":"2026-02-17T03:50:08.089Z","updatedAt":"2026-02-20T03:42:22.699Z"}
+{"id":"bead-0234","title":"Closeout review: CrmSales port adapter integration tests","status":"closed","createdAt":"2026-02-17T03:50:08.356Z","updatedAt":"2026-02-20T03:42:49.638Z"}
 {"id":"bead-0235","title":"Closeout review: CustomerSupport port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:08.635Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0236","title":"Closeout review: CustomerSupport port adapter integration tests","status":"open","createdAt":"2026-02-17T03:50:08.906Z","updatedAt":"2026-02-17T20:18:23.090Z"}
 {"id":"bead-0237","title":"Closeout review: ItsmItOps port adapter foundation","status":"open","createdAt":"2026-02-17T03:50:09.176Z","updatedAt":"2026-02-17T20:18:23.090Z"}
