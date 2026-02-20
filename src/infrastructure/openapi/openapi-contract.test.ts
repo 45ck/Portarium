@@ -1,6 +1,4 @@
-import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
@@ -10,7 +8,10 @@ import { describe, expect, it } from 'vitest';
 import { appendEvidenceEntryV1 } from '../../domain/evidence/evidence-chain-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
+import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
+import { parseCredentialGrantV1 } from '../../domain/credentials/credential-grant-v1.js';
+import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import {
   CorrelationId,
   EvidenceId,
@@ -21,117 +22,17 @@ import {
   WorkspaceId,
 } from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
-
-function resolveRepoRoot(): string {
-  const testFilePath = fileURLToPath(import.meta.url);
-  const testDir = path.dirname(testFilePath);
-  return path.resolve(testDir, '../../..');
-}
-
-async function readText(filePath: string): Promise<string> {
-  return await readFile(filePath, 'utf8');
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function deepCloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-function stripOpenApiKeywords(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stripOpenApiKeywords);
-  if (!isRecord(value)) return value;
-
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(value)) {
-    // OpenAPI-specific keyword; not valid JSON Schema.
-    if (k === 'discriminator') continue;
-    out[k] = stripOpenApiKeywords(v);
-  }
-  return out;
-}
-
-function rewriteComponentRefs(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(rewriteComponentRefs);
-  if (!isRecord(value)) return value;
-
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(value)) {
-    if (k === '$ref' && typeof v === 'string') {
-      out[k] = v.replace('#/components/schemas/', '#/$defs/');
-      continue;
-    }
-    out[k] = rewriteComponentRefs(v);
-  }
-  return out;
-}
-
-function buildJsonSchemaFromComponents(params: {
-  rootName: string;
-  componentsSchemas: Record<string, unknown>;
-}): object {
-  const defs = rewriteComponentRefs(stripOpenApiKeywords(deepCloneJson(params.componentsSchemas)));
-  if (!isRecord(defs)) throw new Error('components.schemas must be an object.');
-
-  const root = defs[params.rootName];
-  if (!isRecord(root)) throw new Error(`Missing components.schemas.${params.rootName}`);
-
-  return {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
-    $id: `https://portarium.local/schema/${params.rootName}.schema.json`,
-    ...root,
-    $defs: defs,
-  };
-}
-
-function validateOrThrow(validateFn: (data: unknown) => boolean, data: unknown): void {
-  const ok = validateFn(data);
-  if (ok) return;
-  const errors = (validateFn as unknown as { errors?: unknown }).errors;
-  throw new Error(errors ? JSON.stringify(errors, null, 2) : 'Schema validation failed.');
-}
+import {
+  buildJsonSchemaFromComponents,
+  findDuplicates,
+  listOperationIds,
+  mustRecord,
+  readText,
+  resolveRepoRoot,
+  validateOrThrow,
+} from './openapi-contract.test-helpers.js';
 
 const OPENAPI_SPEC_RELATIVE_PATH = 'docs/spec/openapi/portarium-control-plane.v1.yaml';
-
-function mustRecord(value: unknown, label: string): Record<string, unknown> {
-  if (!isRecord(value)) throw new Error(`${label} must be an object.`);
-  return value;
-}
-
-function listOperationIds(pathsObj: Record<string, unknown>): string[] {
-  const methods = new Set(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']);
-  const out: string[] = [];
-
-  for (const item of Object.values(pathsObj)) {
-    if (!isRecord(item)) continue;
-    for (const [k, op] of Object.entries(item)) {
-      if (!methods.has(k)) continue;
-      if (!isRecord(op)) continue;
-      const operationId = op['operationId'];
-      if (typeof operationId !== 'string' || operationId.trim() === '') continue;
-      out.push(operationId);
-    }
-  }
-
-  return out;
-}
-
-function findDuplicates(values: readonly string[]): string[] {
-  const seen = new Set<string>();
-  const dupes = new Set<string>();
-
-  for (const v of values) {
-    if (seen.has(v)) {
-      dupes.add(v);
-      continue;
-    }
-    seen.add(v);
-  }
-
-  return [...dupes].sort((a, b) => a.localeCompare(b));
-}
 
 describe('OpenAPI contract', () => {
   it('OpenAPI parses and operationIds are unique', async () => {
@@ -185,17 +86,10 @@ describe('OpenAPI contract', () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
-    const doc = parseYaml(await readText(specPath)) as unknown;
-    if (!isRecord(doc)) throw new Error('OpenAPI must be an object.');
-
-    const components = doc['components'];
-    if (!isRecord(components)) throw new Error('OpenAPI.components must be an object.');
-
-    const schemas = components['schemas'];
-    if (!isRecord(schemas)) throw new Error('OpenAPI.components.schemas must be an object.');
-
-    const portFamily = schemas['PortFamily'];
-    if (!isRecord(portFamily)) throw new Error('Missing components.schemas.PortFamily');
+    const doc = mustRecord(parseYaml(await readText(specPath)) as unknown, 'OpenAPI');
+    const components = mustRecord(doc['components'], 'OpenAPI.components');
+    const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
+    const portFamily = mustRecord(schemas['PortFamily'], 'components.schemas.PortFamily');
 
     const enumRaw = portFamily['enum'];
     if (!Array.isArray(enumRaw) || enumRaw.some((x) => typeof x !== 'string')) {
@@ -205,18 +99,13 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
-  it('PlanV1, EvidenceEntryV1, and WorkItemV1 schemas validate representative payloads', async () => {
+  it('PlanV1, EvidenceEntryV1, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, and PolicyV1 schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
-    const doc = parseYaml(await readText(specPath)) as unknown;
-    if (!isRecord(doc)) throw new Error('OpenAPI must be an object.');
-
-    const components = doc['components'];
-    if (!isRecord(components)) throw new Error('OpenAPI.components must be an object.');
-
-    const schemas = components['schemas'];
-    if (!isRecord(schemas)) throw new Error('OpenAPI.components.schemas must be an object.');
+    const doc = mustRecord(parseYaml(await readText(specPath)) as unknown, 'OpenAPI');
+    const components = mustRecord(doc['components'], 'OpenAPI.components');
+    const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
 
     const ajv = new Ajv2020({ allErrors: true, strict: true });
     addFormats.default(ajv);
@@ -323,5 +212,107 @@ describe('OpenAPI contract', () => {
     const invalidWorkItem = { ...workItem, status: 'Unknown' };
     expect(() => parseWorkItemV1(invalidWorkItem)).toThrow(/status/i);
     expect(validateWorkItem(invalidWorkItem)).toBe(false);
+
+    const credentialGrantSchema = buildJsonSchemaFromComponents({
+      rootName: 'CredentialGrantV1',
+      componentsSchemas: schemas,
+    });
+    const validateCredentialGrant = ajv.compile(credentialGrantSchema);
+
+    const credentialGrant = {
+      schemaVersion: 1,
+      credentialGrantId: 'cg-1',
+      workspaceId: 'ws-1',
+      adapterId: 'adapter-1',
+      credentialsRef: 'vault://secrets/cg-1',
+      scope: 'invoice:read',
+      issuedAtIso: '2026-02-16T00:00:00.000Z',
+      expiresAtIso: '2026-12-16T00:00:00.000Z',
+      lastRotatedAtIso: '2026-06-16T00:00:00.000Z',
+    };
+
+    expect(() => parseCredentialGrantV1(credentialGrant)).not.toThrow();
+    expect(() => validateOrThrow(validateCredentialGrant, credentialGrant)).not.toThrow();
+
+    const invalidCredentialGrant = { ...credentialGrant, schemaVersion: 2 };
+    expect(() => parseCredentialGrantV1(invalidCredentialGrant)).toThrow(/schemaVersion/i);
+    expect(validateCredentialGrant(invalidCredentialGrant)).toBe(false);
+
+    const adapterRegistrationSchema = buildJsonSchemaFromComponents({
+      rootName: 'AdapterRegistrationV1',
+      componentsSchemas: schemas,
+    });
+    const validateAdapterRegistration = ajv.compile(adapterRegistrationSchema);
+
+    const adapterRegistration = {
+      schemaVersion: 1,
+      adapterId: 'adapter-1',
+      workspaceId: 'ws-1',
+      providerSlug: 'quickbooks',
+      portFamily: 'FinanceAccounting',
+      enabled: true,
+      executionPolicy: {
+        tenantIsolationMode: 'PerTenantWorker',
+        egressAllowlist: ['https://api.quickbooks.example'],
+        credentialScope: 'capabilityMatrix',
+        sandboxVerified: true,
+        sandboxAvailable: true,
+      },
+      capabilityMatrix: [
+        {
+          capability: 'invoice:read',
+          operation: 'invoice:read',
+          requiresAuth: true,
+        },
+      ],
+      machineRegistrations: [
+        {
+          machineId: 'machine-1',
+          endpointUrl: 'https://api.example.com/v1',
+          active: true,
+        },
+      ],
+    };
+
+    expect(() => parseAdapterRegistrationV1(adapterRegistration)).not.toThrow();
+    expect(() => validateOrThrow(validateAdapterRegistration, adapterRegistration)).not.toThrow();
+
+    const invalidAdapterRegistration = {
+      ...adapterRegistration,
+      capabilityMatrix: [],
+    };
+    expect(() => parseAdapterRegistrationV1(invalidAdapterRegistration)).toThrow(/capabilityMatrix/i);
+    expect(validateAdapterRegistration(invalidAdapterRegistration)).toBe(false);
+
+    const policySchema = buildJsonSchemaFromComponents({
+      rootName: 'PolicyV1',
+      componentsSchemas: schemas,
+    });
+    const validatePolicy = ajv.compile(policySchema);
+
+    const policy = {
+      schemaVersion: 1,
+      policyId: 'pol-1',
+      workspaceId: 'ws-1',
+      name: 'Maker-checker policy',
+      active: true,
+      priority: 1,
+      version: 1,
+      createdAtIso: '2026-02-16T00:00:00.000Z',
+      createdByUserId: 'user-1',
+      sodConstraints: [
+        { kind: 'MakerChecker' },
+        { kind: 'DistinctApprovers', minimumApprovers: 2 },
+        { kind: 'IncompatibleDuties', dutyKeys: ['requestor', 'approver'] },
+      ],
+      rules: [{ ruleId: 'r-1', condition: 'run.tier == "Auto"', effect: 'Allow' }],
+    };
+
+    expect(() => parsePolicyV1(policy)).not.toThrow();
+    expect(() => validateOrThrow(validatePolicy, policy)).not.toThrow();
+
+    const invalidPolicy = { ...policy, rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }] };
+    expect(() => parsePolicyV1(invalidPolicy)).toThrow(/effect/i);
+    expect(validatePolicy(invalidPolicy)).toBe(false);
   });
 });

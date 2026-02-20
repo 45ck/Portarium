@@ -9,12 +9,16 @@ function usage() {
     'Beads (bd) - local issue tracker',
     '',
     'Usage:',
-    '  bd issue list   [--open] [--phase <phase>] [--priority <P0|P1|P2|P3>] [--json]',
-    '  bd issue next   [--phase <phase>] [--priority <P0|P1|P2|P3>] [--json]',
+    '  bd issue list   [--open] [--phase <phase>] [--priority <P0|P1|P2|P3>]',
+    '                  [--claimed|--unclaimed|--claimed-by <owner>] [--json]',
+    '  bd issue next   [--phase <phase>] [--priority <P0|P1|P2|P3>]',
+    '                  [--claimed|--unclaimed|--claimed-by <owner>] [--json]',
     '  bd issue view   <id>',
     '  bd issue create --title "..." [--priority P0] [--phase <phase>] [--blocked-by "id1,id2"] [--body "..."] [--json]',
     '  bd issue close  <id> [--json]',
     '  bd issue reopen <id> [--json]',
+    '  bd issue claim  <id> --by "<owner>" [--force] [--json]',
+    '  bd issue unclaim <id> [--by "<owner>"] [--force] [--json]',
     '  bd issue update <id> [--title "..."] [--status open|closed] [--priority <P0|P1|P2|P3>]',
     '                       [--phase <phase>] [--blocked-by "id1,id2"] [--add-blocked-by "id1,id2"]',
     '                       [--remove-blocked-by "id1,id2"] [--body "..."] [--json]',
@@ -24,6 +28,8 @@ function usage() {
     '  phase      devenv | domain | application | infrastructure | presentation |',
     '             integration | governance | security | release | cross-cutting',
     '  blockedBy  comma-separated list of bead IDs that must be closed first',
+    '  claimedBy  current owner actively working this bead',
+    '  claimedAt  UTC timestamp when the bead was claimed',
     '  body       free-text description / acceptance criteria',
     '',
     'Commands:',
@@ -132,6 +138,38 @@ function parseBlockedBy(raw) {
   return ids;
 }
 
+function getClaimedBy(issue) {
+  if (!isNonEmptyString(issue?.claimedBy)) return null;
+  return issue.claimedBy.trim();
+}
+
+function hasClaim(issue) {
+  return getClaimedBy(issue) !== null;
+}
+
+function readClaimFilters(argv) {
+  const claimedOnly = argv.includes('--claimed');
+  const unclaimedOnly = argv.includes('--unclaimed');
+  if (claimedOnly && unclaimedOnly) {
+    throw new Error('Cannot combine --claimed and --unclaimed.');
+  }
+
+  const claimedByRaw = readOption(argv, '--claimed-by');
+  const claimedBy = claimedByRaw ? claimedByRaw.trim() : null;
+
+  return { claimedOnly, unclaimedOnly, claimedBy };
+}
+
+function applyClaimFilters(issues, claimFilters) {
+  let result = issues;
+  if (claimFilters.claimedOnly) result = result.filter((issue) => hasClaim(issue));
+  if (claimFilters.unclaimedOnly) result = result.filter((issue) => !hasClaim(issue));
+  if (claimFilters.claimedBy) {
+    result = result.filter((issue) => getClaimedBy(issue) === claimFilters.claimedBy);
+  }
+  return result;
+}
+
 /** Return true if the issue is unblocked (no open prerequisites). */
 function isUnblocked(issue, closedIds) {
   const blockedBy = issue.blockedBy;
@@ -157,6 +195,12 @@ function formatPriority(p) {
   return p;
 }
 
+function formatClaimSuffix(issue) {
+  const claimedBy = getClaimedBy(issue);
+  if (!claimedBy) return '';
+  return ` [claimed:${claimedBy}]`;
+}
+
 function print(value, jsonFlag) {
   if (jsonFlag) {
     process.stdout.write(JSON.stringify(value, null, 2) + '\n');
@@ -167,7 +211,8 @@ function print(value, jsonFlag) {
     for (const v of value) {
       const pri = formatPriority(v.priority);
       const phase = v.phase ? ` [${v.phase}]` : '';
-      process.stdout.write(`${v.id} ${pri} [${v.status}]${phase} ${v.title}\n`);
+      const claim = formatClaimSuffix(v);
+      process.stdout.write(`${v.id} ${pri} [${v.status}]${phase}${claim} ${v.title}\n`);
     }
     return;
   }
@@ -175,7 +220,8 @@ function print(value, jsonFlag) {
   if (value && typeof value === 'object') {
     const pri = formatPriority(value.priority);
     const phase = value.phase ? ` [${value.phase}]` : '';
-    process.stdout.write(`${value.id} ${pri} [${value.status}]${phase} ${value.title}\n`);
+    const claim = formatClaimSuffix(value);
+    process.stdout.write(`${value.id} ${pri} [${value.status}]${phase}${claim} ${value.title}\n`);
     return;
   }
 
@@ -190,6 +236,8 @@ function printView(issue) {
     `Priority:  ${issue.priority ?? '(unset)'}`,
     `Phase:     ${issue.phase ?? '(unset)'}`,
     `BlockedBy: ${issue.blockedBy?.join(', ') ?? '(none)'}`,
+    `ClaimedBy: ${issue.claimedBy ?? '(none)'}`,
+    `ClaimedAt: ${issue.claimedAt ?? '(none)'}`,
     `Created:   ${issue.createdAt}`,
     `Updated:   ${issue.updatedAt}`,
     '',
@@ -217,6 +265,10 @@ function buildUpdateChanges(argv, existingIssue) {
       throw new Error(`Invalid status "${status}". Expected "open" or "closed".`);
     }
     changes.status = status;
+    if (status === 'closed') {
+      changes.claimedBy = undefined;
+      changes.claimedAt = undefined;
+    }
   }
 
   const priority = readOption(argv, '--priority');
@@ -286,12 +338,14 @@ function main() {
   if (verb === 'list') {
     const filterPhase = readOption(rawArgv, '--phase');
     const filterPriority = readOption(rawArgv, '--priority');
+    const claimFilters = readClaimFilters(rawArgv);
     const openOnly = rawArgv.includes('--open');
 
     let result = issues;
     if (openOnly) result = result.filter((i) => i.status === 'open');
     if (filterPhase) result = result.filter((i) => i.phase === filterPhase);
     if (filterPriority) result = result.filter((i) => i.priority === filterPriority);
+    result = applyClaimFilters(result, claimFilters);
 
     print(result, asJson);
     return;
@@ -301,14 +355,15 @@ function main() {
   if (verb === 'next') {
     const filterPhase = readOption(rawArgv, '--phase');
     const filterPriority = readOption(rawArgv, '--priority');
+    const claimFilters = readClaimFilters(rawArgv);
 
     const closedIds = new Set(issues.filter((i) => i.status === 'closed').map((i) => i.id));
 
-    let open = issues.filter((i) => i.status === 'open');
-    let ready = open.filter((i) => isUnblocked(i, closedIds));
+    let ready = issues.filter((i) => i.status === 'open').filter((i) => isUnblocked(i, closedIds));
 
     if (filterPhase) ready = ready.filter((i) => i.phase === filterPhase);
     if (filterPriority) ready = ready.filter((i) => i.priority === filterPriority);
+    ready = applyClaimFilters(ready, claimFilters);
 
     ready = sortByPriority(ready);
 
@@ -322,7 +377,8 @@ function main() {
         for (const v of ready) {
           const pri = formatPriority(v.priority);
           const phase = v.phase ? ` [${v.phase}]` : '';
-          process.stdout.write(`  ${v.id} ${pri}${phase} ${v.title}\n`);
+          const claim = formatClaimSuffix(v);
+          process.stdout.write(`  ${v.id} ${pri}${phase}${claim} ${v.title}\n`);
         }
       }
     }
@@ -339,6 +395,58 @@ function main() {
     } else {
       printView(issues[idx]);
     }
+    return;
+  }
+
+  // ── claim ───────────────────────────────────────────────────────────────
+  if (verb === 'claim') {
+    const id = rest[0];
+    if (!isNonEmptyString(id)) fail('Missing issue id for issue claim.');
+
+    const claimedByRaw = readOption(rawArgv, '--by');
+    if (!claimedByRaw) fail('Missing --by for issue claim.');
+    const claimedBy = claimedByRaw.trim();
+    const force = rawArgv.includes('--force');
+
+    const idx = findIssueIndex(issues, id);
+    const issue = issues[idx];
+    if (issue.status !== 'open') {
+      fail(`Cannot claim non-open issue: ${id} is ${issue.status}.`);
+    }
+
+    const existingClaim = getClaimedBy(issue);
+    if (existingClaim && existingClaim !== claimedBy && !force) {
+      fail(`Issue ${id} is already claimed by "${existingClaim}". Use --force to reassign.`);
+    }
+
+    const now = nowIsoUtc();
+    issues[idx] = { ...issue, claimedBy, claimedAt: now, updatedAt: now };
+    writeIssues(root, issues);
+    print(issues[idx], asJson);
+    return;
+  }
+
+  // ── unclaim ─────────────────────────────────────────────────────────────
+  if (verb === 'unclaim') {
+    const id = rest[0];
+    if (!isNonEmptyString(id)) fail('Missing issue id for issue unclaim.');
+
+    const byRaw = readOption(rawArgv, '--by');
+    const by = byRaw ? byRaw.trim() : null;
+    const force = rawArgv.includes('--force');
+
+    const idx = findIssueIndex(issues, id);
+    const issue = issues[idx];
+    const existingClaim = getClaimedBy(issue);
+    if (!existingClaim) fail(`Issue ${id} is not claimed.`);
+
+    if (by && existingClaim !== by && !force) {
+      fail(`Issue ${id} is claimed by "${existingClaim}", not "${by}". Use --force to clear.`);
+    }
+
+    const updated = applyUpdate(issues, id, { claimedBy: undefined, claimedAt: undefined });
+    writeIssues(root, issues);
+    print(updated, asJson);
     return;
   }
 
@@ -380,7 +488,11 @@ function main() {
   if (verb === 'close') {
     const id = rest[0];
     if (!isNonEmptyString(id)) fail('Missing issue id for issue close.');
-    const updated = applyUpdate(issues, id, { status: 'closed' });
+    const updated = applyUpdate(issues, id, {
+      status: 'closed',
+      claimedBy: undefined,
+      claimedAt: undefined,
+    });
     writeIssues(root, issues);
     print(updated, asJson);
     return;

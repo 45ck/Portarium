@@ -15,6 +15,7 @@
     "cockpit:storybook": "npm run -w apps/cockpit storybook",
     "cockpit:build": "npm run -w apps/cockpit build",
     "cockpit:build-storybook": "npm run -w apps/cockpit build-storybook",
+    "cockpit:assets:generate": "node scripts/assets/generate-cockpit-assets.mjs",
     "cockpit:assets:validate": "node scripts/assets/validate-cockpit-assets.mjs",
     "cockpit:assets:optimize": "node scripts/assets/optimize-cockpit-assets.mjs",
     "cockpit:assets:check": "node scripts/assets/check-cockpit-assets.mjs",
