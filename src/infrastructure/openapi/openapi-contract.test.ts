@@ -6,20 +6,16 @@ import { parse as parseYaml } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 import { appendEvidenceEntryV1 } from '../../domain/evidence/evidence-chain-v1.js';
-import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
+import { parseRunV1 } from '../../domain/runs/run-v1.js';
+import { createCanonicalSeedBundleV1 } from '../../domain/testing/canonical-seeds-v1.js';
 import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
 import { parseCredentialGrantV1 } from '../../domain/credentials/credential-grant-v1.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import {
-  CorrelationId,
-  EvidenceId,
   HashSha256,
-  PlanId,
   PORT_FAMILIES,
-  RunId,
-  WorkspaceId,
 } from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import {
@@ -154,24 +150,25 @@ describe('OpenAPI contract', () => {
     const validateEvidence = ajv.compile(evidenceSchema);
 
     const hasher = new NodeCryptoEvidenceHasher();
-    const baseEvidence: Omit<EvidenceEntryV1, 'previousHash' | 'hashSha256'> = {
-      schemaVersion: 1,
-      evidenceId: EvidenceId('evi-1'),
-      workspaceId: WorkspaceId('ws-1'),
-      correlationId: CorrelationId('corr-1'),
-      occurredAtIso: '2026-02-16T00:00:00.000Z',
-      category: 'Plan',
-      summary: 'Plan generated',
-      actor: { kind: 'System' },
-      links: { planId: PlanId('plan-1'), runId: RunId('run-1') },
-      payloadRefs: [{ kind: 'Snapshot', uri: 'evidence://snapshots/plan-1.json' }],
-    };
-
-    const evidence = appendEvidenceEntryV1({ previous: undefined, next: baseEvidence, hasher });
+    const seeds = createCanonicalSeedBundleV1();
+    const evidence = appendEvidenceEntryV1({ previous: undefined, next: seeds.evidence, hasher });
     expect(() => validateOrThrow(validateEvidence, evidence)).not.toThrow();
 
     const invalidEvidence = { ...evidence, hashSha256: HashSha256('not-a-sha') };
     expect(validateEvidence(invalidEvidence)).toBe(false);
+
+    const runSchema = buildJsonSchemaFromComponents({
+      rootName: 'RunV1',
+      componentsSchemas: schemas,
+    });
+    const validateRun = ajv.compile(runSchema);
+
+    expect(() => parseRunV1(seeds.run)).not.toThrow();
+    expect(() => validateOrThrow(validateRun, seeds.run)).not.toThrow();
+
+    const invalidRun = { ...seeds.run, status: 'Done' };
+    expect(() => parseRunV1(invalidRun)).toThrow(/status/i);
+    expect(validateRun(invalidRun)).toBe(false);
 
     const workItemSchema = buildJsonSchemaFromComponents({
       rootName: 'WorkItemV1',
@@ -179,32 +176,7 @@ describe('OpenAPI contract', () => {
     });
     const validateWorkItem = ajv.compile(workItemSchema);
 
-    const workItem = {
-      schemaVersion: 1,
-      workItemId: 'wi-1',
-      workspaceId: 'ws-1',
-      createdAtIso: '2026-02-16T00:00:00.000Z',
-      createdByUserId: 'user-1',
-      title: 'Investigate PROJ-123',
-      status: 'Open',
-      ownerUserId: 'user-2',
-      sla: { dueAtIso: '2026-02-20T00:00:00.000Z' },
-      links: {
-        externalRefs: [
-          {
-            sorName: 'jira',
-            portFamily: 'ProjectsWorkMgmt',
-            externalId: 'PROJ-123',
-            externalType: 'Issue',
-            displayLabel: 'PROJ-123',
-            deepLinkUrl: 'https://jira.example.com/browse/PROJ-123',
-          },
-        ],
-        runIds: ['run-1'],
-        approvalIds: ['approval-1'],
-        evidenceIds: ['evi-1'],
-      },
-    };
+    const workItem = seeds.workItem;
 
     expect(() => parseWorkItemV1(workItem)).not.toThrow();
     expect(() => validateOrThrow(validateWorkItem, workItem)).not.toThrow();
@@ -290,23 +262,7 @@ describe('OpenAPI contract', () => {
     });
     const validatePolicy = ajv.compile(policySchema);
 
-    const policy = {
-      schemaVersion: 1,
-      policyId: 'pol-1',
-      workspaceId: 'ws-1',
-      name: 'Maker-checker policy',
-      active: true,
-      priority: 1,
-      version: 1,
-      createdAtIso: '2026-02-16T00:00:00.000Z',
-      createdByUserId: 'user-1',
-      sodConstraints: [
-        { kind: 'MakerChecker' },
-        { kind: 'DistinctApprovers', minimumApprovers: 2 },
-        { kind: 'IncompatibleDuties', dutyKeys: ['requestor', 'approver'] },
-      ],
-      rules: [{ ruleId: 'r-1', condition: 'run.tier == "Auto"', effect: 'Allow' }],
-    };
+    const policy = seeds.policy;
 
     expect(() => parsePolicyV1(policy)).not.toThrow();
     expect(() => validateOrThrow(validatePolicy, policy)).not.toThrow();

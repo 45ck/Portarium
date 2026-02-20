@@ -25,6 +25,7 @@ function parseArgs(argv) {
     background: 'auto',
     threshold: 42,
     softness: 24,
+    files: undefined,
     dryRun: false,
   }
 
@@ -42,6 +43,16 @@ function parseArgs(argv) {
     }
     if (arg === '--threshold') {
       options.threshold = Number(argv[index + 1])
+      index += 1
+      continue
+    }
+    if (arg === '--files') {
+      const raw = argv[index + 1]
+      options.files = String(raw ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .map((value) => path.resolve(value))
       index += 1
       continue
     }
@@ -192,7 +203,10 @@ async function processPng(filePath, backgroundRgb, threshold, softness, dryRun) 
 async function main() {
   const options = parseArgs(process.argv.slice(2))
   const backgroundRgb = resolveBackground(options.background)
-  const files = await collectPngFiles(options.dir)
+  const files =
+    Array.isArray(options.files) && options.files.length > 0
+      ? options.files
+      : await collectPngFiles(options.dir)
 
   let changedFiles = 0
   let changedPixels = 0

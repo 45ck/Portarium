@@ -6,14 +6,9 @@ import { APP_ACTIONS } from '../common/actions.js';
 import { type AuthorizationPort, type WorkspaceStore } from '../ports/index.js';
 import { getWorkspace } from './get-workspace.js';
 import { parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
+import { createCanonicalWorkspaceSeedV1 } from '../../domain/testing/canonical-seeds-v1.js';
 
-const WORKSPACE = parseWorkspaceV1({
-  schemaVersion: 1,
-  workspaceId: 'ws-1',
-  tenantId: 'tenant-1',
-  name: 'Primary Workspace',
-  createdAtIso: '2026-02-17T00:00:00.000Z',
-});
+const WORKSPACE = parseWorkspaceV1(createCanonicalWorkspaceSeedV1());
 
 describe('getWorkspace', () => {
   it('returns NotFound when workspace is absent', async () => {

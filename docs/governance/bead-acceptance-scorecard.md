@@ -2,21 +2,21 @@
 
 <!-- cspell:disable -->
 
-Generated: 2026-02-20T02:48:37.692Z
+Generated: 2026-02-20T02:59:43.554Z
 Source: `.beads/issues.jsonl` + optional `.beads/bead-linkage-map.json`
 
 This scorecard applies the same acceptance rubric to every open bead so owners can close gaps before closure attempts.
 
 ## Snapshot
 
-- Open beads scored: 166
+- Open beads scored: 164
 - Green: 2
 - Amber: 22
-- Red: 142
-- Missing spec alignment: 138
-- Missing tests signal: 144
-- Missing review signal: 93
-- Missing docs signal: 136
+- Red: 140
+- Missing spec alignment: 136
+- Missing tests signal: 142
+- Missing review signal: 91
+- Missing docs signal: 134
 - Missing required security signal: 3
 - Missing required performance signal: 0
 
@@ -43,8 +43,6 @@ This scorecard applies the same acceptance rubric to every open bead so owners c
 | bead-0182 | 2/5 (40%) | red | fail | pass | fail | fail | pass | n/a | Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure |
 | bead-0183 | 4/4 (100%) | green | pass | pass | pass | pass | n/a | n/a | Review: tie each spec in .specify/specs to at least one implementation and one test bead |
 | bead-0184 | 2/4 (50%) | red | fail | pass | pass | fail | n/a | n/a | Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition |
-| bead-0192 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
-| bead-0193 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests |
 | bead-0194 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows |
 | bead-0195 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Generate tenant-isolated fixture factories for every aggregate and port operation |
 | bead-0196 | 3/5 (60%) | amber | fail | fail | pass | pass | pass | n/a | Review: verify tenant-isolated fixtures block cross-tenant leakage in tests and docs |

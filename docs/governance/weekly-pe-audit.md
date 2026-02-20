@@ -1,15 +1,15 @@
 # Weekly PE Audit: Orphaned Beads And Dependency Deadlocks
 
-Generated: 2026-02-20T02:48:49.884Z
+Generated: 2026-02-20T02:55:17.933Z
 Week of: 2026-02-16
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 166
+- Open beads: 165
 - Open dependency edges: 23
 - Open beads blocked by open prerequisites: 19
-- Orphaned beads: 138
+- Orphaned beads: 137
 - Deadlock cycles: 0
 - Beads participating in deadlocks: 0
 
@@ -36,7 +36,6 @@ Source: `.beads/issues.jsonl`
 | bead-0182 | -- | unspecified | Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure |
 | bead-0183 | -- | unspecified | Review: tie each spec in .specify/specs to at least one implementation and one test bead |
 | bead-0184 | -- | unspecified | Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition |
-| bead-0192 | -- | unspecified | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
 | bead-0193 | -- | unspecified | E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests |
 | bead-0194 | -- | unspecified | E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows |
 | bead-0195 | -- | unspecified | Generate tenant-isolated fixture factories for every aggregate and port operation |

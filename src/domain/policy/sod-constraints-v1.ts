@@ -3,7 +3,13 @@ import type { UserId as UserIdType } from '../primitives/index.js';
 import type { ApprovalPendingV1 } from '../approvals/approval-v1.js';
 import { readInteger, readRecord, readString, readStringArray } from '../validation/parse-utils.js';
 
-export type SodConstraintKind = 'MakerChecker' | 'DistinctApprovers' | 'IncompatibleDuties';
+export type SodConstraintKind =
+  | 'MakerChecker'
+  | 'DistinctApprovers'
+  | 'IncompatibleDuties'
+  | 'HazardousZoneNoSelfApproval'
+  | 'SafetyClassifiedZoneDualApproval'
+  | 'RemoteEstopRequesterSeparation';
 
 export type MakerCheckerConstraintV1 = Readonly<{
   kind: 'MakerChecker';
@@ -19,20 +25,44 @@ export type IncompatibleDutiesConstraintV1 = Readonly<{
   dutyKeys: readonly string[];
 }>;
 
+export type HazardousZoneNoSelfApprovalConstraintV1 = Readonly<{
+  kind: 'HazardousZoneNoSelfApproval';
+}>;
+
+export type SafetyClassifiedZoneDualApprovalConstraintV1 = Readonly<{
+  kind: 'SafetyClassifiedZoneDualApproval';
+}>;
+
+export type RemoteEstopRequesterSeparationConstraintV1 = Readonly<{
+  kind: 'RemoteEstopRequesterSeparation';
+}>;
+
 export type SodConstraintV1 =
   | MakerCheckerConstraintV1
   | DistinctApproversConstraintV1
-  | IncompatibleDutiesConstraintV1;
+  | IncompatibleDutiesConstraintV1
+  | HazardousZoneNoSelfApprovalConstraintV1
+  | SafetyClassifiedZoneDualApprovalConstraintV1
+  | RemoteEstopRequesterSeparationConstraintV1;
 
 export type PerformedDutyV1 = Readonly<{
   userId: UserIdType;
   dutyKey: string;
 }>;
 
+export type RobotSodContextV1 = Readonly<{
+  hazardousZone?: boolean;
+  safetyClassifiedZone?: boolean;
+  remoteEstopRequest?: boolean;
+  missionProposerUserId?: UserIdType;
+  estopRequesterUserId?: UserIdType;
+}>;
+
 export type SodEvaluationContextV1 = Readonly<{
   initiatorUserId: UserIdType;
   approverUserIds: readonly UserIdType[];
   performedDuties?: readonly PerformedDutyV1[];
+  robotContext?: RobotSodContextV1;
 }>;
 
 export type SodViolationV1 =
@@ -51,6 +81,20 @@ export type SodViolationV1 =
       userId: UserIdType;
       dutyKeys: readonly string[];
       constraintDutyKeys: readonly string[];
+    }>
+  | Readonly<{
+      kind: 'HazardousZoneNoSelfApprovalViolation';
+      missionProposerUserId: UserIdType;
+    }>
+  | Readonly<{
+      kind: 'SafetyClassifiedZoneDualApprovalViolation';
+      requiredApprovers: 2;
+      distinctApprovers: number;
+      approverUserIds: readonly UserIdType[];
+    }>
+  | Readonly<{
+      kind: 'RemoteEstopRequesterSeparationViolation';
+      estopRequesterUserId: UserIdType;
     }>;
 
 export class SodConstraintParseError extends Error {
@@ -95,6 +139,12 @@ function evaluateSodConstraintV1(
       return evaluateDistinctApproversConstraintV1(constraint, context);
     case 'IncompatibleDuties':
       return evaluateIncompatibleDutiesConstraintV1(constraint, context);
+    case 'HazardousZoneNoSelfApproval':
+      return evaluateHazardousZoneNoSelfApprovalConstraintV1(context);
+    case 'SafetyClassifiedZoneDualApproval':
+      return evaluateSafetyClassifiedZoneDualApprovalConstraintV1(context);
+    case 'RemoteEstopRequesterSeparation':
+      return evaluateRemoteEstopRequesterSeparationConstraintV1(context);
     default:
       return assertNever(constraint);
   }
@@ -155,13 +205,67 @@ function evaluateIncompatibleDutiesConstraintV1(
   return violations;
 }
 
+function evaluateHazardousZoneNoSelfApprovalConstraintV1(
+  context: SodEvaluationContextV1,
+): readonly SodViolationV1[] {
+  if (!context.robotContext?.hazardousZone) return [];
+
+  const missionProposerUserId = context.robotContext.missionProposerUserId ?? context.initiatorUserId;
+  if (!context.approverUserIds.includes(missionProposerUserId)) return [];
+
+  return [
+    {
+      kind: 'HazardousZoneNoSelfApprovalViolation',
+      missionProposerUserId,
+    },
+  ];
+}
+
+function evaluateSafetyClassifiedZoneDualApprovalConstraintV1(
+  context: SodEvaluationContextV1,
+): readonly SodViolationV1[] {
+  if (!context.robotContext?.safetyClassifiedZone) return [];
+
+  const distinctApproverUserIds = uniqByString(context.approverUserIds);
+  if (distinctApproverUserIds.length >= 2) return [];
+
+  return [
+    {
+      kind: 'SafetyClassifiedZoneDualApprovalViolation',
+      requiredApprovers: 2,
+      distinctApprovers: distinctApproverUserIds.length,
+      approverUserIds: distinctApproverUserIds,
+    },
+  ];
+}
+
+function evaluateRemoteEstopRequesterSeparationConstraintV1(
+  context: SodEvaluationContextV1,
+): readonly SodViolationV1[] {
+  if (!context.robotContext?.remoteEstopRequest) return [];
+
+  const estopRequesterUserId =
+    context.robotContext.estopRequesterUserId ??
+    context.robotContext.missionProposerUserId ??
+    context.initiatorUserId;
+
+  if (!context.approverUserIds.includes(estopRequesterUserId)) return [];
+
+  return [
+    {
+      kind: 'RemoteEstopRequesterSeparationViolation',
+      estopRequesterUserId,
+    },
+  ];
+}
+
 function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV1 {
   const record = readRecord(value, pathLabel, SodConstraintParseError);
 
   const kind = readString(record, 'kind', SodConstraintParseError);
   if (!isSodConstraintKind(kind)) {
     throw new SodConstraintParseError(
-      `${pathLabel}.kind must be one of: MakerChecker, DistinctApprovers, IncompatibleDuties.`,
+      `${pathLabel}.kind must be one of: MakerChecker, DistinctApprovers, IncompatibleDuties, HazardousZoneNoSelfApproval, SafetyClassifiedZoneDualApproval, RemoteEstopRequesterSeparation.`,
     );
   }
 
@@ -177,6 +281,18 @@ function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV
     return { kind: 'DistinctApprovers', minimumApprovers };
   }
 
+  if (kind === 'HazardousZoneNoSelfApproval') {
+    return { kind: 'HazardousZoneNoSelfApproval' };
+  }
+
+  if (kind === 'SafetyClassifiedZoneDualApproval') {
+    return { kind: 'SafetyClassifiedZoneDualApproval' };
+  }
+
+  if (kind === 'RemoteEstopRequesterSeparation') {
+    return { kind: 'RemoteEstopRequesterSeparation' };
+  }
+
   const dutyKeys = readStringArray(record, 'dutyKeys', SodConstraintParseError);
   if (dutyKeys.length < 2) {
     throw new SodConstraintParseError(`${pathLabel}.dutyKeys must have length >= 2.`);
@@ -186,7 +302,12 @@ function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV
 
 function isSodConstraintKind(value: string): value is SodConstraintKind {
   return (
-    value === 'MakerChecker' || value === 'DistinctApprovers' || value === 'IncompatibleDuties'
+    value === 'MakerChecker' ||
+    value === 'DistinctApprovers' ||
+    value === 'IncompatibleDuties' ||
+    value === 'HazardousZoneNoSelfApproval' ||
+    value === 'SafetyClassifiedZoneDualApproval' ||
+    value === 'RemoteEstopRequesterSeparation'
   );
 }
 
@@ -244,9 +365,16 @@ export function evaluateApprovalRoutingSodV1(params: {
   approval: ApprovalPendingV1;
   proposedApproverId: UserIdType;
   previousApproverIds?: readonly UserIdType[];
+  robotContext?: RobotSodContextV1;
   constraints: readonly SodConstraintV1[];
 }): readonly SodViolationV1[] {
-  const { approval, proposedApproverId, previousApproverIds = [], constraints } = params;
+  const {
+    approval,
+    proposedApproverId,
+    previousApproverIds = [],
+    robotContext,
+    constraints,
+  } = params;
   const allApprovers = [...previousApproverIds, proposedApproverId];
 
   return evaluateSodConstraintsV1({
@@ -254,6 +382,7 @@ export function evaluateApprovalRoutingSodV1(params: {
     context: {
       initiatorUserId: approval.requestedByUserId,
       approverUserIds: allApprovers,
+      ...(robotContext ? { robotContext } : {}),
     },
   });
 }

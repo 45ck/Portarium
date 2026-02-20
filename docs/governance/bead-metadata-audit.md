@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:48:49.884Z
+Generated: 2026-02-20T02:59:43.554Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -8,7 +8,7 @@ Source: `.beads/issues.jsonl`
 - Total beads: 586
 - Fully compliant beads: 0
 - Non-compliant beads: 586
-- Missing owner: 584
+- Missing owner: 585
 - Missing close criteria: 456
 - Missing rollback trigger: 584
 
@@ -207,8 +207,8 @@ Source: `.beads/issues.jsonl`
 | bead-0189 | closed | (none) | owner, closeCriteria, rollbackTrigger | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
 | bead-0190 | closed | (none) | owner, closeCriteria, rollbackTrigger | Runbook review: validate rollback plan includes data, evidence, and credential cleanup actions |
 | bead-0191 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define acceptance scorecard for each Bead (spec alignment, tests, review, docs, security, performance) |
-| bead-0192 | open | codex-agent | closeCriteria, rollbackTrigger | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
-| bead-0193 | open | (none) | owner, closeCriteria, rollbackTrigger | E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests |
+| bead-0192 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
+| bead-0193 | closed | (none) | owner, closeCriteria, rollbackTrigger | E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests |
 | bead-0194 | open | (none) | owner, closeCriteria, rollbackTrigger | E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows |
 | bead-0195 | open | (none) | owner, closeCriteria, rollbackTrigger | Generate tenant-isolated fixture factories for every aggregate and port operation |
 | bead-0196 | open | (none) | owner, closeCriteria, rollbackTrigger | Review: verify tenant-isolated fixtures block cross-tenant leakage in tests and docs |

@@ -38,6 +38,7 @@ Owner: Principal Engineer
   - `npm run beads:audit:weekly`
   - `npm run beads:audit:metadata`
   - `npm run beads:audit:scorecard`
+  - `npm run beads:stop-loss:status`
 - Confirm next ready bead and claim:
   - `npm run bd -- issue next --priority P0`
   - `npm run bd -- issue claim bead-XXXX --by "<owner>"`

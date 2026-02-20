@@ -2,26 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { parseWorkItemV1 } from '../../domain/work-items/work-item-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import { createCanonicalWorkItemSeedV1 } from '../../domain/testing/canonical-seeds-v1.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
 import { type AuthorizationPort, type WorkItemStore } from '../ports/index.js';
 import { listWorkItems } from './list-work-items.js';
 
-const WORK_ITEM = parseWorkItemV1({
-  schemaVersion: 1,
-  workItemId: 'wi-1',
-  workspaceId: 'ws-1',
-  createdAtIso: '2026-02-17T00:00:00.000Z',
-  createdByUserId: 'user-1',
-  title: 'Link run/evidence chain for incident response',
-  status: 'Open',
-  links: {
-    runIds: ['run-1'],
-    workflowIds: ['wf-1'],
-    approvalIds: ['approval-1'],
-    evidenceIds: ['evi-1'],
-  },
-});
+const WORK_ITEM = parseWorkItemV1(createCanonicalWorkItemSeedV1());
 
 describe('listWorkItems', () => {
   it('passes linkage filters to store and returns page', async () => {

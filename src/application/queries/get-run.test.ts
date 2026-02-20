@@ -6,18 +6,9 @@ import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
 import { type AuthorizationPort, type RunStore } from '../ports/index.js';
 import { getRun } from './get-run.js';
+import { createCanonicalRunSeedV1 } from '../../domain/testing/canonical-seeds-v1.js';
 
-const RUN = parseRunV1({
-  schemaVersion: 1,
-  runId: 'run-1',
-  workspaceId: 'ws-1',
-  workflowId: 'wf-1',
-  correlationId: 'corr-1',
-  executionTier: 'Auto',
-  initiatedByUserId: 'user-1',
-  status: 'Pending',
-  createdAtIso: '2026-02-17T00:00:00.000Z',
-});
+const RUN = parseRunV1(createCanonicalRunSeedV1());
 
 describe('getRun', () => {
   it('returns run when present', async () => {

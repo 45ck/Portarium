@@ -1,16 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
+import { createCanonicalWorkspaceSeedV1 } from '../../domain/testing/canonical-seeds-v1.js';
 import { toAppContext } from '../common/context.js';
 import type { AuthorizationPort, WorkspaceQueryStore } from '../ports/index.js';
 import { listWorkspaces } from './list-workspaces.js';
 
-const WORKSPACE = parseWorkspaceV1({
-  workspaceId: 'ws-1',
-  tenantId: 'ws-1',
-  name: 'Demo',
-  createdAtIso: '2026-02-20T00:00:00.000Z',
-});
+const WORKSPACE = parseWorkspaceV1(createCanonicalWorkspaceSeedV1());
 
 describe('listWorkspaces', () => {
   it('returns paged workspaces when caller is authorized', async () => {

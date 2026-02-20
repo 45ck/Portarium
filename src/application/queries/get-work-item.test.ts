@@ -6,22 +6,9 @@ import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
 import { type AuthorizationPort, type WorkItemStore } from '../ports/index.js';
 import { getWorkItem } from './get-work-item.js';
+import { createCanonicalWorkItemSeedV1 } from '../../domain/testing/canonical-seeds-v1.js';
 
-const WORK_ITEM = parseWorkItemV1({
-  schemaVersion: 1,
-  workItemId: 'wi-1',
-  workspaceId: 'ws-1',
-  createdAtIso: '2026-02-17T00:00:00.000Z',
-  createdByUserId: 'user-1',
-  title: 'Binding object for cross-system remediation',
-  status: 'Open',
-  links: {
-    runIds: ['run-1'],
-    workflowIds: ['wf-1'],
-    approvalIds: ['approval-1'],
-    evidenceIds: ['evi-1'],
-  },
-});
+const WORK_ITEM = parseWorkItemV1(createCanonicalWorkItemSeedV1());
 
 describe('getWorkItem', () => {
   it('returns work item when present', async () => {
