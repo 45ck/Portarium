@@ -1,7 +1,7 @@
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import { useWorkforceQueues, useWorkforceMembers } from '@/hooks/queries/use-workforce';
+import { useWorkforceQueues } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
@@ -17,7 +17,6 @@ const strategyVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
 function WorkforceQueuesPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data: queuesData, isLoading: queuesLoading } = useWorkforceQueues(wsId);
-  const { data: membersData, isLoading: membersLoading } = useWorkforceMembers(wsId);
 
   const queues = queuesData?.items ?? [];
 
@@ -76,7 +75,7 @@ function WorkforceQueuesPage() {
       <DataTable
         columns={columns}
         data={queues}
-        loading={queuesLoading || membersLoading}
+        loading={queuesLoading}
         getRowKey={(row) => row.workforceQueueId}
         pagination={{ pageSize: 20 }}
       />

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { format, differenceInMinutes } from 'date-fns';
 import { Route as rootRoute } from '../__root';
@@ -40,13 +39,19 @@ function formatDuration(startedAtIso?: string, endedAtIso?: string): string {
   return `${hours}h ${remainingMins}m`;
 }
 
+interface RunsSearch {
+  status?: string;
+  tier?: string;
+}
+
 function RunsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({
-    status: 'all',
-    tier: 'all',
-  });
+  const search = Route.useSearch() as RunsSearch;
+  const filterValues: Record<string, string> = {
+    status: search.status ?? 'all',
+    tier: search.tier ?? 'all',
+  };
 
   const { data, isLoading, isError, refetch } = useRuns(wsId);
   const items = data?.items ?? [];
@@ -136,7 +141,13 @@ function RunsPage() {
           { key: 'tier', label: 'Tier', options: TIER_OPTIONS },
         ]}
         values={filterValues}
-        onChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
+        onChange={(key, value) =>
+          navigate({
+            to: '.' as string,
+            search: { ...search, [key]: value === 'all' ? undefined : value } as RunsSearch,
+            replace: true,
+          })
+        }
       />
 
       <DataTable
@@ -157,4 +168,8 @@ export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/runs',
   component: RunsPage,
+  validateSearch: (search: Record<string, unknown>): RunsSearch => ({
+    status: typeof search.status === 'string' ? search.status : undefined,
+    tier: typeof search.tier === 'string' ? search.tier : undefined,
+  }),
 });

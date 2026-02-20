@@ -4,6 +4,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 import { queryClient } from '@/lib/query-client';
 import { useTheme } from '@/hooks/use-theme';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { EntityIcon } from '@/components/domain/entity-icon';
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { CommandPalette } from '@/components/cockpit/command-palette';
 import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
+import { Toaster } from 'sonner';
 import {
   LayoutDashboard,
   Settings,
@@ -223,6 +225,17 @@ function NavLink({
   return link;
 }
 
+function InboxBadge({ wsId }: { wsId: string }) {
+  const { data } = useApprovals(wsId);
+  const pendingCount = (data?.items ?? []).filter((a) => a.status === 'Pending').length;
+  if (pendingCount === 0) return null;
+  return (
+    <span className="ml-auto rounded-full bg-primary/15 text-primary text-[10px] px-1.5 py-0.5 font-medium leading-none">
+      {pendingCount}
+    </span>
+  );
+}
+
 function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
@@ -304,6 +317,9 @@ function RootLayout() {
                           {!sidebarCollapsed && (
                             <span className="flex-1 text-left truncate">{item.label}</span>
                           )}
+                          {item.to === '/inbox' && !sidebarCollapsed && (
+                            <InboxBadge wsId={activeWorkspaceId} />
+                          )}
                         </NavLink>
                       ),
                     )
@@ -312,23 +328,41 @@ function RootLayout() {
               ))}
             </nav>
 
-            {/* Bottom: workspace selector */}
-            <div className="p-3 border-t border-border">
+            {/* Bottom: persona + workspace selector */}
+            <div className="p-3 border-t border-border space-y-2">
               {sidebarCollapsed ? (
-                <span className="text-[10px] text-muted-foreground truncate block text-center">
-                  {activeWorkspaceId.replace('ws-', '').slice(0, 3)}
-                </span>
+                <>
+                  <span className="text-[10px] text-muted-foreground truncate block text-center" title={activePersona}>
+                    {activePersona.slice(0, 2)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate block text-center">
+                    {activeWorkspaceId.replace('ws-', '').slice(0, 3)}
+                  </span>
+                </>
               ) : (
-                <Select value={activeWorkspaceId} onValueChange={setActiveWorkspaceId}>
-                  <SelectTrigger size="sm" className="w-full text-xs h-7">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ws-demo">ws-demo</SelectItem>
-                    <SelectItem value="ws-prod">ws-prod</SelectItem>
-                    <SelectItem value="ws-staging">ws-staging</SelectItem>
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select value={activePersona} onValueChange={(v) => setActivePersona(v as PersonaId)}>
+                    <SelectTrigger size="sm" className="w-full text-xs h-7">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Operator">Operator</SelectItem>
+                      <SelectItem value="Approver">Approver</SelectItem>
+                      <SelectItem value="Auditor">Auditor</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={activeWorkspaceId} onValueChange={setActiveWorkspaceId}>
+                    <SelectTrigger size="sm" className="w-full text-xs h-7">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ws-demo">ws-demo</SelectItem>
+                      <SelectItem value="ws-prod">ws-prod</SelectItem>
+                      <SelectItem value="ws-staging">ws-staging</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
               )}
             </div>
           </aside>
@@ -344,6 +378,7 @@ function RootLayout() {
         {/* Global overlays */}
         <CommandPalette />
         <KeyboardCheatsheet />
+        <Toaster position="bottom-right" />
       </TooltipProvider>
     </QueryClientProvider>
   );

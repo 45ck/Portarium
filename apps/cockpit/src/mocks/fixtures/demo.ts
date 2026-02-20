@@ -325,7 +325,6 @@ export const APPROVALS: ApprovalSummary[] = [
     workspaceId: 'ws-demo',
     runId: 'run-2007',
     planId: 'plan-5004',
-    workItemId: 'wi-1007',
     prompt:
       'Approve large supplier payment: €14,200 to Global Parts GmbH against PO-8821. Exceeds auto-approve threshold.',
     status: 'Pending',

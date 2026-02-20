@@ -262,6 +262,7 @@ export function ApprovalTriageCard({
   const [requestChangesMode, setRequestChangesMode] = useState(false)
   const [requestChangesMsg, setRequestChangesMsg] = useState('')
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null)
+  const [denyAttempted, setDenyAttempted] = useState(false)
 
   const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION
   const policyRule = approval.policyRule
@@ -299,8 +300,10 @@ export function ApprovalTriageCard({
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
       if ((e.key === 'a' || e.key === 'A') && !isBlocked && !loading)
         handleAction('Approved')
-      if ((e.key === 'd' || e.key === 'D') && rationale.trim() && !loading)
+      if ((e.key === 'd' || e.key === 'D') && !loading) {
+        if (!rationale.trim()) { setDenyAttempted(true); return }
         handleAction('Denied')
+      }
       if ((e.key === 'r' || e.key === 'R') && !requestChangesMode) setRequestChangesMode(true)
       if ((e.key === 's' || e.key === 'S') && !loading) handleAction('Skip')
     }
@@ -493,13 +496,19 @@ export function ApprovalTriageCard({
               <div className="space-y-3">
                 <Textarea
                   aria-label={`Decision rationale for approval ${approval.approvalId}`}
-                  className="text-xs min-h-[80px] resize-none"
+                  className={cn(
+                    'text-xs min-h-[80px] resize-none',
+                    denyAttempted && !rationale.trim() && 'border-yellow-500 focus-visible:ring-yellow-500',
+                  )}
                   placeholder="Decision rationale — optional for approve, required for deny…"
                   value={rationale}
-                  onChange={(e) => setRationale(e.target.value)}
+                  onChange={(e) => {
+                    setRationale(e.target.value)
+                    if (e.target.value.trim()) setDenyAttempted(false)
+                  }}
                 />
-                <p className="text-[10px] text-muted-foreground">
-                  Rationale is optional when approving, required when denying.
+                <p className="text-xs text-muted-foreground">
+                  Required when denying <span className="text-red-500">*</span>
                 </p>
 
                 <div role="group" aria-label="Make approval decision" className="grid grid-cols-4 gap-2">
@@ -518,8 +527,14 @@ export function ApprovalTriageCard({
                     variant="destructive"
                     size="sm"
                     className="h-12 flex-col gap-1"
-                    disabled={!rationale.trim() || Boolean(loading)}
-                    onClick={() => handleAction('Denied')}
+                    disabled={Boolean(loading)}
+                    onClick={() => {
+                      if (!rationale.trim()) {
+                        setDenyAttempted(true)
+                        return
+                      }
+                      handleAction('Denied')
+                    }}
                     title="Deny (D)"
                     aria-keyshortcuts="d"
                   >

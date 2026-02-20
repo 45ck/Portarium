@@ -13,6 +13,9 @@ import type {
 import { buildMockWorkflows, findMockWorkflowById } from './fixtures/workflows'
 import { buildMockHumanTasks } from './fixtures/human-tasks'
 import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from './fixtures/robot-locations'
+import { MOCK_USERS, type UserSummary } from './fixtures/users'
+import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from './fixtures/policies'
+import { MOCK_GATEWAYS } from './fixtures/gateways'
 
 // ---------------------------------------------------------------------------
 // Mutable dataset reference — replaced at bootstrap via loadActiveDataset()
@@ -25,6 +28,9 @@ let approvals: MeridianDataset['APPROVALS'] = []
 let credentialGrants: CredentialGrantV1[] = []
 let humanTasks: HumanTaskSummary[] = []
 let workItems: MeridianDataset['WORK_ITEMS'] = []
+let users: UserSummary[] = [...MOCK_USERS]
+let agents: MeridianDataset['AGENTS'] = []
+let runs: MeridianDataset['RUNS'] = []
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index')
@@ -36,6 +42,8 @@ export async function loadActiveDataset(): Promise<void> {
   workItems = [...data.WORK_ITEMS]
   credentialGrants = [...data.CREDENTIAL_GRANTS]
   humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS)
+  agents = [...data.AGENTS]
+  runs = [...data.RUNS]
 }
 
 export const handlers = [
@@ -62,22 +70,49 @@ export const handlers = [
 
   // Runs
   http.get('/v1/workspaces/:wsId/runs', () =>
-    HttpResponse.json({ items: data?.RUNS ?? [] }),
+    HttpResponse.json({ items: runs }),
   ),
   http.get('/v1/workspaces/:wsId/runs/:runId', ({ params }) => {
-    const run = data?.RUNS.find((r) => r.runId === params['runId'])
+    const run = runs.find((r) => r.runId === params['runId'])
     if (!run) return HttpResponse.json(null, { status: 404 })
     return HttpResponse.json(run)
+  }),
+  http.post('/v1/workspaces/:wsId/runs', async ({ request, params }) => {
+    const body = (await request.json()) as { workflowId: string; parameters?: Record<string, unknown> }
+    const wsId = String(params['wsId'] ?? 'ws-demo')
+    const newRun = {
+      schemaVersion: 1,
+      runId: `run-${Date.now()}`,
+      workspaceId: wsId,
+      workflowId: body.workflowId,
+      correlationId: `corr-${Date.now()}`,
+      executionTier: 'Auto' as const,
+      initiatedByUserId: 'user-001',
+      status: 'Running' as const,
+      createdAtIso: new Date().toISOString(),
+      startedAtIso: new Date().toISOString(),
+    }
+    runs = [newRun, ...runs]
+    return HttpResponse.json(newRun, { status: 201 })
+  }),
+  http.post('/v1/workspaces/:wsId/runs/:runId/cancel', ({ params }) => {
+    const runId = String(params['runId'] ?? '')
+    runs = runs.map((r) =>
+      r.runId === runId ? { ...r, status: 'Cancelled' as const, endedAtIso: new Date().toISOString() } : r,
+    )
+    const updated = runs.find((r) => r.runId === runId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
   }),
 
   // Workflows
   http.get('/v1/workspaces/:wsId/workflows', () =>
-    HttpResponse.json({ items: buildMockWorkflows(data?.RUNS ?? [], data?.AGENTS ?? []) }),
+    HttpResponse.json({ items: buildMockWorkflows(runs, agents) }),
   ),
   http.get('/v1/workspaces/:wsId/workflows/:workflowId', ({ params }) => {
     const workflow = findMockWorkflowById(
-      data?.RUNS ?? [],
-      data?.AGENTS ?? [],
+      runs,
+      agents,
       String(params['workflowId'] ?? ''),
     )
     if (!workflow) return HttpResponse.json(null, { status: 404 })
@@ -135,8 +170,24 @@ export const handlers = [
 
   // Agents
   http.get('/v1/workspaces/:wsId/agents', () =>
-    HttpResponse.json({ items: data?.AGENTS ?? [] }),
+    HttpResponse.json({ items: agents }),
   ),
+  http.post('/v1/workspaces/:wsId/agents', async ({ request, params }) => {
+    const body = (await request.json()) as { name: string; endpoint: string; modelId?: string; allowedCapabilities?: string[] }
+    const wsId = String(params['wsId'] ?? 'ws-demo')
+    const newAgent = {
+      schemaVersion: 1 as const,
+      agentId: `agent-${Date.now()}`,
+      workspaceId: wsId,
+      name: body.name,
+      endpoint: body.endpoint,
+      modelId: body.modelId,
+      allowedCapabilities: (body.allowedCapabilities ?? []) as import('@portarium/cockpit-types').AgentCapability[],
+      usedByWorkflowIds: [],
+    }
+    agents = [newAgent, ...agents]
+    return HttpResponse.json(newAgent, { status: 201 })
+  }),
 
   // Adapters
   http.get('/v1/workspaces/:wsId/adapters', () =>
@@ -257,5 +308,54 @@ export const handlers = [
   ),
   http.get('/v1/workspaces/:wsId/robotics/safety/estop-log', () =>
     HttpResponse.json({ items: data?.ESTOP_AUDIT_LOG ?? [] }),
+  ),
+
+  // Users
+  http.get('/v1/workspaces/:wsId/users', () =>
+    HttpResponse.json({ items: users }),
+  ),
+  http.post('/v1/workspaces/:wsId/users/invite', async ({ request, params }) => {
+    const body = (await request.json()) as { email: string; role: string }
+    const wsId = String(params['wsId'] ?? 'ws-demo')
+    const newUser: UserSummary = {
+      userId: `user-${Date.now()}`,
+      name: body.email.split('@')[0] ?? 'New User',
+      email: body.email,
+      role: body.role as UserSummary['role'],
+      status: 'active',
+      lastActiveIso: new Date().toISOString(),
+    }
+    users = [newUser, ...users]
+    return HttpResponse.json(newUser, { status: 201 })
+  }),
+  http.patch('/v1/workspaces/:wsId/users/:userId', async ({ request, params }) => {
+    const body = (await request.json()) as Partial<Pick<UserSummary, 'role' | 'status'>>
+    const userId = String(params['userId'] ?? '')
+    users = users.map((u) =>
+      u.userId === userId ? { ...u, ...body } : u,
+    )
+    const updated = users.find((u) => u.userId === userId)
+    if (!updated) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(updated)
+  }),
+
+  // Policies
+  http.get('/v1/workspaces/:wsId/policies', () =>
+    HttpResponse.json({ items: MOCK_POLICIES }),
+  ),
+  http.get('/v1/workspaces/:wsId/policies/:policyId', ({ params }) => {
+    const policy = MOCK_POLICIES.find((p) => p.policyId === params['policyId'])
+    if (!policy) return HttpResponse.json(null, { status: 404 })
+    return HttpResponse.json(policy)
+  }),
+
+  // SoD Constraints
+  http.get('/v1/workspaces/:wsId/sod-constraints', () =>
+    HttpResponse.json({ items: MOCK_SOD_CONSTRAINTS }),
+  ),
+
+  // Robotics — Gateways
+  http.get('/v1/workspaces/:wsId/robotics/gateways', () =>
+    HttpResponse.json({ items: MOCK_GATEWAYS }),
   ),
 ]

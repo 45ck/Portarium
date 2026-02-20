@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { createRoute, useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { Route as rootRoute } from '../__root';
@@ -18,22 +17,30 @@ const STATUS_FILTERS = [
   { label: 'Closed', value: 'Closed' },
 ];
 
-const OWNER_FILTERS = [
-  { label: 'alex', value: 'user-ops-alex' },
-  { label: 'sam', value: 'user-ops-sam' },
-  { label: 'dana', value: 'user-approver-dana' },
-];
+interface WorkItemsSearch {
+  status?: string;
+  owner?: string;
+}
 
 function WorkItemsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({
-    status: 'all',
-    owner: 'all',
-  });
+  const search = Route.useSearch() as WorkItemsSearch;
+  const filterValues: Record<string, string> = {
+    status: search.status ?? 'all',
+    owner: search.owner ?? 'all',
+  };
 
   const { data, isLoading, isError, refetch } = useWorkItems(wsId);
   const items = data?.items ?? [];
+
+  const ownerFilters = Array.from(
+    new Map(
+      items
+        .filter((i) => Boolean(i.ownerUserId))
+        .map((i) => [i.ownerUserId!, { label: i.ownerUserId!.replace(/^user-/, ''), value: i.ownerUserId! }]),
+    ).values(),
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const filtered = items.filter((item) => {
     if (filterValues.status && filterValues.status !== 'all' && item.status !== filterValues.status)
@@ -124,10 +131,16 @@ function WorkItemsPage() {
       <FilterBar
         filters={[
           { key: 'status', label: 'Status', options: STATUS_FILTERS },
-          { key: 'owner', label: 'Owner', options: OWNER_FILTERS },
+          { key: 'owner', label: 'Owner', options: ownerFilters },
         ]}
         values={filterValues}
-        onChange={(key, value) => setFilterValues((prev) => ({ ...prev, [key]: value }))}
+        onChange={(key, value) =>
+          navigate({
+            to: '.' as string,
+            search: { ...search, [key]: value === 'all' ? undefined : value } as WorkItemsSearch,
+            replace: true,
+          })
+        }
       />
 
       <DataTable
@@ -151,4 +164,8 @@ export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/work-items',
   component: WorkItemsPage,
+  validateSearch: (search: Record<string, unknown>): WorkItemsSearch => ({
+    status: typeof search.status === 'string' ? search.status : undefined,
+    owner: typeof search.owner === 'string' ? search.owner : undefined,
+  }),
 });

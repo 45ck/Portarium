@@ -27,7 +27,7 @@ function WorkItemDetailPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
 
-  const { data: item, isLoading: itemLoading } = useWorkItem(wsId, workItemId);
+  const { data: item, isLoading: itemLoading, isError: itemError } = useWorkItem(wsId, workItemId);
   const runs = useRuns(wsId);
   const approvals = useApprovals(wsId);
   const evidence = useEvidence(wsId);
@@ -36,11 +36,26 @@ function WorkItemDetailPage() {
   const workforceMembers = membersData?.items ?? [];
   const ownerMember = workforceMembers.find((m) => m.linkedUserId === item?.ownerUserId);
 
-  if (itemLoading || !item) {
+  if (itemLoading) {
     return (
       <div className="p-6 space-y-4">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (itemError || !item) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader
+          title="Work Item Not Found"
+          icon={<EntityIcon entityType="work-item" size="md" decorative />}
+          breadcrumb={[{ label: 'Work Items', to: '/work-items' }]}
+        />
+        <p className="text-sm text-muted-foreground">
+          The work item <span className="font-mono">{workItemId}</span> does not exist or could not be loaded.
+        </p>
       </div>
     );
   }
