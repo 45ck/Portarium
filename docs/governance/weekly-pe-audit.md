@@ -1,15 +1,15 @@
 # Weekly PE Audit: Orphaned Beads And Dependency Deadlocks
 
-Generated: 2026-02-20T02:35:56.712Z
+Generated: 2026-02-20T02:36:36.474Z
 Week of: 2026-02-16
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
 
-- Open beads: 174
+- Open beads: 172
 - Open dependency edges: 25
 - Open beads blocked by open prerequisites: 20
-- Orphaned beads: 145
+- Orphaned beads: 143
 - Deadlock cycles: 0
 - Beads participating in deadlocks: 0
 
@@ -36,7 +36,6 @@ Source: `.beads/issues.jsonl`
 | bead-0182 | -- | unspecified | Test evidence: require mutation-test or targeted fault-injection tests for policy and SoD logic before closure |
 | bead-0183 | -- | unspecified | Review: tie each spec in .specify/specs to at least one implementation and one test bead |
 | bead-0184 | -- | unspecified | Review: tie each open implementation bead to at least one test evidence bead and one code-review bead before transition |
-| bead-0187 | -- | unspecified | Onboarding: explain CLAUDE.md, docs, beading schema, and review/closure requirements |
 | bead-0188 | -- | unspecified | Runbook: start-to-finish execution order with owner assignments for Domain Atlas, adapter families, control-plane API, and evidence pipeline |
 | bead-0189 | -- | unspecified | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
 | bead-0190 | -- | unspecified | Runbook review: validate rollback plan includes data, evidence, and credential cleanup actions |
@@ -160,7 +159,6 @@ Source: `.beads/issues.jsonl`
 | bead-0445 | -- | unspecified | Governance: OpenClaw multi-tenant isolation strategy - per-workspace or per-security-domain Gateway deployment model; credential scoping; network isolation requirements; documented decision record |
 | bead-0448 | P1 | domain | Spec: Policy evaluation rule language — decide and document condition grammar for PolicyInlineRuleV1.condition (CEL, OPA/Rego, or constrained DSL) and implement evaluator; current bare-string condition is ambiguous, unevaluable, and a security risk |
 | bead-0518 | P2 | infrastructure | Infra: OPC UA connector prototype using node-opcua for industrial PLC actuation |
-| bead-0524 | P2 | governance | Governance: machinery compliance planning — ISO 12100 risk assessment and EU/UK/US regulations timeline |
 | bead-0586 | P1 | presentation | Cockpit assets: domain icon gap expansion + transparent icon pipeline |
 
 ## Dependency Deadlocks

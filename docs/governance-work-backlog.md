@@ -246,6 +246,7 @@ Goal: runbooks, onboarding, and rollback procedures documented.
 - STORY-V09.2 — bead-0188
   - Runbook: start-to-finish execution order with owner assignments.
   - AC: execution order documented; owners assigned.
+  - Artifact: `docs/governance/execution-order-runbook.md`
 - STORY-V09.3 — bead-0189
   - Runbook: rollback plan for failing cycle.
   - AC: freeze scope, rollback scope, communication template documented.
