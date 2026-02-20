@@ -32,7 +32,7 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 
 1. **Types-only domain layer** -- No runtime logic in entity/event definitions. Pure interfaces and type definitions that compile to nothing. Runtime behaviour lives in domain services (pure functions) and application services.
 
-2. **Branded primitives everywhere** -- Every ID is a branded type (`TenantId`, `WorkflowId`, etc.) preventing accidental mixing. See `src/domain/primitives/`.
+2. **Branded primitives everywhere** -- Every ID is a branded type (`TenantId`, `WorkflowId`, etc.) preventing accidental mixing. `WorkspaceId` is a v1 alias of `TenantId` with a compile-time guard (`WORKSPACE_ID_ALIAS_GUARD`) to prevent drift. See `src/domain/primitives/`.
 
 3. **Canonical objects as cross-system bridges** -- Fourteen canonical entity types (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account, ExternalObjectRef) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
 

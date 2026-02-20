@@ -40,10 +40,19 @@ import {
   unbrand,
   WorkItemId,
   WORKSPACE_ID_ALIAS_GUARD,
+  type WorkspaceIdEqualsTenantId,
 } from './index.js';
 
 // Compile-time assertion: WORKSPACE_ID_ALIAS_GUARD is typed as WorkspaceIdEqualsTenantId.
 // If the alias breaks, the assignment in index.ts (true as WorkspaceIdEqualsTenantId) becomes a TS error.
+type AssertTrue<T extends true> = T;
+const _workspaceAliasCompileTimeCheck: AssertTrue<WorkspaceIdEqualsTenantId> = true;
+// Deliberate violation: guard is `true`, never `false`.
+// @ts-expect-error WorkspaceId/TenantId alias guard must not be false.
+const _workspaceAliasDeliberateViolation: false = WORKSPACE_ID_ALIAS_GUARD;
+void _workspaceAliasCompileTimeCheck;
+void _workspaceAliasDeliberateViolation;
+
 describe('domain primitives', () => {
   it('WorkspaceId is a compile-time alias for TenantId (guard is true at runtime)', () => {
     expect(WORKSPACE_ID_ALIAS_GUARD).toBe(true);
