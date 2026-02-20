@@ -24,6 +24,7 @@ Use this page to pick the shortest path for what you are trying to do.
 6. `docs/governance/execution-order-runbook.md`
 7. `docs/governance/failing-cycle-rollback-runbook.md`
 8. `docs/governance/bead-acceptance-scorecard.md`
+9. `docs/governance/bead-stop-loss-thresholds.md`
 
 ## I Want Contracts and Technical Facts
 

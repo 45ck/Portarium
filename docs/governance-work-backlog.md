@@ -84,6 +84,7 @@ Goal: prevent orphaned work, enforce quality standards, enable audit.
 - STORY-V04.6 — bead-0192
   - PE quality: stop-loss thresholds (risk score, failed gates, open decisions) that force cycle halt.
   - AC: thresholds documented; enforcement mechanism in place.
+  - Artifact: `docs/governance/bead-stop-loss-thresholds.md`
 
 ### EPIC-V05 — Code review gates
 

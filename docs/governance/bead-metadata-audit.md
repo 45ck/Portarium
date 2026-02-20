@@ -1,6 +1,6 @@
 # Bead Metadata Audit: Owner, Close Criteria, Rollback Trigger
 
-Generated: 2026-02-20T02:46:00.502Z
+Generated: 2026-02-20T02:48:49.884Z
 Source: `.beads/issues.jsonl`
 
 ## Snapshot
@@ -8,7 +8,7 @@ Source: `.beads/issues.jsonl`
 - Total beads: 586
 - Fully compliant beads: 0
 - Non-compliant beads: 586
-- Missing owner: 586
+- Missing owner: 584
 - Missing close criteria: 456
 - Missing rollback trigger: 584
 
@@ -207,7 +207,7 @@ Source: `.beads/issues.jsonl`
 | bead-0189 | closed | (none) | owner, closeCriteria, rollbackTrigger | Runbook: rollback plan for failing cycle (what to freeze, rollback scope, and communication template) |
 | bead-0190 | closed | (none) | owner, closeCriteria, rollbackTrigger | Runbook review: validate rollback plan includes data, evidence, and credential cleanup actions |
 | bead-0191 | closed | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define acceptance scorecard for each Bead (spec alignment, tests, review, docs, security, performance) |
-| bead-0192 | open | (none) | owner, closeCriteria, rollbackTrigger | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
+| bead-0192 | open | codex-agent | closeCriteria, rollbackTrigger | PE quality: define stop-loss thresholds (risk score, failed gates, unresolved open decisions) that force cycle halt |
 | bead-0193 | open | (none) | owner, closeCriteria, rollbackTrigger | E2E data-model: define canonical seeds for workspace, policy, run, evidence, and work-item across all tests |
 | bead-0194 | open | (none) | owner, closeCriteria, rollbackTrigger | E2E data-model: define synthetic evidence and retention fixtures for proof-of-retention and legal-hold workflows |
 | bead-0195 | open | (none) | owner, closeCriteria, rollbackTrigger | Generate tenant-isolated fixture factories for every aggregate and port operation |
@@ -538,7 +538,7 @@ Source: `.beads/issues.jsonl`
 | bead-0520 | open | (none) | owner, rollbackTrigger | Security: SROS2 and DDS-Security hardening for ROS 2 mission traffic across trust boundaries |
 | bead-0521 | open | (none) | owner, rollbackTrigger | Security: mTLS workload identity for robot gateways using SPIFFE/SPIRE |
 | bead-0522 | closed | (none) | owner, rollbackTrigger | Governance: safety-aware policy tiers — HumanApprove mandatory for hazardous robot actions |
-| bead-0523 | open | (none) | owner, rollbackTrigger | Governance: SoD constraints for robot control — operator cannot approve own mission in hazardous zones |
+| bead-0523 | open | codex | rollbackTrigger | Governance: SoD constraints for robot control — operator cannot approve own mission in hazardous zones |
 | bead-0524 | closed | (none) | owner, rollbackTrigger | Governance: machinery compliance planning — ISO 12100 risk assessment and EU/UK/US regulations timeline |
 | bead-0525 | closed | (none) | owner, rollbackTrigger | Presentation: Cockpit Robots and Fleet screen — enrolment, health, connectivity, capability matrix |
 | bead-0526 | closed | (none) | owner, rollbackTrigger | Presentation: Cockpit Missions screen — create/submit, monitor feedback, pre-empt/cancel, post-run evidence |
