@@ -1,0 +1,124 @@
+name: OpenAPI SDKs
+
+on:
+  pull_request:
+    paths:
+      - 'docs/spec/openapi/**'
+      - 'scripts/codegen/**'
+      - '.github/workflows/openapi-sdks.yml'
+      - 'package.json'
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/spec/openapi/**'
+      - 'scripts/codegen/**'
+      - '.github/workflows/openapi-sdks.yml'
+      - 'package.json'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: openapi-sdks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install repo deps
+        run: npm ci
+
+      - name: Install Python SDK generator deps
+        run: python -m pip install --upgrade pip openapi-python-client build twine
+
+      - name: Generate TypeScript SDK
+        run: npm run codegen:sdk && npm run codegen:sdk:package:ts
+
+      - name: Generate Python SDK
+        run: bash ./scripts/codegen/generate-python-client.sh
+
+      - name: Build Python package artifacts
+        run: python -m build sdks/python/portarium-client
+
+      - name: Pack TypeScript SDK
+        run: npm pack
+        working-directory: sdks/typescript/portarium-openapi-client
+
+      - name: Upload TypeScript SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-openapi-sdk
+          path: sdks/typescript/portarium-openapi-client/*.tgz
+
+      - name: Upload Python SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-openapi-sdk
+          path: sdks/python/portarium-client/dist/*
+
+  publish:
+    if: github.event_name == 'release'
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Python publish deps
+        run: python -m pip install --upgrade pip openapi-python-client build twine
+
+      - name: Generate SDK packages
+        run: npm run codegen:sdk && npm run codegen:sdk:package:ts && bash ./scripts/codegen/generate-python-client.sh
+
+      - name: Build Python dist
+        run: python -m build sdks/python/portarium-client
+
+      - name: Publish TypeScript SDK to npm
+        if: ${{ secrets.NPM_TOKEN != '' }}
+        run: npm publish --access public
+        working-directory: sdks/typescript/portarium-openapi-client
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Python SDK to PyPI
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+        run: python -m twine upload --non-interactive sdks/python/portarium-client/dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
