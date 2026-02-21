@@ -38,7 +38,8 @@ ADR-0053 implementation coverage currently maps to:
 - `bead-0035` (closed): tamper-evident evidence chain and signature hooks.
 - `bead-0045` (closed): containment and least-privilege boundary hardening.
 - `bead-0605` (closed): ADR closure mapping bead for implementation/evidence linkage.
-- `bead-0606` (open): ADR linkage verification review bead.
+- `bead-0606` (closed): ADR linkage verification review bead.
+- `bead-0688` (closed): reference-pack compliance profile asset wiring and parsing coverage.
 
 ## Acceptance Evidence
 
@@ -56,8 +57,8 @@ ADR-0053 implementation coverage currently maps to:
   - `src/domain/evidence/evidence-chain-v1.ts`
 - Review artifact:
   - `docs/review/bead-0605-adr-0053-implementation-mapping-review.md`
+  - `docs/review/bead-0688-pack-compliance-enablement-review.md`
 
 ## Remaining Gap Tracking
 
-- `bead-0688` (open): wire compliance profile assets end-to-end in the reference pack manifest
-  and parsing tests to fully align ADR evidence with runtime pack artefacts.
+- No open ADR-0053 enforcement gaps remain in this repository scope.

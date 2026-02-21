@@ -11,6 +11,7 @@
     "workflows": ["workflows/change-request-lifecycle.json"],
     "uiTemplates": ["ui-templates/change-request-form.json"],
     "mappings": ["mappings/change-ticket-mapping.json"],
-    "testAssets": ["tests/change-evidence-fixture.json"]
+    "testAssets": ["tests/change-evidence-fixture.json"],
+    "complianceProfiles": ["compliance/scm-change-governance.json"]
   }
 }

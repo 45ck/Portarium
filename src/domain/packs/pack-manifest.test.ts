@@ -15,6 +15,7 @@ describe('pack-manifest: happy path', () => {
         workflows: ['workflows/change-request.json'],
         uiTemplates: ['ui/change-request.form.json'],
         mappings: ['mappings/github.json'],
+        complianceProfiles: ['compliance/scm-change-governance.json'],
       },
     });
 
@@ -22,6 +23,7 @@ describe('pack-manifest: happy path', () => {
     expect(m.kind).toBe('VerticalPack');
     expect(m.displayName).toBe('Software Change Management');
     expect(m.assets.workflows).toEqual(['workflows/change-request.json']);
+    expect(m.assets.complianceProfiles).toEqual(['compliance/scm-change-governance.json']);
   });
 });
 
