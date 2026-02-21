@@ -1,11 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { createRoute, useNavigate } from '@tanstack/react-router';
-import { format } from 'date-fns';
+import { createRoute } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { usePlan } from '@/hooks/queries/use-plan';
 import { useEvidence } from '@/hooks/queries/use-evidence';
@@ -13,23 +11,16 @@ import { useRun } from '@/hooks/queries/use-runs';
 import { useWorkflow } from '@/hooks/queries/use-workflows';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { DataTable } from '@/components/cockpit/data-table';
-import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { type TriageAction } from '@/components/cockpit/approval-triage-card';
 import { ApprovalTriageDeck } from '@/components/cockpit/approval-triage-deck';
-import { ApprovalTriageLayout } from '@/components/cockpit/approval-triage-layout';
 import {
   TriageCompleteState,
   type TriageSessionStats,
 } from '@/components/cockpit/triage-complete-state';
 import { EmptyState } from '@/components/cockpit/empty-state';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { CheckSquare, AlertCircle, RotateCcw, List } from 'lucide-react';
+import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ApprovalListPanel } from '@/components/cockpit/approval-list-panel';
-import type { ApprovalSummary, ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -316,60 +307,14 @@ function ApprovalsPage() {
     );
   }
 
-  // ----- Desktop: split-panel layout -----
-  if (!isMobile) {
-    return (
-      <ApprovalTriageLayout
-        items={items}
-        pendingCount={pendingItems.length}
-        selectedId={currentApproval?.approvalId ?? null}
-        onSelect={handleListSelect}
-      >
-        {triageContent}
-      </ApprovalTriageLayout>
-    );
-  }
-
-  // ----- Mobile: full-screen card with list drawer -----
+  // ----- Standard layout (desktop & mobile) -----
   return (
-    <div className="flex flex-col h-full">
-      {/* Compact header */}
-      <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2">
-          <h1 className="text-base font-semibold" role="heading" aria-level={1}>
-            Approvals
-          </h1>
-          {pendingItems.length > 0 && (
-            <Badge variant="secondary" className="text-[10px]">
-              {pendingItems.length}
-            </Badge>
-          )}
-        </div>
-        <Button variant="outline" size="sm" className="h-8" onClick={() => setMobileListOpen(true)}>
-          <List className="h-3.5 w-3.5 mr-1.5" />
-          All
-        </Button>
-      </div>
-
-      {/* Full-height deck area */}
-      <div className="flex-1 min-h-0 px-3 pb-3">{triageContent}</div>
-
-      {/* Mobile list drawer */}
-      <Drawer open={mobileListOpen} onOpenChange={setMobileListOpen} snapPoints={[0.35, 0.65, 1]}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>All Approvals</DrawerTitle>
-          </DrawerHeader>
-          <div className="flex-1 overflow-hidden">
-            <ApprovalListPanel
-              items={items}
-              pendingCount={pendingItems.length}
-              selectedId={currentApproval?.approvalId ?? null}
-              onSelect={handleListSelect}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
+    <div className="p-6 space-y-4">
+      <PageHeader
+        title="Approvals"
+        icon={<EntityIcon entityType="approval" size="md" decorative />}
+      />
+      {triageContent}
     </div>
   );
 }
