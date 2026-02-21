@@ -33,4 +33,4 @@ Adopt **framer-motion** (v11) as the gesture and animation engine for the triage
 - **Existing CSS animations** for mode sub-components (`animate-replay-step`,
   `animate-signal-fade-in`, `animate-graph-node-in`, `animate-queue-clear-ring`)
   remain as-is — framer-motion is scoped to the triage deck and card transitions.
-- `use-swipe-gesture.ts` is deprecated and will be deleted once the deck is stable.
+- `use-swipe-gesture.ts` has been removed after deck stabilization.

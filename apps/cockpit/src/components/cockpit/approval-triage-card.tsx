@@ -397,7 +397,6 @@ export function ApprovalTriageCard({
   const [rationale, setRationale] = useState('');
   const [requestChangesMode, setRequestChangesMode] = useState(false);
   const [requestChangesMsg, setRequestChangesMsg] = useState('');
-  const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null);
   const [denyAttempted, setDenyAttempted] = useState(false);
   const [rationaleHasFocus, setRationaleHasFocus] = useState(false);
 
@@ -418,30 +417,12 @@ export function ApprovalTriageCard({
           setRequestChangesMode(true);
           return;
         }
-        if (externalDrag) {
-          onAction(approval.approvalId, action, requestChangesMsg);
-          return;
-        }
-        const dir: 'left' | 'right' = 'left';
-        setExitDir(dir);
-        setTimeout(() => {
-          setExitDir(null);
-          onAction(approval.approvalId, action, requestChangesMsg);
-        }, 320);
+        onAction(approval.approvalId, action, requestChangesMsg);
         return;
       }
-      if (externalDrag) {
-        onAction(approval.approvalId, action, rationale);
-        return;
-      }
-      const dir: 'left' | 'right' = action === 'Approved' ? 'right' : 'left';
-      setExitDir(dir);
-      setTimeout(() => {
-        setExitDir(null);
-        onAction(approval.approvalId, action, rationale);
-      }, 320);
+      onAction(approval.approvalId, action, rationale);
     },
-    [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg, externalDrag],
+    [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg],
   );
 
   // Keyboard shortcuts
@@ -562,8 +543,7 @@ export function ApprovalTriageCard({
             !externalDrag && !exitDir && 'animate-triage-in',
             !externalDrag && !exitDir && !isDragging && 'cursor-grab',
           )}
-          style={{ zIndex: 2, ...(!externalDrag && !exitDir ? dragStyle : {}) }}
-          {...(!externalDrag && !exitDir ? pointerHandlers : {})}
+          style={{ zIndex: 2 }}
         >
           {/* Directional tint overlay — skipped when deck owns drag visuals */}
           {!externalDrag && isDragging && !exitDir && Math.abs(dragProgress) > 0.05 && (

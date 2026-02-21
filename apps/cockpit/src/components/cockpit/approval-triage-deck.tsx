@@ -77,10 +77,6 @@ export function ApprovalTriageDeck({
   const ghost2Scale = useTransform(x, [-300, 0, 300], [0.97, 0.94, 0.97]);
   const ghost2Y = useTransform(x, [-300, 0, 300], [4, 8, 4]);
 
-  // Tint overlay opacity
-  const greenTint = useTransform(x, [0, COMMIT_PX * 2], [0, 0.12]);
-  const redTint = useTransform(x, [-COMMIT_PX * 2, 0], [0.12, 0]);
-
   // Stamp opacity
   const stampThreshold = compact ? 0.2 : STAMP_THRESHOLD;
   const approveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
