@@ -73,7 +73,7 @@ function ApprovalsPage() {
 
   // If a specific approval is selected from the list, use that; otherwise use the queue head
   const selectedFromList = selectedApprovalId
-    ? pendingItems.find((a) => a.approvalId === selectedApprovalId) ?? null
+    ? (pendingItems.find((a) => a.approvalId === selectedApprovalId) ?? null)
     : null;
   const currentApproval = selectedFromList ?? triageQueue[0] ?? null;
 
@@ -345,21 +345,14 @@ function ApprovalsPage() {
             </Badge>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8"
-          onClick={() => setMobileListOpen(true)}
-        >
+        <Button variant="outline" size="sm" className="h-8" onClick={() => setMobileListOpen(true)}>
           <List className="h-3.5 w-3.5 mr-1.5" />
           All
         </Button>
       </div>
 
       {/* Full-height deck area */}
-      <div className="flex-1 min-h-0 px-3 pb-3">
-        {triageContent}
-      </div>
+      <div className="flex-1 min-h-0 px-3 pb-3">{triageContent}</div>
 
       {/* Mobile list drawer */}
       <Drawer open={mobileListOpen} onOpenChange={setMobileListOpen} snapPoints={[0.35, 0.65, 1]}>

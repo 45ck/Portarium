@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import type {
   ApprovalSummary,
@@ -532,15 +533,16 @@ export function ApprovalTriageCard({
                     : 'bg-muted';
             const justCompleted = i === index - 1 && action;
             return (
-              <div
+              <motion.div
                 key={`${approval.approvalId}-${i}`}
                 className={cn(
                   'h-1.5 rounded-full transition-all duration-300 shrink-0',
                   i === index ? 'w-6 sm:w-8' : 'w-3 sm:w-5',
                   dotColor,
-                  justCompleted && 'animate-dot-complete',
                   i === index && 'animate-pulse',
                 )}
+                animate={justCompleted ? { scale: [1, 1.8, 1] } : undefined}
+                transition={justCompleted ? { duration: 0.3, ease: 'easeOut' } : undefined}
               />
             );
           })}
@@ -740,51 +742,59 @@ export function ApprovalTriageCard({
             {/* SoD evaluation — always visible */}
             <SodBanner eval={sodEval} />
 
-            {/* Mode-specific content — keyed crossfade so mode switches don't jolt the card */}
+            {/* Mode-specific content — AnimatePresence crossfade on mode switch */}
             <ModeErrorBoundary modeKey={triageViewMode}>
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain rounded-lg">
-                <div key={triageViewMode} className="animate-mode-crossfade">
-                  {triageViewMode === 'default' ? (
-                    <>
-                      {/* Provenance journey — shows how this approval got here */}
-                      <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={triageViewMode}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {triageViewMode === 'default' ? (
+                      <>
+                        {/* Provenance journey — shows how this approval got here */}
+                        <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
 
-                      {/* Policy rule — shown when available */}
-                      {policyRule && (
-                        <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
-                          <PolicyRulePanel rule={policyRule} />
-                        </div>
-                      )}
-
-                      {/* Planned effects panel */}
-                      {plannedEffects.length > 0 && (
-                        <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-                          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-                            What will happen if approved
-                          </p>
-                          <div className="divide-y divide-border/40">
-                            {plannedEffects.map((e) => (
-                              <TriageEffectRow key={e.effectId} effect={e} />
-                            ))}
+                        {/* Policy rule — shown when available */}
+                        {policyRule && (
+                          <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
+                            <PolicyRulePanel rule={policyRule} />
                           </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    (() => {
-                      const ModeComponent = MODE_COMPONENTS[triageViewMode];
-                      return ModeComponent ? (
-                        <ModeComponent
-                          approval={approval}
-                          plannedEffects={plannedEffects}
-                          evidenceEntries={evidenceEntries}
-                          run={run}
-                          workflow={workflow}
-                        />
-                      ) : null;
-                    })()
-                  )}
-                </div>
+                        )}
+
+                        {/* Planned effects panel */}
+                        {plannedEffects.length > 0 && (
+                          <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                              What will happen if approved
+                            </p>
+                            <div className="divide-y divide-border/40">
+                              {plannedEffects.map((e) => (
+                                <TriageEffectRow key={e.effectId} effect={e} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      (() => {
+                        const ModeComponent = MODE_COMPONENTS[triageViewMode];
+                        return ModeComponent ? (
+                          <ModeComponent
+                            approval={approval}
+                            plannedEffects={plannedEffects}
+                            evidenceEntries={evidenceEntries}
+                            run={run}
+                            workflow={workflow}
+                          />
+                        ) : null;
+                      })()
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </ModeErrorBoundary>
 

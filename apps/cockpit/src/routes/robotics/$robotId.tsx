@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createRoute, Link } from '@tanstack/react-router';
+import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
@@ -126,6 +126,7 @@ function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
 function RobotDetailPage() {
   const { robotId } = Route.useParams();
   const { activeWorkspaceId: wsId } = useUIStore();
+  const navigate = useNavigate();
   const [estopDialogOpen, setEstopDialogOpen] = useState(false);
   const [layers, setLayers] = useState<LayerVisibility>({
     geofences: true,
@@ -365,7 +366,7 @@ function RobotDetailPage() {
                   loading={false}
                   getRowKey={(row) => row.missionId}
                   onRowClick={(row) => {
-                    window.location.href = `/robotics/missions/${row.missionId}`;
+                    navigate({ to: `/robotics/missions/${row.missionId}` as string });
                   }}
                   pagination={{ pageSize: 10 }}
                 />
