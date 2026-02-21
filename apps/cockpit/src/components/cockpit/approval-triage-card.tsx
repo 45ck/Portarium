@@ -31,7 +31,6 @@ import {
   ArrowRight,
   Paperclip,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useUIStore } from '@/stores/ui-store';
 import { getNextMode, getPrevMode } from '@/components/cockpit/triage-modes/index';
 import { ModeSwitcher } from '@/components/cockpit/triage-modes/mode-switcher';
@@ -505,90 +504,13 @@ export function ApprovalTriageCard({
         </div>
       </div>
 
-      {/* Stacked card effect — ghost cards behind (skipped when deck owns visuals) */}
+      {/* Card container — ghost cards and drag visuals are handled by the deck */}
       <div className="relative">
-        {!externalDrag && hasMore && (
-          <>
-            <div
-              className="absolute inset-x-6 rounded-xl border border-border bg-card/60 transition-transform duration-200 ease-out"
-              style={{
-                top: `${8 - (isDragging ? Math.min(Math.abs(dragProgress) * 3, 4) : 0)}px`,
-                bottom: `${-8 + (isDragging ? Math.min(Math.abs(dragProgress) * 3, 4) : 0)}px`,
-                zIndex: 0,
-                transform: isDragging
-                  ? `scale(${0.94 + Math.min(Math.abs(dragProgress) * 0.03, 0.03)})`
-                  : 'scale(0.94)',
-              }}
-            />
-            <div
-              className="absolute inset-x-3 rounded-xl border border-border bg-card/80 transition-transform duration-200 ease-out"
-              style={{
-                top: `${4 - (isDragging ? Math.min(Math.abs(dragProgress) * 2, 3) : 0)}px`,
-                bottom: `${-4 + (isDragging ? Math.min(Math.abs(dragProgress) * 2, 3) : 0)}px`,
-                zIndex: 1,
-                transform: isDragging
-                  ? `scale(${0.97 + Math.min(Math.abs(dragProgress) * 0.02, 0.02)})`
-                  : 'scale(0.97)',
-              }}
-            />
-          </>
-        )}
-
-        {/* Main card — deck owns entrance/exit/drag when externalDrag is true */}
+        {/* Main card — deck owns entrance/exit/drag/tint/stamps */}
         <div
-          className={cn(
-            'relative rounded-xl border border-border bg-card shadow-md overflow-hidden',
-            !externalDrag && exitDir === 'right' && 'animate-triage-out-right',
-            !externalDrag && exitDir === 'left' && 'animate-triage-out-left',
-            !externalDrag && !exitDir && 'animate-triage-in',
-            !externalDrag && !exitDir && !isDragging && 'cursor-grab',
-          )}
+          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden"
           style={{ zIndex: 2 }}
         >
-          {/* Directional tint overlay — skipped when deck owns drag visuals */}
-          {!externalDrag && isDragging && !exitDir && Math.abs(dragProgress) > 0.05 && (
-            <div
-              className="absolute inset-0 pointer-events-none z-10 rounded-xl"
-              style={{
-                background:
-                  dragProgress > 0
-                    ? `linear-gradient(100deg, rgba(34,197,94,${Math.min(Math.abs(dragProgress) * 0.12, 0.12)}) 0%, transparent 60%)`
-                    : `linear-gradient(260deg, rgba(239,68,68,${Math.min(Math.abs(dragProgress) * 0.12, 0.12)}) 0%, transparent 60%)`,
-              }}
-            />
-          )}
-
-          {/* Decision stamps — skipped when deck owns drag visuals */}
-          {!externalDrag && isDragging && !exitDir && Math.abs(dragProgress) > 0.3 && (
-            <>
-              {dragProgress > 0.3 && (
-                <div
-                  className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
-                  style={{ opacity: Math.min((dragProgress - 0.3) / 0.7, 1) }}
-                >
-                  <span
-                    className="text-green-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-green-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
-                    style={{ transform: 'rotate(-12deg)', display: 'inline-block' }}
-                  >
-                    Approved
-                  </span>
-                </div>
-              )}
-              {dragProgress < -0.3 && (
-                <div
-                  className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none"
-                  style={{ opacity: Math.min((Math.abs(dragProgress) - 0.3) / 0.7, 1) }}
-                >
-                  <span
-                    className="text-red-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-red-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
-                    style={{ transform: 'rotate(12deg)', display: 'inline-block' }}
-                  >
-                    Denied
-                  </span>
-                </div>
-              )}
-            </>
-          )}
           {/* Overdue stripe */}
           {isOverdue && (
             <div className="bg-red-500 px-5 py-1.5 flex items-center gap-2">
@@ -892,9 +814,14 @@ export function ApprovalTriageCard({
       </div>
 
       {/* Keyboard hints — contextual */}
-      <div
+      <AnimatePresence mode="wait">
+      <motion.div
         key={rationaleHasFocus ? 'focus' : undoAvailable ? 'undo' : 'default'}
-        className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-4 text-[11px] text-muted-foreground animate-mode-crossfade"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-4 text-[11px] text-muted-foreground"
       >
         <span className="hidden sm:inline">Keyboard:</span>
         {rationaleHasFocus ? (
@@ -932,7 +859,8 @@ export function ApprovalTriageCard({
             )}
           </>
         )}
-      </div>
+      </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

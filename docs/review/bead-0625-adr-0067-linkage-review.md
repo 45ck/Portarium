@@ -35,3 +35,5 @@ Low:
   - `bead-0515`
   - `bead-0517`
   - `bead-0520`
+
+Re-verified on: 2026-02-21 (no regressions in mapping/linkage evidence).
