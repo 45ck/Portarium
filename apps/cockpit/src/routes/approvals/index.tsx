@@ -206,13 +206,11 @@ function ApprovalsPage() {
   }, [commitAction]);
 
   // ----- Triage content -----
-  // Determine which state + key to show. AnimatePresence is persistent
-  // so it can animate exits even when transitioning between states.
-  let triageKey: string;
+  // AnimatePresence wraps ALL states so exits animate even when
+  // transitioning from deck → complete/empty.
   let triageChild: React.ReactNode;
 
   if (isLoading) {
-    triageKey = 'loading';
     triageChild = (
       <motion.div
         key="loading"
@@ -223,7 +221,6 @@ function ApprovalsPage() {
       />
     );
   } else if (!currentApproval || triageQueue.length === 0) {
-    triageKey = sessionStats.total > 0 ? 'complete' : 'empty';
     triageChild =
       sessionStats.total > 0 ? (
         <motion.div
@@ -280,7 +277,6 @@ function ApprovalsPage() {
         </motion.div>
       );
   } else {
-    triageKey = currentApproval.approvalId;
     triageChild = (
       <ApprovalTriageDeck
         key={currentApproval.approvalId}

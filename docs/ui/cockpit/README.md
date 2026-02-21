@@ -29,6 +29,17 @@ Then open `http://localhost:4174`.
 - Click correlation links, SoR ref chips, or the "Context" button to open the right drawer.
 - The status bar at the bottom shows Run progress, chain integrity, and event stream health.
 
+## Demo Automation Locators
+
+For scripted demo capture, prefer target-intent selectors (`data-testid`) over CSS shape selectors.
+The prototype exposes stable anchors for the core demo storyline:
+
+- Nav: `demo-nav-inbox`, `demo-nav-work-item`, `demo-nav-runs`, `demo-nav-approvals`, `demo-nav-evidence`, `demo-nav-settings`
+- Screens: `demo-screen-inbox`, `demo-screen-work-item`, `demo-screen-run`, `demo-screen-approvals`, `demo-screen-evidence`, `demo-screen-settings`
+
+When updating layout/styling, keep these test IDs stable or update the corresponding test at
+`src/presentation/ops-cockpit/cockpit-demo-locators.test.ts` and demo scripts together.
+
 ## Robotics Map Prototype Highlights
 
 - `Robots` now defaults to `Operations Map` (overview-first map + synchronized list).

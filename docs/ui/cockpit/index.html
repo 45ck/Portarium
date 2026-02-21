@@ -78,7 +78,7 @@
       <aside class="sidebar" aria-label="Primary navigation">
         <div class="sidebar__section-title">Workspace</div>
         <nav class="nav" aria-label="Main navigation">
-          <a class="nav__item" href="#inbox"
+          <a class="nav__item" href="#inbox" data-testid="demo-nav-inbox"
             ><span class="nav__icon">!</span> Inbox
             <span class="nav__badge nav__badge--warn">5</span></a
           >
@@ -87,20 +87,22 @@
 
         <div class="sidebar__section-title">Work</div>
         <nav class="nav" aria-label="Project navigation">
-          <a class="nav__item" href="#work-items"
+          <a class="nav__item" href="#work-items" data-testid="demo-nav-work-items"
             ><span class="nav__icon">&equiv;</span> Work Items <span class="nav__badge">7</span></a
           >
-          <a class="nav__item" href="#runs"
+          <a class="nav__item" href="#runs" data-testid="demo-nav-runs"
             ><span class="nav__icon">&rsaquo;</span> Runs <span class="nav__badge">1</span></a
           >
           <a class="nav__item" href="#workflow-builder"
             ><span class="nav__icon">&loz;</span> Workflow Builder</a
           >
-          <a class="nav__item" href="#approvals"
+          <a class="nav__item" href="#approvals" data-testid="demo-nav-approvals"
             ><span class="nav__icon">&check;</span> Approvals
             <span class="nav__badge nav__badge--warn">4</span></a
           >
-          <a class="nav__item" href="#evidence"><span class="nav__icon">&sect;</span> Evidence</a>
+          <a class="nav__item" href="#evidence" data-testid="demo-nav-evidence"
+            ><span class="nav__icon">&sect;</span> Evidence</a
+          >
         </nav>
 
         <div class="sidebar__section-title">Workforce</div>
@@ -124,7 +126,9 @@
             ><span class="nav__icon">&#8644;</span> Adapters
             <span class="nav__badge nav__badge--warn">3</span></a
           >
-          <a class="nav__item" href="#settings"><span class="nav__icon">&bull;</span> Settings</a>
+          <a class="nav__item" href="#settings" data-testid="demo-nav-settings"
+            ><span class="nav__icon">&bull;</span> Settings</a
+          >
         </nav>
 
         <div class="sidebar__section-title">Explore</div>
@@ -208,14 +212,22 @@
         <!-- ============================================================
              SCREEN: INBOX
              ============================================================ -->
-        <section id="screen-inbox" class="screen" data-screen="inbox" aria-labelledby="h-inbox">
+        <section
+          id="screen-inbox"
+          class="screen"
+          data-screen="inbox"
+          data-testid="demo-screen-inbox"
+          aria-labelledby="h-inbox"
+        >
           <div class="screen__header">
             <div>
               <h1 id="h-inbox" class="h1">Inbox</h1>
               <div class="subtle">Items that need your attention</div>
             </div>
             <div class="screen__actions">
-              <a class="btn btn--primary js-inbox-cta" href="#work-item">Start workflow</a>
+              <a class="btn btn--primary js-inbox-cta" href="#work-item" data-testid="demo-nav-work-item"
+                >Start workflow</a
+              >
               <button class="btn js-drawer-trigger" type="button" data-drawer="context">
                 Context
               </button>
@@ -1432,6 +1444,7 @@
           id="screen-work-item"
           class="screen"
           data-screen="work-item"
+          data-testid="demo-screen-work-item"
           aria-labelledby="h-work-item"
         >
           <div class="screen__header">
@@ -1731,7 +1744,13 @@
         <!-- ============================================================
              SCREEN: RUN DETAIL
              ============================================================ -->
-        <section id="screen-run" class="screen" data-screen="run" aria-labelledby="h-run">
+        <section
+          id="screen-run"
+          class="screen"
+          data-screen="run"
+          data-testid="demo-screen-run"
+          aria-labelledby="h-run"
+        >
           <div class="screen__header">
             <div>
               <div class="crumbs subtle">
@@ -2039,6 +2058,7 @@
           id="screen-approvals"
           class="screen"
           data-screen="approvals"
+          data-testid="demo-screen-approvals"
           aria-labelledby="h-approvals"
         >
           <div class="screen__header">
@@ -3371,6 +3391,7 @@
           id="screen-evidence"
           class="screen"
           data-screen="evidence"
+          data-testid="demo-screen-evidence"
           aria-labelledby="h-evidence"
         >
           <div class="screen__header">
@@ -3627,6 +3648,7 @@
           id="screen-settings"
           class="screen"
           data-screen="settings"
+          data-testid="demo-screen-settings"
           aria-labelledby="h-settings"
         >
           <div class="screen__header">
