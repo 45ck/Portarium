@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { type TriageAction } from '@/components/cockpit/approval-triage-card';
 import { ApprovalTriageDeck } from '@/components/cockpit/approval-triage-deck';
+import { ApprovalListPanel } from '@/components/cockpit/approval-list-panel';
 import {
   TriageCompleteState,
   type TriageSessionStats,
@@ -58,7 +59,14 @@ function ApprovalsPage() {
 
   // Get pending items not yet actioned/skipped in this triage session
   const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
-  const currentApproval = triageQueue[0] ?? null;
+  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(null);
+
+  const currentApproval =
+    (selectedApprovalId
+      ? triageQueue.find((approval) => approval.approvalId === selectedApprovalId)
+      : null) ??
+    triageQueue[0] ??
+    null;
 
   // ID-parameterized mutation so deferred commits target the correct approval
   const qc = useQueryClient();
@@ -100,8 +108,23 @@ function ApprovalsPage() {
     [decideById],
   );
 
-  /** Track the current queue index for actionHistory */
-  const currentIndex = pendingItems.length - triageQueue.length;
+  useEffect(() => {
+    if (triageQueue.length === 0) {
+      setSelectedApprovalId(null);
+      return;
+    }
+    if (!selectedApprovalId || !triageQueue.some((a) => a.approvalId === selectedApprovalId)) {
+      setSelectedApprovalId(triageQueue[0]!.approvalId);
+    }
+  }, [triageQueue, selectedApprovalId]);
+
+  /** Track current queue index for actionHistory and QA determinism */
+  const currentIndex = currentApproval
+    ? Math.max(
+        0,
+        pendingItems.findIndex((a) => a.approvalId === currentApproval.approvalId),
+      )
+    : 0;
 
   function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
     // Rapid-fire: immediately commit any previous pending action
@@ -124,6 +147,12 @@ function ApprovalsPage() {
 
     // Remove from queue immediately (optimistic)
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
+    setSelectedApprovalId((prevSelected) => {
+      const currentIds = triageQueue.map((item) => item.approvalId);
+      const idx = currentIds.indexOf(approvalId);
+      const nextId = currentIds[idx + 1] ?? currentIds[idx - 1] ?? null;
+      return prevSelected === approvalId ? nextId : prevSelected;
+    });
 
     // Skip is instant — no undo, no API call
     if (action === 'Skip') return;
@@ -173,6 +202,7 @@ function ApprovalsPage() {
       next.delete(target.approvalId);
       return next;
     });
+    setSelectedApprovalId(target.approvalId);
 
     // Revert action history using the stored queue index
     setActionHistory((prev) => {
@@ -329,7 +359,21 @@ function ApprovalsPage() {
         title="Approvals"
         icon={<EntityIcon entityType="approval" size="md" decorative />}
       />
-      {triageContent}
+      {currentApproval && triageQueue.length > 0 ? (
+        <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
+            <ApprovalListPanel
+              items={triageQueue}
+              pendingCount={triageQueue.length}
+              selectedId={currentApproval.approvalId}
+              onSelect={setSelectedApprovalId}
+            />
+          </aside>
+          <section>{triageContent}</section>
+        </div>
+      ) : (
+        triageContent
+      )}
     </div>
   );
 }
