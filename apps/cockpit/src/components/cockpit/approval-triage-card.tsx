@@ -508,7 +508,7 @@ export function ApprovalTriageCard({
       <div className="relative">
         {/* Main card — deck owns entrance/exit/drag/tint/stamps */}
         <div
-          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col max-h-[calc(100vh-12rem)]"
+          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[480px]"
           style={{ zIndex: 2 }}
         >
           {/* Overdue stripe */}
