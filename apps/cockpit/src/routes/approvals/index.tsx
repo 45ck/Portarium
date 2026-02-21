@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoute } from '@tanstack/react-router';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Route as rootRoute } from '../__root';
@@ -206,49 +206,82 @@ function ApprovalsPage() {
   }, [commitAction]);
 
   // ----- Triage content -----
-  const triageContent = isLoading ? (
-    <div className="max-w-xl mx-auto h-64 rounded-xl bg-muted/30 animate-pulse" />
-  ) : !currentApproval || triageQueue.length === 0 ? (
-    sessionStats.total > 0 ? (
-      <TriageCompleteState
-        stats={sessionStats}
-        skippedCount={triageSkipped.size}
-        onReviewSkipped={() => {
-          setTriageSkipped(new Set());
-          setActionHistory({});
-          setSessionStats({
-            total: 0,
-            approved: 0,
-            denied: 0,
-            changesRequested: 0,
-            skipped: 0,
-          });
-        }}
+  // Determine which state + key to show. AnimatePresence is persistent
+  // so it can animate exits even when transitioning between states.
+  let triageKey: string;
+  let triageChild: React.ReactNode;
+
+  if (isLoading) {
+    triageKey = 'loading';
+    triageChild = (
+      <motion.div
+        key="loading"
+        className="max-w-xl mx-auto h-64 rounded-xl bg-muted/30 animate-pulse"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
       />
-    ) : (
-      <EmptyState
-        title="All caught up"
-        description="No pending approvals left in the triage queue."
-        icon={<CheckSquare className="h-12 w-12" />}
-        action={
-          triageSkipped.size > 0 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setTriageSkipped(new Set());
-                setActionHistory({});
-              }}
-            >
-              You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} — review
-              them?
-            </Button>
-          ) : undefined
-        }
-      />
-    )
-  ) : (
-    <AnimatePresence mode="wait">
+    );
+  } else if (!currentApproval || triageQueue.length === 0) {
+    triageKey = sessionStats.total > 0 ? 'complete' : 'empty';
+    triageChild =
+      sessionStats.total > 0 ? (
+        <motion.div
+          key="complete"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.25 }}
+        >
+          <TriageCompleteState
+            stats={sessionStats}
+            skippedCount={triageSkipped.size}
+            onReviewSkipped={() => {
+              setTriageSkipped(new Set());
+              setActionHistory({});
+              setSessionStats({
+                total: 0,
+                approved: 0,
+                denied: 0,
+                changesRequested: 0,
+                skipped: 0,
+              });
+            }}
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="empty"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.25 }}
+        >
+          <EmptyState
+            title="All caught up"
+            description="No pending approvals left in the triage queue."
+            icon={<CheckSquare className="h-12 w-12" />}
+            action={
+              triageSkipped.size > 0 ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setTriageSkipped(new Set());
+                    setActionHistory({});
+                  }}
+                >
+                  You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} —
+                  review them?
+                </Button>
+              ) : undefined
+            }
+          />
+        </motion.div>
+      );
+  } else {
+    triageKey = currentApproval.approvalId;
+    triageChild = (
       <ApprovalTriageDeck
         key={currentApproval.approvalId}
         approval={currentApproval}
@@ -265,8 +298,10 @@ function ApprovalsPage() {
         undoAvailable={pendingAction !== null}
         onUndo={() => handleUndo()}
       />
-    </AnimatePresence>
-  );
+    );
+  }
+
+  const triageContent = <AnimatePresence mode="wait">{triageChild}</AnimatePresence>;
 
   // ----- Error state -----
   if (isError) {

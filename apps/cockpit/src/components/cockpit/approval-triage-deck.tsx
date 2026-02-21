@@ -1,5 +1,11 @@
 import { useCallback, useRef } from 'react';
-import { motion, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
+import {
+  motion,
+  animate,
+  useMotionValue,
+  useTransform,
+  useReducedMotion,
+} from 'framer-motion';
 import { ApprovalTriageCard, type TriageAction } from './approval-triage-card';
 import type {
   ApprovalSummary,
@@ -13,6 +19,9 @@ const COMMIT_PX = 120;
 const COMMIT_VELOCITY = 500;
 const DRAG_ELASTIC = 0.2;
 const STAMP_THRESHOLD = 0.3;
+
+const SPRING_SNAP = { type: 'spring' as const, stiffness: 300, damping: 30 };
+const SPRING_EXIT = { type: 'spring' as const, stiffness: 200, damping: 25 };
 
 const EXCLUDED = 'textarea, button, input, [role="tablist"], [role="tab"], select';
 
@@ -93,13 +102,18 @@ export function ApprovalTriageDeck({
         Math.abs(info.offset.x) >= COMMIT_PX || Math.abs(info.velocity.x) >= COMMIT_VELOCITY;
 
       if (!committed) {
-        // Spring snap-back
-        x.set(0);
+        // Animated spring snap-back
+        animate(x, 0, SPRING_SNAP);
         return;
       }
 
-      const action: TriageAction = info.offset.x > 0 ? 'Approved' : 'Denied';
-      onAction(approval.approvalId, action, '');
+      // Fly off screen then fire action
+      const dir = info.offset.x > 0 ? 1 : -1;
+      const action: TriageAction = dir > 0 ? 'Approved' : 'Denied';
+      animate(x, dir * window.innerWidth, SPRING_EXIT);
+
+      // Fire after a beat so the fly-off is visible
+      setTimeout(() => onAction(approval.approvalId, action, ''), 150);
     },
     [x, onAction, approval.approvalId],
   );
@@ -107,10 +121,11 @@ export function ApprovalTriageDeck({
   // Called from the card's button actions (approve/deny/skip/changes)
   const handleCardAction = useCallback(
     (approvalId: string, action: TriageAction, rationale: string) => {
-      // Nudge the card in the action direction for visual feedback
       const dir = action === 'Approved' || action === 'Skip' ? 1 : -1;
-      x.set(dir * COMMIT_PX);
-      onAction(approvalId, action, rationale);
+
+      // Animate the card off-screen, then fire action
+      animate(x, dir * window.innerWidth, SPRING_EXIT);
+      setTimeout(() => onAction(approvalId, action, rationale), 150);
     },
     [x, onAction],
   );
@@ -124,7 +139,7 @@ export function ApprovalTriageDeck({
       className="relative w-full"
       initial={{ y: 30, opacity: 0, scale: 0.95 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
+      exit={{ opacity: 0, scale: 0.92, y: -20, transition: { duration: 0.2 } }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
       {/* Ghost card 2 (deepest) */}
