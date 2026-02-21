@@ -29,7 +29,7 @@ export function ApprovalTriageLayout({
       </div>
 
       <ResizablePanelGroup orientation="horizontal" className="flex-1 min-h-0">
-        <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+        <ResizablePanel defaultSize={'25%'} minSize={'20%'} maxSize={'40%'}>
           <ApprovalListPanel
             items={items}
             pendingCount={pendingCount}
@@ -40,7 +40,7 @@ export function ApprovalTriageLayout({
 
         <ResizableHandle withHandle />
 
-        <ResizablePanel defaultSize={75}>
+        <ResizablePanel defaultSize={'75%'}>
           <div className="flex flex-col h-full overflow-y-auto p-4">{children}</div>
         </ResizablePanel>
       </ResizablePanelGroup>

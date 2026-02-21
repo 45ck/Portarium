@@ -3,15 +3,13 @@
 /**
  * Regression test for the map sidebar layout bug.
  *
- * Root cause: the `.relative.flex-1` wrapper around the ResizablePanelGroup
- * does not have `min-h-0`, so the default `min-height: auto` in flexbox
- * prevents it from shrinking below its content height. This causes:
- *   1. The PanelGroup overflows the viewport (1217px instead of ~835px).
- *   2. react-resizable-panels mis-calculates widths (~4% instead of 28%).
- *   3. The sidebar is crushed to ~45px, making robot cards unreadable.
- *
- * The fix is `min-h-0` on the flex-1 container so the PanelGroup is
- * constrained to the available viewport height.
+ * Root cause (twin issues):
+ *   1. react-resizable-panels v4 interprets numeric size props as PIXELS,
+ *      not percentages. `maxSize={45}` meant 45px, not 45%. This crushed
+ *      the sidebar to a 45px sliver. Fix: use string percentages ("28%").
+ *   2. The `.relative.flex-1` wrapper around the ResizablePanelGroup
+ *      lacked `min-h-0`, so `min-height: auto` in flexbox prevented it
+ *      from shrinking below content height. Fix: add `min-h-0`.
  */
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
@@ -203,5 +201,21 @@ describe('map sidebar layout', () => {
     const flexWrapper = panelGroup!.parentElement;
     expect(flexWrapper).toBeTruthy();
     expect(flexWrapper!.classList.contains('min-h-0')).toBe(true);
+  });
+
+  it('renders two resizable panels with a handle', async () => {
+    const router = createCockpitRouter({
+      history: createMemoryHistory({ initialEntries: ['/robotics/map'] }),
+    });
+    const { container } = render(<RouterProvider router={router} />);
+    await router.load();
+    await screen.findByRole('heading', { name: 'Operations Map' }, { timeout: 5000 });
+
+    // Verify the ResizablePanelGroup renders two panels (map + sidebar)
+    const panels = container.querySelectorAll('[data-slot="resizable-panel"]');
+    expect(panels.length).toBe(2);
+
+    const handle = container.querySelector('[data-slot="resizable-handle"]');
+    expect(handle).toBeTruthy();
   });
 });

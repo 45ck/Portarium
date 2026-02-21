@@ -91,7 +91,7 @@ function OperationsMapPage() {
            constrains the PanelGroup so react-resizable-panels measures correctly */}
       <div className="relative flex-1 min-h-0 overflow-hidden">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel defaultSize={72} minSize={45}>
+          <ResizablePanel defaultSize={'72%'} minSize={'45%'}>
             <div className="relative h-full">
               <MapView
                 locations={locations}
@@ -109,7 +109,7 @@ function OperationsMapPage() {
 
           <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={28} minSize={20} maxSize={45}>
+          <ResizablePanel defaultSize={'28%'} minSize={'20%'} maxSize={'45%'}>
             <div className="flex h-full flex-col">
               <div className="flex-1 min-h-0 overflow-hidden">
                 <RobotListPanel
