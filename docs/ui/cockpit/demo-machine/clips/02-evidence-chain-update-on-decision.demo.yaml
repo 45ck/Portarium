@@ -1,0 +1,66 @@
+meta:
+  title: 'Cockpit Demo: Evidence Chain Updates On Decision'
+  tags:
+    - cockpit
+    - evidence
+    - approvals
+    - bead-0726
+
+runner:
+  command: 'npx --yes http-server docs/ui/cockpit -p 4174'
+  url: 'http://localhost:4174'
+  timeout: 20000
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4174/#evidence'
+      - action: wait
+        timeout: 1200
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 600
+
+  - title: 'Decision Emits Evidence'
+    steps:
+      - action: click
+        selector: "[data-testid='demo-nav-approvals']"
+      - action: wait
+        timeout: 700
+      - action: click
+        selector: '#approvalDecision'
+      - action: press
+        key: 'ArrowDown'
+      - action: press
+        key: 'Enter'
+      - action: click
+        selector: '#submitDecision'
+      - action: wait
+        timeout: 900
+
+  - title: 'Inspect Evidence Chain'
+    steps:
+      - action: click
+        selector: "[data-testid='demo-nav-evidence']"
+      - action: wait
+        timeout: 800
+      - action: assert
+        selector: '#demoChainIntegrityTitle'
+      - action: assert
+        selector: '#demoEvidenceList'
+      - action: screenshot
+        name: 'evidence-chain-updated'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 500

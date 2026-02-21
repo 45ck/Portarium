@@ -1,0 +1,60 @@
+meta:
+  title: 'Cockpit Demo: Capability Matrix Connector Posture'
+  tags:
+    - cockpit
+    - adapters
+    - capability-matrix
+    - bead-0726
+
+runner:
+  command: 'npx --yes http-server docs/ui/cockpit -p 4174'
+  url: 'http://localhost:4174'
+  timeout: 20000
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4174/#settings'
+      - action: wait
+        timeout: 1200
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 600
+
+  - title: 'Inspect Settings Capability Matrix'
+    steps:
+      - action: click
+        selector: "[data-testid='demo-nav-settings']"
+      - action: wait
+        timeout: 800
+      - action: assert
+        selector: '#screen-settings'
+      - action: assert
+        selector: "[aria-label='Capability matrix for adapter credentials by role']"
+
+  - title: 'Inspect Adapter Posture'
+    steps:
+      - action: click
+        selector: "a[href='#adapters']"
+      - action: wait
+        timeout: 800
+      - action: assert
+        selector: '#screen-adapters'
+      - action: assert
+        selector: "[aria-label='Finance and Accounting adapter']"
+      - action: screenshot
+        name: 'capability-matrix-connector-posture'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 500

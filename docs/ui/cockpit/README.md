@@ -39,6 +39,7 @@ The prototype exposes stable anchors for the core demo storyline:
 
 When updating layout/styling, keep these test IDs stable or update the corresponding test at
 `src/presentation/ops-cockpit/cockpit-demo-locators.test.ts` and demo scripts together.
+For scripted clip specs and runbook, see `docs/ui/cockpit/demo-machine/README.md`.
 
 ## Robotics Map Prototype Highlights
 

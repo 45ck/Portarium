@@ -1,0 +1,64 @@
+meta:
+  title: 'Cockpit Demo: Correlation And Context Traversal'
+  tags:
+    - cockpit
+    - correlation
+    - context
+    - bead-0726
+
+runner:
+  command: 'npx --yes http-server docs/ui/cockpit -p 4174'
+  url: 'http://localhost:4174'
+  timeout: 20000
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4174/#runs'
+      - action: wait
+        timeout: 1200
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 600
+
+  - title: 'Trace Correlation'
+    steps:
+      - action: click
+        selector: "[data-testid='demo-nav-runs']"
+      - action: wait
+        timeout: 700
+      - action: assert
+        selector: '#demoRunCorrelation'
+      - action: click
+        selector: '#demoRunCorrelation'
+      - action: wait
+        timeout: 300
+      - action: click
+        selector: '.js-open-drawer'
+      - action: wait
+        timeout: 600
+
+  - title: 'Traverse To Evidence'
+    steps:
+      - action: click
+        selector: "[data-testid='demo-nav-evidence']"
+      - action: wait
+        timeout: 800
+      - action: assert
+        selector: '#demoEvidenceList'
+      - action: screenshot
+        name: 'correlation-context-traversal'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 500

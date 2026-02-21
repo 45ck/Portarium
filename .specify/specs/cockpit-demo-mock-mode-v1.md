@@ -18,6 +18,7 @@ Define the backend-free demo behavior for the cockpit presentation layer so stak
 4. Every decision mutation must append an Evidence entry with previous-hash linkage.
 5. The UI must expose an explicit reset control to restore deterministic demo state.
 6. Demo state and labels must clearly indicate mocked/synthetic data.
+7. Scripted demo-machine clips must cover approval, evidence, correlation, capability posture, degraded realtime, and agent integration narratives with reset preconditions.
 
 ## Out Of Scope
 
