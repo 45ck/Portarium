@@ -236,6 +236,10 @@ const PAGE_CASES = [
   { path: '/runs/run-2001', heading: 'Run: run-2001' },
   { path: '/workflows', heading: 'Workflows' },
   { path: '/workflows/wf-invoice-remediation', heading: 'Workflow: wf-invoice-remediation' },
+  {
+    path: '/workflows/wf-invoice-remediation/edit',
+    heading: 'Edit Workflow: wf-invoice-remediation',
+  },
   { path: '/workflows/builder', heading: 'Workflow Builder' },
   { path: '/approvals', heading: 'Approvals' },
   { path: '/approvals/apr-3001', heading: 'Approval Request' },

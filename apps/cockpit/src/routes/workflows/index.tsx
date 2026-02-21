@@ -10,6 +10,7 @@ import { DataTable } from '@/components/cockpit/data-table';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { WorkflowSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
@@ -118,6 +119,22 @@ function WorkflowsPage() {
         </Badge>
       ),
     },
+    {
+      key: 'actions',
+      header: 'Actions',
+      width: '120px',
+      render: (row: WorkflowSummary) => (
+        <Button asChild size="sm" variant="outline">
+          <Link
+            to={'/workflows/$workflowId/edit' as string}
+            params={{ workflowId: row.workflowId }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            Edit
+          </Link>
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -126,6 +143,11 @@ function WorkflowsPage() {
         title="Workflows"
         description="Runbook definitions and execution metadata"
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
+        action={
+          <Button asChild>
+            <Link to="/workflows/builder">New Workflow</Link>
+          </Button>
+        }
       />
 
       <FilterBar

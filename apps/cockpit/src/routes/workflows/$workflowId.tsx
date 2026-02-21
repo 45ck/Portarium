@@ -8,6 +8,7 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { RunSummary, WorkflowActionSummary } from '@portarium/cockpit-types';
@@ -129,6 +130,16 @@ function WorkflowDetailPage() {
         description={workflow.data.name}
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
         breadcrumb={[{ label: 'Workflows', to: '/workflows' }, { label: workflow.data.workflowId }]}
+        action={
+          <Button asChild>
+            <Link
+              to={'/workflows/$workflowId/edit' as string}
+              params={{ workflowId: workflow.data.workflowId }}
+            >
+              Edit Workflow
+            </Link>
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

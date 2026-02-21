@@ -138,7 +138,11 @@ export function hydrateWorkflowBuilderState(workflow: WorkflowDetail): HydratedB
     },
   }));
 
-  const nodes: WorkflowNode[] = [startNode(), ...actionNodes, endNode(180 + actionNodes.length * 140)];
+  const nodes: WorkflowNode[] = [
+    startNode(),
+    ...actionNodes,
+    endNode(180 + actionNodes.length * 140),
+  ];
   const edges = linearizeNodes(nodes);
 
   return {
@@ -184,7 +188,8 @@ function inferNodeType(operation: string): WorkflowNodeType {
   const normalized = operation.toLowerCase();
   if (normalized.startsWith('agent:')) return 'agent-task';
   if (normalized.includes('approval') || normalized.includes('approve')) return 'approval-gate';
-  if (normalized.includes('notify') || normalized.startsWith('notification:')) return 'notification';
+  if (normalized.includes('notify') || normalized.startsWith('notification:'))
+    return 'notification';
   if (normalized.includes('condition') || normalized.includes('branch')) return 'condition';
   return 'action';
 }
@@ -234,7 +239,10 @@ function derivePortFamily(node: WorkflowNode): string {
   }
 }
 
-function orderedActionNodes(nodes: readonly WorkflowNode[], edges: readonly WorkflowEdge[]): WorkflowNode[] {
+function orderedActionNodes(
+  nodes: readonly WorkflowNode[],
+  edges: readonly WorkflowEdge[],
+): WorkflowNode[] {
   const actionNodes = nodes.filter((node) => isActionNode(node));
   if (actionNodes.length <= 1) return actionNodes;
 
@@ -378,11 +386,11 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
     setSavedSignature(buildSignature(defaultDraft(), nodes, edges));
   }, [edges, mode, nodes, savedSignature]);
 
-  const currentSignature = useMemo(() => buildSignature(draft, nodes, edges), [draft, edges, nodes]);
-  const actionNodeCount = useMemo(
-    () => nodes.filter((node) => isActionNode(node)).length,
-    [nodes],
+  const currentSignature = useMemo(
+    () => buildSignature(draft, nodes, edges),
+    [draft, edges, nodes],
   );
+  const actionNodeCount = useMemo(() => nodes.filter((node) => isActionNode(node)).length, [nodes]);
   const isDirty = savedSignature !== null && savedSignature !== currentSignature;
 
   const statusText = useMemo(() => {
@@ -498,7 +506,9 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 role="heading" className="text-sm font-semibold">
-              {mode === 'edit' ? `Edit Workflow${workflowId ? `: ${workflowId}` : ''}` : 'Workflow Builder'}
+              {mode === 'edit'
+                ? `Edit Workflow${workflowId ? `: ${workflowId}` : ''}`
+                : 'Workflow Builder'}
             </h1>
             <p className="text-xs text-muted-foreground">
               {mode === 'edit'
@@ -523,30 +533,44 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="workflow-name-input"
+              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+            >
               Name
             </label>
             <Input
+              id="workflow-name-input"
               value={draft.name}
               onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Workflow name"
             />
           </div>
           <div className="lg:col-span-2">
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="workflow-description-input"
+              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+            >
               Description
             </label>
             <Input
+              id="workflow-description-input"
               value={draft.description}
-              onChange={(event) => setDraft((prev) => ({ ...prev, description: event.target.value }))}
+              onChange={(event) =>
+                setDraft((prev) => ({ ...prev, description: event.target.value }))
+              }
               placeholder="Workflow description"
             />
           </div>
           <div>
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="workflow-tier-select"
+              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+            >
               Tier
             </label>
             <select
+              id="workflow-tier-select"
               className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
               value={draft.executionTier}
               onChange={(event) =>
@@ -565,10 +589,14 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="workflow-trigger-select"
+                className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+              >
                 Trigger
               </label>
               <select
+                id="workflow-trigger-select"
                 className="h-9 w-full rounded-md border border-input bg-transparent px-2 py-1 text-sm"
                 value={draft.triggerKind}
                 onChange={(event) =>
@@ -602,13 +630,18 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
 
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <Badge variant={isDirty ? 'secondary' : 'outline'}>{isDirty ? 'Dirty' : 'Synced'}</Badge>
+            <Badge variant={isDirty ? 'secondary' : 'outline'}>
+              {isDirty ? 'Dirty' : 'Synced'}
+            </Badge>
             <Badge variant="outline">{actionNodeCount} action nodes</Badge>
             <Badge variant="outline">
               timeout {draft.timeoutMs} ms · retries {draft.retryMaxAttempts}
             </Badge>
           </div>
-          <p className={saveError ? 'text-destructive' : 'text-muted-foreground'} role={saveError ? 'alert' : undefined}>
+          <p
+            className={saveError ? 'text-destructive' : 'text-muted-foreground'}
+            role={saveError ? 'alert' : undefined}
+          >
             {statusText}
           </p>
         </div>
