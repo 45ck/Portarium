@@ -28,6 +28,7 @@ import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from '@/mocks/fixtures/rob
 import { MOCK_USERS } from '@/mocks/fixtures/users';
 import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from '@/mocks/fixtures/policies';
 import { MOCK_GATEWAYS } from '@/mocks/fixtures/gateways';
+import { DEFAULT_PACK_UI_RUNTIME, DEMO_PACK_UI_RUNTIME } from '@/mocks/fixtures/pack-ui-runtime';
 
 const HUMAN_TASKS = buildMockHumanTasks(RUNS, WORK_ITEMS, WORKFORCE_MEMBERS);
 
@@ -210,6 +211,12 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: MOCK_SOD_CONSTRAINTS });
   }
 
+  if (/^\/v1\/workspaces\/[^/]+\/pack-ui-runtime$/.test(pathname)) {
+    return json(
+      pathname.includes('/ws-meridian/') ? DEMO_PACK_UI_RUNTIME : DEFAULT_PACK_UI_RUNTIME,
+    );
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/robotics\/gateways$/.test(pathname)) {
     return json({ items: MOCK_GATEWAYS });
   }
@@ -256,6 +263,7 @@ const PAGE_CASES = [
   { path: '/explore/events', heading: 'Events' },
   { path: '/explore/observability', heading: 'Observability' },
   { path: '/explore/governance', heading: 'Governance' },
+  { path: '/explore/pack-runtime', heading: 'Pack Runtime' },
   { path: '/robotics', heading: 'Robotics' },
   { path: '/robotics/map', heading: 'Operations Map' },
   { path: '/robotics/robots', heading: 'Robots' },

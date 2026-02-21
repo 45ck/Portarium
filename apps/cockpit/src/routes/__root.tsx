@@ -156,6 +156,11 @@ const NAV_SECTIONS: NavSectionDef[] = [
         icon: <BarChart3 className="h-4 w-4" />,
       },
       { label: 'Governance', to: '/explore/governance', icon: <Scale className="h-4 w-4" /> },
+      {
+        label: 'Pack Runtime',
+        to: '/explore/pack-runtime',
+        icon: <Settings className="h-4 w-4" />,
+      },
     ],
   },
   {

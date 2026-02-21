@@ -3,11 +3,14 @@ import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { ThemePicker } from '@/components/cockpit/theme-picker';
+import { PackTemplateRenderer } from '@/components/cockpit/pack-template-renderer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUIStore } from '@/stores/ui-store';
+import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
+import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
 import type { DatasetId } from '@/mocks/fixtures/index';
 
 const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
@@ -29,8 +32,10 @@ const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] =
 ];
 
 function SettingsPage() {
+  const wsId = useUIStore((s) => s.activeWorkspaceId);
   const activeDataset = useUIStore((s) => s.activeDataset);
   const setActiveDataset = useUIStore((s) => s.setActiveDataset);
+  const { data: packRuntime } = usePackUiRuntime(wsId);
 
   const [relativeDates, setRelativeDates] = useState(() => {
     return localStorage.getItem('cockpit-date-format') !== 'absolute';
@@ -39,6 +44,15 @@ function SettingsPage() {
   useEffect(() => {
     localStorage.setItem('cockpit-date-format', relativeDates ? 'relative' : 'absolute');
   }, [relativeDates]);
+
+  useEffect(() => {
+    if (!packRuntime) return;
+    applyThemeTokens(packRuntime);
+  }, [packRuntime]);
+
+  const resolvedPackTemplate = packRuntime
+    ? resolveTemplate(packRuntime, 'ui-scm-change-request-form')
+    : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -62,9 +76,9 @@ function SettingsPage() {
         <CardContent>
           <div className="grid grid-cols-2 gap-y-2 text-xs">
             <span className="text-muted-foreground">Workspace ID</span>
-            <span className="font-mono">ws-demo</span>
+            <span className="font-mono">{wsId}</span>
             <span className="text-muted-foreground">Workspace Name</span>
-            <span>Demo Workspace</span>
+            <span>{wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Demo Workspace'}</span>
           </div>
         </CardContent>
       </Card>
@@ -126,6 +140,25 @@ function SettingsPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
+          <CardDescription>
+            Template source:{' '}
+            <span className="font-mono">{resolvedPackTemplate?.source ?? 'none'}</span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {resolvedPackTemplate ? (
+            <PackTemplateRenderer template={resolvedPackTemplate.template} />
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              No matching template found for this workspace.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

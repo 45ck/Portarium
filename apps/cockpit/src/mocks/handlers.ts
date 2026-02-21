@@ -18,6 +18,7 @@ import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from './fixtures/robot-loc
 import { MOCK_USERS, type UserSummary } from './fixtures/users';
 import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from './fixtures/policies';
 import { MOCK_GATEWAYS } from './fixtures/gateways';
+import { DEFAULT_PACK_UI_RUNTIME, DEMO_PACK_UI_RUNTIME } from './fixtures/pack-ui-runtime';
 
 // ---------------------------------------------------------------------------
 // Mutable dataset reference — replaced at bootstrap via loadActiveDataset()
@@ -367,6 +368,13 @@ export const handlers = [
   http.get('/v1/workspaces/:wsId/observability', () =>
     HttpResponse.json(data?.OBSERVABILITY_DATA ?? {}),
   ),
+
+  // Pack UI runtime
+  http.get('/v1/workspaces/:wsId/pack-ui-runtime', ({ params }) => {
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    if (wsId === 'ws-meridian') return HttpResponse.json(DEMO_PACK_UI_RUNTIME);
+    return HttpResponse.json(DEFAULT_PACK_UI_RUNTIME);
+  }),
 
   // Robotics — Robot Locations (map)
   http.get('/v1/workspaces/:wsId/robotics/robot-locations', () =>

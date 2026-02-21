@@ -51,6 +51,7 @@ import { Route as exploreObjectsRoute } from './routes/explore/objects';
 import { Route as exploreEventsRoute } from './routes/explore/events';
 import { Route as exploreObservabilityRoute } from './routes/explore/observability';
 import { Route as exploreGovernanceRoute } from './routes/explore/governance';
+import { Route as explorePackRuntimeRoute } from './routes/explore/pack-runtime';
 
 // Robotics
 import { Route as roboticsRoute } from './routes/robotics/index';
@@ -90,6 +91,7 @@ export const routeTree = rootRoute.addChildren([
   exploreEventsRoute,
   exploreObservabilityRoute,
   exploreGovernanceRoute,
+  explorePackRuntimeRoute,
   roboticsRoute,
   roboticsMapRoute,
   roboticsRobotsRoute,
