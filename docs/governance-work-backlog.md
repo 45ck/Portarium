@@ -211,6 +211,11 @@ Goal: manage licence risk and commercial obligations for adopted external execut
 - STORY-V07b.1 — bead-0414
   - Licence compliance audit for adopted execution platforms: Activepieces (MIT core, commercial EE carve-outs), Kestra (Apache 2.0, EE features), StackStorm (Apache 2.0), Langflow (MIT).
   - AC: licence obligations documented per platform; EE feature boundaries identified; "safe use" guidelines published for each; any fair-code or multi-tenant restrictions flagged.
+  - Artifact: `docs/governance/external-execution-platform-license-audit.md`
+- STORY-V07b.2 — bead-0750
+  - Licensing gate for third-party workflow/cockpit UI components (MIT/Apache notice handling, source-available restrictions, embed terms).
+  - AC: mandatory checklist documented; owner assignment documented; release gate pass criteria documented.
+  - Artifact: `docs/governance/third-party-workflow-ui-license-gate.md`
 
 ### EPIC-V07d — OpenClaw integration quality and security gates
 

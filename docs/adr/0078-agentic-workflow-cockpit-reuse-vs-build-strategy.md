@@ -82,6 +82,7 @@ This ADR is implemented/planned through:
 
 - ADR document: `docs/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md`
 - Claimed bead record: `.beads/issues.jsonl` entry for `bead-0749`
+- Licensing gate checklist: `docs/governance/third-party-workflow-ui-license-gate.md`
 
 ## Remaining Gap Tracking
 

@@ -2,10 +2,15 @@
   "name": "Portarium Cockpit",
   "short_name": "Portarium",
   "description": "Portarium Cockpit operational control plane UI",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#0B1220",
   "theme_color": "#0B1220",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
