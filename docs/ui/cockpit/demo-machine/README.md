@@ -35,3 +35,16 @@ demo-machine run docs/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-ru
 Each clip spins up the local Cockpit lo-fi prototype with:
 
 `npx --yes http-server docs/ui/cockpit -p 4174`
+
+## Approvals V2 Showcase Media
+
+Render the approvals-v2 showcase GIF and MP4 (for README embedding):
+
+```bash
+npm run cockpit:demo:approvals-v2:showcase
+```
+
+Outputs:
+
+- `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif`
+- `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.json`

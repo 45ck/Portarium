@@ -66,6 +66,12 @@ curl -s http://localhost:8081/healthz
 - Integration model: `docs/explanation/ports-and-adapters.md`
 - Contribution flow: `CONTRIBUTING.md`
 
+## Cockpit Showcase
+
+![Approvals v2 demo showcase](docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif)
+
+See scripted demo specs and capture docs at `docs/ui/cockpit/demo-machine/README.md`.
+
 ## Status
 
 Early and actively built. Runtime and contract foundations are in place; some integration and persistence paths are still scaffold-stage.

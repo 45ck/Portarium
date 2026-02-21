@@ -22,6 +22,7 @@
     "cockpit:assets:validate": "node scripts/assets/validate-cockpit-assets.mjs",
     "cockpit:assets:optimize": "node scripts/assets/optimize-cockpit-assets.mjs",
     "cockpit:assets:check": "node scripts/assets/check-cockpit-assets.mjs",
+    "cockpit:demo:approvals-v2:showcase": "node scripts/qa/render-approvals-v2-showcase.mjs",
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
