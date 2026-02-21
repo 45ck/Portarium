@@ -16,7 +16,11 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - Use `bd` (Beads) for all work tracking; commit `.beads/issues.jsonl` with code changes.
   - Start a bead before implementation: `npm run bd -- issue start <id> --by "<owner>"`
     (claims the bead + creates a git worktree at `.trees/<id>/`).
-  - Work inside `.trees/<id>/` — junction-link node_modules from root (instant, no install): `node -e "const fs=require('fs'),p=require('path'),r=p.resolve('../..');[['node_modules','node_modules'],['apps/cockpit/node_modules','apps/cockpit/node_modules']].forEach(([s,d])=>{if(!fs.existsSync(d))fs.symlinkSync(p.join(r,s),d,'junction')})"`, then implement + `npm run ci:pr`.
+  - Work inside `.trees/<id>/` — **do not run npm/bun install**. Instead junction-link node_modules from the repo root (instant, zero disk):
+    ```bash
+    node -e "const fs=require('fs'),p=require('path'),r=p.resolve('../..');const l=(s,d)=>{if(!fs.existsSync(d))fs.symlinkSync(s,d,'junction')};l(p.join(r,'node_modules'),'node_modules');l(p.join(r,'apps/cockpit/node_modules'),'apps/cockpit/node_modules')"
+    ```
+    Then implement + `npm run ci:pr`.
   - Finish when done (from repo root): `npm run bd -- issue finish <id>`
     (merges branch, removes worktree, closes bead).
   - Commit bead state after start/finish: `git add .beads/issues.jsonl && git commit -m "chore: start/close <id>"`.
