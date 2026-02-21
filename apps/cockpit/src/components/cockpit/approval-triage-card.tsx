@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUIStore } from '@/stores/ui-store';
-import { useSwipeGesture } from '@/hooks/use-swipe-gesture';
 import { getNextMode, getPrevMode } from '@/components/cockpit/triage-modes/index';
 import { ModeSwitcher } from '@/components/cockpit/triage-modes/mode-switcher';
 import { TrafficSignalsMode } from '@/components/cockpit/triage-modes/traffic-signals-mode';
@@ -480,33 +479,9 @@ export function ApprovalTriageCard({
     onUndo,
   ]);
 
-  // Swipe gesture — disabled when deck owns drag
-  const {
-    dragStyle,
-    pointerHandlers,
-    progress: internalDragProgress,
-    isDragging: internalIsDragging,
-  } = useSwipeGesture({
-    onSwipeRight: () => {
-      if (!isBlocked && !loading) handleAction('Approved');
-    },
-    onSwipeLeft: () => {
-      if (loading) return false;
-      if (!rationale.trim()) {
-        setDenyAttempted(true);
-        toast.info('A rationale is required when denying an approval.', { duration: 2500 });
-        return false;
-      }
-      handleAction('Denied');
-      return true;
-    },
-    disabled:
-      externalDrag || Boolean(loading) || isBlocked || requestChangesMode || Boolean(exitDir),
-  });
-
-  // Use deck-driven values when externalDrag, otherwise internal
-  const dragProgress = externalDrag ? externalDragProgress : internalDragProgress;
-  const isDragging = externalDrag ? externalIsDragging : internalIsDragging;
+  // Drag state comes from the deck wrapper
+  const dragProgress = externalDragProgress;
+  const isDragging = externalIsDragging;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
-import type { ApprovalSummary, ApprovalStatus } from '@portarium/cockpit-types';
+import type { ApprovalSummary } from '@portarium/cockpit-types';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -95,37 +96,46 @@ export function ApprovalListPanel({
           </p>
         ) : (
           <ul className="divide-y divide-border">
-            {filtered.map((a) => {
-              const isActive = a.approvalId === selectedId;
-              const isOverdue = Boolean(a.dueAtIso && new Date(a.dueAtIso) < new Date());
-              return (
-                <li key={a.approvalId}>
-                  <button
-                    type="button"
-                    className={cn(
-                      'w-full text-left px-3 py-2.5 transition-colors hover:bg-accent/50',
-                      isActive && 'bg-accent border-l-2 border-l-primary',
-                    )}
-                    onClick={() => onSelect(a.approvalId)}
+            <AnimatePresence>
+              {filtered.map((a) => {
+                const isActive = a.approvalId === selectedId;
+                const isOverdue = Boolean(a.dueAtIso && new Date(a.dueAtIso) < new Date());
+                return (
+                  <motion.li
+                    key={a.approvalId}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                   >
-                    <p className="text-xs font-medium truncate leading-tight">{a.prompt}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <ApprovalStatusBadge status={a.status} />
-                      {isOverdue && a.status === 'Pending' && (
-                        <Badge variant="destructive" className="text-[9px] h-4 px-1">
-                          Overdue
-                        </Badge>
+                    <button
+                      type="button"
+                      className={cn(
+                        'w-full text-left px-3 py-2.5 transition-colors hover:bg-accent/50',
+                        isActive && 'bg-accent border-l-2 border-l-primary',
                       )}
-                      <span className="ml-auto text-[10px] text-muted-foreground shrink-0">
-                        {formatDistanceToNow(new Date(a.requestedAtIso), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
+                      onClick={() => onSelect(a.approvalId)}
+                    >
+                      <p className="text-xs font-medium truncate leading-tight">{a.prompt}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <ApprovalStatusBadge status={a.status} />
+                        {isOverdue && a.status === 'Pending' && (
+                          <Badge variant="destructive" className="text-[9px] h-4 px-1">
+                            Overdue
+                          </Badge>
+                        )}
+                        <span className="ml-auto text-[10px] text-muted-foreground shrink-0">
+                          {formatDistanceToNow(new Date(a.requestedAtIso), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
+                    </button>
+                  </motion.li>
+                );
+              })}
+            </AnimatePresence>
           </ul>
         )}
       </div>
