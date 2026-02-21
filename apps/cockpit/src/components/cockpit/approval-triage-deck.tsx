@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   motion,
   useMotionValue,
   useTransform,
-  useAnimationControls,
   useReducedMotion,
-  AnimatePresence,
 } from 'framer-motion';
 import { ApprovalTriageCard, type TriageAction } from './approval-triage-card';
 import type {
@@ -57,7 +55,6 @@ export function ApprovalTriageDeck({
   onUndo,
   compact = false,
 }: ApprovalTriageDeckProps) {
-  const controls = useAnimationControls();
   const prefersReducedMotion = useReducedMotion();
 
   const x = useMotionValue(0);
@@ -90,19 +87,6 @@ export function ApprovalTriageDeck({
   );
 
   const isDraggingRef = useRef(false);
-  const actionCalledRef = useRef(false);
-
-  // Trigger entrance animation when a new card mounts
-  useEffect(() => {
-    void controls.start({
-      y: 0,
-      scale: 1,
-      opacity: 1,
-      x: 0,
-      rotate: 0,
-      transition: { type: 'spring', stiffness: 300, damping: 25 },
-    });
-  }, [controls, approval.approvalId]);
 
   const handleDragStart = useCallback(() => {
     isDraggingRef.current = true;
@@ -115,59 +99,26 @@ export function ApprovalTriageDeck({
         Math.abs(info.offset.x) >= COMMIT_PX || Math.abs(info.velocity.x) >= COMMIT_VELOCITY;
 
       if (!committed) {
-        // Spring snap-back
-        void controls.start({ x: 0, transition: SPRING_SNAP });
+        // Spring snap-back — animate the motion value directly
+        x.set(0);
         return;
       }
 
-      const dir = info.offset.x > 0 ? 'right' : 'left';
-      const action: TriageAction = dir === 'right' ? 'Approved' : 'Denied';
-
-      // Fly off screen
-      const flyX = dir === 'right' ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
-      const flyRotate = dir === 'right' ? 20 : -20;
-
-      actionCalledRef.current = true;
-
-      void controls
-        .start({
-          x: flyX,
-          rotate: flyRotate,
-          transition: { type: 'spring', stiffness: 200, damping: 30 },
-        })
-        .then(() => {
-          actionCalledRef.current = false;
-        });
-
-      // Fire action immediately — don't wait for exit animation
+      const action: TriageAction = info.offset.x > 0 ? 'Approved' : 'Denied';
       onAction(approval.approvalId, action, '');
     },
-    [controls, onAction, approval.approvalId],
+    [x, onAction, approval.approvalId],
   );
 
   // Called from the card's button actions (approve/deny/skip/changes)
   const handleCardAction = useCallback(
     (approvalId: string, action: TriageAction, rationale: string) => {
-      if (actionCalledRef.current) return;
-      actionCalledRef.current = true;
-
-      const dir = action === 'Approved' ? 'right' : action === 'Skip' ? 'right' : 'left';
-      const flyX = dir === 'right' ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
-      const flyRotate = dir === 'right' ? 20 : -20;
-
-      void controls
-        .start({
-          x: flyX,
-          rotate: flyRotate,
-          transition: { type: 'spring', stiffness: 200, damping: 30 },
-        })
-        .then(() => {
-          actionCalledRef.current = false;
-        });
-
+      // Nudge the card in the action direction for visual feedback
+      const dir = action === 'Approved' || action === 'Skip' ? 1 : -1;
+      x.set(dir * COMMIT_PX);
       onAction(approvalId, action, rationale);
     },
-    [controls, onAction],
+    [x, onAction],
   );
 
   const shouldDrag = !prefersReducedMotion && !loading;
@@ -201,83 +152,81 @@ export function ApprovalTriageDeck({
       )}
 
       {/* Main draggable card */}
-      <AnimatePresence mode="popLayout">
+      <motion.div
+        className="relative cursor-grab active:cursor-grabbing"
+        style={{
+          x,
+          rotate,
+          rotateY,
+          perspective: 1200,
+          zIndex: 2,
+        }}
+        initial={{ y: 40, scale: 0.93, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        drag={shouldDrag ? 'x' : false}
+        dragElastic={DRAG_ELASTIC}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onPointerDownCapture={(e: React.PointerEvent) => {
+          if ((e.target as HTMLElement).closest(EXCLUDED)) {
+            e.stopPropagation();
+          }
+        }}
+      >
+        {/* Directional tint overlay */}
         <motion.div
-          key={approval.approvalId}
-          className="relative cursor-grab active:cursor-grabbing"
-          style={{
-            x,
-            rotate,
-            rotateY,
-            perspective: 1200,
-            zIndex: 2,
-          }}
-          initial={{ y: 40, scale: 0.93, opacity: 0 }}
-          animate={controls}
-          exit={{ x: 0, opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-          drag={shouldDrag ? 'x' : false}
-          dragElastic={DRAG_ELASTIC}
-          dragConstraints={{ left: 0, right: 0 }}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onPointerDownCapture={(e: React.PointerEvent) => {
-            if ((e.target as HTMLElement).closest(EXCLUDED)) {
-              e.stopPropagation();
-            }
-          }}
+          className="absolute inset-0 pointer-events-none z-10 rounded-xl"
+          style={{ background: tintBackground }}
+        />
+
+        {/* Approved stamp */}
+        <motion.div
+          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
+          style={{ opacity: approveStampOpacity }}
         >
-          {/* Directional tint overlay */}
-          <motion.div
-            className="absolute inset-0 pointer-events-none z-10 rounded-xl"
-            style={{ background: tintBackground }}
-          />
-
-          {/* Approved stamp */}
-          <motion.div
-            className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
-            style={{ opacity: approveStampOpacity }}
+          <span
+            className="text-green-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-green-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
+            style={{ transform: 'rotate(-12deg)', display: 'inline-block' }}
           >
-            <span
-              className="text-green-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-green-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
-              style={{ transform: 'rotate(-12deg)', display: 'inline-block' }}
-            >
-              Approved
-            </span>
-          </motion.div>
-
-          {/* Denied stamp */}
-          <motion.div
-            className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none"
-            style={{ opacity: denyStampOpacity }}
-          >
-            <span
-              className="text-red-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-red-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
-              style={{ transform: 'rotate(12deg)', display: 'inline-block' }}
-            >
-              Denied
-            </span>
-          </motion.div>
-
-          <ApprovalTriageCard
-            approval={approval}
-            index={index}
-            total={total}
-            hasMore={hasMore}
-            onAction={handleCardAction}
-            loading={loading}
-            plannedEffects={plannedEffects}
-            evidenceEntries={evidenceEntries}
-            run={run}
-            workflow={workflow}
-            actionHistory={actionHistory}
-            undoAvailable={undoAvailable}
-            onUndo={onUndo}
-            externalDrag
-            dragProgress={dragProgressRef.current}
-            isDragging={isDraggingRef.current}
-          />
+            Approved
+          </span>
         </motion.div>
-      </AnimatePresence>
+
+        {/* Denied stamp */}
+        <motion.div
+          className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none"
+          style={{ opacity: denyStampOpacity }}
+        >
+          <span
+            className="text-red-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-red-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
+            style={{ transform: 'rotate(12deg)', display: 'inline-block' }}
+          >
+            Denied
+          </span>
+        </motion.div>
+
+        <ApprovalTriageCard
+          approval={approval}
+          index={index}
+          total={total}
+          hasMore={hasMore}
+          onAction={handleCardAction}
+          loading={loading}
+          plannedEffects={plannedEffects}
+          evidenceEntries={evidenceEntries}
+          run={run}
+          workflow={workflow}
+          actionHistory={actionHistory}
+          undoAvailable={undoAvailable}
+          onUndo={onUndo}
+          externalDrag
+          dragProgress={dragProgressRef.current}
+          isDragging={isDraggingRef.current}
+        />
+      </motion.div>
     </div>
   );
 }

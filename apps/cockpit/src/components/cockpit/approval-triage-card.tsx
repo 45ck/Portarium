@@ -508,7 +508,7 @@ export function ApprovalTriageCard({
       <div className="relative">
         {/* Main card — deck owns entrance/exit/drag/tint/stamps */}
         <div
-          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden"
+          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col max-h-[calc(100vh-12rem)]"
           style={{ zIndex: 2 }}
         >
           {/* Overdue stripe */}
@@ -615,7 +615,7 @@ export function ApprovalTriageCard({
           </div>
 
           {/* Body */}
-          <div className="px-5 py-5 space-y-4">
+          <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4">
             {/* SoD evaluation — always visible */}
             <SodBanner eval={sodEval} />
 

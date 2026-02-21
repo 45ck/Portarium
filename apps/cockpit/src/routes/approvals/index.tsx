@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoute } from '@tanstack/react-router';
+import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Route as rootRoute } from '../__root';
@@ -247,22 +248,24 @@ function ApprovalsPage() {
       />
     )
   ) : (
-    <ApprovalTriageDeck
-      key={currentApproval.approvalId}
-      approval={currentApproval}
-      index={currentIndex}
-      total={pendingItems.length}
-      hasMore={triageQueue.length > 1}
-      onAction={handleTriageAction}
-      loading={deciding}
-      plannedEffects={planData?.plannedEffects}
-      evidenceEntries={filteredEvidence}
-      run={runData}
-      workflow={workflowData}
-      actionHistory={actionHistory}
-      undoAvailable={pendingAction !== null}
-      onUndo={() => handleUndo()}
-    />
+    <AnimatePresence mode="wait">
+      <ApprovalTriageDeck
+        key={currentApproval.approvalId}
+        approval={currentApproval}
+        index={currentIndex}
+        total={pendingItems.length}
+        hasMore={triageQueue.length > 1}
+        onAction={handleTriageAction}
+        loading={deciding}
+        plannedEffects={planData?.plannedEffects}
+        evidenceEntries={filteredEvidence}
+        run={runData}
+        workflow={workflowData}
+        actionHistory={actionHistory}
+        undoAvailable={pendingAction !== null}
+        onUndo={() => handleUndo()}
+      />
+    </AnimatePresence>
   );
 
   // ----- Error state -----
