@@ -907,3 +907,5 @@ vocab
 Wasmtime
 XACK
 crossfades
+replayable
+SARIF

@@ -12,6 +12,7 @@ Architecture Decision Records live in `docs/adr/`.
 - Hybrid orchestration/choreography model: `docs/adr/0070-hybrid-orchestration-choreography-architecture.md`
 - Cockpit reuse/build strategy: `docs/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md`
 - Agentic workflow cockpit reuse-vs-build strategy: `docs/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md`
+- Derived artifacts and retrieval architecture: `docs/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md`
 
 ## Working rule
 

@@ -2,14 +2,34 @@ name: Security Gates
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   merge_group:
+  workflow_dispatch:
 
 concurrency:
   group: security-gates-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
+  dependency_review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
   security_gates:
     runs-on: ubuntu-latest
     timeout-minutes: 10
