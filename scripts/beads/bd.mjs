@@ -3,7 +3,14 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const VALID_PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
-const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, undefined: 4 };
+const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, 0: 0, 1: 1, 2: 2, 3: 3, undefined: 4 };
+// Upstream bd exports integer priorities (0=P0, 1=P1, …) via bd sync.
+// normalizePriority converts either format to 'P0'..'P3' for display/comparison.
+function normalizePriority(p) {
+  if (p === null || p === undefined) return undefined;
+  if (typeof p === 'number') return `P${p}`;
+  return p;
+}
 
 function usage() {
   const lines = [
@@ -186,7 +193,7 @@ function isUnblocked(issue, closedIds) {
 }
 
 function prioritySortKey(issue) {
-  return PRIORITY_ORDER[issue.priority] ?? PRIORITY_ORDER['undefined'];
+  return PRIORITY_ORDER[normalizePriority(issue.priority)] ?? PRIORITY_ORDER['undefined'];
 }
 
 /** Sort: priority asc (P0 first), then createdAt asc. */
@@ -199,8 +206,9 @@ function sortByPriority(issues) {
 }
 
 function formatPriority(p) {
-  if (!p) return '  --';
-  return p;
+  const n = normalizePriority(p);
+  if (!n) return '  --';
+  return n;
 }
 
 function formatClaimSuffix(issue) {
@@ -241,7 +249,7 @@ function printView(issue) {
     `ID:        ${issue.id}`,
     `Title:     ${issue.title}`,
     `Status:    ${issue.status}`,
-    `Priority:  ${issue.priority ?? '(unset)'}`,
+    `Priority:  ${normalizePriority(issue.priority) ?? '(unset)'}`,
     `Phase:     ${issue.phase ?? '(unset)'}`,
     `BlockedBy: ${issue.blockedBy?.join(', ') ?? '(none)'}`,
     `ClaimedBy: ${issue.claimedBy ?? '(none)'}`,
@@ -352,7 +360,8 @@ function main() {
     let result = issues;
     if (openOnly) result = result.filter((i) => i.status === 'open');
     if (filterPhase) result = result.filter((i) => i.phase === filterPhase);
-    if (filterPriority) result = result.filter((i) => i.priority === filterPriority);
+    if (filterPriority)
+      result = result.filter((i) => normalizePriority(i.priority) === filterPriority);
     result = applyClaimFilters(result, claimFilters);
 
     print(result, asJson);
@@ -370,7 +379,8 @@ function main() {
     let ready = issues.filter((i) => i.status === 'open').filter((i) => isUnblocked(i, closedIds));
 
     if (filterPhase) ready = ready.filter((i) => i.phase === filterPhase);
-    if (filterPriority) ready = ready.filter((i) => i.priority === filterPriority);
+    if (filterPriority)
+      ready = ready.filter((i) => normalizePriority(i.priority) === filterPriority);
     ready = applyClaimFilters(ready, claimFilters);
 
     ready = sortByPriority(ready);

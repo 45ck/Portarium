@@ -54,3 +54,11 @@ nul
 # Git worktrees (managed by bd issue start/finish)
 .trees/
 .claude/worktrees/
+
+# Beads SQLite database (generated; .beads/issues.jsonl is the git-portable format)
+.beads/beads.db
+.beads/beads.db-shm
+.beads/beads.db-wal
+.beads/bd.sock
+.beads/bd.sock.lock
+.beads/deletions.jsonl

@@ -3,6 +3,10 @@
     "shadcn": {
       "command": "npx",
       "args": ["shadcn@latest", "mcp"]
+    },
+    "beads": {
+      "command": "beads-mcp",
+      "args": []
     }
   }
 }

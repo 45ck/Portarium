@@ -18,6 +18,14 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
   - Commit bead state after start/finish: `git add .beads/issues.jsonl && git commit -m "chore: start/close <id>"`.
   - For manual control: `bd issue claim` / `bd issue unclaim` still available.
   - If `bd` isn't installed globally, use `npm run bd -- ...` (e.g. `npm run bd -- issue list --json`).
+- Upstream `bd` binary (global) for sync, daemon, hooks, dep tracking:
+  - `bd ready` — show unblocked beads ready to work on
+  - `bd sync` — push issue state to `beads-metadata` branch on GitHub (run after start/finish)
+  - `bd doctor` — verify database health
+  - `bd dep <id> <dep-id>` — record dependency between beads
+  - `bd prime` — inject workflow context into Claude session
+  - `npm run bd:daemon:start` / `npm run bd:daemon:stop` — background auto-flush daemon
+  - SQLite DB (`.beads/beads.db`) is gitignored; `issues.jsonl` is the portable source of truth
 - For UI/user-flow changes: run `/qa-agent-browser` and attach traces/screenshots.
 - Domain code (`src/domain/`) must have zero external dependencies (no infra, no presentation imports).
 - All domain types use branded primitives from `src/domain/primitives/`.

@@ -1,0 +1,5 @@
+issue-prefix: "bead"
+sync-branch: "beads-metadata"
+auto-start-daemon: true
+flush-debounce: "5s"
+events-export: true

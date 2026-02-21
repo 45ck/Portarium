@@ -248,6 +248,7 @@ nullability
 
 # Git / OpenAPI jargon
 worktree
+Worktrees
 invoiceitem
 idemp
 mapstructure
