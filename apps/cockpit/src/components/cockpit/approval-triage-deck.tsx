@@ -1,10 +1,5 @@
 import { useCallback, useRef } from 'react';
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  useReducedMotion,
-} from 'framer-motion';
+import { motion, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
 import { ApprovalTriageCard, type TriageAction } from './approval-triage-card';
 import type {
   ApprovalSummary,

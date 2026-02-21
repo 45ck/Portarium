@@ -121,8 +121,14 @@ application command paths:
   - `src/application/commands/submit-map-command-intent.test.ts`
 - Spec and review linkage:
   - `.specify/specs/policy-v1.md`
-  - `bead-0633`
-  - `docs/review/bead-0633-adr-0071-linkage-review.md`
+  - `.specify/specs/command-router-policy-boundary.md`
+
+## Review Linkage
+
+- `bead-0632`: implementation mapping closure review
+- `docs/review/bead-0632-adr-0071-implementation-mapping-review.md`
+- `bead-0633`: mapping/linkage verification review
+- `docs/review/bead-0633-adr-0071-linkage-review.md`
 
 ## Remaining Gap Tracking
 
