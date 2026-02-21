@@ -1,6 +1,6 @@
 # Stop-Loss Threshold Evaluation
 
-Generated: 2026-02-20T02:59:43.554Z
+Generated: 2026-02-21T19:01:16.745Z
 Source: `.beads/issues.jsonl`
 
 ## Thresholds
@@ -11,12 +11,12 @@ Source: `.beads/issues.jsonl`
 
 ## Metrics
 
-- Open beads: 164
+- Open beads: 134
 - Deadlock cycles: 0
-- Orphaned beads: 136
-- Open P0 beads: 2
-- Unowned open beads: 163
-- Unresolved open decisions: 30
+- Orphaned beads: 37
+- Open P0 beads: 0
+- Unowned open beads: 132
+- Unresolved open decisions: 23
 - Failed gates input: (none)
 
 ## Risk
@@ -27,4 +27,4 @@ Source: `.beads/issues.jsonl`
 ## Decision
 
 - Halt cycle: yes
-- Reasons: risk score 6 >= threshold 6 | unresolved open decisions 30 >= threshold 8
+- Reasons: risk score 6 >= threshold 6 | unresolved open decisions 23 >= threshold 8

@@ -10,8 +10,13 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - No new public API without a contract (types + boundary test).
 - Update `.specify/specs/` for behaviour changes; add ADR under `docs/adr/` for design changes.
 - Use `bd` (Beads) for all work tracking; commit `.beads/issues.jsonl` with code changes.
-  - Claim the bead before implementation (`npm run bd -- issue claim <id> --by "<owner>"`).
-  - Clear claim state by closing the bead or explicit unclaim (`npm run bd -- issue unclaim <id>`).
+  - Start a bead before implementation: `npm run bd -- issue start <id> --by "<owner>"`
+    (claims the bead + creates a git worktree at `.trees/<id>/`).
+  - Work inside `.trees/<id>/` — run `npm install` there first, then implement + `npm run ci:pr`.
+  - Finish when done (from repo root): `npm run bd -- issue finish <id>`
+    (merges branch, removes worktree, closes bead).
+  - Commit bead state after start/finish: `git add .beads/issues.jsonl && git commit -m "chore: start/close <id>"`.
+  - For manual control: `bd issue claim` / `bd issue unclaim` still available.
   - If `bd` isn't installed globally, use `npm run bd -- ...` (e.g. `npm run bd -- issue list --json`).
 - For UI/user-flow changes: run `/qa-agent-browser` and attach traces/screenshots.
 - Domain code (`src/domain/`) must have zero external dependencies (no infra, no presentation imports).

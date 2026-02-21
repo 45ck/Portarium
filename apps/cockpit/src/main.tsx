@@ -4,7 +4,11 @@ import { RouterProvider } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { router } from './router';
 import { hydrateQueryCacheFromStorage, startQueryCachePersistence } from './lib/query-client';
-import { applyWaitingPwaUpdate, registerCockpitPwa, rollbackCockpitPwa } from './lib/pwa-registration';
+import {
+  applyWaitingPwaUpdate,
+  registerCockpitPwa,
+  rollbackCockpitPwa,
+} from './lib/pwa-registration';
 import './index.css';
 
 async function bootstrap() {

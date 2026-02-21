@@ -50,3 +50,7 @@ knip_debug.txt
 lint_out.txt
 vitest_*.txt
 nul
+
+# Git worktrees (managed by bd issue start/finish)
+.trees/
+.claude/worktrees/

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const VALID_PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3, undefined: 4 };
@@ -17,6 +18,8 @@ function usage() {
     '  bd issue create --title "..." [--priority P0] [--phase <phase>] [--blocked-by "id1,id2"] [--body "..."] [--json]',
     '  bd issue close  <id> [--json]',
     '  bd issue reopen <id> [--json]',
+    '  bd issue start  <id> --by "<owner>"',
+    '  bd issue finish <id> [--no-merge]',
     '  bd issue claim  <id> --by "<owner>" [--force] [--json]',
     '  bd issue unclaim <id> [--by "<owner>"] [--force] [--json]',
     '  bd issue update <id> [--title "..."] [--status open|closed] [--priority <P0|P1|P2|P3>]',
@@ -50,6 +53,11 @@ function fail(message) {
 
 function nowIsoUtc() {
   return new Date().toISOString();
+}
+
+function spawnGit(args, cwd) {
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  return { status: r.status ?? 1, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
 }
 
 function repoRoot() {
@@ -447,6 +455,108 @@ function main() {
     const updated = applyUpdate(issues, id, { claimedBy: undefined, claimedAt: undefined });
     writeIssues(root, issues);
     print(updated, asJson);
+    return;
+  }
+
+  // ── start ─────────────────────────────────────────────────────────────────
+  if (verb === 'start') {
+    const id = rest[0];
+    if (!isNonEmptyString(id)) fail('Missing issue id for issue start.');
+
+    const claimedByRaw = readOption(rawArgv, '--by');
+    if (!claimedByRaw) fail('Missing --by for issue start.');
+    const claimedBy = claimedByRaw.trim();
+
+    const idx = findIssueIndex(issues, id);
+    const issue = issues[idx];
+    if (issue.status !== 'open') fail(`Cannot start non-open bead: ${id} is ${issue.status}.`);
+
+    const worktreePath = path.join(root, '.trees', id);
+    if (fs.existsSync(worktreePath)) {
+      fail(`Worktree already exists at .trees/${id}. Remove it or run issue finish.`);
+    }
+
+    const closedIds = new Set(issues.filter((i) => i.status === 'closed').map((i) => i.id));
+    if (!isUnblocked(issue, closedIds)) {
+      const openBlockers = (issue.blockedBy ?? []).filter((dep) => !closedIds.has(dep));
+      fail(`Bead ${id} is blocked by: ${openBlockers.join(', ')}`);
+    }
+
+    const gitResult = spawnGit(
+      ['worktree', 'add', '-b', id, path.join('.trees', id), 'main'],
+      root,
+    );
+    if (gitResult.status !== 0) {
+      fail(`git worktree add failed:\n${gitResult.stderr}`);
+    }
+
+    const now = nowIsoUtc();
+    issues[idx] = { ...issue, claimedBy, claimedAt: now, updatedAt: now };
+    writeIssues(root, issues);
+
+    if (!asJson) {
+      process.stdout.write(`Started ${id}: worktree created at .trees/${id}\n`);
+      process.stdout.write(`Next: cd .trees/${id} && npm install\n`);
+      process.stdout.write(
+        `Commit: git add .beads/issues.jsonl && git commit -m "chore: start ${id}"\n`,
+      );
+    } else {
+      print(issues[idx], true);
+    }
+    return;
+  }
+
+  // ── finish ────────────────────────────────────────────────────────────────
+  if (verb === 'finish') {
+    const id = rest[0];
+    if (!isNonEmptyString(id)) fail('Missing issue id for issue finish.');
+
+    const idx = findIssueIndex(issues, id);
+    const issue = issues[idx];
+    if (issue.status !== 'open') fail(`Bead ${id} is already ${issue.status}.`);
+
+    const worktreePath = path.join(root, '.trees', id);
+    if (!fs.existsSync(worktreePath)) {
+      fail(
+        `Worktree .trees/${id} not found. Did you run bd issue start ${id}?\n` +
+          `If the worktree was removed manually, close the bead with: bd issue close ${id}`,
+      );
+    }
+
+    const cwd = process.cwd();
+    if (cwd.includes(path.sep + '.trees' + path.sep + id)) {
+      fail(`Run finish from repo root, not from inside the worktree.`);
+    }
+
+    const noMerge = rawArgv.includes('--no-merge');
+    if (!noMerge) {
+      const mergeResult = spawnGit(['merge', '--no-ff', id, '-m', `merge: ${id}`], root);
+      if (mergeResult.status !== 0) {
+        fail(
+          `Merge failed:\n${mergeResult.stderr}\n` +
+            `Resolve conflicts then re-run: bd issue finish ${id} --no-merge`,
+        );
+      }
+    }
+
+    const removeResult = spawnGit(['worktree', 'remove', path.join('.trees', id)], root);
+    if (removeResult.status !== 0) {
+      spawnGit(['worktree', 'remove', '--force', path.join('.trees', id)], root);
+    }
+
+    spawnGit(['branch', '-d', id], root);
+
+    applyUpdate(issues, id, { status: 'closed', claimedBy: undefined, claimedAt: undefined });
+    writeIssues(root, issues);
+
+    if (!asJson) {
+      process.stdout.write(`Finished ${id}: worktree removed, bead closed.\n`);
+      process.stdout.write(
+        `Commit: git add .beads/issues.jsonl && git commit -m "chore: close ${id}"\n`,
+      );
+    } else {
+      print(issues[idx], true);
+    }
     return;
   }
 
