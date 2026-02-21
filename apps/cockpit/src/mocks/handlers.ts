@@ -8,9 +8,11 @@ import type {
   CreateCredentialGrantRequest,
   CredentialGrantV1,
   HumanTaskSummary,
+  UpdateWorkflowRequest,
   UpdateWorkItemCommand,
+  WorkflowSummary,
 } from '@portarium/cockpit-types';
-import { buildMockWorkflows, findMockWorkflowById } from './fixtures/workflows';
+import { buildMockWorkflows } from './fixtures/workflows';
 import { buildMockHumanTasks } from './fixtures/human-tasks';
 import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from './fixtures/robot-locations';
 import { MOCK_USERS, type UserSummary } from './fixtures/users';
@@ -33,6 +35,7 @@ let agents: MeridianDataset['AGENTS'] = [];
 let runs: MeridianDataset['RUNS'] = [];
 let missions: MeridianDataset['MISSIONS'] = [];
 let globalEstopActive = false;
+let workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index');
@@ -47,6 +50,24 @@ export async function loadActiveDataset(): Promise<void> {
   agents = [...data.AGENTS];
   runs = [...data.RUNS];
   missions = [...(data.MISSIONS ?? [])];
+  workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
+}
+
+function getWorkflows(): WorkflowSummary[] {
+  const base = buildMockWorkflows(runs, agents);
+  return base.map((workflow) => {
+    const override = workflowOverrides.get(workflow.workflowId);
+    if (!override) return workflow;
+    return {
+      ...workflow,
+      ...override,
+      actions: override.actions ?? workflow.actions,
+    };
+  });
+}
+
+function findWorkflowById(workflowId: string): WorkflowSummary | null {
+  return getWorkflows().find((workflow) => workflow.workflowId === workflowId) ?? null;
 }
 
 export const handlers = [
@@ -165,13 +186,33 @@ export const handlers = [
   }),
 
   // Workflows
-  http.get('/v1/workspaces/:wsId/workflows', () =>
-    HttpResponse.json({ items: buildMockWorkflows(runs, agents) }),
-  ),
+  http.get('/v1/workspaces/:wsId/workflows', () => HttpResponse.json({ items: getWorkflows() })),
   http.get('/v1/workspaces/:wsId/workflows/:workflowId', ({ params }) => {
-    const workflow = findMockWorkflowById(runs, agents, String(params['workflowId'] ?? ''));
+    const workflow = findWorkflowById(String(params['workflowId'] ?? ''));
     if (!workflow) return HttpResponse.json(null, { status: 404 });
     return HttpResponse.json(workflow);
+  }),
+  http.patch('/v1/workspaces/:wsId/workflows/:workflowId', async ({ request, params }) => {
+    const workflowId = String(params['workflowId'] ?? '');
+    const existing = findWorkflowById(workflowId);
+    if (!existing) return HttpResponse.json(null, { status: 404 });
+
+    const body = (await request.json()) as UpdateWorkflowRequest;
+    const nextVersion = existing.version + 1;
+    const merged: WorkflowSummary = {
+      ...existing,
+      ...body,
+      actions: body.actions ?? existing.actions,
+      version: nextVersion,
+    };
+    workflowOverrides.set(workflowId, {
+      ...workflowOverrides.get(workflowId),
+      ...body,
+      actions: merged.actions,
+      version: nextVersion,
+    });
+
+    return HttpResponse.json(merged);
   }),
 
   // Approvals

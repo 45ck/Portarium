@@ -23,6 +23,7 @@ import { Route as runDetailRoute } from './routes/runs/$runId';
 // Workflows
 import { Route as workflowsRoute } from './routes/workflows/index';
 import { Route as workflowDetailRoute } from './routes/workflows/$workflowId';
+import { Route as workflowEditRoute } from './routes/workflows/$workflowId.edit';
 import { Route as workflowBuilderRoute } from './routes/workflows/builder';
 
 // Approvals
@@ -71,6 +72,7 @@ export const routeTree = rootRoute.addChildren([
   runDetailRoute,
   workflowsRoute,
   workflowDetailRoute,
+  workflowEditRoute,
   workflowBuilderRoute,
   approvalsRoute,
   approvalDetailRoute,
