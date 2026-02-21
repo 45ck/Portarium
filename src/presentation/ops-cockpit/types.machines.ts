@@ -78,6 +78,10 @@ export interface PolicySummary {
   name: string;
   description: string;
   status: 'Active' | 'Draft' | 'Archived';
+  tier?: string;
+  scope?: string;
+  ruleCount?: number;
+  affectedWorkflowIds?: string[];
   ruleText: string;
   conditions: PolicyCondition[];
 }
@@ -88,6 +92,9 @@ export interface SodConstraint {
   description: string;
   status: 'Active' | 'Inactive';
   relatedPolicyIds: string[];
+  rolePair?: string;
+  forbiddenAction?: string;
+  scope?: string;
 }
 
 export interface AdapterSummary {

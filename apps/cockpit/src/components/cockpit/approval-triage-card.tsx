@@ -799,15 +799,9 @@ export function ApprovalTriageCard({
             ) : (
               <div className="shrink-0 space-y-3">
                 <motion.div
-                  animate={
-                    shouldShakeRationale
-                      ? { x: [0, 6, -6, 4, -4, 2, 0] }
-                      : { x: 0 }
-                  }
+                  animate={shouldShakeRationale ? { x: [0, 6, -6, 4, -4, 2, 0] } : { x: 0 }}
                   transition={
-                    shouldShakeRationale
-                      ? { duration: 0.35, ease: 'easeInOut' }
-                      : { duration: 0 }
+                    shouldShakeRationale ? { duration: 0.35, ease: 'easeInOut' } : { duration: 0 }
                   }
                 >
                   <Textarea
@@ -849,15 +843,9 @@ export function ApprovalTriageCard({
                   className="grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_0.75fr] gap-2"
                 >
                   <motion.div
-                    animate={
-                      shouldShakeApprove
-                        ? { x: [0, 8, -8, 6, -6, 3, 0] }
-                        : { x: 0 }
-                    }
+                    animate={shouldShakeApprove ? { x: [0, 8, -8, 6, -6, 3, 0] } : { x: 0 }}
                     transition={
-                      shouldShakeApprove
-                        ? { duration: 0.4, ease: 'easeInOut' }
-                        : { duration: 0 }
+                      shouldShakeApprove ? { duration: 0.4, ease: 'easeInOut' } : { duration: 0 }
                     }
                   >
                     <Button

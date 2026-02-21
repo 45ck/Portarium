@@ -11,6 +11,10 @@ const config: Record<EvidenceCategory, { label: string; className: string }> = {
   Action: { label: 'Action', className: 'bg-info/10 text-info' },
   Approval: { label: 'Approval', className: 'bg-warning/10 text-warning' },
   Policy: { label: 'Policy', className: 'bg-destructive/10 text-destructive' },
+  PolicyViolation: {
+    label: 'Policy Violation',
+    className: 'bg-destructive text-destructive-foreground',
+  },
   System: { label: 'System', className: 'bg-muted text-muted-foreground' },
 };
 

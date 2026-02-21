@@ -20,6 +20,7 @@ export type WorkflowNodeType =
   | 'agent-task';
 
 export interface WorkflowNodeData {
+  actionId?: string;
   label: string;
   description?: string;
   nodeType: WorkflowNodeType;
@@ -38,7 +39,7 @@ function nextNodeId(): string {
   return `node-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-const DEFAULT_NODES: WorkflowNode[] = [
+export const DEFAULT_NODES: WorkflowNode[] = [
   {
     id: 'start-1',
     type: 'start',
@@ -102,6 +103,15 @@ export function useWorkflowBuilder(initialNodes?: WorkflowNode[], initialEdges?:
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
+  const replaceGraph = useCallback(
+    (nextNodes: WorkflowNode[], nextEdges: WorkflowEdge[]) => {
+      setNodes(nextNodes);
+      setEdges(nextEdges);
+      setSelectedNodeId(null);
+    },
+    [setEdges, setNodes],
+  );
+
   return {
     nodes,
     edges,
@@ -114,5 +124,6 @@ export function useWorkflowBuilder(initialNodes?: WorkflowNode[], initialEdges?:
     selectedNodeId,
     setSelectedNodeId,
     selectedNode,
+    replaceGraph,
   };
 }

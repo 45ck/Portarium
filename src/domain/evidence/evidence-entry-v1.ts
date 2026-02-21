@@ -12,7 +12,13 @@ import type {
   WorkspaceId,
 } from '../primitives/index.js';
 
-export type EvidenceCategory = 'Plan' | 'Action' | 'Approval' | 'Policy' | 'System';
+export type EvidenceCategory =
+  | 'Plan'
+  | 'Action'
+  | 'Approval'
+  | 'Policy'
+  | 'PolicyViolation'
+  | 'System';
 
 export type EvidenceActor =
   | Readonly<{ kind: 'User'; userId: UserId }>

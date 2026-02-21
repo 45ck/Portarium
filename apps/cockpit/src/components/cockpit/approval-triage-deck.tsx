@@ -183,6 +183,7 @@ export function ApprovalTriageDeck({
 
       // Animate the card off-screen, then fire action
       animate(x, dir * window.innerWidth, SPRING_EXIT);
+      if (navigator?.vibrate) navigator.vibrate(50);
       setTimeout(() => onAction(approvalId, action, rationale), 150);
     },
     [x, onAction],
@@ -279,6 +280,19 @@ export function ApprovalTriageDeck({
           </span>
         </motion.div>
 
+        {/* Blocked stamp — replaces approve stamp when SoD-blocked */}
+        <motion.div
+          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
+          style={{ opacity: blockedStampOpacity }}
+        >
+          <span
+            className="text-red-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-red-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
+            style={{ transform: 'rotate(-12deg)', display: 'inline-block' }}
+          >
+            Blocked
+          </span>
+        </motion.div>
+
         <ApprovalTriageCard
           approval={approval}
           index={index}
@@ -296,6 +310,8 @@ export function ApprovalTriageDeck({
           externalDrag
           dragProgress={dragProgressRef.current}
           isDragging={isDraggingRef.current}
+          onValidationChange={handleValidationChange}
+          dragRejection={dragRejection}
         />
       </motion.div>
     </motion.div>

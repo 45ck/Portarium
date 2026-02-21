@@ -4,10 +4,12 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { usePolicies, useSodConstraints } from '@/hooks/queries/use-policies';
+import { useWorkflows } from '@/hooks/queries/use-workflows';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { KpiRow } from '@/components/cockpit/kpi-row';
 import { DataTable } from '@/components/cockpit/data-table';
+import { FilterBar } from '@/components/cockpit/filter-bar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,7 +21,17 @@ import {
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types';
+import type { SodConstraint } from '@portarium/cockpit-types';
+import {
+  filterAuditEntries,
+  normalizeAuditCategory,
+  getAffectedWorkflowIds,
+  getPolicyScope,
+  getPolicyTier,
+  getRuleCount,
+  type GovernanceAuditFilter,
+  type GovernancePolicy,
+} from './governance.utils';
 
 const policyStatusClassName: Record<string, string> = {
   Active: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950',
@@ -32,39 +44,93 @@ const sodStatusClassName: Record<string, string> = {
   Inactive: 'text-muted-foreground bg-muted',
 };
 
+const operatorLabel: Record<string, string> = {
+  eq: '=',
+  neq: '!=',
+  in: 'in',
+  gt: '>',
+  lt: '<',
+};
+
+function deriveSodRolePair(constraint: SodConstraint): string {
+  return constraint.rolePair ?? constraint.name;
+}
+
+function deriveSodForbiddenAction(constraint: SodConstraint): string {
+  return constraint.forbiddenAction ?? constraint.description;
+}
+
+function deriveSodScope(constraint: SodConstraint, policies: GovernancePolicy[]): string {
+  if (constraint.scope) return constraint.scope;
+  const linkedPolicy = policies.find((policy) =>
+    constraint.relatedPolicyIds.includes(policy.policyId),
+  );
+  return linkedPolicy ? getPolicyScope(linkedPolicy) : 'workspace';
+}
+
 function ExploreGovernancePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data: evidenceData, isLoading: evidenceLoading } = useEvidence(wsId);
   const { data: policiesData, isLoading: policiesLoading } = usePolicies(wsId);
   const { data: sodData, isLoading: sodLoading } = useSodConstraints(wsId);
+  const { data: workflowsData } = useWorkflows(wsId);
 
-  const [selectedPolicy, setSelectedPolicy] = useState<PolicySummary | null>(null);
+  const [selectedPolicy, setSelectedPolicy] = useState<GovernancePolicy | null>(null);
+  const [auditFilter, setAuditFilter] = useState<GovernanceAuditFilter>('all');
 
-  const policies = policiesData?.items ?? [];
+  const policies = (policiesData?.items ?? []) as GovernancePolicy[];
   const sodConstraints = sodData?.items ?? [];
-  const recentAuditEntries = (evidenceData?.items ?? []).slice(0, 10);
+  const allRecentAuditEntries = (evidenceData?.items ?? []).slice(0, 20);
+  const recentAuditEntries = filterAuditEntries(allRecentAuditEntries, auditFilter).slice(0, 10);
+  const workflowsById = new Map((workflowsData?.items ?? []).map((wf) => [wf.workflowId, wf]));
 
   const activePolicies = policies.filter((p) => p.status === 'Active').length;
   const activeSod = sodConstraints.filter((c) => c.status === 'Active').length;
 
   const policyColumns = [
     {
-      key: 'name',
-      header: 'Policy',
-      render: (row: PolicySummary) => <span className="font-medium">{row.name}</span>,
+      key: 'policyId',
+      header: 'Policy ID',
+      width: '120px',
+      render: (row: GovernancePolicy) => (
+        <Badge variant="secondary" className="font-mono text-[10px]">
+          {row.policyId}
+        </Badge>
+      ),
     },
     {
-      key: 'description',
-      header: 'Description',
-      render: (row: PolicySummary) => (
-        <span className="text-muted-foreground">{row.description}</span>
+      key: 'name',
+      header: 'Name',
+      render: (row: GovernancePolicy) => <span className="font-medium">{row.name}</span>,
+    },
+    {
+      key: 'tier',
+      header: 'Tier',
+      width: '120px',
+      render: (row: GovernancePolicy) => (
+        <span className="text-muted-foreground">{getPolicyTier(row)}</span>
+      ),
+    },
+    {
+      key: 'scope',
+      header: 'Scope',
+      render: (row: GovernancePolicy) => (
+        <span className="text-muted-foreground">{getPolicyScope(row)}</span>
+      ),
+    },
+    {
+      key: 'ruleCount',
+      header: 'Rules',
+      width: '90px',
+      render: (row: GovernancePolicy) => (
+        <Badge variant="secondary">{getRuleCount(row).toString()}</Badge>
       ),
     },
     {
       key: 'status',
       header: 'Status',
       width: '100px',
-      render: (row: PolicySummary) => (
+      render: (row: GovernancePolicy) => (
         <Badge variant="secondary" className={policyStatusClassName[row.status]}>
           {row.status}
         </Badge>
@@ -73,8 +139,28 @@ function ExploreGovernancePage() {
   ];
 
   const sodColumns = [
-    { key: 'name', header: 'Constraint' },
-    { key: 'description', header: 'Description' },
+    {
+      key: 'rolePair',
+      header: 'Role Pair',
+      render: (row: SodConstraint) => <span className="font-medium">{deriveSodRolePair(row)}</span>,
+    },
+    {
+      key: 'forbiddenAction',
+      header: 'Forbidden Action',
+      render: (row: SodConstraint) => (
+        <span className="text-muted-foreground">{deriveSodForbiddenAction(row)}</span>
+      ),
+    },
+    {
+      key: 'scope',
+      header: 'Scope',
+      width: '140px',
+      render: (row: SodConstraint) => (
+        <Badge variant="secondary" className="font-mono text-[10px]">
+          {deriveSodScope(row, policies)}
+        </Badge>
+      ),
+    },
     {
       key: 'status',
       header: 'Status',
@@ -83,14 +169,6 @@ function ExploreGovernancePage() {
         <Badge variant="secondary" className={sodStatusClassName[row.status]}>
           {row.status}
         </Badge>
-      ),
-    },
-    {
-      key: 'relatedPolicyIds',
-      header: 'Policies',
-      width: '120px',
-      render: (row: SodConstraint) => (
-        <Badge variant="secondary">{row.relatedPolicyIds.length} linked</Badge>
       ),
     },
   ];
@@ -177,6 +255,27 @@ function ExploreGovernancePage() {
           <CardTitle className="text-sm">Recent Audit Events</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-3">
+            <FilterBar
+              filters={[
+                {
+                  key: 'category',
+                  label: 'Category',
+                  options: [
+                    { label: 'All', value: 'all' },
+                    { label: 'Policy Violation', value: 'PolicyViolation' },
+                    { label: 'Policy', value: 'Policy' },
+                    { label: 'Approval', value: 'Approval' },
+                    { label: 'Action', value: 'Action' },
+                    { label: 'Plan', value: 'Plan' },
+                    { label: 'System', value: 'System' },
+                  ],
+                },
+              ]}
+              values={{ category: auditFilter }}
+              onChange={(_key, value) => setAuditFilter(value as GovernanceAuditFilter)}
+            />
+          </div>
           {evidenceLoading ? (
             <Skeleton className="h-4 w-1/2" />
           ) : recentAuditEntries.length === 0 ? (
@@ -188,6 +287,9 @@ function ExploreGovernancePage() {
                   <span className="text-muted-foreground shrink-0 tabular-nums">
                     {format(new Date(entry.occurredAtIso), 'MMM d, HH:mm')}
                   </span>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {normalizeAuditCategory(entry)}
+                  </Badge>
                   <span>{entry.summary}</span>
                 </li>
               ))}
@@ -216,6 +318,18 @@ function ExploreGovernancePage() {
               </div>
 
               <div>
+                <div className="text-xs font-medium mb-1">Tier</div>
+                <div className="text-xs text-muted-foreground">{getPolicyTier(selectedPolicy)}</div>
+              </div>
+
+              <div>
+                <div className="text-xs font-medium mb-1">Scope</div>
+                <div className="text-xs text-muted-foreground">
+                  {getPolicyScope(selectedPolicy)}
+                </div>
+              </div>
+
+              <div>
                 <div className="text-xs font-medium mb-1">DSL Rule</div>
                 <pre className="bg-muted rounded-md p-3 text-[11px] font-mono whitespace-pre-wrap leading-relaxed">
                   {selectedPolicy.ruleText}
@@ -224,29 +338,56 @@ function ExploreGovernancePage() {
 
               <div>
                 <div className="text-xs font-medium mb-2">Condition Tree</div>
-                <div className="space-y-1 pl-2 border-l-2 border-primary/30">
-                  {selectedPolicy.conditions.map((cond, i) => (
-                    <div key={i} className="flex items-center gap-1 text-[11px] font-mono">
-                      <span className="text-primary">{cond.field}</span>
-                      <span className="text-muted-foreground">{cond.operator}</span>
-                      <span className="text-foreground">{cond.value}</span>
-                    </div>
-                  ))}
-                </div>
+                {selectedPolicy.conditions.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No conditions declared.</div>
+                ) : (
+                  <div className="space-y-1 pl-2 border-l-2 border-primary/30">
+                    {selectedPolicy.conditions.map((cond, i) => (
+                      <div key={i} className="flex items-center gap-1 text-[11px] font-mono">
+                        <span className="text-foreground">
+                          {cond.field} {operatorLabel[cond.operator] ?? cond.operator} {cond.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
                 <div className="text-xs font-medium mb-2">Linked SoD Constraints</div>
-                {sodConstraints
-                  .filter((c) => c.relatedPolicyIds.includes(selectedPolicy.policyId))
-                  .map((c) => (
-                    <div key={c.constraintId} className="flex items-center gap-2 text-xs py-1">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {c.constraintId}
+                {sodConstraints.filter((c) => c.relatedPolicyIds.includes(selectedPolicy.policyId))
+                  .length === 0 ? (
+                  <div className="text-xs text-muted-foreground">
+                    No SoD constraints linked to this policy.
+                  </div>
+                ) : (
+                  sodConstraints
+                    .filter((c) => c.relatedPolicyIds.includes(selectedPolicy.policyId))
+                    .map((c) => (
+                      <div key={c.constraintId} className="flex items-center gap-2 text-xs py-1">
+                        <Badge variant="secondary" className="text-[10px]">
+                          {c.constraintId}
+                        </Badge>
+                        <span>{deriveSodRolePair(c)}</span>
+                      </div>
+                    ))
+                )}
+              </div>
+
+              <div>
+                <div className="text-xs font-medium mb-2">Affected Workflows</div>
+                {getAffectedWorkflowIds(selectedPolicy).length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No workflows linked.</div>
+                ) : (
+                  getAffectedWorkflowIds(selectedPolicy).map((workflowId) => (
+                    <div key={workflowId} className="flex items-center gap-2 text-xs py-1">
+                      <Badge variant="secondary" className="text-[10px] font-mono">
+                        {workflowId}
                       </Badge>
-                      <span>{c.name}</span>
+                      <span>{workflowsById.get(workflowId)?.name ?? workflowId}</span>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
             </div>
           )}

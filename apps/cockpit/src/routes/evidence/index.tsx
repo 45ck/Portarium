@@ -17,6 +17,7 @@ const CATEGORY_OPTIONS = [
   { label: 'Action', value: 'Action' },
   { label: 'Approval', value: 'Approval' },
   { label: 'Policy', value: 'Policy' },
+  { label: 'Policy Violation', value: 'PolicyViolation' },
   { label: 'System', value: 'System' },
 ];
 

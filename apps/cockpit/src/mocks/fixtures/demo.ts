@@ -542,6 +542,18 @@ export const EVIDENCE: EvidenceEntry[] = [
     links: { runId: 'run-2001', workItemId: 'wi-1001', planId: 'plan-5001' },
     hashSha256: 'd4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5',
   },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-4005',
+    workspaceId: 'ws-demo',
+    occurredAtIso: '2026-02-20T00:14:10Z',
+    category: 'PolicyViolation',
+    summary: 'Policy violation detected: write:external denied by SOC 2 CC6.1',
+    actor: { kind: 'System' },
+    links: { runId: 'run-2001', workItemId: 'wi-1001' },
+    previousHash: 'd4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5f6a7b8c9d4e5',
+    hashSha256: 'e5f6a7b8c9d0e5f6a7b8c9d0e5f6a7b8c9d0e5f6a7b8c9d0e5f6a7b8c9d0e5f6',
+  },
 ];
 
 export const WORKFORCE_MEMBERS: WorkforceMemberSummary[] = [

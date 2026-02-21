@@ -102,6 +102,14 @@ export interface WorkflowSummary {
 
 export type WorkflowDetail = WorkflowSummary;
 
+export interface UpdateWorkflowRequest {
+  name?: string;
+  description?: string;
+  executionTier?: RunSummary['executionTier'];
+  active?: boolean;
+  actions?: WorkflowActionSummary[];
+}
+
 export interface WorkItemSla {
   dueAtIso?: string;
 }
@@ -127,7 +135,13 @@ export interface WorkItemSummary {
   links?: WorkItemLinks;
 }
 
-export type EvidenceCategory = 'Plan' | 'Action' | 'Approval' | 'Policy' | 'System';
+export type EvidenceCategory =
+  | 'Plan'
+  | 'Action'
+  | 'Approval'
+  | 'Policy'
+  | 'PolicyViolation'
+  | 'System';
 
 export interface EvidenceLinks {
   runId?: string;

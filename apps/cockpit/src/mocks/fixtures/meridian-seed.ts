@@ -154,7 +154,14 @@ const RUN_STATUS_WEIGHTS = [0.05, 0.1, 0.1, 0.05, 0.5, 0.12, 0.08];
 const APPROVAL_STATUSES: ApprovalStatus[] = ['Pending', 'Approved', 'Denied', 'RequestChanges'];
 const APPROVAL_STATUS_WEIGHTS = [0.2, 0.55, 0.15, 0.1];
 
-const EVIDENCE_CATEGORIES: EvidenceCategory[] = ['System', 'Approval', 'Action', 'Plan', 'Policy'];
+const EVIDENCE_CATEGORIES: EvidenceCategory[] = [
+  'System',
+  'Approval',
+  'Action',
+  'Plan',
+  'Policy',
+  'PolicyViolation',
+];
 
 const ROBOT_CLASSES: RobotClass[] = ['AMR', 'AGV', 'Manipulator', 'UAV', 'PLC'];
 
@@ -516,6 +523,12 @@ function evidenceSummary(
         `Policy check passed: FDA 21 CFR Part 211 — ${extra}`,
         `Policy violation detected: ${extra}`,
         `Compliance gate cleared for ${runId}`,
+      ]);
+    case 'PolicyViolation':
+      return pick(rand, [
+        `Policy violation detected: temperature excursion at ${extra}`,
+        `Policy violation detected: SoD gate blocked run ${runId}`,
+        `Policy violation detected: unauthorized write attempt at ${extra}`,
       ]);
   }
 }
