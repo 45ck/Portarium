@@ -36,8 +36,6 @@ interface PendingAction {
 
 function ApprovalsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useApprovals(wsId);
   const items = data?.items ?? [];
   const pendingItems = items.filter((a) => a.status === 'Pending');
@@ -51,8 +49,6 @@ function ApprovalsPage() {
     changesRequested: 0,
     skipped: 0,
   });
-  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(null);
-  const [mobileListOpen, setMobileListOpen] = useState(false);
 
   // Undo mechanism
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
@@ -61,12 +57,7 @@ function ApprovalsPage() {
 
   // Get pending items not yet actioned/skipped in this triage session
   const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
-
-  // If a specific approval is selected from the list, use that; otherwise use the queue head
-  const selectedFromList = selectedApprovalId
-    ? (pendingItems.find((a) => a.approvalId === selectedApprovalId) ?? null)
-    : null;
-  const currentApproval = selectedFromList ?? triageQueue[0] ?? null;
+  const currentApproval = triageQueue[0] ?? null;
 
   // ID-parameterized mutation so deferred commits target the correct approval
   const qc = useQueryClient();
@@ -132,10 +123,6 @@ function ApprovalsPage() {
 
     // Remove from queue immediately (optimistic)
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
-    // Clear list selection so next queue item loads
-    if (selectedApprovalId === approvalId) {
-      setSelectedApprovalId(null);
-    }
 
     // Skip is instant — no undo, no API call
     if (action === 'Skip') return;
@@ -217,12 +204,7 @@ function ApprovalsPage() {
     };
   }, [commitAction]);
 
-  const handleListSelect = (id: string) => {
-    setSelectedApprovalId(id);
-    setMobileListOpen(false);
-  };
-
-  // ----- Triage content (shared between desktop right-panel & mobile) -----
+  // ----- Triage content -----
   const triageContent = isLoading ? (
     <div className="max-w-xl mx-auto h-64 rounded-xl bg-muted/30 animate-pulse" />
   ) : !currentApproval || triageQueue.length === 0 ? (
@@ -280,7 +262,6 @@ function ApprovalsPage() {
       actionHistory={actionHistory}
       undoAvailable={pendingAction !== null}
       onUndo={() => handleUndo()}
-      compact={isMobile}
     />
   );
 
