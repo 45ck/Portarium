@@ -37,7 +37,12 @@ interface PendingAction {
   queueIndex: number;
 }
 
+interface ApprovalsSearch {
+  focus?: string;
+}
+
 function ApprovalsPage() {
+  const search = Route.useSearch();
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, refetch } = useApprovals(wsId);
   const items = data?.items ?? [];
@@ -60,7 +65,9 @@ function ApprovalsPage() {
 
   // Get pending items not yet actioned/skipped in this triage session
   const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
-  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(null);
+  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(
+    search.focus ?? null,
+  );
 
   const currentApproval =
     (selectedApprovalId
@@ -376,4 +383,7 @@ export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/approvals',
   component: ApprovalsPage,
+  validateSearch: (search: Record<string, unknown>): ApprovalsSearch => ({
+    focus: typeof search.focus === 'string' ? search.focus : undefined,
+  }),
 });
