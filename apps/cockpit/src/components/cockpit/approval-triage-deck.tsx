@@ -17,7 +17,6 @@ import type {
 const COMMIT_PX = 120;
 const COMMIT_VELOCITY = 500;
 const DRAG_ELASTIC = 0.2;
-const SPRING_SNAP = { type: 'spring' as const, stiffness: 300, damping: 30 };
 const STAMP_THRESHOLD = 0.3;
 
 const EXCLUDED = 'textarea, button, input, [role="tablist"], [role="tab"], select';
@@ -79,7 +78,7 @@ export function ApprovalTriageDeck({
   const approveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
   const denyStampOpacity = useTransform(x, [-COMMIT_PX, -stampThreshold * COMMIT_PX], [1, 0]);
 
-  // Directional tint background (must be at top level — hooks can't be in JSX)
+  // Directional tint background
   const tintBackground = useTransform(x, (latest) =>
     latest > 0
       ? `linear-gradient(100deg, rgba(34,197,94,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`
@@ -99,7 +98,7 @@ export function ApprovalTriageDeck({
         Math.abs(info.offset.x) >= COMMIT_PX || Math.abs(info.velocity.x) >= COMMIT_VELOCITY;
 
       if (!committed) {
-        // Spring snap-back — animate the motion value directly
+        // Spring snap-back
         x.set(0);
         return;
       }
@@ -123,8 +122,16 @@ export function ApprovalTriageDeck({
 
   const shouldDrag = !prefersReducedMotion && !loading;
 
+  // Root motion.div — AnimatePresence sees this for entrance/exit.
+  // Inner motion.div — owns drag transforms (x, rotate, rotateY).
   return (
-    <div className="relative w-full">
+    <motion.div
+      className="relative w-full"
+      initial={{ y: 30, opacity: 0, scale: 0.95 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+    >
       {/* Ghost card 2 (deepest) */}
       {hasMore && (
         <motion.div
@@ -151,7 +158,7 @@ export function ApprovalTriageDeck({
         />
       )}
 
-      {/* Main draggable card */}
+      {/* Draggable card */}
       <motion.div
         className="relative cursor-grab active:cursor-grabbing"
         style={{
@@ -161,10 +168,6 @@ export function ApprovalTriageDeck({
           perspective: 1200,
           zIndex: 2,
         }}
-        initial={{ y: 40, scale: 0.93, opacity: 0 }}
-        animate={{ y: 0, scale: 1, opacity: 1 }}
-        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         drag={shouldDrag ? 'x' : false}
         dragElastic={DRAG_ELASTIC}
         dragConstraints={{ left: 0, right: 0 }}
@@ -227,6 +230,6 @@ export function ApprovalTriageDeck({
           isDragging={isDraggingRef.current}
         />
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

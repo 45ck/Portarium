@@ -525,7 +525,7 @@ export function ApprovalTriageCard({
           )}
 
           {/* Header */}
-          <div className="bg-muted/20 px-5 pt-5 pb-4 border-b border-border/50">
+          <div className="bg-muted/20 px-5 pt-5 pb-4 border-b border-border/50 shrink-0">
             <div className="flex items-start gap-4">
               {/* Icon box */}
               <div className="shrink-0 rounded-xl bg-background border border-border p-3 w-16 h-16 flex items-center justify-center">
@@ -610,14 +610,16 @@ export function ApprovalTriageCard({
           </div>
 
           {/* Mode switcher — below header */}
-          <div className="px-5 pt-3 pb-0">
+          <div className="px-5 pt-3 pb-0 shrink-0">
             <ModeSwitcher />
           </div>
 
           {/* Body */}
           <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4">
             {/* SoD evaluation — always visible */}
-            <SodBanner eval={sodEval} />
+            <div className="shrink-0">
+              <SodBanner eval={sodEval} />
+            </div>
 
             {/* Mode-specific content — AnimatePresence crossfade on mode switch */}
             <ModeErrorBoundary modeKey={triageViewMode}>
@@ -677,7 +679,7 @@ export function ApprovalTriageCard({
 
             {/* Decision area */}
             {requestChangesMode ? (
-              <div className="space-y-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
+              <div className="shrink-0 space-y-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
                 <label className="text-xs font-semibold text-warning-foreground">
                   What needs to change?{' '}
                   <span className="text-red-500" aria-hidden>
@@ -715,7 +717,7 @@ export function ApprovalTriageCard({
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="shrink-0 space-y-3">
                 <Textarea
                   aria-label={`Decision rationale for approval ${approval.approvalId}`}
                   className={cn(
