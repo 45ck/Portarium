@@ -1,16 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { WorkItemSummary, UpdateWorkItemCommand } from '@portarium/cockpit-types';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 async function fetchWorkItems(wsId: string): Promise<{ items: WorkItemSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/work-items`);
-  if (!res.ok) throw new Error('Failed to fetch work items');
-  return res.json();
+  return controlPlaneClient.listWorkItems(wsId);
 }
 
 async function fetchWorkItem(wsId: string, wiId: string): Promise<WorkItemSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/work-items/${wiId}`);
-  if (!res.ok) throw new Error('Work item not found');
-  return res.json();
+  return controlPlaneClient.getWorkItem(wsId, wiId);
 }
 
 async function patchWorkItem(
@@ -18,13 +15,7 @@ async function patchWorkItem(
   wiId: string,
   body: UpdateWorkItemCommand,
 ): Promise<WorkItemSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/work-items/${wiId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to update work item');
-  return res.json();
+  return controlPlaneClient.updateWorkItem(wsId, wiId, body);
 }
 
 export function useWorkItems(wsId: string) {

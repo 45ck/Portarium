@@ -223,7 +223,7 @@ export const handlers = [
     if (!approval) return HttpResponse.json(null, { status: 404 });
     return HttpResponse.json(approval);
   }),
-  http.post('/v1/workspaces/:wsId/approvals/:id/decision', async ({ request, params }) => {
+  http.post('/v1/workspaces/:wsId/approvals/:id/decide', async ({ request, params }) => {
     const body = (await request.json()) as ApprovalDecisionRequest;
     approvals = approvals.map((a) =>
       a.approvalId === params['id']

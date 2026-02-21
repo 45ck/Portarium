@@ -114,7 +114,7 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
   }
 
   const approvalDecisionMatch = pathname.match(
-    /^\/v1\/workspaces\/[^/]+\/approvals\/([^/]+)\/decision$/,
+    /^\/v1\/workspaces\/[^/]+\/approvals\/([^/]+)\/decide$/,
   );
   const approvalDecisionId = approvalDecisionMatch?.[1];
   if (approvalDecisionId && init?.method === 'POST') {

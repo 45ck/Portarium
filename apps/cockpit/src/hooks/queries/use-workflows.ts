@@ -4,17 +4,14 @@ import type {
   WorkflowDetail,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 async function fetchWorkflows(wsId: string): Promise<{ items: WorkflowSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workflows`);
-  if (!res.ok) throw new Error('Failed to fetch workflows');
-  return res.json();
+  return controlPlaneClient.listWorkflows(wsId);
 }
 
 async function fetchWorkflow(wsId: string, workflowId: string): Promise<WorkflowDetail> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workflows/${workflowId}`);
-  if (!res.ok) throw new Error('Workflow not found');
-  return res.json();
+  return controlPlaneClient.getWorkflow(wsId, workflowId);
 }
 
 async function patchWorkflow(
@@ -22,13 +19,7 @@ async function patchWorkflow(
   workflowId: string,
   body: UpdateWorkflowRequest,
 ): Promise<WorkflowDetail> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workflows/${workflowId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to update workflow');
-  return res.json();
+  return controlPlaneClient.updateWorkflow(wsId, workflowId, body);
 }
 
 export function useWorkflows(wsId: string) {

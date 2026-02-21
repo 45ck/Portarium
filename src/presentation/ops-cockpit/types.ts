@@ -129,7 +129,7 @@ export interface WorkItemSummary {
   createdAtIso: string;
   createdByUserId: string;
   title: string;
-  status: 'Open' | 'Closed';
+  status: 'Open' | 'InProgress' | 'Blocked' | 'Resolved' | 'Closed';
   ownerUserId?: string;
   sla?: WorkItemSla;
   links?: WorkItemLinks;

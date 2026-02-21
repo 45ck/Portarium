@@ -1,16 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApprovalSummary, ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 async function fetchApprovals(wsId: string): Promise<{ items: ApprovalSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/approvals`);
-  if (!res.ok) throw new Error('Failed to fetch approvals');
-  return res.json();
+  return controlPlaneClient.listApprovals(wsId);
 }
 
 async function fetchApproval(wsId: string, id: string): Promise<ApprovalSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/approvals/${id}`);
-  if (!res.ok) throw new Error('Approval not found');
-  return res.json();
+  return controlPlaneClient.getApproval(wsId, id);
 }
 
 async function postApprovalDecision(
@@ -18,13 +15,7 @@ async function postApprovalDecision(
   id: string,
   body: ApprovalDecisionRequest,
 ): Promise<ApprovalSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/approvals/${id}/decision`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to submit decision');
-  return res.json();
+  return controlPlaneClient.decideApproval(wsId, id, body);
 }
 
 export function useApprovals(wsId: string) {

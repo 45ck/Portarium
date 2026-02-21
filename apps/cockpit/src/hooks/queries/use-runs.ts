@@ -1,16 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import type { RunSummary } from '@portarium/cockpit-types';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 async function fetchRuns(wsId: string): Promise<{ items: RunSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/runs`);
-  if (!res.ok) throw new Error('Failed to fetch runs');
-  return res.json();
+  return controlPlaneClient.listRuns(wsId);
 }
 
 async function fetchRun(wsId: string, runId: string): Promise<RunSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/runs/${runId}`);
-  if (!res.ok) throw new Error('Run not found');
-  return res.json();
+  return controlPlaneClient.getRun(wsId, runId);
 }
 
 export function useRuns(wsId: string) {

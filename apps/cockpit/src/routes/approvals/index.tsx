@@ -23,6 +23,7 @@ import { EmptyState } from '@/components/cockpit/empty-state';
 import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -72,14 +73,7 @@ function ApprovalsPage() {
   const qc = useQueryClient();
   const { mutate: decideById, isPending: deciding } = useMutation({
     mutationFn: ({ approvalId, body }: { approvalId: string; body: ApprovalDecisionRequest }) =>
-      fetch(`/v1/workspaces/${wsId}/approvals/${approvalId}/decision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }).then((res) => {
-        if (!res.ok) throw new Error('Failed to submit decision');
-        return res.json();
-      }),
+      controlPlaneClient.decideApproval(wsId, approvalId, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['approvals', wsId] });
     },

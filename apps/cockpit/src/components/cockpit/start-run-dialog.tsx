@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 
 interface StartRunDialogProps {
   open: boolean;
@@ -46,13 +47,7 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
           throw new Error('Invalid JSON in parameters field');
         }
       }
-      const res = await fetch(`/v1/workspaces/${wsId}/runs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workflowId, parameters }),
-      });
-      if (!res.ok) throw new Error('Failed to create run');
-      return res.json();
+      return controlPlaneClient.startRun(wsId, { workflowId, parameters });
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['runs', wsId] });

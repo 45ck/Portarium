@@ -26,6 +26,7 @@ import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { controlPlaneClient } from '@/lib/control-plane-client';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -89,13 +90,7 @@ function RunDetailPage() {
   const { data: run, isLoading: runLoading, isError: runError } = useRun(wsId, runId);
 
   const cancelRun = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`/v1/workspaces/${wsId}/runs/${runId}/cancel`, {
-        method: 'POST',
-      });
-      if (!res.ok) throw new Error('Failed to cancel run');
-      return res.json();
-    },
+    mutationFn: () => controlPlaneClient.cancelRun(wsId, runId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['runs', wsId] });
       qc.invalidateQueries({ queryKey: ['runs', wsId, runId] });
