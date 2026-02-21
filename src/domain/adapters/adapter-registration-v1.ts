@@ -41,7 +41,7 @@ export type AdapterMachineEntryV1 = Readonly<{
 }>;
 
 export type AdapterRegistrationV1 = Readonly<{
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   adapterId: AdapterIdType;
   workspaceId: WorkspaceIdType;
   providerSlug: string;
@@ -72,8 +72,8 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
   const record = readRecord(value, 'AdapterRegistration', AdapterRegistrationParseError);
 
   const schemaVersion = readInteger(record, 'schemaVersion', AdapterRegistrationParseError);
-  if (schemaVersion !== 1) {
-    throw new AdapterRegistrationParseError('schemaVersion must be 1.');
+  if (schemaVersion !== 1 && schemaVersion !== 2) {
+    throw new AdapterRegistrationParseError('schemaVersion must be 1 or 2.');
   }
 
   const adapterId = AdapterId(readString(record, 'adapterId', AdapterRegistrationParseError));
@@ -86,12 +86,16 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
   }
 
   const enabled = readBoolean(record, 'enabled', AdapterRegistrationParseError);
-  const capabilityMatrix = parseCapabilityMatrix(record['capabilityMatrix'], portFamilyRaw);
+  const capabilityMatrix = parseCapabilityMatrix(
+    record['capabilityMatrix'],
+    portFamilyRaw,
+    schemaVersion,
+  );
   const executionPolicy = parseExecutionPolicy(record);
   const machineRegistrations = parseMachineRegistrations(record['machineRegistrations']);
 
   return {
-    schemaVersion: 1,
+    schemaVersion,
     adapterId,
     workspaceId,
     providerSlug,
@@ -103,15 +107,26 @@ export function parseAdapterRegistrationV1(value: unknown): AdapterRegistrationV
   };
 }
 
-function parseCapabilityMatrix(raw: unknown, portFamily: PortFamily): readonly CapabilityClaimV1[] {
+function parseCapabilityMatrix(
+  raw: unknown,
+  portFamily: PortFamily,
+  schemaVersion: 1 | 2,
+): readonly CapabilityClaimV1[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new AdapterRegistrationParseError('capabilityMatrix must be a non-empty array.');
   }
 
-  return raw.map((item, i) => parseCapability(item, `capabilityMatrix[${i}]`, portFamily));
+  return raw.map((item, i) =>
+    parseCapability(item, `capabilityMatrix[${i}]`, portFamily, schemaVersion),
+  );
 }
 
-function parseCapability(raw: unknown, path: string, portFamily: PortFamily): CapabilityClaimV1 {
+function parseCapability(
+  raw: unknown,
+  path: string,
+  portFamily: PortFamily,
+  schemaVersion: 1 | 2,
+): CapabilityClaimV1 {
   const record = parseRecord(raw, path, AdapterRegistrationParseError);
   const capability = parseOptionalCapability(record);
   const operation = parseOperation(record, path, capability);
@@ -133,6 +148,12 @@ function parseCapability(raw: unknown, path: string, portFamily: PortFamily): Ca
       ...(inputKind !== undefined ? { inputKind } : {}),
       ...(outputKind !== undefined ? { outputKind } : {}),
     };
+  }
+
+  if (schemaVersion === 2) {
+    throw new AdapterRegistrationParseError(
+      `${path}.capability is required when schemaVersion is 2.`,
+    );
   }
 
   if (operation === undefined) {

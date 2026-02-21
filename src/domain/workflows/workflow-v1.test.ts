@@ -95,12 +95,58 @@ describe('parseWorkflowV1: happy path', () => {
       }),
     ).toThrow(/must match "entity:verb" format when capability is not provided/);
   });
+
+  it('accepts schemaVersion 2 when capability is provided', () => {
+    const wf = parseWorkflowV1({
+      schemaVersion: 2,
+      workflowId: 'wf-5',
+      workspaceId: 'ws-1',
+      name: 'Schema v2',
+      version: 1,
+      active: true,
+      executionTier: 'Auto',
+      actions: [
+        {
+          actionId: 'act-1',
+          order: 1,
+          portFamily: 'SecretsVaulting',
+          capability: 'secret:read',
+        },
+      ],
+    });
+
+    expect(wf.schemaVersion).toBe(2);
+    expect(wf.actions[0]?.capability).toBe('secret:read');
+    expect(wf.actions[0]?.operation).toBe('secret:read');
+  });
+
+  it('rejects operation-only actions when schemaVersion is 2', () => {
+    expect(() =>
+      parseWorkflowV1({
+        schemaVersion: 2,
+        workflowId: 'wf-6',
+        workspaceId: 'ws-1',
+        name: 'Schema v2 invalid',
+        version: 1,
+        active: true,
+        executionTier: 'Auto',
+        actions: [
+          {
+            actionId: 'act-1',
+            order: 1,
+            portFamily: 'SecretsVaulting',
+            operation: 'secret:read',
+          },
+        ],
+      }),
+    ).toThrow(/capability is required when schemaVersion is 2/);
+  });
 });
 
 describe('parseWorkflowV1: validation', () => {
   it('rejects invalid top-level inputs and schema versions', () => {
     expect(() => parseWorkflowV1('nope')).toThrow(/Workflow must be an object/i);
-    expect(() => parseWorkflowV1({ schemaVersion: 2 })).toThrow(/schemaVersion/i);
+    expect(() => parseWorkflowV1({ schemaVersion: 3 })).toThrow(/schemaVersion/i);
   });
 
   it('requires a non-empty actions array', () => {

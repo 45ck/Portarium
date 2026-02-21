@@ -33,7 +33,7 @@ export type WorkflowActionV1 = Readonly<{
 }>;
 
 export type WorkflowV1 = Readonly<{
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   workflowId: WorkflowIdType;
   workspaceId: WorkspaceIdType;
   name: string;
@@ -63,7 +63,7 @@ export function parseWorkflowV1(value: unknown): WorkflowV1 {
   const record = readRecord(value, 'Workflow', WorkflowParseError);
 
   const schemaVersion = readInteger(record, 'schemaVersion', WorkflowParseError);
-  if (schemaVersion !== 1) {
+  if (schemaVersion !== 1 && schemaVersion !== 2) {
     throw new WorkflowParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
@@ -92,13 +92,13 @@ export function parseWorkflowV1(value: unknown): WorkflowV1 {
   }
 
   const actions = actionsRaw.map((a, idx) =>
-    parseWorkflowActionV1(a, `actions[${idx}]`, executionTierRaw),
+    parseWorkflowActionV1(a, `actions[${idx}]`, executionTierRaw, schemaVersion),
   );
 
   validateActionOrdering(actions);
 
   return {
-    schemaVersion: 1,
+    schemaVersion,
     workflowId,
     workspaceId,
     name,
@@ -114,13 +114,14 @@ function parseWorkflowActionV1(
   value: unknown,
   pathLabel: string,
   workflowTier: ExecutionTier,
+  schemaVersion: 1 | 2,
 ): WorkflowActionV1 {
   const record = readRecord(value, pathLabel, WorkflowParseError);
   const actionId = ActionId(readString(record, 'actionId', WorkflowParseError));
   const order = parseActionOrder(record, pathLabel);
   const portFamily = parseActionPortFamily(record, pathLabel);
   const capability = parseCapabilityField(record, 'capability', pathLabel, portFamily);
-  const operation = parseActionOperation(record, pathLabel, capability);
+  const operation = parseActionOperation(record, pathLabel, schemaVersion, capability);
   const inputSchemaRef = readOptionalString(record, 'inputSchemaRef', WorkflowParseError);
   const outputSchemaRef = readOptionalString(record, 'outputSchemaRef', WorkflowParseError);
   const executionTierOverride = parseExecutionTierOverride(record, pathLabel, workflowTier);
@@ -172,27 +173,47 @@ function parseActionPortFamily(record: Record<string, unknown>, pathLabel: strin
 function parseActionOperation(
   record: Record<string, unknown>,
   pathLabel: string,
+  schemaVersion: 1 | 2,
   capability?: PortCapability,
 ): string {
   const legacyOperation = readOptionalString(record, 'operation', WorkflowParseError);
+  assertMatchingCapabilityOperation(pathLabel, capability, legacyOperation);
 
-  if (capability !== undefined && legacyOperation !== undefined && legacyOperation !== capability) {
+  if (capability !== undefined) {
+    return capability;
+  }
+
+  if (schemaVersion === 2) {
+    throw new WorkflowParseError(`${pathLabel}.capability is required when schemaVersion is 2.`);
+  }
+
+  return parseLegacyOperation(pathLabel, legacyOperation);
+}
+
+function assertMatchingCapabilityOperation(
+  pathLabel: string,
+  capability: PortCapability | undefined,
+  operation: string | undefined,
+): void {
+  if (capability !== undefined && operation !== undefined && operation !== capability) {
     throw new WorkflowParseError(
       `${pathLabel}.operation must match capability when both are provided.`,
     );
   }
+}
 
-  if (capability === undefined && legacyOperation === undefined) {
+function parseLegacyOperation(pathLabel: string, operation: string | undefined): string {
+  if (operation === undefined) {
     throw new WorkflowParseError(`${pathLabel} must provide either capability or operation.`);
   }
 
-  if (capability === undefined && !/^[^:\s]+:[^:\s]+$/.test(legacyOperation!)) {
+  if (!/^[^:\s]+:[^:\s]+$/.test(operation)) {
     throw new WorkflowParseError(
       `${pathLabel}.operation must match "entity:verb" format when capability is not provided.`,
     );
   }
 
-  return capability ?? legacyOperation!;
+  return operation;
 }
 
 function parseExecutionTierOverride(

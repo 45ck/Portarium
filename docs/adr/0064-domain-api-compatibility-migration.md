@@ -72,6 +72,16 @@ return {
 Schema version gates the removal: `schemaVersion: 2` parsers may reject `operation`-only
 claims. Until then, `schemaVersion: 1` parsers must accept both forms.
 
+### 6. Rollout guardrails for schemaVersion:2 cutover
+
+- Rollout flag: enable schema-v2 writes behind an explicit release toggle (for example,
+  `PORTARIUM_CAPABILITY_SCHEMA_V2_WRITE=1`) only after confirming all downstream readers
+  have been upgraded to capability-first parsing.
+- Rollback: disable schema-v2 writes to resume `schemaVersion: 1` payload emission; v1
+  parsing continues to accept both `capability` and `operation`.
+- Hard-stop guardrail: parsers must reject `schemaVersion: 2` payloads that omit
+  `capability`, preventing silent fallback to legacy `operation`-only contracts.
+
 ### 4. Workflow action migration
 
 `WorkflowActionV1` follows the same pattern with `capability` (preferred) and `operation`
@@ -146,5 +156,5 @@ ADR-0064 implementation/review coverage maps to:
 
 ## Remaining Gap Tracking
 
-- `bead-0689` (open): schemaVersion:2 cutover to remove legacy `operation`-only compatibility
-  mode and fully enforce capability-first contracts.
+- `bead-0689` (closed): schemaVersion:2 cutover implemented for workflow actions and adapter
+  capability claims; operation-only payloads are now rejected for v2 contracts.

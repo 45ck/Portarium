@@ -70,6 +70,33 @@ describe('parseAdapterRegistrationV1', () => {
     expect(reg.capabilityMatrix[0]!.operation).toBe('invoice:write');
   });
 
+  it('accepts schemaVersion 2 with capability-first claims', () => {
+    const reg = parseAdapterRegistrationV1({
+      ...validFull,
+      schemaVersion: 2,
+      capabilityMatrix: [
+        {
+          capability: 'invoice:read',
+          requiresAuth: true,
+        },
+      ],
+    });
+
+    expect(reg.schemaVersion).toBe(2);
+    expect(reg.capabilityMatrix[0]!.capability).toBe('invoice:read');
+    expect(reg.capabilityMatrix[0]!.operation).toBe('invoice:read');
+  });
+
+  it('rejects operation-only claims when schemaVersion is 2', () => {
+    expect(() =>
+      parseAdapterRegistrationV1({
+        ...validFull,
+        schemaVersion: 2,
+        capabilityMatrix: [{ operation: 'invoice:list', requiresAuth: true }],
+      }),
+    ).toThrow(/capability is required when schemaVersion is 2/);
+  });
+
   it('parses minimal registration without machines', () => {
     const minimal = { ...validFull } as Record<string, unknown>;
     delete minimal['machineRegistrations'];
