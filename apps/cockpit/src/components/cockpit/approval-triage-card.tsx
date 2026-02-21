@@ -46,6 +46,7 @@ import { FinanceImpactMode } from '@/components/cockpit/triage-modes/finance-imp
 import { ComplianceChecklistMode } from '@/components/cockpit/triage-modes/compliance-checklist-mode';
 import { AgentOverviewMode } from '@/components/cockpit/triage-modes/agent-overview-mode';
 import { ProvenanceJourney } from '@/components/cockpit/provenance-journey';
+import { ApprovalContextPanels } from './approval-context-panels';
 
 // ---------------------------------------------------------------------------
 // ActorBadge — infers actor type from ID and shows icon + label
@@ -635,6 +636,14 @@ export function ApprovalTriageCard({
             >
               <SodBanner eval={sodEval} />
             </motion.div>
+
+            {/* Cross-layer context panels for policy/evidence/run timeline */}
+            <ApprovalContextPanels
+              approval={approval}
+              evidenceEntries={evidenceEntries}
+              run={run}
+              onOpenMode={setTriageViewMode}
+            />
 
             {/* Mode-specific content — AnimatePresence crossfade on mode switch */}
             <ModeErrorBoundary modeKey={triageViewMode}>
