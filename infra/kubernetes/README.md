@@ -4,7 +4,8 @@ This folder defines a production-oriented reference topology for Portarium using
 Kustomize:
 
 - `base/` contains control-plane and execution-plane runtime objects, OTel collector,
-  RBAC, PDB, ingress, and network controls.
+  observability backends (Tempo, Loki, Prometheus, Grafana), RBAC, PDB, ingress,
+  and network controls.
 - `overlays/dev` pins low-scale defaults for development validation.
 - `overlays/staging` mirrors the production topology with moderate scaling.
 - `overlays/prod` enables highest resilience settings.
@@ -14,6 +15,8 @@ Kustomize:
 - Control Plane and Execution Plane are separated at the workload level and policy level.
 - Network policies default-deny and then opt-in for observability, workflow engine,
   evidence, and secrets.
+- OTel Collector routes traces to Tempo, logs to Loki, and exposes Prometheus scrape
+  metrics for dashboard and alert wiring.
 - Deployment baseline currently uses runnable scaffolds from `infra/docker/*` that provide
   health endpoints and can be replaced with production binaries in later milestones.
 

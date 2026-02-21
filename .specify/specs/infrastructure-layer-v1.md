@@ -69,6 +69,9 @@ ADR-0056 and existing domain invariants:
 - OpenTelemetry must be available at control-plane ingress, workflow execution,
   and execution-plane boundaries.
 - Event surfaces should use CloudEvents envelopes consistently for correlation.
+- Kubernetes baseline manifests must include an OpenTelemetry Collector deployment
+  plus trace, log, and metrics backends wired for local `dev|staging|prod` overlay
+  validation.
 - Critical SLOs to expose:
   - API latency and error rates,
   - workflow completion rate and retry/replay health,

@@ -11,6 +11,8 @@ resources:
   - execution-plane-deployment.yaml
   - otel-collector-config.yaml
   - otel-collector-deployment.yaml
+  - observability-backends-config.yaml
+  - observability-backends-deployment.yaml
   - secrets.yaml
   - pdb.yaml
   - networking.yaml

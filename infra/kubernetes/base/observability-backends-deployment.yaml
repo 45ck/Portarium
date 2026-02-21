@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-tempo
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-tempo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-tempo
+        app.kubernetes.io/part-of: portarium
+    spec:
+      containers:
+        - name: tempo
+          image: grafana/tempo:2.6.1
+          args: ['-config.file=/etc/tempo/tempo.yaml']
+          ports:
+            - name: tempo-query
+              containerPort: 3200
+            - name: tempo-otlp
+              containerPort: 4317
+          volumeMounts:
+            - name: config
+              mountPath: /etc/tempo
+            - name: data
+              mountPath: /var/tempo
+      volumes:
+        - name: config
+          configMap:
+            name: portarium-tempo-config
+            items:
+              - key: tempo.yaml
+                path: tempo.yaml
+        - name: data
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-loki
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-loki
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-loki
+        app.kubernetes.io/part-of: portarium
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:3.2.1
+          args: ['-config.file=/etc/loki/loki.yaml']
+          ports:
+            - name: loki-http
+              containerPort: 3100
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+            - name: data
+              mountPath: /var/loki
+      volumes:
+        - name: config
+          configMap:
+            name: portarium-loki-config
+            items:
+              - key: loki.yaml
+                path: loki.yaml
+        - name: data
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-prometheus
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-prometheus
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-prometheus
+        app.kubernetes.io/part-of: portarium
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.54.1
+          args: ['--config.file=/etc/prometheus/prometheus.yaml']
+          ports:
+            - name: prom-http
+              containerPort: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: portarium-prometheus-config
+            items:
+              - key: prometheus.yaml
+                path: prometheus.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-grafana
+    app.kubernetes.io/part-of: portarium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-grafana
+        app.kubernetes.io/part-of: portarium
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.2.0
+          ports:
+            - name: grafana-http
+              containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: admin
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: admin
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+      volumes:
+        - name: datasources
+          configMap:
+            name: portarium-grafana-datasources
+            items:
+              - key: datasources.yaml
+                path: datasources.yaml

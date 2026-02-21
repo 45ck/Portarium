@@ -5,6 +5,10 @@ metadata:
   namespace: portarium
 data:
   config.yaml: |
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
     receivers:
       otlp:
         protocols:
@@ -12,33 +16,53 @@ data:
           http:
 
     processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 256
+        spike_limit_mib: 64
       batch:
         timeout: 1s
 
     exporters:
       logging:
         verbosity: basic
+      otlp/tempo:
+        endpoint: tempo:4317
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+      prometheus:
+        endpoint: 0.0.0.0:9464
 
     service:
+      extensions:
+        - health_check
       pipelines:
         traces:
           receivers:
             - otlp
           processors:
+            - memory_limiter
             - batch
           exporters:
             - logging
+            - otlp/tempo
         metrics:
           receivers:
             - otlp
           processors:
+            - memory_limiter
             - batch
           exporters:
             - logging
+            - prometheus
         logs:
           receivers:
             - otlp
           processors:
+            - memory_limiter
             - batch
           exporters:
             - logging
+            - otlphttp/loki
