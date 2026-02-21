@@ -559,11 +559,25 @@ function main() {
     applyUpdate(issues, id, { status: 'closed', claimedBy: undefined, claimedAt: undefined });
     writeIssues(root, issues);
 
+    // Auto-commit .beads/issues.jsonl and push so no agent can forget this step.
+    spawnGit(['add', path.join('.beads', 'issues.jsonl')], root);
+    const commitResult = spawnGit(['commit', '-m', `chore: close ${id}`], root);
+    if (commitResult.status !== 0) {
+      process.stderr.write(`Warning: git commit failed:\n${commitResult.stderr}\n`);
+    }
+    const pushResult = spawnGit(['push', 'origin', 'main'], root);
+    if (pushResult.status !== 0) {
+      // Another agent may have pushed first — rebase and retry.
+      spawnGit(['pull', '--rebase', 'origin', 'main'], root);
+      const retryPush = spawnGit(['push', 'origin', 'main'], root);
+      if (retryPush.status !== 0) {
+        process.stderr.write(`Warning: git push failed:\n${retryPush.stderr}\n`);
+        process.stderr.write(`Run manually: git pull --rebase origin main && git push origin main\n`);
+      }
+    }
+
     if (!asJson) {
-      process.stdout.write(`Finished ${id}: worktree removed, bead closed.\n`);
-      process.stdout.write(
-        `Commit: git add .beads/issues.jsonl && git commit -m "chore: close ${id}"\n`,
-      );
+      process.stdout.write(`Finished ${id}: worktree removed, bead closed, pushed to origin/main.\n`);
     } else {
       print(issues[idx], true);
     }
