@@ -26,7 +26,7 @@ describe('ControlPlaneClient', () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
     const headers = new Headers(init.headers);
     expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/approvals/ap-1/decide');
     expect(headers.get('Authorization')).toBe('Bearer token-123');

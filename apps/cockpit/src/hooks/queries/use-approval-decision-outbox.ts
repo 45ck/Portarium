@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import { controlPlaneClient, CockpitApiError } from '@/lib/control-plane-client';
 import {
+  buildApprovalDecisionIdempotencyKey,
   drainApprovalDecisionOutbox,
   enqueueApprovalDecisionOutbox,
   listApprovalDecisionOutbox,
@@ -35,13 +36,22 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
     setIsFlushing(true);
     try {
       const result = await drainApprovalDecisionOutbox({
-        workspaceId,
-        sendDecision: async ({ workspaceId: wsId, approvalId, decision }) => {
-          await controlPlaneClient.decideApproval(wsId, approvalId, decision);
+        workspaceId: workspaceId,
+        sendDecision: async (entry) => {
+          await controlPlaneClient.decideApproval(
+            entry.workspaceId,
+            entry.approvalId,
+            entry.decision,
+            { idempotencyKey: entry.idempotencyKey },
+          );
         },
       });
       if (result.delivered > 0) {
-        await queryClient.invalidateQueries({ queryKey: ['approvals', workspaceId] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['approvals', workspaceId] }),
+          queryClient.invalidateQueries({ queryKey: ['runs', workspaceId] }),
+          queryClient.invalidateQueries({ queryKey: ['work-items', workspaceId] }),
+        ]);
       }
     } finally {
       refreshPendingCount();
@@ -77,6 +87,11 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
       decision: ApprovalDecisionRequest,
     ): Promise<SubmitDecisionResult> => {
       if (!workspaceId) return { queued: false };
+      const idempotencyKey = buildApprovalDecisionIdempotencyKey({
+        workspaceId,
+        approvalId,
+        decision,
+      });
 
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
         enqueueApprovalDecisionOutbox({ workspaceId, approvalId, decision });
@@ -85,8 +100,14 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
       }
 
       try {
-        await controlPlaneClient.decideApproval(workspaceId, approvalId, decision);
-        await queryClient.invalidateQueries({ queryKey: ['approvals', workspaceId] });
+        await controlPlaneClient.decideApproval(workspaceId, approvalId, decision, {
+          idempotencyKey,
+        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['approvals', workspaceId] }),
+          queryClient.invalidateQueries({ queryKey: ['runs', workspaceId] }),
+          queryClient.invalidateQueries({ queryKey: ['work-items', workspaceId] }),
+        ]);
         return { queued: false };
       } catch (error) {
         if (!shouldQueueOnError(error)) {
