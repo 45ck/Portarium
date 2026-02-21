@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
+import { useUsers } from '@/hooks/queries/use-users';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { FilterBar } from '@/components/cockpit/filter-bar';
@@ -32,16 +33,16 @@ function WorkItemsPage() {
   };
 
   const { data, isLoading, isError, refetch } = useWorkItems(wsId);
+  const users = useUsers(wsId);
   const items = data?.items ?? [];
+  const userItems = users.data?.items ?? [];
 
   const ownerFilters = Array.from(
     new Map(
-      items
-        .filter((i) => Boolean(i.ownerUserId))
-        .map((i) => [
-          i.ownerUserId!,
-          { label: i.ownerUserId!.replace(/^user-/, ''), value: i.ownerUserId! },
-        ]),
+      userItems.map((user) => {
+        const label = user.name || user.email || user.userId;
+        return [user.userId, { label, value: user.userId }] as const;
+      }),
     ).values(),
   ).sort((a, b) => a.label.localeCompare(b.label));
 

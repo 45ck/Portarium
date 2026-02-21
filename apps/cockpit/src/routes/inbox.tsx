@@ -5,6 +5,7 @@ import { Route as rootRoute } from './__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useRuns } from '@/hooks/queries/use-runs';
+import { useEvidence } from '@/hooks/queries/use-evidence';
 import {
   useHumanTasks,
   useAssignHumanTask,
@@ -24,7 +25,7 @@ import { KpiRow } from '@/components/cockpit/kpi-row';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { ApprovalSummary, RunSummary, HumanTaskSummary } from '@portarium/cockpit-types';
-import { CheckSquare, AlertCircle, Clock, ClipboardList, User } from 'lucide-react';
+import { CheckSquare, AlertCircle, Clock, ClipboardList, User, ShieldAlert } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Section header
@@ -161,10 +162,6 @@ function BlockedRunRow({ run, onClick }: { run: RunSummary; onClick: () => void 
 }
 
 // ---------------------------------------------------------------------------
-// Policy violations — placeholder for governance/evidence API integration
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Inbox page
 // ---------------------------------------------------------------------------
 function InboxPage() {
@@ -172,6 +169,7 @@ function InboxPage() {
   const navigate = useNavigate();
   const { data: approvalsData, isLoading: approvalsLoading } = useApprovals(wsId);
   const { data: runsData, isLoading: runsLoading } = useRuns(wsId);
+  const { data: evidenceData, isLoading: evidenceLoading } = useEvidence(wsId);
   const { data: humanTasksData, isLoading: humanTasksLoading } = useHumanTasks(wsId);
   const { data: membersData } = useWorkforceMembers(wsId);
   const adapters = useAdapters(wsId);
@@ -192,6 +190,9 @@ function InboxPage() {
   const actionableHumanTasks = (humanTasksData?.items ?? []).filter(
     (t) => t.status === 'pending' || t.status === 'assigned' || t.status === 'in-progress',
   );
+  const policyViolations = (evidenceData?.items ?? [])
+    .filter((entry) => entry.category === 'Policy')
+    .slice(0, 10);
   const workforceMembers = membersData?.items ?? [];
 
   const totalItems = pendingApprovals.length + blockedRuns.length + actionableHumanTasks.length;
@@ -329,6 +330,32 @@ function InboxPage() {
                   })
                 }
               />
+            ))
+          )}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeader
+          icon={<ShieldAlert className="h-4 w-4" />}
+          title="Policy Violations"
+          count={policyViolations.length}
+        />
+        <div className="rounded-md border border-border divide-y divide-border">
+          {evidenceLoading ? (
+            <div className="p-4 text-sm text-muted-foreground animate-pulse">Loading…</div>
+          ) : policyViolations.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground italic">
+              No policy violations detected.
+            </div>
+          ) : (
+            policyViolations.map((entry) => (
+              <div key={entry.evidenceId} className="px-3 py-3">
+                <p className="text-sm">{entry.summary}</p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(entry.occurredAtIso), 'MMM d, HH:mm')} · {entry.evidenceId}
+                </p>
+              </div>
             ))
           )}
         </div>

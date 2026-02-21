@@ -50,6 +50,12 @@ export async function loadActiveDataset(): Promise<void> {
 }
 
 export const handlers = [
+  // Workspace list
+  http.get('/v1/workspaces', () => {
+    const workspaceId = runs[0]?.workspaceId ?? data?.RUNS[0]?.workspaceId ?? 'ws-demo';
+    return HttpResponse.json({ items: [{ workspaceId, name: workspaceId }] });
+  }),
+
   // Work Items
   http.get('/v1/workspaces/:wsId/work-items', () =>
     HttpResponse.json({ items: workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? []) }),

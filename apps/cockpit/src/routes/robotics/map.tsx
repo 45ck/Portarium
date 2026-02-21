@@ -87,8 +87,9 @@ function OperationsMapPage() {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="relative flex-1 min-h-0">
+      {/* Main content — min-h-0 prevents flexbox overflow, overflow-hidden
+           constrains the PanelGroup so react-resizable-panels measures correctly */}
+      <div className="relative flex-1 min-h-0 overflow-hidden">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel defaultSize={72} minSize={45}>
             <div className="relative h-full">

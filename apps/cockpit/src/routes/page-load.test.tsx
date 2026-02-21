@@ -66,6 +66,15 @@ function json(body: unknown, status = 200) {
 }
 
 function routeResponse(pathname: string, init?: RequestInit): Response {
+  if (pathname === '/v1/workspaces') {
+    return json({
+      items: [
+        { workspaceId: 'ws-demo', name: 'Demo Workspace' },
+        { workspaceId: 'ws-meridian', name: 'Meridian Workspace' },
+      ],
+    });
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/work-items$/.test(pathname)) {
     return json({ items: WORK_ITEMS });
   }

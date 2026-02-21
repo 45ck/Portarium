@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
@@ -49,6 +50,11 @@ interface NavSectionDef {
   label: string;
   items?: NavItemDef[];
   comingSoon?: boolean;
+}
+
+interface WorkspaceOption {
+  workspaceId: string;
+  name: string;
 }
 
 const NAV_SECTIONS: NavSectionDef[] = [
@@ -252,6 +258,48 @@ function RootLayout() {
     startRunOpen,
     setStartRunOpen,
   } = useUIStore();
+  const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWorkspaceOptions() {
+      try {
+        const res = await fetch('/v1/workspaces');
+        if (!res.ok) return;
+        const body = (await res.json()) as { items?: Array<Record<string, unknown>> };
+        const items = Array.isArray(body.items)
+          ? body.items
+              .map((item) => {
+                const workspaceId = typeof item.workspaceId === 'string' ? item.workspaceId : '';
+                const name = typeof item.name === 'string' ? item.name : workspaceId;
+                return workspaceId ? { workspaceId, name } : null;
+              })
+              .filter((item): item is WorkspaceOption => item !== null)
+          : [];
+        if (!cancelled) {
+          setWorkspaceOptions(items);
+        }
+      } catch {
+        if (!cancelled) {
+          setWorkspaceOptions([]);
+        }
+      }
+    }
+
+    void loadWorkspaceOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (workspaceOptions.length === 0) return;
+    if (!workspaceOptions.some((ws) => ws.workspaceId === activeWorkspaceId)) {
+      setActiveWorkspaceId(workspaceOptions[0]!.workspaceId);
+    }
+  }, [workspaceOptions, activeWorkspaceId, setActiveWorkspaceId]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -380,8 +428,15 @@ function RootLayout() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ws-demo">ws-demo</SelectItem>
-                        <SelectItem value="ws-meridian">ws-meridian</SelectItem>
+                        {workspaceOptions.length > 0 ? (
+                          workspaceOptions.map((workspace) => (
+                            <SelectItem key={workspace.workspaceId} value={workspace.workspaceId}>
+                              {workspace.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value={activeWorkspaceId}>{activeWorkspaceId}</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </>

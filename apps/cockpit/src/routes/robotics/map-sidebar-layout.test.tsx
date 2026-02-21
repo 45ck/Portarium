@@ -80,6 +80,15 @@ function json(body: unknown, status = 200) {
 const WS = /^\/v1\/workspaces\/[^/]+/;
 
 function routeResponse(pathname: string): Response {
+  if (pathname === '/v1/workspaces') {
+    return json({
+      items: [
+        { workspaceId: 'ws-demo', name: 'Demo Workspace' },
+        { workspaceId: 'ws-meridian', name: 'Meridian Workspace' },
+      ],
+    });
+  }
+
   if (new RegExp(WS.source + '/robotics/robot-locations$').test(pathname))
     return json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS });
   if (new RegExp(WS.source + '/robotics/robots$').test(pathname)) return json({ items: ROBOTS });

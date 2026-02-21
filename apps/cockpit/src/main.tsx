@@ -5,8 +5,8 @@ import { router } from './router';
 import './index.css';
 
 async function bootstrap() {
-  // Mock mode: active in dev or when VITE_MOCK=true (e.g. staging demo builds)
-  if (import.meta.env.DEV || import.meta.env.VITE_MOCK === 'true') {
+  // Mock mode: dev/test only. Production must always hit live APIs.
+  if (import.meta.env.DEV) {
     const { worker } = await import('./mocks/browser');
     const { loadActiveDataset } = await import('./mocks/handlers');
     await loadActiveDataset();

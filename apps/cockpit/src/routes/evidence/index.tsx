@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
@@ -6,6 +6,7 @@ import { useEvidence } from '@/hooks/queries/use-evidence';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner';
+import { verifyChain } from '@/components/cockpit/triage-modes/lib/chain-verification';
 import { FilterBar } from '@/components/cockpit/filter-bar';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
 import { EmptyState } from '@/components/cockpit/empty-state';
@@ -30,6 +31,12 @@ function EvidencePage() {
   const [visibleCount, setVisibleCount] = useState(EVIDENCE_PAGE_SIZE);
 
   const items = data?.items ?? [];
+  const chainStatus = useMemo<'verified' | 'broken' | 'pending'>(() => {
+    if (isLoading) return 'pending';
+    if (items.length === 0) return 'pending';
+    const chain = verifyChain(items);
+    return chain.some((entry) => entry.chainValid === false) ? 'broken' : 'verified';
+  }, [isLoading, items]);
   const filtered = items.filter((entry) => {
     if (
       filterValues.category &&
@@ -51,7 +58,7 @@ function EvidencePage() {
         icon={<EntityIcon entityType="evidence" size="md" decorative />}
       />
 
-      <ChainIntegrityBanner status={isLoading ? 'pending' : 'verified'} />
+      <ChainIntegrityBanner status={chainStatus} />
 
       <FilterBar
         filters={[{ key: 'category', label: 'Category', options: CATEGORY_OPTIONS }]}
