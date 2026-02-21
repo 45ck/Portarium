@@ -33,7 +33,10 @@ function invalid(reason: string): RequestValidationResult {
   return { valid: false, reason };
 }
 
-function validateMethod(method: string, allowedMethods: readonly string[]): RequestValidationResult {
+function validateMethod(
+  method: string,
+  allowedMethods: readonly string[],
+): RequestValidationResult {
   const normalizedMethod = method.toUpperCase();
   return allowedMethods.includes(normalizedMethod)
     ? { valid: true }

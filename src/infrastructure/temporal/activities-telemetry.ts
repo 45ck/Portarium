@@ -54,11 +54,17 @@ export async function observeTemporalSpan<T>(params: {
         const value = await params.run();
         const durationMs = Date.now() - startedAtMs;
         span.setStatus({ code: SpanStatusCode.OK });
-        activeTemporalTelemetryHooks.onSpanEnd(params.spanName, 'ok', durationMs, params.attributes);
+        activeTemporalTelemetryHooks.onSpanEnd(
+          params.spanName,
+          'ok',
+          durationMs,
+          params.attributes,
+        );
         return value;
       } catch (error) {
         const durationMs = Date.now() - startedAtMs;
-        const message = error instanceof Error ? error.message : 'Unhandled Temporal activity error.';
+        const message =
+          error instanceof Error ? error.message : 'Unhandled Temporal activity error.';
         span.recordException(error instanceof Error ? error : new Error(message));
         span.setStatus({ code: SpanStatusCode.ERROR, message });
         activeTemporalTelemetryHooks.onSpanEnd(

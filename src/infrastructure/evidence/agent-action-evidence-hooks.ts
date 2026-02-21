@@ -174,12 +174,15 @@ function parseRunAndActionIds(
   throw new Error(`Agent action payload missing required runId/actionId for ${event.eventType}.`);
 }
 
-function parseOptionalEvidenceFields(payload: Record<string, unknown>): AgentActionEvidenceOptionalPayload {
+function parseOptionalEvidenceFields(
+  payload: Record<string, unknown>,
+): AgentActionEvidenceOptionalPayload {
   const machineId = asNonEmptyString(payload['machineId']);
   const agentId = asNonEmptyString(payload['agentId']);
   const toolName = asNonEmptyString(payload['toolName']);
   const status = asNonEmptyString(payload['status']);
-  const errorMessage = asNonEmptyString(payload['errorMessage']) ?? asNonEmptyString(payload['error']);
+  const errorMessage =
+    asNonEmptyString(payload['errorMessage']) ?? asNonEmptyString(payload['error']);
   return {
     ...(machineId ? { machineId } : {}),
     ...(agentId ? { agentId } : {}),

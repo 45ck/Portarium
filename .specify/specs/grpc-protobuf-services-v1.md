@@ -24,21 +24,21 @@ latency-sensitive robot communication paths.
 
 ### TelemetryService (`proto/portarium/telemetry/v1/telemetry.proto`)
 
-| RPC | Type | Description |
-|-----|------|-------------|
-| `IngestTelemetry` | Client streaming | Edge gateway streams telemetry frames |
-| `AckCommand` | Unary | Robot acknowledges command execution status |
-| `Heartbeat` | Unary | Gateway keep-alive with clock-drift detection |
-| `StreamTelemetry` | Server streaming | Subscribe to telemetry for a workspace/robot |
+| RPC               | Type             | Description                                   |
+| ----------------- | ---------------- | --------------------------------------------- |
+| `IngestTelemetry` | Client streaming | Edge gateway streams telemetry frames         |
+| `AckCommand`      | Unary            | Robot acknowledges command execution status   |
+| `Heartbeat`       | Unary            | Gateway keep-alive with clock-drift detection |
+| `StreamTelemetry` | Server streaming | Subscribe to telemetry for a workspace/robot  |
 
 ### ControlService (`proto/portarium/control/v1/control.proto`)
 
-| RPC | Type | Description |
-|-----|------|-------------|
-| `DispatchCommand` | Unary | Send a single command to a robot |
-| `StreamFeedback` | Bidirectional | Real-time command/feedback channel |
-| `GetMissionStatus` | Unary | Query current mission state |
-| `CancelMission` | Unary | Request mission cancellation |
+| RPC                | Type          | Description                        |
+| ------------------ | ------------- | ---------------------------------- |
+| `DispatchCommand`  | Unary         | Send a single command to a robot   |
+| `StreamFeedback`   | Bidirectional | Real-time command/feedback channel |
+| `GetMissionStatus` | Unary         | Query current mission state        |
+| `CancelMission`    | Unary         | Request mission cancellation       |
 
 ## Auth Contract
 

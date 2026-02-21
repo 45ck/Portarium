@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import type {
   ApprovalSummary,
   PlanEffect,
+  EvidenceEntry,
   SodEvaluation,
   PolicyRule,
   DecisionHistoryEntry,
+  RunSummary,
+  WorkflowSummary,
 } from '@portarium/cockpit-types';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Button } from '@/components/ui/button';
@@ -19,10 +22,26 @@ import {
   SkipForward,
   Clock,
   User,
+  Bot,
+  Workflow,
   ShieldCheck,
   ShieldAlert,
   AlertTriangle,
+  ArrowRight,
+  Paperclip,
 } from 'lucide-react';
+import { useUIStore } from '@/stores/ui-store';
+import { getNextMode, getPrevMode } from '@/components/cockpit/triage-modes/index';
+import { ModeSwitcher } from '@/components/cockpit/triage-modes/mode-switcher';
+import { TrafficSignalsMode } from '@/components/cockpit/triage-modes/traffic-signals-mode';
+import { BriefingMode } from '@/components/cockpit/triage-modes/briefing-mode';
+import { RiskRadarMode } from '@/components/cockpit/triage-modes/risk-radar-mode';
+import { BlastMapMode } from '@/components/cockpit/triage-modes/blast-map-mode';
+import { DiffViewMode } from '@/components/cockpit/triage-modes/diff-view-mode';
+import { ActionReplayMode } from '@/components/cockpit/triage-modes/action-replay-mode';
+import { EvidenceChainMode } from '@/components/cockpit/triage-modes/evidence-chain-mode';
+import { StoryTimelineMode } from '@/components/cockpit/triage-modes/story-timeline-mode';
+import { ProvenanceJourney } from '@/components/cockpit/provenance-journey';
 
 const DEFAULT_SOD_EVALUATION: SodEvaluation = {
   state: 'eligible',
@@ -30,6 +49,32 @@ const DEFAULT_SOD_EVALUATION: SodEvaluation = {
   ruleId: 'N/A',
   rolesRequired: [],
 };
+
+// ---------------------------------------------------------------------------
+// ActorBadge — infers actor type from ID and shows icon + label
+// ---------------------------------------------------------------------------
+function inferActorType(userId: string): { label: string; Icon: typeof User } {
+  const lower = userId.toLowerCase();
+  if (lower.startsWith('agent-') || lower.startsWith('bot-') || lower.includes('automation'))
+    return { label: 'Agent', Icon: Bot };
+  if (lower.startsWith('wf-') || lower.startsWith('workflow-') || lower.includes('orchestrat'))
+    return { label: 'Workflow', Icon: Workflow };
+  if (lower === 'system' || lower.startsWith('sys-')) return { label: 'System', Icon: Bot };
+  return { label: 'User', Icon: User };
+}
+
+function ActorBadge({ userId }: { userId: string }) {
+  const { label, Icon } = inferActorType(userId);
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px]">
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted shrink-0">
+        <Icon className="h-3 w-3 text-muted-foreground" />
+      </span>
+      <span className="font-medium text-foreground">{userId}</span>
+      <span className="text-muted-foreground">({label})</span>
+    </span>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // SorBadge — color-coded circular badge for each system of record
@@ -264,6 +309,9 @@ interface ApprovalTriageCardProps {
   onAction: (approvalId: string, action: TriageAction, rationale: string) => void;
   loading?: boolean;
   plannedEffects?: PlanEffect[];
+  evidenceEntries?: EvidenceEntry[];
+  run?: RunSummary;
+  workflow?: WorkflowSummary;
 }
 
 export function ApprovalTriageCard({
@@ -274,12 +322,18 @@ export function ApprovalTriageCard({
   onAction,
   loading,
   plannedEffects = [],
+  evidenceEntries = [],
+  run,
+  workflow,
 }: ApprovalTriageCardProps) {
   const [rationale, setRationale] = useState('');
   const [requestChangesMode, setRequestChangesMode] = useState(false);
   const [requestChangesMsg, setRequestChangesMsg] = useState('');
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null);
   const [denyAttempted, setDenyAttempted] = useState(false);
+
+  const triageViewMode = useUIStore((s) => s.triageViewMode);
+  const setTriageViewMode = useUIStore((s) => s.setTriageViewMode);
 
   const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION;
   const policyRule = approval.policyRule;
@@ -328,10 +382,21 @@ export function ApprovalTriageCard({
       }
       if ((e.key === 'r' || e.key === 'R') && !requestChangesMode) setRequestChangesMode(true);
       if ((e.key === 's' || e.key === 'S') && !loading) handleAction('Skip');
+      // V cycles view modes forward, Shift+V backward
+      if (e.key === 'v') setTriageViewMode(getNextMode(triageViewMode));
+      if (e.key === 'V') setTriageViewMode(getPrevMode(triageViewMode));
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [isBlocked, loading, rationale, requestChangesMode, handleAction]);
+  }, [
+    isBlocked,
+    loading,
+    rationale,
+    requestChangesMode,
+    handleAction,
+    triageViewMode,
+    setTriageViewMode,
+  ]);
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
@@ -368,7 +433,8 @@ export function ApprovalTriageCard({
           </>
         )}
 
-        {/* Main card */}
+        {/* Main card — animate-triage-in only on card mount (keyed by approvalId),
+             mode switches use crossfade on the content area below */}
         <div
           className={cn(
             'relative rounded-xl border border-border bg-card shadow-md overflow-hidden',
@@ -407,25 +473,49 @@ export function ApprovalTriageCard({
                   <span className="font-mono text-[10px] text-muted-foreground">
                     {approval.approvalId}
                   </span>
+                  {policyRule && (
+                    <Badge variant="outline" className="text-[9px] h-4 px-1.5 shrink-0">
+                      {policyRule.tier}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm font-semibold leading-snug">{approval.prompt}</p>
 
+                {/* Requested by — prominent actor line */}
+                <div className="flex items-center gap-2 mt-2">
+                  <ActorBadge userId={approval.requestedByUserId} />
+                  {approval.assigneeUserId && (
+                    <>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <User className="h-3 w-3 shrink-0" />
+                        <span className="font-medium text-foreground">
+                          {approval.assigneeUserId}
+                        </span>
+                      </span>
+                    </>
+                  )}
+                  <span className="text-[11px] text-muted-foreground ml-auto shrink-0">
+                    {formatDistanceToNow(new Date(approval.requestedAtIso), { addSuffix: true })}
+                  </span>
+                </div>
+
                 {/* Metadata pills */}
-                <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <span
+                    className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5 hover:border-primary/40 transition-colors cursor-default"
+                    title={`Run: ${approval.runId}`}
+                  >
                     <EntityIcon entityType="run" size="xs" decorative />
-                    {approval.runId}
+                    {approval.runId.slice(0, 12)}
                   </span>
                   {approval.workItemId && (
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5">
+                    <span
+                      className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5 hover:border-primary/40 transition-colors cursor-default"
+                      title={`Work Item: ${approval.workItemId}`}
+                    >
                       <EntityIcon entityType="work-item" size="xs" decorative />
-                      {approval.workItemId}
-                    </span>
-                  )}
-                  {approval.assigneeUserId && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <User className="h-3 w-3" />
-                      {approval.assigneeUserId}
+                      {approval.workItemId.slice(0, 12)}
                     </span>
                   )}
                   {approval.dueAtIso && !isOverdue && (
@@ -434,14 +524,27 @@ export function ApprovalTriageCard({
                       Due {format(new Date(approval.dueAtIso), 'MMM d')}
                     </span>
                   )}
+                  {evidenceEntries.length > 0 &&
+                    (() => {
+                      const totalAttachments = evidenceEntries.reduce(
+                        (s, e) => s + (e.payloadRefs?.length ?? 0),
+                        0,
+                      );
+                      return totalAttachments > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5">
+                          <Paperclip className="h-3 w-3" />
+                          {totalAttachments} file{totalAttachments !== 1 ? 's' : ''}
+                        </span>
+                      ) : null;
+                    })()}
                 </div>
               </div>
-
-              {/* Timestamp */}
-              <div className="shrink-0 text-[11px] text-muted-foreground">
-                {format(new Date(approval.requestedAtIso), 'MMM d, HH:mm')}
-              </div>
             </div>
+          </div>
+
+          {/* Mode switcher — below header */}
+          <div className="px-5 pt-3 pb-0">
+            <ModeSwitcher />
           </div>
 
           {/* Body */}
@@ -449,33 +552,100 @@ export function ApprovalTriageCard({
             {/* SoD evaluation — always visible */}
             <SodBanner eval={sodEval} />
 
-            {/* Policy rule — shown when available */}
-            {policyRule && (
-              <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
-                <PolicyRulePanel rule={policyRule} />
-              </div>
-            )}
+            {/* Mode-specific content — keyed crossfade so mode switches don't jolt the card */}
+            <div key={triageViewMode} className="animate-mode-crossfade">
+              {triageViewMode === 'default' ? (
+                <>
+                  {/* Provenance journey — shows how this approval got here */}
+                  <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
 
-            {/* History trail — shown when request-changes cycle exists */}
-            {history.length > 0 && (
-              <div className="rounded-lg bg-muted/20 border border-border/60 px-4 py-3">
-                <RequestChangesHistory history={history} />
-              </div>
-            )}
+                  {/* Policy rule — shown when available */}
+                  {policyRule && (
+                    <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
+                      <PolicyRulePanel rule={policyRule} />
+                    </div>
+                  )}
 
-            {/* Planned effects panel */}
-            {plannedEffects.length > 0 && (
-              <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-                  What will happen if approved
-                </p>
-                <div className="divide-y divide-border/40">
-                  {plannedEffects.map((e) => (
-                    <TriageEffectRow key={e.effectId} effect={e} />
-                  ))}
-                </div>
-              </div>
-            )}
+                  {/* Planned effects panel */}
+                  {plannedEffects.length > 0 && (
+                    <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                        What will happen if approved
+                      </p>
+                      <div className="divide-y divide-border/40">
+                        {plannedEffects.map((e) => (
+                          <TriageEffectRow key={e.effectId} effect={e} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : triageViewMode === 'traffic-signals' ? (
+                <TrafficSignalsMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'briefing' ? (
+                <BriefingMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'risk-radar' ? (
+                <RiskRadarMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'blast-map' ? (
+                <BlastMapMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'diff-view' ? (
+                <DiffViewMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'action-replay' ? (
+                <ActionReplayMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'evidence-chain' ? (
+                <EvidenceChainMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : triageViewMode === 'story-timeline' ? (
+                <StoryTimelineMode
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                />
+              ) : null}
+            </div>
 
             {/* Decision area */}
             {requestChangesMode ? (
@@ -611,6 +781,7 @@ export function ApprovalTriageCard({
             { key: 'D', label: 'deny' },
             { key: 'R', label: 'changes' },
             { key: 'S', label: 'skip' },
+            { key: 'V', label: 'view mode' },
           ] as const
         ).map(({ key, label }) => (
           <span key={key} className="flex items-center gap-1">

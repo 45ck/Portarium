@@ -313,6 +313,46 @@ export async function assertReadAccess(
   };
 }
 
+// ---------------------------------------------------------------------------
+// List query param parsing (shared across all list endpoints)
+// ---------------------------------------------------------------------------
+
+export interface ParsedListQueryParams {
+  limit: number | undefined;
+  cursor: string | undefined;
+  sort: Readonly<{ field: string; direction: 'asc' | 'desc' }> | undefined;
+  search: string | undefined;
+}
+
+export function parseListQueryParams(
+  url: URL,
+  allowedSortFields: readonly string[],
+): { ok: true; value: ParsedListQueryParams } | { ok: false; error: string } {
+  const limitRaw = url.searchParams.get('limit');
+  const limit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+  if (limit !== undefined && (Number.isNaN(limit) || limit <= 0)) {
+    return { ok: false, error: 'limit must be a positive integer.' };
+  }
+
+  const cursor = url.searchParams.get('cursor') ?? undefined;
+
+  const sortRaw = url.searchParams.get('sort');
+  let sort: ParsedListQueryParams['sort'];
+  if (sortRaw) {
+    const parts = sortRaw.split(':');
+    const field = parts[0]!;
+    const dir = parts[1];
+    if (!allowedSortFields.includes(field)) {
+      return { ok: false, error: `sort field must be one of: ${allowedSortFields.join(', ')}.` };
+    }
+    sort = { field, direction: dir === 'desc' ? 'desc' : 'asc' };
+  }
+
+  const search = url.searchParams.get('q') ?? undefined;
+
+  return { ok: true, value: { limit, cursor, sort, search } };
+}
+
 export function paginate<T extends Readonly<Record<string, unknown>>>(
   items: readonly T[],
   reqUrl: string,

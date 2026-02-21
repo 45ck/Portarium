@@ -85,6 +85,11 @@ interface ApiFetchRequest {
   body?: unknown;
 }
 
+type FlagMap = Record<string, string | boolean>;
+type SubcommandHandler = (flags: FlagMap) => Promise<void>;
+type SubcommandTable = Readonly<Record<string, SubcommandHandler>>;
+type StreamReadChunk = Readonly<{ done: boolean; value?: Uint8Array }>;
+
 async function apiFetch(baseUrl: string, token: string, req: ApiFetchRequest): Promise<unknown> {
   const { method, path, body } = req;
   const res = await fetch(`${baseUrl}${path}`, {
@@ -279,13 +284,44 @@ async function handleEvents(flags: Record<string, string | boolean>): Promise<vo
   const reader = res.body.getReader();
   try {
     for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      process.stdout.write(decoder.decode(value, { stream: true }));
+      const readResult: unknown = await reader.read();
+      if (!isReadableChunk(readResult)) {
+        throw new Error('Invalid event stream chunk shape.');
+      }
+      if (readResult.done) break;
+      if (readResult.value !== undefined) {
+        process.stdout.write(decoder.decode(readResult.value, { stream: true }));
+      }
     }
   } finally {
     reader.releaseLock();
   }
+}
+
+function isReadableChunk(value: unknown): value is StreamReadChunk {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const record = value as { done?: unknown; value?: unknown };
+  if (typeof record.done !== 'boolean') {
+    return false;
+  }
+  return record.value === undefined || record.value instanceof Uint8Array;
+}
+
+async function runSubcommand(
+  command: string,
+  subcommand: string | undefined,
+  flags: FlagMap,
+  table: SubcommandTable,
+): Promise<void> {
+  const handler = subcommand !== undefined ? table[subcommand] : undefined;
+  if (!handler) {
+    console.error(`Unknown ${command} subcommand: ${subcommand ?? '(none)'}`);
+    process.exitCode = 1;
+    return;
+  }
+  await handler(flags);
 }
 
 // -- Dispatch ----------------------------------------------------------------
@@ -303,34 +339,22 @@ export async function run(argv: string[]): Promise<void> {
       handleLogin();
       break;
     case 'workspace':
-      if (parsed.subcommand === 'select') {
-        await handleWorkspaceSelect(parsed.flags);
-      } else {
-        console.error(`Unknown workspace subcommand: ${parsed.subcommand ?? '(none)'}`);
-        process.exitCode = 1;
-      }
+      await runSubcommand('workspace', parsed.subcommand, parsed.flags, {
+        select: handleWorkspaceSelect,
+      });
       break;
     case 'agent':
-      if (parsed.subcommand === 'register') {
-        await handleAgentRegister(parsed.flags);
-      } else if (parsed.subcommand === 'heartbeat') {
-        await handleAgentHeartbeat(parsed.flags);
-      } else {
-        console.error(`Unknown agent subcommand: ${parsed.subcommand ?? '(none)'}`);
-        process.exitCode = 1;
-      }
+      await runSubcommand('agent', parsed.subcommand, parsed.flags, {
+        register: handleAgentRegister,
+        heartbeat: handleAgentHeartbeat,
+      });
       break;
     case 'run':
-      if (parsed.subcommand === 'start') {
-        await handleRunStart(parsed.flags);
-      } else if (parsed.subcommand === 'status') {
-        await handleRunStatus(parsed.flags);
-      } else if (parsed.subcommand === 'cancel') {
-        await handleRunCancel(parsed.flags);
-      } else {
-        console.error(`Unknown run subcommand: ${parsed.subcommand ?? '(none)'}`);
-        process.exitCode = 1;
-      }
+      await runSubcommand('run', parsed.subcommand, parsed.flags, {
+        start: handleRunStart,
+        status: handleRunStatus,
+        cancel: handleRunCancel,
+      });
       break;
     case 'approve':
       await handleApprove(parsed.flags);

@@ -8,7 +8,7 @@ import {
   type WorkflowId as WorkflowIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
-import type { RunStatus } from '../../domain/runs/index.js';
+import type { RunStatus, RunV1 } from '../../domain/runs/index.js';
 import {
   type AppContext,
   APP_ACTIONS,
@@ -17,13 +17,20 @@ import {
   err,
   ok,
   type Result,
+  validate,
+  requiredString,
+  optionalString,
+  oneOf,
 } from '../common/index.js';
+import { paginationRules, sortRule } from '../common/query-validation.js';
+import type { Page, SortClause, SortDirection } from '../common/query.js';
 import type {
   AuthorizationPort,
-  ListRunsFilter,
-  RunListPage,
+  ListRunsQuery,
+  RunFieldFilter,
   RunQueryStore,
 } from '../ports/index.js';
+import { RUN_SORTABLE_FIELDS } from '../ports/run-store.js';
 
 const RUN_STATUSES = [
   'Pending',
@@ -41,79 +48,20 @@ export type ListRunsInput = Readonly<{
   workflowId?: string;
   initiatedByUserId?: string;
   correlationId?: string;
+  search?: string;
+  sortField?: string;
+  sortDirection?: string;
   limit?: number;
   cursor?: string;
 }>;
 
-export type ListRunsOutput = Readonly<RunListPage>;
+export type ListRunsOutput = Readonly<Page<RunV1>>;
 
 export type ListRunsError = Forbidden | ValidationFailed;
 
 export interface ListRunsDeps {
   authorization: AuthorizationPort;
   runStore: RunQueryStore;
-}
-
-function ensureNonEmptyString(
-  value: string | undefined,
-  field: string,
-): Result<void, ValidationFailed> {
-  if (value?.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
-  }
-  return ok(undefined);
-}
-
-function validateWorkspaceId(workspaceId: string): Result<void, ValidationFailed> {
-  if (workspaceId.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
-  }
-  return ok(undefined);
-}
-
-function validateLimit(limit: number | undefined): Result<void, ValidationFailed> {
-  if (limit !== undefined && (!Number.isInteger(limit) || limit <= 0)) {
-    return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
-  }
-  return ok(undefined);
-}
-
-function validateCursor(cursor: string | undefined): Result<void, ValidationFailed> {
-  if (cursor?.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'cursor must be a non-empty string.' });
-  }
-  return ok(undefined);
-}
-
-function validateStatus(status: RunStatus | undefined): Result<void, ValidationFailed> {
-  if (status !== undefined && !RUN_STATUSES.includes(status)) {
-    return err({ kind: 'ValidationFailed', message: 'status is invalid.' });
-  }
-  return ok(undefined);
-}
-
-function validateInput(input: ListRunsInput): Result<void, ValidationFailed> {
-  const workspaceIdValid = validateWorkspaceId(input.workspaceId);
-  if (!workspaceIdValid.ok) return workspaceIdValid;
-  const limitValid = validateLimit(input.limit);
-  if (!limitValid.ok) return limitValid;
-  const cursorValid = validateCursor(input.cursor);
-  if (!cursorValid.ok) return cursorValid;
-  const statusValid = validateStatus(input.status);
-  if (!statusValid.ok) return statusValid;
-
-  for (const [field, value] of [
-    ['workflowId', input.workflowId],
-    ['initiatedByUserId', input.initiatedByUserId],
-    ['correlationId', input.correlationId],
-  ] as const) {
-    const validString = ensureNonEmptyString(value, field);
-    if (!validString.ok) {
-      return validString;
-    }
-  }
-
-  return ok(undefined);
 }
 
 function parseIds(input: ListRunsInput): Result<
@@ -147,34 +95,29 @@ function buildFilter(
     initiatedByUserId?: UserIdType;
     correlationId?: CorrelationIdType;
   }>,
-): ListRunsFilter {
+): RunFieldFilter {
   return {
     ...(input.status ? { status: input.status } : {}),
     ...(parsed.workflowId ? { workflowId: parsed.workflowId } : {}),
     ...(parsed.initiatedByUserId ? { initiatedByUserId: parsed.initiatedByUserId } : {}),
     ...(parsed.correlationId ? { correlationId: parsed.correlationId } : {}),
-    ...(input.limit !== undefined ? { limit: input.limit } : {}),
-    ...(input.cursor ? { cursor: input.cursor } : {}),
   };
 }
 
-function parseInput(
-  input: ListRunsInput,
-): Result<Readonly<{ workspaceId: WorkspaceIdType; filter: ListRunsFilter }>, ValidationFailed> {
-  const validated = validateInput(input);
-  if (!validated.ok) {
-    return validated;
-  }
+function buildQuery(input: ListRunsInput, filter: RunFieldFilter): ListRunsQuery {
+  const sort: SortClause | undefined = input.sortField
+    ? { field: input.sortField, direction: (input.sortDirection as SortDirection) ?? 'asc' }
+    : undefined;
 
-  const parsed = parseIds(input);
-  if (!parsed.ok) {
-    return parsed;
-  }
-
-  return ok({
-    workspaceId: parsed.value.workspaceId,
-    filter: buildFilter(input, parsed.value),
-  });
+  return {
+    filter,
+    pagination: {
+      ...(input.limit !== undefined ? { limit: input.limit } : {}),
+      ...(input.cursor ? { cursor: input.cursor } : {}),
+    },
+    ...(sort ? { sort } : {}),
+    ...(input.search ? { search: input.search } : {}),
+  };
 }
 
 export async function listRuns(
@@ -191,15 +134,23 @@ export async function listRuns(
     });
   }
 
-  const parsed = parseInput(input);
-  if (!parsed.ok) {
-    return parsed;
-  }
+  const validated = validate(input, [
+    requiredString('workspaceId'),
+    ...paginationRules<ListRunsInput>(),
+    sortRule<ListRunsInput>(RUN_SORTABLE_FIELDS),
+    optionalString('workflowId'),
+    optionalString('initiatedByUserId'),
+    optionalString('correlationId'),
+    optionalString('search'),
+    ...(input.status !== undefined ? [oneOf<ListRunsInput>('status', [...RUN_STATUSES])] : []),
+  ]);
+  if (!validated.ok) return validated;
 
-  const page = await deps.runStore.listRuns(
-    ctx.tenantId,
-    parsed.value.workspaceId,
-    parsed.value.filter,
-  );
+  const parsed = parseIds(input);
+  if (!parsed.ok) return parsed;
+
+  const filter = buildFilter(input, parsed.value);
+  const query = buildQuery(input, filter);
+  const page = await deps.runStore.listRuns(ctx.tenantId, parsed.value.workspaceId, query);
   return ok(page);
 }

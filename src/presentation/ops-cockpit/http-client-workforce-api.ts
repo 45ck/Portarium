@@ -25,6 +25,13 @@ type RequestFn = <T>(
   options?: Readonly<{ query?: URLSearchParams; body?: unknown; idempotencyKey?: string }>,
 ) => Promise<T>;
 
+interface HumanTaskMutationInput<TBody> {
+  workspaceId: string;
+  humanTaskId: string;
+  body: TBody;
+  idempotencyKey?: string;
+}
+
 export function listWorkforceMembersApi(
   request: RequestFn,
   workspaceId: string,
@@ -112,11 +119,9 @@ export function getHumanTaskApi(
 
 export function assignHumanTaskApi(
   request: RequestFn,
-  workspaceId: string,
-  humanTaskId: string,
-  body: AssignHumanTaskRequest,
-  idempotencyKey?: string,
+  input: HumanTaskMutationInput<AssignHumanTaskRequest>,
 ): Promise<HumanTaskSummary> {
+  const { workspaceId, humanTaskId, body, idempotencyKey } = input;
   return request<HumanTaskSummary>(
     `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/assign`,
     'POST',
@@ -126,11 +131,9 @@ export function assignHumanTaskApi(
 
 export function completeHumanTaskApi(
   request: RequestFn,
-  workspaceId: string,
-  humanTaskId: string,
-  body: CompleteHumanTaskRequest,
-  idempotencyKey?: string,
+  input: HumanTaskMutationInput<CompleteHumanTaskRequest>,
 ): Promise<HumanTaskSummary> {
+  const { workspaceId, humanTaskId, body, idempotencyKey } = input;
   return request<HumanTaskSummary>(
     `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/complete`,
     'POST',
@@ -140,11 +143,9 @@ export function completeHumanTaskApi(
 
 export function escalateHumanTaskApi(
   request: RequestFn,
-  workspaceId: string,
-  humanTaskId: string,
-  body: EscalateHumanTaskRequest,
-  idempotencyKey?: string,
+  input: HumanTaskMutationInput<EscalateHumanTaskRequest>,
 ): Promise<HumanTaskSummary> {
+  const { workspaceId, humanTaskId, body, idempotencyKey } = input;
   return request<HumanTaskSummary>(
     `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/escalate`,
     'POST',

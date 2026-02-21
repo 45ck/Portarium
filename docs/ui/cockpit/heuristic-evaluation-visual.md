@@ -70,7 +70,7 @@ After WF-5 fix, the owner picker trigger button mirrors the selected member's av
 **Fix applied:** Wrapped in `<span class="chip chip--small">Unassigned</span>`.
 **Verified:** Chip renders consistently with other assignment states.
 
-### B-4 · WORKFORCE_DATA had wrong member names/emails _(Major — H1)_
+### B-4 · WORKFORCE*DATA had wrong member names/emails *(Major — H1)\_
 
 The hardcoded data had `alice@acme.com` (not `alice.martinez@acme.com`), `dave@acme.com` / "Dave Wilson" (not "Dan Park" as shown in HTML).
 **Fix applied:** Updated WORKFORCE_DATA to match HTML member list: Alice Martinez, Bob Chen, Carol Davis, Dan Park with correct emails.

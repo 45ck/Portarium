@@ -25,28 +25,33 @@ HTTP methods, and workspace-scoped authentication.
 ## Generated Package Requirements
 
 ### Package metadata
+
 - Module: `github.com/portarium/portarium-go`
 - Go version: >= 1.21
 - Dependencies: `net/http` (stdlib), optional `github.com/oapi-codegen/runtime`
 
 ### Generated structure
+
 - `portarium/client.go` -- `ClientWithResponses` with bearer auth
 - `portarium/types.go` -- Go structs per OpenAPI schema (branded IDs as `string` typedefs)
 - `portarium/client_gen.go` -- generated request/response methods
 - `portarium/models_gen.go` -- generated model types
 
 ### Auth contract
+
 - Client constructor accepts `WithRequestEditorFn` for injecting bearer token
 - All requests include `Authorization: Bearer {token}` header via editor function
 - `WithWorkspace(id string)` convenience editor sets `X-Workspace-Id` header
 
 ### Endpoint coverage
+
 - All paths under `/v1/workspaces/` in the OpenAPI spec
 - Methods accept `context.Context` as first parameter
 - Cursor pagination via `Limit` and `Cursor` query params
 - Proper Go enums (const blocks) for `ApprovalDecision`, `ExecutionTier`, `WorkspaceUserRole`
 
 ### Error handling
+
 - Non-2xx responses return typed `*ErrorResponse` (maps to RFC 7807 Problem)
 - Network errors propagated via standard `error` return
 - `ClientWithResponses` provides parsed response bodies

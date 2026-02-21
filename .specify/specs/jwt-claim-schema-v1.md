@@ -18,19 +18,19 @@ Define a canonical `PortariumJwtClaimsV1` type and a strict parser
 
 ### Required claims
 
-| Claim         | Type                   | Description                                      |
-|---------------|------------------------|--------------------------------------------------|
-| `sub`         | `string`               | Subject — the principal identity                  |
-| `iss`         | `string`               | Issuer — identity provider that minted the token  |
-| `aud`         | `string \| string[]`   | Audience — intended recipients                    |
-| `workspaceId` | `string`               | Workspace scope (mandatory). Falls back to `tenantId` |
-| `tenantId`    | `string`               | Alias for workspaceId in v1                       |
-| `roles`       | `WorkspaceUserRole[]`  | Non-empty array of workspace roles                |
+| Claim         | Type                  | Description                                           |
+| ------------- | --------------------- | ----------------------------------------------------- |
+| `sub`         | `string`              | Subject — the principal identity                      |
+| `iss`         | `string`              | Issuer — identity provider that minted the token      |
+| `aud`         | `string \| string[]`  | Audience — intended recipients                        |
+| `workspaceId` | `string`              | Workspace scope (mandatory). Falls back to `tenantId` |
+| `tenantId`    | `string`              | Alias for workspaceId in v1                           |
+| `roles`       | `WorkspaceUserRole[]` | Non-empty array of workspace roles                    |
 
 ### Optional claims
 
-| Claim          | Type       | Description                                       |
-|----------------|------------|---------------------------------------------------|
+| Claim          | Type       | Description                                        |
+| -------------- | ---------- | -------------------------------------------------- |
 | `agentId`      | `string`   | AI agent identity (when token represents an agent) |
 | `machineId`    | `string`   | Machine connector identity                         |
 | `capabilities` | `string[]` | Fine-grained capability keys                       |

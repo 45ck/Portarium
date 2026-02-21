@@ -1,4 +1,5 @@
 import { isProblemDetails, ProblemDetailsError } from './problem-details.js';
+import { ControlPlaneClientError } from './http-client-error.js';
 import {
   buildCursorQueryParams,
   buildListEvidenceQuery,
@@ -39,13 +40,13 @@ import type {
   ListHumanTasksRequest,
   ListRunsRequest,
   ListWorkItemsRequest,
-  Plan,
+  ListWorkforceMembersRequest,
+  ListWorkforceQueuesRequest,
   PatchWorkforceAvailabilityRequest,
+  Plan,
   RunDetail,
   RunSummary,
   StartRunCommand,
-  ListWorkforceMembersRequest,
-  ListWorkforceQueuesRequest,
   UpdateWorkItemCommand,
   WorkforceMemberSummary,
   WorkforceQueueSummary,
@@ -53,6 +54,7 @@ import type {
 } from './types.js';
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+export { ControlPlaneClientError };
 
 export interface ControlPlaneClientConfig {
   baseUrl: string;
@@ -62,20 +64,7 @@ export interface ControlPlaneClientConfig {
   requestTimeoutMs?: number;
 }
 
-export class ControlPlaneClientError extends Error {
-  public readonly status: number;
-  public readonly body: string;
-
-  constructor(status: number, body: string) {
-    super(`Control Plane request failed with status ${status}.`);
-    this.name = 'ControlPlaneClientError';
-    this.status = status;
-    this.body = body;
-  }
-}
-
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
-
 type ParseFn<T> = (value: unknown) => T;
 
 interface ApiRequestOptions<T = never> {
@@ -85,6 +74,8 @@ interface ApiRequestOptions<T = never> {
   parse?: ParseFn<T>;
   signal?: AbortSignal;
 }
+
+const parseIdentity = <T>(value: unknown): T => value as T;
 
 export class ControlPlaneClient {
   private readonly baseUrl: string;
@@ -101,179 +92,162 @@ export class ControlPlaneClient {
     this.getAuthToken = config.getAuthToken;
   }
 
-  public async listRuns(
+  public listRuns(
     workspaceId: string,
     request: ListRunsRequest = {},
   ): Promise<CursorPage<RunSummary>> {
-    const query = buildListRunsQuery(request);
-    return this.request<CursorPage<RunSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs`,
-      'GET',
-      { query },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs`, 'GET', {
+      query: buildListRunsQuery(request),
+    });
   }
 
-  public async getRun(workspaceId: string, runId: string): Promise<RunDetail> {
-    return this.request<RunDetail>(
+  public getRun(workspaceId: string, runId: string): Promise<RunDetail> {
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs/${normalizeResourceId(runId)}`,
       'GET',
     );
   }
 
-  public async startRun(
+  public startRun(
     workspaceId: string,
     command: StartRunCommand,
     idempotencyKey?: string,
   ): Promise<RunDetail> {
-    return this.request<RunDetail>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs`,
-      'POST',
-      { body: command, ...(idempotencyKey ? { idempotencyKey } : {}) },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs`, 'POST', {
+      body: command,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
-  public async cancelRun(workspaceId: string, runId: string): Promise<RunDetail> {
-    return this.request<RunDetail>(
+  public cancelRun(workspaceId: string, runId: string): Promise<RunDetail> {
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs/${normalizeResourceId(runId)}/cancel`,
       'POST',
     );
   }
 
-  public async listWorkItems(
+  public listWorkItems(
     workspaceId: string,
     request: ListWorkItemsRequest = {},
   ): Promise<CursorPage<WorkItemSummary>> {
-    const query = buildListWorkItemsQuery(request);
-    return this.request<CursorPage<WorkItemSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items`,
-      'GET',
-      { query },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items`, 'GET', {
+      query: buildListWorkItemsQuery(request),
+    });
   }
 
-  public async createWorkItem(
+  public createWorkItem(
     workspaceId: string,
     command: CreateWorkItemCommand,
     idempotencyKey?: string,
   ): Promise<WorkItemSummary> {
-    return this.request<WorkItemSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items`,
-      'POST',
-      { body: command, ...(idempotencyKey ? { idempotencyKey } : {}) },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items`, 'POST', {
+      body: command,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
-  public async getWorkItem(workspaceId: string, workItemId: string): Promise<WorkItemSummary> {
-    return this.request<WorkItemSummary>(
+  public getWorkItem(workspaceId: string, workItemId: string): Promise<WorkItemSummary> {
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items/${normalizeResourceId(workItemId)}`,
       'GET',
     );
   }
 
-  public async updateWorkItem(
+  public updateWorkItem(
     workspaceId: string,
     workItemId: string,
     command: UpdateWorkItemCommand,
   ): Promise<WorkItemSummary> {
-    return this.request<WorkItemSummary>(
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items/${normalizeResourceId(workItemId)}`,
       'PATCH',
       { body: command },
     );
   }
 
-  public async getPlan(workspaceId: string, planId: string): Promise<Plan> {
-    return this.request<Plan>(
+  public getPlan(workspaceId: string, planId: string): Promise<Plan> {
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/plans/${normalizeResourceId(planId)}`,
       'GET',
     );
   }
 
-  public async listEvidence(
+  public listEvidence(
     workspaceId: string,
     request: ListEvidenceRequest = {},
   ): Promise<CursorPage<EvidenceEntry>> {
-    const query = buildListEvidenceQuery(request);
-    return this.request<CursorPage<EvidenceEntry>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/evidence`,
-      'GET',
-      { query },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/evidence`, 'GET', {
+      query: buildListEvidenceQuery(request),
+    });
   }
 
-  public async listRunEvidence(
+  public listRunEvidence(
     workspaceId: string,
     runId: string,
     request: CursorPaginationRequest = {},
   ): Promise<CursorPage<EvidenceEntry>> {
-    const query = this.buildCursorQuery(request);
-    return this.request<CursorPage<EvidenceEntry>>(
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs/${normalizeResourceId(runId)}/evidence`,
       'GET',
-      { query },
+      { query: this.buildCursorQuery(request) },
     );
   }
 
-  public async listApprovals(
+  public listApprovals(
     workspaceId: string,
     request: ListApprovalsRequest = {},
   ): Promise<CursorPage<ApprovalSummary>> {
-    const query = this.buildCursorQuery(request);
-    return this.request<CursorPage<ApprovalSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals`,
-      'GET',
-      { query },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals`, 'GET', {
+      query: this.buildCursorQuery(request),
+    });
   }
 
-  public async createApproval(
+  public createApproval(
     workspaceId: string,
     request: CreateApprovalRequest,
     idempotencyKey?: string,
   ): Promise<ApprovalSummary> {
-    return this.request<ApprovalSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals`,
-      'POST',
-      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
-    );
+    return this.request(`/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals`, 'POST', {
+      body: request,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
-  public async getApproval(workspaceId: string, approvalId: string): Promise<ApprovalSummary> {
-    return this.request<ApprovalSummary>(
+  public getApproval(workspaceId: string, approvalId: string): Promise<ApprovalSummary> {
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals/${normalizeResourceId(approvalId)}`,
       'GET',
     );
   }
 
-  public async decideApproval(
+  public decideApproval(
     workspaceId: string,
     approvalId: string,
     request: ApprovalDecisionRequest & { idempotencyKey?: string },
   ): Promise<ApprovalSummary> {
     const { idempotencyKey, ...body } = request;
-
-    return this.request<ApprovalSummary>(
+    return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/approvals/${normalizeResourceId(approvalId)}/decide`,
       'POST',
       { body, ...(idempotencyKey ? { idempotencyKey } : {}) },
     );
   }
 
-  public async listWorkforceMembers(
+  public listWorkforceMembers(
     workspaceId: string,
     request: ListWorkforceMembersRequest = {},
   ): Promise<CursorPage<WorkforceMemberSummary>> {
     return listWorkforceMembersApi(this.request.bind(this), workspaceId, request);
   }
 
-  public async getWorkforceMember(
+  public getWorkforceMember(
     workspaceId: string,
     workforceMemberId: string,
   ): Promise<WorkforceMemberSummary> {
     return getWorkforceMemberApi(this.request.bind(this), workspaceId, workforceMemberId);
   }
 
-  public async patchWorkforceMemberAvailability(
+  public patchWorkforceMemberAvailability(
     workspaceId: string,
     workforceMemberId: string,
     request: PatchWorkforceAvailabilityRequest,
@@ -286,67 +260,64 @@ export class ControlPlaneClient {
     );
   }
 
-  public async listWorkforceQueues(
+  public listWorkforceQueues(
     workspaceId: string,
     request: ListWorkforceQueuesRequest = {},
   ): Promise<CursorPage<WorkforceQueueSummary>> {
     return listWorkforceQueuesApi(this.request.bind(this), workspaceId, request);
   }
 
-  public async listHumanTasks(
+  public listHumanTasks(
     workspaceId: string,
     request: ListHumanTasksRequest = {},
   ): Promise<CursorPage<HumanTaskSummary>> {
     return listHumanTasksApi(this.request.bind(this), workspaceId, request);
   }
 
-  public async getHumanTask(workspaceId: string, humanTaskId: string): Promise<HumanTaskSummary> {
+  public getHumanTask(workspaceId: string, humanTaskId: string): Promise<HumanTaskSummary> {
     return getHumanTaskApi(this.request.bind(this), workspaceId, humanTaskId);
   }
 
-  public async assignHumanTask(
+  public assignHumanTask(
     workspaceId: string,
     humanTaskId: string,
     request: AssignHumanTaskRequest,
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return assignHumanTaskApi(
-      this.request.bind(this),
+    return assignHumanTaskApi(this.request.bind(this), {
       workspaceId,
       humanTaskId,
-      request,
-      idempotencyKey,
-    );
+      body: request,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
-  public async completeHumanTask(
+  public completeHumanTask(
     workspaceId: string,
     humanTaskId: string,
     request: CompleteHumanTaskRequest = {},
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return completeHumanTaskApi(
-      this.request.bind(this),
+    return completeHumanTaskApi(this.request.bind(this), {
       workspaceId,
       humanTaskId,
-      request,
-      idempotencyKey,
-    );
+      body: request,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
-  public async escalateHumanTask(
+  public escalateHumanTask(
     workspaceId: string,
     humanTaskId: string,
     request: EscalateHumanTaskRequest,
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return escalateHumanTaskApi(
-      this.request.bind(this),
+    return escalateHumanTaskApi(this.request.bind(this), {
       workspaceId,
       humanTaskId,
-      request,
-      idempotencyKey,
-    );
+      body: request,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
   protected buildCursorQuery(request: CursorPaginationRequest): URLSearchParams {
@@ -358,53 +329,53 @@ export class ControlPlaneClient {
     method: HttpMethod,
     options: ApiRequestOptions<T> = {},
   ): Promise<T> {
-    const headers = await buildRequestHeaders({
+    const headers = await this.buildHeaders(options);
+    const requestBody = normalizeRequestBody(options.body);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.requestTimeoutMs);
+
+    try {
+      const response = await this.fetchImpl(
+        buildRequestUrl(this.baseUrl, path, options.query),
+        this.buildRequestInit(method, headers, options.signal ?? controller.signal, requestBody),
+      );
+      if (!response.ok) await this.throwResponseError(response);
+      return this.parseResponse(response, options.parse ?? parseIdentity<T>);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  private async buildHeaders<T>(options: ApiRequestOptions<T>): Promise<Headers> {
+    return buildRequestHeaders({
       defaultHeaders: this.defaultHeaders,
       hasJsonBody: Boolean(options.body),
       ...(options.idempotencyKey !== undefined ? { idempotencyKey: options.idempotencyKey } : {}),
       ...(this.getAuthToken ? { getAuthToken: this.getAuthToken } : {}),
     });
-    const url = buildRequestUrl(this.baseUrl, path, options.query);
-    const body = normalizeRequestBody(options.body);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, this.requestTimeoutMs);
+  }
 
-    try {
-      const requestInit: RequestInit = {
-        method,
-        headers,
-        signal: options.signal ?? controller.signal,
-      };
-      if (body !== undefined) {
-        requestInit.body = body;
-      }
-      const response = await this.fetchImpl(url, requestInit);
+  private buildRequestInit(
+    method: HttpMethod,
+    headers: Headers,
+    signal: AbortSignal,
+    body: string | undefined,
+  ): RequestInit {
+    if (body === undefined) return { method, headers, signal };
+    return { method, headers, signal, body };
+  }
 
-      if (!response.ok) {
-        await this.throwResponseError(response);
-      }
+  private async parseResponse<T>(response: Response, parse: ParseFn<T>): Promise<T> {
+    if (response.status === 204) return undefined as T;
+    const responseText = await response.text();
+    if (responseText === '') return undefined as T;
 
-      if (response.status === 204) {
-        return undefined as T;
-      }
-
-      const responseText = await response.text();
-      if (!responseText) {
-        return undefined as T;
-      }
-
-      const parsed = safeJsonParse(responseText);
-      if (!parsed) {
-        throw new ControlPlaneClientError(response.status, 'Invalid JSON response');
-      }
-
-      const parse = options.parse ?? ((value: unknown): T => value as T);
-      return parse(parsed);
-    } finally {
-      clearTimeout(timeout);
+    const parsed = safeJsonParse(responseText);
+    if (!parsed) {
+      throw new ControlPlaneClientError(response.status, 'Invalid JSON response');
     }
+
+    return parse(parsed);
   }
 
   private async throwResponseError(response: Response): Promise<never> {

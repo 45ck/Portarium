@@ -17,6 +17,8 @@ package
 tmp_*.js
 tmp_*.cjs
 tmp_*.mjs
+tmp_*.ts
+tmp-*.ts
 gen*.js
 gen*.cjs
 gen*.mjs
@@ -26,3 +28,6 @@ gb*.mjs
 build_gen*.js
 build_gen*.cjs
 build_gen*.mjs
+bd_issues_tmp.json
+infra/helm/**/templates/*.yaml
+docs/ui/cockpit/index.html

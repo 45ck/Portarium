@@ -1,64 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portarium Architecture Diagram — Pick a Version</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 2rem;
-    }
-    h1 { text-align: center; font-size: 1.6rem; margin-bottom: .5rem; color: #f8fafc; }
-    p.subtitle { text-align: center; color: #94a3b8; margin-bottom: 2rem; }
-    .grid { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 1.5rem;
-      width: 620px;
-      max-width: 100%;
-    }
-    .card h2 {
-      font-size: 1.1rem;
-      color: #38bdf8;
-      margin-bottom: .3rem;
-    }
-    .card p.desc {
-      font-size: .85rem;
-      color: #94a3b8;
-      margin-bottom: 1rem;
-    }
-    .mermaid {
-      background: #fff;
-      border-radius: 8px;
-      padding: 1rem;
-      display: flex;
-      justify-content: center;
-    }
-    /* override mermaid svg sizing */
-    .mermaid svg { max-width: 100%; height: auto; }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portarium Architecture Diagram — Pick a Version</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 2rem;
+      }
+      h1 {
+        text-align: center;
+        font-size: 1.6rem;
+        margin-bottom: 0.5rem;
+        color: #f8fafc;
+      }
+      p.subtitle {
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 2rem;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        justify-content: center;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: 620px;
+        max-width: 100%;
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        color: #38bdf8;
+        margin-bottom: 0.3rem;
+      }
+      .card p.desc {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+      }
+      .mermaid {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+      }
+      /* override mermaid svg sizing */
+      .mermaid svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Portarium — Architecture Overview Diagram</h1>
+    <p class="subtitle">Pick the version you like best, then we'll add it to the README.</p>
 
-<h1>Portarium — Architecture Overview Diagram</h1>
-<p class="subtitle">Pick the version you like best, then we'll add it to the README.</p>
-
-<div class="grid">
-
-<!-- ═══════════════════════════════════════════════════════
+    <div class="grid">
+      <!-- ═══════════════════════════════════════════════════════
      VERSION A — Clean Vertical Flow
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>A — Clean Vertical Flow</h2>
-  <p class="desc">Simple top-down with user to the side. Minimal labels.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>A — Clean Vertical Flow</h2>
+        <p class="desc">Simple top-down with user to the side. Minimal labels.</p>
+        <pre class="mermaid">
 flowchart TB
   subgraph consumers [" "]
     direction LR
@@ -98,16 +121,17 @@ flowchart TB
 
   style consumers fill:none,stroke:#6366f1,stroke-width:2,stroke-dasharray:6,rx:12
   style systems   fill:none,stroke:#10b981,stroke-width:2,stroke-dasharray:6,rx:12
-  </pre>
-</div>
+  </pre
+        >
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════════
      VERSION B — Labeled Tiers with Descriptions
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>B — Labeled Tiers</h2>
-  <p class="desc">Subgraph labels make the three layers explicit.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>B — Labeled Tiers</h2>
+        <p class="desc">Subgraph labels make the three layers explicit.</p>
+        <pre class="mermaid">
 flowchart TB
   subgraph TOP ["🚀 Consumers &amp; Orchestrators"]
     direction LR
@@ -150,16 +174,17 @@ flowchart TB
   style TOP fill:#1e1b4b,stroke:#7c3aed,stroke-width:2,color:#c4b5fd,rx:14
   style MID fill:#0c4a6e,stroke:#0284c7,stroke-width:2,color:#7dd3fc,rx:14
   style BOT fill:#064e3b,stroke:#059669,stroke-width:2,color:#6ee7b7,rx:14
-  </pre>
-</div>
+  </pre
+        >
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════════
      VERSION C — Wide Horizontal Core Band
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>C — Horizontal Band</h2>
-  <p class="desc">Portarium as a wide central band. Emphasises the "layer" metaphor.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>C — Horizontal Band</h2>
+        <p class="desc">Portarium as a wide central band. Emphasises the "layer" metaphor.</p>
+        <pre class="mermaid">
 flowchart TB
   AG["🤖 Agents"] --> P
   AU["⚡ Automations"] --> P
@@ -190,16 +215,17 @@ flowchart TB
   class U userNode
 
   style portarium fill:#082f49,stroke:#0ea5e9,stroke-width:2,color:#7dd3fc,rx:14
-  </pre>
-</div>
+  </pre
+        >
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════════
      VERSION D — Minimal / No Emoji / Monochrome-friendly
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>D — Minimal (no emoji)</h2>
-  <p class="desc">Clean lines, monochrome-friendly. Good for dark-mode READMEs.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>D — Minimal (no emoji)</h2>
+        <p class="desc">Clean lines, monochrome-friendly. Good for dark-mode READMEs.</p>
+        <pre class="mermaid">
 %%{init:{"theme":"neutral"}}%%
 flowchart TB
   subgraph top [" "]
@@ -233,15 +259,15 @@ flowchart TB
   style top    fill:none,stroke:#64748b,stroke-dasharray:5,rx:10
   style bottom fill:none,stroke:#64748b,stroke-dasharray:5,rx:10
   </pre>
-</div>
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════════
      VERSION E — Full Detail + Arrows Labeled
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>E — Full Detail</h2>
-  <p class="desc">Arrows labeled with what flows through them. Most informative.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>E — Full Detail</h2>
+        <p class="desc">Arrows labeled with what flows through them. Most informative.</p>
+        <pre class="mermaid">
 flowchart TB
   subgraph consumers ["Consumers"]
     direction LR
@@ -282,15 +308,15 @@ flowchart TB
   style consumers fill:#1e1b4b,stroke:#6366f1,stroke-width:2,color:#c4b5fd,rx:12
   style systems   fill:#064e3b,stroke:#10b981,stroke-width:2,color:#6ee7b7,rx:12
   </pre>
-</div>
+      </div>
 
-<!-- ═══════════════════════════════════════════════════════
+      <!-- ═══════════════════════════════════════════════════════
      VERSION F — Compact Badge Style
      ═══════════════════════════════════════════════════════ -->
-<div class="card">
-  <h2>F — Compact / Badge Style</h2>
-  <p class="desc">Tight, badge-like nodes. Good for narrow README columns.</p>
-  <pre class="mermaid">
+      <div class="card">
+        <h2>F — Compact / Badge Style</h2>
+        <p class="desc">Tight, badge-like nodes. Good for narrow README columns.</p>
+        <pre class="mermaid">
 flowchart TB
   AG(Agents) --> P
   AU(Automations) --> P
@@ -310,18 +336,18 @@ flowchart TB
   style SV fill:#10b981,stroke:#34d399,color:#fff
   style SW fill:#10b981,stroke:#34d399,color:#fff
   style AP fill:#10b981,stroke:#34d399,color:#fff
-  </pre>
-</div>
+  </pre
+        >
+      </div>
+    </div>
+    <!-- /grid -->
 
-</div><!-- /grid -->
-
-<script>
-  mermaid.initialize({
-    startOnLoad: true,
-    securityLevel: "loose",
-    flowchart: { htmlLabels: true, curve: "basis" }
-  });
-</script>
-
-</body>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        securityLevel: 'loose',
+        flowchart: { htmlLabels: true, curve: 'basis' },
+      });
+    </script>
+  </body>
 </html>

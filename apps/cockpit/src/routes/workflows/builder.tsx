@@ -160,11 +160,7 @@ function WorkflowBuilderCanvas() {
           style={{ left: paletteOpen ? '16rem' : '0' }}
           aria-label={paletteOpen ? 'Collapse step palette' : 'Expand step palette'}
         >
-          {paletteOpen ? (
-            <ChevronLeft className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
+          {paletteOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         </button>
 
         {/* Right config panel — floating overlay, shown when a node is selected */}

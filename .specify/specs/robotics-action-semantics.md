@@ -58,4 +58,3 @@ Define workflow action semantics for `RoboticsActuation` so physical actions are
   - Stop-path actions without bypass flag.
   - `robot:execute_action` without pre-emption support.
   - `ManualOnly` completion without operator confirmation requirement.
-

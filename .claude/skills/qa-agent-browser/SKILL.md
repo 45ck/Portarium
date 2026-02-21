@@ -2,13 +2,14 @@
 name: qa-agent-browser
 description: Run deterministic browser QA using agent-browser. Produce QA report + trace/screenshot evidence.
 disable-model-invocation: true
-argument-hint: "[baseUrl] [storiesPath|-] [mode=sweep|smoke|verify|fix]"
+argument-hint: '[baseUrl] [storiesPath|-] [mode=sweep|smoke|verify|fix]'
 allowed-tools: Read, Grep, Glob, Bash(agent-browser:*), Bash(mkdir *)
 ---
 
 # QA with agent-browser
 
 ## Outputs
+
 - `reports/qa/QA_REPORT.md`
 - `qa-artifacts/<date>/screenshots/`
 - `qa-artifacts/<date>/traces/`
@@ -16,6 +17,7 @@ allowed-tools: Read, Grep, Glob, Bash(agent-browser:*), Bash(mkdir *)
 - `qa/repros/*.sh` (if failures)
 
 ## Hard rules
+
 1. Use the deterministic ref workflow:
    - `agent-browser open <url>`
    - `agent-browser snapshot -i -C --json`
@@ -26,12 +28,14 @@ allowed-tools: Read, Grep, Glob, Bash(agent-browser:*), Bash(mkdir *)
 4. Use one stable session: `--session-name qa-${CLAUDE_SESSION_ID}`
 
 ## Modes
+
 - **sweep**: Full test matrix from stories/specs.
 - **smoke**: App loads, no console errors, primary workflow works.
 - **verify**: Only rerun existing repro scripts in `qa/repros/`.
 - **fix**: Reproduce bugs, identify root cause, implement fix, re-verify.
 
 ## Steps
+
 1. Confirm app is reachable at baseUrl.
 2. Confirm agent-browser is installed.
 3. Create artifact folders.

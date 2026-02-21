@@ -15,32 +15,9 @@ import {
   type HumanTaskV1,
   type WorkforceMemberV1,
 } from '../../domain/workforce/index.js';
-import {
-  type AppContext,
-  APP_ACTIONS,
-  err,
-  ok,
-  type Conflict,
-  type DependencyFailure,
-  type Forbidden,
-  type NotFound,
-  type Result,
-  type ValidationFailed,
-} from '../common/index.js';
+import { type AppContext, APP_ACTIONS, err, ok, type Result } from '../common/index.js';
 import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
-import type {
-  AuthorizationPort,
-  Clock,
-  EventPublisher,
-  EvidenceEntryAppendInput,
-  EvidenceLogPort,
-  HumanTaskStore,
-  IdGenerator,
-  UnitOfWork,
-  WorkforceMemberStore,
-  WorkforceQueueStore,
-  WorkItemStore,
-} from '../ports/index.js';
+import type { EvidenceEntryAppendInput } from '../ports/index.js';
 import {
   buildAssignmentArtifacts,
   ensureCapabilitiesCovered,
@@ -48,51 +25,18 @@ import {
   type ParsedAssignInput,
   validateAssignInput,
 } from './assign-workforce-member.helpers.js';
+import type {
+  AssignWorkforceMemberDeps as AssignWorkforceMemberDepsDef,
+  AssignWorkforceMemberError as AssignWorkforceMemberErrorDef,
+  AssignWorkforceMemberInput as AssignWorkforceMemberInputDef,
+  AssignWorkforceMemberOutput as AssignWorkforceMemberOutputDef,
+} from './assign-workforce-member.types.js';
 
 const ASSIGN_WORKFORCE_SOURCE = 'portarium.control-plane.workforce';
-
-export type AssignWorkforceMemberInput = Readonly<{
-  workspaceId: string;
-  target:
-    | Readonly<{
-        kind: 'WorkItem';
-        workItemId: string;
-        workforceMemberId: string;
-      }>
-    | Readonly<{
-        kind: 'HumanTask';
-        humanTaskId: string;
-        workforceMemberId?: string;
-        workforceQueueId?: string;
-      }>;
-}>;
-
-export type AssignWorkforceMemberOutput = Readonly<{
-  targetKind: 'WorkItem' | 'HumanTask';
-  targetId: WorkItemIdType | HumanTaskIdType;
-  workforceMemberId: WorkforceMemberIdType;
-  ownerUserId: UserId;
-}>;
-
-export type AssignWorkforceMemberError =
-  | Forbidden
-  | ValidationFailed
-  | NotFound
-  | Conflict
-  | DependencyFailure;
-
-export interface AssignWorkforceMemberDeps {
-  authorization: AuthorizationPort;
-  clock: Clock;
-  idGenerator: IdGenerator;
-  unitOfWork: UnitOfWork;
-  workItemStore: WorkItemStore;
-  humanTaskStore: HumanTaskStore;
-  workforceMemberStore: WorkforceMemberStore;
-  workforceQueueStore: WorkforceQueueStore;
-  eventPublisher: EventPublisher;
-  evidenceLog: EvidenceLogPort;
-}
+export type AssignWorkforceMemberInput = AssignWorkforceMemberInputDef;
+export type AssignWorkforceMemberOutput = AssignWorkforceMemberOutputDef;
+export type AssignWorkforceMemberError = AssignWorkforceMemberErrorDef;
+export type AssignWorkforceMemberDeps = AssignWorkforceMemberDepsDef;
 
 type AssignPlan = Readonly<{
   targetKind: 'WorkItem' | 'HumanTask';

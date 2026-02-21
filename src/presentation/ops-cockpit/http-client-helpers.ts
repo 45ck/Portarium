@@ -40,7 +40,9 @@ export function buildListEvidenceQuery(request: ListEvidenceRequest): URLSearchP
   return query;
 }
 
-export function buildListWorkforceMembersQuery(request: ListWorkforceMembersRequest): URLSearchParams {
+export function buildListWorkforceMembersQuery(
+  request: ListWorkforceMembersRequest,
+): URLSearchParams {
   const query = buildCursorQueryParams(request);
   if (request.capability) query.set('capability', request.capability);
   if (request.queueId) query.set('queueId', request.queueId);
@@ -48,7 +50,9 @@ export function buildListWorkforceMembersQuery(request: ListWorkforceMembersRequ
   return query;
 }
 
-export function buildListWorkforceQueuesQuery(request: ListWorkforceQueuesRequest): URLSearchParams {
+export function buildListWorkforceQueuesQuery(
+  request: ListWorkforceQueuesRequest,
+): URLSearchParams {
   const query = buildCursorQueryParams(request);
   if (request.capability) query.set('capability', request.capability);
   return query;
@@ -66,12 +70,14 @@ export function buildCursorQueryParams(request: CursorPaginationRequest): URLSea
   return buildCursorQuery(request).query;
 }
 
-export async function buildRequestHeaders(input: Readonly<{
-  defaultHeaders: Record<string, string>;
-  hasJsonBody: boolean;
-  idempotencyKey?: string;
-  getAuthToken?: () => string | Promise<string>;
-}>): Promise<Headers> {
+export async function buildRequestHeaders(
+  input: Readonly<{
+    defaultHeaders: Record<string, string>;
+    hasJsonBody: boolean;
+    idempotencyKey?: string;
+    getAuthToken?: () => string | Promise<string>;
+  }>,
+): Promise<Headers> {
   const headers = new Headers(input.defaultHeaders);
   headers.set('Accept', 'application/json');
   headers.set('X-Client', 'portarium-presentation');

@@ -30,7 +30,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "spell": "cspell --no-progress --config cspell.json \"{src,docs,.specify}/**/*\" \"*.md\"",
-    "knip": "knip --production",
+    "knip": "knip --production --workspace .",
     "knip:strict": "knip --strict",
     "depcruise": "depcruise --config .dependency-cruiser.cjs --validate --output-type err src",
     "depgraph:mermaid": "depcruise --config .dependency-cruiser.cjs --output-type mermaid src --output-to reports/architecture/dependency-graph.mmd",

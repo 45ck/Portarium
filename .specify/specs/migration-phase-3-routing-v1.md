@@ -17,19 +17,22 @@ integrations so >90% of SoR interactions flow through the Portarium control plan
 ## Contract
 
 ### Routing target
+
 - `portarium_direct_sor_ratio` < 0.10 (>90% routed through Portarium)
 
 ### Integration matrix
-| Agent type | Integration method |
-|-----------|-------------------|
+
+| Agent type        | Integration method         |
+| ----------------- | -------------------------- |
 | OpenAI Agents SDK | `portarium_tool` decorator |
-| OpenClaw Gateway | `before_tool_call` hook |
-| LLM via MCP | MCP server tools |
-| Custom Python | `portarium-client` SDK |
-| Custom Go | `portarium-go` SDK |
-| Custom TypeScript | `PortariumClient` facade |
+| OpenClaw Gateway  | `before_tool_call` hook    |
+| LLM via MCP       | MCP server tools           |
+| Custom Python     | `portarium-client` SDK     |
+| Custom Go         | `portarium-go` SDK         |
+| Custom TypeScript | `PortariumClient` facade   |
 
 ### Evidence chain (per routed interaction)
+
 - Initiator identity (agent JWT `sub`)
 - Action type and parameters
 - Policy evaluation result
@@ -39,6 +42,7 @@ integrations so >90% of SoR interactions flow through the Portarium control plan
 - W3C trace context
 
 ### Deployment order
+
 1. Read-only / low-risk agents
 2. Operational SoR agents
 3. Financial / PII agents

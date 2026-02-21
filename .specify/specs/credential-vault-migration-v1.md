@@ -30,19 +30,19 @@ implements the port using Vault KV v2:
 
 ### Credential reference model
 
-| Field            | Type       | Required | Description                        |
-|------------------|------------|----------|------------------------------------|
-| `tenantId`       | `TenantId` | Yes      | Workspace/tenant scope             |
+| Field            | Type       | Required | Description                           |
+| ---------------- | ---------- | -------- | ------------------------------------- |
+| `tenantId`       | `TenantId` | Yes      | Workspace/tenant scope                |
 | `credentialName` | `string`   | Yes      | Logical name (e.g. `erpnext-api-key`) |
-| `version`        | `number`   | No       | Pin to specific version            |
+| `version`        | `number`   | No       | Pin to specific version               |
 
 ### Credential value model
 
-| Field          | Type     | Description                           |
-|----------------|----------|---------------------------------------|
-| `secret`       | `string` | The resolved secret material          |
-| `version`      | `number` | Vault-assigned version number         |
-| `createdAtIso` | `string` | ISO-8601 creation timestamp           |
+| Field          | Type     | Description                   |
+| -------------- | -------- | ----------------------------- |
+| `secret`       | `string` | The resolved secret material  |
+| `version`      | `number` | Vault-assigned version number |
+| `createdAtIso` | `string` | ISO-8601 creation timestamp   |
 
 ## Migration plan
 

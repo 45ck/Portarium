@@ -29,18 +29,14 @@ type HeartbeatBody =
     }
   | { ok: false; message: string };
 
-type ParseResult<T> =
-  | Readonly<{ ok: true; value: T }>
-  | Readonly<{ ok: false; message: string }>;
+type ParseResult<T> = Readonly<{ ok: true; value: T }> | Readonly<{ ok: false; message: string }>;
 
 function parseHeartbeatStatus(status: unknown): ParseResult<string> {
   if (status === 'ok' || status === 'degraded') return { ok: true, value: status };
   return { ok: false, message: 'status must be "ok" or "degraded".' };
 }
 
-function parseHeartbeatMetrics(
-  metrics: unknown,
-): ParseResult<Record<string, number> | undefined> {
+function parseHeartbeatMetrics(metrics: unknown): ParseResult<Record<string, number> | undefined> {
   if (metrics === undefined || metrics === null) return { ok: true, value: undefined };
   if (typeof metrics !== 'object' || Array.isArray(metrics)) {
     return { ok: false, message: 'metrics must be a record of numbers.' };

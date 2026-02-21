@@ -3,7 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { getAgentWorkItems } from './get-agent-work-items.js';
 import type { AuthorizationPort, MachineRegistryStore, WorkItemStore } from '../ports/index.js';
 import { toAppContext } from '../common/context.js';
-import { TenantId, WorkspaceId, WorkItemId, UserId } from '../../domain/primitives/index.js';
+import {
+  CapabilityKey,
+  TenantId,
+  WorkspaceId,
+  WorkItemId,
+  UserId,
+} from '../../domain/primitives/index.js';
 import type { AgentConfigV1 } from '../../domain/machines/machine-registration-v1.js';
 import type { WorkItemV1 } from '../../domain/work-items/index.js';
 
@@ -22,7 +28,7 @@ const FIXTURE_AGENT: AgentConfigV1 = {
   workspaceId: 'ws-1' as AgentConfigV1['workspaceId'],
   machineId: 'machine-1' as AgentConfigV1['machineId'],
   displayName: 'Test Agent',
-  capabilities: [{ capability: 'run:workflow' as any }],
+  capabilities: [{ capability: CapabilityKey('run:workflow') }],
   policyTier: 'Auto',
   allowedTools: ['classify'],
   registeredAtIso: '2026-02-20T00:00:00.000Z',

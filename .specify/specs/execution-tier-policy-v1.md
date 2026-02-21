@@ -18,10 +18,10 @@ function in `src/domain/policy/execution-tier-policy-v1.ts`.
 ### Environment tiers
 
 | Tier      | Enforcement | Override | Approval threshold |
-|-----------|------------|----------|--------------------|
-| `dev`     | `logged`   | Yes      | ManualOnly         |
-| `staging` | `strict`   | Yes      | HumanApprove       |
-| `prod`    | `strict`   | No       | Assisted           |
+| --------- | ----------- | -------- | ------------------ |
+| `dev`     | `logged`    | Yes      | ManualOnly         |
+| `staging` | `strict`    | Yes      | HumanApprove       |
+| `prod`    | `strict`    | No       | Assisted           |
 
 ### Tier evaluation rules
 

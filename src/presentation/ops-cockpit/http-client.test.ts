@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ControlPlaneClient, ControlPlaneClientError } from './http-client.js';
-import { ProblemDetailsError } from './problem-details.js';
+import { ControlPlaneClient } from './http-client.js';
 
 // ---------------------------------------------------------------------------
 // Test helpers
@@ -32,26 +31,6 @@ function createJsonFetch(
   }) as typeof fetch;
 
   return { calls, fetchImpl };
-}
-
-function createErrorFetch(status: number, body: string): typeof fetch {
-  return (async () =>
-    ({
-      ok: false,
-      status,
-      headers: new Headers(),
-      text: async () => body,
-    }) as Response) as typeof fetch;
-}
-
-function createEmptyFetch(status = 204): typeof fetch {
-  return (async () =>
-    ({
-      ok: true,
-      status,
-      headers: new Headers(),
-      text: async () => '',
-    }) as Response) as typeof fetch;
 }
 
 function makeClient(fetchImpl: typeof fetch, extra: object = {}): ControlPlaneClient {
@@ -376,101 +355,3 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect((calls[0]!.init.headers as Headers).get('Idempotency-Key')).toBeNull();
   });
 });
-
-// ---------------------------------------------------------------------------
-// Error response handling
-// ---------------------------------------------------------------------------
-
-describe('ControlPlaneClient error response handling', () => {
-  it('throws ProblemDetailsError when server returns RFC 9457 Problem Details', async () => {
-    const problem = {
-      type: 'https://portarium.dev/problems/approval-not-found',
-      title: 'Approval Not Found',
-      status: 404,
-      detail: 'No approval with id appr-99 found',
-      instance: '/v1/workspaces/ws/approvals/appr-99',
-    };
-    const client = makeClient(createErrorFetch(404, JSON.stringify(problem)));
-
-    const error = await client.getApproval('ws', 'appr-99').catch((e) => e);
-    expect(error).toBeInstanceOf(ProblemDetailsError);
-    expect((error as ProblemDetailsError).status).toBe(404);
-    expect((error as ProblemDetailsError).problem.type).toBe(
-      'https://portarium.dev/problems/approval-not-found',
-    );
-    expect((error as ProblemDetailsError).problem.detail).toBe('No approval with id appr-99 found');
-  });
-
-  it('throws ControlPlaneClientError for non-Problem Details 4xx responses', async () => {
-    const client = makeClient(createErrorFetch(422, 'Unprocessable Entity'));
-
-    const error = await client.listRuns('ws').catch((e) => e);
-    expect(error).toBeInstanceOf(ControlPlaneClientError);
-    expect((error as ControlPlaneClientError).status).toBe(422);
-    expect((error as ControlPlaneClientError).body).toBe('Unprocessable Entity');
-  });
-
-  it('throws ControlPlaneClientError for 500 server errors', async () => {
-    const client = makeClient(createErrorFetch(500, 'Internal Server Error'));
-
-    const error = await client.listApprovals('ws').catch((e) => e);
-    expect(error).toBeInstanceOf(ControlPlaneClientError);
-    expect((error as ControlPlaneClientError).status).toBe(500);
-  });
-
-  it('throws ControlPlaneClientError for empty 4xx body', async () => {
-    const client = makeClient(createErrorFetch(403, ''));
-
-    const error = await client.listRuns('ws').catch((e) => e);
-    expect(error).toBeInstanceOf(ControlPlaneClientError);
-    expect((error as ControlPlaneClientError).status).toBe(403);
-    expect((error as ControlPlaneClientError).body).toBe('');
-  });
-
-  it('throws ControlPlaneClientError when response body is not valid JSON', async () => {
-    // Use a fetch that returns malformed JSON (not parseable)
-    const badFetch = (async () =>
-      ({
-        ok: true,
-        status: 200,
-        headers: new Headers(),
-        text: async () => '{{bad json',
-      }) as Response) as typeof fetch;
-    const client = makeClient(badFetch);
-
-    const error = await client.listRuns('ws').catch((e) => e);
-    expect(error).toBeInstanceOf(ControlPlaneClientError);
-    expect((error as ControlPlaneClientError).body).toBe('Invalid JSON response');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Response parsing edge cases
-// ---------------------------------------------------------------------------
-
-describe('ControlPlaneClient response parsing', () => {
-  it('returns undefined for 204 No Content responses', async () => {
-    const client = makeClient(createEmptyFetch(204));
-    const result = await client.cancelRun('ws', 'run-1');
-    expect(result).toBeUndefined();
-  });
-
-  it('returns undefined for empty 200 body', async () => {
-    const client = makeClient(createEmptyFetch(200));
-    const result = await client.cancelRun('ws', 'run-1');
-    expect(result).toBeUndefined();
-  });
-
-  it('passes response through parse function when provided', async () => {
-    // Access via internal request — test through a public method that uses parse indirectly
-    // Verify that valid JSON is correctly passed back as-is (default identity parse)
-    const payload = { items: [{ id: 'wi-1' }], nextCursor: 'next:xyz' };
-    const { fetchImpl } = createJsonFetch(payload);
-    const client = makeClient(fetchImpl);
-
-    const result = await client.listWorkItems('ws');
-    expect(result).toEqual(payload);
-  });
-});
-
-// Auth and timeout tests are in http-client-auth.test.ts (split for max-lines compliance)

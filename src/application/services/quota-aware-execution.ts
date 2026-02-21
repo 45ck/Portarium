@@ -104,14 +104,16 @@ function asRetryableRateLimitFailure(
   return null;
 }
 
-function resolveTerminalInvokeResult(args: Readonly<{
-  result: MachineInvokerResult;
-  retryableFailure: (MachineInvokerFailure & { errorKind: 'RateLimited' }) | null;
-  attempts: number;
-  retriesUsed: number;
-  maxRetries: number;
-  backoffMsHistory: readonly number[];
-}>): QuotaAwareInvokeResultV1 | null {
+function resolveTerminalInvokeResult(
+  args: Readonly<{
+    result: MachineInvokerResult;
+    retryableFailure: (MachineInvokerFailure & { errorKind: 'RateLimited' }) | null;
+    attempts: number;
+    retriesUsed: number;
+    maxRetries: number;
+    backoffMsHistory: readonly number[];
+  }>,
+): QuotaAwareInvokeResultV1 | null {
   if (!args.retryableFailure) {
     return buildInvokeResult({
       result: args.result,

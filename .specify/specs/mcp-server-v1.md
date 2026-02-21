@@ -14,15 +14,15 @@ through a standardized JSON-RPC 2.0 interface.
 
 ## Tools
 
-| Tool name                       | Maps to               | Description                          |
-| ------------------------------- | --------------------- | ------------------------------------ |
-| `portarium_run_start`           | `startRun`            | Start a workflow run                 |
-| `portarium_run_get`             | `getRun`              | Query run status                     |
-| `portarium_run_cancel`          | `cancelRun`           | Cancel an active run                 |
-| `portarium_work_items_list`     | `listWorkItems`       | List work items                      |
-| `portarium_approval_submit`     | `submitApproval`      | Submit approval decision             |
-| `portarium_agent_register`      | `registerAgent`       | Register agent with control plane    |
-| `portarium_agent_heartbeat`     | `agentHeartbeat`      | Agent liveness heartbeat             |
+| Tool name                   | Maps to          | Description                       |
+| --------------------------- | ---------------- | --------------------------------- |
+| `portarium_run_start`       | `startRun`       | Start a workflow run              |
+| `portarium_run_get`         | `getRun`         | Query run status                  |
+| `portarium_run_cancel`      | `cancelRun`      | Cancel an active run              |
+| `portarium_work_items_list` | `listWorkItems`  | List work items                   |
+| `portarium_approval_submit` | `submitApproval` | Submit approval decision          |
+| `portarium_agent_register`  | `registerAgent`  | Register agent with control plane |
+| `portarium_agent_heartbeat` | `agentHeartbeat` | Agent liveness heartbeat          |
 
 ## Input Validation
 

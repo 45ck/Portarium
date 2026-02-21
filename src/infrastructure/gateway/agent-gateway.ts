@@ -95,7 +95,8 @@ export class AgentGateway {
         return;
       }
 
-      const inboundTraceparent = normalizeSingleHeader(req.headers['traceparent']) ?? generateTraceparent();
+      const inboundTraceparent =
+        normalizeSingleHeader(req.headers['traceparent']) ?? generateTraceparent();
       const inboundTracestate = normalizeSingleHeader(req.headers['tracestate']);
       const upstream = await this.#proxyRequest({
         method,

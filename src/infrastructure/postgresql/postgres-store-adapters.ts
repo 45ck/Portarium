@@ -6,10 +6,9 @@ import type {
   IdempotencyKey,
   IdempotencyStore,
   ListApprovalsFilter,
-  ListRunsFilter,
+  ListRunsQuery,
   ListWorkspacesFilter,
   PolicyStore,
-  RunListPage,
   RunQueryStore,
   RunStore,
   WorkspaceListPage,
@@ -17,6 +16,8 @@ import type {
   WorkflowStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
+import type { Page } from '../../application/common/query.js';
+import { clampLimit } from '../../application/common/query.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
@@ -26,6 +27,7 @@ import { parseRunV1 } from '../../domain/runs/run-v1.js';
 import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import type { WorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
 import { parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
+import { pageByCursor } from './postgres-cursor-page.js';
 import { PostgresJsonDocumentStore } from './postgres-json-document-store.js';
 import type { SqlClient } from './sql-client.js';
 
@@ -134,20 +136,56 @@ export class PostgresRunStore implements RunStore, RunQueryStore {
   public async listRuns(
     tenantId: string,
     workspaceId: string,
-    filter: ListRunsFilter,
-  ): Promise<RunListPage> {
+    query: ListRunsQuery,
+  ): Promise<Page<RunV1>> {
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_RUNS,
     });
 
-    const items = payloads
+    const { filter } = query;
+    let items = payloads
       .map((payload) => parseRunV1(payload))
-      .filter((run) => matchRunFilter(run, filter))
-      .sort((left, right) => String(left.runId).localeCompare(String(right.runId)));
+      .filter((run) => matchRunFieldFilter(run, filter));
 
-    return pageByCursor(items, (run) => String(run.runId), filter.limit, filter.cursor);
+    // Full-text search across key fields
+    if (query.search) {
+      const term = query.search.toLowerCase();
+      items = items.filter(
+        (run) =>
+          String(run.runId).toLowerCase().includes(term) ||
+          String(run.workflowId).toLowerCase().includes(term) ||
+          String(run.correlationId).toLowerCase().includes(term),
+      );
+    }
+
+    // Sort
+    if (query.sort) {
+      const { field, direction } = query.sort;
+      const dir = direction === 'desc' ? -1 : 1;
+      const toSortValue = (value: unknown): string =>
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        typeof value === 'bigint'
+          ? String(value)
+          : '';
+      items.sort((a, b) => {
+        const va = toSortValue((a as Record<string, unknown>)[field]);
+        const vb = toSortValue((b as Record<string, unknown>)[field]);
+        return va.localeCompare(vb) * dir;
+      });
+    } else {
+      items.sort((a, b) => String(a.runId).localeCompare(String(b.runId)));
+    }
+
+    return pageByCursor(
+      items,
+      (run) => String(run.runId),
+      clampLimit(query.pagination.limit),
+      query.pagination.cursor,
+    );
   }
 }
 
@@ -307,7 +345,15 @@ function formatIdempotencyDocumentId(key: IdempotencyKey): string {
   return `${key.commandName}:${key.requestKey}`;
 }
 
-function matchRunFilter(run: RunV1, filter: ListRunsFilter): boolean {
+function matchRunFieldFilter(
+  run: RunV1,
+  filter: Readonly<{
+    status?: string;
+    workflowId?: string;
+    initiatedByUserId?: string;
+    correlationId?: string;
+  }>,
+): boolean {
   if (filter.status && run.status !== filter.status) return false;
   if (filter.workflowId && String(run.workflowId) !== String(filter.workflowId)) return false;
   if (
@@ -339,22 +385,4 @@ function matchApprovalFilter(approval: ApprovalV1, filter: ListApprovalsFilter):
     ],
   ];
   return checks.every(([expected, actual]) => expected === undefined || actual === expected);
-}
-
-function pageByCursor<T>(
-  items: readonly T[],
-  idOf: (item: T) => string,
-  limit?: number,
-  cursor?: string,
-): Readonly<{ items: readonly T[]; nextCursor?: string }> {
-  const cursorId = cursor?.trim();
-  const filtered = cursorId ? items.filter((item) => idOf(item) > cursorId) : [...items];
-
-  if (limit === undefined || filtered.length <= limit) {
-    return { items: filtered };
-  }
-
-  const paged = filtered.slice(0, limit);
-  const nextCursor = idOf(paged[paged.length - 1]!);
-  return { items: paged, nextCursor };
 }

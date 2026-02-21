@@ -6,7 +6,7 @@ import type {
   NewStartWorkflowPlan,
   StartWorkflowDeps,
   StartWorkflowOutput,
-} from './start-workflow.js';
+} from './start-workflow.types.js';
 
 const START_WORKFLOW_SOURCE = 'portarium.control-plane.workflow-runtime';
 

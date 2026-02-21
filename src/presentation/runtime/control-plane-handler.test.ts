@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { toAppContext } from '../../application/common/context.js';
+import { err, ok } from '../../application/common/result.js';
+import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
-import { createControlPlaneHandler } from './control-plane-handler.js';
-import { ok, err } from '../../application/common/result.js';
-import { toAppContext } from '../../application/common/context.js';
 
 let handle: HealthServerHandle | undefined;
 
@@ -13,7 +13,10 @@ afterEach(async () => {
   handle = undefined;
 });
 
-function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['admin']) {
+type Role = 'admin' | 'operator' | 'approver' | 'auditor';
+type HandlerDeps = Parameters<typeof createControlPlaneHandler>[0];
+
+function makeCtx(roles: readonly Role[] = ['admin']) {
   return toAppContext({
     tenantId: 'tenant-1',
     principalId: 'user-1',
@@ -22,34 +25,40 @@ function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')
   });
 }
 
+function makeDeps(overrides: Partial<HandlerDeps> = {}): HandlerDeps {
+  return {
+    authentication: {
+      authenticateBearerToken: async () => ok(makeCtx()),
+    },
+    authorization: {
+      isAllowed: async () => true,
+    },
+    workspaceStore: {
+      getWorkspaceById: async () => null,
+      getWorkspaceByName: async () => null,
+      saveWorkspace: async () => undefined,
+    },
+    runStore: {
+      getRunById: async () => null,
+      saveRun: async () => undefined,
+    },
+    ...overrides,
+  };
+}
+
+async function startWith(deps: HandlerDeps): Promise<void> {
+  handle = await startHealthServer({
+    role: 'control-plane',
+    host: '127.0.0.1',
+    port: 0,
+    handler: createControlPlaneHandler(deps),
+  });
+}
+
 describe('createControlPlaneHandler', () => {
   it('routes GET workspace to application query and returns Problem Details on not found', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx()),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
+    await startWith(makeDeps());
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1`);
     expect(res.status).toBe(404);
     expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/i);
     expect(res.headers.get('traceparent')).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/i);
@@ -59,33 +68,15 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('routes GET run to application query and returns Problem Details on unauthorized', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () =>
-          err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1/runs/run-1`);
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
+        },
+      }),
+    );
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1/runs/run-1`);
     expect(res.status).toBe(401);
     const body = (await res.json()) as { type: string; status: number; title: string };
     expect(body.type).toMatch(/unauthorized/);
@@ -94,62 +85,16 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('returns Problem Details not-found for unknown routes', async () => {
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler({
-        authentication: {
-          authenticateBearerToken: async () => ok(makeCtx()),
-        },
-        authorization: {
-          isAllowed: async () => true,
-        },
-        workspaceStore: {
-          getWorkspaceById: async () => null,
-          getWorkspaceByName: async () => null,
-          saveWorkspace: async () => undefined,
-        },
-        runStore: {
-          getRunById: async () => null,
-          saveRun: async () => undefined,
-        },
-      }),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/nope`);
+    await startWith(makeDeps());
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/nope`);
     expect(res.status).toBe(404);
     const body = (await res.json()) as { detail: string };
     expect(body.detail).toBe('Route not found.');
   });
 
   it('maps ValidationFailed to 400 and preserves x-correlation-id when provided', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx()),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/%20`, {
+    await startWith(makeDeps());
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/%20`, {
       headers: {
         'x-correlation-id': 'corr-fixed',
         traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
@@ -168,32 +113,12 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('maps Forbidden to 403', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx()),
-      },
-      authorization: {
-        isAllowed: async () => false,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
+    await startWith(
+      makeDeps({
+        authorization: { isAllowed: async () => false },
+      }),
+    );
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1`);
     expect(res.status).toBe(403);
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/forbidden/);
@@ -201,34 +126,12 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('returns 500 Problem Details when a dependency throws', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => {
-          throw new Error('boom');
-        },
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
-    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-1`);
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => Promise.reject(new Error('boom')) },
+      }),
+    );
+    const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1`);
     expect(res.status).toBe(500);
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/internal/);
@@ -236,33 +139,13 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('lists workforce members with contract query filters', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce?capability=operations.approval&availability=available`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/workforce?capability=operations.approval&availability=available`,
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as { items: { workforceMemberId: string }[] };
@@ -271,33 +154,13 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('enforces admin-only update for workforce availability patch', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
       {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -310,33 +173,11 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('allows admin to patch workforce availability', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['admin'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({ authentication: { authenticateBearerToken: async () => ok(makeCtx(['admin'])) } }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
       {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -350,33 +191,13 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('lists human tasks with assignee/status filters', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/human-tasks?assigneeId=wm-1&status=assigned`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/human-tasks?assigneeId=wm-1&status=assigned`,
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as { items: { humanTaskId: string }[] };
@@ -385,33 +206,13 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('completes human task and emits evidence visible in evidence list', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const completeRes = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/human-tasks/ht-1/complete`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/human-tasks/ht-1/complete`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -422,86 +223,40 @@ describe('createControlPlaneHandler', () => {
     const completed = (await completeRes.json()) as { status: string; evidenceAnchorId?: string };
     expect(completed.status).toBe('completed');
     expect(typeof completed.evidenceAnchorId).toBe('string');
-
     const evidenceRes = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/evidence?category=Action`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/evidence?category=Action`,
     );
     expect(evidenceRes.status).toBe(200);
-    const evidenceBody = (await evidenceRes.json()) as {
-      items: { evidenceId: string; summary: string }[];
-    };
+    const evidenceBody = (await evidenceRes.json()) as { items: { evidenceId: string }[] };
     expect(
       evidenceBody.items.some((entry) => entry.evidenceId === completed.evidenceAnchorId),
     ).toBe(true);
   });
 
   it('lists location events in a bounded playback window with filters', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/location-events?fromIso=2026-02-20T10:00:00.000Z&toIso=2026-02-20T10:10:00.000Z&sourceType=SLAM&siteId=site-a&floorId=floor-1&limit=1`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/location-events?fromIso=2026-02-20T10:00:00.000Z&toIso=2026-02-20T10:10:00.000Z&sourceType=SLAM&siteId=site-a&floorId=floor-1&limit=1`,
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as {
-      items: { locationEventId: string; tenantId: string; sourceType: string }[];
-      nextCursor?: string;
-    };
+    const body = (await res.json()) as { items: { locationEventId: string; sourceType: string }[] };
     expect(body.items).toHaveLength(1);
     expect(body.items[0]!.locationEventId).toBe('loc-evt-1');
     expect(body.items[0]!.sourceType).toBe('SLAM');
   });
 
   it('serves location stream endpoint as text/event-stream with stale semantics metadata', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/location-events:stream?assetId=asset-1&purpose=operations`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/location-events:stream?assetId=asset-1&purpose=operations`,
     );
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/text\/event-stream/i);
@@ -512,33 +267,13 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('lists map layers and enforces tenant isolation by workspace route', async () => {
-    const deps = {
-      authentication: {
-        authenticateBearerToken: async () => ok(makeCtx(['operator'])),
-      },
-      authorization: {
-        isAllowed: async () => true,
-      },
-      workspaceStore: {
-        getWorkspaceById: async () => null,
-        getWorkspaceByName: async () => null,
-        saveWorkspace: async () => undefined,
-      },
-      runStore: {
-        getRunById: async () => null,
-        saveRun: async () => undefined,
-      },
-    };
-
-    handle = await startHealthServer({
-      role: 'control-plane',
-      host: '127.0.0.1',
-      port: 0,
-      handler: createControlPlaneHandler(deps),
-    });
-
+    await startWith(
+      makeDeps({
+        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+      }),
+    );
     const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-2/map-layers?version=1`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-2/map-layers?version=1`,
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {

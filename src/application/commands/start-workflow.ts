@@ -1,10 +1,4 @@
-import {
-  type RunId as RunIdType,
-  type WorkspaceId as WorkspaceIdType,
-  type WorkflowId as WorkflowIdType,
-  WorkspaceId,
-  WorkflowId,
-} from '../../domain/primitives/index.js';
+import { WorkspaceId, WorkflowId } from '../../domain/primitives/index.js';
 import { parseRunV1, type RunV1 } from '../../domain/runs/index.js';
 import { parseWorkflowTriggerV1, type WorkflowTriggerV1 } from '../../domain/schedule/index.js';
 import type { WorkflowV1 } from '../../domain/workflows/index.js';
@@ -19,66 +13,33 @@ import {
   ok,
   type Result,
   type ValidationFailed,
-  type NotFound,
 } from '../common/index.js';
-import type {
-  AdapterRegistrationStore,
-  AuthorizationPort,
-  Clock,
-  EventPublisher,
-  IdGenerator,
-  IdempotencyStore,
-  IdempotencyKey,
-  RunStore,
-  UnitOfWork,
-  WorkflowOrchestrator,
-  WorkflowStore,
-} from '../ports/index.js';
-import type { TriggerExecutionRouterPort } from '../services/trigger-execution-router.js';
 import {
   ensureRunIdIsUnique,
   ensureSingleActiveAdapterPerPort,
   ensureSingleActiveWorkflowVersion,
 } from '../services/repository-aggregate-invariants.js';
 import { executeStartWorkflowTransaction } from './start-workflow.execute-transaction.js';
+import type {
+  GeneratedValues as GeneratedValuesDef,
+  NewStartWorkflowPlan as NewStartWorkflowPlanDef,
+  ParsedIds as ParsedIdsDef,
+  StartWorkflowDeps as StartWorkflowDepsDef,
+  StartWorkflowError as StartWorkflowErrorDef,
+  StartWorkflowInput as StartWorkflowInputDef,
+  StartWorkflowOutput as StartWorkflowOutputDef,
+} from './start-workflow.types.js';
 
 const START_WORKFLOW_COMMAND = 'StartWorkflow';
 
-export type StartWorkflowInput = Readonly<{
-  idempotencyKey: string;
-  workspaceId: string;
-  workflowId: string;
-  trigger?: unknown;
-}>;
-
-export type StartWorkflowOutput = Readonly<{
-  runId: RunIdType;
-}>;
-
-export type StartWorkflowError =
-  | Forbidden
-  | ValidationFailed
-  | NotFound
-  | Conflict
-  | DependencyFailure;
-
-export interface StartWorkflowDeps {
-  authorization: AuthorizationPort;
-  clock: Clock;
-  idGenerator: IdGenerator;
-  idempotency: IdempotencyStore;
-  unitOfWork: UnitOfWork;
-  workflowStore: WorkflowStore;
-  adapterRegistrationStore: AdapterRegistrationStore;
-  runStore: RunStore;
-  orchestrator: WorkflowOrchestrator;
-  eventPublisher: EventPublisher;
-  triggerRouter?: TriggerExecutionRouterPort;
-}
-
 type Err<E> = Readonly<{ ok: false; error: E }>;
-type ParsedIds = Readonly<{ workspaceId: WorkspaceIdType; workflowId: WorkflowIdType }>;
-type GeneratedValues = Readonly<{ runIdValue: string; createdAtIso: string; eventIdValue: string }>;
+export type StartWorkflowInput = StartWorkflowInputDef;
+export type StartWorkflowOutput = StartWorkflowOutputDef;
+export type StartWorkflowError = StartWorkflowErrorDef;
+export type StartWorkflowDeps = StartWorkflowDepsDef;
+export type ParsedIds = ParsedIdsDef;
+export type GeneratedValues = GeneratedValuesDef;
+export type NewStartWorkflowPlan = NewStartWorkflowPlanDef;
 
 function requireNonEmpty(
   value: string | undefined | null,
@@ -135,7 +96,7 @@ function parseTriggerFromInput(
 }
 
 async function checkAuthorization(
-  authorization: AuthorizationPort,
+  authorization: StartWorkflowDeps['authorization'],
   ctx: AppContext,
 ): Promise<Err<Forbidden> | null> {
   const allowed = await authorization.isAllowed(ctx, APP_ACTIONS.runStart);
@@ -150,7 +111,7 @@ async function checkAuthorization(
 }
 
 async function resolveWorkflow(
-  store: WorkflowStore,
+  store: StartWorkflowDeps['workflowStore'],
   ctx: AppContext,
   ids: ParsedIds,
   rawWorkflowId: string,
@@ -188,8 +149,8 @@ async function resolveWorkflow(
 }
 
 function generateDepsValues(
-  idGenerator: IdGenerator,
-  clock: Clock,
+  idGenerator: StartWorkflowDeps['idGenerator'],
+  clock: StartWorkflowDeps['clock'],
 ): Result<GeneratedValues, DependencyFailure> {
   const runIdValue = idGenerator.generateId();
   if (runIdValue.trim() === '') {
@@ -236,16 +197,6 @@ function buildRun(
     });
   }
 }
-
-export type NewStartWorkflowPlan = Readonly<{
-  kind: 'new';
-  ids: ParsedIds;
-  workflow: WorkflowV1;
-  generated: GeneratedValues;
-  run: RunV1;
-  commandKey: IdempotencyKey;
-  trigger?: WorkflowTriggerV1;
-}>;
 
 type CachedStartWorkflowPlan = Readonly<{
   kind: 'cached';
@@ -305,7 +256,11 @@ async function buildNewRunState(
   const runResult = buildRun(ctx, ids, workflow, genResult.value);
   if (!runResult.ok) return runResult;
 
-  const existingRun = await deps.runStore.getRunById(ctx.tenantId, ids.workspaceId, runResult.value.runId);
+  const existingRun = await deps.runStore.getRunById(
+    ctx.tenantId,
+    ids.workspaceId,
+    runResult.value.runId,
+  );
   const runConflict = ensureRunIdIsUnique(existingRun, runResult.value.runId);
   if (runConflict) return err(runConflict);
   return ok({ generated: genResult.value, run: runResult.value });

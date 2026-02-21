@@ -5,6 +5,9 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals';
 import { usePlan } from '@/hooks/queries/use-plan';
+import { useEvidence } from '@/hooks/queries/use-evidence';
+import { useRun } from '@/hooks/queries/use-runs';
+import { useWorkflow } from '@/hooks/queries/use-workflows';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
@@ -35,6 +38,12 @@ function ApprovalsPage() {
   );
 
   const { data: planData } = usePlan(wsId, currentApproval?.planId);
+  const { data: evidenceData } = useEvidence(wsId);
+  const filteredEvidence = (evidenceData?.items ?? []).filter(
+    (e) => e.links?.runId === currentApproval?.runId,
+  );
+  const { data: runData } = useRun(wsId, currentApproval?.runId ?? '');
+  const { data: workflowData } = useWorkflow(wsId, runData?.workflowId ?? '');
 
   function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
     if (action === 'Skip') {
@@ -204,6 +213,9 @@ function ApprovalsPage() {
                 onAction={handleTriageAction}
                 loading={deciding}
                 plannedEffects={planData?.plannedEffects}
+                evidenceEntries={filteredEvidence}
+                run={runData}
+                workflow={workflowData}
               />
             )}
           </div>

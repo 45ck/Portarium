@@ -24,13 +24,13 @@ portarium.events.{tenantId}.{eventCategory}.{eventType}
 
 ### Event Categories and Types
 
-| Category | Types | Description |
-|---|---|---|
-| `run` | `started`, `completed`, `failed`, `paused`, `resumed` | Run lifecycle events |
-| `approval` | `requested`, `granted`, `denied`, `expired` | Approval lifecycle events |
-| `agent` | `registered`, `heartbeat`, `deregistered` | Agent status events |
-| `evidence` | `appended`, `chain-verified` | Evidence chain events |
-| `telemetry` | `metric`, `trace`, `log` | Telemetry export events |
+| Category    | Types                                                 | Description               |
+| ----------- | ----------------------------------------------------- | ------------------------- |
+| `run`       | `started`, `completed`, `failed`, `paused`, `resumed` | Run lifecycle events      |
+| `approval`  | `requested`, `granted`, `denied`, `expired`           | Approval lifecycle events |
+| `agent`     | `registered`, `heartbeat`, `deregistered`             | Agent status events       |
+| `evidence`  | `appended`, `chain-verified`                          | Evidence chain events     |
+| `telemetry` | `metric`, `trace`, `log`                              | Telemetry export events   |
 
 ### Subscription Patterns
 
@@ -40,16 +40,16 @@ portarium.events.{tenantId}.{eventCategory}.{eventType}
 
 ## JetStream Stream Configuration
 
-| Property | Value |
-|---|---|
-| Stream name | `PORTARIUM_EVENTS` |
-| Subjects | `portarium.events.>` |
-| Storage | File |
-| Retention | Limits |
-| MaxAge | 7 days (configurable) |
-| MaxMsgs | 1,000,000 |
-| Discard policy | Old |
-| Duplicate window | 2 minutes |
+| Property         | Value                 |
+| ---------------- | --------------------- |
+| Stream name      | `PORTARIUM_EVENTS`    |
+| Subjects         | `portarium.events.>`  |
+| Storage          | File                  |
+| Retention        | Limits                |
+| MaxAge           | 7 days (configurable) |
+| MaxMsgs          | 1,000,000             |
+| Discard policy   | Old                   |
+| Duplicate window | 2 minutes             |
 
 ## Consumer Configuration
 

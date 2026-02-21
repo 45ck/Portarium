@@ -36,7 +36,8 @@ export default tseslint.config(
       // UI capture scripts — not production
       'docs/ui/cockpit/screenshots/**',
       // Scratch/generator scripts left from interactive sessions
-      'tmp_*.{js,cjs,mjs,py}',
+      'tmp_*.{js,cjs,mjs,py,ts}',
+      'tmp-*.{js,cjs,mjs,py,ts}',
       'gen*.{js,cjs,mjs,py}',
       'gb*.{js,cjs,mjs}',
       'build_gen*.{js,cjs,mjs}',

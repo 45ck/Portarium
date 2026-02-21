@@ -314,7 +314,12 @@ export async function handleLocationEventsStream(args: HandlerArgs): Promise<voi
 
   const url = new URL(req.url ?? '/', 'http://localhost');
   const purpose = parseLocationTelemetryPurpose(url.searchParams.get('purpose'));
-  const boundary = enforceLocationTelemetryBoundary(appCtx, { mode: 'live', purpose }, undefined, new Date());
+  const boundary = enforceLocationTelemetryBoundary(
+    appCtx,
+    { mode: 'live', purpose },
+    undefined,
+    new Date(),
+  );
   if (!boundary.ok) {
     respondProblem(res, problemFromError(boundary.error, pathname), correlationId, traceContext);
     return;

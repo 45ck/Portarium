@@ -17,21 +17,21 @@ explicit allow rules for required internal and external communication paths.
 
 ### Agent pods (`portarium.io/component: agent`)
 
-| Target                  | Port  | Protocol | Purpose                       |
-|-------------------------|-------|----------|-------------------------------|
-| control-plane           | 8080  | TCP      | Heartbeat, work-item API      |
-| vault (namespace)       | 8200  | TCP      | Credential retrieval          |
-| kube-system (DNS)       | 53    | UDP/TCP  | Service discovery             |
+| Target            | Port | Protocol | Purpose                  |
+| ----------------- | ---- | -------- | ------------------------ |
+| control-plane     | 8080 | TCP      | Heartbeat, work-item API |
+| vault (namespace) | 8200 | TCP      | Credential retrieval     |
+| kube-system (DNS) | 53   | UDP/TCP  | Service discovery        |
 
 ### Execution-plane pods (`portarium.io/component: execution-plane`)
 
-| Target                  | Port  | Protocol | Purpose                       |
-|-------------------------|-------|----------|-------------------------------|
-| control-plane           | 8080  | TCP      | API callbacks, evidence       |
-| vault (namespace)       | 8200  | TCP      | Credential retrieval          |
-| temporal (namespace)    | 7233  | TCP      | Workflow orchestration        |
-| otel-collector          | 4317/4318 | TCP  | Telemetry export              |
-| kube-system (DNS)       | 53    | UDP/TCP  | Service discovery             |
+| Target               | Port      | Protocol | Purpose                 |
+| -------------------- | --------- | -------- | ----------------------- |
+| control-plane        | 8080      | TCP      | API callbacks, evidence |
+| vault (namespace)    | 8200      | TCP      | Credential retrieval    |
+| temporal (namespace) | 7233      | TCP      | Workflow orchestration  |
+| otel-collector       | 4317/4318 | TCP      | Telemetry export        |
+| kube-system (DNS)    | 53        | UDP/TCP  | Service discovery       |
 
 ### External SoR egress
 

@@ -24,12 +24,12 @@ so that the control plane can trust inbound traffic.
 
 All gateway errors use RFC 9457 Problem Details (`application/problem+json`).
 
-| Status | Title               | When                              |
-| ------ | ------------------- | --------------------------------- |
-| 401    | Unauthorized        | Missing or invalid credentials    |
-| 422    | Validation Failed   | Malformed request shape           |
-| 429    | Too Many Requests   | Token bucket exhausted            |
-| 502    | Bad Gateway         | Control plane unreachable / error |
+| Status | Title             | When                              |
+| ------ | ----------------- | --------------------------------- |
+| 401    | Unauthorized      | Missing or invalid credentials    |
+| 422    | Validation Failed | Malformed request shape           |
+| 429    | Too Many Requests | Token bucket exhausted            |
+| 502    | Bad Gateway       | Control plane unreachable / error |
 
 ## Rate Limiter
 
@@ -48,6 +48,7 @@ All gateway errors use RFC 9457 Problem Details (`application/problem+json`).
 ## Test Expectations
 
 Unit tests must cover:
+
 - Successful proxy pass-through.
 - Auth rejection (401).
 - Rate limit rejection (429 with retry-after).

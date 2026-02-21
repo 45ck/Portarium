@@ -2,18 +2,20 @@
 name: quality-check
 description: Run the full local quality gate suite and write a merge-evidence report to reports/quality/.
 disable-model-invocation: true
-argument-hint: "[mode=pr|nightly]"
+argument-hint: '[mode=pr|nightly]'
 allowed-tools: Read, Grep, Glob, Bash(npm run *)
 ---
 
 # Quality Check
 
 ## What this skill does
+
 1. Runs the project's CI gate scripts (`ci:pr` or `ci:nightly`).
 2. Writes a report file to `reports/quality/QUALITY_REPORT.md`.
 3. Summarises failures with exact commands to re-run locally.
 
 ## Steps
+
 - Parse mode argument (default: `pr`).
 - If mode=nightly: run `npm run ci:nightly`
 - Else: run `npm run ci:pr`

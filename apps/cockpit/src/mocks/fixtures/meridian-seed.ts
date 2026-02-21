@@ -13,6 +13,7 @@ import type {
   AgentV1,
   EvidenceCategory,
   EvidenceActor,
+  EvidencePayloadRef,
   RunStatus,
   ApprovalStatus,
   Plan,
@@ -665,6 +666,19 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
         ? addMinutes(started!, Math.floor(rand() * 60 + 5))
         : undefined;
     const tier = pick(rand, ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const);
+    // Link agents used by this workflow to the run
+    const wfAgents = agentSlice.filter((a) => a.wfIds.includes(wfId)).map((a) => a.id);
+    const runAgentIds =
+      wfAgents.length > 0
+        ? wfAgents
+        : rand() < 0.6
+          ? [agentSlice[i % agentSlice.length]!.id]
+          : undefined;
+
+    // Link robots (~30% of runs)
+    const runRobotIds =
+      rand() < 0.3 && ROBOTS.length > 0 ? [ROBOTS[i % ROBOTS.length]!.robotId] : undefined;
+
     RUNS.push({
       schemaVersion: 1,
       runId: `run-m${String(i + 1).padStart(4, '0')}`,
@@ -677,6 +691,8 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
       createdAtIso: created,
       startedAtIso: started,
       endedAtIso: ended,
+      agentIds: runAgentIds,
+      robotIds: runRobotIds,
     });
   }
 
@@ -973,6 +989,71 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     const hash = fakeHash(i);
     const prevHash = i > 0 ? fakeHash(i - 1) : undefined;
 
+    // Generate payload refs for ~40% of evidence entries
+    const payloadRefs: EvidencePayloadRef[] = [];
+    const payloadRoll = rand();
+    if (payloadRoll < 0.15) {
+      // Snapshot — image capture
+      payloadRefs.push({
+        kind: 'Snapshot',
+        uri: `/evidence/${evdId}/snapshot.png`,
+        contentType: 'image/png',
+        sha256: fakeHash(i * 100 + 1),
+      });
+    } else if (payloadRoll < 0.25) {
+      // Diff — code/config change
+      payloadRefs.push({
+        kind: 'Diff',
+        uri: `/evidence/${evdId}/changes.diff`,
+        contentType: 'text/x-diff',
+        sha256: fakeHash(i * 100 + 2),
+      });
+    } else if (payloadRoll < 0.32) {
+      // Log — execution log
+      payloadRefs.push({
+        kind: 'Log',
+        uri: `/evidence/${evdId}/execution.log`,
+        contentType: 'text/plain',
+        sha256: fakeHash(i * 100 + 3),
+      });
+    } else if (payloadRoll < 0.38) {
+      // Artifact — could be PDF, video, audio
+      const mediaTypes = [
+        { ct: 'application/pdf', ext: 'report.pdf' },
+        { ct: 'video/mp4', ext: 'recording.mp4' },
+        { ct: 'audio/mpeg', ext: 'voicenote.mp3' },
+      ];
+      const media = mediaTypes[i % mediaTypes.length]!;
+      payloadRefs.push({
+        kind: 'Artifact',
+        uri: `/evidence/${evdId}/${media.ext}`,
+        contentType: media.ct,
+        sha256: fakeHash(i * 100 + 4),
+      });
+    } else if (payloadRoll < 0.42) {
+      // Multiple attachments
+      payloadRefs.push(
+        {
+          kind: 'Snapshot',
+          uri: `/evidence/${evdId}/before.png`,
+          contentType: 'image/png',
+          sha256: fakeHash(i * 100 + 5),
+        },
+        {
+          kind: 'Snapshot',
+          uri: `/evidence/${evdId}/after.png`,
+          contentType: 'image/png',
+          sha256: fakeHash(i * 100 + 6),
+        },
+        {
+          kind: 'Log',
+          uri: `/evidence/${evdId}/trace.log`,
+          contentType: 'text/plain',
+          sha256: fakeHash(i * 100 + 7),
+        },
+      );
+    }
+
     EVIDENCE.push({
       schemaVersion: 1,
       evidenceId: evdId,
@@ -985,6 +1066,7 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
         runId: run.runId,
         workItemId: wi?.workItemId,
       },
+      ...(payloadRefs.length > 0 ? { payloadRefs } : {}),
       previousHash: prevHash ?? undefined,
       hashSha256: hash,
     });

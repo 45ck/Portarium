@@ -9,23 +9,27 @@ requiring the workload to implement these concerns.
 ## Responsibilities
 
 ### 1. mTLS Termination
+
 - Uses SPIFFE/SPIRE SVIDs for workload identity.
 - Terminates inbound mTLS connections from other cluster services.
 - Rotates SVIDs automatically before expiry.
 
 ### 2. Token Acquisition and Refresh
+
 - Acquires workspace-scoped JWTs for control-plane communication.
 - Refreshes tokens before expiry (configurable buffer).
 - Credentials stored in file paths (Kubernetes secrets / CSI volumes), never
   embedded in config.
 
 ### 3. Egress Allowlist Enforcement
+
 - All outbound traffic must pass through the sidecar proxy.
 - Egress rules define allowed host patterns, ports, and methods.
 - Blocked destinations receive a 403 with a reason in the response body.
 - Default-deny: if no rule matches, the request is blocked.
 
 ### 4. Trace-Context Injection
+
 - Injects W3C `traceparent` and `tracestate` headers into all proxied
   outbound requests.
 - Preserves existing headers when present.
@@ -33,6 +37,7 @@ requiring the workload to implement these concerns.
 ## Configuration
 
 The sidecar is configured via a `SidecarConfig` object:
+
 - `workspaceId` -- scoping for credential acquisition and policy.
 - `mtls` -- SVID cert/key paths, trust bundle, rotation interval.
 - `token` -- token endpoint, client credentials, audience, refresh buffer.

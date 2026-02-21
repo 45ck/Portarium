@@ -15,6 +15,9 @@
     "@temporalio/client",
     "@temporalio/worker",
     "@temporalio/workflow",
-    "jose"
+    "jose",
+    "@aws-sdk/client-s3",
+    "@opentelemetry/api",
+    "pg"
   ]
 }

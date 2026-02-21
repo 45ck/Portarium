@@ -18,15 +18,18 @@ controls so that agents cannot bypass the Portarium control plane.
 ## Contract
 
 ### Egress policy
+
 - Agent pods can only reach: control plane (443), gRPC (50051), DNS (53), OTel (4317)
 - All other outbound traffic denied
 
 ### SPIRE identity convention
+
 ```
 spiffe://portarium.io/ns/{namespace}/sa/{service-account}
 ```
 
 ### Tool allowlist schema
+
 ```json
 {
   "workspaceId": "string",
@@ -36,15 +39,18 @@ spiffe://portarium.io/ns/{namespace}/sa/{service-account}
 ```
 
 ### OpenFGA relations
+
 - `workspace:{id}#member` for workspace access
 - `run:{id}#operator` for run lifecycle
 - `approval:{id}#approver` for approval decisions
 - `agent:{id}#owner` for agent management
 
 ### Enforcement target
+
 - `portarium_direct_sor_ratio` = 0.0 (zero direct SoR calls)
 
 ### Alerting
+
 - Direct SoR call detected: Critical
 - mTLS handshake failure spike: Warning
 - Policy bypass attempt: Critical

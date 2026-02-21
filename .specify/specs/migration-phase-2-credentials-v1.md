@@ -18,21 +18,25 @@ provider credentials from agent runtimes to Vault and issues Portarium JWTs to a
 ## Contract
 
 ### Vault path convention
+
 ```
 portarium/credentials/data/{workspaceId}/{provider}
 ```
 
 ### Vault policy (workspace-scoped)
+
 - Agents can only read credentials for their own workspace
 - Execution-plane workers retrieve credentials on behalf of agents
 
 ### JWT claims (agent identity)
+
 - `sub`: `agent:{agentId}`
 - `workspace_id`: workspace scope
 - `roles`: workspace role assignments
 - `exp`: short-lived (1 hour default)
 
 ### Credential rotation
+
 - API keys: 90-day TTL
 - OAuth2 refresh tokens: 30-day TTL
 - Service account keys: 180-day TTL

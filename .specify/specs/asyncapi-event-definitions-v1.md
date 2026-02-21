@@ -8,45 +8,45 @@ Defines the channel contracts for Portarium CloudEvents published over NATS JetS
 
 ### Run Lifecycle (`portarium.events.{tenantId}.run.{eventType}`)
 
-| Event Type | Description |
-|---|---|
-| `started` | Run transitioned to Running state |
-| `completed` | Run reached Succeeded state |
-| `failed` | Run reached Failed state |
-| `paused` | Run paused for approval or manual gate |
-| `resumed` | Paused run resumed after approval |
+| Event Type  | Description                            |
+| ----------- | -------------------------------------- |
+| `started`   | Run transitioned to Running state      |
+| `completed` | Run reached Succeeded state            |
+| `failed`    | Run reached Failed state               |
+| `paused`    | Run paused for approval or manual gate |
+| `resumed`   | Paused run resumed after approval      |
 
 ### Approval Lifecycle (`portarium.events.{tenantId}.approval.{eventType}`)
 
-| Event Type | Description |
-|---|---|
-| `requested` | Run requires human approval |
-| `granted` | Approval granted by authorized user |
-| `denied` | Approval denied |
-| `expired` | Approval request expired without decision |
+| Event Type  | Description                               |
+| ----------- | ----------------------------------------- |
+| `requested` | Run requires human approval               |
+| `granted`   | Approval granted by authorized user       |
+| `denied`    | Approval denied                           |
+| `expired`   | Approval request expired without decision |
 
 ### Agent Status (`portarium.events.{tenantId}.agent.{eventType}`)
 
-| Event Type | Description |
-|---|---|
-| `registered` | New agent registered with control plane |
-| `heartbeat` | Periodic heartbeat from active agent |
-| `deregistered` | Agent deregistered |
-| `quarantined` | Agent quarantined due to policy violation |
+| Event Type     | Description                               |
+| -------------- | ----------------------------------------- |
+| `registered`   | New agent registered with control plane   |
+| `heartbeat`    | Periodic heartbeat from active agent      |
+| `deregistered` | Agent deregistered                        |
+| `quarantined`  | Agent quarantined due to policy violation |
 
 ### Evidence Events (`portarium.events.{tenantId}.evidence.{eventType}`)
 
-| Event Type | Description |
-|---|---|
-| `appended` | New evidence entry appended to chain |
-| `chain-verified` | Evidence chain integrity verified |
+| Event Type       | Description                          |
+| ---------------- | ------------------------------------ |
+| `appended`       | New evidence entry appended to chain |
+| `chain-verified` | Evidence chain integrity verified    |
 
 ### Telemetry Events (`portarium.events.{tenantId}.telemetry.{eventType}`)
 
-| Event Type | Description |
-|---|---|
+| Event Type | Description                                   |
+| ---------- | --------------------------------------------- |
 | `location` | Location telemetry from robot or mobile asset |
-| `metric` | Custom metric from connected system |
+| `metric`   | Custom metric from connected system           |
 
 ## Envelope
 

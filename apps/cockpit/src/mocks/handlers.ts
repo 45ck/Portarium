@@ -69,7 +69,56 @@ export const handlers = [
   }),
 
   // Runs
-  http.get('/v1/workspaces/:wsId/runs', () => HttpResponse.json({ items: runs })),
+  http.get('/v1/workspaces/:wsId/runs', ({ request }) => {
+    const url = new URL(request.url);
+    let filtered = [...runs];
+
+    // Field filters
+    const status = url.searchParams.get('status');
+    if (status) filtered = filtered.filter((r) => r.status === status);
+    const tier = url.searchParams.get('tier');
+    if (tier) filtered = filtered.filter((r) => r.executionTier === tier);
+    const workflowId = url.searchParams.get('workflowId');
+    if (workflowId) filtered = filtered.filter((r) => r.workflowId === workflowId);
+
+    // Search
+    const q = url.searchParams.get('q');
+    if (q) {
+      const term = q.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          r.runId.toLowerCase().includes(term) ||
+          r.workflowId.toLowerCase().includes(term) ||
+          r.correlationId.toLowerCase().includes(term),
+      );
+    }
+
+    // Sort
+    const sortRaw = url.searchParams.get('sort');
+    if (sortRaw) {
+      const [field, dir] = sortRaw.split(':');
+      const direction = dir === 'desc' ? -1 : 1;
+      filtered.sort((a, b) => {
+        const va = String((a as unknown as Record<string, unknown>)[field!] ?? '');
+        const vb = String((b as unknown as Record<string, unknown>)[field!] ?? '');
+        return va.localeCompare(vb) * direction;
+      });
+    }
+
+    // Cursor pagination
+    const cursor = url.searchParams.get('cursor');
+    if (cursor) {
+      const idx = filtered.findIndex((r) => r.runId === cursor);
+      filtered = idx >= 0 ? filtered.slice(idx + 1) : filtered;
+    }
+
+    const limit = Number(url.searchParams.get('limit')) || 50;
+    const hasMore = filtered.length > limit;
+    const items = filtered.slice(0, limit);
+    const nextCursor = hasMore ? items[items.length - 1]?.runId : undefined;
+
+    return HttpResponse.json({ items, ...(nextCursor ? { nextCursor } : {}) });
+  }),
   http.get('/v1/workspaces/:wsId/runs/:runId', ({ params }) => {
     const run = runs.find((r) => r.runId === params['runId']);
     if (!run) return HttpResponse.json(null, { status: 404 });

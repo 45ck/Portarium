@@ -18,14 +18,17 @@ without making any enforcement changes.
 ## Contract
 
 ### Trace Context
+
 - All outbound HTTP calls include `traceparent` header (W3C Trace Context Level 1)
 - Trace IDs are 128-bit hex; span IDs are 64-bit hex
 
 ### Structured log schema
+
 - Required fields: `agent_id`, `timestamp`, `target_sor`, `action`, `trace_id`, `routed_via_portarium`
 - `routed_via_portarium` is `false` in phase 1
 
 ### Metrics
+
 - `portarium_sor_calls_total{agent_id, target_sor, action, routed}` counter
 - `portarium_agent_heartbeats_total{agent_id}` counter
 - `portarium_direct_sor_ratio{workspace_id}` gauge

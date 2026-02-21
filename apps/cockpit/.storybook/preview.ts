@@ -1,13 +1,13 @@
-import '../src/index.css'
-import type { Preview, Decorator } from '@storybook/react'
+import '../src/index.css';
+import type { Preview, Decorator } from '@storybook/react';
 
 // Wrap each story in its theme class so CSS variables resolve correctly
 const withTheme: Decorator = (Story, context) => {
-  const theme = (context.globals['theme'] as string) ?? 'theme-arctic'
-  const el = document.getElementById('storybook-root') ?? document.body
-  el.className = theme
-  return Story()
-}
+  const theme = (context.globals['theme'] as string) ?? 'theme-arctic';
+  const el = document.getElementById('storybook-root') ?? document.body;
+  el.className = theme;
+  return Story();
+};
 
 const preview: Preview = {
   decorators: [withTheme],
@@ -20,10 +20,10 @@ const preview: Preview = {
       toolbar: {
         icon: 'paintbrush',
         items: [
-          { value: 'theme-arctic',   title: 'Arctic Ops' },
+          { value: 'theme-arctic', title: 'Arctic Ops' },
           { value: 'theme-midnight', title: 'Midnight' },
-          { value: 'theme-warm',     title: 'Warm Slate' },
-          { value: 'theme-quantum',  title: 'Quantum' },
+          { value: 'theme-warm', title: 'Warm Slate' },
+          { value: 'theme-quantum', title: 'Quantum' },
         ],
         showName: true,
         dynamicTitle: true,
@@ -38,6 +38,6 @@ const preview: Preview = {
     },
     docs: { toc: true },
   },
-}
+};
 
-export default preview
+export default preview;

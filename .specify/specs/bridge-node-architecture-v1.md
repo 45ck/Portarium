@@ -18,18 +18,21 @@ topic ACL governance.
 ## Transport Tiers
 
 ### Tier 1: rosbridge (WebSocket)
+
 - Development and simulation only
 - JSON over WebSocket
 - No DDS-level security
 - Use case: dev workstations, CI, demos
 
 ### Tier 2: DDS-Security (SROS 2)
+
 - Production robot networks
 - X.509 certificates, topic-level access control
 - Low latency (~1-5ms)
 - Use case: robot fleets, warehouse automation
 
 ### Tier 3: MQTT
+
 - Constrained devices and IoT
 - MQTT 5.0 over TLS with topic ACL
 - Low bandwidth suitable for battery-powered devices
@@ -38,6 +41,7 @@ topic ACL governance.
 ## MQTT Topic ACL Contract
 
 ### Namespace
+
 ```
 portarium/{workspaceId}/telemetry/{deviceId}/{telemetryType}
 portarium/{workspaceId}/commands/{deviceId}
@@ -46,6 +50,7 @@ portarium/{workspaceId}/events/{deviceId}
 ```
 
 ### ACL enforcement
+
 - Deny-by-default: unmatched topics rejected
 - Device can only publish to its own telemetry/ack topics
 - Device can only subscribe to its own command topic

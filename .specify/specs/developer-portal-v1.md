@@ -29,10 +29,12 @@ SDK quickstart flows, local emulator behaviour, and content structure.
 ## Local Emulator Contract
 
 ### Start
+
 - `portarium emulator start [--port 3100]`
 - Starts a local HTTP server on `localhost`
 
 ### Supported API surface
+
 - `GET/POST /v1/workspaces` -- workspace CRUD
 - `POST /v1/workspaces/{id}/runs` -- start a run
 - `GET /v1/workspaces/{id}/runs/{runId}` -- run status
@@ -42,10 +44,12 @@ SDK quickstart flows, local emulator behaviour, and content structure.
 - `GET /v1/workspaces/{id}/evidence` -- query evidence
 
 ### Auth
+
 - Accepts any `Authorization: Bearer <token>` in local mode
 - No token validation (development convenience)
 
 ### Storage
+
 - SQLite database at `~/.portarium/emulator.db`
 - Reset via `portarium emulator reset`
 

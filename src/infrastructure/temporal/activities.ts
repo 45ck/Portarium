@@ -143,7 +143,11 @@ function buildRunPlan(input: CompleteRunActivityInput, nowIso: string): PlanV1 {
   return plan;
 }
 
-function appendPlanBuiltEvidence(input: CompleteRunActivityInput, nowIso: string, plan: PlanV1): void {
+function appendPlanBuiltEvidence(
+  input: CompleteRunActivityInput,
+  nowIso: string,
+  plan: PlanV1,
+): void {
   appendEvidence(input.tenantId, {
     schemaVersion: 1,
     evidenceId: EvidenceId(randomUUID()),

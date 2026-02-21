@@ -12,12 +12,12 @@ Define how OpenClaw Gateway tool and skill identifiers are mapped to Portarium e
 
 ## Tier Mapping
 
-| Risk category | Minimum execution tier | Examples | Rationale |
-| --- | --- | --- | --- |
-| `ReadOnly` | `Auto` | `read:file`, `list:records`, `search` | Non-mutating retrieval and analysis operations have low blast radius. |
-| `Mutation` | `HumanApprove` | `write:file`, `update:ticket`, `send:email`, `publish` | External side effects require explicit human approval or stricter tier. |
-| `Dangerous` | `ManualOnly` | `shell.exec`, `powershell`, `browser.playwright`, `selenium` | Host command execution and browser automation are high risk and must remain manually governed. |
-| `Unknown` | `HumanApprove` | Unclassified custom identifiers | Fail-safe default to reduce blast radius. |
+| Risk category | Minimum execution tier | Examples                                                     | Rationale                                                                                      |
+| ------------- | ---------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `ReadOnly`    | `Auto`                 | `read:file`, `list:records`, `search`                        | Non-mutating retrieval and analysis operations have low blast radius.                          |
+| `Mutation`    | `HumanApprove`         | `write:file`, `update:ticket`, `send:email`, `publish`       | External side effects require explicit human approval or stricter tier.                        |
+| `Dangerous`   | `ManualOnly`           | `shell.exec`, `powershell`, `browser.playwright`, `selenium` | Host command execution and browser automation are high risk and must remain manually governed. |
+| `Unknown`     | `HumanApprove`         | Unclassified custom identifiers                              | Fail-safe default to reduce blast radius.                                                      |
 
 ## Classification Precedence
 

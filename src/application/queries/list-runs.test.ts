@@ -42,6 +42,37 @@ describe('listRuns', () => {
     expect(result.value.nextCursor).toBe('run-1');
   });
 
+  it('passes search and sort through to the store', async () => {
+    const authorization: AuthorizationPort = {
+      isAllowed: vi.fn(async () => true),
+    };
+    const listRunsFn = vi.fn(async () => ({ items: [RUN] }));
+    const runStore: RunQueryStore = { listRuns: listRunsFn };
+
+    const result = await listRuns(
+      { authorization, runStore },
+      toAppContext({
+        tenantId: 'ws-1',
+        principalId: 'user-1',
+        correlationId: 'cor-1',
+        roles: ['operator'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        search: 'invoice',
+        sortField: 'createdAtIso',
+        sortDirection: 'desc',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(listRunsFn).toHaveBeenCalledTimes(1);
+    const call = listRunsFn.mock.calls[0] as unknown[];
+    const query = call[2] as { search?: string; sort?: { field: string; direction: string } };
+    expect(query.search).toBe('invoice');
+    expect(query.sort).toEqual({ field: 'createdAtIso', direction: 'desc' });
+  });
+
   it('rejects invalid status values', async () => {
     const authorization: AuthorizationPort = {
       isAllowed: vi.fn(async () => true),
@@ -59,6 +90,30 @@ describe('listRuns', () => {
         roles: ['operator'],
       }),
       { workspaceId: 'ws-1', status: 'Invalid' as never },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.kind).toBe('ValidationFailed');
+  });
+
+  it('rejects invalid sortField', async () => {
+    const authorization: AuthorizationPort = {
+      isAllowed: vi.fn(async () => true),
+    };
+    const runStore: RunQueryStore = {
+      listRuns: vi.fn(async () => ({ items: [] })),
+    };
+
+    const result = await listRuns(
+      { authorization, runStore },
+      toAppContext({
+        tenantId: 'ws-1',
+        principalId: 'user-1',
+        correlationId: 'cor-1',
+        roles: ['operator'],
+      }),
+      { workspaceId: 'ws-1', sortField: 'badField' },
     );
 
     expect(result.ok).toBe(false);

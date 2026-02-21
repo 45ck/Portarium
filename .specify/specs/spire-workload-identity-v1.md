@@ -30,6 +30,7 @@ Each workload receives a SPIFFE ID based on namespace and service account:
 ### RFC 8705 support
 
 Certificate-bound access tokens per RFC 8705 will be implemented by:
+
 1. Extracting the X.509 SVID thumbprint during JWT minting
 2. Embedding the thumbprint in the `cnf.x5t#S256` claim
 3. Verifying thumbprint match during token validation

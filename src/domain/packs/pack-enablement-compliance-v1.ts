@@ -104,7 +104,8 @@ function createComplianceEvaluationState(
 function validateRequiredDeclaration(
   state: ComplianceEvaluationState,
 ): PackEnablementComplianceDecisionV1 | null {
-  if (state.requiredProfileIds.length === 0 || state.declaredComplianceAssets.length > 0) return null;
+  if (state.requiredProfileIds.length === 0 || state.declaredComplianceAssets.length > 0)
+    return null;
   return deny('MissingComplianceAssetDeclaration', toAuditInput(state, []));
 }
 

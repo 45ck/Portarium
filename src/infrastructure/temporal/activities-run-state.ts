@@ -4,7 +4,10 @@ import type { RunStatus } from '../../domain/runs/run-v1.js';
 import type { PlanV1 } from '../../domain/plan/plan-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
-import { appendEvidenceEntryV1, verifyEvidenceChainV1 } from '../../domain/evidence/evidence-chain-v1.js';
+import {
+  appendEvidenceEntryV1,
+  verifyEvidenceChainV1,
+} from '../../domain/evidence/evidence-chain-v1.js';
 
 interface RunExecutionState {
   status: RunStatus;
@@ -20,7 +23,11 @@ function runKey(tenantId: string, runId: string): string {
   return `${tenantId}/${runId}`;
 }
 
-export function ensureRunState(tenantId: string, runId: string, initial: RunStatus): RunExecutionState {
+export function ensureRunState(
+  tenantId: string,
+  runId: string,
+  initial: RunStatus,
+): RunExecutionState {
   const key = runKey(tenantId, runId);
   const existing = runs.get(key);
   if (existing) return existing;

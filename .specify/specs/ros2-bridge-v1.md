@@ -17,10 +17,12 @@ SROS 2 PKI provisioning, and development-mode rosbridge support.
 ## Bridge Node Contract
 
 ### Inputs (from Portarium gRPC)
+
 - `DispatchCommand` -> ROS 2 Action goal (NavigateToPose, FollowWaypoints)
 - `MissionCancellation` -> ROS 2 Action cancel request
 
 ### Outputs (to Portarium gRPC)
+
 - ROS 2 topic data -> `TelemetryFrame` (batched, streamed)
 - ROS 2 Action feedback -> `MissionFeedback` via `StreamFeedback`
 - Safety topics -> `SafetyEvent` via `StreamFeedback`
@@ -29,16 +31,19 @@ SROS 2 PKI provisioning, and development-mode rosbridge support.
 ## SROS 2 Contract
 
 ### Provisioning
+
 - CA per workspace, stored in Vault
 - Bridge certificate provisioned via `portarium agent register --type ros2-bridge`
 - Robot certificates via fleet enrollment API
 - `governance.xml` and `permissions.xml` generated per workspace
 
 ### Rotation
+
 - Bridge certificates: auto-rotated (TTL: 7 days)
 - Robot certificates: on re-enrollment or manual trigger
 
 ### Fail-closed
+
 - Invalid/expired SROS 2 credentials cause DDS discovery failure
 - No unencrypted DDS traffic in production
 

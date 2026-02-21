@@ -11,7 +11,7 @@ import { err, ok, type Conflict, type DependencyFailure, type Result } from '../
 import type {
   AssignWorkforceMemberError,
   AssignWorkforceMemberInput,
-} from './assign-workforce-member.js';
+} from './assign-workforce-member.types.js';
 import type { Clock, IdGenerator } from '../ports/index.js';
 import type { AppContext } from '../common/context.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';

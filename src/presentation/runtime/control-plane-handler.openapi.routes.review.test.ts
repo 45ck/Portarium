@@ -144,14 +144,16 @@ function extractPathOperations(
   return operations;
 }
 
-function buildOpenApiOperation(input: Readonly<{
-  method: (typeof HTTP_METHODS)[number];
-  pathTemplate: string;
-  operation: Record<string, unknown>;
-  pathParameters: readonly OpenApiParameter[];
-  rootDoc: Record<string, unknown>;
-  componentParameters: Record<string, unknown>;
-}>): OpenApiOperation {
+function buildOpenApiOperation(
+  input: Readonly<{
+    method: (typeof HTTP_METHODS)[number];
+    pathTemplate: string;
+    operation: Record<string, unknown>;
+    pathParameters: readonly OpenApiParameter[];
+    rootDoc: Record<string, unknown>;
+    componentParameters: Record<string, unknown>;
+  }>,
+): OpenApiOperation {
   const operationParameters = readParameters(
     input.operation['parameters'],
     input.rootDoc,
@@ -305,7 +307,10 @@ function resolveComponentParameterRef(
   return isRecord(candidate) ? candidate : null;
 }
 
-function resolveJsonPointerRef(ref: string, rootDoc: Record<string, unknown>): Record<string, unknown> | null {
+function resolveJsonPointerRef(
+  ref: string,
+  rootDoc: Record<string, unknown>,
+): Record<string, unknown> | null {
   const pointerTokens = ref
     .slice(2)
     .split('/')

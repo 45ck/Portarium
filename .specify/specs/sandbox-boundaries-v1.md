@@ -8,12 +8,12 @@ interact with sensitive external systems; sandbox boundaries limit blast radius.
 
 ## Containment Tiers
 
-| Execution Tier  | Sandbox Technology        | Isolation Level           |
-| --------------- | ------------------------- | ------------------------- |
-| `Auto`          | seccomp + process isolation | Syscall filtering         |
-| `Assisted`      | gVisor (runsc)            | Application kernel        |
-| `HumanApprove`  | gVisor (runsc)            | Application kernel        |
-| `ManualOnly`    | Firecracker microVM       | Full VM (KVM)             |
+| Execution Tier | Sandbox Technology          | Isolation Level    |
+| -------------- | --------------------------- | ------------------ |
+| `Auto`         | seccomp + process isolation | Syscall filtering  |
+| `Assisted`     | gVisor (runsc)              | Application kernel |
+| `HumanApprove` | gVisor (runsc)              | Application kernel |
+| `ManualOnly`   | Firecracker microVM         | Full VM (KVM)      |
 
 ## Constraints
 
@@ -50,6 +50,7 @@ scheduling:
 ```
 
 Tool execution pods reference the RuntimeClass:
+
 ```yaml
 spec:
   runtimeClassName: portarium-gvisor

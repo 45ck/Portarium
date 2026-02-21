@@ -9,11 +9,13 @@ access at the protocol level.
 ## Policy Structure
 
 A `ToolExposurePolicyV1` consists of:
+
 - `workspaceId` -- scope of the policy.
 - `rules` -- ordered list of `ToolExposureRuleV1` entries.
 - `defaultEffect` -- `Allow` or `Deny` when no rule matches.
 
 Each rule specifies:
+
 - `toolPattern` -- exact tool name or prefix wildcard (e.g. `portarium_run_*`).
 - `allowedRoles` -- workspace roles permitted (empty = all roles).
 - `minimumTier` -- lowest execution tier at which the tool is available.

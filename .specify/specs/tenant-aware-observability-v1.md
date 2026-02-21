@@ -15,12 +15,12 @@ Defines how Portarium's multi-tenant architecture surfaces per-tenant observabil
 
 Every span, metric, and log record from Portarium components MUST include:
 
-| Attribute | Source | Description |
-|---|---|---|
-| `service.name` | env / config | Component name (e.g., `portarium-control-plane`) |
-| `service.namespace` | collector | Always `portarium` (set by resource processor) |
-| `workspace.id` | application code | Workspace/tenant identifier for the current request |
-| `deployment.environment` | env | `dev`, `staging`, `prod` |
+| Attribute                | Source           | Description                                         |
+| ------------------------ | ---------------- | --------------------------------------------------- |
+| `service.name`           | env / config     | Component name (e.g., `portarium-control-plane`)    |
+| `service.namespace`      | collector        | Always `portarium` (set by resource processor)      |
+| `workspace.id`           | application code | Workspace/tenant identifier for the current request |
+| `deployment.environment` | env              | `dev`, `staging`, `prod`                            |
 
 ## Collector Routing
 
@@ -34,7 +34,7 @@ processors:
   routing/tenant:
     from_attribute: workspace.id
     table:
-      - value: "*"
+      - value: '*'
         exporters: [otlp/default]
     default_exporters: [otlp/default]
 ```
@@ -88,10 +88,10 @@ Per-tenant retention is configured via a JSON schema:
 
 ### Default Retention by Tier
 
-| Tier | Traces | Metrics | Logs |
-|---|---|---|---|
-| free | 7 days | 30 days | 7 days |
-| standard | 30 days | 90 days | 30 days |
+| Tier       | Traces  | Metrics  | Logs    |
+| ---------- | ------- | -------- | ------- |
+| free       | 7 days  | 30 days  | 7 days  |
+| standard   | 30 days | 90 days  | 30 days |
 | enterprise | 90 days | 365 days | 90 days |
 
 ## Implementation Files

@@ -25,24 +25,28 @@ type safety, async support, and workspace-scoped auth.
 ## Generated Package Requirements
 
 ### Package metadata
+
 - Name: `portarium-client`
 - Python version: >= 3.10
 - Dependencies: `httpx`, `attrs`, `python-dateutil`
 - Dev dependencies: `pytest`, `mypy`, `ruff`
 
 ### Client structure
+
 - `portarium_client/client.py` -- `AuthenticatedClient` with bearer token
 - `portarium_client/api/` -- one module per OpenAPI tag (workspaces, runs, approvals, etc.)
 - `portarium_client/models/` -- attrs-based dataclasses per schema
 - `portarium_client/errors.py` -- typed error hierarchy from Problem responses
 
 ### Auth contract
+
 - Client accepts `base_url` and `token` (workspace-scoped JWT)
 - All requests include `Authorization: Bearer {token}` header
 - Client must set `X-Workspace-Id` header when workspace context is known
 - Token refresh is caller responsibility (client does not manage token lifecycle)
 
 ### Endpoint coverage
+
 - All paths under `/v1/workspaces/` in the OpenAPI spec
 - Cursor-based pagination helpers for list endpoints
 - Proper enum types for `ApprovalDecision`, `ExecutionTier`, `WorkspaceUserRole`
