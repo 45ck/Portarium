@@ -4,11 +4,13 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 import { queryClient } from '@/lib/query-client';
 import { useTheme } from '@/hooks/use-theme';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useUIStore } from '@/stores/ui-store';
 import { cn } from '@/lib/utils';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ErrorBoundary } from '@/components/cockpit/error-boundary';
+import { MobileBottomNav } from '@/components/cockpit/mobile-bottom-nav';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -239,6 +241,7 @@ function InboxBadge({ wsId }: { wsId: string }) {
 function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
+  const isMobile = useIsMobile();
   const {
     sidebarCollapsed,
     setSidebarCollapsed,
@@ -260,138 +263,143 @@ function RootLayout() {
           >
             Skip to content
           </a>
-          {/* Sidebar */}
-          <aside
-            className={cn(
-              'flex-shrink-0 border-r border-border bg-card flex flex-col transition-all duration-200',
-              sidebarCollapsed ? 'w-16' : 'w-64',
-            )}
-          >
-            {/* Logo + collapse toggle */}
-            <div className="h-14 flex items-center justify-between px-4 border-b border-border">
-              <div className="flex items-center min-w-0">
-                <span className="font-semibold text-primary">Portarium</span>
-                {!sidebarCollapsed && (
-                  <span className="ml-2 text-xs text-muted-foreground">Cockpit</span>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {sidebarCollapsed ? (
-                  <PanelLeftOpen className="h-4 w-4" />
-                ) : (
-                  <PanelLeftClose className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Nav */}
-            <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto p-2 space-y-3">
-              {NAV_SECTIONS.map((section) => (
-                <div key={section.label} className="space-y-0.5">
+          {/* Sidebar — hidden on mobile */}
+          {!isMobile && (
+            <aside
+              className={cn(
+                'flex-shrink-0 border-r border-border bg-card flex flex-col transition-all duration-200',
+                sidebarCollapsed ? 'w-16' : 'w-64',
+              )}
+            >
+              {/* Logo + collapse toggle */}
+              <div className="h-14 flex items-center justify-between px-4 border-b border-border">
+                <div className="flex items-center min-w-0">
+                  <span className="font-semibold text-primary">Portarium</span>
                   {!sidebarCollapsed && (
-                    <p className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                      {section.label}
-                    </p>
-                  )}
-                  {section.comingSoon ? (
-                    <p className="px-2.5 py-1.5 text-[11px] text-muted-foreground italic">
-                      Coming soon
-                    </p>
-                  ) : (
-                    section.items?.map((item) =>
-                      item.comingSoon ? (
-                        <span
-                          key={item.to}
-                          className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground/50 cursor-default"
-                          title="Coming soon"
-                        >
-                          <span className="shrink-0 opacity-50">{item.icon}</span>
-                          {!sidebarCollapsed && (
-                            <span className="flex-1 text-left truncate">
-                              {item.label}
-                              <span className="ml-1.5 text-[10px] italic">soon</span>
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <NavLink
-                          key={item.to}
-                          to={item.to}
-                          collapsed={sidebarCollapsed}
-                          label={item.label}
-                        >
-                          <span className="shrink-0">{item.icon}</span>
-                          {!sidebarCollapsed && (
-                            <span className="flex-1 text-left truncate">{item.label}</span>
-                          )}
-                          {item.to === '/inbox' && !sidebarCollapsed && (
-                            <InboxBadge wsId={activeWorkspaceId} />
-                          )}
-                        </NavLink>
-                      ),
-                    )
+                    <span className="ml-2 text-xs text-muted-foreground">Cockpit</span>
                   )}
                 </div>
-              ))}
-            </nav>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                  {sidebarCollapsed ? (
+                    <PanelLeftOpen className="h-4 w-4" />
+                  ) : (
+                    <PanelLeftClose className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
 
-            {/* Bottom: persona + workspace selector */}
-            <div className="p-3 border-t border-border space-y-2">
-              {sidebarCollapsed ? (
-                <>
-                  <span
-                    className="text-[10px] text-muted-foreground truncate block text-center"
-                    title={activePersona}
-                  >
-                    {activePersona.slice(0, 2)}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground truncate block text-center">
-                    {activeWorkspaceId.replace('ws-', '').slice(0, 3)}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Select
-                    value={activePersona}
-                    onValueChange={(v) => setActivePersona(v as PersonaId)}
-                  >
-                    <SelectTrigger size="sm" className="w-full text-xs h-7">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Operator">Operator</SelectItem>
-                      <SelectItem value="Approver">Approver</SelectItem>
-                      <SelectItem value="Auditor">Auditor</SelectItem>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={activeWorkspaceId} onValueChange={setActiveWorkspaceId}>
-                    <SelectTrigger size="sm" className="w-full text-xs h-7">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ws-demo">ws-demo</SelectItem>
-                      <SelectItem value="ws-meridian">ws-meridian</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </>
-              )}
-            </div>
-          </aside>
+              {/* Nav */}
+              <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto p-2 space-y-3">
+                {NAV_SECTIONS.map((section) => (
+                  <div key={section.label} className="space-y-0.5">
+                    {!sidebarCollapsed && (
+                      <p className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        {section.label}
+                      </p>
+                    )}
+                    {section.comingSoon ? (
+                      <p className="px-2.5 py-1.5 text-[11px] text-muted-foreground italic">
+                        Coming soon
+                      </p>
+                    ) : (
+                      section.items?.map((item) =>
+                        item.comingSoon ? (
+                          <span
+                            key={item.to}
+                            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground/50 cursor-default"
+                            title="Coming soon"
+                          >
+                            <span className="shrink-0 opacity-50">{item.icon}</span>
+                            {!sidebarCollapsed && (
+                              <span className="flex-1 text-left truncate">
+                                {item.label}
+                                <span className="ml-1.5 text-[10px] italic">soon</span>
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <NavLink
+                            key={item.to}
+                            to={item.to}
+                            collapsed={sidebarCollapsed}
+                            label={item.label}
+                          >
+                            <span className="shrink-0">{item.icon}</span>
+                            {!sidebarCollapsed && (
+                              <span className="flex-1 text-left truncate">{item.label}</span>
+                            )}
+                            {item.to === '/inbox' && !sidebarCollapsed && (
+                              <InboxBadge wsId={activeWorkspaceId} />
+                            )}
+                          </NavLink>
+                        ),
+                      )
+                    )}
+                  </div>
+                ))}
+              </nav>
 
-          {/* Main content */}
-          <main id="main-content" className="flex-1 overflow-y-auto">
+              {/* Bottom: persona + workspace selector */}
+              <div className="p-3 border-t border-border space-y-2">
+                {sidebarCollapsed ? (
+                  <>
+                    <span
+                      className="text-[10px] text-muted-foreground truncate block text-center"
+                      title={activePersona}
+                    >
+                      {activePersona.slice(0, 2)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground truncate block text-center">
+                      {activeWorkspaceId.replace('ws-', '').slice(0, 3)}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Select
+                      value={activePersona}
+                      onValueChange={(v) => setActivePersona(v as PersonaId)}
+                    >
+                      <SelectTrigger size="sm" className="w-full text-xs h-7">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Operator">Operator</SelectItem>
+                        <SelectItem value="Approver">Approver</SelectItem>
+                        <SelectItem value="Auditor">Auditor</SelectItem>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={activeWorkspaceId} onValueChange={setActiveWorkspaceId}>
+                      <SelectTrigger size="sm" className="w-full text-xs h-7">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ws-demo">ws-demo</SelectItem>
+                        <SelectItem value="ws-meridian">ws-meridian</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
+              </div>
+            </aside>
+          )}
+
+          {/* Main content — add bottom padding on mobile for bottom nav */}
+          <main id="main-content" className={cn('flex-1 overflow-y-auto', isMobile && 'pb-14')}>
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
           </main>
         </div>
+
+        {/* Mobile bottom nav */}
+        {isMobile && <MobileBottomNav />}
 
         {/* Global overlays */}
         <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />

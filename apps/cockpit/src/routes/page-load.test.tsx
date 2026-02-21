@@ -252,6 +252,22 @@ const PAGE_CASES = [
 ] as const;
 
 beforeAll(() => {
+  // Set desktop viewport so useIsMobile() returns false and sidebar renders
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+  // matchMedia stub for useIsMobile and useReducedMotion
+  if (!window.matchMedia) {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }));
+  }
   vi.stubGlobal('localStorage', createMemoryStorage());
   if (typeof ResizeObserver === 'undefined') {
     class ResizeObserverMock {
