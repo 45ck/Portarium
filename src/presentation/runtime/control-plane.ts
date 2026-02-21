@@ -33,7 +33,8 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
 
   const shutdown = async () => {
     await handle.close();
-    process.exit(0);
+    // Avoid forced process termination so test runners/coverage can flush cleanly.
+    process.exitCode = 0;
   };
 
   process.once('SIGINT', () => void shutdown());
