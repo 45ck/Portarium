@@ -1,5 +1,9 @@
 # Portarium (VAOP) -- Agent Guidelines
 
+## Autonomous issue loop
+
+If you are told to "continue working on issues", "work on the next issue", "keep going", or similar — or if you are launched with `AGENT_LOOP.md` as your prompt — read `AGENT_LOOP.md` at the repo root. It contains the complete autonomous loop: pick → claim → worktree → implement → ci:pr → finish → push → repeat.
+
 ## For any AI agent working on this codebase
 
 1. **Read CLAUDE.md first** — it contains the project rules and workflow order.
@@ -52,7 +56,7 @@ bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon,
 
    ```bash
    cd .trees/<bead-id>
-   npm install
+   bun install   # fast via hardlink cache; subsequent worktrees take ~2-5s
    ```
 
 4. Implement, then run the quality gate:

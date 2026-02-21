@@ -1,5 +1,9 @@
 # Portarium (VAOP) -- Project Rules
 
+## Autonomous issue loop
+
+If the user says "continue working on issues", "work on the next issue", "keep going", or similar — read `AGENT_LOOP.md` at the repo root and follow it exactly. That file defines the full pick → claim → implement → ci:pr → finish → push → repeat cycle.
+
 ## Workflow order (always follow)
 
 Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA → Merge.
@@ -12,7 +16,7 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - Use `bd` (Beads) for all work tracking; commit `.beads/issues.jsonl` with code changes.
   - Start a bead before implementation: `npm run bd -- issue start <id> --by "<owner>"`
     (claims the bead + creates a git worktree at `.trees/<id>/`).
-  - Work inside `.trees/<id>/` — run `npm install` there first, then implement + `npm run ci:pr`.
+  - Work inside `.trees/<id>/` — run `bun install` there first (fast via hardlink cache), then implement + `npm run ci:pr`.
   - Finish when done (from repo root): `npm run bd -- issue finish <id>`
     (merges branch, removes worktree, closes bead).
   - Commit bead state after start/finish: `git add .beads/issues.jsonl && git commit -m "chore: start/close <id>"`.

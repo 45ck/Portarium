@@ -69,7 +69,7 @@ got there first — go back to Step A and pick the next issue.
 
 ```bash
 cd ".trees/$ISSUE_ID"
-npm install          # install deps (fast, node_modules are not shared)
+bun install          # fast install via hardlink cache — 2-5s after first worktree
 ```
 
 ### Step D — Understand the issue
