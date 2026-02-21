@@ -103,6 +103,8 @@
     "migrate:dry-run:contract": "tsx src/infrastructure/migrations/cli.ts dry-run --phase contract --tenants workspace-default --allow-contract-breaking",
     "migrate:ci": "npm run migrate:check && npm run migrate:dry-run:expand",
     "migrate:deploy": "npm run migrate:dry-run:expand",
+    "db:bootstrap": "tsx src/infrastructure/migrations/cli.ts bootstrap",
+    "db:reset": "tsx src/infrastructure/migrations/cli.ts reset --confirm",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

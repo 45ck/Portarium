@@ -45,4 +45,52 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS status_legacy TEXT NULL;',
     ],
   },
+  {
+    version: 4,
+    id: '0004_expand_domain_documents_table',
+    description: 'Creates domain_documents JSONB document store table with indexes.',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS domain_documents (
+  tenant_id    TEXT        NOT NULL,
+  workspace_id TEXT        NULL,
+  collection   TEXT        NOT NULL,
+  document_id  TEXT        NOT NULL,
+  payload      JSONB       NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, collection, document_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_domain_documents_workspace ON domain_documents (tenant_id, collection, workspace_id);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_domain_documents_workspace;',
+      'DROP TABLE IF EXISTS domain_documents;',
+    ],
+  },
+  {
+    version: 5,
+    id: '0005_expand_workflow_runs_table',
+    description: 'Creates workflow_runs projection table used by run query store.',
+    phase: 'Expand',
+    scope: 'Tenant',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS workflow_runs (
+  tenant_id    TEXT        NOT NULL,
+  run_id       TEXT        NOT NULL,
+  status       TEXT        NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, run_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_workflow_runs_status ON workflow_runs (tenant_id, status);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_workflow_runs_status;',
+      'DROP TABLE IF EXISTS workflow_runs;',
+    ],
+  },
 ];

@@ -49,6 +49,9 @@ describe('SchemaMigrator', () => {
       '0001_expand_runtime_schema_baseline:global',
       '0002_expand_run_projection_columns:workspace-a',
       '0002_expand_run_projection_columns:workspace-b',
+      '0004_expand_domain_documents_table:global',
+      '0005_expand_workflow_runs_table:workspace-a',
+      '0005_expand_workflow_runs_table:workspace-b',
     ]);
   });
 

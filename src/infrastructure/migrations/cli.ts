@@ -1,86 +1,167 @@
+import { NodePostgresSqlClient } from '../postgresql/node-postgres-sql-client.js';
 import { DEFAULT_SCHEMA_MIGRATIONS } from './default-migrations.js';
+import { PostgresMigrationSqlDriver } from './postgres-migration-drivers.js';
 import {
   InMemoryMigrationJournalStore,
   InMemoryMigrationSqlDriver,
   SchemaMigrator,
   type MigrationPhase,
+  type MigrationRunResult,
 } from './schema-migrator.js';
+
+// Tables to drop in reverse dependency order for a deterministic reset.
+const RESET_DROP_STATEMENTS: readonly string[] = [
+  'DROP INDEX IF EXISTS idx_workflow_runs_status;',
+  'DROP TABLE IF EXISTS workflow_runs;',
+  'DROP INDEX IF EXISTS idx_domain_documents_workspace;',
+  'DROP TABLE IF EXISTS domain_documents;',
+  'DROP TABLE IF EXISTS workspace_registry;',
+  'DROP TABLE IF EXISTS schema_migrations;',
+];
 
 async function main(): Promise<void> {
   const command = process.argv[2] ?? 'check';
 
-  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
-
   if (command === 'check') {
-    migrator.validateRegistry(DEFAULT_SCHEMA_MIGRATIONS);
-    process.stdout.write(
-      `Schema migration registry OK (${DEFAULT_SCHEMA_MIGRATIONS.length} migrations).\n`,
-    );
+    runCheck();
     return;
   }
-
   if (command === 'plan') {
-    const phase = parsePhase(readArg('--phase') ?? 'expand');
-    const tenants = parseTenants(readArg('--tenants'));
-    const allowContractBreaking = readFlag('--allow-contract-breaking');
-
-    const plan = await migrator.plan(DEFAULT_SCHEMA_MIGRATIONS, {
-      phase,
-      tenants,
-      allowContractBreaking,
-    });
-
-    process.stdout.write(
-      `${JSON.stringify(
-        {
-          phase,
-          tenants,
-          steps: plan.map((step) => ({
-            version: step.migration.version,
-            migrationId: step.migration.id,
-            target: step.target,
-            statementCount: step.migration.upSql.length,
-          })),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    await runPlan();
     return;
   }
-
   if (command === 'dry-run') {
-    const phase = parsePhase(readArg('--phase') ?? 'expand');
-    const tenants = parseTenants(readArg('--tenants'));
-    const allowContractBreaking = readFlag('--allow-contract-breaking');
-
-    const driver = new InMemoryMigrationSqlDriver();
-    const result = await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
-      phase,
-      tenants,
-      allowContractBreaking,
-      rollbackOnError: true,
-    });
-
-    process.stdout.write(
-      `${JSON.stringify(
-        {
-          phase,
-          applied: result.applied.map((step) => ({
-            version: step.migration.version,
-            migrationId: step.migration.id,
-            target: step.target,
-          })),
-          executedStatements: driver.__test__executed(),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    await runDryRun();
+    return;
+  }
+  if (command === 'bootstrap') {
+    await runBootstrap();
+    return;
+  }
+  if (command === 'reset') {
+    await runReset();
     return;
   }
 
   throw new Error(`Unsupported command: ${command}`);
+}
+
+function runCheck(): void {
+  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
+  migrator.validateRegistry(DEFAULT_SCHEMA_MIGRATIONS);
+  process.stdout.write(
+    `Schema migration registry OK (${DEFAULT_SCHEMA_MIGRATIONS.length} migrations).\n`,
+  );
+}
+
+async function runPlan(): Promise<void> {
+  const phase = parsePhase(readArg('--phase') ?? 'expand');
+  const tenants = parseTenants(readArg('--tenants'));
+  const allowContractBreaking = readFlag('--allow-contract-breaking');
+  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
+
+  const plan = await migrator.plan(DEFAULT_SCHEMA_MIGRATIONS, {
+    phase,
+    tenants,
+    allowContractBreaking,
+  });
+
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        phase,
+        tenants,
+        steps: plan.map((step) => ({
+          version: step.migration.version,
+          migrationId: step.migration.id,
+          target: step.target,
+          statementCount: step.migration.upSql.length,
+        })),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+async function runDryRun(): Promise<void> {
+  const phase = parsePhase(readArg('--phase') ?? 'expand');
+  const tenants = parseTenants(readArg('--tenants'));
+  const allowContractBreaking = readFlag('--allow-contract-breaking');
+  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
+  const driver = new InMemoryMigrationSqlDriver();
+
+  const result = await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+    phase,
+    tenants,
+    allowContractBreaking,
+    rollbackOnError: true,
+  });
+
+  process.stdout.write(
+    `${JSON.stringify(
+      {
+        phase,
+        applied: result.applied.map((step) => ({
+          version: step.migration.version,
+          migrationId: step.migration.id,
+          target: step.target,
+        })),
+        executedStatements: driver.__test__executed(),
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+async function runBootstrap(): Promise<void> {
+  const connectionString = requireEnv('DATABASE_URL');
+  const tenants = parseTenants(readArg('--tenants'));
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+  try {
+    const result = await applyExpandMigrations(sqlClient, tenants);
+    printBootstrapResult(result);
+  } finally {
+    await sqlClient.close();
+  }
+}
+
+async function runReset(): Promise<void> {
+  if (!readFlag('--confirm')) {
+    process.stderr.write('reset is destructive — pass --confirm to proceed (destroys all data).\n');
+    process.exitCode = 1;
+    return;
+  }
+  const connectionString = requireEnv('DATABASE_URL');
+  const tenants = parseTenants(readArg('--tenants'));
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+  try {
+    for (const statement of RESET_DROP_STATEMENTS) {
+      await sqlClient.query(statement);
+    }
+    process.stdout.write('Reset: dropped all known tables.\n');
+    const result = await applyExpandMigrations(sqlClient, tenants);
+    printBootstrapResult(result);
+  } finally {
+    await sqlClient.close();
+  }
+}
+
+async function applyExpandMigrations(
+  sqlClient: NodePostgresSqlClient,
+  tenants: readonly string[],
+): Promise<MigrationRunResult> {
+  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
+  const driver = new PostgresMigrationSqlDriver(sqlClient);
+  return migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, { phase: 'Expand', tenants });
+}
+
+function printBootstrapResult(result: MigrationRunResult): void {
+  process.stdout.write(`Bootstrap complete. Applied ${result.applied.length} migration step(s).\n`);
+  for (const step of result.applied) {
+    process.stdout.write(`  + ${step.migration.id} → ${step.target}\n`);
+  }
 }
 
 function readArg(flag: string): string | undefined {
@@ -93,6 +174,14 @@ function readArg(flag: string): string | undefined {
 
 function readFlag(flag: string): boolean {
   return process.argv.includes(flag);
+}
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (value === undefined || value.trim() === '') {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
 }
 
 function parsePhase(raw: string): MigrationPhase {
