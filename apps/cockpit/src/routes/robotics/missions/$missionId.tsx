@@ -88,9 +88,19 @@ function MissionDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-4">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-40 w-full" />
+      <div className="p-6 space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-7 w-64" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-6 w-14 rounded-full" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+          <Skeleton className="h-64 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+        </div>
       </div>
     );
   }
@@ -252,7 +262,7 @@ function MissionDetailPage() {
             </CardContent>
           </Card>
 
-          {!isTerminal && (
+          {(!isTerminal || mission.status === 'Failed') && (
             <Card className="shadow-none">
               <CardContent className="pt-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
@@ -269,32 +279,34 @@ function MissionDetailPage() {
                       Pre-empt
                     </Button>
                   )}
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setConfirmAction('cancel')}
-                    aria-label={`Cancel mission ${mission.missionId}`}
-                  >
-                    Cancel Mission
-                  </Button>
+                  {!isTerminal && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setConfirmAction('cancel')}
+                      aria-label={`Cancel mission ${mission.missionId}`}
+                    >
+                      Cancel Mission
+                    </Button>
+                  )}
+                  {mission.status === 'Failed' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        retryMission.mutate(mission.missionId, {
+                          onSuccess: () =>
+                            toast.success(`Mission ${mission.missionId} queued for retry`),
+                          onError: () => toast.error('Failed to retry mission'),
+                        });
+                      }}
+                    >
+                      Retry Mission
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {mission.status === 'Failed' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                retryMission.mutate(mission.missionId, {
-                  onSuccess: () => toast.success(`Mission ${mission.missionId} queued for retry`),
-                  onError: () => toast.error('Failed to retry mission'),
-                });
-              }}
-            >
-              Retry Mission
-            </Button>
           )}
         </div>
 

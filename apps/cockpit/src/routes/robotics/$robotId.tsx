@@ -41,6 +41,8 @@ import {
   RotateCcw,
   CheckCircle2,
   XCircle,
+  Target,
+  MapPin,
 } from 'lucide-react';
 
 function RobotStatusBadge({ status }: { status: RobotSummary['status'] }) {
@@ -140,9 +142,22 @@ function RobotDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-4">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-40 w-full" />
+      <div className="p-6 space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-7 w-56" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-12 rounded-full" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-48 w-full rounded-lg" />
+          </div>
+          <Skeleton className="h-32 w-full rounded-lg" />
+        </div>
       </div>
     );
   }
@@ -172,13 +187,20 @@ function RobotDetailPage() {
   const relatedEntities: RelatedEntity[] = [];
   if (robot.missionId) {
     relatedEntities.push({
-      type: 'run',
+      type: 'workflow',
       id: robot.missionId,
       label: robot.missionId,
       href: `/robotics/missions/${robot.missionId}`,
       sublabel: 'Active mission',
     });
   }
+  relatedEntities.push({
+    type: 'adapter',
+    id: robot.gatewayUrl,
+    label: robot.gatewayUrl,
+    href: '/robotics/gateways',
+    sublabel: 'Gateway',
+  });
   relatedEntities.push({
     type: 'robot',
     id: 'safety',
@@ -360,16 +382,28 @@ function RobotDetailPage() {
           <TabsContent value="missions">
             <Card className="shadow-none mt-2">
               <CardContent className="pt-4">
-                <DataTable
-                  columns={missionColumns}
-                  data={robotMissions}
-                  loading={false}
-                  getRowKey={(row) => row.missionId}
-                  onRowClick={(row) => {
-                    navigate({ to: `/robotics/missions/${row.missionId}` as string });
-                  }}
-                  pagination={{ pageSize: 10 }}
-                />
+                {robotMissions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Target className="h-8 w-8 mb-2 opacity-40" />
+                    <p className="text-sm">No missions recorded for this robot.</p>
+                    <Link to={'/robotics/missions' as string} className="mt-2">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        View all missions
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <DataTable
+                    columns={missionColumns}
+                    data={robotMissions}
+                    loading={false}
+                    getRowKey={(row) => row.missionId}
+                    onRowClick={(row) => {
+                      navigate({ to: `/robotics/missions/${row.missionId}` as string });
+                    }}
+                    pagination={{ pageSize: 10 }}
+                  />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -377,16 +411,28 @@ function RobotDetailPage() {
           <TabsContent value="map">
             <Card className="shadow-none mt-2">
               <CardContent className="pt-4">
-                <div className="h-[400px] rounded-lg overflow-hidden border border-border">
-                  <MapView
-                    locations={robotLocations}
-                    geofences={geofences}
-                    selectedRobotId={robotId}
-                    onSelectRobot={() => {}}
-                    layers={layers}
-                    onLayersChange={setLayers}
-                  />
-                </div>
+                {robotLocations.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <MapPin className="h-8 w-8 mb-2 opacity-40" />
+                    <p className="text-sm">No location data available for this robot.</p>
+                    <Link to={'/robotics/map' as string} className="mt-2">
+                      <Button variant="outline" size="sm" className="text-xs">
+                        Open full map
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="h-[400px] rounded-lg overflow-hidden border border-border">
+                    <MapView
+                      locations={robotLocations}
+                      geofences={geofences}
+                      selectedRobotId={robotId}
+                      onSelectRobot={() => {}}
+                      layers={layers}
+                      onLayersChange={setLayers}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
