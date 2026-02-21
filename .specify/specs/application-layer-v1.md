@@ -86,6 +86,24 @@ independent of transport/framework concerns.
   - Missing run returns `NotFound`.
   - successful response returns `RunV1`.
 
+### Read-Model Projection and Cache Strategy
+
+- **Projection model**
+  - Command-side writes remain authoritative in transactional stores.
+  - Query-side read models are denormalized projection tables populated from the outbox/CloudEvents stream.
+  - Read models are tenant-scoped and keyed for query patterns used by Cockpit list/detail pages.
+- **Caching model**
+  - Cache-aside strategy on query handlers (`GetRun`, list/read workspace queries).
+  - Cache keys are tenant-scoped and include query parameters (workspaceId, pagination, filters).
+  - Cache entries are short-lived and treated as performance optimization, not source of truth.
+- **Invalidation triggers**
+  - Invalidate run/workflow read-model cache entries on `RunStarted`, `RunStatusChanged`, and approval-decision events.
+  - Invalidate workspace/read-model cache entries on `WorkspaceCreated`, membership changes, and policy changes affecting visibility.
+  - Invalidate adapter/credential query cache entries on adapter registration and credential grant/revoke events.
+- **Failure and recovery**
+  - Projection workers are idempotent and replay-safe; replay rebuilds read models without duplicating records.
+  - On projection lag or corruption, query handlers can fall back to authoritative reads for bounded endpoints while projections are rebuilt.
+
 ## Events
 
 - `WorkspaceCreated` domain event is wrapped in a `PortariumCloudEventV1` envelope with
