@@ -423,6 +423,44 @@ export function ApprovalTriageCard({
   const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date());
   const triagePosition = index + 1;
 
+  const prefersReducedMotion = useReducedMotion();
+  const [shakeTarget, setShakeTarget] = useState<'approve' | 'rationale' | null>(null);
+  const [flashSodBanner, setFlashSodBanner] = useState(false);
+
+  const hasRationale = rationale.trim().length > 0;
+
+  useEffect(() => {
+    onValidationChange?.({
+      canApprove: !isBlocked,
+      canDeny: hasRationale,
+      approveBlockReason: isBlocked
+        ? sodEval.state === 'blocked-self'
+          ? 'You cannot approve your own request'
+          : 'Missing required role'
+        : undefined,
+      denyBlockReason: hasRationale ? undefined : 'Rationale is required to deny',
+      currentRationale: rationale,
+    });
+  }, [isBlocked, hasRationale, rationale, sodEval.state, onValidationChange]);
+
+  // Respond to drag rejection from deck
+  useEffect(() => {
+    if (dragRejection === 'deny') setDenyAttempted(true);
+  }, [dragRejection]);
+
+  useEffect(() => {
+    if (dragRejection === 'approve') {
+      setFlashSodBanner(true);
+      const t = setTimeout(() => setFlashSodBanner(false), 800);
+      return () => clearTimeout(t);
+    }
+  }, [dragRejection]);
+
+  const shouldShakeApprove =
+    (dragRejection === 'approve' || shakeTarget === 'approve') && !prefersReducedMotion;
+  const shouldShakeRationale =
+    (dragRejection === 'deny' || shakeTarget === 'rationale') && !prefersReducedMotion;
+
   const handleAction = useCallback(
     (action: TriageAction) => {
       if (action === 'RequestChanges') {
@@ -443,10 +481,23 @@ export function ApprovalTriageCard({
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if ((e.key === 'a' || e.key === 'A') && !isBlocked && !loading) handleAction('Approved');
+      if ((e.key === 'a' || e.key === 'A') && !loading) {
+        if (isBlocked) {
+          setShakeTarget('approve');
+          setFlashSodBanner(true);
+          if (navigator?.vibrate) navigator.vibrate(30);
+          setTimeout(() => setShakeTarget(null), 500);
+          setTimeout(() => setFlashSodBanner(false), 800);
+          return;
+        }
+        handleAction('Approved');
+      }
       if ((e.key === 'd' || e.key === 'D') && !loading) {
         if (!rationale.trim()) {
           setDenyAttempted(true);
+          setShakeTarget('rationale');
+          if (navigator?.vibrate) navigator.vibrate(30);
+          setTimeout(() => setShakeTarget(null), 500);
           return;
         }
         handleAction('Denied');
@@ -631,9 +682,24 @@ export function ApprovalTriageCard({
           {/* Body */}
           <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4">
             {/* SoD evaluation — always visible */}
-            <div className="shrink-0">
+            <motion.div
+              className="shrink-0"
+              animate={
+                flashSodBanner && !prefersReducedMotion
+                  ? {
+                      scale: [1, 1.02, 1],
+                      boxShadow: [
+                        '0 0 0 0px rgba(239,68,68,0)',
+                        '0 0 0 3px rgba(239,68,68,0.3)',
+                        '0 0 0 0px rgba(239,68,68,0)',
+                      ],
+                    }
+                  : {}
+              }
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
               <SodBanner eval={sodEval} />
-            </div>
+            </motion.div>
 
             {/* Mode-specific content — AnimatePresence crossfade on mode switch */}
             <ModeErrorBoundary modeKey={triageViewMode}>
@@ -732,23 +798,36 @@ export function ApprovalTriageCard({
               </div>
             ) : (
               <div className="shrink-0 space-y-3">
-                <Textarea
-                  aria-label={`Decision rationale for approval ${approval.approvalId}`}
-                  className={cn(
-                    'text-xs min-h-[80px] resize-none',
-                    denyAttempted &&
-                      !rationale.trim() &&
-                      'border-yellow-500 focus-visible:ring-yellow-500',
-                  )}
-                  placeholder="Decision rationale — optional for approve, required for deny…"
-                  value={rationale}
-                  onChange={(e) => {
-                    setRationale(e.target.value);
-                    if (e.target.value.trim()) setDenyAttempted(false);
-                  }}
-                  onFocus={() => setRationaleHasFocus(true)}
-                  onBlur={() => setRationaleHasFocus(false)}
-                />
+                <motion.div
+                  animate={
+                    shouldShakeRationale
+                      ? { x: [0, 6, -6, 4, -4, 2, 0] }
+                      : { x: 0 }
+                  }
+                  transition={
+                    shouldShakeRationale
+                      ? { duration: 0.35, ease: 'easeInOut' }
+                      : { duration: 0 }
+                  }
+                >
+                  <Textarea
+                    aria-label={`Decision rationale for approval ${approval.approvalId}`}
+                    className={cn(
+                      'text-xs min-h-[80px] resize-none',
+                      denyAttempted &&
+                        !rationale.trim() &&
+                        'border-yellow-500 focus-visible:ring-yellow-500',
+                    )}
+                    placeholder="Decision rationale — optional for approve, required for deny…"
+                    value={rationale}
+                    onChange={(e) => {
+                      setRationale(e.target.value);
+                      if (e.target.value.trim()) setDenyAttempted(false);
+                    }}
+                    onFocus={() => setRationaleHasFocus(true)}
+                    onBlur={() => setRationaleHasFocus(false)}
+                  />
+                </motion.div>
                 {denyAttempted && !rationale.trim() ? (
                   <p role="alert" className="text-xs text-yellow-600 font-medium">
                     A rationale is required when denying an approval.
@@ -769,17 +848,30 @@ export function ApprovalTriageCard({
                   aria-label="Make approval decision"
                   className="grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_0.75fr] gap-2"
                 >
-                  <Button
-                    size="sm"
-                    className="h-14 flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
-                    disabled={isBlocked || Boolean(loading)}
-                    onClick={() => handleAction('Approved')}
-                    title="Approve (A)"
-                    aria-keyshortcuts="a"
+                  <motion.div
+                    animate={
+                      shouldShakeApprove
+                        ? { x: [0, 8, -8, 6, -6, 3, 0] }
+                        : { x: 0 }
+                    }
+                    transition={
+                      shouldShakeApprove
+                        ? { duration: 0.4, ease: 'easeInOut' }
+                        : { duration: 0 }
+                    }
                   >
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span className="text-[11px]">Approve</span>
-                  </Button>
+                    <Button
+                      size="sm"
+                      className="h-14 w-full flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
+                      disabled={isBlocked || Boolean(loading)}
+                      onClick={() => handleAction('Approved')}
+                      title="Approve (A)"
+                      aria-keyshortcuts="a"
+                    >
+                      <CheckCircle2 className="h-5 w-5" />
+                      <span className="text-[11px]">Approve</span>
+                    </Button>
+                  </motion.div>
                   <Button
                     variant="destructive"
                     size="sm"
