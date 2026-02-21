@@ -61,6 +61,7 @@
     "domain-atlas:validate": "node scripts/domain-atlas/validate-artifacts.mjs",
     "domain-atlas:ci": "npm run domain-atlas:index && npm run domain-atlas:ops-stubs && npm run domain-atlas:validate && npm run domain-atlas:readiness && npm run domain-atlas:ops-stubs:verify && git diff --exit-code -- docs/research/index.md",
     "bd": "node scripts/beads/bd.mjs",
+    "bd:verify": "node scripts/beads/verify-bd-integration.mjs",
     "bd:sync": "bd sync",
     "bd:ready": "bd ready",
     "bd:daemon:start": "bd daemon start --auto-commit",
