@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import type {
   ApprovalSummary,
@@ -30,7 +30,9 @@ import {
   ArrowRight,
   Paperclip,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useUIStore } from '@/stores/ui-store';
+import { useSwipeGesture } from '@/hooks/use-swipe-gesture';
 import { getNextMode, getPrevMode } from '@/components/cockpit/triage-modes/index';
 import { ModeSwitcher } from '@/components/cockpit/triage-modes/mode-switcher';
 import { TrafficSignalsMode } from '@/components/cockpit/triage-modes/traffic-signals-mode';
@@ -79,20 +81,10 @@ function ActorBadge({ userId }: { userId: string }) {
 // ---------------------------------------------------------------------------
 // SorBadge — color-coded circular badge for each system of record
 // ---------------------------------------------------------------------------
-const SOR_PALETTE: Record<string, { bg: string; text: string }> = {
-  Odoo: { bg: 'bg-indigo-600', text: 'text-white' },
-  Stripe: { bg: 'bg-violet-600', text: 'text-white' },
-  NetSuite: { bg: 'bg-blue-600', text: 'text-white' },
-  Okta: { bg: 'bg-sky-500', text: 'text-white' },
-  Mautic: { bg: 'bg-orange-500', text: 'text-white' },
-  Zammad: { bg: 'bg-rose-500', text: 'text-white' },
-  Vault: { bg: 'bg-amber-500', text: 'text-white' },
-};
-
-const SOR_PALETTE_DEFAULT = { bg: 'bg-muted', text: 'text-muted-foreground' };
+import { resolveSorPalette } from '@/components/cockpit/triage-modes/lib/sor-palette';
 
 function SorBadge({ name }: { name: string }) {
-  const palette = SOR_PALETTE[name] ?? SOR_PALETTE_DEFAULT;
+  const palette = resolveSorPalette(name);
   const abbr = name.slice(0, 2);
   return (
     <span
@@ -183,15 +175,15 @@ function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
   return (
     <div
       role="status"
-      className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 flex items-start gap-3"
+      className="rounded-lg bg-warning/10 border border-warning/30 px-4 py-3 flex items-start gap-3"
     >
-      <ShieldCheck className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+      <ShieldCheck className="h-4 w-4 text-warning mt-0.5 shrink-0" />
       <div className="text-xs space-y-1">
-        <p className="font-semibold text-yellow-800">
+        <p className="font-semibold text-warning-foreground">
           {ev.nRequired} of {ev.nTotal} approvers needed — {(ev.nRequired ?? 0) - (ev.nSoFar ?? 0)}{' '}
           more required after you
         </p>
-        <p className="text-yellow-700">
+        <p className="text-warning-foreground/80">
           Rule: {ev.ruleId} · {ev.nSoFar} approval{ev.nSoFar !== 1 ? 's' : ''} recorded so far
         </p>
       </div>
@@ -297,11 +289,69 @@ function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] })
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// MODE_COMPONENTS — lookup table replaces 9-branch ternary chain
+// ---------------------------------------------------------------------------
+import type { TriageModeProps } from '@/components/cockpit/triage-modes/index';
+import type { TriageViewMode } from '@/stores/ui-store';
+
+const MODE_COMPONENTS: Partial<Record<TriageViewMode, React.ComponentType<TriageModeProps>>> = {
+  'traffic-signals': TrafficSignalsMode,
+  briefing: BriefingMode,
+  'risk-radar': RiskRadarMode,
+  'blast-map': BlastMapMode,
+  'diff-view': DiffViewMode,
+  'action-replay': ActionReplayMode,
+  'evidence-chain': EvidenceChainMode,
+  'story-timeline': StoryTimelineMode,
+};
+
+// ---------------------------------------------------------------------------
+// ModeErrorBoundary — prevents Recharts / mode failures from crashing card
+// ---------------------------------------------------------------------------
+interface ModeErrorBoundaryProps {
+  modeKey: string;
+  children: React.ReactNode;
+}
+
+interface ModeErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ModeErrorBoundary extends React.Component<ModeErrorBoundaryProps, ModeErrorBoundaryState> {
+  state: ModeErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): ModeErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps: ModeErrorBoundaryProps) {
+    if (prevProps.modeKey !== this.props.modeKey) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-8 text-center">
+          <p className="text-sm font-medium text-destructive">This view encountered an error</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Try switching to another mode or refreshing the page.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
 export type TriageAction = 'Approved' | 'Denied' | 'RequestChanges' | 'Skip';
 
-interface ApprovalTriageCardProps {
+export interface ApprovalTriageCardProps {
   approval: ApprovalSummary;
   index: number;
   total: number;
@@ -312,6 +362,18 @@ interface ApprovalTriageCardProps {
   evidenceEntries?: EvidenceEntry[];
   run?: RunSummary;
   workflow?: WorkflowSummary;
+  /** Per-index action history for color-coded progress dots */
+  actionHistory?: Record<number, TriageAction>;
+  /** Whether an undo is currently available (shows Z hint) */
+  undoAvailable?: boolean;
+  /** Called when user presses Z to undo */
+  onUndo?: () => void;
+  /** When true, drag is handled by the deck wrapper */
+  externalDrag?: boolean;
+  /** Normalized drag progress -1..1, driven by deck */
+  dragProgress?: number;
+  /** Whether a drag is in progress, from deck */
+  isDragging?: boolean;
 }
 
 export function ApprovalTriageCard({
@@ -325,12 +387,19 @@ export function ApprovalTriageCard({
   evidenceEntries = [],
   run,
   workflow,
+  actionHistory = {},
+  undoAvailable = false,
+  onUndo,
+  externalDrag = false,
+  dragProgress: externalDragProgress = 0,
+  isDragging: externalIsDragging = false,
 }: ApprovalTriageCardProps) {
   const [rationale, setRationale] = useState('');
   const [requestChangesMode, setRequestChangesMode] = useState(false);
   const [requestChangesMsg, setRequestChangesMsg] = useState('');
   const [exitDir, setExitDir] = useState<'left' | 'right' | null>(null);
   const [denyAttempted, setDenyAttempted] = useState(false);
+  const [rationaleHasFocus, setRationaleHasFocus] = useState(false);
 
   const triageViewMode = useUIStore((s) => s.triageViewMode);
   const setTriageViewMode = useUIStore((s) => s.setTriageViewMode);
@@ -349,12 +418,20 @@ export function ApprovalTriageCard({
           setRequestChangesMode(true);
           return;
         }
+        if (externalDrag) {
+          onAction(approval.approvalId, action, requestChangesMsg);
+          return;
+        }
         const dir: 'left' | 'right' = 'left';
         setExitDir(dir);
         setTimeout(() => {
           setExitDir(null);
           onAction(approval.approvalId, action, requestChangesMsg);
         }, 320);
+        return;
+      }
+      if (externalDrag) {
+        onAction(approval.approvalId, action, rationale);
         return;
       }
       const dir: 'left' | 'right' = action === 'Approved' ? 'right' : 'left';
@@ -364,7 +441,7 @@ export function ApprovalTriageCard({
         onAction(approval.approvalId, action, rationale);
       }, 320);
     },
-    [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg],
+    [approval.approvalId, onAction, rationale, requestChangesMode, requestChangesMsg, externalDrag],
   );
 
   // Keyboard shortcuts
@@ -385,6 +462,8 @@ export function ApprovalTriageCard({
       // V cycles view modes forward, Shift+V backward
       if (e.key === 'v') setTriageViewMode(getNextMode(triageViewMode));
       if (e.key === 'V') setTriageViewMode(getPrevMode(triageViewMode));
+      // Z triggers undo
+      if ((e.key === 'z' || e.key === 'Z') && undoAvailable && onUndo) onUndo();
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -396,7 +475,37 @@ export function ApprovalTriageCard({
     handleAction,
     triageViewMode,
     setTriageViewMode,
+    undoAvailable,
+    onUndo,
   ]);
+
+  // Swipe gesture — disabled when deck owns drag
+  const {
+    dragStyle,
+    pointerHandlers,
+    progress: internalDragProgress,
+    isDragging: internalIsDragging,
+  } = useSwipeGesture({
+    onSwipeRight: () => {
+      if (!isBlocked && !loading) handleAction('Approved');
+    },
+    onSwipeLeft: () => {
+      if (loading) return false;
+      if (!rationale.trim()) {
+        setDenyAttempted(true);
+        toast.info('A rationale is required when denying an approval.', { duration: 2500 });
+        return false;
+      }
+      handleAction('Denied');
+      return true;
+    },
+    disabled:
+      externalDrag || Boolean(loading) || isBlocked || requestChangesMode || Boolean(exitDir),
+  });
+
+  // Use deck-driven values when externalDrag, otherwise internal
+  const dragProgress = externalDrag ? externalDragProgress : internalDragProgress;
+  const isDragging = externalDrag ? externalIsDragging : internalIsDragging;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
@@ -405,45 +514,124 @@ export function ApprovalTriageCard({
         <span className="text-xs text-muted-foreground font-medium">
           {triagePosition} of {total} pending
         </span>
-        <div className="flex gap-1.5">
-          {Array.from({ length: total }).map((_, i) => (
-            <div
-              key={`${approval.approvalId}-${i}`}
-              className={cn(
-                'h-1.5 rounded-full transition-all duration-300',
-                i < index ? 'w-5 bg-green-500' : i === index ? 'w-8 bg-primary' : 'w-5 bg-muted',
-              )}
-            />
-          ))}
+        <div className="flex gap-1 sm:gap-1.5 overflow-hidden max-w-[60%] sm:max-w-none">
+          {Array.from({ length: total }).map((_, i) => {
+            const action = actionHistory[i];
+            const dotColor =
+              i < index && action
+                ? ({
+                    Approved: 'bg-green-500',
+                    Denied: 'bg-red-500',
+                    RequestChanges: 'bg-yellow-500',
+                    Skip: 'bg-muted-foreground/40',
+                  }[action] ?? 'bg-green-500')
+                : i < index
+                  ? 'bg-green-500'
+                  : i === index
+                    ? 'bg-primary'
+                    : 'bg-muted';
+            const justCompleted = i === index - 1 && action;
+            return (
+              <div
+                key={`${approval.approvalId}-${i}`}
+                className={cn(
+                  'h-1.5 rounded-full transition-all duration-300 shrink-0',
+                  i === index ? 'w-6 sm:w-8' : 'w-3 sm:w-5',
+                  dotColor,
+                  justCompleted && 'animate-dot-complete',
+                  i === index && 'animate-pulse',
+                )}
+              />
+            );
+          })}
         </div>
       </div>
 
-      {/* Stacked card effect — ghost cards behind when queue has more items */}
+      {/* Stacked card effect — ghost cards behind (skipped when deck owns visuals) */}
       <div className="relative">
-        {hasMore && (
+        {!externalDrag && hasMore && (
           <>
             <div
-              className="absolute inset-x-6 rounded-xl border border-border bg-card/60"
-              style={{ top: '8px', bottom: '-8px', zIndex: 0 }}
+              className="absolute inset-x-6 rounded-xl border border-border bg-card/60 transition-transform duration-200 ease-out"
+              style={{
+                top: `${8 - (isDragging ? Math.min(Math.abs(dragProgress) * 3, 4) : 0)}px`,
+                bottom: `${-8 + (isDragging ? Math.min(Math.abs(dragProgress) * 3, 4) : 0)}px`,
+                zIndex: 0,
+                transform: isDragging
+                  ? `scale(${0.94 + Math.min(Math.abs(dragProgress) * 0.03, 0.03)})`
+                  : 'scale(0.94)',
+              }}
             />
             <div
-              className="absolute inset-x-3 rounded-xl border border-border bg-card/80"
-              style={{ top: '4px', bottom: '-4px', zIndex: 1 }}
+              className="absolute inset-x-3 rounded-xl border border-border bg-card/80 transition-transform duration-200 ease-out"
+              style={{
+                top: `${4 - (isDragging ? Math.min(Math.abs(dragProgress) * 2, 3) : 0)}px`,
+                bottom: `${-4 + (isDragging ? Math.min(Math.abs(dragProgress) * 2, 3) : 0)}px`,
+                zIndex: 1,
+                transform: isDragging
+                  ? `scale(${0.97 + Math.min(Math.abs(dragProgress) * 0.02, 0.02)})`
+                  : 'scale(0.97)',
+              }}
             />
           </>
         )}
 
-        {/* Main card — animate-triage-in only on card mount (keyed by approvalId),
-             mode switches use crossfade on the content area below */}
+        {/* Main card — deck owns entrance/exit/drag when externalDrag is true */}
         <div
           className={cn(
             'relative rounded-xl border border-border bg-card shadow-md overflow-hidden',
-            exitDir === 'right' && 'animate-triage-out-right',
-            exitDir === 'left' && 'animate-triage-out-left',
-            !exitDir && 'animate-triage-in',
+            !externalDrag && exitDir === 'right' && 'animate-triage-out-right',
+            !externalDrag && exitDir === 'left' && 'animate-triage-out-left',
+            !externalDrag && !exitDir && 'animate-triage-in',
+            !externalDrag && !exitDir && !isDragging && 'cursor-grab',
           )}
-          style={{ zIndex: 2 }}
+          style={{ zIndex: 2, ...(!externalDrag && !exitDir ? dragStyle : {}) }}
+          {...(!externalDrag && !exitDir ? pointerHandlers : {})}
         >
+          {/* Directional tint overlay — skipped when deck owns drag visuals */}
+          {!externalDrag && isDragging && !exitDir && Math.abs(dragProgress) > 0.05 && (
+            <div
+              className="absolute inset-0 pointer-events-none z-10 rounded-xl"
+              style={{
+                background:
+                  dragProgress > 0
+                    ? `linear-gradient(100deg, rgba(34,197,94,${Math.min(Math.abs(dragProgress) * 0.12, 0.12)}) 0%, transparent 60%)`
+                    : `linear-gradient(260deg, rgba(239,68,68,${Math.min(Math.abs(dragProgress) * 0.12, 0.12)}) 0%, transparent 60%)`,
+              }}
+            />
+          )}
+
+          {/* Decision stamps — skipped when deck owns drag visuals */}
+          {!externalDrag && isDragging && !exitDir && Math.abs(dragProgress) > 0.3 && (
+            <>
+              {dragProgress > 0.3 && (
+                <div
+                  className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
+                  style={{ opacity: Math.min((dragProgress - 0.3) / 0.7, 1) }}
+                >
+                  <span
+                    className="text-green-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-green-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
+                    style={{ transform: 'rotate(-12deg)', display: 'inline-block' }}
+                  >
+                    Approved
+                  </span>
+                </div>
+              )}
+              {dragProgress < -0.3 && (
+                <div
+                  className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none"
+                  style={{ opacity: Math.min((Math.abs(dragProgress) - 0.3) / 0.7, 1) }}
+                >
+                  <span
+                    className="text-red-600 text-lg sm:text-2xl font-bold uppercase tracking-widest border-[3px] sm:border-4 border-red-600 rounded-sm px-2 py-0.5 sm:px-3 sm:py-1"
+                    style={{ transform: 'rotate(12deg)', display: 'inline-block' }}
+                  >
+                    Denied
+                  </span>
+                </div>
+              )}
+            </>
+          )}
           {/* Overdue stripe */}
           {isOverdue && (
             <div className="bg-red-500 px-5 py-1.5 flex items-center gap-2">
@@ -553,104 +741,57 @@ export function ApprovalTriageCard({
             <SodBanner eval={sodEval} />
 
             {/* Mode-specific content — keyed crossfade so mode switches don't jolt the card */}
-            <div key={triageViewMode} className="animate-mode-crossfade">
-              {triageViewMode === 'default' ? (
-                <>
-                  {/* Provenance journey — shows how this approval got here */}
-                  <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
+            <ModeErrorBoundary modeKey={triageViewMode}>
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain rounded-lg">
+                <div key={triageViewMode} className="animate-mode-crossfade">
+                  {triageViewMode === 'default' ? (
+                    <>
+                      {/* Provenance journey — shows how this approval got here */}
+                      <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
 
-                  {/* Policy rule — shown when available */}
-                  {policyRule && (
-                    <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
-                      <PolicyRulePanel rule={policyRule} />
-                    </div>
-                  )}
+                      {/* Policy rule — shown when available */}
+                      {policyRule && (
+                        <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
+                          <PolicyRulePanel rule={policyRule} />
+                        </div>
+                      )}
 
-                  {/* Planned effects panel */}
-                  {plannedEffects.length > 0 && (
-                    <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-                        What will happen if approved
-                      </p>
-                      <div className="divide-y divide-border/40">
-                        {plannedEffects.map((e) => (
-                          <TriageEffectRow key={e.effectId} effect={e} />
-                        ))}
-                      </div>
-                    </div>
+                      {/* Planned effects panel */}
+                      {plannedEffects.length > 0 && (
+                        <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                            What will happen if approved
+                          </p>
+                          <div className="divide-y divide-border/40">
+                            {plannedEffects.map((e) => (
+                              <TriageEffectRow key={e.effectId} effect={e} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    (() => {
+                      const ModeComponent = MODE_COMPONENTS[triageViewMode];
+                      return ModeComponent ? (
+                        <ModeComponent
+                          approval={approval}
+                          plannedEffects={plannedEffects}
+                          evidenceEntries={evidenceEntries}
+                          run={run}
+                          workflow={workflow}
+                        />
+                      ) : null;
+                    })()
                   )}
-                </>
-              ) : triageViewMode === 'traffic-signals' ? (
-                <TrafficSignalsMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'briefing' ? (
-                <BriefingMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'risk-radar' ? (
-                <RiskRadarMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'blast-map' ? (
-                <BlastMapMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'diff-view' ? (
-                <DiffViewMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'action-replay' ? (
-                <ActionReplayMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'evidence-chain' ? (
-                <EvidenceChainMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : triageViewMode === 'story-timeline' ? (
-                <StoryTimelineMode
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                />
-              ) : null}
-            </div>
+                </div>
+              </div>
+            </ModeErrorBoundary>
 
             {/* Decision area */}
             {requestChangesMode ? (
-              <div className="space-y-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                <label className="text-xs font-semibold text-yellow-900">
+              <div className="space-y-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
+                <label className="text-xs font-semibold text-warning-foreground">
                   What needs to change?{' '}
                   <span className="text-red-500" aria-hidden>
                     *
@@ -702,19 +843,32 @@ export function ApprovalTriageCard({
                     setRationale(e.target.value);
                     if (e.target.value.trim()) setDenyAttempted(false);
                   }}
+                  onFocus={() => setRationaleHasFocus(true)}
+                  onBlur={() => setRationaleHasFocus(false)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Required when denying <span className="text-red-500">*</span>
-                </p>
+                {denyAttempted && !rationale.trim() ? (
+                  <p role="alert" className="text-xs text-yellow-600 font-medium">
+                    A rationale is required when denying an approval.
+                  </p>
+                ) : rationale.trim() ? (
+                  <p className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Rationale provided
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Required when denying <span className="text-red-500">*</span>
+                  </p>
+                )}
 
                 <div
                   role="group"
                   aria-label="Make approval decision"
-                  className="grid grid-cols-4 gap-2"
+                  className="grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_0.75fr] gap-2"
                 >
                   <Button
                     size="sm"
-                    className="h-12 flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
+                    className="h-14 flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
                     disabled={isBlocked || Boolean(loading)}
                     onClick={() => handleAction('Approved')}
                     title="Approve (A)"
@@ -756,14 +910,14 @@ export function ApprovalTriageCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-12 flex-col gap-1 text-muted-foreground"
+                    className="h-10 flex-col gap-1 text-muted-foreground"
                     disabled={Boolean(loading)}
                     onClick={() => handleAction('Skip')}
                     title="Skip (S)"
                     aria-keyshortcuts="s"
                   >
-                    <SkipForward className="h-5 w-5" />
-                    <span className="text-[11px]">Skip</span>
+                    <SkipForward className="h-4 w-4" />
+                    <span className="text-[10px]">Skip</span>
                   </Button>
                 </div>
               </div>
@@ -772,25 +926,47 @@ export function ApprovalTriageCard({
         </div>
       </div>
 
-      {/* Keyboard hints */}
-      <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
-        <span>Keyboard:</span>
-        {(
-          [
-            { key: 'A', label: 'approve' },
-            { key: 'D', label: 'deny' },
-            { key: 'R', label: 'changes' },
-            { key: 'S', label: 'skip' },
-            { key: 'V', label: 'view mode' },
-          ] as const
-        ).map(({ key, label }) => (
-          <span key={key} className="flex items-center gap-1">
+      {/* Keyboard hints — contextual */}
+      <div
+        key={rationaleHasFocus ? 'focus' : undoAvailable ? 'undo' : 'default'}
+        className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:gap-4 text-[11px] text-muted-foreground animate-mode-crossfade"
+      >
+        <span className="hidden sm:inline">Keyboard:</span>
+        {rationaleHasFocus ? (
+          <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
-              {key}
+              Esc
             </kbd>
-            {label}
+            exit
           </span>
-        ))}
+        ) : (
+          <>
+            {(
+              [
+                { key: 'A', label: 'approve' },
+                { key: 'D', label: 'deny' },
+                { key: 'R', label: 'changes' },
+                { key: 'S', label: 'skip' },
+                { key: 'V', label: 'view mode' },
+              ] as const
+            ).map(({ key, label }) => (
+              <span key={key} className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
+                  {key}
+                </kbd>
+                {label}
+              </span>
+            ))}
+            {undoAvailable && (
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
+                  Z
+                </kbd>
+                undo
+              </span>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
