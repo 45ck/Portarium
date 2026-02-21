@@ -1,6 +1,10 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { parseArgs } from './portarium-cli.js';
+import { generateAdapterScaffold, generateAgentWrapperScaffold, parseArgs } from './portarium-cli.js';
 
 describe('Portarium CLI argument parsing', () => {
   it('parses a bare command', () => {
@@ -87,5 +91,86 @@ describe('Portarium CLI argument parsing', () => {
     expect(result.command).toBe('workspace');
     expect(result.subcommand).toBe('select');
     expect(result.flags['base-url']).toBe('http://localhost:9000');
+  });
+
+  it('parses generate adapter flags', () => {
+    const result = parseArgs([
+      'node',
+      'portarium',
+      'generate',
+      'adapter',
+      '--name',
+      'hubspot-adapter',
+      '--port-family',
+      'CrmSales',
+      '--force',
+    ]);
+    expect(result.command).toBe('generate');
+    expect(result.subcommand).toBe('adapter');
+    expect(result.flags['name']).toBe('hubspot-adapter');
+    expect(result.flags['port-family']).toBe('CrmSales');
+    expect(result.flags['force']).toBe(true);
+  });
+});
+
+describe('Portarium CLI scaffolding generators', () => {
+  it('creates adapter scaffold files', () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'portarium-adapter-'));
+    const outputDir = join(tmpRoot, 'adapter');
+
+    try {
+      generateAdapterScaffold({
+        outputDir,
+        adapterName: 'HubSpotAdapter',
+        providerSlug: 'hubspot',
+        portFamily: 'CrmSales',
+      });
+
+      expect(existsSync(join(outputDir, 'adapter.manifest.json'))).toBe(true);
+      expect(existsSync(join(outputDir, 'src/index.ts'))).toBe(true);
+      expect(existsSync(join(outputDir, 'src/index.test.ts'))).toBe(true);
+
+      const manifest = JSON.parse(readFileSync(join(outputDir, 'adapter.manifest.json'), 'utf8')) as {
+        adapterName: string;
+        providerSlug: string;
+      };
+      expect(manifest.adapterName).toBe('HubSpotAdapter');
+      expect(manifest.providerSlug).toBe('hubspot');
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('supports force overwrite for agent-wrapper scaffolds', () => {
+    const tmpRoot = mkdtempSync(join(tmpdir(), 'portarium-agent-wrapper-'));
+    const outputDir = join(tmpRoot, 'wrapper');
+
+    try {
+      generateAgentWrapperScaffold({
+        outputDir,
+        wrapperName: 'openclaw-wrapper',
+        runtimeSlug: 'openclaw',
+      });
+
+      expect(() =>
+        generateAgentWrapperScaffold({
+          outputDir,
+          wrapperName: 'openclaw-wrapper',
+          runtimeSlug: 'openclaw',
+        }),
+      ).toThrow(/already exists and is not empty/);
+
+      generateAgentWrapperScaffold({
+        outputDir,
+        wrapperName: 'openclaw-wrapper',
+        runtimeSlug: 'openclaw',
+        force: true,
+      });
+
+      expect(existsSync(join(outputDir, 'agent-wrapper.manifest.json'))).toBe(true);
+      expect(existsSync(join(outputDir, 'src/server.ts'))).toBe(true);
+    } finally {
+      rmSync(tmpRoot, { recursive: true, force: true });
+    }
   });
 });

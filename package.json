@@ -59,6 +59,7 @@
     "domain-atlas:validate": "node scripts/domain-atlas/validate-artifacts.mjs",
     "domain-atlas:ci": "npm run domain-atlas:index && npm run domain-atlas:ops-stubs && npm run domain-atlas:validate && npm run domain-atlas:readiness && npm run domain-atlas:ops-stubs:verify && git diff --exit-code -- docs/research/index.md",
     "bd": "node scripts/beads/bd.mjs",
+    "cli:portarium": "tsx src/cli/portarium-cli.ts",
     "beads:audit:weekly": "node scripts/beads/generate-weekly-pe-audit.mjs",
     "beads:audit:weekly:check": "node scripts/beads/generate-weekly-pe-audit.mjs --check",
     "beads:audit:metadata": "node scripts/beads/generate-bead-metadata-audit.mjs",
