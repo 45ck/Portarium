@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import type {
   ApprovalSummary,
@@ -350,6 +350,14 @@ class ModeErrorBoundary extends React.Component<ModeErrorBoundaryProps, ModeErro
 // ---------------------------------------------------------------------------
 export type TriageAction = 'Approved' | 'Denied' | 'RequestChanges' | 'Skip';
 
+export interface DragValidation {
+  canApprove: boolean;
+  canDeny: boolean;
+  approveBlockReason: string | undefined;
+  denyBlockReason: string | undefined;
+  currentRationale: string;
+}
+
 export interface ApprovalTriageCardProps {
   approval: ApprovalSummary;
   index: number;
@@ -373,6 +381,10 @@ export interface ApprovalTriageCardProps {
   dragProgress?: number;
   /** Whether a drag is in progress, from deck */
   isDragging?: boolean;
+  /** Reports validation state for drag validation in deck */
+  onValidationChange?: (validation: DragValidation) => void;
+  /** Set by deck when a drag is rejected — triggers shake feedback */
+  dragRejection?: 'approve' | 'deny' | null;
 }
 
 export function ApprovalTriageCard({
@@ -392,6 +404,8 @@ export function ApprovalTriageCard({
   externalDrag = false,
   dragProgress: externalDragProgress = 0,
   isDragging: externalIsDragging = false,
+  onValidationChange,
+  dragRejection = null,
 }: ApprovalTriageCardProps) {
   const [rationale, setRationale] = useState('');
   const [requestChangesMode, setRequestChangesMode] = useState(false);
