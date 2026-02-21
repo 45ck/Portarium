@@ -101,10 +101,10 @@ function AfterCard({ effect }: { effect: PlanEffect }) {
 
 function OpBadge({ op }: { op: EffectOperation }) {
   const cls: Record<string, string> = {
-    Create: 'bg-emerald-100 text-emerald-700',
-    Update: 'bg-blue-100 text-blue-700',
-    Delete: 'bg-red-100 text-red-700',
-    Upsert: 'bg-yellow-100 text-yellow-700',
+    Create: 'bg-success/10 text-success',
+    Update: 'bg-info/10 text-info',
+    Delete: 'bg-destructive/10 text-destructive',
+    Upsert: 'bg-warning/10 text-warning',
   };
   return (
     <Badge variant="secondary" className={cn('text-[9px] h-4 px-1', cls[op])}>

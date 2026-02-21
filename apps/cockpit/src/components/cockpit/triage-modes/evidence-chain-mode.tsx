@@ -65,11 +65,11 @@ function getMediaLabel(ref: EvidencePayloadRef): string {
 
 function getMediaColor(ref: EvidencePayloadRef): string {
   const ct = ref.contentType ?? '';
-  if (ct.startsWith('image/')) return 'bg-violet-100 text-violet-700 border-violet-200';
-  if (ct.startsWith('video/')) return 'bg-rose-100 text-rose-700 border-rose-200';
-  if (ct.startsWith('audio/')) return 'bg-amber-100 text-amber-700 border-amber-200';
-  if (ct === 'application/pdf') return 'bg-red-100 text-red-700 border-red-200';
-  if (ct === 'text/x-diff') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (ct.startsWith('image/')) return 'bg-primary/10 text-primary border-primary/30';
+  if (ct.startsWith('video/')) return 'bg-destructive/10 text-destructive border-destructive/30';
+  if (ct.startsWith('audio/')) return 'bg-warning/10 text-warning border-warning/30';
+  if (ct === 'application/pdf') return 'bg-destructive/10 text-destructive border-destructive/30';
+  if (ct === 'text/x-diff') return 'bg-info/10 text-info border-info/30';
   return 'bg-muted text-muted-foreground border-border';
 }
 

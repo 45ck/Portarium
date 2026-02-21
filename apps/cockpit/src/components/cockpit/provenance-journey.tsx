@@ -53,10 +53,10 @@ const RUN_STATUS_STYLE: Record<string, { color: string; Icon: typeof Play }> = {
 };
 
 const TIER_STYLE: Record<string, string> = {
-  Auto: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  Assisted: 'bg-blue-100 text-blue-800 border-blue-200',
-  HumanApprove: 'bg-amber-100 text-amber-800 border-amber-200',
-  ManualOnly: 'bg-red-100 text-red-800 border-red-200',
+  Auto: 'bg-success/10 text-success border-success/30',
+  Assisted: 'bg-info/10 text-info border-info/30',
+  HumanApprove: 'bg-warning/10 text-warning border-warning/30',
+  ManualOnly: 'bg-destructive/10 text-destructive border-destructive/30',
 };
 
 function inferActorKind(userId: string): { label: string; Icon: typeof User } {

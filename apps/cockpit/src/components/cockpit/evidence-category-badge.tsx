@@ -7,11 +7,11 @@ interface EvidenceCategoryBadgeProps {
 }
 
 const config: Record<EvidenceCategory, { label: string; className: string }> = {
-  Plan: { label: 'Plan', className: 'bg-purple-100 text-purple-700' },
-  Action: { label: 'Action', className: 'bg-blue-100 text-blue-700' },
-  Approval: { label: 'Approval', className: 'bg-yellow-100 text-yellow-700' },
-  Policy: { label: 'Policy', className: 'bg-orange-100 text-orange-700' },
-  System: { label: 'System', className: 'bg-gray-100 text-gray-700' },
+  Plan: { label: 'Plan', className: 'bg-primary/10 text-primary' },
+  Action: { label: 'Action', className: 'bg-info/10 text-info' },
+  Approval: { label: 'Approval', className: 'bg-warning/10 text-warning' },
+  Policy: { label: 'Policy', className: 'bg-destructive/10 text-destructive' },
+  System: { label: 'System', className: 'bg-muted text-muted-foreground' },
 };
 
 export function EvidenceCategoryBadge({ category }: EvidenceCategoryBadgeProps) {

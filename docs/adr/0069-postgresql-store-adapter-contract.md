@@ -31,6 +31,43 @@ Introduce infrastructure adapters under `src/infrastructure/postgresql/` with a 
 - Outbox and evidence persistence have infrastructure implementations ready for broader command wiring.
 - A full production schema rollout still depends on migration execution and deploy-time table management.
 
+## Implementation Mapping
+
+The PostgreSQL adapter contract in this ADR is implemented and verified by:
+
+- `bead-0335`: PostgreSQL infra adapter baseline and store adapter contract implementation.
+- `bead-0316`: outbox ordering and replay safety coverage across application/infra boundaries.
+- `bead-0391`: migration framework required for contract-safe schema evolution.
+- `bead-0385`: infrastructure test hardening and adapter behavior verification.
+- `bead-0484`: infrastructure adapter wiring validation review.
+- `bead-0486`: outbox event dispatcher review and evidence linkage.
+- `bead-0597`: adapter activation/wiring completion for PostgreSQL-backed runtime behavior.
+
+## Acceptance Evidence
+
+- `src/infrastructure/postgresql/sql-client.ts`
+- `src/infrastructure/postgresql/node-postgres-sql-client.ts`
+- `src/infrastructure/postgresql/postgres-json-document-store.ts`
+- `src/infrastructure/postgresql/postgres-store-adapters.ts`
+- `src/infrastructure/postgresql/postgres-workforce-store-adapters.ts`
+- `src/infrastructure/postgresql/postgres-eventing.ts`
+- `src/infrastructure/postgresql/postgres-store-adapters.integration.test.ts`
+- `src/infrastructure/migrations/schema-migrator.ts`
+- `src/infrastructure/migrations/schema-migrator.test.ts`
+- `docs/review/bead-0484-infrastructure-adapters-wiring-review.md`
+- `docs/review/bead-0486-outbox-event-dispatcher-review.md`
+
+## Review Linkage
+
+- `bead-0628`: implementation mapping closure review
+- `docs/review/bead-0628-adr-0069-implementation-mapping-review.md`
+- `bead-0629`: mapping/linkage verification review
+- `docs/review/bead-0629-adr-0069-linkage-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0392`: multi-tenant storage tier automation follow-through (schema-per-tenant provisioning lifecycle).
+
 ## Alternatives Considered
 
 - Keep runtime-level in-memory placeholders
