@@ -132,7 +132,7 @@
       "canonicalObjects": ["Ticket", "Asset", "Party", "Document", "Subscription", "Product"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0237", "bead-0238"],
-      "gapBeads": ["bead-0164", "bead-0166"],
+      "gapBeads": ["bead-0399", "bead-0166"],
       "gaps": [
         "Event-driven IT ops execution-platform fit is still under spike evaluation.",
         "Integration gate remains open for rollout readiness."
@@ -144,10 +144,10 @@
       "canonicalObjects": ["Party", "Asset"],
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0239", "bead-0240"],
-      "gapBeads": ["bead-0328", "bead-0167"],
+      "gapBeads": ["bead-0328", "bead-0166"],
       "gaps": [
         "Production AuthN/AuthZ hardening bead remains open.",
-        "Security phase gate remains open before closure."
+        "Integration gate remains open before closure."
       ]
     },
     {
@@ -156,10 +156,10 @@
       "canonicalObjects": [],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0241", "bead-0242"],
-      "gapBeads": ["bead-0327", "bead-0167"],
+      "gapBeads": ["bead-0327", "bead-0166"],
       "gaps": [
         "Execution-plane Vault workload-auth hardening is still open.",
-        "Security phase gate remains open for final sign-off."
+        "Integration gate remains open for final sign-off."
       ]
     },
     {
@@ -180,7 +180,7 @@
       "canonicalObjects": ["Campaign", "Document"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0245", "bead-0246"],
-      "gapBeads": ["bead-0164", "bead-0166"],
+      "gapBeads": ["bead-0298", "bead-0166"],
       "gaps": [
         "Platform coverage and piece selection are still in spike status.",
         "Integration gate remains open before family promotion."
@@ -192,7 +192,7 @@
       "canonicalObjects": ["Party", "Task", "Document"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0247", "bead-0248"],
-      "gapBeads": ["bead-0164", "bead-0166"],
+      "gapBeads": ["bead-0298", "bead-0166"],
       "gaps": [
         "Execution-platform capability coverage is still in evaluation for this family.",
         "Integration gate remains open for release readiness."
@@ -240,7 +240,7 @@
       "canonicalObjects": ["Ticket", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0255", "bead-0256"],
-      "gapBeads": ["bead-0164", "bead-0393"],
+      "gapBeads": ["bead-0399", "bead-0393"],
       "gaps": [
         "IT-ops automation platform evaluation is still open.",
         "SLO and alerting implementation for incident visibility remains open."
@@ -252,10 +252,10 @@
       "canonicalObjects": ["Ticket", "Asset", "Document", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0257", "bead-0258"],
-      "gapBeads": ["bead-0167", "bead-0168"],
+      "gapBeads": ["bead-8x1n", "bead-47v1"],
       "gaps": [
         "License and compliance governance for external execution platforms remains open.",
-        "Security phase gate remains open before governance closeout."
+        "Security policy and disclosure deliverables remain open before governance closeout."
       ]
     },
     {
