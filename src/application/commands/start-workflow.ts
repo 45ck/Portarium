@@ -21,8 +21,6 @@ import {
   type ValidationFailed,
   type NotFound,
 } from '../common/index.js';
-import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
-import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import type {
   AdapterRegistrationStore,
   AuthorizationPort,
@@ -42,9 +40,9 @@ import {
   ensureSingleActiveAdapterPerPort,
   ensureSingleActiveWorkflowVersion,
 } from '../services/repository-aggregate-invariants.js';
+import { executeStartWorkflowTransaction } from './start-workflow.execute-transaction.js';
 
 const START_WORKFLOW_COMMAND = 'StartWorkflow';
-const START_WORKFLOW_SOURCE = 'portarium.control-plane.workflow-runtime';
 
 export type StartWorkflowInput = Readonly<{
   idempotencyKey: string;
@@ -79,17 +77,8 @@ export interface StartWorkflowDeps {
 }
 
 type Err<E> = Readonly<{ ok: false; error: E }>;
-
-type ParsedIds = Readonly<{
-  workspaceId: WorkspaceIdType;
-  workflowId: WorkflowIdType;
-}>;
-
-type GeneratedValues = Readonly<{
-  runIdValue: string;
-  createdAtIso: string;
-  eventIdValue: string;
-}>;
+type ParsedIds = Readonly<{ workspaceId: WorkspaceIdType; workflowId: WorkflowIdType }>;
+type GeneratedValues = Readonly<{ runIdValue: string; createdAtIso: string; eventIdValue: string }>;
 
 function requireNonEmpty(
   value: string | undefined | null,
@@ -248,58 +237,7 @@ function buildRun(
   }
 }
 
-async function executeTransaction(
-  deps: StartWorkflowDeps,
-  ctx: AppContext,
-  plan: NewStartWorkflowPlan,
-): Promise<Result<StartWorkflowOutput, DependencyFailure>> {
-  const domainEvent: DomainEventV1 = {
-    schemaVersion: 1,
-    eventId: plan.generated.eventIdValue,
-    eventType: 'RunStarted',
-    aggregateKind: 'Run',
-    aggregateId: plan.run.runId,
-    occurredAtIso: plan.generated.createdAtIso,
-    workspaceId: ctx.tenantId,
-    correlationId: ctx.correlationId,
-    actorUserId: ctx.principalId,
-    payload: {
-      runId: plan.run.runId,
-      workflowId: plan.ids.workflowId.toString(),
-      workspaceId: plan.ids.workspaceId.toString(),
-    },
-  };
-
-  try {
-    return await deps.unitOfWork.execute(async () => {
-      await deps.runStore.saveRun(ctx.tenantId, plan.run);
-      await deps.orchestrator.startRun({
-        runId: plan.run.runId,
-        tenantId: ctx.tenantId,
-        workflowId: plan.ids.workflowId,
-        workflow: plan.workflow,
-        initiatedByUserId: ctx.principalId,
-        correlationId: ctx.correlationId,
-        ...(ctx.traceparent ? { traceparent: ctx.traceparent } : {}),
-        ...(ctx.tracestate ? { tracestate: ctx.tracestate } : {}),
-        executionTier: plan.workflow.executionTier,
-        idempotencyKey: plan.commandKey.requestKey,
-      });
-      await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(domainEvent, START_WORKFLOW_SOURCE),
-      );
-      const output: StartWorkflowOutput = { runId: plan.run.runId };
-      await deps.idempotency.set(plan.commandKey, output);
-      return ok(output);
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Workflow start failed due to a dependency failure.';
-    return err({ kind: 'DependencyFailure', message });
-  }
-}
-
-type NewStartWorkflowPlan = Readonly<{
+export type NewStartWorkflowPlan = Readonly<{
   kind: 'new';
   ids: ParsedIds;
   workflow: WorkflowV1;
@@ -316,21 +254,76 @@ type CachedStartWorkflowPlan = Readonly<{
 
 type StartWorkflowPlan = CachedStartWorkflowPlan | NewStartWorkflowPlan;
 
+function resolvePlanInput(
+  input: StartWorkflowInput,
+): Result<Readonly<{ idempotencyKey: string; ids: ParsedIds }>, StartWorkflowError> {
+  const keyCheck = requireNonEmpty(input.idempotencyKey, 'idempotencyKey');
+  if (!keyCheck.ok) return keyCheck;
+  const idsResult = validateInput(input);
+  if (!idsResult.ok) return idsResult;
+  return ok({ idempotencyKey: keyCheck.value, ids: idsResult.value });
+}
+
+async function ensureRepositoryAggregateConflicts(
+  deps: StartWorkflowDeps,
+  ctx: AppContext,
+  ids: ParsedIds,
+  workflow: WorkflowV1,
+): Promise<Err<Conflict> | null> {
+  const workflowVersions = await deps.workflowStore.listWorkflowsByName(
+    ctx.tenantId,
+    ids.workspaceId,
+    workflow.name,
+  );
+  const workflowVersionConflict = ensureSingleActiveWorkflowVersion({
+    workflowName: workflow.name,
+    selectedWorkflowId: workflow.workflowId,
+    workflowVersions,
+  });
+  if (workflowVersionConflict) return err(workflowVersionConflict);
+
+  const adapterRegistrations = await deps.adapterRegistrationStore.listByWorkspace(
+    ctx.tenantId,
+    ids.workspaceId,
+  );
+  const adapterConflict = ensureSingleActiveAdapterPerPort({
+    portFamilies: workflow.actions.map((action) => action.portFamily),
+    adapterRegistrations,
+  });
+  return adapterConflict ? err(adapterConflict) : null;
+}
+
+async function buildNewRunState(
+  deps: StartWorkflowDeps,
+  ctx: AppContext,
+  ids: ParsedIds,
+  workflow: WorkflowV1,
+): Promise<Result<Readonly<{ generated: GeneratedValues; run: RunV1 }>, StartWorkflowError>> {
+  const genResult = generateDepsValues(deps.idGenerator, deps.clock);
+  if (!genResult.ok) return genResult;
+
+  const runResult = buildRun(ctx, ids, workflow, genResult.value);
+  if (!runResult.ok) return runResult;
+
+  const existingRun = await deps.runStore.getRunById(ctx.tenantId, ids.workspaceId, runResult.value.runId);
+  const runConflict = ensureRunIdIsUnique(existingRun, runResult.value.runId);
+  if (runConflict) return err(runConflict);
+  return ok({ generated: genResult.value, run: runResult.value });
+}
+
 async function buildStartWorkflowPlan(
   deps: StartWorkflowDeps,
   ctx: AppContext,
   input: StartWorkflowInput,
 ): Promise<Result<StartWorkflowPlan, StartWorkflowError>> {
-  const keyCheck = requireNonEmpty(input.idempotencyKey, 'idempotencyKey');
-  if (!keyCheck.ok) return keyCheck;
-
-  const idsResult = validateInput(input);
-  if (!idsResult.ok) return idsResult;
+  const planInput = resolvePlanInput(input);
+  if (!planInput.ok) return planInput;
+  const { idempotencyKey, ids } = planInput.value;
 
   const commandKey = {
     tenantId: ctx.tenantId,
     commandName: START_WORKFLOW_COMMAND,
-    requestKey: keyCheck.value,
+    requestKey: idempotencyKey,
   };
 
   const cached = await deps.idempotency.get<StartWorkflowOutput>(commandKey);
@@ -338,60 +331,24 @@ async function buildStartWorkflowPlan(
     return ok({ kind: 'cached', output: cached });
   }
 
-  // Validate and parse trigger before doing expensive lookups
-  const triggerResult = parseTriggerFromInput(input.trigger, idsResult.value);
+  const triggerResult = parseTriggerFromInput(input.trigger, ids);
   if (!triggerResult.ok) return triggerResult;
 
-  const workflowResult = await resolveWorkflow(
-    deps.workflowStore,
-    ctx,
-    idsResult.value,
-    input.workflowId,
-  );
+  const workflowResult = await resolveWorkflow(deps.workflowStore, ctx, ids, input.workflowId);
   if (!workflowResult.ok) return workflowResult;
 
-  const workflowVersions = await deps.workflowStore.listWorkflowsByName(
-    ctx.tenantId,
-    idsResult.value.workspaceId,
-    workflowResult.value.name,
-  );
-  const workflowVersionConflict = ensureSingleActiveWorkflowVersion({
-    workflowName: workflowResult.value.name,
-    selectedWorkflowId: workflowResult.value.workflowId,
-    workflowVersions,
-  });
-  if (workflowVersionConflict) return err(workflowVersionConflict);
+  const conflict = await ensureRepositoryAggregateConflicts(deps, ctx, ids, workflowResult.value);
+  if (conflict) return conflict;
 
-  const adapterRegistrations = await deps.adapterRegistrationStore.listByWorkspace(
-    ctx.tenantId,
-    idsResult.value.workspaceId,
-  );
-  const adapterConflict = ensureSingleActiveAdapterPerPort({
-    portFamilies: workflowResult.value.actions.map((action) => action.portFamily),
-    adapterRegistrations,
-  });
-  if (adapterConflict) return err(adapterConflict);
-
-  const genResult = generateDepsValues(deps.idGenerator, deps.clock);
-  if (!genResult.ok) return genResult;
-
-  const runResult = buildRun(ctx, idsResult.value, workflowResult.value, genResult.value);
-  if (!runResult.ok) return runResult;
-
-  const existingRun = await deps.runStore.getRunById(
-    ctx.tenantId,
-    idsResult.value.workspaceId,
-    runResult.value.runId,
-  );
-  const runConflict = ensureRunIdIsUnique(existingRun, runResult.value.runId);
-  if (runConflict) return err(runConflict);
+  const runState = await buildNewRunState(deps, ctx, ids, workflowResult.value);
+  if (!runState.ok) return runState;
 
   return ok({
     kind: 'new',
-    ids: idsResult.value,
+    ids,
     workflow: workflowResult.value,
-    generated: genResult.value,
-    run: runResult.value,
+    generated: runState.value.generated,
+    run: runState.value.run,
     commandKey,
     ...(triggerResult.value !== undefined ? { trigger: triggerResult.value } : {}),
   });
@@ -413,10 +370,9 @@ export async function startWorkflow(
     return ok(plan.output);
   }
 
-  const txResult = await executeTransaction(deps, ctx, plan);
+  const txResult = await executeStartWorkflowTransaction(deps, ctx, plan);
   if (!txResult.ok) return txResult;
 
-  // Route trigger if one was provided and a router is configured
   if (plan.trigger && deps.triggerRouter) {
     await deps.triggerRouter.routeAtWorkflowStart({
       trigger: plan.trigger,

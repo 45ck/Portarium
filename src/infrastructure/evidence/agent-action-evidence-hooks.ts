@@ -35,6 +35,11 @@ type AgentActionEvidencePayload = Readonly<{
   timestamp: string;
 }>;
 
+type AgentActionEvidenceOptionalPayload = Pick<
+  AgentActionEvidencePayload,
+  'machineId' | 'agentId' | 'toolName' | 'status' | 'errorMessage'
+>;
+
 export interface AgentActionEvidenceHooksDeps {
   evidenceLog: EvidenceLogPort;
   payloadStore: EvidencePayloadStorePort;
@@ -148,29 +153,39 @@ function parseAgentActionEvidencePayload(
   eventType: SupportedAgentActionEventType,
 ): AgentActionEvidencePayload {
   const payload = isRecord(event.payload) ? event.payload : {};
-  const runId = asNonEmptyString(payload['runId']) ?? event.aggregateId;
-  const actionId = asNonEmptyString(payload['actionId']) ?? asNonEmptyString(payload['stepId']);
-  if (!runId || !actionId) {
-    throw new Error(`Agent action payload missing required runId/actionId for ${event.eventType}.`);
-  }
-
-  const machineId = asNonEmptyString(payload['machineId']);
-  const agentId = asNonEmptyString(payload['agentId']);
-  const toolName = asNonEmptyString(payload['toolName']);
-  const status = asNonEmptyString(payload['status']);
-  const errorMessage =
-    asNonEmptyString(payload['errorMessage']) ?? asNonEmptyString(payload['error']);
+  const { runId, actionId } = parseRunAndActionIds(event, payload);
 
   return {
     eventType,
     runId,
     actionId,
+    ...parseOptionalEvidenceFields(payload),
+    timestamp: event.occurredAtIso,
+  };
+}
+
+function parseRunAndActionIds(
+  event: DomainEventV1,
+  payload: Record<string, unknown>,
+): Readonly<{ runId: string; actionId: string }> {
+  const runId = asNonEmptyString(payload['runId']) ?? event.aggregateId;
+  const actionId = asNonEmptyString(payload['actionId']) ?? asNonEmptyString(payload['stepId']);
+  if (runId && actionId) return { runId, actionId };
+  throw new Error(`Agent action payload missing required runId/actionId for ${event.eventType}.`);
+}
+
+function parseOptionalEvidenceFields(payload: Record<string, unknown>): AgentActionEvidenceOptionalPayload {
+  const machineId = asNonEmptyString(payload['machineId']);
+  const agentId = asNonEmptyString(payload['agentId']);
+  const toolName = asNonEmptyString(payload['toolName']);
+  const status = asNonEmptyString(payload['status']);
+  const errorMessage = asNonEmptyString(payload['errorMessage']) ?? asNonEmptyString(payload['error']);
+  return {
     ...(machineId ? { machineId } : {}),
     ...(agentId ? { agentId } : {}),
     ...(toolName ? { toolName } : {}),
     ...(status ? { status } : {}),
     ...(errorMessage ? { errorMessage } : {}),
-    timestamp: event.occurredAtIso,
   };
 }
 

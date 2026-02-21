@@ -24,6 +24,7 @@ import {
   type Result,
   type ValidationFailed,
 } from '../common/index.js';
+import { newCommandKey, toDependencyFailure } from './machine-agent-registration.utils.js';
 import type {
   AuthorizationPort,
   Clock,
@@ -34,7 +35,6 @@ import type {
   MachineRegistryStore,
   UnitOfWork,
 } from '../ports/index.js';
-import type { IdempotencyKey } from '../ports/idempotency.js';
 
 const REGISTER_MACHINE_COMMAND = 'RegisterMachine';
 const CREATE_AGENT_COMMAND = 'CreateAgent';
@@ -79,14 +79,6 @@ function validateIdempotencyKey(key: string): Result<string, ValidationFailed> {
     return err({ kind: 'ValidationFailed', message: 'idempotencyKey must be a non-empty string.' });
   }
   return ok(key);
-}
-
-function toDependencyFailure(error: unknown, fallback: string): DependencyFailure {
-  return { kind: 'DependencyFailure', message: error instanceof Error ? error.message : fallback };
-}
-
-function newCommandKey(ctx: AppContext, commandName: string, requestKey: string): IdempotencyKey {
-  return { tenantId: ctx.tenantId, commandName, requestKey };
 }
 
 function buildEvidenceEntry(

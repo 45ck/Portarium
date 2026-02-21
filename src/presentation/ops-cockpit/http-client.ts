@@ -1,5 +1,27 @@
 import { isProblemDetails, ProblemDetailsError } from './problem-details.js';
-import { buildCursorQuery } from './pagination.js';
+import {
+  buildCursorQueryParams,
+  buildListEvidenceQuery,
+  buildListRunsQuery,
+  buildListWorkItemsQuery,
+  buildRequestHeaders,
+  buildRequestUrl,
+  normalizeRequestBody,
+  normalizeResourceId,
+  normalizeWorkspaceId,
+  safeJsonParse,
+} from './http-client-helpers.js';
+import {
+  assignHumanTaskApi,
+  completeHumanTaskApi,
+  escalateHumanTaskApi,
+  getHumanTaskApi,
+  getWorkforceMemberApi,
+  listHumanTasksApi,
+  listWorkforceMembersApi,
+  listWorkforceQueuesApi,
+  patchWorkforceMemberAvailabilityApi,
+} from './http-client-workforce-api.js';
 import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
@@ -83,7 +105,7 @@ export class ControlPlaneClient {
     workspaceId: string,
     request: ListRunsRequest = {},
   ): Promise<CursorPage<RunSummary>> {
-    const query = this.buildListRunsQuery(request);
+    const query = buildListRunsQuery(request);
     return this.request<CursorPage<RunSummary>>(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs`,
       'GET',
@@ -121,7 +143,7 @@ export class ControlPlaneClient {
     workspaceId: string,
     request: ListWorkItemsRequest = {},
   ): Promise<CursorPage<WorkItemSummary>> {
-    const query = this.buildListWorkItemsQuery(request);
+    const query = buildListWorkItemsQuery(request);
     return this.request<CursorPage<WorkItemSummary>>(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/work-items`,
       'GET',
@@ -171,7 +193,7 @@ export class ControlPlaneClient {
     workspaceId: string,
     request: ListEvidenceRequest = {},
   ): Promise<CursorPage<EvidenceEntry>> {
-    const query = this.buildListEvidenceQuery(request);
+    const query = buildListEvidenceQuery(request);
     return this.request<CursorPage<EvidenceEntry>>(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/evidence`,
       'GET',
@@ -241,22 +263,14 @@ export class ControlPlaneClient {
     workspaceId: string,
     request: ListWorkforceMembersRequest = {},
   ): Promise<CursorPage<WorkforceMemberSummary>> {
-    const query = this.buildListWorkforceMembersQuery(request);
-    return this.request<CursorPage<WorkforceMemberSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce`,
-      'GET',
-      { query },
-    );
+    return listWorkforceMembersApi(this.request.bind(this), workspaceId, request);
   }
 
   public async getWorkforceMember(
     workspaceId: string,
     workforceMemberId: string,
   ): Promise<WorkforceMemberSummary> {
-    return this.request<WorkforceMemberSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/${normalizeResourceId(workforceMemberId)}`,
-      'GET',
-    );
+    return getWorkforceMemberApi(this.request.bind(this), workspaceId, workforceMemberId);
   }
 
   public async patchWorkforceMemberAvailability(
@@ -264,10 +278,11 @@ export class ControlPlaneClient {
     workforceMemberId: string,
     request: PatchWorkforceAvailabilityRequest,
   ): Promise<WorkforceMemberSummary> {
-    return this.request<WorkforceMemberSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/${normalizeResourceId(workforceMemberId)}/availability`,
-      'PATCH',
-      { body: request },
+    return patchWorkforceMemberAvailabilityApi(
+      this.request.bind(this),
+      workspaceId,
+      workforceMemberId,
+      request,
     );
   }
 
@@ -275,31 +290,18 @@ export class ControlPlaneClient {
     workspaceId: string,
     request: ListWorkforceQueuesRequest = {},
   ): Promise<CursorPage<WorkforceQueueSummary>> {
-    const query = this.buildListWorkforceQueuesQuery(request);
-    return this.request<CursorPage<WorkforceQueueSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/workforce/queues`,
-      'GET',
-      { query },
-    );
+    return listWorkforceQueuesApi(this.request.bind(this), workspaceId, request);
   }
 
   public async listHumanTasks(
     workspaceId: string,
     request: ListHumanTasksRequest = {},
   ): Promise<CursorPage<HumanTaskSummary>> {
-    const query = this.buildListHumanTasksQuery(request);
-    return this.request<CursorPage<HumanTaskSummary>>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks`,
-      'GET',
-      { query },
-    );
+    return listHumanTasksApi(this.request.bind(this), workspaceId, request);
   }
 
   public async getHumanTask(workspaceId: string, humanTaskId: string): Promise<HumanTaskSummary> {
-    return this.request<HumanTaskSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}`,
-      'GET',
-    );
+    return getHumanTaskApi(this.request.bind(this), workspaceId, humanTaskId);
   }
 
   public async assignHumanTask(
@@ -308,10 +310,12 @@ export class ControlPlaneClient {
     request: AssignHumanTaskRequest,
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return this.request<HumanTaskSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/assign`,
-      'POST',
-      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    return assignHumanTaskApi(
+      this.request.bind(this),
+      workspaceId,
+      humanTaskId,
+      request,
+      idempotencyKey,
     );
   }
 
@@ -321,10 +325,12 @@ export class ControlPlaneClient {
     request: CompleteHumanTaskRequest = {},
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return this.request<HumanTaskSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/complete`,
-      'POST',
-      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    return completeHumanTaskApi(
+      this.request.bind(this),
+      workspaceId,
+      humanTaskId,
+      request,
+      idempotencyKey,
     );
   }
 
@@ -334,95 +340,17 @@ export class ControlPlaneClient {
     request: EscalateHumanTaskRequest,
     idempotencyKey?: string,
   ): Promise<HumanTaskSummary> {
-    return this.request<HumanTaskSummary>(
-      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/human-tasks/${normalizeResourceId(humanTaskId)}/escalate`,
-      'POST',
-      { body: request, ...(idempotencyKey ? { idempotencyKey } : {}) },
+    return escalateHumanTaskApi(
+      this.request.bind(this),
+      workspaceId,
+      humanTaskId,
+      request,
+      idempotencyKey,
     );
   }
 
-  private buildListRunsQuery(request: ListRunsRequest): URLSearchParams {
-    return this.buildCursorQuery(request);
-  }
-
-  private buildListWorkItemsQuery(request: ListWorkItemsRequest): URLSearchParams {
-    const query = buildCursorQuery(request).query;
-    if (request.status) {
-      query.set('status', request.status);
-    }
-    if (request.ownerUserId) {
-      query.set('ownerUserId', request.ownerUserId);
-    }
-    if (request.runId) {
-      query.set('runId', request.runId);
-    }
-    if (request.workflowId) {
-      query.set('workflowId', request.workflowId);
-    }
-    if (request.approvalId) {
-      query.set('approvalId', request.approvalId);
-    }
-    if (request.evidenceId) {
-      query.set('evidenceId', request.evidenceId);
-    }
-    return query;
-  }
-
-  private buildListEvidenceQuery(request: ListEvidenceRequest): URLSearchParams {
-    const query = buildCursorQuery(request).query;
-    if (request.runId) {
-      query.set('runId', request.runId);
-    }
-    if (request.planId) {
-      query.set('planId', request.planId);
-    }
-    if (request.workItemId) {
-      query.set('workItemId', request.workItemId);
-    }
-    if (request.category) {
-      query.set('category', request.category);
-    }
-    return query;
-  }
-
-  private buildListWorkforceMembersQuery(request: ListWorkforceMembersRequest): URLSearchParams {
-    const query = this.buildCursorQuery(request);
-    if (request.capability) {
-      query.set('capability', request.capability);
-    }
-    if (request.queueId) {
-      query.set('queueId', request.queueId);
-    }
-    if (request.availability) {
-      query.set('availability', request.availability);
-    }
-    return query;
-  }
-
-  private buildListWorkforceQueuesQuery(request: ListWorkforceQueuesRequest): URLSearchParams {
-    const query = this.buildCursorQuery(request);
-    if (request.capability) {
-      query.set('capability', request.capability);
-    }
-    return query;
-  }
-
-  private buildListHumanTasksQuery(request: ListHumanTasksRequest): URLSearchParams {
-    const query = this.buildCursorQuery(request);
-    if (request.assigneeId) {
-      query.set('assigneeId', request.assigneeId);
-    }
-    if (request.status) {
-      query.set('status', request.status);
-    }
-    if (request.runId) {
-      query.set('runId', request.runId);
-    }
-    return query;
-  }
-
   protected buildCursorQuery(request: CursorPaginationRequest): URLSearchParams {
-    return buildCursorQuery(request).query;
+    return buildCursorQueryParams(request);
   }
 
   protected async request<T>(
@@ -430,9 +358,14 @@ export class ControlPlaneClient {
     method: HttpMethod,
     options: ApiRequestOptions<T> = {},
   ): Promise<T> {
-    const headers = await this.buildHeaders(Boolean(options.body), options.idempotencyKey);
-    const url = this.buildUrl(path, options.query);
-    const body = this.normalizeBody(options.body);
+    const headers = await buildRequestHeaders({
+      defaultHeaders: this.defaultHeaders,
+      hasJsonBody: Boolean(options.body),
+      ...(options.idempotencyKey !== undefined ? { idempotencyKey: options.idempotencyKey } : {}),
+      ...(this.getAuthToken ? { getAuthToken: this.getAuthToken } : {}),
+    });
+    const url = buildRequestUrl(this.baseUrl, path, options.query);
+    const body = normalizeRequestBody(options.body);
     const controller = new AbortController();
     const timeout = setTimeout(() => {
       controller.abort();
@@ -482,63 +415,4 @@ export class ControlPlaneClient {
     }
     throw new ControlPlaneClientError(response.status, bodyText);
   }
-
-  private async buildHeaders(hasJsonBody: boolean, idempotencyKey?: string): Promise<Headers> {
-    const headers = new Headers(this.defaultHeaders);
-    headers.set('Accept', 'application/json');
-    headers.set('X-Client', 'portarium-presentation');
-
-    if (hasJsonBody) {
-      headers.set('Content-Type', 'application/json');
-    }
-    if (hasValue(idempotencyKey)) {
-      headers.set('Idempotency-Key', idempotencyKey);
-    }
-    if (this.getAuthToken) {
-      const token = await this.getAuthToken();
-      if (hasValue(token)) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-    }
-
-    return headers;
-  }
-
-  private buildUrl(path: string, query?: URLSearchParams): string {
-    const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
-    const url = new URL(normalizedPath, this.baseUrl);
-    if (query) {
-      query.forEach((value, key) => {
-        url.searchParams.set(key, value);
-      });
-    }
-    return url.toString();
-  }
-
-  private normalizeBody(body?: unknown): string | undefined {
-    if (body === undefined) return undefined;
-    if (typeof body === 'string') return body;
-    return JSON.stringify(body);
-  }
-}
-
-function safeJsonParse(input: string): unknown {
-  if (!input) return null;
-  try {
-    return JSON.parse(input);
-  } catch {
-    return null;
-  }
-}
-
-function normalizeWorkspaceId(workspaceId: string): string {
-  return encodeURIComponent(workspaceId);
-}
-
-function normalizeResourceId(resourceId: string): string {
-  return encodeURIComponent(resourceId);
-}
-
-function hasValue(input: string | undefined): input is string {
-  return typeof input === 'string' && input.length > 0;
 }

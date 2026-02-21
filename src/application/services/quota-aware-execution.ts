@@ -77,6 +77,69 @@ export type QuotaAwareInvokeResultV1 = Readonly<{
   backoffMsHistory: readonly number[];
 }>;
 
+function buildInvokeResult(
+  args: Readonly<{
+    result: MachineInvokerResult;
+    attempts: number;
+    retriesUsed: number;
+    maxRetries: number;
+    backoffMsHistory: readonly number[];
+  }>,
+): QuotaAwareInvokeResultV1 {
+  return {
+    result: args.result,
+    attempts: args.attempts,
+    retryBudgetUsed: args.retriesUsed,
+    retryBudgetRemaining: Math.max(0, args.maxRetries - args.retriesUsed),
+    backoffMsHistory: args.backoffMsHistory,
+  };
+}
+
+function asRetryableRateLimitFailure(
+  result: MachineInvokerResult,
+): (MachineInvokerFailure & { errorKind: 'RateLimited' }) | null {
+  if (!result.ok && result.errorKind === 'RateLimited') {
+    return result as MachineInvokerFailure & { errorKind: 'RateLimited' };
+  }
+  return null;
+}
+
+function resolveTerminalInvokeResult(args: Readonly<{
+  result: MachineInvokerResult;
+  retryableFailure: (MachineInvokerFailure & { errorKind: 'RateLimited' }) | null;
+  attempts: number;
+  retriesUsed: number;
+  maxRetries: number;
+  backoffMsHistory: readonly number[];
+}>): QuotaAwareInvokeResultV1 | null {
+  if (!args.retryableFailure) {
+    return buildInvokeResult({
+      result: args.result,
+      attempts: args.attempts,
+      retriesUsed: args.retriesUsed,
+      maxRetries: args.maxRetries,
+      backoffMsHistory: args.backoffMsHistory,
+    });
+  }
+  if (args.retriesUsed >= args.maxRetries) {
+    return buildInvokeResult({
+      result: args.result,
+      attempts: args.attempts,
+      retriesUsed: args.retriesUsed,
+      maxRetries: args.maxRetries,
+      backoffMsHistory: args.backoffMsHistory,
+    });
+  }
+  return null;
+}
+
+function requireRetryableFailure(
+  failure: (MachineInvokerFailure & { errorKind: 'RateLimited' }) | null,
+): MachineInvokerFailure & { errorKind: 'RateLimited' } {
+  if (failure) return failure;
+  throw new Error('Expected retryable rate-limit failure.');
+}
+
 export async function invokeMachineWithQuotaRetryV1(params: {
   invoke: () => Promise<MachineInvokerResult>;
   maxRetries: number;
@@ -100,35 +163,26 @@ export async function invokeMachineWithQuotaRetryV1(params: {
   for (;;) {
     attempts += 1;
     const result = await params.invoke();
-    if (result.ok || result.errorKind !== 'RateLimited') {
-      return {
-        result,
-        attempts,
-        retryBudgetUsed: retriesUsed,
-        retryBudgetRemaining: Math.max(0, params.maxRetries - retriesUsed),
-        backoffMsHistory,
-      };
-    }
+    const retryableFailure = asRetryableRateLimitFailure(result);
+    const terminalResult = resolveTerminalInvokeResult({
+      result,
+      retryableFailure,
+      attempts,
+      retriesUsed,
+      maxRetries: params.maxRetries,
+      backoffMsHistory,
+    });
+    if (terminalResult) return terminalResult;
 
-    if (retriesUsed >= params.maxRetries) {
-      return {
-        result,
-        attempts,
-        retryBudgetUsed: retriesUsed,
-        retryBudgetRemaining: 0,
-        backoffMsHistory,
-      };
-    }
-
-    const retryAfter = params.retryAfterMs?.(result);
-    const computedBackoff = computeExponentialBackoffMs({
+    const computedBackoffMs = computeExponentialBackoffMs({
       retryIndex: retriesUsed,
       baseBackoffMs,
       maxBackoffMs,
       jitterRatio,
       random,
     });
-    const delayMs = sanitizeDelayMs(retryAfter) ?? computedBackoff;
+    const retryAfterMs = params.retryAfterMs?.(requireRetryableFailure(retryableFailure));
+    const delayMs = sanitizeDelayMs(retryAfterMs) ?? computedBackoffMs;
     backoffMsHistory.push(delayMs);
 
     retriesUsed += 1;

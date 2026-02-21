@@ -29,39 +29,62 @@ export type RequestValidatorConfig = Readonly<{
 const DEFAULT_MAX_BODY_BYTES = 1_048_576; // 1 MiB
 const DEFAULT_ALLOWED_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 
+function invalid(reason: string): RequestValidationResult {
+  return { valid: false, reason };
+}
+
+function validateMethod(method: string, allowedMethods: readonly string[]): RequestValidationResult {
+  const normalizedMethod = method.toUpperCase();
+  return allowedMethods.includes(normalizedMethod)
+    ? { valid: true }
+    : invalid(`Method ${normalizedMethod} is not allowed.`);
+}
+
+function validatePath(path: string): RequestValidationResult {
+  return path.startsWith('/') ? { valid: true } : invalid('Request path must start with /.');
+}
+
+function validateBodySize(
+  bodySize: number | undefined,
+  maxBodyBytes: number,
+): RequestValidationResult {
+  if (bodySize === undefined || bodySize <= maxBodyBytes) return { valid: true };
+  return invalid(`Request body exceeds maximum size of ${maxBodyBytes} bytes.`);
+}
+
+function requiresJsonBody(method: string): boolean {
+  return method === 'POST' || method === 'PUT' || method === 'PATCH';
+}
+
+function isSupportedContentType(contentType: string): boolean {
+  const normalized = contentType.toLowerCase();
+  return (
+    normalized.includes('application/json') || normalized.includes('application/cloudevents+json')
+  );
+}
+
+function validateContentType(
+  method: string,
+  contentType: string | undefined,
+): RequestValidationResult {
+  if (!requiresJsonBody(method) || contentType === undefined) return { valid: true };
+  return isSupportedContentType(contentType)
+    ? { valid: true }
+    : invalid(`Unsupported content type: ${contentType}. Expected application/json.`);
+}
+
 export function validateRequest(
   request: ValidatableRequest,
   config?: RequestValidatorConfig,
 ): RequestValidationResult {
   const maxBodyBytes = config?.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES;
   const allowedMethods = config?.allowedMethods ?? DEFAULT_ALLOWED_METHODS;
-
   const method = request.method.toUpperCase();
-  if (!allowedMethods.includes(method)) {
-    return { valid: false, reason: `Method ${method} is not allowed.` };
-  }
-
-  if (!request.path.startsWith('/')) {
-    return { valid: false, reason: 'Request path must start with /.' };
-  }
-
-  if (request.bodySize !== undefined && request.bodySize > maxBodyBytes) {
-    return {
-      valid: false,
-      reason: `Request body exceeds maximum size of ${maxBodyBytes} bytes.`,
-    };
-  }
-
-  const hasBody = method === 'POST' || method === 'PUT' || method === 'PATCH';
-  if (hasBody && request.contentType !== undefined) {
-    const ct = request.contentType.toLowerCase();
-    if (!ct.includes('application/json') && !ct.includes('application/cloudevents+json')) {
-      return {
-        valid: false,
-        reason: `Unsupported content type: ${request.contentType}. Expected application/json.`,
-      };
-    }
-  }
-
-  return { valid: true };
+  const checks = [
+    validateMethod(method, allowedMethods),
+    validatePath(request.path),
+    validateBodySize(request.bodySize, maxBodyBytes),
+    validateContentType(method, request.contentType),
+  ];
+  return checks.find((result) => !result.valid) ?? { valid: true };
 }

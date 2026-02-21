@@ -38,117 +38,140 @@ export type EvaluatePackEnablementComplianceInputV1 = Readonly<{
   requiredProfileIds: readonly string[];
 }>;
 
+type ComplianceAuditInput = Readonly<{
+  packId: PackIdType;
+  declaredComplianceAssets: readonly string[];
+  validatedProfileIds: readonly string[];
+  requiredProfileIds: readonly string[];
+}>;
+
+type ComplianceEvaluationState = Readonly<{
+  packId: PackIdType;
+  declaredComplianceAssets: readonly string[];
+  declaredAssetSet: ReadonlySet<string>;
+  parsedEntries: readonly (readonly [string, PackComplianceProfileV1])[];
+  requiredProfileIds: readonly string[];
+}>;
+
+type ProfileCollectionResult =
+  | Readonly<{ ok: true; validatedProfileIds: readonly string[] }>
+  | Readonly<{ ok: false; decision: PackEnablementComplianceDecisionV1 }>;
+
 export function evaluatePackEnablementComplianceV1(
   input: EvaluatePackEnablementComplianceInputV1,
 ): PackEnablementComplianceDecisionV1 {
-  const declaredComplianceAssets = [...(input.manifest.assets.complianceProfiles ?? [])];
-  const declaredAssetSet = new Set(declaredComplianceAssets);
-  const parsedEntries = Object.entries(input.parsedProfilesByAsset);
-  const requiredProfileIds = toSortedUnique(input.requiredProfileIds);
+  const state = createComplianceEvaluationState(input);
+  const declarationError = validateRequiredDeclaration(state);
+  if (declarationError) return declarationError;
 
-  if (requiredProfileIds.length > 0 && declaredComplianceAssets.length === 0) {
-    return deny(
-      'MissingComplianceAssetDeclaration',
-      input.manifest.id,
-      declaredComplianceAssets,
-      [],
-      requiredProfileIds,
-    );
-  }
+  const undeclaredAssetError = validateDeclaredAssets(state);
+  if (undeclaredAssetError) return undeclaredAssetError;
 
-  for (const [assetPath] of parsedEntries) {
-    if (!declaredAssetSet.has(assetPath)) {
-      return deny(
-        'UndeclaredComplianceAsset',
-        input.manifest.id,
-        declaredComplianceAssets,
-        [],
-        requiredProfileIds,
-      );
-    }
-  }
+  const profileCollection = collectValidatedProfileIds(input, state);
+  if (!profileCollection.ok) return profileCollection.decision;
 
-  const validatedProfileIds: string[] = [];
-  for (const declaredAsset of declaredComplianceAssets) {
-    const profile = input.parsedProfilesByAsset[declaredAsset];
-    if (profile === undefined) {
-      return deny(
-        'MissingParsedComplianceProfile',
-        input.manifest.id,
-        declaredComplianceAssets,
-        validatedProfileIds,
-        requiredProfileIds,
-      );
-    }
-
-    if (profile.packId !== input.manifest.id) {
-      return deny(
-        'PackIdMismatch',
-        input.manifest.id,
-        declaredComplianceAssets,
-        validatedProfileIds,
-        requiredProfileIds,
-      );
-    }
-
-    validatedProfileIds.push(String(profile.profileId));
-  }
-
-  const uniqueValidatedProfileIds = toSortedUnique(validatedProfileIds);
-  const missingRequiredProfileIds = requiredProfileIds.filter(
+  const uniqueValidatedProfileIds = toSortedUnique(profileCollection.validatedProfileIds);
+  const missingRequiredProfileIds = state.requiredProfileIds.filter(
     (requiredId) => !uniqueValidatedProfileIds.includes(requiredId),
   );
   if (missingRequiredProfileIds.length > 0) {
     return deny(
       'MissingRequiredComplianceProfile',
-      input.manifest.id,
-      declaredComplianceAssets,
-      uniqueValidatedProfileIds,
-      requiredProfileIds,
+      toAuditInput(state, uniqueValidatedProfileIds),
       missingRequiredProfileIds,
     );
   }
 
   return {
     allowed: true,
-    audit: buildAudit(
-      input.manifest.id,
-      declaredComplianceAssets,
-      uniqueValidatedProfileIds,
-      requiredProfileIds,
-      [],
-    ),
+    audit: buildAudit(toAuditInput(state, uniqueValidatedProfileIds), []),
+  };
+}
+
+function createComplianceEvaluationState(
+  input: EvaluatePackEnablementComplianceInputV1,
+): ComplianceEvaluationState {
+  const declaredComplianceAssets = [...(input.manifest.assets.complianceProfiles ?? [])];
+  return {
+    packId: input.manifest.id,
+    declaredComplianceAssets,
+    declaredAssetSet: new Set(declaredComplianceAssets),
+    parsedEntries: Object.entries(input.parsedProfilesByAsset),
+    requiredProfileIds: toSortedUnique(input.requiredProfileIds),
+  };
+}
+
+function validateRequiredDeclaration(
+  state: ComplianceEvaluationState,
+): PackEnablementComplianceDecisionV1 | null {
+  if (state.requiredProfileIds.length === 0 || state.declaredComplianceAssets.length > 0) return null;
+  return deny('MissingComplianceAssetDeclaration', toAuditInput(state, []));
+}
+
+function validateDeclaredAssets(
+  state: ComplianceEvaluationState,
+): PackEnablementComplianceDecisionV1 | null {
+  for (const [assetPath] of state.parsedEntries) {
+    if (!state.declaredAssetSet.has(assetPath)) {
+      return deny('UndeclaredComplianceAsset', toAuditInput(state, []));
+    }
+  }
+  return null;
+}
+
+function collectValidatedProfileIds(
+  input: EvaluatePackEnablementComplianceInputV1,
+  state: ComplianceEvaluationState,
+): ProfileCollectionResult {
+  const validatedProfileIds: string[] = [];
+  for (const declaredAsset of state.declaredComplianceAssets) {
+    const profile = input.parsedProfilesByAsset[declaredAsset];
+    if (profile === undefined) {
+      return {
+        ok: false,
+        decision: deny('MissingParsedComplianceProfile', toAuditInput(state, validatedProfileIds)),
+      };
+    }
+    if (profile.packId !== state.packId) {
+      return {
+        ok: false,
+        decision: deny('PackIdMismatch', toAuditInput(state, validatedProfileIds)),
+      };
+    }
+    validatedProfileIds.push(String(profile.profileId));
+  }
+  return { ok: true, validatedProfileIds };
+}
+
+function toAuditInput(
+  state: ComplianceEvaluationState,
+  validatedProfileIds: readonly string[],
+): ComplianceAuditInput {
+  return {
+    packId: state.packId,
+    declaredComplianceAssets: state.declaredComplianceAssets,
+    validatedProfileIds,
+    requiredProfileIds: state.requiredProfileIds,
   };
 }
 
 function deny(
   reason: PackEnablementComplianceReasonV1,
-  packId: PackIdType,
-  declaredComplianceAssets: readonly string[],
-  validatedProfileIds: readonly string[],
-  requiredProfileIds: readonly string[],
+  auditInput: ComplianceAuditInput,
   missingRequiredProfileIds: readonly string[] = [],
 ): PackEnablementComplianceDeniedV1 {
   return {
     allowed: false,
     reason,
-    audit: buildAudit(
-      packId,
-      declaredComplianceAssets,
-      validatedProfileIds,
-      requiredProfileIds,
-      missingRequiredProfileIds,
-    ),
+    audit: buildAudit(auditInput, missingRequiredProfileIds),
   };
 }
 
 function buildAudit(
-  packId: PackIdType,
-  declaredComplianceAssets: readonly string[],
-  validatedProfileIds: readonly string[],
-  requiredProfileIds: readonly string[],
+  auditInput: ComplianceAuditInput,
   missingRequiredProfileIds: readonly string[],
 ): PackEnablementComplianceAuditV1 {
+  const { packId, declaredComplianceAssets, validatedProfileIds, requiredProfileIds } = auditInput;
   return {
     packId,
     declaredComplianceAssets: [...declaredComplianceAssets],

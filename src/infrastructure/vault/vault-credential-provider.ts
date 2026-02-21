@@ -31,6 +31,73 @@ function normalizeAddr(addr: string): string {
   return addr.replace(/\/+$/, '');
 }
 
+interface VaultKvReadResponse {
+  data?: {
+    data?: Record<string, string>;
+    metadata?: { version?: number; created_time?: string };
+  };
+}
+
+interface VaultReadUrlInput {
+  vaultAddr: string;
+  kvMount: string;
+  tenantId: string;
+  credentialName: string;
+  version: number | undefined;
+}
+
+function buildVaultReadUrl(input: VaultReadUrlInput): string {
+  const path = `${input.kvMount}/data/${input.tenantId}/${input.credentialName}`;
+  const versionQs = input.version !== undefined ? `?version=${input.version}` : '';
+  return `${input.vaultAddr}/v1/${path}${versionQs}`;
+}
+
+function mapErrorResponse(
+  response: Response,
+  credentialName: string,
+  tenantId: string,
+): CredentialProviderError | null {
+  switch (response.status) {
+    case 404:
+      return {
+        kind: 'CredentialNotFound',
+        message: `Credential '${credentialName}' not found for tenant '${tenantId}'.`,
+      };
+    case 403:
+      return {
+        kind: 'CredentialAccessDenied',
+        message: `Access denied to credential '${credentialName}' for tenant '${tenantId}'.`,
+      };
+    default:
+      return response.ok
+        ? null
+        : {
+            kind: 'CredentialProviderUnavailable',
+            message: `Vault returned HTTP ${response.status}.`,
+          };
+  }
+}
+
+function parseSecretValue(
+  body: VaultKvReadResponse,
+  credentialName: string,
+): Result<CredentialValue, CredentialProviderError> {
+  const secret = body.data?.data?.['value'];
+  if (typeof secret !== 'string') {
+    return err({
+      kind: 'CredentialNotFound',
+      message: `Credential '${credentialName}' has no 'value' key.`,
+    });
+  }
+
+  const metadata = body.data?.metadata;
+  return ok({
+    secret,
+    version: metadata?.version ?? 0,
+    createdAtIso: metadata?.created_time ?? new Date(0).toISOString(),
+  });
+}
+
 export class VaultCredentialProvider implements CredentialProviderPort {
   readonly #vaultAddr: string;
   readonly #token: string;
@@ -48,9 +115,13 @@ export class VaultCredentialProvider implements CredentialProviderPort {
     ref: CredentialReference,
   ): Promise<Result<CredentialValue, CredentialProviderError>> {
     const tenantId: TenantIdType = ref.tenantId;
-    const path = `${this.#kvMount}/data/${tenantId}/${ref.credentialName}`;
-    const versionQs = ref.version !== undefined ? `?version=${ref.version}` : '';
-    const url = `${this.#vaultAddr}/v1/${path}${versionQs}`;
+    const url = buildVaultReadUrl({
+      vaultAddr: this.#vaultAddr,
+      kvMount: this.#kvMount,
+      tenantId,
+      credentialName: ref.credentialName,
+      version: ref.version,
+    });
 
     try {
       const response = await this.#fetchImpl(url, {
@@ -61,49 +132,11 @@ export class VaultCredentialProvider implements CredentialProviderPort {
         },
       });
 
-      if (response.status === 404) {
-        return err({
-          kind: 'CredentialNotFound',
-          message: `Credential '${ref.credentialName}' not found for tenant '${tenantId}'.`,
-        });
-      }
+      const providerError = mapErrorResponse(response, ref.credentialName, tenantId);
+      if (providerError) return err(providerError);
 
-      if (response.status === 403) {
-        return err({
-          kind: 'CredentialAccessDenied',
-          message: `Access denied to credential '${ref.credentialName}' for tenant '${tenantId}'.`,
-        });
-      }
-
-      if (!response.ok) {
-        return err({
-          kind: 'CredentialProviderUnavailable',
-          message: `Vault returned HTTP ${response.status}.`,
-        });
-      }
-
-      const body = (await response.json()) as {
-        data?: {
-          data?: Record<string, string>;
-          metadata?: { version?: number; created_time?: string };
-        };
-      };
-
-      const secretData = body.data?.data;
-      const secret = secretData?.['value'];
-      if (typeof secret !== 'string') {
-        return err({
-          kind: 'CredentialNotFound',
-          message: `Credential '${ref.credentialName}' has no 'value' key.`,
-        });
-      }
-
-      const metadata = body.data?.metadata;
-      return ok({
-        secret,
-        version: metadata?.version ?? 0,
-        createdAtIso: metadata?.created_time ?? new Date(0).toISOString(),
-      });
+      const body = (await response.json()) as VaultKvReadResponse;
+      return parseSecretValue(body, ref.credentialName);
     } catch {
       return err({
         kind: 'CredentialProviderUnavailable',

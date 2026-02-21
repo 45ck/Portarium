@@ -92,31 +92,10 @@ export class SidecarProxy {
   ): Promise<ProxiedResponse> {
     const egressCheck = this.checkEgress(request.url);
     if (!egressCheck.allowed) {
-      return {
-        status: 403,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          error: 'EgressDenied',
-          message: egressCheck.reason,
-          host: egressCheck.host,
-        }),
-      };
+      return this.#buildEgressDeniedResponse(egressCheck);
     }
 
-    const headers: Record<string, string> = { ...request.headers };
-
-    // Inject auth header if token is available and not already set.
-    if (this.#currentToken && !headers['authorization']) {
-      headers['authorization'] = `Bearer ${this.#currentToken}`;
-    }
-
-    // Inject W3C trace context headers.
-    if (traceContext?.traceparent && !headers['traceparent']) {
-      headers['traceparent'] = traceContext.traceparent;
-    }
-    if (traceContext?.tracestate && !headers['tracestate']) {
-      headers['tracestate'] = traceContext.tracestate;
-    }
+    const headers = this.#buildProxyHeaders(request.headers, traceContext);
 
     try {
       const response = await this.#fetchImpl(request.url, {
@@ -125,27 +104,54 @@ export class SidecarProxy {
         ...(request.body !== undefined ? { body: request.body } : {}),
       });
 
-      const responseBody = await response.text();
-      const responseHeaders: Record<string, string> = {};
-      response.headers.forEach((value, key) => {
-        responseHeaders[key] = value;
-      });
-
       return {
         status: response.status,
-        headers: responseHeaders,
-        body: responseBody,
+        headers: toHeaderRecord(response.headers),
+        body: await response.text(),
       };
     } catch (error) {
-      return {
-        status: 502,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          error: 'UpstreamFailure',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        }),
-      };
+      return this.#buildUpstreamFailureResponse(error);
     }
+  }
+
+  #buildEgressDeniedResponse(egressCheck: EgressCheckResult): ProxiedResponse {
+    return {
+      status: 403,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        error: 'EgressDenied',
+        message: egressCheck.reason,
+        host: egressCheck.host,
+      }),
+    };
+  }
+
+  #buildProxyHeaders(
+    requestHeaders: Readonly<Record<string, string>>,
+    traceContext?: Readonly<{ traceparent?: string; tracestate?: string }>,
+  ): Record<string, string> {
+    const headers: Record<string, string> = { ...requestHeaders };
+    if (this.#currentToken && !headers['authorization']) {
+      headers['authorization'] = `Bearer ${this.#currentToken}`;
+    }
+    if (traceContext?.traceparent && !headers['traceparent']) {
+      headers['traceparent'] = traceContext.traceparent;
+    }
+    if (traceContext?.tracestate && !headers['tracestate']) {
+      headers['tracestate'] = traceContext.tracestate;
+    }
+    return headers;
+  }
+
+  #buildUpstreamFailureResponse(error: unknown): ProxiedResponse {
+    return {
+      status: 502,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        error: 'UpstreamFailure',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+    };
   }
 }
 
@@ -162,4 +168,12 @@ function matchesHost(host: string, pattern: string): boolean {
   }
 
   return false;
+}
+
+function toHeaderRecord(headers: Headers): Record<string, string> {
+  const responseHeaders: Record<string, string> = {};
+  headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+  return responseHeaders;
 }

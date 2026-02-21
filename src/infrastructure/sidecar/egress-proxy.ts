@@ -44,27 +44,12 @@ export function checkEgressAllowed(
   const method = request.method?.toUpperCase();
 
   for (const rule of config.allowlist) {
-    if (!matchesHostPattern(rule.hostPattern, host)) continue;
-
-    if (rule.port !== undefined && request.port !== undefined && request.port !== rule.port) {
-      continue;
-    }
-
-    if (
-      rule.allowedMethods &&
-      rule.allowedMethods.length > 0 &&
-      method &&
-      !rule.allowedMethods.includes(method)
-    ) {
-      continue;
-    }
-
-    return { allowed: true, matchedRule: rule };
+    if (matchesRule(rule, host, request.port, method)) return { allowed: true, matchedRule: rule };
   }
 
   return {
     allowed: false,
-    reason: `Egress to ${host}${request.port ? `:${request.port}` : ''} is not in the allowlist.`,
+    reason: `Egress to ${formatHostPort(host, request.port)} is not in the allowlist.`,
   };
 }
 
@@ -100,4 +85,34 @@ function matchesHostPattern(pattern: string, host: string): boolean {
   }
 
   return normalizedPattern === host;
+}
+
+function matchesRule(
+  rule: EgressRule,
+  host: string,
+  port: number | undefined,
+  method: string | undefined,
+): boolean {
+  return (
+    matchesHostPattern(rule.hostPattern, host) &&
+    matchesRulePort(rule.port, port) &&
+    matchesRuleMethod(rule.allowedMethods, method)
+  );
+}
+
+function matchesRulePort(rulePort: number | undefined, requestPort: number | undefined): boolean {
+  if (rulePort === undefined || requestPort === undefined) return true;
+  return requestPort === rulePort;
+}
+
+function matchesRuleMethod(
+  allowedMethods: readonly string[] | undefined,
+  method: string | undefined,
+): boolean {
+  if (!allowedMethods || allowedMethods.length === 0 || !method) return true;
+  return allowedMethods.includes(method);
+}
+
+function formatHostPort(host: string, port: number | undefined): string {
+  return port ? `${host}:${port}` : host;
 }

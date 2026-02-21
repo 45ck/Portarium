@@ -164,75 +164,84 @@ export class PortariumMcpServer {
   }
 
   async #dispatch(toolName: string, args: Record<string, unknown>): Promise<unknown> {
-    switch (toolName) {
-      case 'portarium_run_start': {
-        const input = asRecord(args['input']);
-        return this.#client.startRun({
-          workspaceId: requireString(args, 'workspaceId'),
-          workflowId: requireString(args, 'workflowId'),
-          ...(input !== undefined ? { input } : {}),
-        });
-      }
+    const handlers: Record<string, () => Promise<unknown>> = {
+      portarium_run_start: async () => this.#dispatchStartRun(args),
+      portarium_run_get: async () => this.#dispatchRunGet(args),
+      portarium_run_cancel: async () => this.#dispatchRunCancel(args),
+      portarium_work_items_list: async () => this.#dispatchListWorkItems(args),
+      portarium_approval_submit: async () => this.#dispatchSubmitApproval(args),
+      portarium_agent_register: async () => this.#dispatchRegisterAgent(args),
+      portarium_agent_heartbeat: async () => this.#dispatchAgentHeartbeat(args),
+    };
+    const handler = handlers[toolName];
+    if (!handler) throw new Error(`Unimplemented tool: ${toolName}`);
+    return handler();
+  }
 
-      case 'portarium_run_get':
-        return this.#client.getRun({
-          workspaceId: requireString(args, 'workspaceId'),
-          runId: requireString(args, 'runId'),
-        });
+  async #dispatchStartRun(args: Record<string, unknown>): Promise<unknown> {
+    const input = asRecord(args['input']);
+    return this.#client.startRun({
+      workspaceId: requireString(args, 'workspaceId'),
+      workflowId: requireString(args, 'workflowId'),
+      ...(input !== undefined ? { input } : {}),
+    });
+  }
 
-      case 'portarium_run_cancel': {
-        const reason = asString(args['reason']);
-        return this.#client.cancelRun({
-          workspaceId: requireString(args, 'workspaceId'),
-          runId: requireString(args, 'runId'),
-          ...(reason !== undefined ? { reason } : {}),
-        });
-      }
+  async #dispatchRunGet(args: Record<string, unknown>): Promise<unknown> {
+    return this.#client.getRun({
+      workspaceId: requireString(args, 'workspaceId'),
+      runId: requireString(args, 'runId'),
+    });
+  }
 
-      case 'portarium_work_items_list': {
-        const runId = asString(args['runId']);
-        const status = asString(args['status']);
-        return this.#client.listWorkItems({
-          workspaceId: requireString(args, 'workspaceId'),
-          ...(runId !== undefined ? { runId } : {}),
-          ...(status !== undefined ? { status } : {}),
-        });
-      }
+  async #dispatchRunCancel(args: Record<string, unknown>): Promise<unknown> {
+    const reason = asString(args['reason']);
+    return this.#client.cancelRun({
+      workspaceId: requireString(args, 'workspaceId'),
+      runId: requireString(args, 'runId'),
+      ...(reason !== undefined ? { reason } : {}),
+    });
+  }
 
-      case 'portarium_approval_submit': {
-        const comment = asString(args['comment']);
-        return this.#client.submitApproval({
-          workspaceId: requireString(args, 'workspaceId'),
-          approvalId: requireString(args, 'approvalId'),
-          decision: requireString(args, 'decision'),
-          ...(comment !== undefined ? { comment } : {}),
-        });
-      }
+  async #dispatchListWorkItems(args: Record<string, unknown>): Promise<unknown> {
+    const runId = asString(args['runId']);
+    const status = asString(args['status']);
+    return this.#client.listWorkItems({
+      workspaceId: requireString(args, 'workspaceId'),
+      ...(runId !== undefined ? { runId } : {}),
+      ...(status !== undefined ? { status } : {}),
+    });
+  }
 
-      case 'portarium_agent_register': {
-        const capabilities = asStringArray(args['capabilities']);
-        return this.#client.registerAgent({
-          workspaceId: requireString(args, 'workspaceId'),
-          machineId: requireString(args, 'machineId'),
-          agentId: requireString(args, 'agentId'),
-          displayName: requireString(args, 'displayName'),
-          ...(capabilities !== undefined ? { capabilities } : {}),
-        });
-      }
+  async #dispatchSubmitApproval(args: Record<string, unknown>): Promise<unknown> {
+    const comment = asString(args['comment']);
+    return this.#client.submitApproval({
+      workspaceId: requireString(args, 'workspaceId'),
+      approvalId: requireString(args, 'approvalId'),
+      decision: requireString(args, 'decision'),
+      ...(comment !== undefined ? { comment } : {}),
+    });
+  }
 
-      case 'portarium_agent_heartbeat': {
-        const status = asString(args['status']);
-        return this.#client.agentHeartbeat({
-          workspaceId: requireString(args, 'workspaceId'),
-          machineId: requireString(args, 'machineId'),
-          agentId: requireString(args, 'agentId'),
-          ...(status !== undefined ? { status } : {}),
-        });
-      }
+  async #dispatchRegisterAgent(args: Record<string, unknown>): Promise<unknown> {
+    const capabilities = asStringArray(args['capabilities']);
+    return this.#client.registerAgent({
+      workspaceId: requireString(args, 'workspaceId'),
+      machineId: requireString(args, 'machineId'),
+      agentId: requireString(args, 'agentId'),
+      displayName: requireString(args, 'displayName'),
+      ...(capabilities !== undefined ? { capabilities } : {}),
+    });
+  }
 
-      default:
-        throw new Error(`Unimplemented tool: ${toolName}`);
-    }
+  async #dispatchAgentHeartbeat(args: Record<string, unknown>): Promise<unknown> {
+    const status = asString(args['status']);
+    return this.#client.agentHeartbeat({
+      workspaceId: requireString(args, 'workspaceId'),
+      machineId: requireString(args, 'machineId'),
+      agentId: requireString(args, 'agentId'),
+      ...(status !== undefined ? { status } : {}),
+    });
   }
 }
 

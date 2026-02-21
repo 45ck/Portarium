@@ -41,6 +41,47 @@ export interface ListWorkItemsDeps {
 
 const WORK_ITEM_STATUSES = ['Open', 'InProgress', 'Blocked', 'Resolved', 'Closed'] as const;
 
+function validateIdentifierFields(input: ListWorkItemsInput): ValidationFailed | null {
+  for (const [field, value] of [
+    ['ownerUserId', input.ownerUserId],
+    ['runId', input.runId],
+    ['workflowId', input.workflowId],
+    ['approvalId', input.approvalId],
+    ['evidenceId', input.evidenceId],
+  ] as const) {
+    if (value?.trim() === '') {
+      return { kind: 'ValidationFailed', message: `${field} must be a non-empty string.` };
+    }
+  }
+  return null;
+}
+
+function validateInput(input: ListWorkItemsInput): ValidationFailed | null {
+  if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
+    return { kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' };
+  }
+  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
+    return { kind: 'ValidationFailed', message: 'limit must be a positive integer.' };
+  }
+  if (input.status !== undefined && !WORK_ITEM_STATUSES.includes(input.status)) {
+    return { kind: 'ValidationFailed', message: 'status is invalid.' };
+  }
+  return validateIdentifierFields(input);
+}
+
+function buildFilter(input: ListWorkItemsInput): ListWorkItemsFilter {
+  return {
+    ...(input.status ? { status: input.status } : {}),
+    ...(input.ownerUserId ? { ownerUserId: UserId(input.ownerUserId) } : {}),
+    ...(input.runId ? { runId: RunId(input.runId) } : {}),
+    ...(input.workflowId ? { workflowId: WorkflowId(input.workflowId) } : {}),
+    ...(input.approvalId ? { approvalId: ApprovalId(input.approvalId) } : {}),
+    ...(input.evidenceId ? { evidenceId: EvidenceId(input.evidenceId) } : {}),
+    ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    ...(input.cursor ? { cursor: input.cursor } : {}),
+  };
+}
+
 export async function listWorkItems(
   deps: ListWorkItemsDeps,
   ctx: AppContext,
@@ -55,42 +96,12 @@ export async function listWorkItems(
     });
   }
 
-  if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
-  }
-
-  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
-    return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
-  }
-
-  if (input.status !== undefined && !WORK_ITEM_STATUSES.includes(input.status)) {
-    return err({ kind: 'ValidationFailed', message: 'status is invalid.' });
-  }
-
-  for (const [field, value] of [
-    ['ownerUserId', input.ownerUserId],
-    ['runId', input.runId],
-    ['workflowId', input.workflowId],
-    ['approvalId', input.approvalId],
-    ['evidenceId', input.evidenceId],
-  ] as const) {
-    if (value?.trim() === '') {
-      return err({ kind: 'ValidationFailed', message: `${field} must be a non-empty string.` });
-    }
-  }
+  const validationError = validateInput(input);
+  if (validationError) return err(validationError);
 
   try {
     const workspaceId = WorkspaceId(input.workspaceId);
-    const filter: ListWorkItemsFilter = {
-      ...(input.status ? { status: input.status } : {}),
-      ...(input.ownerUserId ? { ownerUserId: UserId(input.ownerUserId) } : {}),
-      ...(input.runId ? { runId: RunId(input.runId) } : {}),
-      ...(input.workflowId ? { workflowId: WorkflowId(input.workflowId) } : {}),
-      ...(input.approvalId ? { approvalId: ApprovalId(input.approvalId) } : {}),
-      ...(input.evidenceId ? { evidenceId: EvidenceId(input.evidenceId) } : {}),
-      ...(input.limit !== undefined ? { limit: input.limit } : {}),
-      ...(input.cursor ? { cursor: input.cursor } : {}),
-    };
+    const filter = buildFilter(input);
     const page = await deps.workItemStore.listWorkItems(ctx.tenantId, workspaceId, filter);
     return ok(page);
   } catch {

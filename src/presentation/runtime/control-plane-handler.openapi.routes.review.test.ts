@@ -112,44 +112,83 @@ async function loadOpenApiOperations(): Promise<readonly OpenApiOperation[]> {
   const operations: OpenApiOperation[] = [];
   for (const [pathTemplate, pathItemUnknown] of Object.entries(paths)) {
     const pathItem = toRecord(pathItemUnknown, `OpenAPI.paths.${pathTemplate}`);
-    const pathParameters = readParameters(pathItem['parameters'], doc, componentParameters);
-
-    for (const method of HTTP_METHODS) {
-      const operationUnknown = pathItem[method];
-      if (!operationUnknown) continue;
-
-      const operation = toRecord(operationUnknown, `${pathTemplate}.${method}`);
-      const operationParameters = readParameters(operation['parameters'], doc, componentParameters);
-      const responses = toRecord(operation['responses'], `${pathTemplate}.${method}.responses`);
-
-      const allowedStatuses = new Set<number>();
-      let hasDefaultResponse = false;
-      for (const key of Object.keys(responses)) {
-        if (/^\d{3}$/.test(key)) {
-          allowedStatuses.add(Number.parseInt(key, 10));
-        } else if (key === 'default') {
-          hasDefaultResponse = true;
-        }
-      }
-
-      const operationId =
-        typeof operation['operationId'] === 'string'
-          ? operation['operationId']
-          : `${method.toUpperCase()} ${pathTemplate}`;
-
-      operations.push({
-        method: method.toUpperCase() as OpenApiOperation['method'],
-        pathTemplate,
-        operationId,
-        allowedStatuses,
-        hasDefaultResponse,
-        parameters: [...pathParameters, ...operationParameters],
-        hasJsonRequestBody: hasJsonRequestBody(operation, doc),
-      });
-    }
+    operations.push(...extractPathOperations(pathTemplate, pathItem, doc, componentParameters));
   }
 
   return operations;
+}
+
+function extractPathOperations(
+  pathTemplate: string,
+  pathItem: Record<string, unknown>,
+  rootDoc: Record<string, unknown>,
+  componentParameters: Record<string, unknown>,
+): readonly OpenApiOperation[] {
+  const pathParameters = readParameters(pathItem['parameters'], rootDoc, componentParameters);
+  const operations: OpenApiOperation[] = [];
+  for (const method of HTTP_METHODS) {
+    const operationUnknown = pathItem[method];
+    if (!operationUnknown) continue;
+    const operation = toRecord(operationUnknown, `${pathTemplate}.${method}`);
+    operations.push(
+      buildOpenApiOperation({
+        method,
+        pathTemplate,
+        operation,
+        pathParameters,
+        rootDoc,
+        componentParameters,
+      }),
+    );
+  }
+  return operations;
+}
+
+function buildOpenApiOperation(input: Readonly<{
+  method: (typeof HTTP_METHODS)[number];
+  pathTemplate: string;
+  operation: Record<string, unknown>;
+  pathParameters: readonly OpenApiParameter[];
+  rootDoc: Record<string, unknown>;
+  componentParameters: Record<string, unknown>;
+}>): OpenApiOperation {
+  const operationParameters = readParameters(
+    input.operation['parameters'],
+    input.rootDoc,
+    input.componentParameters,
+  );
+  const responses = toRecord(
+    input.operation['responses'],
+    `${input.pathTemplate}.${input.method}.responses`,
+  );
+  const { allowedStatuses, hasDefaultResponse } = readAllowedStatuses(responses);
+  return {
+    method: input.method.toUpperCase() as OpenApiOperation['method'],
+    pathTemplate: input.pathTemplate,
+    operationId:
+      typeof input.operation['operationId'] === 'string'
+        ? input.operation['operationId']
+        : `${input.method.toUpperCase()} ${input.pathTemplate}`,
+    allowedStatuses,
+    hasDefaultResponse,
+    parameters: [...input.pathParameters, ...operationParameters],
+    hasJsonRequestBody: hasJsonRequestBody(input.operation, input.rootDoc),
+  };
+}
+
+function readAllowedStatuses(
+  responses: Record<string, unknown>,
+): Readonly<{ allowedStatuses: ReadonlySet<number>; hasDefaultResponse: boolean }> {
+  const allowedStatuses = new Set<number>();
+  let hasDefaultResponse = false;
+  for (const key of Object.keys(responses)) {
+    if (/^\d{3}$/.test(key)) {
+      allowedStatuses.add(Number.parseInt(key, 10));
+      continue;
+    }
+    if (key === 'default') hasDefaultResponse = true;
+  }
+  return { allowedStatuses, hasDefaultResponse };
 }
 
 function buildRequest(operation: OpenApiOperation): {
@@ -214,28 +253,29 @@ function readParameters(
   for (const item of value) {
     const resolved = resolveMaybeRef(item, rootDoc, componentParameters);
     if (!resolved) continue;
-
-    const name = typeof resolved['name'] === 'string' ? resolved['name'] : undefined;
-    const location = resolved['in'];
-    if (
-      !name ||
-      (location !== 'path' &&
-        location !== 'query' &&
-        location !== 'header' &&
-        location !== 'cookie')
-    ) {
-      continue;
-    }
-
-    parameters.push({
-      name,
-      in: location,
-      required: resolved['required'] === true,
-      ...(isRecord(resolved['schema']) ? { schema: resolved['schema'] } : {}),
-    });
+    const parameter = toOpenApiParameter(resolved);
+    if (parameter) parameters.push(parameter);
   }
 
   return parameters;
+}
+
+function toOpenApiParameter(resolved: Record<string, unknown>): OpenApiParameter | null {
+  const name = typeof resolved['name'] === 'string' ? resolved['name'] : undefined;
+  const location = parseParameterLocation(resolved['in']);
+  if (!name || !location) return null;
+  return {
+    name,
+    in: location,
+    required: resolved['required'] === true,
+    ...(isRecord(resolved['schema']) ? { schema: resolved['schema'] } : {}),
+  };
+}
+
+function parseParameterLocation(value: unknown): OpenApiParameter['in'] | null {
+  return value === 'path' || value === 'query' || value === 'header' || value === 'cookie'
+    ? value
+    : null;
 }
 
 function resolveMaybeRef(
@@ -249,13 +289,23 @@ function resolveMaybeRef(
   if (typeof ref !== 'string') return value;
   if (!ref.startsWith('#/')) return null;
 
-  if (componentParameters && ref.startsWith('#/components/parameters/')) {
-    const key = ref.split('/').at(-1);
-    if (typeof key !== 'string') return null;
-    const candidate = componentParameters[key];
-    return isRecord(candidate) ? candidate : null;
-  }
+  const componentRef = resolveComponentParameterRef(ref, componentParameters);
+  if (componentRef) return componentRef;
+  return resolveJsonPointerRef(ref, rootDoc);
+}
 
+function resolveComponentParameterRef(
+  ref: string,
+  componentParameters: Record<string, unknown> | undefined,
+): Record<string, unknown> | null {
+  if (!componentParameters || !ref.startsWith('#/components/parameters/')) return null;
+  const key = ref.split('/').at(-1);
+  if (typeof key !== 'string') return null;
+  const candidate = componentParameters[key];
+  return isRecord(candidate) ? candidate : null;
+}
+
+function resolveJsonPointerRef(ref: string, rootDoc: Record<string, unknown>): Record<string, unknown> | null {
   const pointerTokens = ref
     .slice(2)
     .split('/')
@@ -272,6 +322,19 @@ function resolveMaybeRef(
 }
 
 function sampleParameterValue(parameter: OpenApiParameter): string {
+  const byName = byKnownParameterName(parameter.name);
+  if (byName) return byName;
+
+  const bySchema = byParameterSchema(parameter.schema ?? {});
+  if (bySchema) return bySchema;
+
+  const byHint = byParameterNameHint(parameter.name);
+  if (byHint) return byHint;
+
+  return `${parameter.name}-1`;
+}
+
+function byKnownParameterName(name: string): string | undefined {
   const byName: Record<string, string> = {
     workspaceId: 'workspace-1',
     userId: 'user-1',
@@ -292,11 +355,10 @@ function sampleParameterValue(parameter: OpenApiParameter): string {
     mapLayerId: 'map-layer-1',
     locationEventId: 'loc-1',
   };
-  if (Object.prototype.hasOwnProperty.call(byName, parameter.name)) {
-    return byName[parameter.name]!;
-  }
+  return Object.prototype.hasOwnProperty.call(byName, name) ? byName[name] : undefined;
+}
 
-  const schema = parameter.schema ?? {};
+function byParameterSchema(schema: Record<string, unknown>): string | undefined {
   const enumValues = schema['enum'];
   if (Array.isArray(enumValues) && enumValues.length > 0) {
     const first = enumValues[0];
@@ -304,24 +366,17 @@ function sampleParameterValue(parameter: OpenApiParameter): string {
       return String(first);
     }
   }
-
   if (schema['type'] === 'integer' || schema['type'] === 'number') return '1';
   if (schema['type'] === 'boolean') return 'true';
+  return undefined;
+}
 
-  if (parameter.name.toLowerCase().includes('iso')) {
-    return '2026-02-20T10:00:00.000Z';
-  }
-  if (parameter.name.toLowerCase().includes('from')) {
-    return '2026-02-20T10:00:00.000Z';
-  }
-  if (parameter.name.toLowerCase().includes('to')) {
-    return '2026-02-20T10:10:00.000Z';
-  }
-  if (parameter.name.toLowerCase().includes('limit')) {
-    return '1';
-  }
-
-  return `${parameter.name}-1`;
+function byParameterNameHint(name: string): string | undefined {
+  const normalized = name.toLowerCase();
+  if (normalized.includes('iso') || normalized.includes('from')) return '2026-02-20T10:00:00.000Z';
+  if (normalized.includes('to')) return '2026-02-20T10:10:00.000Z';
+  if (normalized.includes('limit')) return '1';
+  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

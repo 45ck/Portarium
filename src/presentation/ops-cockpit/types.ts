@@ -313,7 +313,14 @@ export interface CursorPaginationRequest {
   cursor?: CursorToken;
 }
 
-export type ListRunsRequest = CursorPaginationRequest;
+export interface ListRunsRequest extends CursorPaginationRequest {
+  status?: RunStatus;
+  workflowId?: string;
+  initiatedByUserId?: string;
+  correlationId?: string;
+  sort?: string;
+  q?: string;
+}
 
 export interface ListWorkItemsRequest extends CursorPaginationRequest {
   status?: WorkItemSummary['status'];
@@ -353,179 +360,5 @@ export interface ListHumanTasksRequest extends CursorPaginationRequest {
   runId?: string;
 }
 
-export interface AssignHumanTaskRequest {
-  workforceMemberId?: string;
-  workforceQueueId?: string;
-}
-
-export interface CompleteHumanTaskRequest {
-  completionNote?: string;
-}
-
-export interface EscalateHumanTaskRequest {
-  workforceQueueId: string;
-  reason?: string;
-}
-
-export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';
-
-export interface ApprovalDecisionRequest {
-  decision: ApprovalDecision;
-  rationale: string;
-}
-
-export interface CreateWorkItemCommand {
-  title: string;
-  ownerUserId?: string;
-  sla?: WorkItemSla;
-  externalRefs?: ExternalObjectRef[];
-}
-
-export interface UpdateWorkItemCommand {
-  title?: string;
-  status?: WorkItemSummary['status'];
-  ownerUserId?: string;
-  sla?: WorkItemSla;
-  externalRefs?: ExternalObjectRef[];
-}
-
-export interface CreateApprovalRequest {
-  runId: string;
-  planId: string;
-  workItemId?: string;
-  prompt: string;
-  assigneeUserId?: string;
-  dueAtIso?: string;
-}
-
-export interface StartRunCommand {
-  workflowId: string;
-  parameters?: Record<string, unknown>;
-}
-
-// ---------------------------------------------------------------------------
-// Machines (bead-0438)
-// ---------------------------------------------------------------------------
-
-export type AgentCapability =
-  | 'read:external'
-  | 'write:external'
-  | 'classify'
-  | 'generate'
-  | 'analyze'
-  | 'execute-code'
-  | 'notify'
-  | 'machine:invoke';
-
-export type ConnectionTestStatus = 'ok' | 'slow' | 'unreachable';
-
-export interface ConnectionTestResult {
-  status: ConnectionTestStatus;
-  latencyMs: number;
-  errorMessage?: string;
-}
-
-export type MachineStatus = 'Online' | 'Degraded' | 'Offline';
-
-export interface MachineV1 {
-  schemaVersion: 1;
-  machineId: string;
-  workspaceId: string;
-  hostname: string;
-  osImage?: string;
-  registeredAtIso: string;
-  lastHeartbeatAtIso?: string;
-  status: MachineStatus;
-  activeRunCount?: number;
-  allowedCapabilities?: AgentCapability[];
-}
-
-export interface RegisterMachineRequest {
-  hostname: string;
-  osImage?: string;
-  allowedCapabilities?: AgentCapability[];
-}
-
-export type ListMachinesRequest = CursorPaginationRequest;
-
-// ---------------------------------------------------------------------------
-// Agents (bead-0439)
-// ---------------------------------------------------------------------------
-
-export interface AgentV1 {
-  schemaVersion: 1;
-  agentId: string;
-  workspaceId: string;
-  name: string;
-  modelId?: string;
-  endpoint: string;
-  allowedCapabilities: AgentCapability[];
-  usedByWorkflowIds?: string[];
-}
-
-export interface RegisterAgentRequest {
-  name: string;
-  modelId?: string;
-  endpoint: string;
-  allowedCapabilities?: AgentCapability[];
-}
-
-export interface UpdateAgentRequest {
-  name?: string;
-  endpoint?: string;
-  allowedCapabilities?: AgentCapability[];
-}
-
-export type ListAgentsRequest = CursorPaginationRequest;
-
-// ---------------------------------------------------------------------------
-// Policies & SoD Constraints
-// ---------------------------------------------------------------------------
-
-export interface PolicyCondition {
-  field: string;
-  operator: 'eq' | 'neq' | 'in' | 'gt' | 'lt';
-  value: string;
-}
-
-export interface PolicySummary {
-  policyId: string;
-  name: string;
-  description: string;
-  status: 'Active' | 'Draft' | 'Archived';
-  ruleText: string;
-  conditions: PolicyCondition[];
-}
-
-export interface SodConstraint {
-  constraintId: string;
-  name: string;
-  description: string;
-  status: 'Active' | 'Inactive';
-  relatedPolicyIds: string[];
-}
-
-// ---------------------------------------------------------------------------
-// Adapters
-// ---------------------------------------------------------------------------
-
-export interface AdapterSummary {
-  adapterId: string;
-  name: string;
-  sorFamily: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  lastSyncIso: string;
-}
-
-// ---------------------------------------------------------------------------
-// Robotics Gateways
-// ---------------------------------------------------------------------------
-
-export interface GatewaySummary {
-  gatewayId: string;
-  url: string;
-  status: 'Online' | 'Offline' | 'Degraded';
-  connectedRobots: number;
-  lastHeartbeatIso: string;
-  region: string;
-}
+export * from './types.commands.js';
+export * from './types.machines.js';

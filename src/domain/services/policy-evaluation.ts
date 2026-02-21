@@ -215,11 +215,24 @@ function buildRuleEvaluationContext(
   return base;
 }
 
+function toPolicyDecision(effect: 'Allow' | 'Deny'): PolicyDecisionV1 {
+  return effect === 'Deny' ? 'Deny' : 'Allow';
+}
+
+function strongestOf(
+  current: PolicyDecisionV1 | null,
+  candidate: PolicyDecisionV1,
+): PolicyDecisionV1 {
+  if (current === null) return candidate;
+  return DECISION_SEVERITY[candidate] > DECISION_SEVERITY[current] ? candidate : current;
+}
+
 function evaluateInlineRules(
   policy: PolicyV1,
   context: PolicyEvaluationContextV1,
 ): InlineRuleEvalResult {
-  if (!policy.rules || policy.rules.length === 0) {
+  const rules = policy.rules ?? [];
+  if (rules.length === 0) {
     return { decision: null, errors: [] };
   }
 
@@ -228,7 +241,7 @@ function evaluateInlineRules(
   const errors: string[] = [];
   let strongestDecision: PolicyDecisionV1 | null = null;
 
-  for (const rule of policy.rules) {
+  for (const rule of rules) {
     const evalResult = evaluatePolicyConditionDslV1({
       condition: rule.condition,
       context: evalCtx,
@@ -240,15 +253,8 @@ function evaluateInlineRules(
       continue;
     }
 
-    if (evalResult.value) {
-      const ruleDecision: PolicyDecisionV1 = rule.effect === 'Deny' ? 'Deny' : 'Allow';
-      if (
-        strongestDecision === null ||
-        DECISION_SEVERITY[ruleDecision] > DECISION_SEVERITY[strongestDecision]
-      ) {
-        strongestDecision = ruleDecision;
-      }
-    }
+    if (!evalResult.value) continue;
+    strongestDecision = strongestOf(strongestDecision, toPolicyDecision(rule.effect));
   }
 
   if (errors.length > 0) {

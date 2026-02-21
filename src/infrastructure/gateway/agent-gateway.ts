@@ -70,29 +70,16 @@ export class AgentGateway {
    */
   public handleRequest = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     try {
-      // 1. Authenticate
-      const authHeader = req.headers.authorization;
-      const authResult = await this.#authVerifier(authHeader);
-      if (!authResult.ok) {
-        return sendProblem(res, 401, 'Unauthorized', authResult.reason);
-      }
+      const auth = await this.#authenticate(req, res);
+      if (!auth) return;
 
-      // 2. Rate limit
-      const rateResult = this.#rateLimiter.tryConsume(authResult.workspaceId);
-      if (!rateResult.allowed) {
-        res.setHeader('retry-after', String(rateResult.retryAfterSeconds));
-        return sendProblem(res, 429, 'Too Many Requests', 'Rate limit exceeded.');
-      }
+      const limited = this.#enforceRateLimit(auth.workspaceId, res);
+      if (!limited) return;
 
-      // 3. Validate request shape
       const method = (req.method ?? 'GET').toUpperCase();
       const path = req.url ?? '/';
       const contentType = req.headers['content-type'];
-      const bodyChunks: Buffer[] = [];
-      for await (const chunk of req) {
-        bodyChunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-      }
-      const bodyBuffer = Buffer.concat(bodyChunks);
+      const bodyBuffer = await readBodyBuffer(req);
 
       const validation = validateRequest(
         {
@@ -104,41 +91,73 @@ export class AgentGateway {
         this.#requestValidation,
       );
       if (!validation.valid) {
-        return sendProblem(res, 422, 'Validation Failed', validation.reason);
+        sendProblem(res, 422, 'Validation Failed', validation.reason);
+        return;
       }
 
-      // 4. Build trace context headers
-      const incomingTraceparent = req.headers['traceparent'] as string | undefined;
-      const traceparent = incomingTraceparent ?? generateTraceparent();
-      const tracestate = req.headers['tracestate'] as string | undefined;
-
-      // 5. Proxy to control plane
-      const targetUrl = `${this.#controlPlaneBaseUrl}${path}`;
-      const proxyHeaders: Record<string, string> = {
-        'content-type': contentType ?? 'application/json',
-        'x-workspace-id': authResult.workspaceId,
-        'x-subject': authResult.subject,
-        'x-correlation-id': randomUUID(),
-        traceparent,
-        ...(tracestate ? { tracestate } : {}),
-      };
-
-      const upstream = await this.#fetchImpl(targetUrl, {
+      const inboundTraceparent = normalizeSingleHeader(req.headers['traceparent']) ?? generateTraceparent();
+      const inboundTracestate = normalizeSingleHeader(req.headers['tracestate']);
+      const upstream = await this.#proxyRequest({
         method,
-        headers: proxyHeaders,
-        ...(bodyBuffer.length > 0 ? { body: bodyBuffer } : {}),
+        path,
+        bodyBuffer,
+        contentType,
+        workspaceId: auth.workspaceId,
+        subject: auth.subject,
+        traceparent: inboundTraceparent,
+        ...(inboundTracestate ? { tracestate: inboundTracestate } : {}),
       });
-
-      // 6. Forward response
-      res.writeHead(upstream.status, {
-        'content-type': upstream.headers.get('content-type') ?? 'application/json',
-      });
-      const upstreamBody = await upstream.text();
-      res.end(upstreamBody);
+      await forwardUpstreamResponse(res, upstream);
     } catch {
       sendProblem(res, 502, 'Bad Gateway', 'Failed to proxy request to control plane.');
     }
   };
+
+  async #authenticate(
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): Promise<Readonly<{ workspaceId: string; subject: string }> | null> {
+    const authResult = await this.#authVerifier(req.headers.authorization);
+    if (!authResult.ok) {
+      sendProblem(res, 401, 'Unauthorized', authResult.reason);
+      return null;
+    }
+    return authResult;
+  }
+
+  #enforceRateLimit(workspaceId: string, res: ServerResponse): boolean {
+    const rateResult = this.#rateLimiter.tryConsume(workspaceId);
+    if (rateResult.allowed) return true;
+    res.setHeader('retry-after', String(rateResult.retryAfterSeconds));
+    sendProblem(res, 429, 'Too Many Requests', 'Rate limit exceeded.');
+    return false;
+  }
+
+  #proxyRequest(input: {
+    method: string;
+    path: string;
+    bodyBuffer: Buffer;
+    contentType: string | string[] | undefined;
+    workspaceId: string;
+    subject: string;
+    traceparent: string;
+    tracestate?: string;
+  }): Promise<Response> {
+    const targetUrl = `${this.#controlPlaneBaseUrl}${input.path}`;
+    const proxyHeaders: Record<string, string> = {
+      'content-type': normalizeSingleHeader(input.contentType) ?? 'application/json',
+      'x-workspace-id': input.workspaceId,
+      'x-subject': input.subject,
+      'x-correlation-id': randomUUID(),
+      traceparent: input.traceparent,
+      ...(input.tracestate ? { tracestate: input.tracestate } : {}),
+    };
+    return this.#fetchImpl(targetUrl, {
+      method: input.method,
+      headers: proxyHeaders,
+      ...(input.bodyBuffer.length > 0 ? { body: input.bodyBuffer } : {}),
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -174,4 +193,31 @@ function randomHex(byteCount: number): string {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+function normalizeSingleHeader(value: string | string[] | undefined): string | undefined {
+  if (!value) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function toBufferChunk(chunk: unknown): Buffer {
+  if (Buffer.isBuffer(chunk)) return chunk;
+  if (typeof chunk === 'string') return Buffer.from(chunk);
+  if (chunk instanceof Uint8Array) return Buffer.from(chunk);
+  return Buffer.from(String(chunk));
+}
+
+async function readBodyBuffer(req: IncomingMessage): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(toBufferChunk(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
+async function forwardUpstreamResponse(res: ServerResponse, upstream: Response): Promise<void> {
+  res.writeHead(upstream.status, {
+    'content-type': upstream.headers.get('content-type') ?? 'application/json',
+  });
+  res.end(await upstream.text());
 }

@@ -12,6 +12,7 @@ import {
 } from '../common/index.js';
 import type {
   AuthorizationPort,
+  ListWorkItemsFilter,
   MachineRegistryStore,
   WorkItemListPage,
   WorkItemStore,
@@ -41,23 +42,37 @@ export interface GetAgentWorkItemsDeps {
 
 const VALID_STATUSES = ['Open', 'InProgress', 'Blocked', 'Resolved', 'Closed'] as const;
 
+function validateInput(input: GetAgentWorkItemsInput): ValidationFailed | null {
+  if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
+    return { kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' };
+  }
+  if (typeof input.agentId !== 'string' || input.agentId.trim() === '') {
+    return { kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' };
+  }
+  if (input.status !== undefined && !(VALID_STATUSES as readonly string[]).includes(input.status)) {
+    return { kind: 'ValidationFailed', message: 'status is invalid.' };
+  }
+  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
+    return { kind: 'ValidationFailed', message: 'limit must be a positive integer.' };
+  }
+  return null;
+}
+
+function buildFilter(input: GetAgentWorkItemsInput): ListWorkItemsFilter {
+  return {
+    ...(input.status ? { status: input.status as WorkItemV1['status'] } : {}),
+    ...(input.limit !== undefined ? { limit: input.limit } : {}),
+    ...(input.cursor ? { cursor: input.cursor } : {}),
+  };
+}
+
 export async function getAgentWorkItems(
   deps: GetAgentWorkItemsDeps,
   ctx: AppContext,
   input: GetAgentWorkItemsInput,
 ): Promise<Result<GetAgentWorkItemsOutput, GetAgentWorkItemsError>> {
-  if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'workspaceId must be a non-empty string.' });
-  }
-  if (typeof input.agentId !== 'string' || input.agentId.trim() === '') {
-    return err({ kind: 'ValidationFailed', message: 'agentId must be a non-empty string.' });
-  }
-  if (input.status !== undefined && !(VALID_STATUSES as readonly string[]).includes(input.status)) {
-    return err({ kind: 'ValidationFailed', message: 'status is invalid.' });
-  }
-  if (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit <= 0)) {
-    return err({ kind: 'ValidationFailed', message: 'limit must be a positive integer.' });
-  }
+  const validationError = validateInput(input);
+  if (validationError) return err(validationError);
 
   const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.workItemRead);
   if (!allowed) {
@@ -80,11 +95,11 @@ export async function getAgentWorkItems(
     });
   }
 
-  const page: WorkItemListPage = await deps.workItemStore.listWorkItems(ctx.tenantId, workspaceId, {
-    ...(input.status ? { status: input.status as WorkItemV1['status'] } : {}),
-    ...(input.limit !== undefined ? { limit: input.limit } : {}),
-    ...(input.cursor ? { cursor: input.cursor } : {}),
-  });
+  const page: WorkItemListPage = await deps.workItemStore.listWorkItems(
+    ctx.tenantId,
+    workspaceId,
+    buildFilter(input),
+  );
 
   return ok({
     agentId: input.agentId,

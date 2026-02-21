@@ -29,47 +29,63 @@ type HeartbeatBody =
     }
   | { ok: false; message: string };
 
-function checkMetrics(metrics: unknown): HeartbeatBody | null {
-  if (metrics !== undefined && metrics !== null) {
-    if (typeof metrics !== 'object' || Array.isArray(metrics))
-      return { ok: false, message: 'metrics must be a record of numbers.' };
-  }
-  return null;
+type ParseResult<T> =
+  | Readonly<{ ok: true; value: T }>
+  | Readonly<{ ok: false; message: string }>;
+
+function parseHeartbeatStatus(status: unknown): ParseResult<string> {
+  if (status === 'ok' || status === 'degraded') return { ok: true, value: status };
+  return { ok: false, message: 'status must be "ok" or "degraded".' };
 }
 
-function checkLocation(location: unknown): HeartbeatBody | null {
-  if (location !== undefined && location !== null) {
-    if (typeof location !== 'object' || Array.isArray(location))
-      return { ok: false, message: 'location must have lat and lon.' };
-    const loc = location as Record<string, unknown>;
-    if (typeof loc['lat'] !== 'number' || typeof loc['lon'] !== 'number')
-      return { ok: false, message: 'location must have numeric lat and lon.' };
+function parseHeartbeatMetrics(
+  metrics: unknown,
+): ParseResult<Record<string, number> | undefined> {
+  if (metrics === undefined || metrics === null) return { ok: true, value: undefined };
+  if (typeof metrics !== 'object' || Array.isArray(metrics)) {
+    return { ok: false, message: 'metrics must be a record of numbers.' };
   }
-  return null;
+  return { ok: true, value: metrics as Record<string, number> };
+}
+
+function parseHeartbeatLocation(
+  location: unknown,
+): ParseResult<{ lat: number; lon: number } | undefined> {
+  if (location === undefined || location === null) return { ok: true, value: undefined };
+  if (typeof location !== 'object' || Array.isArray(location)) {
+    return { ok: false, message: 'location must have lat and lon.' };
+  }
+  const loc = location as Record<string, unknown>;
+  if (typeof loc['lat'] !== 'number' || typeof loc['lon'] !== 'number') {
+    return { ok: false, message: 'location must have numeric lat and lon.' };
+  }
+  return { ok: true, value: { lat: loc['lat'], lon: loc['lon'] } };
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 }
 
 function parseHeartbeatBody(body: unknown): HeartbeatBody {
-  if (typeof body !== 'object' || body === null)
+  const record = asRecord(body);
+  if (!record) {
     return { ok: false, message: 'Request body must be a JSON object.' };
-  const record = body as Record<string, unknown>;
-  const status = record['status'];
-  if (status !== 'ok' && status !== 'degraded')
-    return { ok: false, message: 'status must be "ok" or "degraded".' };
-  const metricsCheck = checkMetrics(record['metrics']);
-  if (metricsCheck) return metricsCheck;
-  const locationCheck = checkLocation(record['location']);
-  if (locationCheck) return locationCheck;
-  const metrics = record['metrics'];
-  const location = record['location'];
+  }
+
+  const status = parseHeartbeatStatus(record['status']);
+  if (!status.ok) return status;
+
+  const metrics = parseHeartbeatMetrics(record['metrics']);
+  if (!metrics.ok) return metrics;
+
+  const location = parseHeartbeatLocation(record['location']);
+  if (!location.ok) return location;
+
   return {
     ok: true,
-    status: status as string,
-    ...(metrics !== undefined && metrics !== null
-      ? { metrics: metrics as Record<string, number> }
-      : {}),
-    ...(location !== undefined && location !== null
-      ? { location: location as { lat: number; lon: number } }
-      : {}),
+    status: status.value,
+    ...(metrics.value ? { metrics: metrics.value } : {}),
+    ...(location.value ? { location: location.value } : {}),
   };
 }
 
