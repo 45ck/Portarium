@@ -191,7 +191,7 @@ function RunDetailPage() {
       type: 'robot',
       id: robotId,
       label: robotId,
-      href: '/robotics/robots',
+      href: `/robotics/robots/${robotId}`,
     });
   }
 

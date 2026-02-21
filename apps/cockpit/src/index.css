@@ -100,23 +100,27 @@
     }
   }
 
-  /* Triage card swipe animations — kept subtle for enterprise feel */
+  /* Triage card swipe animations — Tinder-style physics */
   @keyframes triage-out-right {
     to {
-      transform: translateX(105%) rotate(2deg);
+      transform: translateX(120%) rotate(15deg);
       opacity: 0;
     }
   }
   @keyframes triage-out-left {
     to {
-      transform: translateX(-105%) rotate(-2deg);
+      transform: translateX(-120%) rotate(-15deg);
       opacity: 0;
     }
   }
   @keyframes triage-in {
     from {
-      transform: translateY(8px) scale(0.99);
+      transform: translateY(12px) scale(0.96);
       opacity: 0;
+    }
+    50% {
+      transform: translateY(-2px) scale(1.005);
+      opacity: 1;
     }
     to {
       transform: translateY(0) scale(1);
@@ -128,9 +132,11 @@
   @keyframes mode-crossfade {
     from {
       opacity: 0;
+      transform: translateY(4px);
     }
     to {
       opacity: 1;
+      transform: translateY(0);
     }
   }
 
@@ -182,20 +188,52 @@
       opacity: 1;
     }
   }
+
+  /* Progress dot pop on decision */
+  @keyframes dot-complete {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.8);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Empty state checkmark ring pulse */
+  @keyframes queue-clear-ring {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.8;
+      box-shadow: 0 0 0 0 oklch(0.72 0.19 150 / 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px oklch(0.72 0.19 150 / 0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 oklch(0.72 0.19 150 / 0);
+    }
+  }
 }
 
 @layer utilities {
   .animate-triage-out-right {
-    animation: triage-out-right 0.25s ease-in forwards;
+    animation: triage-out-right 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+    transform-origin: center 80%;
   }
   .animate-triage-out-left {
-    animation: triage-out-left 0.25s ease-in forwards;
+    animation: triage-out-left 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+    transform-origin: center 80%;
   }
   .animate-triage-in {
-    animation: triage-in 0.2s ease-out both;
+    animation: triage-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.1) both;
   }
   .animate-mode-crossfade {
-    animation: mode-crossfade 0.15s ease-out both;
+    animation: mode-crossfade 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   }
   .animate-replay-step {
     animation:
@@ -207,6 +245,34 @@
   }
   .animate-graph-node-in {
     animation: graph-node-in 0.3s ease-out both;
+  }
+  .animate-dot-complete {
+    animation: dot-complete 0.3s ease-out both;
+  }
+  .animate-queue-clear-ring {
+    animation: queue-clear-ring 0.6s ease-out both;
+  }
+}
+
+/* Accessibility: suppress all triage animations when user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-triage-out-right,
+  .animate-triage-out-left,
+  .animate-triage-in,
+  .animate-mode-crossfade,
+  .animate-replay-step,
+  .animate-signal-fade-in,
+  .animate-graph-node-in,
+  .animate-dot-complete,
+  .animate-queue-clear-ring {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -408,6 +474,52 @@
 }
 
 /* shadcn sidebar overrides removed — sidebar tokens live in each theme block above */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Leaflet popup overrides — Leaflet creates DOM outside React root, so
+   Tailwind classes don't apply. Use CSS vars for theme-awareness.
+───────────────────────────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-tip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-right: none;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+.leaflet-popup-close-button {
+  color: var(--muted-foreground) !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: var(--foreground) !important;
+}
+
+/* Leaflet control buttons (zoom, fit-all) — theme-aware */
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-bottom-color: var(--border);
+}
+
+.leaflet-bar a:hover {
+  background: var(--accent);
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Theme 4 — "Quantum" (Shakuro Arctic Ops reference)

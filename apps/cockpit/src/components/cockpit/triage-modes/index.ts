@@ -1,5 +1,15 @@
 import type { LucideIcon } from 'lucide-react';
-import { Radar, FileText, Network, Columns2, Play, Link2, TrafficCone, Clock } from 'lucide-react';
+import {
+  Radar,
+  FileText,
+  ScrollText,
+  Network,
+  Columns2,
+  Play,
+  Link2,
+  TrafficCone,
+  Clock,
+} from 'lucide-react';
 import type { TriageViewMode } from '@/stores/ui-store';
 import type {
   ApprovalSummary,
@@ -36,7 +46,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     id: 'briefing',
     label: 'Briefing',
     shortLabel: 'Brief',
-    icon: FileText,
+    icon: ScrollText,
     description: '6-section executive briefing with full domain context',
   },
   {

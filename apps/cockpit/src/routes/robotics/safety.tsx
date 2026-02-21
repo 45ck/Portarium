@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
@@ -8,6 +8,9 @@ import {
   useSafetyConstraints,
   useApprovalThresholds,
   useEStopLog,
+  useGlobalEstopStatus,
+  useSetEstop,
+  useClearEstop,
 } from '@/hooks/queries/use-safety';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -64,11 +67,14 @@ function SafetyPage() {
   const { data: constraintsData, isLoading: constraintsLoading } = useSafetyConstraints(wsId);
   const { data: thresholdsData, isLoading: thresholdsLoading } = useApprovalThresholds(wsId);
   const { data: logData, isLoading: logLoading } = useEStopLog(wsId);
+  const { data: estopData } = useGlobalEstopStatus(wsId);
+  const setEstop = useSetEstop(wsId);
+  const clearEstop = useClearEstop(wsId);
   const constraints = constraintsData?.items ?? [];
   const thresholds = thresholdsData?.items ?? [];
   const auditLog = logData?.items ?? [];
 
-  const [globalEstopActive, setGlobalEstopActive] = useState(false);
+  const globalEstopActive = estopData?.active ?? false;
   const [showEstopModal, setShowEstopModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearRationale, setClearRationale] = useState('');
@@ -79,6 +85,7 @@ function SafetyPage() {
         <PageHeader
           title="Safety & E-Stop"
           description="Global safety controls, constraints, and audit trail"
+          breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Safety' }]}
         />
         <Button
           variant="destructive"
@@ -99,14 +106,14 @@ function SafetyPage() {
         className={cn(
           'rounded-md border px-4 py-3 flex items-center gap-3 text-sm font-medium',
           globalEstopActive
-            ? 'bg-red-50 border-red-300 text-red-800'
-            : 'bg-green-50 border-green-200 text-green-800',
+            ? 'bg-destructive/10 border-destructive/30 text-destructive'
+            : 'bg-success/10 border-success/30 text-success',
         )}
       >
         {globalEstopActive ? (
           <>
-            <ShieldAlert className="h-4 w-4 text-red-600" />
-            <span>⚠ GLOBAL E-STOP ACTIVE — All robots halted</span>
+            <ShieldAlert className="h-4 w-4" />
+            <span>GLOBAL E-STOP ACTIVE — All robots halted</span>
             <Button
               variant="outline"
               size="sm"
@@ -118,7 +125,7 @@ function SafetyPage() {
           </>
         ) : (
           <>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4" />
             <span>
               System NOMINAL — {constraints.reduce((n, c) => n + c.robotCount, 0)} robots monitored,
               0 in E-Stop state
@@ -154,7 +161,11 @@ function SafetyPage() {
                     <td className="px-3 py-2">
                       <EnforcementBadge mode={sc.enforcement} />
                     </td>
-                    <td className="px-3 py-2 text-center">{sc.robotCount}</td>
+                    <td className="px-3 py-2 text-center">
+                      <Link to="/robotics/robots" className="text-primary hover:underline">
+                        {sc.robotCount}
+                      </Link>
+                    </td>
                     <td className="px-3 py-2">
                       <Button
                         variant="outline"
@@ -285,18 +296,17 @@ function SafetyPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={async () => {
-                await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ actor: 'user-operator' }),
-                }).catch(() => null);
-                setGlobalEstopActive(true);
-                setShowEstopModal(false);
-                toast.error('Global E-Stop activated — all robots halted', { duration: 8000 });
+              disabled={setEstop.isPending}
+              onClick={() => {
+                setEstop.mutate('user-operator', {
+                  onSuccess: () => {
+                    setShowEstopModal(false);
+                    toast.error('Global E-Stop activated — all robots halted', { duration: 8000 });
+                  },
+                });
               }}
             >
-              Confirm E-Stop
+              {setEstop.isPending ? 'Activating...' : 'Confirm E-Stop'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -330,20 +340,21 @@ function SafetyPage() {
               Cancel
             </Button>
             <Button
-              disabled={!clearRationale.trim()}
-              onClick={async () => {
-                await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ actor: 'user-admin', rationale: clearRationale }),
-                }).catch(() => null);
-                setGlobalEstopActive(false);
-                setClearRationale('');
-                setShowClearModal(false);
-                toast.success('E-Stop cleared — robots may resume operations');
+              disabled={!clearRationale.trim() || clearEstop.isPending}
+              onClick={() => {
+                clearEstop.mutate(
+                  { actor: 'user-admin', rationale: clearRationale },
+                  {
+                    onSuccess: () => {
+                      setClearRationale('');
+                      setShowClearModal(false);
+                      toast.success('E-Stop cleared — robots may resume operations');
+                    },
+                  },
+                );
               }}
             >
-              Clear E-Stop
+              {clearEstop.isPending ? 'Clearing...' : 'Clear E-Stop'}
             </Button>
           </DialogFooter>
         </DialogContent>

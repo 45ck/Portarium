@@ -75,6 +75,7 @@ function GatewaysPage() {
         title="Gateways"
         description="Robotics gateway connections and status"
         icon={<EntityIcon entityType="port" size="md" decorative />}
+        breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Gateways' }]}
       />
 
       <DataTable

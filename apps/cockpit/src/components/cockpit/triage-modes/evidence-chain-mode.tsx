@@ -19,6 +19,7 @@ import {
 import { formatDistanceToNow, formatDistanceStrict } from 'date-fns';
 import type { EvidenceEntry, EvidencePayloadRef } from '@portarium/cockpit-types';
 import type { TriageModeProps } from './index';
+import { verifyChain, type ChainEntry } from './lib/chain-verification';
 
 function actorLabel(actor: EvidenceEntry['actor']): string {
   switch (actor.kind) {
@@ -74,25 +75,6 @@ function getMediaColor(ref: EvidencePayloadRef): string {
 
 function filename(uri: string): string {
   return uri.split('/').pop() ?? uri;
-}
-
-interface ChainEntry {
-  entry: EvidenceEntry;
-  chainValid: boolean | null;
-}
-
-function verifyChain(entries: EvidenceEntry[]): ChainEntry[] {
-  if (entries.length === 0) return [];
-  const sorted = [...entries].sort(
-    (a, b) => new Date(a.occurredAtIso).getTime() - new Date(b.occurredAtIso).getTime(),
-  );
-
-  return sorted.map((entry, i) => {
-    if (i === 0) return { entry, chainValid: null };
-    const prev = sorted[i - 1]!;
-    const valid = entry.previousHash === prev.hashSha256;
-    return { entry, chainValid: valid };
-  });
 }
 
 function PayloadAttachments({ refs }: { refs: EvidencePayloadRef[] }) {
@@ -219,7 +201,7 @@ function EvidenceBlock({
   requestedAtIso,
   runId,
 }: {
-  item: ChainEntry;
+  item: ChainEntry<EvidenceEntry>;
   index: number;
   requestedAtIso?: string;
   runId?: string;
@@ -235,13 +217,16 @@ function EvidenceBlock({
           {chainValid === true ? (
             <div className="flex items-center gap-1">
               <div className="w-0.5 h-4 bg-emerald-400" />
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <CheckCircle2
+                className="h-3.5 w-3.5 text-emerald-500"
+                aria-label="Chain link valid"
+              />
               <div className="w-0.5 h-4 bg-emerald-400" />
             </div>
           ) : (
             <div className="flex items-center gap-1">
               <div className="w-0.5 h-4 bg-red-400" />
-              <XCircle className="h-3.5 w-3.5 text-red-500" />
+              <XCircle className="h-3.5 w-3.5 text-red-500" aria-label="Chain link broken" />
               <div className="w-0.5 h-4 bg-red-400" />
             </div>
           )}
@@ -333,7 +318,7 @@ export function EvidenceChainMode({
       <div className="rounded-lg border border-border bg-muted/10 px-4 py-8 flex flex-col items-center gap-2 text-center">
         <ShieldOff className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-xs font-medium text-muted-foreground">No evidence collected yet</p>
-        <p className="text-[11px] text-muted-foreground/70 max-w-[260px]">
+        <p className="text-[11px] text-muted-foreground/70 max-w-[260px] sm:max-w-xs">
           Evidence entries are recorded as actions occur — approvals, artifact uploads, and system
           checks will appear here as a tamper-proof chain.
         </p>
@@ -347,7 +332,7 @@ export function EvidenceChainMode({
 
       <EvidenceAdequacy entries={evidenceEntries} />
 
-      <div className="max-h-[320px] overflow-y-auto space-y-0 pr-1">
+      <div className="max-h-[240px] sm:max-h-[320px] overflow-y-auto space-y-0 pr-1">
         {chain.map((item, i) => (
           <EvidenceBlock
             key={item.entry.evidenceId}

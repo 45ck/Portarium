@@ -58,6 +58,8 @@ import { Route as roboticsRobotsRoute } from './routes/robotics/robots';
 import { Route as roboticsMissionsRoute } from './routes/robotics/missions';
 import { Route as roboticsSafetyRoute } from './routes/robotics/safety';
 import { Route as roboticsGatewaysRoute } from './routes/robotics/gateways';
+import { Route as roboticsRobotDetailRoute } from './routes/robotics/$robotId';
+import { Route as roboticsMissionDetailRoute } from './routes/robotics/missions/$missionId';
 
 export const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -92,6 +94,8 @@ export const routeTree = rootRoute.addChildren([
   roboticsMissionsRoute,
   roboticsSafetyRoute,
   roboticsGatewaysRoute,
+  roboticsRobotDetailRoute,
+  roboticsMissionDetailRoute,
 ]);
 
 export function createCockpitRouter(options?: { history?: RouterHistory }) {

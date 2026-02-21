@@ -1,5 +1,7 @@
+import { Link } from '@tanstack/react-router';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { RobotLocation } from '@/mocks/fixtures/robot-locations';
 import type { RobotStatus } from '@/types/robotics';
@@ -12,6 +14,7 @@ import {
   Battery,
   Navigation,
   MapPin,
+  ExternalLink,
 } from 'lucide-react';
 
 const STATUS_ICON: Record<RobotStatus, React.ReactNode> = {
@@ -62,11 +65,14 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             Battery
           </p>
-          <div className="mt-1 flex items-center gap-1.5 text-sm">
-            <Battery className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className={cn(robot.batteryPct < 20 && 'text-red-600 font-medium')}>
-              {robot.batteryPct}%
-            </span>
+          <div className="mt-1 space-y-1">
+            <div className="flex items-center gap-1.5 text-sm">
+              <Battery className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className={cn(robot.batteryPct < 20 && 'text-red-600 font-medium')}>
+                {robot.batteryPct}%
+              </span>
+            </div>
+            <Progress value={robot.batteryPct} className="h-1.5" />
           </div>
         </div>
         <div>
@@ -101,7 +107,13 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </p>
           <p className="mt-1 text-sm">
             {robot.missionId ? (
-              <span className="font-mono text-xs">{robot.missionId}</span>
+              <Link
+                to={`/robotics/missions/${robot.missionId}` as string}
+                className="font-mono text-xs text-primary hover:underline inline-flex items-center gap-1"
+              >
+                {robot.missionId}
+                <ExternalLink className="h-2.5 w-2.5" />
+              </Link>
             ) : (
               <span className="text-muted-foreground italic">None</span>
             )}
@@ -114,6 +126,17 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           <p className="mt-1 text-xs text-muted-foreground">
             {new Date(robot.updatedAtIso).toLocaleString()}
           </p>
+        </div>
+        <div className="col-span-2">
+          <Link
+            to={`/robotics/robots/${robot.robotId}` as string}
+            className="inline-flex items-center gap-1"
+          >
+            <Button variant="outline" size="sm" className="h-7 text-xs w-full gap-1">
+              Open Robot Page
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

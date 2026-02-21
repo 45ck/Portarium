@@ -3,41 +3,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import type { DomainEntityType } from '@/assets/types';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { opColors } from '@/components/cockpit/lib/effect-colors';
 import type { PlanEffect, WorkflowSummary } from '@portarium/cockpit-types';
 import type { TriageModeProps } from './index';
+import { resolveSorPalette } from './lib/sor-palette';
+import { resolveEntity } from './lib/entity-type-resolver';
 
 const AUTOPLAY_INTERVAL = 2000;
-
-const SOR_PALETTE: Record<string, { bg: string; text: string }> = {
-  Odoo: { bg: 'bg-indigo-600', text: 'text-white' },
-  Stripe: { bg: 'bg-violet-600', text: 'text-white' },
-  NetSuite: { bg: 'bg-blue-600', text: 'text-white' },
-  Okta: { bg: 'bg-sky-500', text: 'text-white' },
-  Mautic: { bg: 'bg-orange-500', text: 'text-white' },
-  Zammad: { bg: 'bg-rose-500', text: 'text-white' },
-  Vault: { bg: 'bg-amber-500', text: 'text-white' },
-};
-
-const EXTERNAL_TYPE_MAP: Record<string, DomainEntityType> = {
-  Invoice: 'invoice',
-  Payment: 'payment',
-  Ticket: 'ticket',
-  Subscription: 'subscription',
-  Order: 'order',
-  Account: 'account',
-  Party: 'party',
-  Product: 'product',
-};
-
-function resolveEntity(ext: string): DomainEntityType {
-  for (const [k, v] of Object.entries(EXTERNAL_TYPE_MAP)) {
-    if (ext.toLowerCase().includes(k.toLowerCase())) return v;
-  }
-  return 'external-object-ref';
-}
 
 const OP_BADGE: Record<string, string> = {
   Create: 'bg-emerald-500 text-white',
@@ -117,13 +90,56 @@ export function ActionReplayMode({ approval, plannedEffects, run, workflow }: Tr
 
   const effect = plannedEffects[currentStep]!;
   const entity = resolveEntity(effect.target.externalType);
-  const sorPalette = SOR_PALETTE[effect.target.sorName] ?? {
-    bg: 'bg-muted',
-    text: 'text-foreground',
-  };
+  const sorPalette = resolveSorPalette(effect.target.sorName);
   const stepNumber = findWorkflowStep(effect, workflow);
   const prevEffect = currentStep > 0 ? plannedEffects[currentStep - 1] : null;
   const sameSorAsPrev = prevEffect && prevEffect.target.sorName === effect.target.sorName;
+
+  // Single-effect: show static card without playback controls
+  if (total === 1) {
+    return (
+      <div className="space-y-3">
+        <div className="text-[11px] text-muted-foreground font-semibold">1 planned effect</div>
+
+        <div className="rounded-lg border border-border bg-card p-5 space-y-3">
+          {stepNumber !== null && (
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded bg-primary/10 text-primary text-[9px] font-bold">
+                {stepNumber}
+              </span>
+              <span>Workflow step {stepNumber}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <Badge className={cn('text-sm px-3 py-1 font-bold', OP_BADGE[effect.operation])}>
+              {effect.operation}
+            </Badge>
+            <span
+              className={cn(
+                'inline-flex items-center justify-center w-9 h-9 rounded-full text-xs font-bold shrink-0',
+                sorPalette.bg,
+                sorPalette.text,
+              )}
+            >
+              {effect.target.sorName.slice(0, 2)}
+            </span>
+            <span className="text-sm font-semibold">{effect.target.sorName}</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 rounded-lg bg-muted/30 border border-border p-2">
+              <EntityIcon entityType={entity} size="lg" decorative />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="font-mono text-[11px] text-muted-foreground block">
+                {effect.target.externalType}
+              </span>
+              <p className="text-sm text-foreground mt-1 leading-relaxed">{effect.summary}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Running tally up to current step
   const tally: Record<string, number> = { Create: 0, Update: 0, Delete: 0, Upsert: 0 };
@@ -262,7 +278,7 @@ export function ActionReplayMode({ approval, plannedEffects, run, workflow }: Tr
             >
               <span
                 className={cn(
-                  'w-10 h-10 rounded border flex items-center justify-center text-[11px] font-bold transition-all duration-200 relative',
+                  'w-8 h-8 sm:w-10 sm:h-10 rounded border flex items-center justify-center text-[9px] sm:text-[11px] font-bold transition-all duration-200 relative',
                   OP_BADGE[e.operation] ?? 'bg-muted text-foreground',
                   i === currentStep
                     ? 'ring-2 ring-primary border-primary scale-110 shadow-md'

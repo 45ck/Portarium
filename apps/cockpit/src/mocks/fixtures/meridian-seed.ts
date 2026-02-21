@@ -21,6 +21,9 @@ import type {
   EffectOperation,
   CredentialGrantV1,
   AdapterSummary,
+  SodEvaluation,
+  PolicyRule,
+  DecisionHistoryEntry,
 } from '@portarium/cockpit-types';
 import type {
   RobotSummary,
@@ -667,7 +670,9 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
         : undefined;
     const tier = pick(rand, ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const);
     // Link agents used by this workflow to the run
-    const wfAgents = agentSlice.filter((a) => a.wfIds.includes(wfId)).map((a) => a.id);
+    const wfAgents = agentSlice
+      .filter((a) => (a.wfIds as readonly string[]).includes(wfId))
+      .map((a) => a.id);
     const runAgentIds =
       wfAgents.length > 0
         ? wfAgents
@@ -965,6 +970,96 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
       plannedEffects,
     };
   });
+
+  // ---- SoD / Policy / Decision History ------------------------------------
+  const SOD_ROLES = ['qa-reviewer', 'site-director', 'compliance-officer', 'logistics-lead'];
+  const POLICY_TRIGGERS = [
+    'controlled-substance-release',
+    'temperature-excursion-override',
+    'manual-shipment-routing',
+    'batch-recall-initiation',
+    'equipment-calibration-bypass',
+  ];
+  const CHANGE_REQUEST_MESSAGES = [
+    'Missing chain-of-custody documentation.',
+    'Calibration certificate expired — please renew.',
+    'Temperature deviation justification insufficient.',
+    'Invoice discrepancy needs reconciliation.',
+  ];
+  const RESUBMIT_MESSAGES = [
+    'Documentation attached, please re-review.',
+    'Calibration renewed and uploaded.',
+    'Justification added with corrective action plan.',
+    'Invoice reconciled with updated PO.',
+  ];
+
+  for (const approval of APPROVALS) {
+    // sodEvaluation — ~60% eligible, 15% blocked-self, 15% blocked-role, 10% n-of-m
+    const sodRoll = rand();
+    if (sodRoll < 0.85) {
+      const sodState =
+        sodRoll < 0.6 ? 'eligible' : sodRoll < 0.75 ? 'blocked-self' : 'blocked-role';
+      const roles = SOD_ROLES.slice(0, 2 + Math.floor(rand() * (SOD_ROLES.length - 2)));
+      approval.sodEvaluation = {
+        state: sodState as SodEvaluation['state'],
+        requestorId: approval.requestedByUserId,
+        ruleId: `sod-rule-${Math.floor(rand() * 50 + 1)}`,
+        rolesRequired: roles,
+      };
+    } else {
+      // n-of-m
+      const nTotal = 2 + Math.floor(rand() * 3);
+      const nSoFar = Math.floor(rand() * (nTotal + 1));
+      approval.sodEvaluation = {
+        state: 'n-of-m',
+        requestorId: approval.requestedByUserId,
+        ruleId: `sod-rule-${Math.floor(rand() * 50 + 1)}`,
+        rolesRequired: SOD_ROLES.slice(0, nTotal),
+        nRequired: nTotal,
+        nTotal,
+        nSoFar,
+      };
+    }
+
+    // policyRule — ~40% of approvals
+    if (rand() < 0.4) {
+      const trigger = pick(rand, POLICY_TRIGGERS);
+      const tiers = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const;
+      const blastOpts = ['shipment', 'inventory', 'compliance-record', 'batch', 'site-config'];
+      approval.policyRule = {
+        ruleId: `pol-${trigger.slice(0, 8)}-${Math.floor(rand() * 100)}`,
+        trigger,
+        tier: pick(rand, tiers),
+        blastRadius: blastOpts.slice(0, 1 + Math.floor(rand() * 3)),
+        irreversibility: pick(rand, ['full', 'partial', 'none'] as const),
+      };
+    }
+
+    // decisionHistory — ~30% of non-Pending approvals
+    if (approval.status !== 'Pending' && rand() < 0.3) {
+      const history: DecisionHistoryEntry[] = [];
+      const base = approval.requestedAtIso;
+      history.push({
+        timestamp: base,
+        type: 'requested',
+        actor: approval.requestedByUserId,
+        message: 'Initial approval request submitted.',
+      });
+      history.push({
+        timestamp: addMinutes(base, Math.floor(rand() * 60 + 10)),
+        type: 'changes_requested',
+        actor: approval.assigneeUserId ?? pick(rand, userIds),
+        message: pick(rand, CHANGE_REQUEST_MESSAGES),
+      });
+      history.push({
+        timestamp: addMinutes(base, Math.floor(rand() * 120 + 70)),
+        type: 'resubmitted',
+        actor: approval.requestedByUserId,
+        message: pick(rand, RESUBMIT_MESSAGES),
+      });
+      approval.decisionHistory = history;
+    }
+  }
 
   // ---- Evidence ----------------------------------------------------------
   const EVIDENCE: EvidenceEntry[] = [];

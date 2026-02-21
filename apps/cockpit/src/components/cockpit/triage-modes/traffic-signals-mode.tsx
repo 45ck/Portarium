@@ -38,7 +38,7 @@ function SignalCard({ signal, index }: { signal: Signal; index: number }) {
   return (
     <div
       className="rounded-lg border border-border bg-card p-3 flex items-center gap-3 animate-signal-fade-in"
-      style={{ animationDelay: `${index * 80}ms` }}
+      style={{ animationDelay: `${Math.min(index * 80, 300)}ms` }}
     >
       <div
         className={cn(

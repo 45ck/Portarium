@@ -3,36 +3,7 @@ import { cn } from '@/lib/utils';
 import type { DomainEntityType } from '@/assets/types';
 import type { TriageModeProps } from './index';
 import type { PlanEffect, EvidenceEntry } from '@portarium/cockpit-types';
-
-const SOR_FILL: Record<string, string> = {
-  Odoo: '#6366f1',
-  Stripe: '#8b5cf6',
-  NetSuite: '#3b82f6',
-  Okta: '#0ea5e9',
-  Mautic: '#f97316',
-  Zammad: '#f43f5e',
-  Vault: '#f59e0b',
-  SAP: '#2563eb',
-  LIMS: '#14b8a6',
-  UPS: '#854d0e',
-  Paperless: '#65a30d',
-  DEA: '#dc2626',
-};
-
-const SOR_BG: Record<string, string> = {
-  Odoo: '#6366f11a',
-  Stripe: '#8b5cf61a',
-  NetSuite: '#3b82f61a',
-  Okta: '#0ea5e91a',
-  Mautic: '#f973161a',
-  Zammad: '#f43f5e1a',
-  Vault: '#f59e0b1a',
-  SAP: '#2563eb1a',
-  LIMS: '#14b8a61a',
-  UPS: '#854d0e1a',
-  Paperless: '#65a30d1a',
-  DEA: '#dc26261a',
-};
+import { SOR_PALETTE, resolveSorPalette } from './lib/sor-palette';
 
 const OP_STROKE: Record<string, string> = {
   Create: '#10b981',
@@ -247,8 +218,9 @@ function buildGraph(props: TriageModeProps) {
 
   sorNames.forEach((sorName, si) => {
     const sy = sorStartY + si * ROW_HEIGHT;
-    const sorColor = SOR_FILL[sorName] ?? '#6b7280';
-    const sorBg = SOR_BG[sorName] ?? '#f9fafb';
+    const sorPalette = resolveSorPalette(sorName);
+    const sorColor = sorPalette.fill;
+    const sorBg = sorPalette.fillBg;
     const effects = bySor.get(sorName)!;
 
     nodes.push({
@@ -347,6 +319,24 @@ function buildGraph(props: TriageModeProps) {
     });
   }
 
+  // "+N more" overflow indicator for evidence
+  const overflow = evidenceEntries.length - maxEvidenceShown;
+  if (overflow > 0) {
+    const overflowY = evidenceStartY + maxEvidenceShown * 22;
+    nodes.push({
+      id: 'ev-overflow',
+      x: approvalX + 10,
+      y: overflowY,
+      kind: 'evidence',
+      label: `+${overflow}`,
+      sublabel: `${overflow} more`,
+      color: NODE_COLORS.evidence!.stroke,
+      bg: NODE_COLORS.evidence!.fill,
+      width: 18,
+      height: 18,
+    });
+  }
+
   // Compute viewBox
   let minX = Infinity,
     minY = Infinity,
@@ -359,7 +349,11 @@ function buildGraph(props: TriageModeProps) {
     maxY = Math.max(maxY, node.y + node.height + 10);
   }
   const pad = 20;
-  const viewBox = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
+  // Enforce minimum viewBox height so the graph doesn't look squashed with few SOR rows
+  const rawH = maxY - minY + pad * 2;
+  const vbH = Math.max(rawH, 160);
+  const vbYOffset = rawH < 160 ? (160 - rawH) / 2 : 0;
+  const viewBox = `${minX - pad} ${minY - pad - vbYOffset} ${maxX - minX + pad * 2} ${vbH}`;
 
   return { nodes, edges, viewBox };
 }
@@ -413,6 +407,7 @@ function DetailPopover({
           type="button"
           className="text-muted-foreground hover:text-foreground text-xs"
           onClick={onClose}
+          aria-label="Close detail popover"
         >
           x
         </button>
@@ -430,9 +425,12 @@ function DetailPopover({
 }
 
 export function BlastMapMode(props: TriageModeProps) {
-  const { approval, plannedEffects } = props;
+  const { approval, plannedEffects, evidenceEntries, run, workflow } = props;
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const { nodes, edges, viewBox } = useMemo(() => buildGraph(props), [props]);
+  const { nodes, edges, viewBox } = useMemo(
+    () => buildGraph(props),
+    [approval, plannedEffects, evidenceEntries, run, workflow],
+  );
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -474,14 +472,16 @@ export function BlastMapMode(props: TriageModeProps) {
       <svg
         ref={svgRef}
         viewBox={viewBox}
-        className="w-full h-auto"
-        style={{ minHeight: 220, maxHeight: 420 }}
+        className="w-full h-auto min-h-[180px] sm:min-h-[220px] max-h-[360px] sm:max-h-[420px]"
+        preserveAspectRatio="xMidYMid meet"
         xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label={`Entity relationship graph centered on approval ${approval.approvalId} showing ${plannedEffects.length} planned effects`}
       >
         {/* Arrow marker defs */}
         <defs>
           {Object.entries({
-            ...SOR_FILL,
+            ...Object.fromEntries(Object.entries(SOR_PALETTE).map(([k, v]) => [k, v.fill])),
             ...OP_STROKE,
             ...Object.fromEntries(Object.entries(NODE_COLORS).map(([k, v]) => [k, v.stroke])),
           }).map(([key, color]) => (
@@ -521,7 +521,7 @@ export function BlastMapMode(props: TriageModeProps) {
               <g
                 key={node.id}
                 className="cursor-pointer animate-graph-node-in"
-                style={{ animationDelay: `${i * 30}ms` }}
+                style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${node.label} ${node.kind}`}
@@ -568,7 +568,7 @@ export function BlastMapMode(props: TriageModeProps) {
             <g
               key={node.id}
               className="cursor-pointer animate-graph-node-in"
-              style={{ animationDelay: `${i * 30}ms` }}
+              style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
               tabIndex={0}
               role="button"
               aria-label={`${node.label} ${node.kind}`}
@@ -606,7 +606,7 @@ export function BlastMapMode(props: TriageModeProps) {
                 height={node.height}
                 rx={node.kind === 'approval' ? 10 : 6}
                 fill={node.bg}
-                stroke={isSelected ? node.color : node.color}
+                stroke={isSelected ? 'hsl(var(--primary))' : node.color}
                 strokeWidth={isSelected ? 2.5 : node.kind === 'approval' ? 2 : 1.5}
                 className="transition-transform duration-150 hover:scale-105"
                 style={{
@@ -632,15 +632,15 @@ export function BlastMapMode(props: TriageModeProps) {
                   y={node.y + node.height / 2 + 8}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill="#9ca3af"
+                  style={{ fill: 'hsl(var(--muted-foreground))' }}
                   fontSize={node.kind === 'effect' ? 9 : 10}
                 >
                   {node.sublabel}
                 </text>
               )}
 
-              {/* "AWAITING DECISION" label for approval */}
-              {isApproval && (
+              {/* "AWAITING DECISION" label for approval — only when Pending */}
+              {isApproval && approval.status === 'Pending' && (
                 <text
                   x={node.x + node.width / 2}
                   y={node.y - 10}

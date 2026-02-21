@@ -18,7 +18,7 @@ export function AlertTriagePanel({ alerts, onJumpToRobot }: AlertTriagePanelProp
   if (alerts.length === 0) return null;
 
   return (
-    <div className="absolute bottom-3 left-3 right-3 z-[1000] max-h-[180px] overflow-y-auto rounded-lg border border-border bg-card/95 shadow-lg backdrop-blur-sm">
+    <div className="absolute bottom-3 left-3 z-[1000] w-80 max-w-[320px] max-h-[180px] overflow-y-auto rounded-lg border border-border bg-card/95 shadow-lg backdrop-blur-sm">
       <div className="sticky top-0 border-b border-border bg-card/95 px-3 py-2 backdrop-blur-sm">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Spatial Alerts ({alerts.length})

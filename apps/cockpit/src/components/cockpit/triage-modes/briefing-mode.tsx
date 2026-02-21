@@ -6,6 +6,18 @@ import { useState } from 'react';
 import type { TriageModeProps } from './index';
 import { generateBriefing, type BriefingSection } from './lib/briefing-templates';
 
+function RiskContent({ content }: { content: string }) {
+  const match = content.match(/^(Risk level:\s*\w+)(\.?\s*)(.*)/s);
+  if (!match) return <>{content}</>;
+  return (
+    <>
+      <strong className="text-red-600">{match[1]}</strong>
+      {match[2]}
+      {match[3]}
+    </>
+  );
+}
+
 function BriefingSectionCard({ section }: { section: BriefingSection }) {
   const isRecommendation = section.id === 'recommendation';
   return (
@@ -20,11 +32,10 @@ function BriefingSectionCard({ section }: { section: BriefingSection }) {
         <p
           className={cn(
             'text-xs leading-relaxed text-foreground',
-            section.id === 'risk' && '[&_strong]:text-red-600',
             isRecommendation && 'font-medium',
           )}
         >
-          {section.content}
+          {section.id === 'risk' ? <RiskContent content={section.content} /> : section.content}
         </p>
       </div>
     </div>
@@ -39,6 +50,7 @@ export function BriefingMode({
   workflow,
 }: TriageModeProps) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const sections = useMemo(
     () => generateBriefing(approval, plannedEffects, evidenceEntries, run, workflow),
     [approval, plannedEffects, evidenceEntries, run, workflow],
@@ -52,7 +64,10 @@ export function BriefingMode({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       })
-      .catch(() => void 0);
+      .catch(() => {
+        setCopyFailed(true);
+        setTimeout(() => setCopyFailed(false), 2000);
+      });
   }, [sections]);
 
   return (
@@ -63,7 +78,7 @@ export function BriefingMode({
         </p>
         <Button variant="ghost" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleCopy}>
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-          {copied ? 'Copied' : 'Copy briefing'}
+          {copyFailed ? 'Copy failed' : copied ? 'Copied' : 'Copy briefing'}
         </Button>
       </div>
 

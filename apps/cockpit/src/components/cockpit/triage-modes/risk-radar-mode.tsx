@@ -82,7 +82,7 @@ export function RiskRadarMode({ approval, plannedEffects, evidenceEntries, run }
     <div className="space-y-3">
       {/* Radar chart */}
       <div className="flex justify-center">
-        <div className="w-full max-w-[300px] h-[240px] relative">
+        <div className="w-full max-w-[240px] sm:max-w-[300px] h-[200px] sm:h-[240px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="58%">
               <PolarGrid stroke="hsl(var(--border))" />
@@ -108,7 +108,7 @@ export function RiskRadarMode({ approval, plannedEffects, evidenceEntries, run }
             {score.label}
           </span>
         </div>
-        <div className="mx-auto w-48 h-2 bg-muted rounded-full overflow-hidden">
+        <div className="mx-auto w-36 sm:w-48 h-2 bg-muted rounded-full overflow-hidden">
           <div
             className={cn('h-full rounded-full transition-all duration-700', colors.bar)}
             style={{ width: `${score.composite}%` }}
@@ -117,7 +117,7 @@ export function RiskRadarMode({ approval, plannedEffects, evidenceEntries, run }
       </div>
 
       {/* Axis detail bars */}
-      <div className="space-y-1.5 pt-1 max-w-[300px] mx-auto">
+      <div className="space-y-1.5 pt-1 max-w-[240px] sm:max-w-[300px] mx-auto">
         {(Object.keys(score.axes) as Array<keyof typeof score.axes>).map((key) => (
           <MicroBar
             key={key}

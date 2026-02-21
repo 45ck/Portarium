@@ -2,40 +2,13 @@ import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import type { DomainEntityType } from '@/assets/types';
 import type { TriageModeProps } from './index';
 import type { PlanEffect, EffectOperation, WorkflowActionSummary } from '@portarium/cockpit-types';
-
-const SOR_PALETTE: Record<string, string> = {
-  Odoo: 'bg-indigo-600',
-  Stripe: 'bg-violet-600',
-  NetSuite: 'bg-blue-600',
-  Okta: 'bg-sky-500',
-  Mautic: 'bg-orange-500',
-  Zammad: 'bg-rose-500',
-  Vault: 'bg-amber-500',
-};
-
-const EXTERNAL_TYPE_MAP: Record<string, DomainEntityType> = {
-  Invoice: 'invoice',
-  Payment: 'payment',
-  Ticket: 'ticket',
-  Subscription: 'subscription',
-  Order: 'order',
-  Account: 'account',
-  Party: 'party',
-  Product: 'product',
-};
-
-function resolveEntity(ext: string): DomainEntityType {
-  for (const [k, v] of Object.entries(EXTERNAL_TYPE_MAP)) {
-    if (ext.toLowerCase().includes(k.toLowerCase())) return v;
-  }
-  return 'external-object-ref';
-}
+import { resolveSorPalette } from './lib/sor-palette';
+import { resolveEntity } from './lib/entity-type-resolver';
 
 function SorBadgeInline({ name }: { name: string }) {
-  const bg = SOR_PALETTE[name] ?? 'bg-muted-foreground';
+  const bg = resolveSorPalette(name).bg;
   return (
     <span
       className={cn(
@@ -116,6 +89,11 @@ function AfterCard({ effect }: { effect: PlanEffect }) {
           {effect.target.externalType}
         </span>
         <span className="text-[10px] text-foreground block truncate">{effect.summary}</span>
+        {effect.operation === 'Update' && (
+          <span className="text-[9px] font-medium text-primary block mt-0.5">
+            Fields will be modified
+          </span>
+        )}
       </div>
     </div>
   );
@@ -148,6 +126,7 @@ function formatElapsed(startIso: string, endIso?: string): string {
   const end = endIso ? new Date(endIso).getTime() : Date.now();
   const ms = end - start;
   const minutes = Math.floor(ms / 60000);
+  if (minutes === 0) return 'just now';
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ${minutes % 60}m`;
@@ -208,7 +187,7 @@ export function DiffViewMode({ approval, plannedEffects, run, workflow }: Triage
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
+      <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] gap-2">
         <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
           Current State
         </div>
@@ -237,14 +216,25 @@ export function DiffViewMode({ approval, plannedEffects, run, workflow }: Triage
             {effects.map((effect) => (
               <div
                 key={effect.effectId}
-                className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center"
+                className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] gap-2 items-center"
               >
                 <BeforeCard effect={effect} />
-                <div className="w-8 flex flex-col items-center gap-0.5">
+                <div className="sm:hidden flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                  <svg width="8" height="16" viewBox="0 0 8 16" className="text-muted-foreground">
+                    <path
+                      d="M4 0 V12 M1 9 L4 12 L7 9"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                  <OpBadge op={effect.operation} />
+                </div>
+                <div className="hidden sm:flex w-8 flex-col items-center gap-0.5">
                   <OpBadge op={effect.operation} />
                   <svg width="8" height="16" viewBox="0 0 8 16" className="text-muted-foreground">
                     <path
-                      d="M4 0 L4 12 L1 9 M4 12 L7 9"
+                      d="M4 0 V12 M1 9 L4 12 L7 9"
                       stroke="currentColor"
                       fill="none"
                       strokeWidth="1.5"

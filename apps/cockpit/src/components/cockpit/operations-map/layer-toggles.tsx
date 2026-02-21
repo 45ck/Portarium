@@ -16,7 +16,7 @@ interface LayerTogglesProps {
 const LAYER_DEFS = [
   { key: 'geofences' as const, label: 'Geofences', icon: Hexagon },
   { key: 'trails' as const, label: 'Trails', icon: Navigation },
-  { key: 'halos' as const, label: 'Halos', icon: CircleDot },
+  { key: 'halos' as const, label: 'Uncertainty zones', icon: CircleDot },
 ];
 
 export function LayerToggles({ layers, onChange }: LayerTogglesProps) {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Radio, History } from 'lucide-react';
@@ -14,7 +15,7 @@ export function PlaybackControls() {
   const [position, setPosition] = useState(100);
 
   return (
-    <div className="absolute bottom-3 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-md backdrop-blur-sm">
+    <div className="absolute bottom-3 left-1/2 z-[1001] flex -translate-x-1/2 items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 shadow-md backdrop-blur-sm">
       {/* Mode toggle */}
       <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
         <Button
@@ -33,7 +34,7 @@ export function PlaybackControls() {
           variant={mode === 'replay' ? 'default' : 'ghost'}
           size="sm"
           className="h-6 gap-1 px-2 text-[11px]"
-          onClick={() => setMode('replay')}
+          onClick={() => toast.info('Replay mode coming soon — requires telemetry backend')}
         >
           <History className="h-3 w-3" />
           Replay

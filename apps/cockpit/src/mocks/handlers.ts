@@ -32,6 +32,7 @@ let users: UserSummary[] = [...MOCK_USERS];
 let agents: MeridianDataset['AGENTS'] = [];
 let runs: MeridianDataset['RUNS'] = [];
 let missions: MeridianDataset['MISSIONS'] = [];
+let globalEstopActive = false;
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index');
@@ -377,12 +378,17 @@ export const handlers = [
   http.get('/v1/workspaces/:wsId/robotics/safety/estop-log', () =>
     HttpResponse.json({ items: data?.ESTOP_AUDIT_LOG ?? [] }),
   ),
-  http.post('/v1/workspaces/:wsId/robotics/safety/estop', () =>
-    HttpResponse.json({ status: 'activated' }),
+  http.get('/v1/workspaces/:wsId/robotics/safety/estop', () =>
+    HttpResponse.json({ active: globalEstopActive }),
   ),
-  http.delete('/v1/workspaces/:wsId/robotics/safety/estop', () =>
-    HttpResponse.json({ status: 'cleared' }),
-  ),
+  http.post('/v1/workspaces/:wsId/robotics/safety/estop', () => {
+    globalEstopActive = true;
+    return HttpResponse.json({ status: 'activated', active: true });
+  }),
+  http.delete('/v1/workspaces/:wsId/robotics/safety/estop', () => {
+    globalEstopActive = false;
+    return HttpResponse.json({ status: 'cleared', active: false });
+  }),
 
   // Users
   http.get('/v1/workspaces/:wsId/users', () => HttpResponse.json({ items: users })),

@@ -4,6 +4,7 @@ import type {
   EvidenceEntry,
   RunSummary,
 } from '@portarium/cockpit-types';
+import { hasChainBreak } from './chain-verification';
 
 export type SignalColor = 'green' | 'yellow' | 'red';
 
@@ -185,16 +186,7 @@ export function evaluateEvidenceChain(evidenceEntries?: EvidenceEntry[]): Signal
     };
   }
 
-  // Check chain integrity
-  const sorted = [...evidenceEntries].sort(
-    (a, b) => new Date(a.occurredAtIso).getTime() - new Date(b.occurredAtIso).getTime(),
-  );
-  const hasBroken = sorted.some((entry, i) => {
-    if (i === 0) return false;
-    return entry.previousHash !== sorted[i - 1]!.hashSha256;
-  });
-
-  if (hasBroken) {
+  if (hasChainBreak(evidenceEntries)) {
     return {
       id: 'evidence-chain',
       label: 'Evidence Chain',

@@ -18,7 +18,7 @@ export function ModeSwitcher() {
       </span>
       <TooltipProvider delayDuration={300}>
         <Tabs value={mode} onValueChange={(v) => setMode(v as TriageViewMode)}>
-          <TabsList className="h-8 gap-0.5">
+          <TabsList className="h-8 gap-0.5 overflow-x-auto flex-nowrap">
             {TRIAGE_MODES.map((m) => {
               const Icon = m.icon;
               const isActive = mode === m.id;

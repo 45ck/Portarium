@@ -76,6 +76,43 @@ flowchart LR
 - Enables multiple robotics protocol adapters without changing core workflow/policy semantics.
 - Establishes stable boundaries for mission APIs, telemetry normalization, and governance controls.
 
+## Implementation Mapping
+
+The architecture boundary in this ADR is implemented and verified across the following beads:
+
+- `bead-0505`: mission dispatch/cancel/status boundary contract and adapter-facing integration shape.
+- `bead-0507`: robotics capability matrix contract for boundary-level protocol declarations.
+- `bead-0508`: mission aggregate/domain model contract for control-plane intent semantics.
+- `bead-0509`: robot and fleet domain contracts for execution/edge separation.
+- `bead-0510`: safety-state domain contracts for explicit local safety ownership boundaries.
+- `bead-0511`: robotics event contract normalization for control-plane evidence/audit ingestion.
+- `bead-0512`: orchestration and run-policy integration for robotics mission execution boundaries.
+- `bead-0513`: architecture/spec alignment for robotics action semantics and control-plane ownership.
+- `bead-0514`: conformance hardening and boundary test coverage closure for robotics contracts.
+
+Protocol-specific gateway adapter implementation remains tracked as follow-on work:
+
+- `bead-0515` (gRPC edge gateway prototype)
+- `bead-0516` (MQTT gateway prototype)
+- `bead-0517` (ROS 2 Action bridge prototype)
+- `bead-0518` (OPC UA gateway prototype)
+
+## Acceptance Evidence
+
+- `src/application/ports/mission-port.ts`
+- `src/domain/ports/port-family-capabilities-v1.ts`
+- `src/domain/robots/mission-v1.ts`
+- `src/domain/robots/robot-fleet-v1.ts`
+- `src/domain/event-stream/robot-events-v1.ts`
+- `.specify/specs/robotics-action-semantics.md`
+
+## Review Linkage
+
+- `bead-0622`: implementation mapping closure review
+- `docs/review/bead-0622-adr-0066-implementation-mapping-review.md`
+- `bead-0623`: mapping/linkage verification review
+- `docs/review/bead-0623-adr-0066-linkage-review.md`
+
 ## References
 
 - `bead-0497` Domain Atlas robotics taxonomy

@@ -5,6 +5,7 @@ import type {
   RunSummary,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
+import { hasChainBreak } from './chain-verification';
 
 export interface BriefingSection {
   id: string;
@@ -155,14 +156,7 @@ function buildRisk(
 
   // Evidence chain health
   if (evidenceEntries && evidenceEntries.length > 0) {
-    const sorted = [...evidenceEntries].sort(
-      (a, b) => new Date(a.occurredAtIso).getTime() - new Date(b.occurredAtIso).getTime(),
-    );
-    const hasBroken = sorted.some((entry, i) => {
-      if (i === 0) return false;
-      return entry.previousHash !== sorted[i - 1]!.hashSha256;
-    });
-    if (hasBroken) {
+    if (hasChainBreak(evidenceEntries)) {
       points.push('Evidence chain integrity broken');
       riskFactors += 2;
     }
@@ -226,14 +220,7 @@ function buildEvidence(evidenceEntries?: EvidenceEntry[]): string {
   const categories = new Set(evidenceEntries.map((e) => e.category));
   const attachmentCount = evidenceEntries.reduce((sum, e) => sum + (e.payloadRefs?.length ?? 0), 0);
 
-  const sorted = [...evidenceEntries].sort(
-    (a, b) => new Date(a.occurredAtIso).getTime() - new Date(b.occurredAtIso).getTime(),
-  );
-  const hasBroken = sorted.some((entry, i) => {
-    if (i === 0) return false;
-    return entry.previousHash !== sorted[i - 1]!.hashSha256;
-  });
-  const chainLabel = hasBroken ? 'chain broken' : 'chain verified';
+  const chainLabel = hasChainBreak(evidenceEntries) ? 'chain broken' : 'chain verified';
 
   const parts = [
     `${pluralize(evidenceEntries.length, 'entry', 'entries')} from ${pluralize(actorSet.size, 'actor')}`,

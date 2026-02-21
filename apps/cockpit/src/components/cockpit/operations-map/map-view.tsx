@@ -12,8 +12,7 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { RobotLocation, Geofence } from '@/mocks/fixtures/robot-locations';
-import type { RobotStatus } from '@/types/robotics';
-import { cn } from '@/lib/utils';
+import type { RobotStatus, RobotClass } from '@/types/robotics';
 import { LayerToggles, type LayerVisibility } from './layer-toggles';
 
 // Fix default marker icon paths for bundlers (guarded for JSDOM/SSR)
@@ -26,28 +25,92 @@ if (typeof window !== 'undefined' && L.Icon?.Default?.prototype) {
   });
 }
 
-const STATUS_COLORS: Record<RobotStatus, string> = {
+export const STATUS_COLORS: Record<RobotStatus, string> = {
   Online: '#22c55e',
   Degraded: '#eab308',
   'E-Stopped': '#ef4444',
   Offline: '#9ca3af',
 };
 
-function robotIcon(status: RobotStatus, isSelected: boolean): L.DivIcon {
+const CLASS_GLYPHS: Record<RobotClass, string> = {
+  AMR: 'R',
+  AGV: 'A',
+  Manipulator: 'M',
+  UAV: 'U',
+  PLC: 'P',
+};
+
+function robotIcon(
+  status: RobotStatus,
+  robotClass: RobotClass,
+  name: string,
+  isSelected: boolean,
+): L.DivIcon {
   const color = STATUS_COLORS[status];
-  const size = isSelected ? 18 : 12;
-  const border = isSelected ? '3px solid white' : '2px solid white';
-  const shadow = isSelected ? '0 0 8px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.3)';
+  const size = isSelected ? 32 : 24;
+  const glyph = CLASS_GLYPHS[robotClass];
+  const border = isSelected ? `3px solid ${color}` : `2px solid ${color}`;
+  const shadow = isSelected ? '0 0 10px rgba(0,0,0,0.4)' : '0 0 4px rgba(0,0,0,0.3)';
+  const fontSize = isSelected ? 13 : 10;
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      background:${color};border:${border};
-      box-shadow:${shadow};
-    "></div>`,
-    iconSize: [size, size],
+    html: `<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;">
+      <div style="
+        width:${size}px;height:${size}px;border-radius:6px;
+        background:var(--card);border:${border};
+        box-shadow:${shadow};
+        display:flex;align-items:center;justify-content:center;
+        font-size:${fontSize}px;font-weight:700;color:${color};
+        font-family:system-ui,sans-serif;
+      ">${glyph}</div>
+      <div style="
+        margin-top:2px;font-size:9px;font-weight:600;
+        color:var(--card-foreground);background:var(--card);
+        padding:0 3px;border-radius:2px;white-space:nowrap;
+        max-width:80px;overflow:hidden;text-overflow:ellipsis;
+        text-align:center;line-height:1.3;
+      ">${name}</div>
+    </div>`,
+    iconSize: [size, size + 16],
     iconAnchor: [size / 2, size / 2],
   });
+}
+
+function FitAllControl({ locations }: { locations: RobotLocation[] }) {
+  const map = useMap();
+  useEffect(() => {
+    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+    const btn = L.DomUtil.create('a', '', container);
+    btn.href = '#';
+    btn.title = 'Fit all robots';
+    btn.innerHTML = '&#x2922;'; // ⤢ expand icon
+    btn.style.cssText =
+      'display:flex;align-items:center;justify-content:center;width:30px;height:30px;font-size:18px;text-decoration:none;color:var(--card-foreground);background:var(--card);';
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('aria-label', 'Fit all robots in view');
+
+    const control = L.Control.extend({
+      options: { position: 'topleft' as const },
+      onAdd: () => container,
+    });
+    const ctrl = new control();
+    ctrl.addTo(map);
+
+    const handleClick = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (locations.length > 0) {
+        const bounds = L.latLngBounds(locations.map((l) => [l.lat, l.lng]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+      }
+    };
+    btn.addEventListener('click', handleClick);
+    return () => {
+      btn.removeEventListener('click', handleClick);
+      ctrl.remove();
+    };
+  }, [map, locations]);
+  return null;
 }
 
 function FlyToSelected({
@@ -104,6 +167,7 @@ export function MapView({
         />
 
         <FlyToSelected selectedId={selectedRobotId} locations={locations} />
+        <FitAllControl locations={locations} />
 
         {/* Geofence polygons */}
         {layers.geofences &&
@@ -119,7 +183,7 @@ export function MapView({
               }}
             >
               <Popup>
-                <span className="text-sm font-medium">{gf.label}</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{gf.label}</span>
               </Popup>
             </Polygon>
           ))}
@@ -163,25 +227,32 @@ export function MapView({
           <Marker
             key={loc.robotId}
             position={[loc.lat, loc.lng]}
-            icon={robotIcon(loc.status, loc.robotId === selectedRobotId)}
+            icon={robotIcon(loc.status, loc.robotClass, loc.name, loc.robotId === selectedRobotId)}
             eventHandlers={{
               click: () => onSelectRobot(loc.robotId),
             }}
           >
             <Popup>
-              <div className="space-y-1 min-w-[140px]">
-                <p className="font-semibold text-sm">{loc.name}</p>
-                <p className="text-xs text-muted-foreground">{loc.robotId}</p>
-                <div className="flex items-center gap-1.5 text-xs">
+              <div style={{ minWidth: 140, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <p style={{ fontWeight: 600, fontSize: '0.875rem', margin: 0 }}>{loc.name}</p>
+                <p style={{ fontSize: '0.75rem', opacity: 0.6, margin: 0 }}>{loc.robotId}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}>
                   <span
-                    className={cn('inline-block h-2 w-2 rounded-full')}
-                    style={{ backgroundColor: STATUS_COLORS[loc.status] }}
+                    style={{
+                      display: 'inline-block',
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: STATUS_COLORS[loc.status],
+                    }}
                   />
                   {loc.status}
                 </div>
-                <p className="text-xs">Battery: {loc.batteryPct}%</p>
+                <p style={{ fontSize: '0.75rem', margin: 0 }}>Battery: {loc.batteryPct}%</p>
                 {loc.missionId && (
-                  <p className="text-xs text-muted-foreground">Mission: {loc.missionId}</p>
+                  <p style={{ fontSize: '0.75rem', opacity: 0.6, margin: 0 }}>
+                    Mission: {loc.missionId}
+                  </p>
                 )}
               </div>
             </Popup>

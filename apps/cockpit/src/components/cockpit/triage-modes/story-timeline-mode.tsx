@@ -218,7 +218,7 @@ function TimelineCard({ event, above }: { event: TimelineEvent; above: boolean }
         )}
       >
         {isFuture && (
-          <span className="text-[8px] uppercase tracking-wider text-muted-foreground">
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
             Projected
           </span>
         )}
@@ -237,7 +237,7 @@ function TimelineCard({ event, above }: { event: TimelineEvent; above: boolean }
           </p>
         )}
         {event.detail && (
-          <p className="text-[8px] text-muted-foreground mt-0.5 truncate">{event.detail}</p>
+          <p className="text-[9px] text-muted-foreground mt-0.5 truncate">{event.detail}</p>
         )}
       </div>
     </div>
@@ -279,7 +279,11 @@ function SimpleTimeline({ events }: { events: TimelineEvent[] }) {
 
 export function StoryTimelineMode(props: TriageModeProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const events = useMemo(() => buildTimelineEvents(props), [props]);
+  const { approval, plannedEffects, evidenceEntries, run, workflow } = props;
+  const events = useMemo(
+    () => buildTimelineEvents(props),
+    [approval, plannedEffects, evidenceEntries, run, workflow],
+  );
 
   // Filter non-evidence events for card display
   const cardEvents = events.filter((e) => e.type !== 'evidence');
@@ -313,7 +317,7 @@ export function StoryTimelineMode(props: TriageModeProps) {
   const minTime = events[0]!.timestamp.getTime();
   const maxTime = events[events.length - 1]!.timestamp.getTime();
   const timeRange = Math.max(maxTime - minTime, 1);
-  const totalWidth = Math.max(cardEvents.length * minSpacingPerCard, 600);
+  const totalWidth = Math.max(cardEvents.length * minSpacingPerCard, 480);
 
   function getX(ts: Date): number {
     return 80 + ((ts.getTime() - minTime) / timeRange) * (totalWidth - 160);
@@ -380,14 +384,20 @@ export function StoryTimelineMode(props: TriageModeProps) {
           {props.approval.dueAtIso &&
             new Date(props.approval.dueAtIso) < new Date() &&
             (() => {
-              const dueX = getX(new Date(props.approval.dueAtIso));
-              const nowXOverdue = getX(new Date());
+              const dueEvent = cardEvents.find((e) => e.id === 'due');
+              const nowEventOverdue = cardEvents.find((e) => e.id === 'now');
+              const dueX = dueEvent
+                ? (adjustedCardPositions.get(dueEvent.id) ?? getX(dueEvent.timestamp))
+                : getX(new Date(props.approval.dueAtIso));
+              const nowXOverdue = nowEventOverdue
+                ? (adjustedCardPositions.get(nowEventOverdue.id) ?? getX(nowEventOverdue.timestamp))
+                : getX(new Date());
               return (
                 <div
                   className="absolute h-1 bg-red-300/40 top-1/2 -translate-y-1/2 rounded flex items-center justify-center"
-                  style={{ left: dueX, width: nowXOverdue - dueX }}
+                  style={{ left: dueX, width: Math.max(nowXOverdue - dueX, 0) }}
                 >
-                  <span className="text-[7px] font-bold uppercase text-red-500 leading-none">
+                  <span className="text-[9px] font-bold uppercase text-red-500 leading-none">
                     OVERDUE
                   </span>
                 </div>

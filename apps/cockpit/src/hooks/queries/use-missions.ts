@@ -7,6 +7,12 @@ async function fetchMissions(wsId: string): Promise<{ items: MissionSummary[] }>
   return res.json();
 }
 
+async function fetchMission(wsId: string, missionId: string): Promise<MissionSummary> {
+  const res = await fetch(`/v1/workspaces/${wsId}/robotics/missions/${missionId}`);
+  if (!res.ok) throw new Error('Mission not found');
+  return res.json();
+}
+
 async function postMissionAction(
   wsId: string,
   missionId: string,
@@ -26,6 +32,14 @@ export function useMissions(wsId: string) {
     queryKey: ['missions', wsId],
     queryFn: () => fetchMissions(wsId),
     enabled: Boolean(wsId),
+  });
+}
+
+export function useMission(wsId: string, missionId: string) {
+  return useQuery({
+    queryKey: ['missions', wsId, missionId],
+    queryFn: () => fetchMission(wsId, missionId),
+    enabled: Boolean(wsId) && Boolean(missionId),
   });
 }
 
