@@ -28,7 +28,7 @@ export function ApprovalTriageLayout({
         />
       </div>
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
+      <ResizablePanelGroup orientation="horizontal" className="flex-1 min-h-0">
         <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
           <ApprovalListPanel
             items={items}
