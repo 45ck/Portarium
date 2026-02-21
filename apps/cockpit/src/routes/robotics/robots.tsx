@@ -4,11 +4,12 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useRobots } from '@/hooks/queries/use-robots';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { RobotStatusBadge } from '@/components/domain/robot-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { RobotSummary, RobotClass } from '@/types/robotics';
-import { Bot, Wifi, WifiOff, AlertTriangle, OctagonX, MapPin } from 'lucide-react';
+import { Bot, MapPin } from 'lucide-react';
 
 const CLASS_FILTERS: Array<{ label: string; value: RobotClass | 'All' }> = [
   { label: 'All', value: 'All' },
@@ -18,42 +19,6 @@ const CLASS_FILTERS: Array<{ label: string; value: RobotClass | 'All' }> = [
   { label: 'UAV', value: 'UAV' },
   { label: 'PLC', value: 'PLC' },
 ];
-
-function RobotStatusBadge({ status }: { status: RobotSummary['status'] }) {
-  const config = {
-    Online: {
-      label: 'Online',
-      icon: <Wifi className="h-3 w-3" />,
-      className: 'bg-success/10 text-success border-success/30',
-    },
-    Degraded: {
-      label: 'Degraded',
-      icon: <AlertTriangle className="h-3 w-3" />,
-      className: 'bg-warning/10 text-warning border-warning/30',
-    },
-    'E-Stopped': {
-      label: 'E-Stopped',
-      icon: <OctagonX className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-    Offline: {
-      label: 'Offline',
-      icon: <WifiOff className="h-3 w-3" />,
-      className: 'bg-muted text-muted-foreground border-border',
-    },
-  }[status];
-
-  return (
-    <Badge
-      variant="outline"
-      className={cn('flex items-center gap-1 text-[11px]', config.className)}
-      aria-label={status}
-    >
-      {config.icon}
-      {config.label}
-    </Badge>
-  );
-}
 
 function heartbeatLabel(sec: number): string {
   if (sec < 60) return `${sec}s ago`;

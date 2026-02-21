@@ -32,3 +32,5 @@ Low:
   - `docs/review/bead-0630-adr-0070-implementation-mapping-review.md`
 - Confirmed remaining-gap tracking remains explicit via:
   - `bead-0647`
+
+Re-verified on: 2026-02-21 (no regressions in mapping/linkage evidence).

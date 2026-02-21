@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RelatedEntities } from '@/components/cockpit/related-entities';
 import type { RelatedEntity } from '@/components/cockpit/related-entities';
+import { MissionStatusBadge } from '@/components/domain/mission-status-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,52 +30,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import type { MissionSummary } from '@/types/robotics';
-import { Circle, RotateCcw, CheckCircle2, XCircle, OctagonX, MapPin } from 'lucide-react';
-
-function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
-  const config: Record<
-    MissionSummary['status'],
-    { label: string; icon: React.ReactNode; className: string }
-  > = {
-    Pending: {
-      label: 'Pending',
-      icon: <Circle className="h-3 w-3" />,
-      className: 'bg-muted text-muted-foreground border-border',
-    },
-    Executing: {
-      label: 'Executing',
-      icon: <RotateCcw className="h-3 w-3 animate-spin" />,
-      className: 'bg-info/10 text-info border-info/30',
-    },
-    Completed: {
-      label: 'Completed',
-      icon: <CheckCircle2 className="h-3 w-3" />,
-      className: 'bg-success/10 text-success border-success/30',
-    },
-    Failed: {
-      label: 'Failed',
-      icon: <XCircle className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-    Cancelled: {
-      label: 'Cancelled',
-      icon: <OctagonX className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-  };
-  const c = config[status];
-  return (
-    <Badge
-      variant="outline"
-      className={cn('flex items-center gap-1 text-[11px]', c.className)}
-      aria-label={status}
-    >
-      {c.icon}
-      {c.label}
-    </Badge>
-  );
-}
+import { MapPin } from 'lucide-react';
 
 function MissionDetailPage() {
   const { missionId } = Route.useParams();

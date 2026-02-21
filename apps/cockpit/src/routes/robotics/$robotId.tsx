@@ -14,6 +14,8 @@ import { MapView } from '@/components/cockpit/operations-map/map-view';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { RobotStatusBadge } from '@/components/domain/robot-status-badge';
+import { MissionStatusBadge } from '@/components/domain/mission-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -29,101 +31,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import type { RobotSummary } from '@/types/robotics';
 import type { MissionSummary } from '@/types/robotics';
 import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-toggles';
-import {
-  Wifi,
-  WifiOff,
-  AlertTriangle,
-  OctagonX,
-  Circle,
-  RotateCcw,
-  CheckCircle2,
-  XCircle,
-  Target,
-  MapPin,
-} from 'lucide-react';
-
-function RobotStatusBadge({ status }: { status: RobotSummary['status'] }) {
-  const config = {
-    Online: {
-      label: 'Online',
-      icon: <Wifi className="h-3 w-3" />,
-      className: 'bg-success/10 text-success border-success/30',
-    },
-    Degraded: {
-      label: 'Degraded',
-      icon: <AlertTriangle className="h-3 w-3" />,
-      className: 'bg-warning/10 text-warning border-warning/30',
-    },
-    'E-Stopped': {
-      label: 'E-Stopped',
-      icon: <OctagonX className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-    Offline: {
-      label: 'Offline',
-      icon: <WifiOff className="h-3 w-3" />,
-      className: 'bg-muted text-muted-foreground border-border',
-    },
-  }[status];
-
-  return (
-    <Badge
-      variant="outline"
-      className={cn('flex items-center gap-1 text-[11px]', config.className)}
-      aria-label={status}
-    >
-      {config.icon}
-      {config.label}
-    </Badge>
-  );
-}
-
-function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
-  const config: Record<
-    MissionSummary['status'],
-    { label: string; icon: React.ReactNode; className: string }
-  > = {
-    Pending: {
-      label: 'Pending',
-      icon: <Circle className="h-3 w-3" />,
-      className: 'bg-muted text-muted-foreground border-border',
-    },
-    Executing: {
-      label: 'Executing',
-      icon: <RotateCcw className="h-3 w-3 animate-spin" />,
-      className: 'bg-info/10 text-info border-info/30',
-    },
-    Completed: {
-      label: 'Completed',
-      icon: <CheckCircle2 className="h-3 w-3" />,
-      className: 'bg-success/10 text-success border-success/30',
-    },
-    Failed: {
-      label: 'Failed',
-      icon: <XCircle className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-    Cancelled: {
-      label: 'Cancelled',
-      icon: <OctagonX className="h-3 w-3" />,
-      className: 'bg-destructive/10 text-destructive border-destructive/30',
-    },
-  };
-  const c = config[status];
-  return (
-    <Badge
-      variant="outline"
-      className={cn('flex items-center gap-1 text-[11px]', c.className)}
-      aria-label={status}
-    >
-      {c.icon}
-      {c.label}
-    </Badge>
-  );
-}
+import { Target, MapPin } from 'lucide-react';
 
 function RobotDetailPage() {
   const { robotId } = Route.useParams();

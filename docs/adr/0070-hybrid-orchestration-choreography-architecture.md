@@ -67,6 +67,39 @@ Portarium adopts a **hybrid orchestration/choreography architecture**:
 - Introduces eventual consistency for read models fed from event streams.
 - Demands explicit idempotency and replay handling in subscriber systems.
 
+## Implementation Mapping
+
+The hybrid orchestration/choreography architecture in this ADR is implemented and verified by:
+
+- `bead-0452`: orchestration/choreography architecture decision closure.
+- `bead-0041`: CloudEvents envelope and domain event contract baseline.
+- `bead-0316`: outbox ordering and replay safety coverage.
+- `bead-0319`: command-side idempotency and replay protection hardening.
+- `bead-0340`: asynchronous dispatch path reliability and backoff handling.
+- `bead-0425`: event publication integration and delivery-path verification.
+
+## Acceptance Evidence
+
+- `src/infrastructure/temporal/workflows.ts`
+- `src/infrastructure/temporal/temporal-worker.ts`
+- `src/application/events/cloudevent.ts`
+- `src/application/services/outbox-dispatcher.ts`
+- `src/infrastructure/postgresql/postgres-eventing.ts`
+- `src/infrastructure/postgresql/postgres-outbox-adapter.ts`
+- `src/infrastructure/eventing/outbox-dispatcher.test.ts`
+- `src/application/events/cloudevent.test.ts`
+
+## Review Linkage
+
+- `bead-0630`: implementation mapping closure review
+- `docs/review/bead-0630-adr-0070-implementation-mapping-review.md`
+- `bead-0631`: mapping/linkage verification review
+- `docs/review/bead-0631-adr-0070-linkage-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0647`: choreography subscriber hardening and replay safety verification.
+
 ## Guardrails
 
 - Internal run status authority remains in orchestrated storage, not event projections.
