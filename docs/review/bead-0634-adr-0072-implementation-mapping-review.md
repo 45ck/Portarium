@@ -45,3 +45,5 @@ Evidence pointers added in ADR:
 Remaining-gap traceability:
 
 - Confirmed cross-cutting enforcement hardening remains tracked by `bead-0647`.
+
+Re-verified on: 2026-02-21 (ADR-0072 implementation mapping and evidence links remain valid).
