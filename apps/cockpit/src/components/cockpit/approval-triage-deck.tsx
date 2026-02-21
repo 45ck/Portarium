@@ -54,6 +54,20 @@ export function ApprovalTriageDeck({
 }: ApprovalTriageDeckProps) {
   const prefersReducedMotion = useReducedMotion();
 
+  const validationRef = useRef<DragValidation>({
+    canApprove: true,
+    canDeny: false,
+    approveBlockReason: undefined,
+    denyBlockReason: 'Rationale is required to deny',
+    currentRationale: '',
+  });
+
+  const handleValidationChange = useCallback((v: DragValidation) => {
+    validationRef.current = v;
+  }, []);
+
+  const [dragRejection, setDragRejection] = useState<'approve' | 'deny' | null>(null);
+
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
   const rotateY = useTransform(x, [-300, 0, 300], [-5, 0, 5]);
@@ -71,10 +85,19 @@ export function ApprovalTriageDeck({
   const ghost2Scale = useTransform(x, [-300, 0, 300], [0.97, 0.94, 0.97]);
   const ghost2Y = useTransform(x, [-300, 0, 300], [4, 8, 4]);
 
-  // Stamp opacity
+  // Stamp opacity — gated by validation state
   const stampThreshold = compact ? 0.2 : STAMP_THRESHOLD;
-  const approveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
-  const denyStampOpacity = useTransform(x, [-COMMIT_PX, -stampThreshold * COMMIT_PX], [1, 0]);
+  const rawApproveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
+  const approveStampOpacity = useTransform(rawApproveStampOpacity, (v) =>
+    validationRef.current.canApprove ? v : 0,
+  );
+  const blockedStampOpacity = useTransform(rawApproveStampOpacity, (v) =>
+    validationRef.current.canApprove ? 0 : v,
+  );
+  const rawDenyStampOpacity = useTransform(x, [-COMMIT_PX, -stampThreshold * COMMIT_PX], [1, 0]);
+  const denyStampOpacity = useTransform(rawDenyStampOpacity, (v) =>
+    validationRef.current.canDeny ? v : 0,
+  );
 
   // Directional tint background
   const tintBackground = useTransform(x, (latest) =>
@@ -84,6 +107,32 @@ export function ApprovalTriageDeck({
   );
 
   const isDraggingRef = useRef(false);
+
+  const rejectDrag = useCallback(
+    (reason: 'approve' | 'deny') => {
+      isDraggingRef.current = false;
+
+      if (prefersReducedMotion) {
+        x.set(0);
+      } else {
+        animate(x, 0, {
+          ...SPRING_SNAP,
+          onComplete: () => {
+            animate(x, [0, 10, -10, 6, -6, 3, 0], {
+              duration: 0.4,
+              ease: 'easeInOut',
+            });
+          },
+        });
+      }
+
+      if (navigator?.vibrate) navigator.vibrate([30, 20, 30]);
+
+      setDragRejection(reason);
+      setTimeout(() => setDragRejection(null), 600);
+    },
+    [x, prefersReducedMotion],
+  );
 
   const handleDragStart = useCallback(() => {
     isDraggingRef.current = true;
@@ -96,20 +145,35 @@ export function ApprovalTriageDeck({
         Math.abs(info.offset.x) >= COMMIT_PX || Math.abs(info.velocity.x) >= COMMIT_VELOCITY;
 
       if (!committed) {
-        // Animated spring snap-back
         animate(x, 0, SPRING_SNAP);
         return;
       }
 
-      // Fly off screen then fire action
       const dir = info.offset.x > 0 ? 1 : -1;
       const action: TriageAction = dir > 0 ? 'Approved' : 'Denied';
+
+      // Validation gate — reject drag if action is blocked
+      const validation = validationRef.current;
+      if (action === 'Approved' && !validation.canApprove) {
+        rejectDrag('approve');
+        return;
+      }
+      if (action === 'Denied' && !validation.canDeny) {
+        rejectDrag('deny');
+        return;
+      }
+
+      // Fly off screen then fire action
       animate(x, dir * window.innerWidth, SPRING_EXIT);
+      if (navigator?.vibrate) navigator.vibrate(50);
 
       // Fire after a beat so the fly-off is visible
-      setTimeout(() => onAction(approval.approvalId, action, ''), 150);
+      setTimeout(
+        () => onAction(approval.approvalId, action, validationRef.current.currentRationale),
+        150,
+      );
     },
-    [x, onAction, approval.approvalId],
+    [x, onAction, approval.approvalId, rejectDrag],
   );
 
   // Called from the card's button actions (approve/deny/skip/changes)
