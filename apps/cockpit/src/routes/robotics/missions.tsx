@@ -3,12 +3,7 @@ import { isToday, format } from 'date-fns';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import {
-  useMissions,
-  useCancelMission,
-  usePreemptMission,
-  useRetryMission,
-} from '@/hooks/queries/use-missions';
+import { useMissions, useRetryMission } from '@/hooks/queries/use-missions';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Badge } from '@/components/ui/badge';

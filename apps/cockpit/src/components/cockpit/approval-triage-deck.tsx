@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   motion,
   useMotionValue,
@@ -82,8 +82,27 @@ export function ApprovalTriageDeck({
   const approveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
   const denyStampOpacity = useTransform(x, [-COMMIT_PX, -stampThreshold * COMMIT_PX], [1, 0]);
 
+  // Directional tint background (must be at top level — hooks can't be in JSX)
+  const tintBackground = useTransform(x, (latest) =>
+    latest > 0
+      ? `linear-gradient(100deg, rgba(34,197,94,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`
+      : `linear-gradient(260deg, rgba(239,68,68,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`,
+  );
+
   const isDraggingRef = useRef(false);
   const actionCalledRef = useRef(false);
+
+  // Trigger entrance animation when a new card mounts
+  useEffect(() => {
+    void controls.start({
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      x: 0,
+      rotate: 0,
+      transition: { type: 'spring', stiffness: 300, damping: 25 },
+    });
+  }, [controls, approval.approvalId]);
 
   const handleDragStart = useCallback(() => {
     isDraggingRef.current = true;
@@ -196,19 +215,6 @@ export function ApprovalTriageDeck({
           initial={{ y: 40, scale: 0.93, opacity: 0 }}
           animate={controls}
           exit={{ x: 0, opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-          onAnimationStart={() => {
-            // Reset position on new card entrance
-            if (!actionCalledRef.current) {
-              void controls.start({
-                y: 0,
-                scale: 1,
-                opacity: 1,
-                x: 0,
-                rotate: 0,
-                transition: { type: 'spring', stiffness: 300, damping: 25 },
-              });
-            }
-          }}
           drag={shouldDrag ? 'x' : false}
           dragElastic={DRAG_ELASTIC}
           dragConstraints={{ left: 0, right: 0 }}
@@ -223,13 +229,7 @@ export function ApprovalTriageDeck({
           {/* Directional tint overlay */}
           <motion.div
             className="absolute inset-0 pointer-events-none z-10 rounded-xl"
-            style={{
-              background: useTransform(x, (latest) =>
-                latest > 0
-                  ? `linear-gradient(100deg, rgba(34,197,94,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`
-                  : `linear-gradient(260deg, rgba(239,68,68,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`,
-              ),
-            }}
+            style={{ background: tintBackground }}
           />
 
           {/* Approved stamp */}
