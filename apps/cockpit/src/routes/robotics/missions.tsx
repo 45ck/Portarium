@@ -142,17 +142,14 @@ function MissionsPage() {
       render: (row: MissionSummary) => {
         if (row.status === 'Executing')
           return (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePreempt(row.missionId);
-              }}
+            <Link
+              to={`/robotics/missions/${row.missionId}` as string}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
-              Pre-empt
-            </Button>
+              <Button variant="outline" size="sm" className="h-6 text-xs">
+                Pre-empt
+              </Button>
+            </Link>
           );
         if (row.status === 'Failed')
           return (
@@ -170,17 +167,18 @@ function MissionsPage() {
           );
         if (row.status === 'Pending')
           return (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 text-xs text-destructive hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancel(row.missionId);
-              }}
+            <Link
+              to={`/robotics/missions/${row.missionId}` as string}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
-              Cancel
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-xs text-destructive hover:text-destructive"
+              >
+                Cancel
+              </Button>
+            </Link>
           );
         return null;
       },
