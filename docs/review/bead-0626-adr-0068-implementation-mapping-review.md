@@ -40,5 +40,5 @@ Evidence pointers added in ADR:
 
 Remaining-gap traceability:
 
-- Added follow-up bead `bead-0694` for deploy-time persistent migration execution
-  hardening beyond dry-run-only deploy path.
+- Added follow-up bead `bead-0392` for multi-tenant storage tier automation
+  follow-through (schema-per-tenant provisioning lifecycle).

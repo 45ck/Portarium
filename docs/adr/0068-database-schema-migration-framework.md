@@ -52,6 +52,31 @@ Adopt a versioned migration framework with explicit expand/contract phases.
 - Tenant migration history can diverge intentionally while remaining auditable.
 - Contract cleanup becomes an explicit operational decision.
 
+## Implementation Mapping
+
+The migration framework in this ADR is implemented and verified by:
+
+- `bead-0391`: core migration framework implementation (expand/contract model, compatibility policy, CLI/CI integration).
+
+## Acceptance Evidence
+
+- `src/infrastructure/migrations/schema-migrator.ts`
+- `src/infrastructure/migrations/schema-migrator.test.ts`
+- `src/infrastructure/migrations/default-migrations.ts`
+- `src/infrastructure/migrations/cli.ts`
+- `package.json` (`migrate:*` scripts)
+
+## Review Linkage
+
+- `bead-0626`: implementation mapping closure review
+- `docs/review/bead-0626-adr-0068-implementation-mapping-review.md`
+- `bead-0627`: mapping/linkage verification review
+- `docs/review/bead-0627-adr-0068-linkage-review.md`
+
+## Remaining Gap Tracking
+
+- `bead-0392`: multi-tenant storage tier automation follow-through (schema-per-tenant provisioning lifecycle).
+
 ## Alternatives Considered
 
 - **Single-phase migration system**
