@@ -16,6 +16,16 @@ Portarium sits between people and execution systems:
 - Middle: Portarium control plane (policy, approvals, orchestration, evidence)
 - Bottom: services, software, APIs, and tools
 
+## Feature Showcase
+
+### Approvals UX v2 (Cockpit)
+
+<p align="center">
+  <img src="docs/ui/cockpit/media/approvals-v2-showcase.gif" alt="Approvals UX v2 showcase: pending queue, triage panel, and approval detail" />
+</p>
+
+The approvals v2 flow in Cockpit demonstrates fast triage with policy context, decision rationale capture, and evidence-linked run governance.
+
 ## Why Portarium
 
 - Governed execution tiers: `Auto`, `Assisted`, `Human-approve`, `Manual-only`
