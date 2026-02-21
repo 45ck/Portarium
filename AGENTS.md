@@ -56,7 +56,8 @@ bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon,
 
    ```bash
    cd .trees/<bead-id>
-   bun install   # fast via hardlink cache; subsequent worktrees take ~2-5s
+   # Junction-link node_modules from root — instant, no install needed
+   node -e "const fs=require('fs'),p=require('path'),r=p.resolve('../..');const l=(s,d)=>{if(!fs.existsSync(d))fs.symlinkSync(s,d,'junction')};l(p.join(r,'node_modules'),'node_modules');l(p.join(r,'apps/cockpit/node_modules'),'apps/cockpit/node_modules')"
    ```
 
 4. Implement, then run the quality gate:

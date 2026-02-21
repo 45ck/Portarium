@@ -69,7 +69,13 @@ got there first — go back to Step A and pick the next issue.
 
 ```bash
 cd ".trees/$ISSUE_ID"
-bun install          # fast install via hardlink cache — 2-5s after first worktree
+# Junction-link node_modules from repo root — instant, zero disk, no install needed
+node -e "
+const fs=require('fs'),p=require('path'),root=p.resolve('../..');
+const link=(src,dst)=>{ if(!fs.existsSync(dst)) fs.symlinkSync(src,dst,'junction'); };
+link(p.join(root,'node_modules'),'node_modules');
+link(p.join(root,'apps/cockpit/node_modules'),'apps/cockpit/node_modules');
+"
 ```
 
 ### Step D — Understand the issue
