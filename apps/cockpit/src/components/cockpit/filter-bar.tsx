@@ -29,14 +29,14 @@ export function FilterBar({ filters, values, onChange }: FilterBarProps) {
   const hasActiveFilters = Object.values(values).some((v) => v && v !== 'all');
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {filters.map((filter) => (
         <Select
           key={filter.key}
           value={values[filter.key] || 'all'}
           onValueChange={(v) => onChange(filter.key, v)}
         >
-          <SelectTrigger className="h-7 w-[140px] text-xs">
+          <SelectTrigger className="h-8 w-full sm:h-7 sm:w-[140px] text-xs">
             <SelectValue placeholder={filter.label} />
           </SelectTrigger>
           <SelectContent>
@@ -55,7 +55,7 @@ export function FilterBar({ filters, values, onChange }: FilterBarProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 text-xs gap-1"
+          className="h-8 sm:h-7 text-xs gap-1"
           onClick={() => filters.forEach((f) => onChange(f.key, 'all'))}
         >
           <X className="h-3 w-3" />

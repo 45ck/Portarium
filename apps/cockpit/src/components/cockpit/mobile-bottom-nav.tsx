@@ -2,9 +2,21 @@ import { useState } from 'react';
 import { Link, useMatchRoute } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Inbox, CheckSquare, Play, LayoutDashboard, Menu } from 'lucide-react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { EntityIcon } from '@/components/domain/entity-icon';
-import { useUIStore } from '@/stores/ui-store';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { PersonaId } from '@/stores/ui-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +25,19 @@ interface NavItem {
   to: string;
   icon: React.ReactNode;
   matchPath: string;
+}
+
+interface WorkspaceOption {
+  workspaceId: string;
+  name: string;
+}
+
+interface MobileBottomNavProps {
+  activeWorkspaceId: string;
+  activePersona: PersonaId;
+  workspaceOptions: WorkspaceOption[];
+  onWorkspaceChange: (workspaceId: string) => void;
+  onPersonaChange: (persona: PersonaId) => void;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -83,10 +108,16 @@ const TypedLink = Link as React.ComponentType<{
   className?: string;
   children?: React.ReactNode;
   onClick?: () => void;
+  'aria-label'?: string;
 }>;
 
-export function MobileBottomNav() {
-  const { activeWorkspaceId } = useUIStore();
+export function MobileBottomNav({
+  activeWorkspaceId,
+  activePersona,
+  workspaceOptions,
+  onWorkspaceChange,
+  onPersonaChange,
+}: MobileBottomNavProps) {
   const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -109,6 +140,7 @@ export function MobileBottomNav() {
                 key={item.to}
                 to={item.to}
                 className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+                aria-label={item.label}
               >
                 {isActive && (
                   <motion.div
@@ -148,6 +180,8 @@ export function MobileBottomNav() {
             type="button"
             className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
             onClick={() => setMoreOpen(true)}
+            aria-label="Open more navigation"
+            aria-haspopup="dialog"
           >
             <motion.div whileTap={{ scale: 0.85 }} className="text-muted-foreground">
               <Menu className="h-5 w-5" />
@@ -162,8 +196,54 @@ export function MobileBottomNav() {
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>Navigation</DrawerTitle>
+            <DrawerDescription>
+              Switch workspace context and jump between cockpit sections.
+            </DrawerDescription>
           </DrawerHeader>
           <div className="overflow-y-auto px-4 pb-6 space-y-4">
+            <div className="rounded-lg border border-border bg-card p-3 space-y-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                Context
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Persona</label>
+                  <Select
+                    value={activePersona}
+                    onValueChange={(value) => onPersonaChange(value as PersonaId)}
+                  >
+                    <SelectTrigger aria-label="Mobile persona" className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Operator">Operator</SelectItem>
+                      <SelectItem value="Approver">Approver</SelectItem>
+                      <SelectItem value="Auditor">Auditor</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Workspace</label>
+                  <Select value={activeWorkspaceId} onValueChange={onWorkspaceChange}>
+                    <SelectTrigger aria-label="Mobile workspace" className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workspaceOptions.length > 0 ? (
+                        workspaceOptions.map((workspace) => (
+                          <SelectItem key={workspace.workspaceId} value={workspace.workspaceId}>
+                            {workspace.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value={activeWorkspaceId}>{activeWorkspaceId}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
             {MORE_SECTIONS.map((section) => (
               <div key={section.label}>
                 <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
@@ -176,6 +256,7 @@ export function MobileBottomNav() {
                       to={item.to}
                       className="block px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
                       onClick={() => setMoreOpen(false)}
+                      aria-label={item.label}
                     >
                       {item.label}
                     </TypedLink>

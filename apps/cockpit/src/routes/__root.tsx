@@ -451,7 +451,10 @@ function RootLayout() {
           )}
 
           {/* Main content — add bottom padding on mobile for bottom nav */}
-          <main id="main-content" className={cn('flex-1 overflow-y-auto', isMobile && 'pb-14')}>
+          <main
+            id="main-content"
+            className={cn('flex-1 overflow-y-auto overflow-x-hidden', isMobile && 'pb-14')}
+          >
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
@@ -459,7 +462,15 @@ function RootLayout() {
         </div>
 
         {/* Mobile bottom nav */}
-        {isMobile && <MobileBottomNav />}
+        {isMobile && (
+          <MobileBottomNav
+            activeWorkspaceId={activeWorkspaceId}
+            activePersona={activePersona}
+            workspaceOptions={workspaceOptions}
+            onWorkspaceChange={setActiveWorkspaceId}
+            onPersonaChange={setActivePersona}
+          />
+        )}
 
         {/* Global overlays */}
         <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />

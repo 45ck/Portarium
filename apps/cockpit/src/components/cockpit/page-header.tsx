@@ -46,7 +46,7 @@ export function PageHeader({ title, description, action, breadcrumb, icon }: Pag
           <Separator />
         </>
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-lg font-semibold">
             {icon && <span className="inline-flex shrink-0">{icon}</span>}
@@ -54,7 +54,7 @@ export function PageHeader({ title, description, action, breadcrumb, icon }: Pag
           </h1>
           {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
-        {action && <div>{action}</div>}
+        {action && <div className="sm:shrink-0">{action}</div>}
       </div>
     </div>
   );

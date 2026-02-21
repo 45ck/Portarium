@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-02-21T09:01:27.073Z",
+  "source": "D:\\Visual Studio Projects\\VAOP\\docs\\ui\\cockpit\\index.html",
+  "screens": [
+    {
+      "id": "approvals",
+      "target": "Approvals"
+    },
+    {
+      "id": "work-items",
+      "target": "Work Items"
+    },
+    {
+      "id": "runs",
+      "target": "Runs"
+    },
+    {
+      "id": "workflow-builder",
+      "target": "Workflow Builder"
+    }
+  ],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "id": "desktop",
+      "width": 1280,
+      "height": 900
+    }
+  ],
+  "captures": [
+    {
+      "screen": "approvals",
+      "label": "Approvals",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/approvals-mobile.png"
+    },
+    {
+      "screen": "work-items",
+      "label": "Work Items",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/work-items-mobile.png"
+    },
+    {
+      "screen": "runs",
+      "label": "Runs",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/runs-mobile.png"
+    },
+    {
+      "screen": "workflow-builder",
+      "label": "Workflow Builder",
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/workflow-builder-mobile.png"
+    },
+    {
+      "screen": "approvals",
+      "label": "Approvals",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 900,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/approvals-desktop.png"
+    },
+    {
+      "screen": "work-items",
+      "label": "Work Items",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 900,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/work-items-desktop.png"
+    },
+    {
+      "screen": "runs",
+      "label": "Runs",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 900,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/runs-desktop.png"
+    },
+    {
+      "screen": "workflow-builder",
+      "label": "Workflow Builder",
+      "viewport": "desktop",
+      "width": 1280,
+      "height": 900,
+      "file": "docs/review/artifacts/bead-0716/mobile-breakpoints/workflow-builder-desktop.png"
+    }
+  ]
+}
