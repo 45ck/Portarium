@@ -43,6 +43,9 @@ Repeat this entire cycle until you decide to stop (or no issues remain):
 
 ```bash
 # From repo root:
+git fetch origin --prune
+git pull --rebase origin main
+bd sync --status || npm run bd:sync
 npm run bd -- issue next --json
 ```
 
@@ -64,6 +67,19 @@ This atomically:
 
 **If this fails** with "branch already exists" or "already claimed": another agent
 got there first — go back to Step A and pick the next issue.
+
+Immediately publish the claim (do not delay this):
+
+```bash
+git add .beads/issues.jsonl
+git commit -m "chore: start $ISSUE_ID"
+git pull --rebase origin main
+npm run bd:sync
+git push origin main
+npm run bd -- issue view "$ISSUE_ID"   # confirm claimedBy is still you
+```
+
+If claim ownership is no longer yours after sync/pull, run `npm run bd -- issue unclaim "$ISSUE_ID"` and return to Step A.
 
 ### Step C — Enter the worktree
 
@@ -148,7 +164,9 @@ Then commit the state and push:
 ```bash
 git add .beads/issues.jsonl
 git commit -m "chore: close $ISSUE_ID"
+npm run bd:sync
 git push origin main
+git status   # must show up to date with origin/main
 ```
 
 If `git push` is rejected (another agent pushed first):
@@ -178,6 +196,7 @@ Because multiple agents run at the same time:
 | --------------------------------------------- | ------------------------------------------ |
 | Each agent works in `.trees/<id>/`            | Worktrees are isolated — no file conflicts |
 | `npm run bd -- issue start` is the claim gate | Sets `claimedBy` before creating worktree  |
+| Push claim immediately after start             | Other machines see ownership right away    |
 | "Branch already exists" → skip and retry      | Git itself prevents double-claiming        |
 | `git pull --rebase` before every push         | Keeps main clean with parallel pushes      |
 | Never force-push                              | Would destroy other agents' merged work    |

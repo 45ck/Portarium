@@ -40,6 +40,9 @@ bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon,
 1. Pick an unblocked issue:
 
    ```bash
+   git fetch origin --prune
+   git pull --rebase origin main
+   bd sync --status               # if global bd is unavailable, run: npm run bd:sync
    npm run bd:ready        # show issues ready to work (upstream bd)
    # or
    npm run bd -- issue list --status open
@@ -52,7 +55,18 @@ bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon,
    # e.g.: npm run bd -- issue start bead-0756 --by "claude"
    ```
 
-3. Enter the worktree and install deps:
+3. Immediately publish the claim (required for multi-machine safety):
+
+   ```bash
+   git add .beads/issues.jsonl
+   git commit -m "chore: start <bead-id>"
+   git pull --rebase origin main
+   npm run bd:sync
+   git push origin main
+   npm run bd -- issue view <bead-id>   # verify claimedBy is you
+   ```
+
+4. Enter the worktree and install deps:
 
    ```bash
    cd .trees/<bead-id>
@@ -60,7 +74,7 @@ bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon,
    node -e "const fs=require('fs'),p=require('path'),r=p.resolve('../..');const l=(s,d)=>{if(!fs.existsSync(d))fs.symlinkSync(s,d,'junction')};l(p.join(r,'node_modules'),'node_modules');l(p.join(r,'apps/cockpit/node_modules'),'apps/cockpit/node_modules')"
    ```
 
-4. Implement, then run the quality gate:
+5. Implement, then run the quality gate:
    ```bash
    npm run ci:pr
    ```
@@ -77,10 +91,12 @@ npm run bd -- issue finish <bead-id>
 Then sync issue state to GitHub and commit:
 
 ```bash
+git pull --rebase origin main
 npm run bd:sync                      # push to beads-metadata branch
 git add .beads/issues.jsonl
 git commit -m "chore: close <bead-id>"
-git push
+git push origin main
+git status  # MUST show: "Your branch is up to date with 'origin/main'"
 ```
 
 ### Upstream bd Commands (global binary)
@@ -124,7 +140,9 @@ Machine A: npm run bd -- issue finish bead-0719
 
 - **Always** run `npm run ci:pr` before claiming work is done.
 - **Commit** `.beads/issues.jsonl` alongside every code change that opens/closes a bead.
+- **Sync + pull before claiming** and **push immediately after claiming** so other machines see the claim.
 - **Sync** after start/finish so other machines see the updated state.
+- **If claim ownership changes after sync/pull, unclaim locally and pick a different ready bead.**
 - The SQLite database (`.beads/beads.db`) is gitignored — `issues.jsonl` is the portable format.
 - Worktrees live in `.trees/<bead-id>/` and are gitignored.
 

@@ -14,8 +14,11 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - No new public API without a contract (types + boundary test).
 - Update `.specify/specs/` for behaviour changes; add ADR under `docs/adr/` for design changes.
 - Use `bd` (Beads) for all work tracking; commit `.beads/issues.jsonl` with code changes.
+  - Before picking/claiming any bead: `git fetch origin --prune && git pull --rebase origin main`, then check remote bead state (`bd sync --status` when available).
   - Start a bead before implementation: `npm run bd -- issue start <id> --by "<owner>"`
     (claims the bead + creates a git worktree at `.trees/<id>/`).
+  - Immediately publish the claim to remote after `issue start`: commit `.beads/issues.jsonl`, run `npm run bd:sync`, then `git push origin main`.
+  - Re-check claim ownership after sync/pull (`npm run bd -- issue view <id>`). If claim is no longer yours, unclaim and pick another ready bead.
   - Work inside `.trees/<id>/` — **do not run npm/bun install**. Instead junction-link node_modules from the repo root (instant, zero disk):
     ```bash
     node -e "const fs=require('fs'),p=require('path'),r=p.resolve('../..');const l=(s,d)=>{if(!fs.existsSync(d))fs.symlinkSync(s,d,'junction')};l(p.join(r,'node_modules'),'node_modules');l(p.join(r,'apps/cockpit/node_modules'),'apps/cockpit/node_modules')"
@@ -24,6 +27,7 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
   - Finish when done (from repo root): `npm run bd -- issue finish <id>`
     (merges branch, removes worktree, closes bead).
   - Commit bead state after start/finish: `git add .beads/issues.jsonl && git commit -m "chore: start/close <id>"`.
+  - Session end is not complete until all local commits are pushed (`git pull --rebase`, `npm run bd:sync`, `git push origin main`, confirm `git status` is up to date).
   - For manual control: `bd issue claim` / `bd issue unclaim` still available.
   - If `bd` isn't installed globally, use `npm run bd -- ...` (e.g. `npm run bd -- issue list --json`).
 - Upstream `bd` binary (global) for sync, daemon, hooks, dep tracking:
