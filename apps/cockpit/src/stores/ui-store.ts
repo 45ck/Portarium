@@ -21,7 +21,11 @@ export type TriageViewMode =
   | 'diff-view'
   | 'action-replay'
   | 'evidence-chain'
-  | 'story-timeline';
+  | 'story-timeline'
+  | 'robotics-safety'
+  | 'finance-impact'
+  | 'compliance-checklist'
+  | 'agent-overview';
 
 interface UIStore {
   sidebarCollapsed: boolean;
@@ -52,6 +56,10 @@ const VALID_TRIAGE_MODES: TriageViewMode[] = [
   'action-replay',
   'evidence-chain',
   'story-timeline',
+  'robotics-safety',
+  'finance-impact',
+  'compliance-checklist',
+  'agent-overview',
 ];
 
 function readStoredTriageView(): TriageViewMode {

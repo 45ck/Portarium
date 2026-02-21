@@ -13,10 +13,17 @@
  * Internally delegates to the Portarium control-plane HTTP API.
  */
 
-import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import {
+  generateAdapterScaffold,
+  generateAgentWrapperScaffold,
+  handleGenerateAdapter,
+  handleGenerateAgentWrapper,
+  type AdapterScaffoldParams,
+  type AgentWrapperScaffoldParams,
+} from './scaffold-generators.js';
 
-// -- Argument parsing --------------------------------------------------------
+export type { AdapterScaffoldParams, AgentWrapperScaffoldParams };
+export { generateAdapterScaffold, generateAgentWrapperScaffold };
 
 export interface CliArgs {
   command: string;
@@ -25,12 +32,24 @@ export interface CliArgs {
   positional: string[];
 }
 
+interface ApiFetchRequest {
+  method: string;
+  path: string;
+  body?: unknown;
+}
+
+type FlagMap = Record<string, string | boolean>;
+type SubcommandHandler = (flags: FlagMap) => Promise<void> | void;
+type SubcommandTable = Readonly<Record<string, SubcommandHandler>>;
+type CommandHandler = (parsed: CliArgs) => Promise<void> | void;
+type StreamReadChunk = Readonly<{ done: boolean; value?: Uint8Array }>;
+
 /**
  * Parse argv into a structured CliArgs object.
  * Supports `--flag value`, `--flag=value`, and `--bool-flag` patterns.
  */
 export function parseArgs(argv: string[]): CliArgs {
-  const args = argv.slice(2); // skip node + script
+  const args = argv.slice(2);
   const flags: Record<string, string | boolean> = {};
   const positional: string[] = [];
 
@@ -45,7 +64,7 @@ export function parseArgs(argv: string[]): CliArgs {
         const next = args[i + 1];
         if (next !== undefined && !next.startsWith('--')) {
           flags[arg.slice(2)] = next;
-          i++;
+          i += 1;
         } else {
           flags[arg.slice(2)] = true;
         }
@@ -53,7 +72,7 @@ export function parseArgs(argv: string[]): CliArgs {
     } else {
       positional.push(arg);
     }
-    i++;
+    i += 1;
   }
 
   const command = positional[0] ?? 'help';
@@ -67,32 +86,17 @@ export function parseArgs(argv: string[]): CliArgs {
   };
 }
 
-// -- Configuration -----------------------------------------------------------
-
-function getBaseUrl(flags: Record<string, string | boolean>): string {
+function getBaseUrl(flags: FlagMap): string {
   return String(flags['base-url'] ?? process.env['PORTARIUM_BASE_URL'] ?? 'http://localhost:3100');
 }
 
-function getToken(flags: Record<string, string | boolean>): string {
+function getToken(flags: FlagMap): string {
   return String(flags['token'] ?? process.env['PORTARIUM_TOKEN'] ?? '');
 }
 
-function getWorkspaceId(flags: Record<string, string | boolean>): string {
+function getWorkspaceId(flags: FlagMap): string {
   return String(flags['workspace'] ?? process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-default');
 }
-
-// -- HTTP client helper ------------------------------------------------------
-
-interface ApiFetchRequest {
-  method: string;
-  path: string;
-  body?: unknown;
-}
-
-type FlagMap = Record<string, string | boolean>;
-type SubcommandHandler = (flags: FlagMap) => Promise<void>;
-type SubcommandTable = Readonly<Record<string, SubcommandHandler>>;
-type StreamReadChunk = Readonly<{ done: boolean; value?: Uint8Array }>;
 
 async function apiFetch(baseUrl: string, token: string, req: ApiFetchRequest): Promise<unknown> {
   const { method, path, body } = req;
@@ -114,8 +118,6 @@ async function apiFetch(baseUrl: string, token: string, req: ApiFetchRequest): P
     return text;
   }
 }
-
-// -- Command handlers --------------------------------------------------------
 
 function printUsage(): void {
   console.log(`Usage: portarium <command> [subcommand] [options]
@@ -140,239 +142,12 @@ Global flags:
 `);
 }
 
-export interface AdapterScaffoldParams {
-  outputDir: string;
-  adapterName: string;
-  providerSlug: string;
-  portFamily: string;
-  force?: boolean;
-}
-
-export interface AgentWrapperScaffoldParams {
-  outputDir: string;
-  wrapperName: string;
-  runtimeSlug: string;
-  force?: boolean;
-}
-
-function parseBooleanFlag(value: string | boolean | undefined): boolean {
-  if (value === true) {
-    return true;
-  }
-  if (typeof value !== 'string') {
-    return false;
-  }
-  const normalized = value.trim().toLowerCase();
-  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
-}
-
-function ensureWritableOutputDir(outputDir: string, force: boolean): void {
-  if (existsSync(outputDir)) {
-    const hasContent = readdirSync(outputDir).length > 0;
-    if (hasContent && !force) {
-      throw new Error(`Output directory already exists and is not empty: ${outputDir}`);
-    }
-    if (hasContent && force) {
-      rmSync(outputDir, { recursive: true, force: true });
-    }
-  }
-  mkdirSync(outputDir, { recursive: true });
-}
-
-function writeTextFile(path: string, content: string): void {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content, 'utf8');
-}
-
-export function generateAdapterScaffold(params: AdapterScaffoldParams): void {
-  const outputDir = resolve(params.outputDir);
-  const force = params.force ?? false;
-  ensureWritableOutputDir(outputDir, force);
-
-  const manifest = {
-    schemaVersion: 1,
-    adapterName: params.adapterName,
-    providerSlug: params.providerSlug,
-    portFamily: params.portFamily,
-    capabilities: [
-      { capability: 'ticket:read', operation: 'listTickets' },
-      { capability: 'ticket:write', operation: 'createTicket' },
-    ],
-    executionPolicy: {
-      tenantIsolationMode: 'PerTenantWorker',
-      egressAllowlist: ['https://api.example.com'],
-      credentialScope: 'capabilityMatrix',
-      sandboxVerified: false,
-      sandboxAvailable: true,
-    },
-  };
-
-  writeTextFile(
-    resolve(outputDir, 'README.md'),
-    `# ${params.adapterName}\n\n` +
-      'Generated adapter scaffold for Portarium integration work.\n\n' +
-      '## Next steps\n\n' +
-      '1. Update `adapter.manifest.json` capability entries and execution policy.\n' +
-      '2. Implement provider calls in `src/index.ts`.\n' +
-      '3. Add provider-specific contract and integration tests.\n',
-  );
-  writeTextFile(resolve(outputDir, 'adapter.manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  writeTextFile(
-    resolve(outputDir, 'src/index.ts'),
-    `export interface AdapterInvocation {\n` +
-      `  tenantId: string;\n` +
-      `  capability: string;\n` +
-      `  input: Record<string, unknown>;\n` +
-      `}\n\n` +
-      `export interface AdapterInvocationResult {\n` +
-      `  ok: boolean;\n` +
-      `  output?: Record<string, unknown>;\n` +
-      `  error?: string;\n` +
-      `}\n\n` +
-      `export async function invokeAdapter(\n` +
-      `  request: AdapterInvocation,\n` +
-      `): Promise<AdapterInvocationResult> {\n` +
-      `  // TODO: Replace stub with provider-specific API call.\n` +
-      `  return {\n` +
-      `    ok: true,\n` +
-      `    output: {\n` +
-      `      provider: '${params.providerSlug}',\n` +
-      `      capability: request.capability,\n` +
-      `      tenantId: request.tenantId,\n` +
-      `    },\n` +
-      `  };\n` +
-      `}\n`,
-  );
-  writeTextFile(
-    resolve(outputDir, 'src/index.test.ts'),
-    `import { describe, expect, it } from 'vitest';\n\n` +
-      `import { invokeAdapter } from './index.js';\n\n` +
-      `describe('${params.adapterName} adapter scaffold', () => {\n` +
-      `  it('returns a stubbed success payload', async () => {\n` +
-      `    const result = await invokeAdapter({\n` +
-      `      tenantId: 'ws-demo',\n` +
-      `      capability: 'ticket:read',\n` +
-      `      input: {},\n` +
-      `    });\n` +
-      `\n` +
-      `    expect(result.ok).toBe(true);\n` +
-      `  });\n` +
-      `});\n`,
-  );
-}
-
-export function generateAgentWrapperScaffold(params: AgentWrapperScaffoldParams): void {
-  const outputDir = resolve(params.outputDir);
-  const force = params.force ?? false;
-  ensureWritableOutputDir(outputDir, force);
-
-  const manifest = {
-    schemaVersion: 1,
-    wrapperName: params.wrapperName,
-    runtimeSlug: params.runtimeSlug,
-    endpoints: {
-      healthz: '/healthz',
-      invoke: '/v1/responses',
-    },
-    policyDefaults: {
-      requiresApproval: true,
-      auditEvidence: true,
-      egressAllowlist: ['https://api.example.com'],
-    },
-  };
-
-  writeTextFile(
-    resolve(outputDir, 'README.md'),
-    `# ${params.wrapperName}\n\n` +
-      'Generated agent-wrapper scaffold for Portarium machine integration.\n\n' +
-      '## Next steps\n\n' +
-      '1. Configure runtime credentials and policy in `.env.example`.\n' +
-      '2. Implement guarded invocation logic in `src/server.ts`.\n' +
-      '3. Register this machine wrapper in Portarium and run smoke tests.\n',
-  );
-  writeTextFile(resolve(outputDir, 'agent-wrapper.manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  writeTextFile(
-    resolve(outputDir, '.env.example'),
-    `PORT=8080\n` +
-      `RUNTIME_BASE_URL=https://api.example.com\n` +
-      `RUNTIME_API_KEY=replace-me\n` +
-      `WORKSPACE_ID=ws-default\n`,
-  );
-  writeTextFile(
-    resolve(outputDir, 'src/server.ts'),
-    `import { createServer } from 'node:http';\n\n` +
-      `const port = Number(process.env['PORT'] ?? 8080);\n\n` +
-      `const server = createServer((req, res) => {\n` +
-      `  if (req.url === '/healthz') {\n` +
-      `    res.writeHead(200, { 'Content-Type': 'application/json' });\n` +
-      `    res.end(JSON.stringify({ ok: true, runtime: '${params.runtimeSlug}' }));\n` +
-      `    return;\n` +
-      `  }\n` +
-      `\n` +
-      `  if (req.method === 'POST' && req.url === '/v1/responses') {\n` +
-      `    res.writeHead(202, { 'Content-Type': 'application/json' });\n` +
-      `    res.end(JSON.stringify({ status: 'accepted', wrapper: '${params.wrapperName}' }));\n` +
-      `    return;\n` +
-      `  }\n` +
-      `\n` +
-      `  res.writeHead(404, { 'Content-Type': 'application/json' });\n` +
-      `  res.end(JSON.stringify({ error: 'not_found' }));\n` +
-      `});\n\n` +
-      `server.listen(port, () => {\n` +
-      `  console.log('${params.wrapperName} listening on http://127.0.0.1:' + port);\n` +
-      `});\n`,
-  );
-}
-
-function readRequiredFlag(flags: FlagMap, key: string): string {
-  const value = flags[key];
-  if (typeof value !== 'string' || value.trim() === '') {
-    throw new Error(`--${key} is required`);
-  }
-  return value.trim();
-}
-
-async function handleGenerateAdapter(flags: FlagMap): Promise<void> {
-  const adapterName = readRequiredFlag(flags, 'name');
-  const providerSlug = String(flags['provider-slug'] ?? adapterName);
-  const portFamily = String(flags['port-family'] ?? 'CrmSales');
-  const outputDir = String(flags['output'] ?? `scaffolds/adapters/${providerSlug}`);
-  const force = parseBooleanFlag(flags['force']);
-
-  generateAdapterScaffold({
-    outputDir,
-    adapterName,
-    providerSlug,
-    portFamily,
-    force,
-  });
-
-  console.log(`Adapter scaffold generated at ${resolve(outputDir)}`);
-}
-
-async function handleGenerateAgentWrapper(flags: FlagMap): Promise<void> {
-  const wrapperName = readRequiredFlag(flags, 'name');
-  const runtimeSlug = String(flags['runtime'] ?? 'openclaw');
-  const outputDir = String(flags['output'] ?? `scaffolds/agent-wrappers/${wrapperName}`);
-  const force = parseBooleanFlag(flags['force']);
-
-  generateAgentWrapperScaffold({
-    outputDir,
-    wrapperName,
-    runtimeSlug,
-    force,
-  });
-
-  console.log(`Agent-wrapper scaffold generated at ${resolve(outputDir)}`);
-}
-
 function handleLogin(): void {
   console.log('OAuth2 Device Authorization Flow');
   console.log('--------------------------------');
   console.log('1. Visit: https://auth.portarium.dev/device');
   console.log('2. Enter the code displayed below.');
   console.log();
-  // Stub: in a real implementation this would call the authorization server.
   const stubCode = 'ABCD-1234';
   console.log(`  User code: ${stubCode}`);
   console.log();
@@ -382,19 +157,18 @@ function handleLogin(): void {
   );
 }
 
-async function handleWorkspaceSelect(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
-  const result = await apiFetch(baseUrl, token, { method: 'GET', path: '/api/v1/workspaces' });
+async function handleWorkspaceSelect(flags: FlagMap): Promise<void> {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
+    method: 'GET',
+    path: '/api/v1/workspaces',
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleAgentRegister(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleAgentRegister(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const name = String(flags['name'] ?? 'cli-agent');
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'POST',
     path: `/api/v1/workspaces/${ws}/agents`,
     body: { name, capabilities: [] },
@@ -402,9 +176,7 @@ async function handleAgentRegister(flags: Record<string, string | boolean>): Pro
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleAgentHeartbeat(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleAgentHeartbeat(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const agentId = String(flags['agent-id'] ?? '');
   if (!agentId) {
@@ -412,16 +184,14 @@ async function handleAgentHeartbeat(flags: Record<string, string | boolean>): Pr
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'POST',
     path: `/api/v1/workspaces/${ws}/agents/${encodeURIComponent(agentId)}/heartbeat`,
   });
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleRunStart(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleRunStart(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const workflowId = String(flags['workflow-id'] ?? '');
   if (!workflowId) {
@@ -429,7 +199,7 @@ async function handleRunStart(flags: Record<string, string | boolean>): Promise<
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'POST',
     path: `/api/v1/workspaces/${ws}/runs`,
     body: { workflowId, inputPayload: {} },
@@ -437,9 +207,7 @@ async function handleRunStart(flags: Record<string, string | boolean>): Promise<
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleRunStatus(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleRunStatus(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const runId = String(flags['run-id'] ?? '');
   if (!runId) {
@@ -447,16 +215,14 @@ async function handleRunStatus(flags: Record<string, string | boolean>): Promise
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'GET',
     path: `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}`,
   });
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleRunCancel(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleRunCancel(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const runId = String(flags['run-id'] ?? '');
   if (!runId) {
@@ -464,16 +230,14 @@ async function handleRunCancel(flags: Record<string, string | boolean>): Promise
     process.exitCode = 1;
     return;
   }
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'POST',
     path: `/api/v1/workspaces/${ws}/runs/${encodeURIComponent(runId)}/cancel`,
   });
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleApprove(flags: Record<string, string | boolean>): Promise<void> {
-  const baseUrl = getBaseUrl(flags);
-  const token = getToken(flags);
+async function handleApprove(flags: FlagMap): Promise<void> {
   const ws = getWorkspaceId(flags);
   const approvalId = String(flags['approval-id'] ?? '');
   const decision = String(flags['decision'] ?? '');
@@ -483,7 +247,7 @@ async function handleApprove(flags: Record<string, string | boolean>): Promise<v
     return;
   }
   const reason = flags['reason'] ? String(flags['reason']) : undefined;
-  const result = await apiFetch(baseUrl, token, {
+  const result = await apiFetch(getBaseUrl(flags), getToken(flags), {
     method: 'POST',
     path: `/api/v1/workspaces/${ws}/approvals/${encodeURIComponent(approvalId)}/decisions`,
     body: { decision, ...(reason ? { reason } : {}) },
@@ -491,7 +255,7 @@ async function handleApprove(flags: Record<string, string | boolean>): Promise<v
   console.log(JSON.stringify(result, null, 2));
 }
 
-async function handleEvents(flags: Record<string, string | boolean>): Promise<void> {
+async function handleEvents(flags: FlagMap): Promise<void> {
   const baseUrl = getBaseUrl(flags);
   const token = getToken(flags);
   const ws = getWorkspaceId(flags);
@@ -499,7 +263,6 @@ async function handleEvents(flags: Record<string, string | boolean>): Promise<vo
   console.log(`  SSE endpoint: ${baseUrl}/api/v1/workspaces/${ws}/events/stream`);
   console.log();
 
-  // SSE tailing via fetch streaming.
   const res = await fetch(`${baseUrl}/api/v1/workspaces/${ws}/events/stream`, {
     headers: {
       Accept: 'text/event-stream',
@@ -556,58 +319,46 @@ async function runSubcommand(
   await handler(flags);
 }
 
-// -- Dispatch ----------------------------------------------------------------
+const COMMAND_HANDLERS: Readonly<Record<string, CommandHandler>> = {
+  help: () => printUsage(),
+  '--help': () => printUsage(),
+  '-h': () => printUsage(),
+  login: () => handleLogin(),
+  generate: (parsed) =>
+    runSubcommand('generate', parsed.subcommand, parsed.flags, {
+      adapter: handleGenerateAdapter,
+      'agent-wrapper': handleGenerateAgentWrapper,
+    }),
+  workspace: (parsed) =>
+    runSubcommand('workspace', parsed.subcommand, parsed.flags, {
+      select: handleWorkspaceSelect,
+    }),
+  agent: (parsed) =>
+    runSubcommand('agent', parsed.subcommand, parsed.flags, {
+      register: handleAgentRegister,
+      heartbeat: handleAgentHeartbeat,
+    }),
+  run: (parsed) =>
+    runSubcommand('run', parsed.subcommand, parsed.flags, {
+      start: handleRunStart,
+      status: handleRunStatus,
+      cancel: handleRunCancel,
+    }),
+  approve: (parsed) => handleApprove(parsed.flags),
+  events: (parsed) => handleEvents(parsed.flags),
+};
 
 export async function run(argv: string[]): Promise<void> {
   const parsed = parseArgs(argv);
-
-  switch (parsed.command) {
-    case 'help':
-    case '--help':
-    case '-h':
-      printUsage();
-      break;
-    case 'login':
-      handleLogin();
-      break;
-    case 'generate':
-      await runSubcommand('generate', parsed.subcommand, parsed.flags, {
-        adapter: handleGenerateAdapter,
-        'agent-wrapper': handleGenerateAgentWrapper,
-      });
-      break;
-    case 'workspace':
-      await runSubcommand('workspace', parsed.subcommand, parsed.flags, {
-        select: handleWorkspaceSelect,
-      });
-      break;
-    case 'agent':
-      await runSubcommand('agent', parsed.subcommand, parsed.flags, {
-        register: handleAgentRegister,
-        heartbeat: handleAgentHeartbeat,
-      });
-      break;
-    case 'run':
-      await runSubcommand('run', parsed.subcommand, parsed.flags, {
-        start: handleRunStart,
-        status: handleRunStatus,
-        cancel: handleRunCancel,
-      });
-      break;
-    case 'approve':
-      await handleApprove(parsed.flags);
-      break;
-    case 'events':
-      await handleEvents(parsed.flags);
-      break;
-    default:
-      console.error(`Unknown command: ${parsed.command}`);
-      printUsage();
-      process.exitCode = 1;
+  const handler = COMMAND_HANDLERS[parsed.command];
+  if (!handler) {
+    console.error(`Unknown command: ${parsed.command}`);
+    printUsage();
+    process.exitCode = 1;
+    return;
   }
+  await handler(parsed);
 }
-
-// -- Entrypoint (when run directly) ------------------------------------------
 
 const isDirectExecution =
   typeof process !== 'undefined' &&

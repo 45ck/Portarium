@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import type {
   ApprovalSummary,
   PlanEffect,
   EvidenceEntry,
-  SodEvaluation,
   PolicyRule,
   DecisionHistoryEntry,
   RunSummary,
@@ -25,15 +24,15 @@ import {
   User,
   Bot,
   Workflow,
-  ShieldCheck,
-  ShieldAlert,
   AlertTriangle,
   ArrowRight,
   Paperclip,
 } from 'lucide-react';
+import { SodBanner, DEFAULT_SOD_EVALUATION } from './sod-banner';
 import { useUIStore } from '@/stores/ui-store';
-import { getNextMode, getPrevMode } from '@/components/cockpit/triage-modes/index';
+import { getNextRelevantMode, getPrevRelevantMode } from '@/components/cockpit/triage-modes/index';
 import { ModeSwitcher } from '@/components/cockpit/triage-modes/mode-switcher';
+import { resolveApprovalContext } from '@/components/cockpit/triage-modes/lib/approval-context';
 import { TrafficSignalsMode } from '@/components/cockpit/triage-modes/traffic-signals-mode';
 import { BriefingMode } from '@/components/cockpit/triage-modes/briefing-mode';
 import { RiskRadarMode } from '@/components/cockpit/triage-modes/risk-radar-mode';
@@ -42,14 +41,11 @@ import { DiffViewMode } from '@/components/cockpit/triage-modes/diff-view-mode';
 import { ActionReplayMode } from '@/components/cockpit/triage-modes/action-replay-mode';
 import { EvidenceChainMode } from '@/components/cockpit/triage-modes/evidence-chain-mode';
 import { StoryTimelineMode } from '@/components/cockpit/triage-modes/story-timeline-mode';
+import { RoboticsSafetyMode } from '@/components/cockpit/triage-modes/robotics-safety-mode';
+import { FinanceImpactMode } from '@/components/cockpit/triage-modes/finance-impact-mode';
+import { ComplianceChecklistMode } from '@/components/cockpit/triage-modes/compliance-checklist-mode';
+import { AgentOverviewMode } from '@/components/cockpit/triage-modes/agent-overview-mode';
 import { ProvenanceJourney } from '@/components/cockpit/provenance-journey';
-
-const DEFAULT_SOD_EVALUATION: SodEvaluation = {
-  state: 'eligible',
-  requestorId: 'unknown',
-  ruleId: 'N/A',
-  rolesRequired: [],
-};
 
 // ---------------------------------------------------------------------------
 // ActorBadge — infers actor type from ID and shows icon + label
@@ -115,77 +111,6 @@ function TriageEffectRow({ effect }: { effect: PlanEffect }) {
         {effect.target.externalType}
       </span>
       <span className="flex-1 truncate text-foreground">{effect.summary}</span>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SodBanner — always visible
-// ---------------------------------------------------------------------------
-function SodBanner({ eval: ev }: { eval: SodEvaluation }) {
-  if (ev.state === 'eligible') {
-    return (
-      <div
-        role="status"
-        className="rounded-lg bg-success/10 border border-success/30 px-4 py-3 flex items-start gap-3"
-      >
-        <ShieldCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
-        <div className="text-xs space-y-1">
-          <p className="font-semibold text-success">You are eligible to approve</p>
-          <p className="text-success/80">
-            Requestor: <span className="font-mono">{ev.requestorId}</span> (different from you) ·
-            Rule: {ev.ruleId} · Roles required: {ev.rolesRequired.join(' OR ')}
-          </p>
-        </div>
-      </div>
-    );
-  }
-  if (ev.state === 'blocked-self') {
-    return (
-      <div
-        role="alert"
-        className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3"
-      >
-        <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-        <div className="text-xs space-y-1">
-          <p className="font-semibold text-destructive">You cannot approve your own request</p>
-          <p className="text-destructive/80">SoD rule {ev.ruleId} requires a different approver.</p>
-        </div>
-      </div>
-    );
-  }
-  if (ev.state === 'blocked-role') {
-    return (
-      <div
-        role="alert"
-        className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 flex items-start gap-3"
-      >
-        <ShieldAlert className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-        <div className="text-xs space-y-1">
-          <p className="font-semibold text-destructive">Missing required role</p>
-          <p className="text-destructive/80">
-            Requires: {ev.rolesRequired.join(' OR ')} — rule {ev.ruleId}
-          </p>
-        </div>
-      </div>
-    );
-  }
-  // n-of-m
-  return (
-    <div
-      role="status"
-      className="rounded-lg bg-warning/10 border border-warning/30 px-4 py-3 flex items-start gap-3"
-    >
-      <ShieldCheck className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-      <div className="text-xs space-y-1">
-        <p className="font-semibold text-warning-foreground">
-          {ev.nRequired} of {ev.nTotal} approvers needed — {(ev.nRequired ?? 0) - (ev.nSoFar ?? 0)}{' '}
-          more required after you
-        </p>
-        <p className="text-warning-foreground/80">
-          Rule: {ev.ruleId} · {ev.nSoFar} approval{ev.nSoFar !== 1 ? 's' : ''} recorded so far
-        </p>
-      </div>
     </div>
   );
 }
@@ -303,6 +228,10 @@ const MODE_COMPONENTS: Partial<Record<TriageViewMode, React.ComponentType<Triage
   'action-replay': ActionReplayMode,
   'evidence-chain': EvidenceChainMode,
   'story-timeline': StoryTimelineMode,
+  'robotics-safety': RoboticsSafetyMode,
+  'finance-impact': FinanceImpactMode,
+  'compliance-checklist': ComplianceChecklistMode,
+  'agent-overview': AgentOverviewMode,
 };
 
 // ---------------------------------------------------------------------------
@@ -416,6 +345,11 @@ export function ApprovalTriageCard({
   const triageViewMode = useUIStore((s) => s.triageViewMode);
   const setTriageViewMode = useUIStore((s) => s.setTriageViewMode);
 
+  const approvalContext = useMemo(
+    () => resolveApprovalContext(approval, plannedEffects, evidenceEntries, run, workflow),
+    [approval, plannedEffects, evidenceEntries, run, workflow],
+  );
+
   const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION;
   const policyRule = approval.policyRule;
   const history = approval.decisionHistory ?? [];
@@ -504,9 +438,9 @@ export function ApprovalTriageCard({
       }
       if ((e.key === 'r' || e.key === 'R') && !requestChangesMode) setRequestChangesMode(true);
       if ((e.key === 's' || e.key === 'S') && !loading) handleAction('Skip');
-      // V cycles view modes forward, Shift+V backward
-      if (e.key === 'v') setTriageViewMode(getNextMode(triageViewMode));
-      if (e.key === 'V') setTriageViewMode(getPrevMode(triageViewMode));
+      // V cycles view modes forward, Shift+V backward (context-aware)
+      if (e.key === 'v') setTriageViewMode(getNextRelevantMode(triageViewMode, approvalContext));
+      if (e.key === 'V') setTriageViewMode(getPrevRelevantMode(triageViewMode, approvalContext));
       // Z triggers undo
       if ((e.key === 'z' || e.key === 'Z') && undoAvailable && onUndo) onUndo();
     }
@@ -520,6 +454,7 @@ export function ApprovalTriageCard({
     handleAction,
     triageViewMode,
     setTriageViewMode,
+    approvalContext,
     undoAvailable,
     onUndo,
   ]);
@@ -676,7 +611,7 @@ export function ApprovalTriageCard({
 
           {/* Mode switcher — below header */}
           <div className="px-5 pt-3 pb-0 shrink-0">
-            <ModeSwitcher />
+            <ModeSwitcher context={approvalContext} />
           </div>
 
           {/* Body */}

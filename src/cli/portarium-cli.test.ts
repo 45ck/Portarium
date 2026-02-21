@@ -4,7 +4,11 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { generateAdapterScaffold, generateAgentWrapperScaffold, parseArgs } from './portarium-cli.js';
+import {
+  generateAdapterScaffold,
+  generateAgentWrapperScaffold,
+  parseArgs,
+} from './portarium-cli.js';
 
 describe('Portarium CLI argument parsing', () => {
   it('parses a bare command', () => {
@@ -130,7 +134,9 @@ describe('Portarium CLI scaffolding generators', () => {
       expect(existsSync(join(outputDir, 'src/index.ts'))).toBe(true);
       expect(existsSync(join(outputDir, 'src/index.test.ts'))).toBe(true);
 
-      const manifest = JSON.parse(readFileSync(join(outputDir, 'adapter.manifest.json'), 'utf8')) as {
+      const manifest = JSON.parse(
+        readFileSync(join(outputDir, 'adapter.manifest.json'), 'utf8'),
+      ) as {
         adapterName: string;
         providerSlug: string;
       };
