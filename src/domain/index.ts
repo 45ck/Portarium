@@ -11,6 +11,7 @@ export * from './workflows/index.js';
 export * from './versioning/index.js';
 export * from './packs/index.js';
 export * from './quota/index.js';
+export * from './rate-limiting/index.js';
 export * from './event-stream/index.js';
 export * from './events/index.js';
 export * from './work-items/index.js';

@@ -6,7 +6,8 @@ export type AppErrorKind =
   | 'ValidationFailed'
   | 'Conflict'
   | 'NotFound'
-  | 'DependencyFailure';
+  | 'DependencyFailure'
+  | 'RateLimitExceeded';
 
 export type Unauthorized = Readonly<{
   kind: 'Unauthorized';
@@ -61,6 +62,17 @@ export type PreconditionFailed = Readonly<{
   ifMatch: string;
 }>;
 
+/**
+ * HTTP 429 Too Many Requests — the request exceeds the configured rate limit
+ * for the tenant, user, or action.
+ */
+export type RateLimitExceeded = Readonly<{
+  kind: 'RateLimitExceeded';
+  message: string;
+  /** Seconds until the rate limit window resets. */
+  retryAfterSeconds: number;
+}>;
+
 export type AppError =
   | Unauthorized
   | Forbidden
@@ -68,7 +80,8 @@ export type AppError =
   | Conflict
   | NotFound
   | DependencyFailure
-  | PreconditionFailed;
+  | PreconditionFailed
+  | RateLimitExceeded;
 
 /** Map an application error kind to its canonical HTTP status code. */
 export function toHttpStatus(error: AppError): number {
@@ -87,6 +100,8 @@ export function toHttpStatus(error: AppError): number {
       return 502;
     case 'PreconditionFailed':
       return 412;
+    case 'RateLimitExceeded':
+      return 429;
   }
 }
 
@@ -101,6 +116,7 @@ export function isAppError(value: unknown): value is AppError {
     candidate['kind'] === 'Conflict' ||
     candidate['kind'] === 'NotFound' ||
     candidate['kind'] === 'DependencyFailure' ||
-    candidate['kind'] === 'PreconditionFailed'
+    candidate['kind'] === 'PreconditionFailed' ||
+    candidate['kind'] === 'RateLimitExceeded'
   );
 }

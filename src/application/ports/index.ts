@@ -1,6 +1,7 @@
 export * from './authorization.js';
 export * from './authentication.js';
 export * from './clock.js';
+export * from './rate-limit-store.js';
 export * from './workflow-orchestrator.js';
 export * from './idempotency.js';
 export * from './id-generator.js';
