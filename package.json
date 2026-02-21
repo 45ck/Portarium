@@ -4,6 +4,7 @@
   "type": "module",
   "version": "0.1.0",
   "description": "Portarium -- open-source multi-tenant control plane for governable business operations",
+  "license": "MIT",
   "workspaces": [
     "apps/*"
   ],

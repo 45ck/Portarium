@@ -22,4 +22,4 @@ See `docs/getting-started/local-dev.md`.
 
 ## What license applies?
 
-Until a `LICENSE` file is added, treat repository content as all rights reserved.
+Portarium is released under the MIT License. See `LICENSE`.

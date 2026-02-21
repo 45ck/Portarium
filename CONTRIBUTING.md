@@ -54,3 +54,7 @@ In your PR description include:
 - changed specs/ADRs
 - test and gate evidence
 - notable risks or follow-up tasks
+
+## License
+
+By contributing, you agree that your contributions are licensed under the MIT License in `LICENSE`.

@@ -76,40 +76,52 @@ function json(body: unknown, status = 200) {
   });
 }
 
+// URL prefix for workspace-scoped API requests
+const WS = /^\/v1\/workspaces\/[^/]+/;
+
 function routeResponse(pathname: string): Response {
-  if (/\/robotics\/robot-locations$/.test(pathname))
+  if (new RegExp(WS.source + '/robotics/robot-locations$').test(pathname))
     return json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS });
-  if (/\/robotics\/robots$/.test(pathname)) return json({ items: ROBOTS });
-  if (/\/robotics\/robots\/[^/]+$/.test(pathname)) {
+  if (new RegExp(WS.source + '/robotics/robots$').test(pathname)) return json({ items: ROBOTS });
+  if (new RegExp(WS.source + '/robotics/robots/[^/]+$').test(pathname)) {
     const id = pathname.split('/').pop()!;
     const robot = ROBOTS.find((r) => r.robotId === id);
     return robot ? json(robot) : json({ error: 'not-found' }, 404);
   }
-  if (/\/robotics\/missions$/.test(pathname)) return json({ items: MISSIONS });
-  if (/\/robotics\/missions\/[^/]+$/.test(pathname)) {
+  if (new RegExp(WS.source + '/robotics/missions$').test(pathname))
+    return json({ items: MISSIONS });
+  if (new RegExp(WS.source + '/robotics/missions/[^/]+$').test(pathname)) {
     const id = pathname.split('/').pop()!;
     const mission = MISSIONS.find((m) => m.missionId === id);
     return mission ? json(mission) : json({ error: 'not-found' }, 404);
   }
-  if (/\/robotics\/safety\/constraints$/.test(pathname)) return json({ items: SAFETY_CONSTRAINTS });
-  if (/\/robotics\/safety\/thresholds$/.test(pathname)) return json({ items: APPROVAL_THRESHOLDS });
-  if (/\/robotics\/safety\/estop-log$/.test(pathname)) return json({ items: ESTOP_AUDIT_LOG });
-  if (/\/robotics\/gateways$/.test(pathname)) return json({ items: MOCK_GATEWAYS });
-  if (/\/work-items$/.test(pathname)) return json({ items: WORK_ITEMS });
-  if (/\/runs$/.test(pathname)) return json({ items: RUNS });
-  if (/\/workflows$/.test(pathname)) return json({ items: WORKFLOWS });
-  if (/\/approvals$/.test(pathname)) return json({ items: APPROVALS });
-  if (/\/evidence$/.test(pathname)) return json({ items: EVIDENCE });
-  if (/\/workforce\/members$/.test(pathname)) return json({ items: WORKFORCE_MEMBERS });
-  if (/\/workforce\/queues$/.test(pathname)) return json({ items: WORKFORCE_QUEUES });
-  if (/\/agents$/.test(pathname)) return json({ items: AGENTS });
-  if (/\/adapters$/.test(pathname)) return json({ items: ADAPTERS });
-  if (/\/credential-grants$/.test(pathname)) return json({ items: CREDENTIAL_GRANTS });
-  if (/\/human-tasks$/.test(pathname)) return json({ items: HUMAN_TASKS });
-  if (/\/observability$/.test(pathname)) return json(OBSERVABILITY_DATA);
-  if (/\/users$/.test(pathname)) return json({ items: MOCK_USERS });
-  if (/\/policies$/.test(pathname)) return json({ items: MOCK_POLICIES });
-  if (/\/sod-constraints$/.test(pathname)) return json({ items: MOCK_SOD_CONSTRAINTS });
+  if (new RegExp(WS.source + '/robotics/safety/constraints$').test(pathname))
+    return json({ items: SAFETY_CONSTRAINTS });
+  if (new RegExp(WS.source + '/robotics/safety/thresholds$').test(pathname))
+    return json({ items: APPROVAL_THRESHOLDS });
+  if (new RegExp(WS.source + '/robotics/safety/estop-log$').test(pathname))
+    return json({ items: ESTOP_AUDIT_LOG });
+  if (new RegExp(WS.source + '/robotics/gateways$').test(pathname))
+    return json({ items: MOCK_GATEWAYS });
+  if (new RegExp(WS.source + '/work-items$').test(pathname)) return json({ items: WORK_ITEMS });
+  if (new RegExp(WS.source + '/runs$').test(pathname)) return json({ items: RUNS });
+  if (new RegExp(WS.source + '/workflows$').test(pathname)) return json({ items: WORKFLOWS });
+  if (new RegExp(WS.source + '/approvals$').test(pathname)) return json({ items: APPROVALS });
+  if (new RegExp(WS.source + '/evidence$').test(pathname)) return json({ items: EVIDENCE });
+  if (new RegExp(WS.source + '/workforce/members$').test(pathname))
+    return json({ items: WORKFORCE_MEMBERS });
+  if (new RegExp(WS.source + '/workforce/queues$').test(pathname))
+    return json({ items: WORKFORCE_QUEUES });
+  if (new RegExp(WS.source + '/agents$').test(pathname)) return json({ items: AGENTS });
+  if (new RegExp(WS.source + '/adapters$').test(pathname)) return json({ items: ADAPTERS });
+  if (new RegExp(WS.source + '/credential-grants$').test(pathname))
+    return json({ items: CREDENTIAL_GRANTS });
+  if (new RegExp(WS.source + '/human-tasks$').test(pathname)) return json({ items: HUMAN_TASKS });
+  if (new RegExp(WS.source + '/observability$').test(pathname)) return json(OBSERVABILITY_DATA);
+  if (new RegExp(WS.source + '/users$').test(pathname)) return json({ items: MOCK_USERS });
+  if (new RegExp(WS.source + '/policies$').test(pathname)) return json({ items: MOCK_POLICIES });
+  if (new RegExp(WS.source + '/sod-constraints$').test(pathname))
+    return json({ items: MOCK_SOD_CONSTRAINTS });
   return json({ error: 'unhandled', pathname }, 404);
 }
 
@@ -164,23 +176,23 @@ describe('map sidebar layout', () => {
     const router = createCockpitRouter({
       history: createMemoryHistory({ initialEntries: ['/robotics/map'] }),
     });
-    render(<RouterProvider router={router} />);
+    const { container } = render(<RouterProvider router={router} />);
+    await router.load();
 
-    // Wait for the map page to fully render (async data fetching + component mount)
-    await screen.findByText('Operations Map', {}, { timeout: 5000 });
+    // Wait for the map page to fully render (async data fetching + component mount).
+    // The heading has role="heading" with text "Operations Map".
+    await screen.findByRole('heading', { name: 'Operations Map' }, { timeout: 5000 });
 
     // The map page's flex-1 wrapper around the ResizablePanelGroup must have
     // min-height: 0 (via `min-h-0`) to prevent flexbox overflow.
     // Without it, the default `min-height: auto` causes the panel group to
     // exceed the viewport height, which breaks ResizablePanel width calculations.
-    const panelGroup = document.querySelector('[data-slot="resizable-panel-group"]');
+    const panelGroup = container.querySelector('[data-slot="resizable-panel-group"]');
     expect(panelGroup).toBeTruthy();
 
     // Walk up to find the flex-1 parent that wraps the panel group
     const flexWrapper = panelGroup!.parentElement;
     expect(flexWrapper).toBeTruthy();
-
-    const style = window.getComputedStyle(flexWrapper!);
-    expect(style.minHeight).toBe('0px');
+    expect(flexWrapper!.classList.contains('min-h-0')).toBe(true);
   });
 });

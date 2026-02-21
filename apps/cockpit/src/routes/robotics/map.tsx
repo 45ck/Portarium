@@ -88,7 +88,7 @@ function OperationsMapPage() {
       </div>
 
       {/* Main content */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-h-0">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel defaultSize={72} minSize={45}>
             <div className="relative h-full">

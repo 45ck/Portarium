@@ -62,4 +62,4 @@ Early and actively built. Runtime and contract foundations are in place; some in
 
 ## License
 
-License is being finalised. Until a `LICENSE` file is added, treat repository content as all rights reserved.
+Released under the MIT License. See `LICENSE`.
