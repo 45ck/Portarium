@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { WorkItemSummary, UpdateWorkItemCommand } from '@portarium/cockpit-types';
 import { controlPlaneClient } from '@/lib/control-plane-client';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchWorkItems(wsId: string): Promise<{ items: WorkItemSummary[] }> {
   return controlPlaneClient.listWorkItems(wsId);
@@ -19,13 +20,20 @@ async function patchWorkItem(
 }
 
 export function useWorkItems(wsId: string) {
-  return useQuery({ queryKey: ['work-items', wsId], queryFn: () => fetchWorkItems(wsId) });
+  return useOfflineQuery({
+    queryKey: ['work-items', wsId],
+    cacheKey: `work-items:${wsId}`,
+    queryFn: () => fetchWorkItems(wsId),
+    enabled: Boolean(wsId),
+  });
 }
 
 export function useWorkItem(wsId: string, wiId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['work-items', wsId, wiId],
+    cacheKey: `work-items:${wsId}:${wiId}`,
     queryFn: () => fetchWorkItem(wsId, wiId),
+    enabled: Boolean(wsId) && Boolean(wiId),
   });
 }
 

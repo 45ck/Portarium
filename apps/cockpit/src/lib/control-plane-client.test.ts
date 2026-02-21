@@ -60,6 +60,48 @@ describe('ControlPlaneClient', () => {
     });
   });
 
+  it('retries transient status codes with backoff', async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('busy', { status: 503 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    const client = new ControlPlaneClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    const pending = client.listApprovals('ws-1');
+    await vi.runAllTimersAsync();
+    await expect(pending).resolves.toEqual({ items: [] });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries network failures for reads', async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('offline'))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    const client = new ControlPlaneClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    const pending = client.listRuns('ws-1');
+    await vi.runAllTimersAsync();
+    await expect(pending).resolves.toEqual({ items: [] });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
   it('exports a singleton client for hooks/routes', () => {
     expect(controlPlaneClient).toBeInstanceOf(ControlPlaneClient);
   });

@@ -150,6 +150,7 @@ function RunsPage() {
       data={list.data}
       isLoading={list.isLoading}
       isError={list.isError}
+      offlineMeta={list.offlineMeta}
       onRetry={list.refetch}
       getRowKey={(r) => r.runId}
       onRowClick={(r) => navigate({ to: '/runs/$runId' as string, params: { runId: r.runId } })}

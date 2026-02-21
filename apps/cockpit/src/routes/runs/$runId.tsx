@@ -6,7 +6,8 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useRun } from '@/hooks/queries/use-runs';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
-import { useApprovals, useApprovalDecision } from '@/hooks/queries/use-approvals';
+import { useApprovals } from '@/hooks/queries/use-approvals';
+import { useApprovalDecisionOutbox } from '@/hooks/queries/use-approval-decision-outbox';
 import { usePlan } from '@/hooks/queries/use-plan';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { useAgents } from '@/hooks/queries/use-agents';
@@ -110,7 +111,7 @@ function RunDetailPage() {
   const planId = (approvals.data?.items ?? []).find((a) => a.runId === runId)?.planId;
   const { data: plan } = usePlan(wsId, planId);
 
-  const approvalDecision = useApprovalDecision(wsId, pendingApproval?.approvalId ?? '');
+  const approvalDecisionOutbox = useApprovalDecisionOutbox(wsId);
 
   const evidenceForRun = (evidence.data?.items ?? []).filter((e) => e.links?.runId === runId);
 
@@ -296,15 +297,20 @@ function RunDetailPage() {
             <ApprovalGatePanel
               approval={pendingApproval}
               onDecide={(decision, rationale) =>
-                approvalDecision.mutate(
-                  { decision, rationale },
-                  {
-                    onSuccess: () => toast.success('Decision submitted'),
-                    onError: () => toast.error('Failed to submit decision'),
-                  },
-                )
+                void approvalDecisionOutbox
+                  .submitDecision(pendingApproval.approvalId, { decision, rationale })
+                  .then((result) => {
+                    if (result.queued) {
+                      toast.info('Offline: decision queued and will replay on reconnect.');
+                      return;
+                    }
+                    toast.success('Decision submitted');
+                  })
+                  .catch(() => {
+                    toast.error('Failed to submit decision');
+                  })
               }
-              loading={approvalDecision.isPending}
+              loading={approvalDecisionOutbox.isFlushing}
             />
           </div>
         )}

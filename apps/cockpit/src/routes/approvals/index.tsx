@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useApprovals } from '@/hooks/queries/use-approvals';
@@ -10,6 +9,7 @@ import { usePlan } from '@/hooks/queries/use-plan';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { useRun } from '@/hooks/queries/use-runs';
 import { useWorkflow } from '@/hooks/queries/use-workflows';
+import { useApprovalDecisionOutbox } from '@/hooks/queries/use-approval-decision-outbox';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { type TriageAction } from '@/components/cockpit/approval-triage-card';
@@ -20,10 +20,10 @@ import {
   type TriageSessionStats,
 } from '@/components/cockpit/triage-complete-state';
 import { EmptyState } from '@/components/cockpit/empty-state';
+import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
 import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
-import { controlPlaneClient } from '@/lib/control-plane-client';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -33,7 +33,6 @@ interface PendingAction {
   rationale: string;
   toastId: string | number;
   timerId: ReturnType<typeof setTimeout>;
-  /** Queue index at time of action — used for actionHistory revert */
   queueIndex: number;
 }
 
@@ -44,7 +43,8 @@ interface ApprovalsSearch {
 function ApprovalsPage() {
   const search = Route.useSearch();
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, isError, refetch } = useApprovals(wsId);
+  const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
+  const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
   const items = data?.items ?? [];
   const pendingItems = items.filter((a) => a.status === 'Pending');
 
@@ -58,16 +58,12 @@ function ApprovalsPage() {
     skipped: 0,
   });
 
-  // Undo mechanism
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const pendingActionRef = useRef<PendingAction | null>(null);
   pendingActionRef.current = pendingAction;
 
-  // Get pending items not yet actioned/skipped in this triage session
   const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
-  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(
-    search.focus ?? null,
-  );
+  const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(search.focus ?? null);
 
   const currentApproval =
     (selectedApprovalId
@@ -75,16 +71,6 @@ function ApprovalsPage() {
       : null) ??
     triageQueue[0] ??
     null;
-
-  // ID-parameterized mutation so deferred commits target the correct approval
-  const qc = useQueryClient();
-  const { mutate: decideById, isPending: deciding } = useMutation({
-    mutationFn: ({ approvalId, body }: { approvalId: string; body: ApprovalDecisionRequest }) =>
-      controlPlaneClient.decideApproval(wsId, approvalId, body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['approvals', wsId] });
-    },
-  });
 
   const { data: planData } = usePlan(wsId, currentApproval?.planId);
   const { data: evidenceData } = useEvidence(wsId);
@@ -94,19 +80,24 @@ function ApprovalsPage() {
   const { data: runData } = useRun(wsId, currentApproval?.runId ?? '');
   const { data: workflowData } = useWorkflow(wsId, runData?.workflowId ?? '');
 
-  /** Commit a pending action — fires the actual mutation with the correct approval ID */
   const commitAction = useCallback(
     (pa: PendingAction) => {
-      if (pa.action === 'Skip') return; // skips are already instant
-      decideById({
-        approvalId: pa.approvalId,
-        body: {
-          decision: pa.action as 'Approved' | 'Denied' | 'RequestChanges',
-          rationale: pa.rationale,
-        },
-      });
+      if (pa.action === 'Skip') return;
+      const body: ApprovalDecisionRequest = {
+        decision: pa.action as 'Approved' | 'Denied' | 'RequestChanges',
+        rationale: pa.rationale,
+      };
+      void submitDecision(pa.approvalId, body)
+        .then((result) => {
+          if (result.queued) {
+            toast.info('Decision queued for replay when network is available.');
+          }
+        })
+        .catch(() => {
+          toast.error('Failed to submit approval decision.');
+        });
     },
-    [decideById],
+    [submitDecision],
   );
 
   useEffect(() => {
@@ -119,7 +110,6 @@ function ApprovalsPage() {
     }
   }, [triageQueue, selectedApprovalId]);
 
-  /** Track current queue index for actionHistory and QA determinism */
   const currentIndex = currentApproval
     ? Math.max(
         0,
@@ -128,7 +118,6 @@ function ApprovalsPage() {
     : 0;
 
   function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
-    // Rapid-fire: immediately commit any previous pending action
     if (pendingActionRef.current) {
       clearTimeout(pendingActionRef.current.timerId);
       toast.dismiss(pendingActionRef.current.toastId);
@@ -136,7 +125,6 @@ function ApprovalsPage() {
       setPendingAction(null);
     }
 
-    // Record in action history and session stats
     setActionHistory((prev) => ({ ...prev, [currentIndex]: action }));
     setSessionStats((prev) => ({
       total: prev.total + 1,
@@ -146,7 +134,6 @@ function ApprovalsPage() {
       skipped: prev.skipped + (action === 'Skip' ? 1 : 0),
     }));
 
-    // Remove from queue immediately (optimistic)
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
     setSelectedApprovalId((prevSelected) => {
       const currentIds = triageQueue.map((item) => item.approvalId);
@@ -155,10 +142,8 @@ function ApprovalsPage() {
       return prevSelected === approvalId ? nextId : prevSelected;
     });
 
-    // Skip is instant — no undo, no API call
     if (action === 'Skip') return;
 
-    // Defer actual mutation behind undo window
     const toastId = `undo-${approvalId}`;
     const timerId = setTimeout(() => {
       const current = pendingActionRef.current;
@@ -197,7 +182,6 @@ function ApprovalsPage() {
     toast.dismiss(target.toastId);
     setPendingAction(null);
 
-    // Revert: remove from skipped set so it re-enters the queue
     setTriageSkipped((prev) => {
       const next = new Set(prev);
       next.delete(target.approvalId);
@@ -205,7 +189,6 @@ function ApprovalsPage() {
     });
     setSelectedApprovalId(target.approvalId);
 
-    // Revert action history using the stored queue index
     setActionHistory((prev) => {
       const next = { ...prev };
       delete next[target.queueIndex];
@@ -224,7 +207,6 @@ function ApprovalsPage() {
     }));
   }
 
-  // Commit pending action on route unmount (prevent data loss on navigation)
   useEffect(() => {
     return () => {
       const pa = pendingActionRef.current;
@@ -236,9 +218,6 @@ function ApprovalsPage() {
     };
   }, [commitAction]);
 
-  // ----- Triage content -----
-  // AnimatePresence wraps ALL states so exits animate even when
-  // transitioning from deck → complete/empty.
   let triageChild: React.ReactNode;
 
   if (isLoading) {
@@ -299,7 +278,7 @@ function ApprovalsPage() {
                     setActionHistory({});
                   }}
                 >
-                  You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} —
+                  You skipped {triageSkipped.size} item{triageSkipped.size !== 1 ? 's' : ''} -
                   review them?
                 </Button>
               ) : undefined
@@ -316,7 +295,7 @@ function ApprovalsPage() {
         total={pendingItems.length}
         hasMore={triageQueue.length > 1}
         onAction={handleTriageAction}
-        loading={deciding}
+        loading={isFlushing}
         plannedEffects={planData?.plannedEffects}
         evidenceEntries={filteredEvidence}
         run={runData}
@@ -330,13 +309,18 @@ function ApprovalsPage() {
 
   const triageContent = <AnimatePresence mode="wait">{triageChild}</AnimatePresence>;
 
-  // ----- Error state -----
   if (isError) {
     return (
       <div className="p-6 space-y-4">
         <PageHeader
           title="Approvals"
           icon={<EntityIcon entityType="approval" size="md" decorative />}
+        />
+        <OfflineSyncBanner
+          isOffline={offlineMeta.isOffline}
+          isStaleData={offlineMeta.isStaleData}
+          lastSyncAtIso={offlineMeta.lastSyncAtIso}
+          pendingOutboxCount={pendingCount}
         />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
@@ -353,12 +337,17 @@ function ApprovalsPage() {
     );
   }
 
-  // ----- Standard layout (desktop & mobile) -----
   return (
     <div className="p-6 space-y-4">
       <PageHeader
         title="Approvals"
         icon={<EntityIcon entityType="approval" size="md" decorative />}
+      />
+      <OfflineSyncBanner
+        isOffline={offlineMeta.isOffline}
+        isStaleData={offlineMeta.isStaleData}
+        lastSyncAtIso={offlineMeta.lastSyncAtIso}
+        pendingOutboxCount={pendingCount}
       />
       {currentApproval && triageQueue.length > 0 ? (
         <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">

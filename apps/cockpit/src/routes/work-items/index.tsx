@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { FilterBar } from '@/components/cockpit/filter-bar';
 import { DataTable } from '@/components/cockpit/data-table';
+import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RotateCcw } from 'lucide-react';
@@ -32,7 +33,7 @@ function WorkItemsPage() {
     owner: search.owner ?? 'all',
   };
 
-  const { data, isLoading, isError, refetch } = useWorkItems(wsId);
+  const { data, isLoading, isError, refetch, offlineMeta } = useWorkItems(wsId);
   const users = useUsers(wsId);
   const items = data?.items ?? [];
   const userItems = users.data?.items ?? [];
@@ -108,12 +109,17 @@ function WorkItemsPage() {
     },
   ];
 
-  if (isError) {
+  if (isError && filtered.length === 0) {
     return (
       <div className="p-6 space-y-4">
         <PageHeader
           title="Work Items"
           icon={<EntityIcon entityType="work-item" size="md" decorative />}
+        />
+        <OfflineSyncBanner
+          isOffline={offlineMeta.isOffline}
+          isStaleData={offlineMeta.isStaleData}
+          lastSyncAtIso={offlineMeta.lastSyncAtIso}
         />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
@@ -135,6 +141,11 @@ function WorkItemsPage() {
       <PageHeader
         title="Work Items"
         icon={<EntityIcon entityType="work-item" size="md" decorative />}
+      />
+      <OfflineSyncBanner
+        isOffline={offlineMeta.isOffline}
+        isStaleData={offlineMeta.isStaleData}
+        lastSyncAtIso={offlineMeta.lastSyncAtIso}
       />
 
       <FilterBar

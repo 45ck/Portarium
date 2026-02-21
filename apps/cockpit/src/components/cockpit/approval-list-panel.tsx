@@ -131,6 +131,9 @@ export function ApprovalListPanel({
                           })}
                         </span>
                       </div>
+                      <p className="text-[10px] font-mono text-muted-foreground/50 mt-0.5 truncate">
+                        {a.runId.slice(0, 18)}
+                      </p>
                     </button>
                   </motion.li>
                 );

@@ -60,6 +60,13 @@ interface ControlPlaneClientConfig {
 
 const DEFAULT_BASE_URL = (import.meta.env.VITE_PORTARIUM_API_BASE_URL ?? '').trim();
 const DEFAULT_BEARER_TOKEN = (import.meta.env.VITE_PORTARIUM_API_BEARER_TOKEN ?? '').trim();
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 function defaultGetBearerToken(): string | undefined {
   if (DEFAULT_BEARER_TOKEN) return DEFAULT_BEARER_TOKEN;
@@ -95,9 +102,15 @@ export class ControlPlaneClient {
     workspaceId: string,
     approvalId: string,
     body: ApprovalDecisionRequest,
+    options: { idempotencyKey?: string } = {},
   ): Promise<ApprovalSummary> {
+    const headers = new Headers();
+    if (options.idempotencyKey) {
+      headers.set('Idempotency-Key', options.idempotencyKey);
+    }
     return this.request(`/v1/workspaces/${workspaceId}/approvals/${approvalId}/decide`, {
       method: 'POST',
+      headers,
       body: JSON.stringify(body),
     });
   }
@@ -173,7 +186,27 @@ export class ControlPlaneClient {
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const response = await this.fetchImpl(this.resolveUrl(path), { ...init, headers });
+    const method = (init.method ?? 'GET').toUpperCase();
+    const maxRetries = method === 'GET' || method === 'HEAD' ? 3 : 1;
+    let response: Response;
+
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        response = await this.fetchImpl(this.resolveUrl(path), { ...init, headers });
+      } catch (error) {
+        if (!(error instanceof TypeError) || attempt >= maxRetries) {
+          throw error;
+        }
+        await sleep(Math.min(1_500 * 2 ** attempt, 8_000));
+        continue;
+      }
+
+      if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt >= maxRetries) {
+        break;
+      }
+      await sleep(Math.min(1_500 * 2 ** attempt, 8_000));
+    }
+
     if (!response.ok) {
       await this.throwResponseError(response);
     }
