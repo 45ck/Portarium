@@ -76,7 +76,7 @@ npm install          # install deps (fast, node_modules are not shared)
 
 1. Read the issue body:
    ```bash
-   npm run bd -- issue show "$ISSUE_ID"
+   npm run bd -- issue view "$ISSUE_ID"
    ```
 2. Read `CLAUDE.md` (project rules) and `AGENTS.md` (workflow) in the **repo root**.
 3. Search for related specs: `ls ../../.specify/specs/` and read relevant ones.
@@ -188,7 +188,7 @@ If an issue you want has `blockedBy` deps that aren't closed yet:
 To check an issue's blockers:
 
 ```bash
-npm run bd -- issue show "$ISSUE_ID"
+npm run bd -- issue view "$ISSUE_ID"
 ```
 
 ---
@@ -227,7 +227,7 @@ When you want to stop:
 # Issue lifecycle
 npm run bd -- issue next --json          # list unblocked open issues (JSON)
 npm run bd -- issue start <id> --by <name>   # claim + create worktree
-npm run bd -- issue show <id>            # show issue details
+npm run bd -- issue view <id>            # show issue details
 npm run bd -- issue finish <id>          # merge + close (from repo root)
 npm run bd -- issue unclaim <id>         # release claim without finishing
 
