@@ -686,7 +686,7 @@ export function ApprovalTriageCard({
                 </label>
                 <Textarea
                   autoFocus
-                  className="text-xs min-h-[80px] resize-none bg-white"
+                  className="text-xs min-h-[80px] resize-none bg-background"
                   placeholder="Describe what the requestor needs to update before you can approve…"
                   value={requestChangesMsg}
                   onChange={(e) => setRequestChangesMsg(e.target.value)}

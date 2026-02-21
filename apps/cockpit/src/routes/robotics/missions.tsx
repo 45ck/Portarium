@@ -25,22 +25,22 @@ function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
     Executing: {
       label: 'Executing',
       icon: <RotateCcw className="h-3 w-3 animate-spin" />,
-      className: 'bg-blue-100 text-blue-800 border-blue-200',
+      className: 'bg-info/10 text-info border-info/30',
     },
     Completed: {
       label: 'Completed',
       icon: <CheckCircle2 className="h-3 w-3" />,
-      className: 'bg-green-100 text-green-800 border-green-200',
+      className: 'bg-success/10 text-success border-success/30',
     },
     Failed: {
       label: 'Failed',
       icon: <XCircle className="h-3 w-3" />,
-      className: 'bg-red-100 text-red-800 border-red-200',
+      className: 'bg-destructive/10 text-destructive border-destructive/30',
     },
     Cancelled: {
       label: 'Cancelled',
       icon: <OctagonX className="h-3 w-3" />,
-      className: 'bg-red-100 text-red-800 border-red-200',
+      className: 'bg-destructive/10 text-destructive border-destructive/30',
     },
   };
   const c = config[status];
@@ -59,8 +59,6 @@ function MissionStatusBadge({ status }: { status: MissionSummary['status'] }) {
 function MissionsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading } = useMissions(wsId);
-  const cancelMission = useCancelMission(wsId);
-  const preemptMission = usePreemptMission(wsId);
   const retryMission = useRetryMission(wsId);
   const navigate = useNavigate();
   const missionsList = data?.items ?? [];
@@ -73,16 +71,6 @@ function MissionsPage() {
     failed: missionsList.filter((m) => m.status === 'Failed').length,
   };
 
-  function handleCancel(missionId: string) {
-    cancelMission.mutate(missionId, {
-      onSuccess: () => toast.success(`Mission ${missionId} cancelled`),
-    });
-  }
-  function handlePreempt(missionId: string) {
-    preemptMission.mutate(missionId, {
-      onSuccess: () => toast.success(`Mission ${missionId} pre-empted`),
-    });
-  }
   function handleRetry(missionId: string) {
     retryMission.mutate(missionId, {
       onSuccess: () => toast.success(`Mission ${missionId} queued for retry`),

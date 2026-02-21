@@ -90,7 +90,7 @@ function OperationsMapPage() {
       {/* Main content */}
       <div className="relative flex-1">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel defaultSize={65} minSize={40}>
+          <ResizablePanel defaultSize={60} minSize={35}>
             <div className="relative h-full">
               <MapView
                 locations={locations}
@@ -108,7 +108,7 @@ function OperationsMapPage() {
 
           <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={35} minSize={20} maxSize={50}>
+          <ResizablePanel defaultSize={40} minSize={30} maxSize={55}>
             <div className="flex h-full flex-col">
               <div className="flex-1 min-h-0 overflow-hidden">
                 <RobotListPanel

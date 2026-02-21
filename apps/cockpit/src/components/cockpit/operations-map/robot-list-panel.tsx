@@ -22,9 +22,9 @@ const STATUS_ICON: Record<RobotStatus, React.ReactNode> = {
 };
 
 const STATUS_BADGE_CLASS: Record<RobotStatus, string> = {
-  Online: 'bg-green-100 text-green-800 border-green-200',
-  Degraded: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  'E-Stopped': 'bg-red-100 text-red-800 border-red-200',
+  Online: 'bg-success/10 text-success border-success/30',
+  Degraded: 'bg-warning/10 text-warning border-warning/30',
+  'E-Stopped': 'bg-destructive/10 text-destructive border-destructive/30',
   Offline: 'bg-muted text-muted-foreground border-border',
 };
 
