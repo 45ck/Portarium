@@ -65,7 +65,7 @@ describe('worker runtime main (Temporal enabled)', () => {
     expect(process.exitCode).toBe(1);
   });
 
-  it('shuts down Temporal worker and HTTP server on SIGTERM without exiting the test process', async () => {
+  it('shuts down Temporal worker and HTTP server on SIGTERM without forcing process exit', async () => {
     process.env['PORTARIUM_ENABLE_TEMPORAL_WORKER'] = 'true';
 
     let resolveRun: (() => void) | undefined;
@@ -100,9 +100,7 @@ describe('worker runtime main (Temporal enabled)', () => {
     await new Promise((r) => setTimeout(r, 0));
 
     expect(shutdown).toHaveBeenCalledTimes(1);
-    expect(exit).toHaveBeenCalledWith(0);
+    expect(exit).not.toHaveBeenCalled();
     expect(handle.server.listening).toBe(false);
-
-    exit.mockRestore();
   });
 });
