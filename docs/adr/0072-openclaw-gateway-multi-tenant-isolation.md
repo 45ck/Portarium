@@ -99,9 +99,13 @@ enforcement at runtime boundaries:
 - Contract and policy boundary tests:
   - `src/presentation/runtime/control-plane-handler.machine-agent.contract.test.ts`
   - `src/application/ports/machine-invoker.test.ts`
-- Review linkage:
-  - `bead-0635`
-  - `docs/review/bead-0635-adr-0072-linkage-review.md`
+
+## Review Linkage
+
+- `bead-0634`: implementation mapping closure review
+- `docs/review/bead-0634-adr-0072-implementation-mapping-review.md`
+- `bead-0635`: mapping/linkage verification review
+- `docs/review/bead-0635-adr-0072-linkage-review.md`
 
 ## Remaining Gap Tracking
 
