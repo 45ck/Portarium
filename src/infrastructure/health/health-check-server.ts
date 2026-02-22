@@ -63,6 +63,7 @@ export class HealthCheckServer {
   private readonly readinessCheck: HealthCheckFn;
   private readonly startupCheck: HealthCheckFn;
   private server: ReturnType<typeof createServer> | null = null;
+  private boundPort: number | null = null;
 
   constructor(opts: HealthCheckServerOptions = {}) {
     this.port = opts.port ?? 8081;
@@ -70,6 +71,11 @@ export class HealthCheckServer {
     this.livenessCheck = opts.livenessCheck ?? alwaysOk;
     this.readinessCheck = opts.readinessCheck ?? alwaysOk;
     this.startupCheck = opts.startupCheck ?? alwaysOk;
+  }
+
+  /** The actual port the server is bound to (available after start()). */
+  get actualPort(): number {
+    return this.boundPort ?? this.port;
   }
 
   /** Start listening. Resolves when the server is bound. */
@@ -83,7 +89,11 @@ export class HealthCheckServer {
       });
 
       this.server.on('error', reject);
-      this.server.listen(this.port, this.host, () => resolve());
+      this.server.listen(this.port, this.host, () => {
+        const addr = this.server!.address();
+        this.boundPort = typeof addr === 'object' && addr !== null ? addr.port : this.port;
+        resolve();
+      });
     });
   }
 
