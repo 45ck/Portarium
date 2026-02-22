@@ -1124,3 +1124,7 @@ unparseable
 ijlt
 erso
 mig1
+
+# Redis commands (rate-limiting store — bead-dsnp)
+numkeys
+EXPIREAT
