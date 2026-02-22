@@ -10,6 +10,11 @@ export type OpenFgaAuthorizationConfig = Readonly<{
   authorizationModelId?: string;
   apiToken?: string;
   fetchImpl?: typeof fetch;
+  /**
+   * Injectable environment map (default: `process.env`).
+   * Injected in tests to control NODE_ENV without stubbing process.env.
+   */
+  env?: Record<string, string | undefined>;
 }>;
 
 type OpenFgaCheckResponse = Readonly<{
@@ -61,9 +66,21 @@ export class OpenFgaAuthorization implements AuthorizationPort {
     this.#fetchImpl = config.fetchImpl ?? fetch;
 
     if (!config.authorizationModelId) {
-      // Unpinned model ID: OpenFGA will use the latest model, which can cause
-      // silent authorization changes on model updates. Pin the model ID in
-      // production to prevent model-drift authorization changes.
+      const env = config.env ?? process.env;
+      const nodeEnv = (env['NODE_ENV'] ?? '').trim();
+      const isDevOrTest = nodeEnv === 'development' || nodeEnv === 'test';
+
+      if (!isDevOrTest) {
+        // Non-dev/test environment with no pinned model ID: this is a misconfiguration that
+        // could allow silent authorization changes on OpenFGA model updates. Fail fast.
+        throw new Error(
+          `[portarium] FATAL: OpenFGA authorizationModelId is not pinned and NODE_ENV="${nodeEnv}". ` +
+            'Unpinned model IDs allow silent authorization changes on model updates. ' +
+            'Set PORTARIUM_OPENFGA_AUTHORIZATION_MODEL_ID to a specific model ID in production.',
+        );
+      }
+
+      // In dev/test: warn but allow unpinned model ID for local iteration.
       console.warn(
         '[OpenFGA] WARNING: authorizationModelId is not pinned. Authorization checks will use ' +
           'the latest model version. Set authorizationModelId to a specific model ID in production.',

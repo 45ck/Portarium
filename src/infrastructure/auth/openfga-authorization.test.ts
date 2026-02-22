@@ -81,18 +81,78 @@ describe('OpenFgaAuthorization', () => {
     expect(allowed).toBe(false);
   });
 
-  it('emits a console.warn when authorizationModelId is not pinned', () => {
+  it('emits a console.warn when authorizationModelId is not pinned in development', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     new OpenFgaAuthorization({
       apiUrl: 'http://openfga.local',
       storeId: 'store-1',
       fetchImpl: vi.fn<typeof fetch>(),
+      env: { NODE_ENV: 'development' },
     });
 
     expect(warn).toHaveBeenCalledWith(
       expect.stringContaining('authorizationModelId is not pinned'),
     );
     warn.mockRestore();
+  });
+
+  it('emits a console.warn when authorizationModelId is not pinned in test', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaAuthorization({
+      apiUrl: 'http://openfga.local',
+      storeId: 'store-1',
+      fetchImpl: vi.fn<typeof fetch>(),
+      env: { NODE_ENV: 'test' },
+    });
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('authorizationModelId is not pinned'),
+    );
+    warn.mockRestore();
+  });
+
+  it('throws a fatal error when authorizationModelId is not pinned in production', () => {
+    expect(() => {
+      new OpenFgaAuthorization({
+        apiUrl: 'http://openfga.local',
+        storeId: 'store-1',
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: { NODE_ENV: 'production' },
+      });
+    }).toThrow(/FATAL.*authorizationModelId.*not pinned/i);
+  });
+
+  it('throws a fatal error when authorizationModelId is not pinned and NODE_ENV=staging', () => {
+    expect(() => {
+      new OpenFgaAuthorization({
+        apiUrl: 'http://openfga.local',
+        storeId: 'store-1',
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: { NODE_ENV: 'staging' },
+      });
+    }).toThrow(/FATAL/i);
+  });
+
+  it('throws a fatal error when authorizationModelId is not pinned and NODE_ENV is absent', () => {
+    expect(() => {
+      new OpenFgaAuthorization({
+        apiUrl: 'http://openfga.local',
+        storeId: 'store-1',
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: {},
+      });
+    }).toThrow(/FATAL/i);
+  });
+
+  it('fatal error message names the offending NODE_ENV value', () => {
+    expect(() => {
+      new OpenFgaAuthorization({
+        apiUrl: 'http://openfga.local',
+        storeId: 'store-1',
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: { NODE_ENV: 'custom-env' },
+      });
+    }).toThrow(/"custom-env"/);
   });
 
   it('does not warn when authorizationModelId is pinned', () => {
