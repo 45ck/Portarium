@@ -46,6 +46,7 @@ npm run cockpit:demo:approvals-v2:showcase
 ```
 
 This opens a headed Chromium browser, walks through:
+
 1. Start a workflow run with an approval gate.
 2. Submit the approval.
 3. View the resulting evidence chain.

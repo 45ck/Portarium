@@ -768,6 +768,20 @@ HiveMQ
 # Database / backup terms
 quiescing
 
+# iOS / Android CI and build terms
+xcarchive
+xcodeproj
+pbxproj
+gradlew
+
+# Test fixture random tokens (push-notification and mobile-smoke tests)
+Rdre
+ALRFX
+OOUHK
+wtaz
+svbpez
+Vloto
+
 # Workflow / fault-injection terms
 checkpointed
 defn
