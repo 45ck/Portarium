@@ -5,7 +5,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['src/test-setup.ts'],
     testTimeout: 30_000,
-    include: ['src/**/*.test.ts', 'scaffolds/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scaffolds/**/*.test.ts', 'scripts/**/*.test.ts'],
     reporters: ['default'],
     coverage: {
       provider: 'v8',
