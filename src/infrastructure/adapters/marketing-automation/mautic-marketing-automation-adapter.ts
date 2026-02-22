@@ -53,6 +53,7 @@ interface MauticResponse<T> {
 
 function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: string): PartyV1 {
   const fields = (contact['fields'] as Record<string, Record<string, unknown>> | undefined)?.['all'] ?? {};
+  const email = typeof fields['email'] === 'string' ? fields['email'] : undefined;
   return {
     partyId: PartyId(String(contact['id'] ?? '')),
     tenantId: tenantId as PartyV1['tenantId'],
@@ -60,7 +61,7 @@ function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: str
     displayName:
       `${String(fields['firstname'] ?? '')} ${String(fields['lastname'] ?? '')}`.trim() ||
       String(fields['email'] ?? contact['id'] ?? ''),
-    email: typeof fields['email'] === 'string' ? fields['email'] : undefined,
+    ...(email !== undefined ? { email } : {}),
     roles: ['lead'],
   };
 }
@@ -202,7 +203,7 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
   // ── Segments (Lists) ───────────────────────────────────────────────────────
 
-  async #listSegments(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #listSegments(_input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
     const data = await this.#get<{ lists: Record<string, Record<string, unknown>> }>('segments');
     const refs: ExternalObjectRef[] = Object.values(data.data.lists).map((seg) =>
       makeExternalRef(seg['id'] as string, 'segment', String(seg['name'] ?? ''), this.#config.baseUrl, 's/segments'),
@@ -330,7 +331,7 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
   // ── Forms ─────────────────────────────────────────────────────────────────
 
-  async #listForms(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #listForms(_input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
     const data = await this.#get<{ forms: Record<string, Record<string, unknown>> }>('forms');
     const refs: ExternalObjectRef[] = Object.values(data.data.forms).map((f) =>
       makeExternalRef(f['id'] as string, 'form', String(f['name'] ?? ''), this.#config.baseUrl, 's/forms/view'),
@@ -376,7 +377,7 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
         signal: controller.signal,
       });
 
