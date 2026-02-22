@@ -1,0 +1,265 @@
+# Progressive delivery pipeline.
+#
+# Orchestrates a canary rollout via Argo Rollouts and monitors SLO burn-rate
+# during promotion. Automatically rolls back if any SLO check fails.
+#
+# Flow:
+#   1. Verify image provenance (re-uses verify-provenance.yml)
+#   2. Render Kustomize manifests and pin image digest
+#   3. Apply Argo Rollout update (kubectl argo rollouts set image)
+#   4. Monitor promotion: poll rollout status + Prometheus SLO every 2 min
+#   5. Promote to 100% on success or abort (automatic rollback) on failure
+#   6. Notify result (Slack / GitHub deployment status)
+#
+# Bead: bead-0394
+
+name: CD (Progressive Delivery)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        default: staging
+        options:
+          - staging
+          - prod
+      image_tag:
+        description: Image tag / digest to deploy
+        required: true
+      component:
+        description: Component to roll out
+        required: true
+        type: choice
+        default: control-plane
+        options:
+          - control-plane
+          - worker
+          - all
+
+permissions:
+  contents: read
+  id-token: write
+  deployments: write
+
+jobs:
+  # ── Provenance verification ──────────────────────────────────────────────
+  verify-provenance:
+    if: ${{ github.event.inputs.component == 'control-plane' || github.event.inputs.component == 'all' }}
+    uses: ./.github/workflows/verify-provenance.yml
+    with:
+      digest: ${{ github.event.inputs.image_tag }}
+      component: control-plane
+    permissions:
+      contents: read
+      id-token: write
+
+  verify-provenance-worker:
+    if: ${{ github.event.inputs.component == 'worker' || github.event.inputs.component == 'all' }}
+    uses: ./.github/workflows/verify-provenance.yml
+    with:
+      digest: ${{ github.event.inputs.image_tag }}
+      component: worker
+    permissions:
+      contents: read
+      id-token: write
+
+  # ── Progressive rollout ──────────────────────────────────────────────────
+  progressive-rollout:
+    needs: [verify-provenance, verify-provenance-worker]
+    if: |
+      always() &&
+      (needs.verify-provenance.result == 'success' || needs.verify-provenance.result == 'skipped') &&
+      (needs.verify-provenance-worker.result == 'success' || needs.verify-provenance-worker.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    concurrency:
+      group: progressive-rollout-${{ github.event.inputs.environment }}-${{ github.event.inputs.component }}
+      cancel-in-progress: false   # never cancel mid-rollout
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name "${{ vars.EKS_CLUSTER_NAME }}" \
+            --region "${{ vars.AWS_REGION }}"
+
+      - name: Install Argo Rollouts kubectl plugin
+        run: |
+          curl -LO "https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64"
+          chmod +x kubectl-argo-rollouts-linux-amd64
+          sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+      - name: Create GitHub deployment
+        id: deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: '${{ github.event.inputs.environment }}',
+              description: 'Progressive delivery: ${{ github.event.inputs.component }} ${{ github.event.inputs.image_tag }}',
+              auto_merge: false,
+              required_contexts: [],
+            });
+            core.setOutput('deployment_id', data.id);
+
+      - name: Set rollout image(s)
+        run: |
+          IMAGE_TAG="${{ github.event.inputs.image_tag }}"
+          COMPONENT="${{ github.event.inputs.component }}"
+
+          if [[ "$COMPONENT" == "control-plane" || "$COMPONENT" == "all" ]]; then
+            kubectl argo rollouts set image portarium-control-plane \
+              control-plane="ghcr.io/${{ github.repository_owner }}/portarium/control-plane:${IMAGE_TAG}" \
+              -n portarium
+          fi
+
+          if [[ "$COMPONENT" == "worker" || "$COMPONENT" == "all" ]]; then
+            kubectl argo rollouts set image portarium-worker \
+              worker="ghcr.io/${{ github.repository_owner }}/portarium/worker:${IMAGE_TAG}" \
+              -n portarium
+          fi
+
+      - name: Monitor canary progression
+        id: monitor
+        env:
+          PROMETHEUS_URL: ${{ vars.PROMETHEUS_URL }}
+          MAX_WAIT_MINUTES: "30"
+          POLL_INTERVAL_SECONDS: "30"
+        run: |
+          set -euo pipefail
+
+          COMPONENT="${{ github.event.inputs.component }}"
+          NAMESPACE="portarium"
+          DEADLINE=$((SECONDS + MAX_WAIT_MINUTES * 60))
+          ABORT=false
+
+          declare -a ROLLOUTS
+          if [[ "$COMPONENT" == "control-plane" || "$COMPONENT" == "all" ]]; then
+            ROLLOUTS+=("portarium-control-plane")
+          fi
+          if [[ "$COMPONENT" == "worker" || "$COMPONENT" == "all" ]]; then
+            ROLLOUTS+=("portarium-worker")
+          fi
+
+          while [[ $SECONDS -lt $DEADLINE ]]; do
+            for ROLLOUT in "${ROLLOUTS[@]}"; do
+              STATUS=$(kubectl argo rollouts status "$ROLLOUT" -n "$NAMESPACE" --timeout=10s 2>&1 || true)
+              echo "[$(date -u +%T)] $ROLLOUT: $STATUS"
+
+              if echo "$STATUS" | grep -q "Degraded\|Aborted\|Error"; then
+                echo "::error::Rollout $ROLLOUT entered failed state: $STATUS"
+                ABORT=true
+                break 2
+              fi
+
+              if echo "$STATUS" | grep -q "Healthy"; then
+                echo "$ROLLOUT reached Healthy state — promotion complete."
+              fi
+            done
+
+            # SLO burn-rate check: abort if any P0 SLO is in fast-burn (>14×).
+            if [[ -n "$PROMETHEUS_URL" ]]; then
+              BURN_RATE=$(curl -sf "${PROMETHEUS_URL}/api/v1/query" \
+                --data-urlencode 'query=max(
+                  slo:api_availability:error_rate1h / (1 - 0.999),
+                  slo:workflow_completion_rate:error_rate1h / (1 - 0.99),
+                  slo:worker_action_success_rate:error_rate1h / (1 - 0.995),
+                  slo:evidence_integrity_write_success:error_rate1h / (1 - 0.9999)
+                )' | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['result'][0]['value'][1] if d['data']['result'] else '0')" 2>/dev/null || echo "0")
+
+              echo "Max SLO burn rate: ${BURN_RATE}×"
+              if python3 -c "import sys; sys.exit(0 if float('${BURN_RATE}') < 14 else 1)"; then
+                : # OK
+              else
+                echo "::error::SLO fast-burn detected (${BURN_RATE}×). Aborting rollout."
+                ABORT=true
+                break
+              fi
+            fi
+
+            # Check if all rollouts are Healthy.
+            ALL_HEALTHY=true
+            for ROLLOUT in "${ROLLOUTS[@]}"; do
+              STATUS=$(kubectl argo rollouts status "$ROLLOUT" -n "$NAMESPACE" --timeout=10s 2>&1 || true)
+              if ! echo "$STATUS" | grep -q "Healthy"; then
+                ALL_HEALTHY=false
+                break
+              fi
+            done
+
+            if $ALL_HEALTHY; then
+              echo "All rollouts are Healthy. Progressive delivery complete."
+              break
+            fi
+
+            sleep "$POLL_INTERVAL_SECONDS"
+          done
+
+          echo "abort=${ABORT}" >> "$GITHUB_OUTPUT"
+
+      - name: Abort rollout on failure
+        if: steps.monitor.outputs.abort == 'true'
+        run: |
+          COMPONENT="${{ github.event.inputs.component }}"
+          if [[ "$COMPONENT" == "control-plane" || "$COMPONENT" == "all" ]]; then
+            kubectl argo rollouts abort portarium-control-plane -n portarium || true
+          fi
+          if [[ "$COMPONENT" == "worker" || "$COMPONENT" == "all" ]]; then
+            kubectl argo rollouts abort portarium-worker -n portarium || true
+          fi
+          echo "::error::Rollout aborted — automatic rollback initiated by Argo Rollouts."
+          exit 1
+
+      - name: Update GitHub deployment status (success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.deployment_id }},
+              state: 'success',
+              description: 'Canary promotion complete',
+              environment_url: '${{ vars.APP_URL }}',
+            });
+
+      - name: Update GitHub deployment status (failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: ${{ steps.deployment.outputs.deployment_id }},
+              state: 'failure',
+              description: 'Canary aborted — rollback complete',
+            });
+
+      - name: Emit rollout summary
+        if: always()
+        run: |
+          echo "## Progressive Delivery Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Component | ${{ github.event.inputs.component }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image tag | \`${{ github.event.inputs.image_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Environment | ${{ github.event.inputs.environment }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Result | ${{ job.status }} |" >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,130 @@
+# Argo Rollout: Portarium execution-plane worker canary strategy.
+#
+# Workers poll Temporal for tasks — there is no HTTP ingress to weight.
+# Instead, we use a "blue/green" canary where we gradually scale up the
+# new version while scaling down the old one, gated on Prometheus metrics.
+#
+# Argo Rollouts supports this with the canary strategy and no trafficRouting;
+# Temporal task-queue polling naturally distributes load across all workers.
+#
+# Bead: bead-0394
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: portarium-worker
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-worker
+    app.kubernetes.io/part-of: portarium
+    portarium.io/component: execution-plane
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-worker
+        app.kubernetes.io/part-of: portarium
+        portarium.io/component: execution-plane
+    spec:
+      serviceAccountName: portarium-execution-plane
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: worker
+          image: ghcr.io/45ck/portarium/worker:latest
+          ports:
+            - containerPort: 9090
+              name: metrics
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+  strategy:
+    canary:
+      # No traffic routing — Temporal distributes tasks naturally.
+      # maxSurge: bring up 1 new pod before taking down 1 old pod.
+      maxSurge: "34%"       # at 3 replicas: 1 surge pod
+      maxUnavailable: 0
+
+      steps:
+        # Step 1: 1 canary replica (33%); wait 5 minutes.
+        - setWeight: 33
+        - pause: { duration: 5m }
+
+        # Step 2: 2 canary replicas (67%); run analysis.
+        - setWeight: 67
+        - pause: { duration: 10m }
+
+        # Step 3: full promotion.
+        - setWeight: 100
+
+      canaryAnalysis:
+        startingStep: 1
+        interval: 2m
+        count: 5
+        failureLimit: 1
+        metrics:
+          - name: worker-action-error-rate
+            successCondition: result < 0.005   # < 0.5% failure rate
+            failureLimit: 1
+            provider:
+              prometheus:
+                address: http://prometheus-operated.monitoring.svc:9090
+                query: |
+                  (
+                    sum(rate(portarium_worker_action_started_total[2m]))
+                    - sum(rate(portarium_worker_action_succeeded_total[2m]))
+                  )
+                  /
+                  clamp_min(sum(rate(portarium_worker_action_started_total[2m])), 0.0001)
+
+          - name: evidence-write-error-rate
+            successCondition: result < 0.0001   # < 0.01% failure rate
+            failureLimit: 1
+            provider:
+              prometheus:
+                address: http://prometheus-operated.monitoring.svc:9090
+                query: |
+                  (
+                    sum(rate(portarium_evidence_write_attempted_total[2m]))
+                    - sum(rate(portarium_evidence_write_succeeded_total[2m]))
+                  )
+                  /
+                  clamp_min(sum(rate(portarium_evidence_write_attempted_total[2m])), 0.0001)
+
+      abortScaleDownDelaySeconds: 0

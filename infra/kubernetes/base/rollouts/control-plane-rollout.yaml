@@ -1,0 +1,191 @@
+# Argo Rollout: Portarium control-plane canary strategy.
+#
+# Replaces the control-plane Deployment with an Argo Rollout resource that
+# uses a canary traffic-shifting strategy gated on Prometheus SLO metrics.
+#
+# Prerequisites:
+#   - Argo Rollouts controller installed (argocd/argo-rollouts Helm chart)
+#   - Prometheus available at prometheus-operated.monitoring.svc:9090
+#   - NGINX ingress controller with canary annotation support
+#
+# Traffic shifting uses the NGINX Ingress canary annotations:
+#   nginx.ingress.kubernetes.io/canary: "true"
+#   nginx.ingress.kubernetes.io/canary-weight: "<N>"
+#
+# Bead: bead-0394
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: portarium-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-control-plane
+    app.kubernetes.io/part-of: portarium
+    portarium.io/component: control-plane
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-control-plane
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portarium-control-plane
+        app.kubernetes.io/part-of: portarium
+        portarium.io/component: control-plane
+    spec:
+      serviceAccountName: portarium-control-plane
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: control-plane
+          image: ghcr.io/45ck/portarium/control-plane:latest
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 9090
+              name: metrics
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: portarium-control-plane
+
+  strategy:
+    canary:
+      # Stable and canary services are separate so NGINX can route weight %.
+      stableService: portarium-control-plane-stable
+      canaryService: portarium-control-plane-canary
+
+      # NGINX ingress traffic management.
+      trafficRouting:
+        nginx:
+          stableIngress: portarium-control-plane-ingress
+
+      # Canary analysis runs every 2 minutes throughout each step.
+      analysis:
+        startingStep: 2            # begin analysis at the 20% step
+
+      # Progressive traffic steps with SLO-gated pauses.
+      steps:
+        # Step 1: shift 10% of traffic and wait 3 minutes.
+        - setWeight: 10
+        - pause: { duration: 3m }
+
+        # Step 2: 20% — start analysis; wait 5 minutes.
+        - setWeight: 20
+        - pause: { duration: 5m }
+
+        # Step 3: 50% — mid-canary gate.
+        - setWeight: 50
+        - pause: { duration: 10m }
+
+        # Step 4: 100% — final promotion (argo-rollouts promotes stable).
+        - setWeight: 100
+
+      # Inline analysis template: query Prometheus for SLO burn rate.
+      canaryAnalysis:
+        startingStep: 2
+        interval: 2m
+        count: 5
+        successCondition: result < 1
+        failureLimit: 1
+        metrics:
+          - name: api-error-rate
+            successCondition: result < 0.001   # < 0.1% error rate
+            failureLimit: 1
+            provider:
+              prometheus:
+                address: http://prometheus-operated.monitoring.svc:9090
+                query: |
+                  sum(rate(http_requests_total{service="portarium-control-plane",code=~"5.."}[2m]))
+                  /
+                  clamp_min(sum(rate(http_requests_total{service="portarium-control-plane"}[2m])), 0.0001)
+
+          - name: api-latency-p95
+            successCondition: result < 500   # < 500 ms
+            failureLimit: 1
+            provider:
+              prometheus:
+                address: http://prometheus-operated.monitoring.svc:9090
+                query: |
+                  histogram_quantile(
+                    0.95,
+                    sum by (le) (rate(http_request_duration_ms_bucket{service="portarium-control-plane"}[2m]))
+                  )
+
+      # On analysis failure or manual abort: immediately roll back to stable.
+      abortScaleDownDelaySeconds: 0
+
+---
+# Stable service (receives all traffic when rollout is healthy).
+apiVersion: v1
+kind: Service
+metadata:
+  name: portarium-control-plane-stable
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-control-plane
+    app.kubernetes.io/part-of: portarium
+spec:
+  selector:
+    app.kubernetes.io/name: portarium-control-plane
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http
+
+---
+# Canary service (receives canary weight % during rollout).
+apiVersion: v1
+kind: Service
+metadata:
+  name: portarium-control-plane-canary
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-control-plane
+    app.kubernetes.io/part-of: portarium
+spec:
+  selector:
+    app.kubernetes.io/name: portarium-control-plane
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http
