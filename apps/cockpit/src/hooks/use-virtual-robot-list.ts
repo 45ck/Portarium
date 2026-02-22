@@ -82,7 +82,9 @@ export function filterSortSlice(
 ): RobotLocation[] {
   // 1. Filter by status
   let result: RobotLocation[] =
-    statusFilter === 'All' ? Array.from(locations) : locations.filter((l) => l.status === statusFilter);
+    statusFilter === 'All'
+      ? Array.from(locations)
+      : locations.filter((l) => l.status === statusFilter);
 
   // 2. Filter by search term
   if (search.trim()) {
@@ -95,7 +97,8 @@ export function filterSortSlice(
   // 3. Sort
   result.sort((a, b) => {
     if (sortBy === 'battery') return a.batteryPct - b.batteryPct;
-    if (sortBy === 'status') return (STATUS_ORDER[a.status as string] ?? 99) - (STATUS_ORDER[b.status as string] ?? 99);
+    if (sortBy === 'status')
+      return (STATUS_ORDER[a.status as string] ?? 99) - (STATUS_ORDER[b.status as string] ?? 99);
     return a.name.localeCompare(b.name);
   });
 
@@ -118,7 +121,9 @@ export function useVirtualRobotList({
   // Full filtered + sorted list (for count)
   const filteredCount = useMemo(() => {
     let result: RobotLocation[] =
-      statusFilter === 'All' ? Array.from(locations) : locations.filter((l) => l.status === statusFilter);
+      statusFilter === 'All'
+        ? Array.from(locations)
+        : locations.filter((l) => l.status === statusFilter);
     if (search.trim()) {
       const term = search.toLowerCase();
       result = result.filter(
