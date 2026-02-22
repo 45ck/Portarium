@@ -192,10 +192,14 @@
     "@temporalio/client": "^1.14.1",
     "@temporalio/worker": "^1.14.1",
     "@temporalio/workflow": "^1.14.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "esbuild": "^0.27.3",
     "hono": "^4.12.1",
     "ioredis": "^5.9.3",
     "jose": "^6.1.3",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   }
 }
