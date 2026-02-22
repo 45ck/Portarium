@@ -1,0 +1,362 @@
+openapi: "3.1.0"
+info:
+  title: Portarium Control Plane — Retrieval & Graph Query Extension
+  description: |
+    Workspace retrieval and graph query endpoints for the Derived Artifacts campaign.
+    These endpoints extend the main control-plane API (`portarium-control-plane.v1.yaml`).
+    They are versioned independently and will be merged into the main spec once
+    the infrastructure adapters (beads 0772–0780) are implemented.
+  version: "0.1.0"
+  contact:
+    name: Portarium Core Team
+
+servers:
+  - url: /v1
+    description: Control plane v1
+
+paths:
+
+  /workspaces/{workspaceId}/retrieval/search:
+    post:
+      operationId: searchRetrievalIndex
+      summary: Semantic / hybrid search over workspace evidence and artefacts
+      description: |
+        Searches the derived-artefact index for entries semantically similar to the
+        query string. Supports `semantic`, `graph`, and `hybrid` retrieval strategies.
+        Results include provenance (source run, evidence entry) and a relevance score.
+      tags:
+        - Retrieval
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RetrievalQueryV1"
+      responses:
+        "200":
+          description: Search results with provenance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievalResultsV1"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /workspaces/{workspaceId}/graph/query:
+    post:
+      operationId: queryWorkflowGraph
+      summary: Graph query over workflow entity relationships
+      description: |
+        Executes a graph traversal query over the workflow entity graph.
+        Supports querying dependencies (what does this approval block?),
+        ancestry (what triggered this run?), and impact analysis.
+      tags:
+        - Graph
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GraphQueryV1"
+      responses:
+        "200":
+          description: Graph query results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GraphResultsV1"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /workspaces/{workspaceId}/derived-artifacts:
+    get:
+      operationId: listDerivedArtifacts
+      summary: List derived artefacts for a workspace
+      tags:
+        - Retrieval
+      parameters:
+        - $ref: "#/components/parameters/WorkspaceId"
+        - name: runId
+          in: query
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum: [embedding, graph-node, graph-edge, chunk-index]
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of derived artefacts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DerivedArtifactListV1"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+components:
+
+  parameters:
+    WorkspaceId:
+      name: workspaceId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+
+    RetrievalQueryV1:
+      type: object
+      required: [query, topK, strategy]
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Natural language query string
+        topK:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Number of results to return
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+          description: |
+            - `semantic`: vector similarity search
+            - `graph`: graph traversal from matched entities
+            - `hybrid`: weighted combination of semantic + graph
+        filters:
+          type: object
+          properties:
+            runId:
+              type: string
+            evidenceKind:
+              type: string
+            dateRange:
+              type: object
+              required: [from, to]
+              properties:
+                from:
+                  type: string
+                  format: date-time
+                to:
+                  type: string
+                  format: date-time
+
+    RetrievalResultsV1:
+      type: object
+      required: [items, query, strategy]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetrievalResultItemV1"
+        query:
+          type: string
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+        total:
+          type: integer
+
+    RetrievalResultItemV1:
+      type: object
+      required: [score, provenance]
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Relevance score (1 = most relevant)
+        snippet:
+          type: string
+          description: Extracted snippet from the source artefact
+        provenance:
+          type: object
+          required: [runId, evidenceId, workspaceId]
+          properties:
+            runId:
+              type: string
+            evidenceId:
+              type: string
+            workspaceId:
+              type: string
+            occurredAtIso:
+              type: string
+              format: date-time
+
+    GraphQueryV1:
+      type: object
+      required: [rootEntityId, entityKind, traversal]
+      properties:
+        rootEntityId:
+          type: string
+          description: Starting entity for the traversal (e.g. runId, workItemId)
+        entityKind:
+          type: string
+          enum: [run, work-item, approval, evidence-entry]
+        traversal:
+          type: string
+          enum: [dependencies, ancestry, impact, full]
+          description: |
+            - `dependencies`: what does this entity block?
+            - `ancestry`: what caused this entity?
+            - `impact`: what would be affected if this entity changed?
+            - `full`: all connected entities (bounded by maxDepth)
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+
+    GraphResultsV1:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, kind, label]
+            properties:
+              id:
+                type: string
+              kind:
+                type: string
+              label:
+                type: string
+              metadata:
+                type: object
+                additionalProperties: true
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to, relation]
+            properties:
+              from:
+                type: string
+              to:
+                type: string
+              relation:
+                type: string
+
+    DerivedArtifactListV1:
+      type: object
+      required: [items, meta]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [artifactId, kind, sourceRunId, createdAtIso]
+            properties:
+              artifactId:
+                type: string
+              kind:
+                type: string
+                enum: [embedding, graph-node, graph-edge, chunk-index]
+              sourceRunId:
+                type: string
+              sourceEvidenceId:
+                type: string
+              createdAtIso:
+                type: string
+                format: date-time
+              expiresAtIso:
+                type: string
+                format: date-time
+        meta:
+          type: object
+          required: [total]
+          properties:
+            total:
+              type: integer
+            nextCursor:
+              type: string
+
+    ProblemDetail:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        correlationId:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    Unauthorized:
+      description: Unauthenticated
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    Forbidden:
+      description: Unauthorised
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+    InternalError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
