@@ -110,9 +110,15 @@ export interface ResourceAuthorizationPort {
 export type OpenFgaResourceCheckConfig = Readonly<{
   apiUrl: string;
   storeId: string;
+  /** Pin the authorization model ID to prevent model-drift authorization changes. */
   authorizationModelId?: string;
   apiToken?: string;
   fetchImpl?: typeof fetch;
+  /**
+   * Injectable environment map (default: `process.env`).
+   * Injected in tests to control NODE_ENV without stubbing process.env.
+   */
+  env?: Record<string, string | undefined>;
 }>;
 
 type OpenFgaCheckResponse = Readonly<{ allowed?: boolean }>;
@@ -141,6 +147,18 @@ export class OpenFgaResourceAuthorization implements ResourceAuthorizationPort {
     this.#fetchImpl = config.fetchImpl ?? fetch;
 
     if (!config.authorizationModelId) {
+      const env = config.env ?? process.env;
+      const nodeEnv = (env['NODE_ENV'] ?? '').trim();
+      const isDevOrTest = nodeEnv === 'development' || nodeEnv === 'test';
+
+      if (!isDevOrTest) {
+        throw new Error(
+          `[portarium] FATAL: OpenFGA authorizationModelId is not pinned and NODE_ENV="${nodeEnv}". ` +
+            'Unpinned model IDs allow silent authorization changes on model updates. ' +
+            'Set PORTARIUM_OPENFGA_AUTHORIZATION_MODEL_ID to a specific model ID in production.',
+        );
+      }
+
       console.warn(
         '[OpenFGA] WARNING: authorizationModelId is not pinned. Authorization checks will use ' +
           'the latest model version. Set authorizationModelId to a specific model ID in production.',

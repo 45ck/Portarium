@@ -160,6 +160,90 @@ describe('OpenFgaResourceAuthorization', () => {
     const url = fetch.mock.calls[0]![0];
     expect(url).toBe('https://fga.example.com/stores/store-1/check');
   });
+
+  it('strips email domain from principalId in tuple key (PII guardrail)', async () => {
+    const fetch = mockFetch(true);
+    const ctx = toAppContext({
+      tenantId: 'ws-1',
+      principalId: 'alice@example.com',
+      roles: ['admin'],
+      correlationId: 'corr-1',
+    });
+    const authz = new OpenFgaResourceAuthorization({
+      ...baseConfig,
+      authorizationModelId: 'model-1',
+      fetchImpl: fetch,
+    });
+
+    await authz.isResourceAllowed(ctx, {
+      resourceType: 'agent',
+      resourceId: 'a-1',
+      relation: 'register',
+    });
+
+    const body = JSON.parse(fetch.mock.calls[0]![1].body);
+    expect(body.tuple_key.user).toBe('user:alice');
+  });
+
+  it('emits console.warn when authorizationModelId is not pinned in development', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaResourceAuthorization({
+      ...baseConfig,
+      fetchImpl: vi.fn<typeof fetch>(),
+      env: { NODE_ENV: 'development' },
+    });
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('authorizationModelId is not pinned'),
+    );
+    warn.mockRestore();
+  });
+
+  it('emits console.warn when authorizationModelId is not pinned in test', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaResourceAuthorization({
+      ...baseConfig,
+      fetchImpl: vi.fn<typeof fetch>(),
+      env: { NODE_ENV: 'test' },
+    });
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('authorizationModelId is not pinned'),
+    );
+    warn.mockRestore();
+  });
+
+  it('throws a fatal error when authorizationModelId is not pinned in production', () => {
+    expect(() => {
+      new OpenFgaResourceAuthorization({
+        ...baseConfig,
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: { NODE_ENV: 'production' },
+      });
+    }).toThrow(/FATAL.*authorizationModelId.*not pinned/i);
+  });
+
+  it('throws a fatal error when authorizationModelId is not pinned in staging', () => {
+    expect(() => {
+      new OpenFgaResourceAuthorization({
+        ...baseConfig,
+        fetchImpl: vi.fn<typeof fetch>(),
+        env: { NODE_ENV: 'staging' },
+      });
+    }).toThrow(/FATAL/i);
+  });
+
+  it('does not warn when authorizationModelId is pinned', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaResourceAuthorization({
+      ...baseConfig,
+      authorizationModelId: 'model-pinned',
+      fetchImpl: vi.fn<typeof fetch>(),
+    });
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
 
 describe('convenience helpers', () => {

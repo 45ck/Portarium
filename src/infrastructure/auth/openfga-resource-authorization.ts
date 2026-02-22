@@ -1,5 +1,6 @@
 import type { AppContext } from '../../application/common/context.js';
 import { isAllowedWorkspaceAction } from '../../application/iam/rbac/workspace-rbac.js';
+import { sanitizePrincipalForTuple } from './openfga-authorization.js';
 
 /**
  * Resource-scoped actions that extend beyond workspace-level RBAC.
@@ -25,9 +26,15 @@ export type ResourceCheckInput = Readonly<{
 export type OpenFgaResourceAuthorizationConfig = Readonly<{
   apiUrl: string;
   storeId: string;
+  /** Pin the authorization model ID to prevent model-drift authorization changes. */
   authorizationModelId?: string;
   apiToken?: string;
   fetchImpl?: typeof fetch;
+  /**
+   * Injectable environment map (default: `process.env`).
+   * Injected in tests to control NODE_ENV without stubbing process.env.
+   */
+  env?: Record<string, string | undefined>;
 }>;
 
 type OpenFgaCheckResponse = Readonly<{
@@ -94,6 +101,25 @@ export class OpenFgaResourceAuthorization {
     this.#authorizationModelId = config.authorizationModelId;
     this.#apiToken = config.apiToken;
     this.#fetchImpl = config.fetchImpl ?? fetch;
+
+    if (!config.authorizationModelId) {
+      const env = config.env ?? process.env;
+      const nodeEnv = (env['NODE_ENV'] ?? '').trim();
+      const isDevOrTest = nodeEnv === 'development' || nodeEnv === 'test';
+
+      if (!isDevOrTest) {
+        throw new Error(
+          `[portarium] FATAL: OpenFGA authorizationModelId is not pinned and NODE_ENV="${nodeEnv}". ` +
+            'Unpinned model IDs allow silent authorization changes on model updates. ' +
+            'Set PORTARIUM_OPENFGA_AUTHORIZATION_MODEL_ID to a specific model ID in production.',
+        );
+      }
+
+      console.warn(
+        '[OpenFGA] WARNING: authorizationModelId is not pinned. Authorization checks will use ' +
+          'the latest model version. Set authorizationModelId to a specific model ID in production.',
+      );
+    }
   }
 
   public async isAllowedOnResource(ctx: AppContext, input: ResourceCheckInput): Promise<boolean> {
@@ -105,7 +131,7 @@ export class OpenFgaResourceAuthorization {
     const endpoint = `${this.#apiUrl}/stores/${encodeURIComponent(this.#storeId)}/check`;
     const payload = {
       tuple_key: {
-        user: `user:${ctx.principalId}`,
+        user: `user:${sanitizePrincipalForTuple(ctx.principalId)}`,
         relation: toRelation(input.action),
         object: toObjectRef(input, ctx.tenantId.toString()),
       },
