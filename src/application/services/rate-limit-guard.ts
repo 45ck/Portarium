@@ -49,38 +49,36 @@ export async function checkRateLimit(
     };
   }
 
-  // Check each rule
+  // Check each rule — track the usage returned by the last check so we
+  // report the correct (potentially window-reset) usage without re-fetching
+  // stale data from the store.
+  let lastAllowedUsage = null;
   for (const rule of rules) {
     const result = await checkSingleRule(deps, scope, rule, nowIso);
     if (!result.allowed) {
       // First violated rule determines the response
       return result;
     }
+    lastAllowedUsage = result.usage;
   }
 
-  // All rules passed
-  const lastUsage = await deps.rateLimitStore.getUsage({
-    scope,
-    window: rules[0]!.window,
-  });
-
-  if (!lastUsage) {
-    const boundaries = computeWindowBoundaries({ nowIso, window: rules[0]!.window });
-    return {
-      allowed: true,
-      usage: {
-        scope,
-        window: rules[0]!.window,
-        requestCount: 0,
-        windowStartedAtIso: boundaries.windowStartedAtIso,
-        windowResetsAtIso: boundaries.windowResetsAtIso,
-      },
-    };
+  // All rules passed — use the usage captured from the last rule check so that
+  // a window reset is reflected in the returned usage (not overwritten by a
+  // re-fetch of the stale previous window from the store).
+  if (lastAllowedUsage) {
+    return { allowed: true, usage: lastAllowedUsage };
   }
 
+  const boundaries = computeWindowBoundaries({ nowIso, window: rules[0]!.window });
   return {
     allowed: true,
-    usage: lastUsage,
+    usage: {
+      scope,
+      window: rules[0]!.window,
+      requestCount: 0,
+      windowStartedAtIso: boundaries.windowStartedAtIso,
+      windowResetsAtIso: boundaries.windowResetsAtIso,
+    },
   };
 }
 
