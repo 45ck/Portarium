@@ -1,0 +1,47 @@
+# OTel Collector Helm values — dev environment
+#
+# Single replica, simple pipeline, debug exporter, insecure backends.
+# Backends are expected to be running in docker-compose or a shared dev cluster.
+
+replicaCount: 1
+
+configMode: simple
+
+collector:
+  debugVerbosity: 'basic'
+  logLevel: 'debug'
+
+backends:
+  tempo:
+    endpoint: 'tempo:4317'
+    tlsInsecure: 'true'
+    caFile: ''
+    authTokenSecretKey: ''
+  loki:
+    endpoint: 'http://loki:3100/loki/api/v1/push'
+    tlsInsecure: 'true'
+    caFile: ''
+    authTokenSecretKey: ''
+
+secret:
+  create: true
+  tempoEndpoint: 'tempo:4317'
+  tempoAuthToken: ''
+  promRemoteWriteUrl: ''
+  promAuthToken: ''
+  lokiEndpoint: 'http://loki:3100/loki/api/v1/push'
+  lokiAuthToken: ''
+
+tls:
+  secretName: ''
+  optional: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+topologySpreadConstraints: []

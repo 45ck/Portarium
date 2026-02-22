@@ -1,0 +1,136 @@
+# OTel Collector Helm values — defaults (production baseline)
+#
+# Bead: bead-0390
+
+replicaCount: 2
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: '0.119.0'
+  pullPolicy: IfNotPresent
+
+nameOverride: ''
+fullnameOverride: ''
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  ports:
+    otlpGrpc: 4317
+    otlpHttp: 4318
+    selfMetrics: 8888
+    health: 13133
+    zpages: 55679
+
+# ---------------------------------------------------------------------------
+# Collector pipeline configuration mode
+#
+# "full"    — production pipeline with tail-sampling, spanmetrics, PII redaction,
+#             and remote-write exporters (uses infra/otel/collector-config.yaml).
+# "simple"  — minimal pipeline suitable for dev/local (no tail sampling, debug
+#             exporter only, Loki via OTLP HTTP).
+# ---------------------------------------------------------------------------
+configMode: full
+
+# ---------------------------------------------------------------------------
+# Backend endpoints (production — injected from secret by default)
+# ---------------------------------------------------------------------------
+backends:
+  tempo:
+    endpoint: '' # e.g. tempo.monitoring.svc:4317
+    tlsInsecure: 'false'
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+    authTokenSecretKey: TEMPO_AUTH_TOKEN
+  prometheus:
+    remoteWriteUrl: '' # e.g. https://mimir.monitoring.svc/api/v1/push
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+    authTokenSecretKey: PROM_AUTH_TOKEN
+  loki:
+    endpoint: '' # e.g. http://loki:3100/loki/api/v1/push
+    tlsInsecure: 'false'
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+    authTokenSecretKey: LOKI_AUTH_TOKEN
+
+# ---------------------------------------------------------------------------
+# Secret: otel-backends  (must exist in the namespace; chart won't create it)
+# Set createSecret: true + provide values only for non-production environments.
+# ---------------------------------------------------------------------------
+secret:
+  name: otel-backends
+  create: false
+  tempoEndpoint: ''
+  tempoAuthToken: ''
+  promRemoteWriteUrl: ''
+  promAuthToken: ''
+  lokiEndpoint: ''
+  lokiAuthToken: ''
+
+# ---------------------------------------------------------------------------
+# Verbosity (overridden per environment)
+# ---------------------------------------------------------------------------
+collector:
+  debugVerbosity: 'none' # none | basic | detailed
+  logLevel: 'info' # debug | info | warn | error
+
+# ---------------------------------------------------------------------------
+# TLS — mount an existing Secret with a CA cert for backend mTLS
+# ---------------------------------------------------------------------------
+tls:
+  secretName: otel-tls-ca
+  optional: true
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+# ---------------------------------------------------------------------------
+# Pod security
+# ---------------------------------------------------------------------------
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 10001
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+# ---------------------------------------------------------------------------
+# Pod annotations (enables Prometheus scraping of collector self-metrics)
+# ---------------------------------------------------------------------------
+podAnnotations:
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '8888'
+  prometheus.io/path: '/metrics'
+
+# ---------------------------------------------------------------------------
+# Topology spread — spread replicas across nodes
+# ---------------------------------------------------------------------------
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: DoNotSchedule
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ---------------------------------------------------------------------------
+# ServiceAccount
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ''
+  annotations: {}

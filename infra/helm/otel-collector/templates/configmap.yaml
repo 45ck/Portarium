@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "otel-collector.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- if eq .Values.configMode "full" }}
+    # Full production pipeline — tail sampling, spanmetrics, PII redaction.
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+        path: /health
+        check_collector_pipeline:
+          enabled: true
+          interval: 5m
+          exporter_failure_threshold: 5
+      zpages:
+        endpoint: 0.0.0.0:55679
+      pprof:
+        endpoint: 0.0.0.0:1777
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size_mib: 32
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins:
+                - "https://*.portarium.io"
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: otelcol
+              scrape_interval: 60s
+              static_configs:
+                - targets: ["localhost:8888"]
+
+    connectors:
+      spanmetrics:
+        histogram:
+          explicit:
+            buckets: [5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s]
+        dimensions:
+          - name: service.name
+          - name: service.namespace
+          - name: http.method
+          - name: http.status_code
+          - name: rpc.grpc.status_code
+        exemplars:
+          enabled: true
+        namespace: portarium_trace
+      servicegraph:
+        metrics_exporter: prometheusremotewrite
+        latency_histogram_buckets: [10ms, 100ms, 250ms, 500ms, 1s, 5s]
+        dimensions:
+          - service.namespace
+        store:
+          ttl: 2s
+          max_items: 1000
+
+    exporters:
+      otlp/tempo:
+        endpoint: ${env:TEMPO_ENDPOINT}
+        tls:
+          insecure: ${env:TEMPO_TLS_INSECURE}
+          ca_file: ${env:TEMPO_CA_FILE}
+        headers:
+          Authorization: "Bearer ${env:TEMPO_AUTH_TOKEN}"
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 4
+          queue_size: 1000
+      prometheusremotewrite:
+        endpoint: ${env:PROM_REMOTE_WRITE_URL}
+        tls:
+          insecure: false
+          ca_file: ${env:PROM_CA_FILE}
+        headers:
+          Authorization: "Bearer ${env:PROM_AUTH_TOKEN}"
+          X-Scope-OrgID: portarium
+        add_metric_suffixes: true
+        send_metadata: true
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 120s
+      loki:
+        endpoint: ${env:LOKI_ENDPOINT}
+        tls:
+          insecure: ${env:LOKI_TLS_INSECURE}
+        default_labels_enabled:
+          exporter: false
+          job: true
+          instance: false
+          level: true
+        headers:
+          X-Scope-OrgID: portarium
+          Authorization: "Bearer ${env:LOKI_AUTH_TOKEN}"
+        retry_on_failure:
+          enabled: true
+      debug:
+        verbosity: ${env:OTEL_DEBUG_VERBOSITY}
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_percentage: 75
+        spike_limit_percentage: 25
+      batch/traces:
+        timeout: 1s
+        send_batch_size: 512
+        send_batch_max_size: 1024
+      batch/metrics:
+        timeout: 15s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+      batch/logs:
+        timeout: 5s
+        send_batch_size: 256
+        send_batch_max_size: 512
+      attributes/redact:
+        actions:
+          - key: tenant.id
+            action: hash
+          - key: user.email
+            action: delete
+          - key: user.ip
+            action: delete
+          - key: enduser.id
+            action: delete
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: db.statement
+            action: delete
+          - key: db.parameters
+            action: delete
+      resourcedetection:
+        detectors: [env, docker, kubernetes]
+        timeout: 5s
+        override: false
+      resource/namespace:
+        attributes:
+          - key: service.namespace
+            value: portarium
+            action: upsert
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 100000
+        expected_new_traces_per_sec: 1000
+        policies:
+          - name: errors-policy
+            type: status_code
+            status_code: { status_codes: [ERROR] }
+          - name: slow-traces-policy
+            type: latency
+            latency: { threshold_ms: 1000 }
+          - name: base-rate-policy
+            type: probabilistic
+            probabilistic: { sampling_percentage: 5 }
+      metricstransform:
+        transforms:
+          - include: "^portarium_"
+            match_type: regexp
+            action: update
+            operations:
+              - action: add_label
+                new_label: source
+                new_value: otelcol
+      transform/add_trace_id_to_logs:
+        log_statements:
+          - context: log
+            statements:
+              - set(attributes["trace_id"], trace_id.string) where trace_id != SpanID("0000000000000000")
+              - set(attributes["span_id"], span_id.string) where span_id != SpanID("00000000")
+
+    service:
+      telemetry:
+        logs:
+          level: ${env:OTEL_LOG_LEVEL}
+          encoding: json
+        metrics:
+          level: detailed
+          address: 0.0.0.0:8888
+      extensions: [health_check, zpages, pprof]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors:
+            - memory_limiter
+            - resourcedetection
+            - resource/namespace
+            - attributes/redact
+            - tail_sampling
+            - batch/traces
+          exporters: [otlp/tempo, spanmetrics, servicegraph, debug]
+        metrics:
+          receivers: [otlp, prometheus, spanmetrics, servicegraph]
+          processors:
+            - memory_limiter
+            - resourcedetection
+            - resource/namespace
+            - metricstransform
+            - batch/metrics
+          exporters: [prometheusremotewrite, debug]
+        logs:
+          receivers: [otlp]
+          processors:
+            - memory_limiter
+            - resourcedetection
+            - resource/namespace
+            - attributes/redact
+            - transform/add_trace_id_to_logs
+            - batch/logs
+          exporters: [loki, debug]
+    {{- else }}
+    # Simple pipeline — suitable for dev/local (no tail sampling, debug logging).
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+        path: /health
+      zpages:
+        endpoint: 0.0.0.0:55679
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    exporters:
+      otlp/tempo:
+        endpoint: ${env:TEMPO_ENDPOINT}
+        tls:
+          insecure: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        tls:
+          insecure: true
+      debug:
+        verbosity: ${env:OTEL_DEBUG_VERBOSITY}
+
+    processors:
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 256
+        spike_limit_mib: 64
+      batch:
+        timeout: 1s
+
+    service:
+      telemetry:
+        logs:
+          level: ${env:OTEL_LOG_LEVEL}
+          encoding: json
+        metrics:
+          level: basic
+          address: 0.0.0.0:8888
+      extensions: [health_check, zpages]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlp/tempo, debug]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp/loki, debug]
+    {{- end }}

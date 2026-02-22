@@ -1,0 +1,37 @@
+# OTel Collector Helm values — production environment
+#
+# 2 replicas HA, full pipeline with tail sampling + PII redaction + mTLS.
+# All backend endpoints and auth tokens must be provided via the otel-backends Secret.
+
+replicaCount: 2
+
+configMode: full
+
+collector:
+  debugVerbosity: 'none'
+  logLevel: 'info'
+
+backends:
+  tempo:
+    tlsInsecure: 'false'
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+  prometheus:
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+  loki:
+    tlsInsecure: 'false'
+    caFile: /etc/otelcol-contrib/tls/ca.crt
+
+secret:
+  create: false # Secret must be pre-created by platform (Vault/ESO)
+
+tls:
+  secretName: otel-tls-ca
+  optional: false
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi

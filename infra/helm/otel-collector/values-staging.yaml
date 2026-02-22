@@ -1,0 +1,32 @@
+# OTel Collector Helm values — staging environment
+#
+# Single replica, full pipeline, TLS optional, slightly more verbose logging.
+
+replicaCount: 1
+
+configMode: full
+
+collector:
+  debugVerbosity: 'basic'
+  logLevel: 'info'
+
+backends:
+  tempo:
+    tlsInsecure: 'true'
+    caFile: ''
+  loki:
+    tlsInsecure: 'true'
+    caFile: ''
+
+tls:
+  optional: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 750m
+    memory: 384Mi
+
+topologySpreadConstraints: []

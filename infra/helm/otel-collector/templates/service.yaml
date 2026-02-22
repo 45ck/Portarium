@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "otel-collector.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: {{ .Values.service.ports.otlpGrpc }}
+      targetPort: otlp-grpc
+    - name: otlp-http
+      protocol: TCP
+      port: {{ .Values.service.ports.otlpHttp }}
+      targetPort: otlp-http
+    - name: self-metrics
+      protocol: TCP
+      port: {{ .Values.service.ports.selfMetrics }}
+      targetPort: self-metrics
+    - name: health
+      protocol: TCP
+      port: {{ .Values.service.ports.health }}
+      targetPort: health
+    - name: zpages
+      protocol: TCP
+      port: {{ .Values.service.ports.zpages }}
+      targetPort: zpages

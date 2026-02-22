@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-collector.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "otel-collector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "otel-collector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "otel-collector.labels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "otel-collector.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: otel-collector
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ['--config=/etc/otelcol-contrib/config.yaml']
+          ports:
+            - name: otlp-grpc
+              containerPort: {{ .Values.service.ports.otlpGrpc }}
+              protocol: TCP
+            - name: otlp-http
+              containerPort: {{ .Values.service.ports.otlpHttp }}
+              protocol: TCP
+            - name: self-metrics
+              containerPort: {{ .Values.service.ports.selfMetrics }}
+              protocol: TCP
+            - name: health
+              containerPort: {{ .Values.service.ports.health }}
+              protocol: TCP
+            - name: zpages
+              containerPort: {{ .Values.service.ports.zpages }}
+              protocol: TCP
+          env:
+            - name: TEMPO_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: TEMPO_ENDPOINT
+                  optional: true
+            - name: TEMPO_TLS_INSECURE
+              value: {{ .Values.backends.tempo.tlsInsecure | quote }}
+            - name: TEMPO_CA_FILE
+              value: {{ .Values.backends.tempo.caFile | quote }}
+            - name: TEMPO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: TEMPO_AUTH_TOKEN
+                  optional: true
+            - name: PROM_REMOTE_WRITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: PROM_REMOTE_WRITE_URL
+                  optional: true
+            - name: PROM_CA_FILE
+              value: {{ .Values.backends.prometheus.caFile | quote }}
+            - name: PROM_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: PROM_AUTH_TOKEN
+                  optional: true
+            - name: LOKI_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: LOKI_ENDPOINT
+                  optional: true
+            - name: LOKI_TLS_INSECURE
+              value: {{ .Values.backends.loki.tlsInsecure | quote }}
+            - name: LOKI_CA_FILE
+              value: {{ .Values.backends.loki.caFile | quote }}
+            - name: LOKI_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "otel-collector.secretName" . }}
+                  key: LOKI_AUTH_TOKEN
+                  optional: true
+            - name: OTEL_DEBUG_VERBOSITY
+              value: {{ .Values.collector.debugVerbosity | quote }}
+            - name: OTEL_LOG_LEVEL
+              value: {{ .Values.collector.logLevel | quote }}
+          volumeMounts:
+            - name: collector-config
+              mountPath: /etc/otelcol-contrib
+              readOnly: true
+            {{- if .Values.tls.secretName }}
+            - name: tls
+              mountPath: /etc/otelcol-contrib/tls
+              readOnly: true
+            {{- end }}
+            - name: tmp
+              mountPath: /tmp
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: health
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: health
+            failureThreshold: 20
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+      volumes:
+        - name: collector-config
+          configMap:
+            name: {{ include "otel-collector.fullname" . }}-config
+        {{- if .Values.tls.secretName }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+            optional: {{ .Values.tls.optional }}
+        {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range . }}
+        - maxSkew: {{ .maxSkew }}
+          topologyKey: {{ .topologyKey }}
+          whenUnsatisfiable: {{ .whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              {{- include "otel-collector.selectorLabels" $ | nindent 14 }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
