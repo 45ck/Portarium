@@ -3,7 +3,7 @@
 // Positions are around the Seattle area for demo purposes.
 // ---------------------------------------------------------------------------
 
-import type { RobotStatus, RobotClass } from '@/types/robotics';
+import type { RobotStatus, RobotClass } from '../../types/robotics.js';
 
 export interface RobotLocation {
   robotId: string;
