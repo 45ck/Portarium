@@ -3,3 +3,4 @@ export * from './sod-eligibility-v1.js';
 export * from './policy-v1.js';
 export * from './policy-rule-v1.js';
 export * from './execution-tier-policy-v1.js';
+export * from './policy-evaluation-pipeline-v1.js';
