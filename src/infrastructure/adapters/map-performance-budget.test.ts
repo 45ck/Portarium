@@ -47,8 +47,9 @@ function makeFleet(size: number): RobotLocation[] {
 const FLEET_500 = makeFleet(500);
 const FLEET_100 = makeFleet(100);
 
-/** Measure elapsed ms for a synchronous function. */
+/** Measure elapsed ms for a synchronous function. Runs fn once to warm the JIT, then times it. */
 function timeMs(fn: () => void): number {
+  fn(); // warm-up — lets V8 JIT-compile before we measure
   const start = performance.now();
   fn();
   return performance.now() - start;
