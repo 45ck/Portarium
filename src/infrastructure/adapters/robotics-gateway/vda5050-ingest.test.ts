@@ -108,8 +108,12 @@ describe('parseVda5050StateMessage', () => {
 describe('parseVda5050ConnectionMessage', () => {
   it('parses an ONLINE connection message', () => {
     const msg = {
-      headerId: 1, timestamp: '2026-02-22T14:00:00.000Z', version: '2.0.0',
-      manufacturer: 'KUKA', serialNumber: 'AGV-001', connectionState: 'ONLINE',
+      headerId: 1,
+      timestamp: '2026-02-22T14:00:00.000Z',
+      version: '2.0.0',
+      manufacturer: 'KUKA',
+      serialNumber: 'AGV-001',
+      connectionState: 'ONLINE',
     };
     const result = parseVda5050ConnectionMessage(msg);
     expect(result.connectionState).toBe('ONLINE');
@@ -118,17 +122,29 @@ describe('parseVda5050ConnectionMessage', () => {
 
   it('parses OFFLINE and CONNECTIONBROKEN states', () => {
     const base = {
-      headerId: 1, timestamp: '2026-02-22T14:00:00.000Z', version: '2.0.0',
-      manufacturer: 'M', serialNumber: 'S',
+      headerId: 1,
+      timestamp: '2026-02-22T14:00:00.000Z',
+      version: '2.0.0',
+      manufacturer: 'M',
+      serialNumber: 'S',
     };
-    expect(parseVda5050ConnectionMessage({ ...base, connectionState: 'OFFLINE' }).connectionState).toBe('OFFLINE');
-    expect(parseVda5050ConnectionMessage({ ...base, connectionState: 'CONNECTIONBROKEN' }).connectionState).toBe('CONNECTIONBROKEN');
+    expect(
+      parseVda5050ConnectionMessage({ ...base, connectionState: 'OFFLINE' }).connectionState,
+    ).toBe('OFFLINE');
+    expect(
+      parseVda5050ConnectionMessage({ ...base, connectionState: 'CONNECTIONBROKEN' })
+        .connectionState,
+    ).toBe('CONNECTIONBROKEN');
   });
 
   it('throws Vda5050ParseError for invalid connectionState', () => {
     const msg = {
-      headerId: 1, timestamp: '', version: '2.0.0',
-      manufacturer: 'KUKA', serialNumber: 'S', connectionState: 'UNKNOWN_STATE',
+      headerId: 1,
+      timestamp: '',
+      version: '2.0.0',
+      manufacturer: 'KUKA',
+      serialNumber: 'S',
+      connectionState: 'UNKNOWN_STATE',
     };
     expect(() => parseVda5050ConnectionMessage(msg)).toThrow(Vda5050ParseError);
   });

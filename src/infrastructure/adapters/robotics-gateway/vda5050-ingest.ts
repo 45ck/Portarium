@@ -25,7 +25,13 @@ import { FleetId, RobotId } from '../../../domain/primitives/index.js';
 export type Vda5050ConnectionState = 'ONLINE' | 'OFFLINE' | 'CONNECTIONBROKEN';
 
 /** VDA 5050 action status. */
-export type Vda5050ActionStatus = 'WAITING' | 'INITIALIZING' | 'RUNNING' | 'PAUSED' | 'FINISHED' | 'FAILED';
+export type Vda5050ActionStatus =
+  | 'WAITING'
+  | 'INITIALIZING'
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'FINISHED'
+  | 'FAILED';
 
 /** VDA 5050 action result (v2.0 actionState). */
 export interface Vda5050ActionState {
@@ -97,7 +103,9 @@ export interface Vda5050ConnectionMessage {
 
 export class Vda5050ParseError extends Error {
   public override readonly name = 'Vda5050ParseError';
-  public constructor(message: string) { super(message); }
+  public constructor(message: string) {
+    super(message);
+  }
 }
 
 // ── Utility ───────────────────────────────────────────────────────────────────
@@ -135,12 +143,12 @@ export function parseVda5050StateMessage(payload: unknown): Vda5050StateMessage 
 
   const battery = readRecord(obj['batteryState'], 'batteryState');
   if (typeof battery['batteryCharge'] !== 'number') {
-    throw new Vda5050ParseError("VDA5050: batteryState.batteryCharge must be a number");
+    throw new Vda5050ParseError('VDA5050: batteryState.batteryCharge must be a number');
   }
 
   const safety = readRecord(obj['safetyState'], 'safetyState');
   if (typeof safety['eStopActivated'] !== 'boolean') {
-    throw new Vda5050ParseError("VDA5050: safetyState.eStopActivated must be a boolean");
+    throw new Vda5050ParseError('VDA5050: safetyState.eStopActivated must be a boolean');
   }
 
   return obj as unknown as Vda5050StateMessage;
@@ -169,13 +177,14 @@ export function parseVda5050ConnectionMessage(payload: unknown): Vda5050Connecti
 /**
  * Map a VDA 5050 connectionState to Portarium RobotConnectivityState.
  */
-export function mapVda5050ConnectionState(
-  state: Vda5050ConnectionState,
-): RobotConnectivityState {
+export function mapVda5050ConnectionState(state: Vda5050ConnectionState): RobotConnectivityState {
   switch (state) {
-    case 'ONLINE': return 'Online';
-    case 'OFFLINE': return 'Offline';
-    case 'CONNECTIONBROKEN': return 'Degraded';
+    case 'ONLINE':
+      return 'Online';
+    case 'OFFLINE':
+      return 'Offline';
+    case 'CONNECTIONBROKEN':
+      return 'Degraded';
   }
 }
 
@@ -186,11 +195,16 @@ export function mapVda5050ConnectionState(
 export function mapVda5050ActionStatus(status: Vda5050ActionStatus): MissionStatus {
   switch (status) {
     case 'WAITING':
-    case 'INITIALIZING': return 'Dispatched';
-    case 'RUNNING': return 'Executing';
-    case 'PAUSED': return 'WaitingPreemption';
-    case 'FINISHED': return 'Succeeded';
-    case 'FAILED': return 'Failed';
+    case 'INITIALIZING':
+      return 'Dispatched';
+    case 'RUNNING':
+      return 'Executing';
+    case 'PAUSED':
+      return 'WaitingPreemption';
+    case 'FINISHED':
+      return 'Succeeded';
+    case 'FAILED':
+      return 'Failed';
   }
 }
 
@@ -230,7 +244,10 @@ export function parseVda5050Topic(topic: string): Vda5050TopicParts {
  * Derive a stable Portarium RobotId from a VDA 5050 manufacturer + serialNumber.
  * Format: vda5050/{manufacturer}/{serialNumber}
  */
-export function vda5050RobotId(manufacturer: string, serialNumber: string): ReturnType<typeof RobotId> {
+export function vda5050RobotId(
+  manufacturer: string,
+  serialNumber: string,
+): ReturnType<typeof RobotId> {
   return RobotId(`vda5050/${manufacturer}/${serialNumber}`);
 }
 

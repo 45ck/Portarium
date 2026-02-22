@@ -30,12 +30,7 @@ import type {
 } from '../../../application/ports/mission-port.js';
 import type { MissionActionRequestV1 } from '../../../domain/robots/mission-action-semantics-v1.js';
 import type { MissionStatus } from '../../../domain/robots/mission-v1.js';
-import {
-  CorrelationId,
-  GatewayId,
-  MissionId,
-  RobotId,
-} from '../../../domain/primitives/index.js';
+import { CorrelationId, GatewayId, MissionId, RobotId } from '../../../domain/primitives/index.js';
 
 // ── In-process MissionPort stub ───────────────────────────────────────────────
 
@@ -57,7 +52,9 @@ class LatencyTestMissionPort implements MissionPort {
   #artificialDelayMs = 0;
 
   /** Inject: pause every operation by this many ms (simulate gateway RTT). */
-  setArtificialDelay(ms: number) { this.#artificialDelayMs = ms; }
+  setArtificialDelay(ms: number) {
+    this.#artificialDelayMs = ms;
+  }
 
   /** Seed: directly set a mission into a given state. */
   seed(missionId: string, status: MissionStatus) {

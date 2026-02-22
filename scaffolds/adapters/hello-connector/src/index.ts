@@ -128,7 +128,10 @@ export async function invokeAdapter(request: AdapterInvocation): Promise<Adapter
       return { ok: true, output: { item: toCanonicalTask(item) } };
     }
 
-    return { ok: false, error: `Unknown capability/operation: ${capability}/${String(input['operation'])}` };
+    return {
+      ok: false,
+      error: `Unknown capability/operation: ${capability}/${String(input['operation'])}`,
+    };
   } catch (err) {
     return { ok: false, error: String(err) };
   }

@@ -774,6 +774,19 @@ xcodeproj
 pbxproj
 gradlew
 
+# Robotics consortium / protocol names
+massrobotics
+MassRobotics
+VDMA
+uagv
+
+# VDA 5050 (AGV/AMR messaging protocol) status codes
+CONNECTIONBROKEN
+TEACHIN
+
+# Short abbreviations in test fixtures
+conv
+
 # Test fixture random tokens (push-notification and mobile-smoke tests)
 Rdre
 ALRFX

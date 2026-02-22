@@ -104,36 +104,60 @@ describe('parseMassRoboticsIdentityMessage', () => {
   });
 
   it('throws when manufacturer is missing', () => {
-    expect(() =>
-      parseMassRoboticsIdentityMessage({ robotId: 'id', model: 'X' }),
-    ).toThrow(MassRoboticsParseError);
+    expect(() => parseMassRoboticsIdentityMessage({ robotId: 'id', model: 'X' })).toThrow(
+      MassRoboticsParseError,
+    );
   });
 
   it('throws when model is missing', () => {
-    expect(() =>
-      parseMassRoboticsIdentityMessage({ robotId: 'id', manufacturer: 'M' }),
-    ).toThrow(MassRoboticsParseError);
+    expect(() => parseMassRoboticsIdentityMessage({ robotId: 'id', manufacturer: 'M' })).toThrow(
+      MassRoboticsParseError,
+    );
   });
 });
 
 // ── Domain mapping ────────────────────────────────────────────────────────────
 
 describe('mapMassRoboticsOperationalState', () => {
-  it('maps IDLE → Online', () => { expect(mapMassRoboticsOperationalState('IDLE')).toBe('Online'); });
-  it('maps MOVING → Online', () => { expect(mapMassRoboticsOperationalState('MOVING')).toBe('Online'); });
-  it('maps CHARGING → Online', () => { expect(mapMassRoboticsOperationalState('CHARGING')).toBe('Online'); });
-  it('maps PAUSED → Online', () => { expect(mapMassRoboticsOperationalState('PAUSED')).toBe('Online'); });
-  it('maps ERROR → Degraded', () => { expect(mapMassRoboticsOperationalState('ERROR')).toBe('Degraded'); });
-  it('maps OFFLINE → Offline', () => { expect(mapMassRoboticsOperationalState('OFFLINE')).toBe('Offline'); });
-  it('maps UNKNOWN → Unknown', () => { expect(mapMassRoboticsOperationalState('UNKNOWN')).toBe('Unknown'); });
+  it('maps IDLE → Online', () => {
+    expect(mapMassRoboticsOperationalState('IDLE')).toBe('Online');
+  });
+  it('maps MOVING → Online', () => {
+    expect(mapMassRoboticsOperationalState('MOVING')).toBe('Online');
+  });
+  it('maps CHARGING → Online', () => {
+    expect(mapMassRoboticsOperationalState('CHARGING')).toBe('Online');
+  });
+  it('maps PAUSED → Online', () => {
+    expect(mapMassRoboticsOperationalState('PAUSED')).toBe('Online');
+  });
+  it('maps ERROR → Degraded', () => {
+    expect(mapMassRoboticsOperationalState('ERROR')).toBe('Degraded');
+  });
+  it('maps OFFLINE → Offline', () => {
+    expect(mapMassRoboticsOperationalState('OFFLINE')).toBe('Offline');
+  });
+  it('maps UNKNOWN → Unknown', () => {
+    expect(mapMassRoboticsOperationalState('UNKNOWN')).toBe('Unknown');
+  });
 });
 
 describe('mapMassRoboticsTaskState', () => {
-  it('maps ASSIGNED → Dispatched', () => { expect(mapMassRoboticsTaskState('ASSIGNED')).toBe('Dispatched'); });
-  it('maps EXECUTING → Executing', () => { expect(mapMassRoboticsTaskState('EXECUTING')).toBe('Executing'); });
-  it('maps COMPLETED → Succeeded', () => { expect(mapMassRoboticsTaskState('COMPLETED')).toBe('Succeeded'); });
-  it('maps FAILED → Failed', () => { expect(mapMassRoboticsTaskState('FAILED')).toBe('Failed'); });
-  it('maps CANCELLED → Cancelled', () => { expect(mapMassRoboticsTaskState('CANCELLED')).toBe('Cancelled'); });
+  it('maps ASSIGNED → Dispatched', () => {
+    expect(mapMassRoboticsTaskState('ASSIGNED')).toBe('Dispatched');
+  });
+  it('maps EXECUTING → Executing', () => {
+    expect(mapMassRoboticsTaskState('EXECUTING')).toBe('Executing');
+  });
+  it('maps COMPLETED → Succeeded', () => {
+    expect(mapMassRoboticsTaskState('COMPLETED')).toBe('Succeeded');
+  });
+  it('maps FAILED → Failed', () => {
+    expect(mapMassRoboticsTaskState('FAILED')).toBe('Failed');
+  });
+  it('maps CANCELLED → Cancelled', () => {
+    expect(mapMassRoboticsTaskState('CANCELLED')).toBe('Cancelled');
+  });
   it('returns null when taskState is undefined', () => {
     expect(mapMassRoboticsTaskState(undefined)).toBeNull();
   });
