@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "adapterName": "hello-connector",
+  "providerSlug": "hello",
+  "portFamily": "ProjectsWorkMgmt",
+  "capabilities": [
+    { "capability": "task:read", "operation": "listItems" },
+    { "capability": "task:read", "operation": "getItem" },
+    { "capability": "task:write", "operation": "createItem" },
+    { "capability": "task:write", "operation": "updateItem" }
+  ],
+  "executionPolicy": {
+    "tenantIsolationMode": "PerTenantWorker",
+    "egressAllowlist": ["https://api.hello-example.com"],
+    "credentialScope": "capabilityMatrix",
+    "sandboxVerified": false,
+    "sandboxAvailable": true
+  }
+}

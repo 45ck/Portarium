@@ -1,0 +1,16 @@
+{
+  "name": "@portarium-examples/hello-connector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Portarium connector scaffold",
+  "type": "module",
+  "scripts": {
+    "start": "tsx connector.ts",
+    "test": "vitest run connector.test.ts"
+  },
+  "devDependencies": {
+    "tsx": "*",
+    "vitest": "*",
+    "typescript": "*"
+  }
+}
