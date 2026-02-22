@@ -288,6 +288,7 @@ function violationToDecision(violation: SodViolationV1): PolicyDecisionV1 {
     case 'HazardousZoneNoSelfApprovalViolation':
     case 'SafetyClassifiedZoneDualApprovalViolation':
     case 'RemoteEstopRequesterSeparationViolation':
+    case 'SpecialistApprovalViolation':
       return 'RequireApproval';
   }
 }
