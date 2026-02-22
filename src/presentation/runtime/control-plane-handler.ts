@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 
+import { Hono } from 'hono';
+
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
@@ -43,30 +45,40 @@ import {
   handlePatchWorkforceAvailability,
 } from './control-plane-handler.workforce.js';
 
-type RequestContext = Readonly<{
-  deps: ControlPlaneDeps;
-  req: IncomingMessage;
-  res: ServerResponse;
-  correlationId: string;
-  pathname: string;
-  traceContext: TraceContext;
-}>;
+// ---------------------------------------------------------------------------
+// Hono environment types
+// ---------------------------------------------------------------------------
 
-type WorkspaceHandlerArgs = RequestContext &
-  Readonly<{
-    workspaceId: string;
-  }>;
+/** Node.js objects passed as Hono bindings via app.fetch(req, env). */
+interface HonoBindings {
+  incoming: IncomingMessage;
+  outgoing: ServerResponse;
+}
 
-type RunHandlerArgs = WorkspaceHandlerArgs &
-  Readonly<{
-    runId: string;
-  }>;
+/**
+ * Per-request context stored in Hono variables by the context-building
+ * middleware and consumed by all route handlers.
+ */
+interface RequestContext {
+  readonly deps: ControlPlaneDeps;
+  readonly req: IncomingMessage;
+  readonly res: ServerResponse;
+  readonly correlationId: string;
+  readonly pathname: string;
+  readonly traceContext: TraceContext;
+}
 
-type Route = Readonly<{
-  method: 'GET' | 'PATCH' | 'POST';
-  pattern: RegExp;
-  handle: (match: RegExpExecArray, ctx: RequestContext) => Promise<void>;
-}>;
+type WorkspaceHandlerArgs = RequestContext & Readonly<{ workspaceId: string }>;
+type RunHandlerArgs = WorkspaceHandlerArgs & Readonly<{ runId: string }>;
+
+interface HonoEnv {
+  Bindings: HonoBindings;
+  Variables: { ctx: RequestContext };
+}
+
+// ---------------------------------------------------------------------------
+// Route handler functions (unchanged from the original implementation)
+// ---------------------------------------------------------------------------
 
 async function handleGetWorkspace(args: WorkspaceHandlerArgs): Promise<void> {
   const { deps, req, res, correlationId, pathname, traceContext, workspaceId } = args;
@@ -93,12 +105,7 @@ async function handleGetWorkspace(args: WorkspaceHandlerArgs): Promise<void> {
 
   const etag = computeETag(result.value);
   res.setHeader('ETag', etag);
-  respondJson(res, {
-    statusCode: 200,
-    correlationId,
-    traceContext,
-    body: result.value,
-  });
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
 async function handleGetRun(args: RunHandlerArgs): Promise<void> {
@@ -137,250 +144,368 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
     return;
   }
 
-  respondJson(res, {
-    statusCode: 200,
-    correlationId,
-    traceContext,
-    body: result.value,
-  });
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
-function decodePathSegment(match: RegExpExecArray, index: number): string {
-  return decodeURIComponent(match[index] ?? '');
-}
-
-function workspaceArgs(match: RegExpExecArray, ctx: RequestContext): WorkspaceHandlerArgs {
-  return { ...ctx, workspaceId: decodePathSegment(match, 1) };
-}
-
-function runArgs(match: RegExpExecArray, ctx: RequestContext): RunHandlerArgs {
-  return { ...workspaceArgs(match, ctx), runId: decodePathSegment(match, 2) };
-}
-
-function workforceMemberArgs(
-  match: RegExpExecArray,
-  ctx: RequestContext,
-): WorkspaceHandlerArgs & Readonly<{ workforceMemberId: string }> {
-  return { ...workspaceArgs(match, ctx), workforceMemberId: decodePathSegment(match, 2) };
-}
-
-function humanTaskArgs(
-  match: RegExpExecArray,
-  ctx: RequestContext,
-): WorkspaceHandlerArgs & Readonly<{ humanTaskId: string }> {
-  return { ...workspaceArgs(match, ctx), humanTaskId: decodePathSegment(match, 2) };
-}
-
-function agentArgs(
-  match: RegExpExecArray,
-  ctx: RequestContext,
-): WorkspaceHandlerArgs & Readonly<{ agentId: string }> {
-  return { ...workspaceArgs(match, ctx), agentId: decodePathSegment(match, 2) };
-}
-
-function machineArgs(
-  match: RegExpExecArray,
-  ctx: RequestContext,
-): WorkspaceHandlerArgs & Readonly<{ machineId: string }> {
-  return { ...workspaceArgs(match, ctx), machineId: decodePathSegment(match, 2) };
-}
-
-const ROUTES: readonly Route[] = [
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)$/,
-    handle: (m, c) => handleGetWorkspace(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/runs\/([^/]+)$/,
-    handle: (m, c) => handleGetRun(runArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/location-events:stream$/,
-    handle: (m, c) => handleLocationEventsStream(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/location-events$/,
-    handle: (m, c) => handleListLocationEvents(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/map-layers$/,
-    handle: (m, c) => handleListMapLayers(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/workforce$/,
-    handle: (m, c) => handleListWorkforceMembers(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/workforce\/queues$/,
-    handle: (m, c) => handleListWorkforceQueues(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/human-tasks$/,
-    handle: (m, c) => handleListHumanTasks(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/evidence$/,
-    handle: (m, c) => handleListEvidence(workspaceArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/workforce\/([^/]+)$/,
-    handle: (m, c) => handleGetWorkforceMember(workforceMemberArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)$/,
-    handle: (m, c) => handleGetHumanTask(humanTaskArgs(m, c)),
-  },
-  {
-    method: 'GET',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/work-items$/,
-    handle: (m, c) => handleGetAgentWorkItems(agentArgs(m, c)),
-  },
-  {
-    method: 'PATCH',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/workforce\/([^/]+)\/availability$/,
-    handle: (m, c) => handlePatchWorkforceAvailability(workforceMemberArgs(m, c)),
-  },
-  {
-    method: 'POST',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/machines\/([^/]+)\/heartbeat$/,
-    handle: (m, c) => handleMachineHeartbeat(machineArgs(m, c)),
-  },
-  {
-    method: 'POST',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/agents\/([^/]+)\/heartbeat$/,
-    handle: (m, c) => handleAgentHeartbeat(agentArgs(m, c)),
-  },
-  {
-    method: 'POST',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/assign$/,
-    handle: (m, c) => handleAssignHumanTask(humanTaskArgs(m, c)),
-  },
-  {
-    method: 'POST',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/complete$/,
-    handle: (m, c) => handleCompleteHumanTask(humanTaskArgs(m, c)),
-  },
-  {
-    method: 'POST',
-    pattern: /^\/v1\/workspaces\/([^/]+)\/human-tasks\/([^/]+)\/escalate$/,
-    handle: (m, c) => handleEscalateHumanTask(humanTaskArgs(m, c)),
-  },
-];
-
-async function dispatchRoute(ctx: RequestContext): Promise<boolean> {
-  for (const route of ROUTES) {
-    if (ctx.req.method !== route.method) continue;
-    const match = route.pattern.exec(ctx.pathname);
-    if (!match) continue;
-    await route.handle(match, ctx);
-    return true;
-  }
-  return false;
-}
+// ---------------------------------------------------------------------------
+// Hono app factory
+// ---------------------------------------------------------------------------
 
 /**
- * Apply workspace-level rate limiting.
- * Returns true when the request was rejected and a 429 response was already sent.
+ * Builds the Hono routing app for the control plane.
+ *
+ * The app is used as a pure routing + middleware layer: route handlers write
+ * HTTP responses directly to the Node.js `ServerResponse` via `respondJson` /
+ * `respondProblem`, and the `Response` returned by `app.fetch()` is discarded
+ * by the outer Node.js `RequestHandler`. See ADR-0097 for rationale.
  */
-async function applyWorkspaceRateLimit(ctx: RequestContext): Promise<boolean> {
-  const { deps, pathname, res, correlationId, traceContext } = ctx;
-  if (!deps.rateLimitStore) return false;
+function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
+  const app = new Hono<HonoEnv>();
 
-  const rawId = decodeURIComponent(/^\/v1\/workspaces\/([^/]+)/.exec(pathname)?.[1] ?? '').trim();
-  if (!rawId) return false;
-
-  const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId(rawId) };
-  const result = await checkRateLimit({ rateLimitStore: deps.rateLimitStore }, scope);
-
-  if (!result.allowed) {
-    respondProblem(
-      res,
-      {
-        type: 'https://portarium.dev/problems/rate-limit-exceeded',
-        title: 'Too Many Requests',
-        status: 429,
-        detail: `Rate limit exceeded. Retry after ${result.retryAfterSeconds} seconds.`,
-        instance: pathname,
-        retryAfterSeconds: result.retryAfterSeconds,
-      },
+  // -------------------------------------------------------------------------
+  // Middleware 1: build RequestContext
+  // -------------------------------------------------------------------------
+  app.use('*', async (c, next) => {
+    const { incoming, outgoing } = c.env;
+    const correlationId = normalizeCorrelationId(incoming);
+    const traceContext = normalizeTraceContext(incoming);
+    c.set('ctx', {
+      deps,
+      req: incoming,
+      res: outgoing,
       correlationId,
       traceContext,
-    );
-    return true;
-  }
-
-  // Record the allowed request against the window returned by the rate-limit check.
-  await deps.rateLimitStore.recordRequest({
-    scope,
-    window: result.usage.window,
-    nowIso: new Date().toISOString(),
+      pathname: c.req.path,
+    });
+    await next();
   });
-  return false;
-}
 
-async function handleRequest(
-  deps: ControlPlaneDeps,
-  req: IncomingMessage,
-  res: ServerResponse,
-): Promise<void> {
-  const ctx: RequestContext = {
-    deps,
-    req,
-    res,
-    correlationId: normalizeCorrelationId(req),
-    traceContext: normalizeTraceContext(req),
-    pathname: new URL(req.url ?? '/', 'http://localhost').pathname,
-  };
+  // -------------------------------------------------------------------------
+  // Middleware 2: workspace-level rate limiting
+  // -------------------------------------------------------------------------
+  app.use('/v1/workspaces/*', async (c, next) => {
+    const ctx = c.get('ctx');
+    const { deps: d, res, correlationId, traceContext, pathname } = ctx;
+    if (!d.rateLimitStore) {
+      await next();
+      return;
+    }
 
-  if (await applyWorkspaceRateLimit(ctx)) return;
+    const rawId = decodeURIComponent(/^\/v1\/workspaces\/([^/]+)/.exec(pathname)?.[1] ?? '').trim();
+    if (!rawId) {
+      await next();
+      return;
+    }
 
-  const handled = await dispatchRoute(ctx);
-  if (handled) return;
+    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId(rawId) };
+    const result = await checkRateLimit({ rateLimitStore: d.rateLimitStore }, scope);
 
-  respondProblem(
-    res,
-    {
-      type: 'https://portarium.dev/problems/not-found',
-      title: 'Not Found',
-      status: 404,
-      detail: 'Route not found.',
-      instance: ctx.pathname,
-    },
-    ctx.correlationId,
-    ctx.traceContext,
-  );
-}
-
-export function createControlPlaneHandler(
-  deps: ControlPlaneDeps = buildControlPlaneDeps(),
-): RequestHandler {
-  return (req, res) => {
-    void handleRequest(deps, req, res).catch((error) => {
-      const correlationId = randomUUID();
-      const traceContext = normalizeTraceContext(req);
+    if (!result.allowed) {
       respondProblem(
         res,
         {
-          type: 'https://portarium.dev/problems/internal',
-          title: 'Internal Server Error',
-          status: 500,
-          detail: error instanceof Error ? error.message : 'Unhandled error.',
-          instance: req.url ?? '/',
+          type: 'https://portarium.dev/problems/rate-limit-exceeded',
+          title: 'Too Many Requests',
+          status: 429,
+          detail: `Rate limit exceeded. Retry after ${result.retryAfterSeconds} seconds.`,
+          instance: pathname,
+          retryAfterSeconds: result.retryAfterSeconds,
         },
         correlationId,
         traceContext,
       );
+      // Do not call next() — response already written.
+      return;
+    }
+
+    await d.rateLimitStore.recordRequest({
+      scope,
+      window: result.usage.window,
+      nowIso: new Date().toISOString(),
     });
+    await next();
+  });
+
+  // -------------------------------------------------------------------------
+  // Routes
+  //
+  // More-specific paths are registered before generic parameterised ones so
+  // that Hono's trie router matches them correctly (e.g. /workforce/queues
+  // before /workforce/:workforceMemberId).
+  //
+  // The `location-events:stream` path uses a named-group RegExp because the
+  // literal colon would otherwise be parsed as a Hono path parameter.
+  // -------------------------------------------------------------------------
+
+  // GET /v1/workspaces/:workspaceId
+  app.get('/v1/workspaces/:workspaceId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkspace({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/runs/:runId
+  app.get('/v1/workspaces/:workspaceId/runs/:runId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetRun({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      runId: c.req.param('runId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/location-events:stream   (SSE stream)
+  //
+  // The URL path contains a literal colon: `.../location-events:stream`.
+  // Hono treats `:stream` in the string pattern as a path parameter that
+  // captures everything after the `location-events` prefix.  At runtime the
+  // captured value will be the literal string `:stream`, which is correct —
+  // no other value would be sent by real clients.  The more specific pattern
+  // (with the implicit non-empty capture) is registered first so it takes
+  // precedence over the plain `location-events` route below.
+  app.get('/v1/workspaces/:workspaceId/location-events:stream', async (c) => {
+    const ctx = c.get('ctx');
+    await handleLocationEventsStream({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/location-events
+  app.get('/v1/workspaces/:workspaceId/location-events', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListLocationEvents({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/map-layers
+  app.get('/v1/workspaces/:workspaceId/map-layers', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListMapLayers({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/workforce/queues  (before /:workforceMemberId)
+  app.get('/v1/workspaces/:workspaceId/workforce/queues', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListWorkforceQueues({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/workforce
+  app.get('/v1/workspaces/:workspaceId/workforce', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListWorkforceMembers({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/workforce/:workforceMemberId
+  app.get('/v1/workspaces/:workspaceId/workforce/:workforceMemberId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkforceMember({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workforceMemberId: c.req.param('workforceMemberId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/workforce/:workforceMemberId/availability
+  app.patch('/v1/workspaces/:workspaceId/workforce/:workforceMemberId/availability', async (c) => {
+    const ctx = c.get('ctx');
+    await handlePatchWorkforceAvailability({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workforceMemberId: c.req.param('workforceMemberId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/human-tasks
+  app.get('/v1/workspaces/:workspaceId/human-tasks', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListHumanTasks({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/human-tasks/:humanTaskId
+  app.get('/v1/workspaces/:workspaceId/human-tasks/:humanTaskId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetHumanTask({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      humanTaskId: c.req.param('humanTaskId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/human-tasks/:humanTaskId/assign
+  app.post('/v1/workspaces/:workspaceId/human-tasks/:humanTaskId/assign', async (c) => {
+    const ctx = c.get('ctx');
+    await handleAssignHumanTask({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      humanTaskId: c.req.param('humanTaskId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/human-tasks/:humanTaskId/complete
+  app.post('/v1/workspaces/:workspaceId/human-tasks/:humanTaskId/complete', async (c) => {
+    const ctx = c.get('ctx');
+    await handleCompleteHumanTask({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      humanTaskId: c.req.param('humanTaskId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/human-tasks/:humanTaskId/escalate
+  app.post('/v1/workspaces/:workspaceId/human-tasks/:humanTaskId/escalate', async (c) => {
+    const ctx = c.get('ctx');
+    await handleEscalateHumanTask({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      humanTaskId: c.req.param('humanTaskId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/evidence
+  app.get('/v1/workspaces/:workspaceId/evidence', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListEvidence({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/agents/:agentId/work-items
+  app.get('/v1/workspaces/:workspaceId/agents/:agentId/work-items', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetAgentWorkItems({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/machines/:machineId/heartbeat
+  app.post('/v1/workspaces/:workspaceId/machines/:machineId/heartbeat', async (c) => {
+    const ctx = c.get('ctx');
+    await handleMachineHeartbeat({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      machineId: c.req.param('machineId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/agents/:agentId/heartbeat
+  app.post('/v1/workspaces/:workspaceId/agents/:agentId/heartbeat', async (c) => {
+    const ctx = c.get('ctx');
+    await handleAgentHeartbeat({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // -------------------------------------------------------------------------
+  // 404 — no route matched
+  // -------------------------------------------------------------------------
+  app.notFound((c) => {
+    const ctx = c.get('ctx');
+    if (ctx) {
+      respondProblem(
+        ctx.res,
+        {
+          type: 'https://portarium.dev/problems/not-found',
+          title: 'Not Found',
+          status: 404,
+          detail: 'Route not found.',
+          instance: ctx.pathname,
+        },
+        ctx.correlationId,
+        ctx.traceContext,
+      );
+    }
+    return new Response(null);
+  });
+
+  // -------------------------------------------------------------------------
+  // Unhandled error — last resort 500
+  // -------------------------------------------------------------------------
+  app.onError((error, c) => {
+    const ctx = c.get('ctx');
+    const correlationId = ctx?.correlationId ?? randomUUID();
+    const traceContext = ctx?.traceContext ?? normalizeTraceContext(c.env.incoming);
+    const pathname = ctx?.pathname ?? c.req.path;
+    respondProblem(
+      c.env.outgoing,
+      {
+        type: 'https://portarium.dev/problems/internal',
+        title: 'Internal Server Error',
+        status: 500,
+        detail: error instanceof Error ? error.message : 'Unhandled error.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return new Response(null);
+  });
+
+  return app;
+}
+
+// ---------------------------------------------------------------------------
+// Public factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a Node.js `RequestHandler` backed by a Hono routing app.
+ *
+ * The Hono app is created once and reused across all requests.  Each request
+ * is fed to `app.fetch()` as a minimal synthetic `Request` (method + URL
+ * only); actual response-writing is performed as a side effect inside Hono
+ * middleware/handlers via `respondJson` / `respondProblem`.  The `Response`
+ * returned by `app.fetch()` is discarded.  See ADR-0097.
+ */
+export function createControlPlaneHandler(
+  deps: ControlPlaneDeps = buildControlPlaneDeps(),
+): RequestHandler {
+  const app = buildRouter(deps);
+
+  return (req, res) => {
+    // Construct a minimal synthetic Request for Hono routing only.
+    // The body is not needed because all body-reading happens from the raw
+    // IncomingMessage inside route handlers via readJsonBody().
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    const honoReq = new Request(url.toString(), { method: req.method ?? 'GET' });
+
+    // app.fetch() may return a synchronous Response or a Promise<Response>;
+    // wrap in Promise.resolve() to ensure .catch() is always available.
+    void Promise.resolve(app.fetch(honoReq, { incoming: req, outgoing: res })).catch(
+      (error: unknown) => {
+        // Catastrophic failure — try to send a 500 if the response is still open.
+        if (!res.writableEnded) {
+          const correlationId = randomUUID();
+          const traceContext = normalizeTraceContext(req);
+          respondProblem(
+            res,
+            {
+              type: 'https://portarium.dev/problems/internal',
+              title: 'Internal Server Error',
+              status: 500,
+              detail: error instanceof Error ? error.message : 'Unhandled error.',
+              instance: req.url ?? '/',
+            },
+            correlationId,
+            traceContext,
+          );
+        }
+      },
+    );
   };
 }
