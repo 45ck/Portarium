@@ -181,9 +181,7 @@
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0245", "bead-0246", "bead-0298"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open before family promotion."
-      ]
+      "gaps": ["Integration gate remains open before family promotion."]
     },
     {
       "portFamily": "CommsCollaboration",
@@ -192,9 +190,7 @@
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0247", "bead-0248", "bead-0298"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for release readiness."
-      ]
+      "gaps": ["Integration gate remains open for release readiness."]
     },
     {
       "portFamily": "ProjectsWorkMgmt",
