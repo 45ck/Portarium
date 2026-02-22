@@ -4,7 +4,7 @@
  * Bead: bead-0421
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { MauticMarketingAutomationAdapter } from './mautic-marketing-automation-adapter.js';
 import type { MarketingAutomationExecuteInputV1 } from '../../../application/ports/marketing-automation-adapter.js';
 import { TenantId } from '../../../domain/primitives/index.js';
@@ -16,7 +16,7 @@ function makeInput(
   operation: MarketingAutomationExecuteInputV1['operation'],
   payload?: Record<string, unknown>,
 ): MarketingAutomationExecuteInputV1 {
-  return { tenantId: TENANT, operation, payload };
+  return { tenantId: TENANT, operation, ...(payload !== undefined ? { payload } : {}) };
 }
 
 function makeFetch(body: unknown, status = 200) {
@@ -28,10 +28,11 @@ function makeFetch(body: unknown, status = 200) {
   });
 }
 
-function makeAdapter(fetchFn = makeFetch({})) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makeAdapter(fetchFn: any = makeFetch({})) {
   return new MauticMarketingAutomationAdapter(
     { baseUrl: BASE_URL, username: 'admin', password: 'pass' },
-    fetchFn as unknown as typeof fetch,
+    fetchFn as typeof fetch,
   );
 }
 
