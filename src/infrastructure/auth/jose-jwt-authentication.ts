@@ -1,6 +1,7 @@
 import {
   createLocalJWKSet,
   createRemoteJWKSet,
+  decodeProtectedHeader,
   jwtVerify,
   type JSONWebKeySet,
   type JWTVerifyGetKey,
@@ -16,11 +17,43 @@ import type {
 import { err, ok, type Result } from '../../application/common/result.js';
 import type { AppContext, Unauthorized } from '../../application/common/index.js';
 
+/**
+ * Accepted `typ` header values for Portarium access tokens.
+ *
+ * RFC 9068 §2.1 specifies "at+JWT" for OAuth 2.0 access tokens issued by an
+ * authorisation server. Legacy implementations may use "JWT". Both are accepted;
+ * configure `requiredTokenType` to enforce one value.
+ */
+export type JwtTokenType = 'at+JWT' | 'JWT';
+
 export type JoseJwtAuthenticationConfig = Readonly<{
   /** Expected issuer (`iss`). When omitted, issuer is not validated. */
   issuer?: string;
+  /**
+   * Trusted issuer allowlist for multi-IdP federation.
+   *
+   * When provided, the token's `iss` claim must exactly match one of these values
+   * **in addition** to any value set via `issuer`. If only `trustedIssuers` is
+   * set (no `issuer`), jose's built-in issuer check is skipped and the allowlist
+   * is applied manually after verification.
+   */
+  trustedIssuers?: readonly string[];
   /** Expected audience (`aud`). When omitted, audience is not validated. */
   audience?: string | readonly string[];
+  /**
+   * Authorized party (`azp`) — the client_id permitted to present this token.
+   *
+   * When set, the `azp` claim in the token must exactly match this value.
+   * Prevents cross-client token forwarding attacks (RFC 7519 §4.1).
+   */
+  authorizedParty?: string;
+  /**
+   * Required JWT `typ` header value.
+   *
+   * When set, tokens with a mismatching `typ` header are rejected. Defaults to
+   * accepting both "at+JWT" (RFC 9068) and "JWT" (legacy).
+   */
+  requiredTokenType?: JwtTokenType;
   /** Local JWKS. Exactly one of jwks/jwksUri must be provided. */
   jwks?: JSONWebKeySet;
   /** Remote JWKS URI. Exactly one of jwks/jwksUri must be provided. */
@@ -36,6 +69,8 @@ const JWT_AUTH_ERROR_NAMES = new Set([
   'JWTSignatureVerificationFailed',
   'JOSEError',
 ]);
+
+const ACCEPTED_TOKEN_TYPES = new Set<string>(['at+JWT', 'JWT']);
 
 function parseBearerToken(header: string | undefined): Result<string, Unauthorized> {
   if (typeof header !== 'string' || header.trim() === '') {
@@ -56,6 +91,94 @@ function parseBearerToken(header: string | undefined): Result<string, Unauthoriz
   }
 
   return ok(token);
+}
+
+/**
+ * Validate the `typ` JOSE header claim.
+ *
+ * RFC 9068 §2.1 requires access tokens issued by an AS to carry `typ: "at+JWT"`.
+ * We accept "JWT" for legacy IdP compatibility. An unknown type is rejected.
+ */
+function validateTokenType(
+  token: string,
+  requiredTokenType: JwtTokenType | undefined,
+): Result<void, Unauthorized> {
+  let typ: unknown;
+  try {
+    const header = decodeProtectedHeader(token);
+    typ = header.typ;
+  } catch {
+    return err({ kind: 'Unauthorized', message: 'Malformed JWT header.' });
+  }
+
+  if (typ !== undefined) {
+    const typStr = typeof typ === 'string' ? typ : '';
+    if (!ACCEPTED_TOKEN_TYPES.has(typStr)) {
+      return err({
+        kind: 'Unauthorized',
+        message: `Invalid token type '${typStr}'. Expected 'at+JWT' or 'JWT'.`,
+      });
+    }
+    if (requiredTokenType !== undefined && typStr !== requiredTokenType) {
+      return err({
+        kind: 'Unauthorized',
+        message: `Token type mismatch: expected '${requiredTokenType}', got '${typStr}'.`,
+      });
+    }
+  }
+
+  return ok(undefined);
+}
+
+/**
+ * Validate the `azp` (authorized party) claim.
+ *
+ * Per RFC 7519 §4.1 and OpenID Connect Core §2, `azp` identifies the client
+ * to which the token was issued. When `authorizedParty` is configured, any
+ * token lacking or mismatching `azp` is rejected.
+ */
+function validateAuthorizedParty(
+  payload: Record<string, unknown>,
+  authorizedParty: string | undefined,
+): Result<void, Unauthorized> {
+  if (authorizedParty === undefined) return ok(undefined);
+
+  const azp = payload['azp'];
+  if (typeof azp !== 'string' || azp.trim() === '') {
+    return err({
+      kind: 'Unauthorized',
+      message: "Token must include the 'azp' claim when authorized party validation is enabled.",
+    });
+  }
+  if (azp.trim() !== authorizedParty) {
+    return err({
+      kind: 'Unauthorized',
+      message: 'Authorized party mismatch.',
+    });
+  }
+  return ok(undefined);
+}
+
+/**
+ * Validate the `iss` claim against the trusted issuer allowlist.
+ *
+ * Used when `trustedIssuers` is configured without a single `issuer`, or to
+ * augment jose's built-in issuer check with multi-IdP federation support.
+ */
+function validateTrustedIssuer(
+  payload: Record<string, unknown>,
+  trustedIssuers: readonly string[] | undefined,
+): Result<void, Unauthorized> {
+  if (!trustedIssuers || trustedIssuers.length === 0) return ok(undefined);
+
+  const iss = payload['iss'];
+  if (typeof iss !== 'string' || iss.trim() === '') {
+    return err({ kind: 'Unauthorized', message: "Token is missing the 'iss' claim." });
+  }
+  if (!trustedIssuers.includes(iss.trim())) {
+    return err({ kind: 'Unauthorized', message: 'Issuer not in trusted allowlist.' });
+  }
+  return ok(undefined);
 }
 
 function parseScopes(payload: Record<string, unknown>): readonly string[] {
@@ -171,6 +294,12 @@ function buildGetKey(config: JoseJwtAuthenticationConfig): JWTVerifyGetKey {
 /**
  * JWT authentication adapter using `jose`.
  *
+ * Production hardening (bead-0328):
+ * - `typ` header check: rejects unknown token types (RFC 9068).
+ * - `azp` claim validation: prevents cross-client token forwarding.
+ * - Trusted issuer allowlist: supports multi-IdP federation.
+ * - Workspace scope mismatch check (pre-existing, enforced on every request).
+ *
  * Validates the bearer token signature and standard registered claims (exp/nbf),
  * then materializes AppContext from the Portarium IAM claims:
  * - sub
@@ -180,17 +309,25 @@ function buildGetKey(config: JoseJwtAuthenticationConfig): JWTVerifyGetKey {
 export class JoseJwtAuthentication implements AuthenticationPort {
   readonly #getKey: JWTVerifyGetKey;
   readonly #issuer: string | undefined;
+  readonly #trustedIssuers: readonly string[] | undefined;
   readonly #audience: string | readonly string[] | undefined;
+  readonly #authorizedParty: string | undefined;
+  readonly #requiredTokenType: JwtTokenType | undefined;
   readonly #clockToleranceSeconds: number;
 
   public constructor(config: JoseJwtAuthenticationConfig) {
     this.#getKey = buildGetKey(config);
     this.#issuer = config.issuer;
+    this.#trustedIssuers = config.trustedIssuers;
     this.#audience = config.audience;
+    this.#authorizedParty = config.authorizedParty;
+    this.#requiredTokenType = config.requiredTokenType;
     this.#clockToleranceSeconds = config.clockToleranceSeconds ?? 0;
   }
 
-  async #verifyPayload(token: string): Promise<Result<Record<string, unknown>, Unauthorized>> {
+  async #verifyPayload(
+    token: string,
+  ): Promise<Result<Record<string, unknown>, Unauthorized>> {
     try {
       const options = buildVerifyOptions({
         issuer: this.#issuer,
@@ -214,10 +351,25 @@ export class JoseJwtAuthentication implements AuthenticationPort {
     const tokenResult = parseBearerToken(input.authorizationHeader);
     if (!tokenResult.ok) return tokenResult;
 
-    const payloadResult = await this.#verifyPayload(tokenResult.value);
+    const token = tokenResult.value;
+
+    // Validate typ header before attempting cryptographic verification.
+    const typResult = validateTokenType(token, this.#requiredTokenType);
+    if (!typResult.ok) return typResult;
+
+    const payloadResult = await this.#verifyPayload(token);
     if (!payloadResult.ok) return payloadResult;
 
     const payload = payloadResult.value;
+
+    // Validate azp (authorized party) after signature verification.
+    const azpResult = validateAuthorizedParty(payload, this.#authorizedParty);
+    if (!azpResult.ok) return azpResult;
+
+    // Validate trusted issuer allowlist (multi-IdP federation).
+    const issuerResult = validateTrustedIssuer(payload, this.#trustedIssuers);
+    if (!issuerResult.ok) return issuerResult;
+
     const normalizedClaims = normalizeWorkspaceClaims(payload);
 
     const { actor, ctx } = appContextFromWorkspaceAuthClaims({
