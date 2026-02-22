@@ -76,3 +76,4 @@ infra/terraform/**/.terraform.lock.hcl
 .beads/bd.sock.lock
 .beads/deletions.jsonl
 tmp/
+test-results/

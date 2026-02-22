@@ -6,11 +6,14 @@ export default defineConfig({
     setupFiles: ['src/test-setup.ts'],
     testTimeout: 30_000,
     include: ['src/**/*.test.ts', 'scaffolds/**/*.test.ts', 'scripts/**/*.test.ts'],
-    reporters: ['default'],
+    reporters: process.env['CI'] ? ['verbose', 'junit'] : ['default'],
+    outputFile: {
+      junit: './test-results/junit.xml',
+    },
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
-      reporter: ['text', 'html', 'lcov'],
+      reporter: ['text', 'html', 'lcov', 'clover'],
       include: ['src/**/*.ts'],
       exclude: [
         'src/**/*.test.ts',
