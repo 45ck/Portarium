@@ -1,8 +1,11 @@
 /**
- * Integration tests: application-layer idempotency and replay safety.
+ * Integration tests for application-layer idempotency and replay safety.
  *
- * Covers idempotency cache hit/miss behaviour, cross-tenant key isolation,
- * and replay safety under transient unit-of-work failures.
+ * Covers Suites 1–2: duplicate detection, cross-tenant isolation, and
+ * idempotency under transient unit-of-work failures.
+ *
+ * Outbox dispatch ordering (Suite 3) → idempotency-outbox-dispatch-ordering.integration.test.ts
+ * Failure injection (Suite 4) → idempotency-failure-injection.integration.test.ts
  */
 import { describe, expect, it } from 'vitest';
 
@@ -25,12 +28,14 @@ import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevent
 
 class InMemoryWorkspaceStore implements WorkspaceStore {
   readonly #byId = new Map<string, WorkspaceV1>();
+
   public async getWorkspaceById(
     _tenantId: string,
     workspaceId: string,
   ): Promise<WorkspaceV1 | null> {
     return this.#byId.get(workspaceId) ?? null;
   }
+
   public async getWorkspaceByName(
     _tenantId: string,
     workspaceName: string,
@@ -160,6 +165,7 @@ describe('idempotency: duplicate detection and tenant isolation', () => {
       },
     };
 
+    // First call: creates workspace, enqueues one event.
     const first = await registerWorkspace(deps, ctx, {
       idempotencyKey: 'key-abc',
       workspace: BASE_WORKSPACE,
@@ -168,6 +174,7 @@ describe('idempotency: duplicate detection and tenant isolation', () => {
     expect(outbox.allEntries()).toHaveLength(1);
     expect(idempotency.size()).toBe(1);
 
+    // Replay with same key: returns cached result, no new event.
     const replay = await registerWorkspace(deps, ctx, {
       idempotencyKey: 'key-abc',
       workspace: BASE_WORKSPACE,
@@ -231,6 +238,7 @@ describe('idempotency: duplicate detection and tenant isolation', () => {
       correlationId: 'corrB',
       roles: ['admin'],
     });
+
     const workspaceStore = new InMemoryWorkspaceStore();
     const idempotency = new InMemoryIdempotencyStore();
     const outbox = new InMemoryOutboxStore();
@@ -363,3 +371,6 @@ describe('replay safety: idempotency is preserved across transient write failure
     expect(idempotency.size()).toBe(1);
   });
 });
+
+// Suite 3 (outbox dispatch ordering) is in idempotency-outbox-dispatch-ordering.integration.test.ts
+// Suite 4 (failure injection) is in idempotency-failure-injection.integration.test.ts

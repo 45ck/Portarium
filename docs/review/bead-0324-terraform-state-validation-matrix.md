@@ -7,16 +7,17 @@
 
 ## Validation matrix — all Terraform stacks
 
-| Stack | Path | fmt -check | init -backend=false | validate | Trivy IaC | Infracost |
-|-------|------|-----------|---------------------|----------|-----------|-----------|
-| AWS platform | `infra/terraform/aws/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | ⚠️ advisory |
-| AWS bootstrap | `infra/terraform/aws-backend-bootstrap/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | ⚠️ advisory |
-| Azure platform | `infra/terraform/azure/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | — |
-| Azure bootstrap | `infra/terraform/azure-backend-bootstrap/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | — |
-| GCP platform | `infra/terraform/gcp/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | — |
-| GCP bootstrap | `infra/terraform/gcp-backend-bootstrap/` | ✅ blocking | ✅ blocking | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | — |
+| Stack           | Path                                       | fmt -check  | init -backend=false | validate    | Trivy IaC                   | Infracost   |
+| --------------- | ------------------------------------------ | ----------- | ------------------- | ----------- | --------------------------- | ----------- |
+| AWS platform    | `infra/terraform/aws/`                     | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | ⚠️ advisory |
+| AWS bootstrap   | `infra/terraform/aws-backend-bootstrap/`   | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | ⚠️ advisory |
+| Azure platform  | `infra/terraform/azure/`                   | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | —           |
+| Azure bootstrap | `infra/terraform/azure-backend-bootstrap/` | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | —           |
+| GCP platform    | `infra/terraform/gcp/`                     | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | —           |
+| GCP bootstrap   | `infra/terraform/gcp-backend-bootstrap/`   | ✅ blocking | ✅ blocking         | ✅ blocking | ✅ blocking (CRITICAL/HIGH) | —           |
 
 **Legend:**
+
 - ✅ blocking — CI failure blocks merge
 - ⚠️ advisory — `continue-on-error: true`; results visible in job output but do not block merge
 - — — not yet applicable (Infracost supports AWS/Azure/GCP but Azure/GCP stubs have no costed resources)
@@ -44,6 +45,7 @@ references. Uses `-json` output and parses `valid` field for reliable exit code.
 ### Trivy IaC scan
 
 [Trivy](https://trivy.dev/) scans all `.tf` files for:
+
 - Insecure defaults (e.g., S3 bucket public access, unencrypted resources)
 - Missing encryption at rest
 - Overly permissive IAM policies
@@ -56,6 +58,7 @@ Medium/Low findings are reported but do not block.
 
 [Infracost](https://www.infracost.io/) estimates monthly cloud costs for the
 AWS stacks. Results are printed as a table in job output. This gate is:
+
 1. **Gated behind** `INFRACOST_API_KEY` secret presence — skipped if the
    secret is not configured.
 2. **Advisory only** (`continue-on-error: true`) — unexpected cost spikes

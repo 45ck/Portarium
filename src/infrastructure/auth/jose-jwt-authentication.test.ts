@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { SignJWT, exportJWK, generateKeyPair } from 'jose';
 import type { JoseJwtAuthenticationConfig } from './jose-jwt-authentication.js';
-
 import { JoseJwtAuthentication } from './jose-jwt-authentication.js';
 import { toHttpStatus } from '../../application/common/errors.js';
 
@@ -205,6 +204,34 @@ describe('JoseJwtAuthentication', () => {
 
     expect(result.ok).toBe(true);
   });
+
+  it('accepts Keycloak-style tenant/realm role claims', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({
+      tenantId: 'ws-1',
+      realm_access: { roles: ['operator', 'offline_access'] },
+    })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] } });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+      expectedWorkspaceId: 'ws-1',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected success.');
+    expect(result.value.tenantId).toBe('ws-1');
+    expect(result.value.roles).toEqual(['operator']);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -362,33 +389,5 @@ describe('JoseJwtAuthentication — authorization and issuer', () => {
     });
 
     expect(result.ok).toBe(true);
-  });
-
-  it('accepts Keycloak-style tenant/realm role claims', async () => {
-    const { publicKey, privateKey } = await generateKeyPair('RS256');
-    const jwk = await exportJWK(publicKey);
-    jwk.kid = 'kid-1';
-
-    const token = await new SignJWT({
-      tenantId: 'ws-1',
-      realm_access: { roles: ['operator', 'offline_access'] },
-    })
-      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
-      .setSubject('user-1')
-      .setIssuedAt()
-      .setExpirationTime('2h')
-      .sign(privateKey);
-
-    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] } });
-    const result = await auth.authenticateBearerToken({
-      authorizationHeader: `Bearer ${token}`,
-      correlationId: 'corr-1',
-      expectedWorkspaceId: 'ws-1',
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) throw new Error('Expected success.');
-    expect(result.value.tenantId).toBe('ws-1');
-    expect(result.value.roles).toEqual(['operator']);
   });
 });

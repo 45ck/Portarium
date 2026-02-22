@@ -77,6 +77,63 @@ Invoke-RestMethod http://localhost:8081/healthz
 Invoke-RestMethod http://localhost:8081/readyz
 ```
 
+## Dev token auth (local bypass)
+
+Protected routes return `401` when no JWKS endpoint is configured. For local
+development you can enable a static token bypass instead of running a full IdP:
+
+```bash
+export PORTARIUM_DEV_TOKEN=my-local-dev-token
+export PORTARIUM_DEV_WORKSPACE_ID=ws-local
+# Optional: defaults to "dev-user"
+export PORTARIUM_DEV_USER_ID=alice
+```
+
+```powershell
+$env:PORTARIUM_DEV_TOKEN = "my-local-dev-token"
+$env:PORTARIUM_DEV_WORKSPACE_ID = "ws-local"
+$env:PORTARIUM_DEV_USER_ID = "alice"
+```
+
+Then restart the control-plane runtime. A warning is printed to stderr when dev
+auth is active. The token grants `admin` role in the specified workspace.
+
+> **Never set `PORTARIUM_DEV_TOKEN` in staging or production.** It bypasses all
+> JWKS signature validation.
+
+### Calling a protected endpoint
+
+```bash
+curl -i -H "Authorization: Bearer my-local-dev-token" \
+  http://localhost:8080/v1/workspaces/ws-local
+```
+
+```powershell
+Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
+  -Headers @{ Authorization = "Bearer my-local-dev-token" }
+```
+
+### Cockpit integration
+
+Cockpit reads `VITE_PORTARIUM_API_BEARER_TOKEN` at build time and falls back to
+`localStorage`. Set this to the same value as `PORTARIUM_DEV_TOKEN`:
+
+```bash
+VITE_PORTARIUM_API_BEARER_TOKEN=my-local-dev-token npm run dev
+```
+
+```powershell
+$env:VITE_PORTARIUM_API_BEARER_TOKEN = "my-local-dev-token"
+npm run dev
+```
+
+Or set it at runtime in the browser console:
+
+```js
+localStorage.setItem('portarium_cockpit_bearer_token', 'my-local-dev-token');
+location.reload();
+```
+
 ## Call a v1 endpoint
 
 ```bash
@@ -93,7 +150,8 @@ Expected behavior without auth config: `401 Unauthorized` on protected routes.
 
 - `http://localhost:8080/healthz` returns `200`
 - `http://localhost:8081/healthz` returns `200`
-- `/v1/workspaces/...` returns `401` before JWT/JWKS config (expected)
+- `/v1/workspaces/...` returns `401` without auth config (expected)
+- With `PORTARIUM_DEV_TOKEN` set, `Authorization: Bearer <token>` returns `200`
 
 ## Common Pitfalls
 

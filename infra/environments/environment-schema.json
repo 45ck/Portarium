@@ -4,7 +4,17 @@
   "title": "PortariumEnvironment",
   "description": "Canonical definition of a Portarium deployment environment.",
   "type": "object",
-  "required": ["name", "tier", "promotion", "kubernetes", "terraform", "config", "scaling", "database", "gates"],
+  "required": [
+    "name",
+    "tier",
+    "promotion",
+    "kubernetes",
+    "terraform",
+    "config",
+    "scaling",
+    "database",
+    "gates"
+  ],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
