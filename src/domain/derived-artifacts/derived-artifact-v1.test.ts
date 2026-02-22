@@ -77,15 +77,15 @@ describe('parseDerivedArtifactV1: validation errors', () => {
   });
 
   it('throws on invalid retentionPolicy', () => {
-    expect(() =>
-      parseDerivedArtifactV1({ ...VALID_BASE, retentionPolicy: 'forever' }),
-    ).toThrow(DerivedArtifactParseError);
+    expect(() => parseDerivedArtifactV1({ ...VALID_BASE, retentionPolicy: 'forever' })).toThrow(
+      DerivedArtifactParseError,
+    );
   });
 
   it('throws when ttl retention has no expiresAtIso', () => {
-    expect(() =>
-      parseDerivedArtifactV1({ ...VALID_BASE, retentionPolicy: 'ttl' }),
-    ).toThrow(DerivedArtifactParseError);
+    expect(() => parseDerivedArtifactV1({ ...VALID_BASE, retentionPolicy: 'ttl' })).toThrow(
+      DerivedArtifactParseError,
+    );
   });
 
   it('throws when expiresAtIso is before createdAtIso', () => {

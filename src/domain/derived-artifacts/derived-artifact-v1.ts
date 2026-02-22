@@ -120,7 +120,9 @@ export function parseDerivedArtifactV1(value: unknown): DerivedArtifactV1 {
   }
 
   const artifactId = DerivedArtifactId(readString(record, 'artifactId', DerivedArtifactParseError));
-  const workspaceId = WorkspaceIdBrand(readString(record, 'workspaceId', DerivedArtifactParseError));
+  const workspaceId = WorkspaceIdBrand(
+    readString(record, 'workspaceId', DerivedArtifactParseError),
+  );
   const kind = readKind(record);
   const provenance = readProvenance(record);
   const retentionPolicy = readRetentionPolicy(record);
@@ -136,9 +138,7 @@ export function parseDerivedArtifactV1(value: unknown): DerivedArtifactV1 {
 
   // Invariant: expiresAtIso must be after createdAtIso
   if (expiresAtIso !== undefined && expiresAtIso <= createdAtIso) {
-    throw new DerivedArtifactParseError(
-      'DerivedArtifact expiresAtIso must be after createdAtIso',
-    );
+    throw new DerivedArtifactParseError('DerivedArtifact expiresAtIso must be after createdAtIso');
   }
 
   return {
@@ -158,10 +158,7 @@ export function parseDerivedArtifactV1(value: unknown): DerivedArtifactV1 {
 // ---------------------------------------------------------------------------
 
 /** Returns true if the artefact has expired (expiresAtIso < nowIso). */
-export function isDerivedArtifactExpired(
-  artifact: DerivedArtifactV1,
-  nowIso: string,
-): boolean {
+export function isDerivedArtifactExpired(artifact: DerivedArtifactV1, nowIso: string): boolean {
   if (artifact.expiresAtIso === undefined) return false;
   return artifact.expiresAtIso < nowIso;
 }
@@ -199,7 +196,9 @@ function readRetentionPolicy(record: Record<string, unknown>): RetentionPolicy {
 
 function readProvenance(record: Record<string, unknown>): DerivedArtifactProvenanceV1 {
   const raw = readRecord(record['provenance'], 'provenance', DerivedArtifactParseError);
-  const evidenceId = readOptionalString(raw, 'evidenceId', DerivedArtifactParseError) as EvidenceId | undefined;
+  const evidenceId = readOptionalString(raw, 'evidenceId', DerivedArtifactParseError) as
+    | EvidenceId
+    | undefined;
   return {
     workspaceId: WorkspaceIdBrand(readString(raw, 'workspaceId', DerivedArtifactParseError)),
     runId: RunIdBrand(readString(raw, 'runId', DerivedArtifactParseError)),

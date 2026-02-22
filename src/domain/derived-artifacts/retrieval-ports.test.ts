@@ -156,7 +156,14 @@ describe('SemanticIndexPort contract', () => {
 
   it('delete removes entry', async () => {
     const index = new StubSemanticIndex();
-    await index.upsert({ artifactId: 'art-2', workspaceId: 'ws-1' as any, runId: 'run-1' as any, text: 'hello', vector: [], metadata: {} });
+    await index.upsert({
+      artifactId: 'art-2',
+      workspaceId: 'ws-1' as any,
+      runId: 'run-1' as any,
+      text: 'hello',
+      vector: [],
+      metadata: {},
+    });
     await index.delete('art-2', 'ws-1' as any);
     expect(index.get('art-2')).toBeUndefined();
   });
@@ -178,7 +185,12 @@ describe('KnowledgeGraphPort contract', () => {
       properties: {},
     };
     await graph.upsertNode(node);
-    const result = await graph.traverse({ workspaceId: 'ws-1' as any, rootNodeId: 'n-1', direction: 'outbound', maxDepth: 1 });
+    const result = await graph.traverse({
+      workspaceId: 'ws-1' as any,
+      rootNodeId: 'n-1',
+      direction: 'outbound',
+      maxDepth: 1,
+    });
     expect(result.nodes).toContainEqual(node);
   });
 
@@ -192,16 +204,38 @@ describe('KnowledgeGraphPort contract', () => {
       workspaceId: 'ws-1' as any,
     };
     await graph.upsertEdge(edge);
-    const result = await graph.traverse({ workspaceId: 'ws-1' as any, rootNodeId: 'n-1', direction: 'outbound', maxDepth: 1 });
+    const result = await graph.traverse({
+      workspaceId: 'ws-1' as any,
+      rootNodeId: 'n-1',
+      direction: 'outbound',
+      maxDepth: 1,
+    });
     expect(result.edges).toContainEqual(edge);
   });
 
   it('deleteWorkspaceData removes all workspace nodes', async () => {
     const graph = new StubKnowledgeGraph();
-    await graph.upsertNode({ nodeId: 'n-ws1', workspaceId: 'ws-1' as any, kind: 'run', label: 'x', properties: {} });
-    await graph.upsertNode({ nodeId: 'n-ws2', workspaceId: 'ws-2' as any, kind: 'run', label: 'y', properties: {} });
+    await graph.upsertNode({
+      nodeId: 'n-ws1',
+      workspaceId: 'ws-1' as any,
+      kind: 'run',
+      label: 'x',
+      properties: {},
+    });
+    await graph.upsertNode({
+      nodeId: 'n-ws2',
+      workspaceId: 'ws-2' as any,
+      kind: 'run',
+      label: 'y',
+      properties: {},
+    });
     await graph.deleteWorkspaceData('ws-1' as any);
-    const result = await graph.traverse({ workspaceId: 'ws-1' as any, rootNodeId: '', direction: 'both', maxDepth: 1 });
+    const result = await graph.traverse({
+      workspaceId: 'ws-1' as any,
+      rootNodeId: '',
+      direction: 'both',
+      maxDepth: 1,
+    });
     expect(result.nodes.every((n) => n.workspaceId !== 'ws-1')).toBe(true);
   });
 });
