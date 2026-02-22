@@ -19,9 +19,14 @@ describe('parseSodConstraintsV1', () => {
       { kind: 'HazardousZoneNoSelfApproval' },
       { kind: 'SafetyClassifiedZoneDualApproval' },
       { kind: 'RemoteEstopRequesterSeparation' },
+      {
+        kind: 'SpecialistApproval',
+        requiredRoles: ['data-platform'],
+        rationale: 'SQL changes require data-platform approval.',
+      },
     ]);
 
-    expect(constraints).toHaveLength(6);
+    expect(constraints).toHaveLength(7);
     expect(constraints[0]).toEqual({ kind: 'MakerChecker' });
     expect(constraints[1]).toEqual({ kind: 'DistinctApprovers', minimumApprovers: 2 });
     expect(constraints[2]).toEqual({
@@ -31,6 +36,17 @@ describe('parseSodConstraintsV1', () => {
     expect(constraints[3]).toEqual({ kind: 'HazardousZoneNoSelfApproval' });
     expect(constraints[4]).toEqual({ kind: 'SafetyClassifiedZoneDualApproval' });
     expect(constraints[5]).toEqual({ kind: 'RemoteEstopRequesterSeparation' });
+    expect(constraints[6]).toEqual({
+      kind: 'SpecialistApproval',
+      requiredRoles: ['data-platform'],
+      rationale: 'SQL changes require data-platform approval.',
+    });
+  });
+
+  it('validates SpecialistApproval requiredRoles is non-empty', () => {
+    expect(() =>
+      parseSodConstraintsV1([{ kind: 'SpecialistApproval', requiredRoles: [], rationale: 'test' }]),
+    ).toThrow(/requiredRoles/i);
   });
 
   it('rejects non-array inputs', () => {
@@ -200,6 +216,108 @@ describe('evaluateSodConstraintsV1', () => {
         estopRequesterUserId: UserId('operator-1'),
       },
     ]);
+  });
+
+  describe('SpecialistApproval', () => {
+    const constraint: SodConstraintV1 = {
+      kind: 'SpecialistApproval',
+      requiredRoles: ['data-platform', 'dba'],
+      rationale: 'SQL schema changes require specialist approval.',
+    };
+
+    it('flags violation when no approver holds a required role', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1')],
+          approverRoles: [{ userId: UserId('approver-1'), roles: ['developer'] }],
+        },
+      });
+
+      expect(violations).toEqual([
+        {
+          kind: 'SpecialistApprovalViolation',
+          requiredRoles: ['data-platform', 'dba'],
+          rationale: 'SQL schema changes require specialist approval.',
+        },
+      ]);
+    });
+
+    it('passes when at least one approver holds a required role', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1'), UserId('approver-2')],
+          approverRoles: [
+            { userId: UserId('approver-1'), roles: ['developer'] },
+            { userId: UserId('approver-2'), roles: ['data-platform', 'sre'] },
+          ],
+        },
+      });
+
+      expect(violations).toEqual([]);
+    });
+
+    it('passes when approver holds secondary required role (dba)', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1')],
+          approverRoles: [{ userId: UserId('approver-1'), roles: ['dba'] }],
+        },
+      });
+
+      expect(violations).toEqual([]);
+    });
+
+    it('skips evaluation when approverRoles is not provided', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1')],
+          // approverRoles intentionally omitted
+        },
+      });
+
+      expect(violations).toEqual([]);
+    });
+
+    it('skips evaluation when approverRoles is empty', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1')],
+          approverRoles: [],
+        },
+      });
+
+      expect(violations).toEqual([]);
+    });
+
+    it('flags violation when approver has no roles entry at all', () => {
+      const violations = evaluateSodConstraintsV1({
+        constraints: [constraint],
+        context: {
+          initiatorUserId: UserId('user-1'),
+          approverUserIds: [UserId('approver-1')],
+          // approver-1 not listed in approverRoles
+          approverRoles: [{ userId: UserId('other-user'), roles: ['data-platform'] }],
+        },
+      });
+
+      expect(violations).toEqual([
+        {
+          kind: 'SpecialistApprovalViolation',
+          requiredRoles: ['data-platform', 'dba'],
+          rationale: 'SQL schema changes require specialist approval.',
+        },
+      ]);
+    });
   });
 });
 

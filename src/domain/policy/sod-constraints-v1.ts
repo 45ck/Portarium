@@ -9,7 +9,8 @@ export type SodConstraintKind =
   | 'IncompatibleDuties'
   | 'HazardousZoneNoSelfApproval'
   | 'SafetyClassifiedZoneDualApproval'
-  | 'RemoteEstopRequesterSeparation';
+  | 'RemoteEstopRequesterSeparation'
+  | 'SpecialistApproval';
 
 export type MakerCheckerConstraintV1 = Readonly<{
   kind: 'MakerChecker';
@@ -37,13 +38,37 @@ export type RemoteEstopRequesterSeparationConstraintV1 = Readonly<{
   kind: 'RemoteEstopRequesterSeparation';
 }>;
 
+/**
+ * Requires at least one of the approvers to hold at least one of the listed roles.
+ *
+ * Analogous to GitHub CODEOWNERS — specific roles/teams must sign off on changes.
+ * `rationale` is surfaced in the UI so approvers understand why this role is required.
+ */
+export type SpecialistApprovalConstraintV1 = Readonly<{
+  kind: 'SpecialistApproval';
+  /** At least one approver must hold at least one of these roles. */
+  requiredRoles: readonly string[];
+  /** Human-readable explanation shown in the approval UI. */
+  rationale: string;
+}>;
+
 export type SodConstraintV1 =
   | MakerCheckerConstraintV1
   | DistinctApproversConstraintV1
   | IncompatibleDutiesConstraintV1
   | HazardousZoneNoSelfApprovalConstraintV1
   | SafetyClassifiedZoneDualApprovalConstraintV1
-  | RemoteEstopRequesterSeparationConstraintV1;
+  | RemoteEstopRequesterSeparationConstraintV1
+  | SpecialistApprovalConstraintV1;
+
+/**
+ * Role assignment for a single approver, used to evaluate SpecialistApproval constraints.
+ * Injected by the application layer from the authorisation system.
+ */
+export interface ApproverRoleV1 {
+  userId: UserIdType;
+  roles: readonly string[];
+}
 
 export type PerformedDutyV1 = Readonly<{
   userId: UserIdType;
@@ -63,6 +88,12 @@ export type SodEvaluationContextV1 = Readonly<{
   approverUserIds: readonly UserIdType[];
   performedDuties?: readonly PerformedDutyV1[];
   robotContext?: RobotSodContextV1;
+  /**
+   * Optional: roles held by each approver, injected by the application layer.
+   * Required to evaluate `SpecialistApproval` constraints.
+   * If absent, SpecialistApproval evaluation is skipped (no violation produced).
+   */
+  approverRoles?: readonly ApproverRoleV1[];
 }>;
 
 export type SodViolationV1 =
@@ -95,6 +126,11 @@ export type SodViolationV1 =
   | Readonly<{
       kind: 'RemoteEstopRequesterSeparationViolation';
       estopRequesterUserId: UserIdType;
+    }>
+  | Readonly<{
+      kind: 'SpecialistApprovalViolation';
+      requiredRoles: readonly string[];
+      rationale: string;
     }>;
 
 export class SodConstraintParseError extends Error {
@@ -145,6 +181,8 @@ function evaluateSodConstraintV1(
       return evaluateSafetyClassifiedZoneDualApprovalConstraintV1(context);
     case 'RemoteEstopRequesterSeparation':
       return evaluateRemoteEstopRequesterSeparationConstraintV1(context);
+    case 'SpecialistApproval':
+      return evaluateSpecialistApprovalConstraintV1(constraint, context);
     default:
       return assertNever(constraint);
   }
@@ -294,6 +332,14 @@ function parseSodConstraintV1(value: unknown, pathLabel: string): SodConstraintV
     return { kind: 'RemoteEstopRequesterSeparation' };
   }
 
+  if (kind === 'SpecialistApproval') {
+    const requiredRoles = readStringArray(record, 'requiredRoles', SodConstraintParseError, {
+      minLength: 1,
+    });
+    const rationale = readString(record, 'rationale', SodConstraintParseError);
+    return { kind: 'SpecialistApproval', requiredRoles, rationale };
+  }
+
   const dutyKeys = readStringArray(record, 'dutyKeys', SodConstraintParseError);
   if (dutyKeys.length < 2) {
     throw new SodConstraintParseError(`${pathLabel}.dutyKeys must have length >= 2.`);
@@ -308,7 +354,8 @@ function isSodConstraintKind(value: string): value is SodConstraintKind {
     value === 'IncompatibleDuties' ||
     value === 'HazardousZoneNoSelfApproval' ||
     value === 'SafetyClassifiedZoneDualApproval' ||
-    value === 'RemoteEstopRequesterSeparation'
+    value === 'RemoteEstopRequesterSeparation' ||
+    value === 'SpecialistApproval'
   );
 }
 
@@ -346,6 +393,31 @@ function groupPerformedDutiesByUser(performed: readonly PerformedDutyV1[]): Map<
     out.set(d.userId, [d.dutyKey]);
   }
   return out;
+}
+
+function evaluateSpecialistApprovalConstraintV1(
+  constraint: SpecialistApprovalConstraintV1,
+  context: SodEvaluationContextV1,
+): readonly SodViolationV1[] {
+  // If no role info was injected by the caller, skip evaluation.
+  // The caller is responsible for supplying approverRoles when SpecialistApproval constraints are present.
+  if (!context.approverRoles || context.approverRoles.length === 0) return [];
+
+  const hasQualifiedApprover = context.approverUserIds.some((approverId) => {
+    const entry = context.approverRoles!.find((r) => r.userId === approverId);
+    if (!entry) return false;
+    return constraint.requiredRoles.some((req) => entry.roles.includes(req));
+  });
+
+  if (hasQualifiedApprover) return [];
+
+  return [
+    {
+      kind: 'SpecialistApprovalViolation',
+      requiredRoles: constraint.requiredRoles,
+      rationale: constraint.rationale,
+    },
+  ];
 }
 
 function assertNever(value: never): never {
