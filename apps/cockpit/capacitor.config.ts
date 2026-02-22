@@ -13,7 +13,17 @@
  *   npx cap sync
  */
 
-import type { CapacitorConfig } from '@capacitor/cli';
+// CapacitorConfig type defined locally until @capacitor/cli is added as a
+// dependency. The shape mirrors @capacitor/cli's CapacitorConfig interface.
+interface CapacitorConfig {
+  appId: string;
+  appName: string;
+  webDir: string;
+  server?: Record<string, unknown>;
+  plugins?: Record<string, unknown>;
+  ios?: Record<string, unknown>;
+  android?: Record<string, unknown>;
+}
 
 const config: CapacitorConfig = {
   appId: 'com.portarium.cockpit',
