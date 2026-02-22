@@ -1,6 +1,7 @@
 import type { ExternalObjectRef } from '../canonical/external-object-ref.js';
 import type {
   AdapterId,
+  ApprovalId,
   CorrelationId,
   EvidenceId,
   HashSha256,
@@ -30,6 +31,7 @@ export type EvidenceLinks = Readonly<{
   runId?: RunId;
   planId?: PlanId;
   workItemId?: WorkItemId;
+  approvalId?: ApprovalId;
   externalRefs?: readonly ExternalObjectRef[];
 }>;
 
