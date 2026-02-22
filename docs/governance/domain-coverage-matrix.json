@@ -239,9 +239,8 @@
       "canonicalObjects": ["Ticket", "Asset", "Document", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0257", "bead-0258"],
-      "gapBeads": ["bead-8x1n", "bead-47v1"],
+      "gapBeads": ["bead-47v1"],
       "gaps": [
-        "License and compliance governance for external execution platforms remains open.",
         "Security policy and disclosure deliverables remain open before governance closeout."
       ]
     },
