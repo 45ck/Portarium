@@ -11,12 +11,59 @@ Terraform is the baseline Infrastructure as Code strategy for ADR-0056.
 - Track all intent (environment defaults, state names, and rollout assumptions) in
   version control through Terraform code and examples.
 
+## Remote state and locking
+
+All provider stacks use remote state with provider-native locking. A one-time
+bootstrap step provisions the state storage **before** the main stack is first
+applied. After bootstrapping, uncomment the `backend` block in each stack's
+`backend.tf` and run `terraform init -migrate-state`.
+
+| Provider | Backend    | Lock mechanism              | Bootstrap dir               |
+| -------- | ---------- | --------------------------- | --------------------------- |
+| AWS      | S3         | DynamoDB (`LockID` table)   | `aws-backend-bootstrap/`    |
+| Azure    | azurerm    | Native blob lease           | `azure-backend-bootstrap/`  |
+| GCP      | gcs        | Native Cloud Storage lock   | `gcp-backend-bootstrap/`    |
+
+### Bootstrap procedure (all providers)
+
+```bash
+# 1. Provision state storage with a local backend (run once per environment)
+cd infra/terraform/<provider>-backend-bootstrap
+terraform init
+terraform apply -var="environment=dev"
+
+# 2. Capture the generated backend config snippet
+terraform output backend_config_snippet
+
+# 3. Paste the snippet into infra/terraform/<provider>/backend.tf and uncomment
+
+# 4. Migrate local state (if any) into the remote backend
+cd ../infra/terraform/<provider>
+terraform init -migrate-state
+```
+
+The bootstrap modules themselves use **local state only** and are intentionally
+minimal — they provision nothing that depends on the main platform stack.
+
+### State key convention
+
+```
+portarium/<provider>/<stack>/terraform.tfstate
+```
+
+Examples:
+- `portarium/aws/platform/terraform.tfstate`
+- `portarium/azure/platform/terraform.tfstate`
+- `portarium/gcp/platform/terraform.tfstate`
+
 ## Current status
 
 - Provider baseline status:
-  - ✅ `aws/` has a concrete reference implementation for network, control plane,
-    data persistence, and evidence storage.
-  - ⏳ `azure/` and `gcp/` are planned as parity implementations.
+  - ✅ `aws/` — concrete reference implementation (network, control plane,
+    data persistence, evidence storage). Remote state: S3 + DynamoDB.
+  - ✅ `azure/` — stub with provider config and remote state scaffolding.
+  - ✅ `gcp/` — stub with provider config and remote state scaffolding.
+  - ✅ `*-backend-bootstrap/` — bootstrap modules for all three providers.
 - ADR-0056 and `.specify/specs/infrastructure-layer-v1.md` define required
   capabilities and acceptance criteria.
 - The provider entry points are intentionally aligned to the same operational
