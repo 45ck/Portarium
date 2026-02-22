@@ -1,0 +1,130 @@
+# Temporal Helm values — staging environment
+#
+# 2-replica HA, PostgreSQL persistence + advanced visibility, PDB enforced.
+# Mirrors production topology for pre-prod validation.
+#
+# Bead: bead-0388
+
+server:
+  replicaCount: 2
+
+  image:
+    repository: temporalio/server
+    tag: "1.25.2"
+    pullPolicy: IfNotPresent
+
+  config:
+    logLevel: info
+    numHistoryShards: 8
+
+    persistence:
+      defaultStore: postgres-default
+      visibilityStore: postgres-visibility
+      advancedVisibilityStore: postgres-visibility
+      numHistoryShards: 8
+
+      datastores:
+        postgres-default:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal
+            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectProtocol: tcp
+            user: temporal
+            maxConns: 40
+            maxIdleConns: 20
+            maxConnLifetime: 1h
+            tls:
+              enabled: true
+              caFile: /etc/temporal/ssl/ca.crt
+              enableHostVerification: true
+
+        postgres-visibility:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal_visibility
+            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectProtocol: tcp
+            user: temporal
+            maxConns: 20
+            maxIdleConns: 10
+            maxConnLifetime: 1h
+            tls:
+              enabled: true
+              caFile: /etc/temporal/ssl/ca.crt
+              enableHostVerification: true
+
+  frontend:
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      port: 7233
+
+  history:
+    replicaCount: 2
+
+  matching:
+    replicaCount: 2
+
+  worker:
+    replicaCount: 2
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Pod Disruption Budget — ensure at least 1 replica available during rolling updates
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: temporal
+            topologyKey: kubernetes.io/hostname
+
+web:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+admintools:
+  enabled: true
+  image:
+    repository: temporalio/admin-tools
+    tag: "1.25.2"
+
+cassandra:
+  enabled: false
+
+mysql:
+  enabled: false
+
+postgresql:
+  enabled: false
+
+elasticsearch:
+  enabled: false
+
+schema:
+  setup:
+    enabled: true
+    backoffLimit: 100
+  update:
+    enabled: true
+    backoffLimit: 100

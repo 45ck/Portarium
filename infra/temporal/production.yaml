@@ -1,0 +1,138 @@
+# Temporal server configuration — production.
+#
+# PostgreSQL persistence + advanced visibility, 512 history shards for
+# horizontal scalability, Prometheus metrics, TLS to DB.
+#
+# Bead: bead-0388
+
+persistence:
+  defaultStore: postgres-default
+  visibilityStore: postgres-visibility
+  advancedVisibilityStore: postgres-visibility
+  numHistoryShards: 512
+  datastores:
+    postgres-default:
+      sql:
+        pluginName: postgres12
+        databaseName: temporal
+        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectProtocol: tcp
+        user: "{{ .Env.TEMPORAL_DB_USER }}"
+        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        maxConns: 100
+        maxIdleConns: 50
+        maxConnLifetime: 30m
+        tls:
+          enabled: true
+          caFile: /etc/temporal/ssl/ca.crt
+          enableHostVerification: true
+
+    postgres-visibility:
+      sql:
+        pluginName: postgres12
+        databaseName: temporal_visibility
+        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectProtocol: tcp
+        user: "{{ .Env.TEMPORAL_DB_USER }}"
+        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        maxConns: 50
+        maxIdleConns: 25
+        maxConnLifetime: 30m
+        tls:
+          enabled: true
+          caFile: /etc/temporal/ssl/ca.crt
+          enableHostVerification: true
+
+global:
+  membership:
+    maxJoinDuration: 30s
+    broadcastAddress: '0.0.0.0'
+
+  metrics:
+    prometheus:
+      framework: tally
+      listenAddress: '0.0.0.0:9090'
+      handlerPath: /metrics
+
+  tls:
+    internode:
+      server:
+        certFile: /etc/temporal/ssl/server.crt
+        keyFile: /etc/temporal/ssl/server.key
+        requireClientAuth: true
+        clientCaFiles:
+          - /etc/temporal/ssl/ca.crt
+      client:
+        serverName: temporal-internode
+        rootCaFiles:
+          - /etc/temporal/ssl/ca.crt
+    frontend:
+      server:
+        certFile: /etc/temporal/ssl/server.crt
+        keyFile: /etc/temporal/ssl/server.key
+        clientCaFiles:
+          - /etc/temporal/ssl/ca.crt
+      client:
+        serverName: temporal-frontend
+        rootCaFiles:
+          - /etc/temporal/ssl/ca.crt
+
+services:
+  frontend:
+    rpc:
+      grpcPort: 7233
+      membershipPort: 6933
+      bindOnIP: '0.0.0.0'
+  matching:
+    rpc:
+      grpcPort: 7235
+      membershipPort: 6935
+      bindOnIP: '0.0.0.0'
+  history:
+    rpc:
+      grpcPort: 7234
+      membershipPort: 6934
+      bindOnIP: '0.0.0.0'
+  worker:
+    rpc:
+      grpcPort: 7239
+      membershipPort: 6939
+      bindOnIP: '0.0.0.0'
+
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: 'active'
+  currentClusterName: 'active'
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 1
+      rpcName: 'frontend'
+      rpcAddress: '127.0.0.1:7233'
+
+dcRedirectionPolicy:
+  policy: 'noop'
+
+# S3/GCS archival for long-term workflow history retention (7 years for audit).
+# Disabled until S3 bucket is provisioned; set state: 'enabled' to activate.
+archival:
+  history:
+    state: 'disabled'
+    enableRead: false
+    provider:
+      s3store:
+        region: "{{ .Env.AWS_REGION }}"
+  visibility:
+    state: 'disabled'
+    enableRead: false
+
+publicClient:
+  hostPort: '127.0.0.1:7233'
+
+namespaceDefaults:
+  archival:
+    history:
+      state: 'disabled'
+    visibility:
+      state: 'disabled'

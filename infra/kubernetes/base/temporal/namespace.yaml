@@ -1,0 +1,20 @@
+# Temporal namespace with baseline PodSecurity.
+#
+# Temporal server components (history, matching, frontend) run in their own
+# namespace, isolated from the Portarium application namespace.
+#
+# Bead: bead-0388
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: temporal
+  labels:
+    app.kubernetes.io/name: temporal
+    app.kubernetes.io/part-of: portarium
+    kubernetes.io/metadata.name: temporal
+    # Allow Temporal server pods (which need to bind ports) to run at baseline.
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest

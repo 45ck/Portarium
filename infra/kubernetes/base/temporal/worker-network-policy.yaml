@@ -1,0 +1,69 @@
+# NetworkPolicy: allow Portarium execution-plane workers to reach Temporal frontend.
+#
+# Workers in the `portarium` namespace need to connect to Temporal frontend
+# (gRPC port 7233) to poll for workflow tasks and heartbeat.
+#
+# This policy is applied in the `temporal` namespace — it controls what ingress
+# the Temporal frontend service accepts from cross-namespace sources.
+#
+# Bead: bead-0388
+
+---
+# Allow ingress from portarium execution-plane to Temporal frontend.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: temporal-frontend-allow-portarium-workers
+  namespace: temporal
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: temporal-ingress-allow-workers
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: portarium
+          podSelector:
+            matchLabels:
+              portarium.io/component: execution-plane
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: portarium
+          podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 7233
+
+---
+# Allow Prometheus/OTel to scrape Temporal metrics.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: temporal-allow-metrics-scrape
+  namespace: temporal
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: temporal-ingress-allow-metrics
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090

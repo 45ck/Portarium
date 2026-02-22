@@ -1,0 +1,108 @@
+# Temporal server configuration — staging.
+#
+# PostgreSQL persistence + advanced visibility (PostgreSQL 12+).
+# Use with the Helm chart; this file is mounted at
+# /etc/temporal/config/config_template.yaml inside the server container.
+#
+# Bead: bead-0388
+
+persistence:
+  defaultStore: postgres-default
+  visibilityStore: postgres-visibility
+  advancedVisibilityStore: postgres-visibility
+  numHistoryShards: 8
+  datastores:
+    postgres-default:
+      sql:
+        pluginName: postgres12
+        databaseName: temporal
+        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectProtocol: tcp
+        user: "{{ .Env.TEMPORAL_DB_USER }}"
+        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        maxConns: 40
+        maxIdleConns: 20
+        maxConnLifetime: 1h
+        tls:
+          enabled: true
+          caFile: /etc/temporal/ssl/ca.crt
+          enableHostVerification: true
+
+    postgres-visibility:
+      sql:
+        pluginName: postgres12
+        databaseName: temporal_visibility
+        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectProtocol: tcp
+        user: "{{ .Env.TEMPORAL_DB_USER }}"
+        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        maxConns: 20
+        maxIdleConns: 10
+        maxConnLifetime: 1h
+        tls:
+          enabled: true
+          caFile: /etc/temporal/ssl/ca.crt
+          enableHostVerification: true
+
+global:
+  membership:
+    maxJoinDuration: 30s
+    broadcastAddress: '0.0.0.0'
+
+  metrics:
+    prometheus:
+      framework: tally
+      listenAddress: '0.0.0.0:9090'
+
+services:
+  frontend:
+    rpc:
+      grpcPort: 7233
+      membershipPort: 6933
+      bindOnIP: '0.0.0.0'
+  matching:
+    rpc:
+      grpcPort: 7235
+      membershipPort: 6935
+      bindOnIP: '0.0.0.0'
+  history:
+    rpc:
+      grpcPort: 7234
+      membershipPort: 6934
+      bindOnIP: '0.0.0.0'
+  worker:
+    rpc:
+      grpcPort: 7239
+      membershipPort: 6939
+      bindOnIP: '0.0.0.0'
+
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: 'active'
+  currentClusterName: 'active'
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 1
+      rpcName: 'frontend'
+      rpcAddress: '127.0.0.1:7233'
+
+dcRedirectionPolicy:
+  policy: 'noop'
+
+archival:
+  history:
+    state: 'disabled'
+  visibility:
+    state: 'disabled'
+
+publicClient:
+  hostPort: '127.0.0.1:7233'
+
+namespaceDefaults:
+  archival:
+    history:
+      state: 'disabled'
+    visibility:
+      state: 'disabled'

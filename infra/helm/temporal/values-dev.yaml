@@ -1,0 +1,125 @@
+# Temporal Helm values — dev environment
+#
+# Single-replica, PostgreSQL persistence, PostgreSQL standard visibility.
+# Suitable for shared dev cluster.
+#
+# Bead: bead-0388
+
+# ---------------------------------------------------------------------------
+# Server
+# ---------------------------------------------------------------------------
+server:
+  replicaCount: 1
+
+  image:
+    repository: temporalio/server
+    tag: "1.25.2"
+    pullPolicy: IfNotPresent
+
+  # Temporal server configuration (overrides chart defaults)
+  config:
+    logLevel: info
+    numHistoryShards: 4
+
+    persistence:
+      defaultStore: postgres-default
+      visibilityStore: postgres-visibility
+      numHistoryShards: 4
+
+      datastores:
+        postgres-default:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal
+            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectProtocol: tcp
+            user: temporal
+            # password injected at deploy time via --set
+            maxConns: 20
+            maxIdleConns: 20
+            maxConnLifetime: 1h
+
+        postgres-visibility:
+          sql:
+            pluginName: postgres12
+            databaseName: temporal_visibility
+            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectProtocol: tcp
+            user: temporal
+            # password injected at deploy time via --set
+            maxConns: 10
+            maxIdleConns: 10
+            maxConnLifetime: 1h
+
+  # Per-service replica counts
+  frontend:
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 7233
+
+  history:
+    replicaCount: 1
+
+  matching:
+    replicaCount: 1
+
+  worker:
+    replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ---------------------------------------------------------------------------
+# Web UI
+# ---------------------------------------------------------------------------
+web:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# ---------------------------------------------------------------------------
+# Admin tools
+# ---------------------------------------------------------------------------
+admintools:
+  enabled: true
+  image:
+    repository: temporalio/admin-tools
+    tag: "1.25.2"
+
+# ---------------------------------------------------------------------------
+# Bundled Cassandra/MySQL/PostgreSQL — disabled (external DB used)
+# ---------------------------------------------------------------------------
+cassandra:
+  enabled: false
+
+mysql:
+  enabled: false
+
+postgresql:
+  enabled: false
+
+elasticsearch:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# Schema migration job
+# ---------------------------------------------------------------------------
+schema:
+  setup:
+    enabled: true
+    backoffLimit: 100
+  update:
+    enabled: true
+    backoffLimit: 100

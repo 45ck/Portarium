@@ -1,0 +1,58 @@
+# PodDisruptionBudgets for Temporal services.
+#
+# Ensures at least 1 replica of each critical Temporal service remains
+# available during node drain, rolling updates, or cluster upgrades.
+# Production values-prod.yaml sets minAvailable: 2 via Helm.
+#
+# These PDBs are applied in addition to Helm chart PDBs to cover the
+# admin-tools deployment in staging.
+#
+# Bead: bead-0388
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: temporal-frontend-pdb
+  namespace: temporal
+  labels:
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: temporal-frontend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: frontend
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: temporal-history-pdb
+  namespace: temporal
+  labels:
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: temporal-history
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: history
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: temporal-matching-pdb
+  namespace: temporal
+  labels:
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: temporal-matching
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: temporal
+      app.kubernetes.io/component: matching
