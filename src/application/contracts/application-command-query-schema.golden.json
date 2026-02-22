@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 21,
+  "operationCount": 23,
   "operations": [
     {
       "kind": "command",
@@ -420,6 +420,46 @@
         "error": {
           "name": "ListAgentsError",
           "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "syncAgentToGateway",
+      "sourcePath": "src/application/commands/sync-agent-to-gateway.ts",
+      "action": "machine-agent:bridge-sync",
+      "types": {
+        "input": {
+          "name": "SyncAgentToGatewayInput",
+          "sha256": "61b52827c45502f3049766b5a2ab3407e6d9d287ccdff12dde6aec5a84bc1f83"
+        },
+        "output": {
+          "name": "SyncAgentToGatewayOutput",
+          "sha256": "aee22b0870c87eeeda052a5e4759faca904ac66d2eaabdd4aedfd10324083166"
+        },
+        "error": {
+          "name": "SyncAgentToGatewayError",
+          "sha256": "e5a68d7c30eceaa1217fdc152331c790fd4bd7c83082975a90b6dc7d458be29d"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "deactivateMachine",
+      "sourcePath": "src/application/commands/deactivate-machine.ts",
+      "action": "machine-agent:bridge-sync",
+      "types": {
+        "input": {
+          "name": "DeactivateMachineInput",
+          "sha256": "44932dc4ecaeb2418b386c3941468b7944e169c2d6873f3f3cfba267aa432c59"
+        },
+        "output": {
+          "name": "DeactivateMachineOutput",
+          "sha256": "b9cbdd9448775eccc4760a275b1f949deec4cc8d77db129b673802f25bd4c04f"
+        },
+        "error": {
+          "name": "DeactivateMachineError",
+          "sha256": "e5a68d7c30eceaa1217fdc152331c790fd4bd7c83082975a90b6dc7d458be29d"
         }
       }
     }

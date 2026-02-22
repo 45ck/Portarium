@@ -49,3 +49,4 @@ export * from './query-cache.js';
 export * from './read-model-projector.js';
 export * from './event-stream.js';
 export * from './machine-query-store.js';
+export * from './openclaw-management-bridge-port.js';

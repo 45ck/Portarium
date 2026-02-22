@@ -13,7 +13,8 @@ export type ActionKey =
   | 'workspaceRead'
   | 'agentHeartbeat'
   | 'machineAgentRegister'
-  | 'machineAgentRead';
+  | 'machineAgentRead'
+  | 'machineAgentBridgeSync';
 
 export type OperationContract = Readonly<{
   kind: OperationKind;
@@ -262,6 +263,28 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'ListAgentsInput',
       output: 'ListAgentsOutput',
       error: 'ListAgentsError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'syncAgentToGateway',
+    sourcePath: 'src/application/commands/sync-agent-to-gateway.ts',
+    actionKey: 'machineAgentBridgeSync',
+    types: {
+      input: 'SyncAgentToGatewayInput',
+      output: 'SyncAgentToGatewayOutput',
+      error: 'SyncAgentToGatewayError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'deactivateMachine',
+    sourcePath: 'src/application/commands/deactivate-machine.ts',
+    actionKey: 'machineAgentBridgeSync',
+    types: {
+      input: 'DeactivateMachineInput',
+      output: 'DeactivateMachineOutput',
+      error: 'DeactivateMachineError',
     },
   },
 ] as const satisfies readonly OperationContract[];

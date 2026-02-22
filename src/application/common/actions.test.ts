@@ -20,6 +20,7 @@ describe('APP_ACTIONS contract', () => {
       'agent:heartbeat',
       'machine-agent:register',
       'machine-agent:read',
+      'machine-agent:bridge-sync',
     ]);
   });
 

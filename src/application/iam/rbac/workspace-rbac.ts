@@ -31,6 +31,8 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'machine-agent:register': ['admin'],
   /** Read machines and agents — available to operators and auditors. */
   'machine-agent:read': ['admin', 'operator', 'auditor'],
+  /** Bridge sync is admin-only: syncs agent lifecycle with the OpenClaw gateway. */
+  'machine-agent:bridge-sync': ['admin'],
 };
 
 export function isAllowedWorkspaceAction(

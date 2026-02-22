@@ -15,6 +15,8 @@ export const APP_ACTIONS = {
   machineAgentRegister: 'machine-agent:register',
   /** Read machine or agent registrations. */
   machineAgentRead: 'machine-agent:read',
+  /** Sync agent lifecycle state with an OpenClaw gateway (bridge operations). */
+  machineAgentBridgeSync: 'machine-agent:bridge-sync',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
