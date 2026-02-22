@@ -105,20 +105,22 @@ export class GrpcMissionGateway implements MissionPort {
 
   /** Wrap a gRPC callback-style call in a Promise with deadline. */
   #call<TReq, TRes>(
-    method: (client: MissionServiceClient) => (
-      req: TReq,
-      opts: { deadline: Date },
-      cb: GrpcCallback<TRes>,
-    ) => void,
+    method: (
+      client: MissionServiceClient,
+    ) => (req: TReq, opts: { deadline: Date }, cb: GrpcCallback<TRes>) => void,
     request: TReq,
   ): Promise<TRes> {
     return new Promise((resolve, reject) => {
       const client = this.#getClient();
       const deadline = new Date(Date.now() + (this.#config.deadlineMs ?? 10_000));
-      (method(client) as (req: unknown, opts: { deadline: Date }, cb: GrpcCallback<TRes>) => void)(request, { deadline }, (err, res) => {
-        if (err) reject(err);
-        else resolve(res as TRes);
-      });
+      (method(client) as (req: unknown, opts: { deadline: Date }, cb: GrpcCallback<TRes>) => void)(
+        request,
+        { deadline },
+        (err, res) => {
+          if (err) reject(err);
+          else resolve(res as TRes);
+        },
+      );
     });
   }
 
@@ -223,7 +225,10 @@ export class GrpcMissionGateway implements MissionPort {
     }
   }
 
-  async getMissionStatus(missionId: MissionId, correlationId: CorrelationId): Promise<MissionStatusResult> {
+  async getMissionStatus(
+    missionId: MissionId,
+    correlationId: CorrelationId,
+  ): Promise<MissionStatusResult> {
     const grpcReq = { mission_id: missionId, correlation_id: correlationId };
 
     const res = await this.#call<typeof grpcReq, Record<string, unknown>>(
@@ -234,7 +239,9 @@ export class GrpcMissionGateway implements MissionPort {
     return {
       missionId,
       status: mapMissionStatus(String(res['status'] ?? 'unknown')),
-      ...(res['action_execution_id'] ? { actionExecutionId: String(res['action_execution_id']) } : {}),
+      ...(res['action_execution_id']
+        ? { actionExecutionId: String(res['action_execution_id']) }
+        : {}),
       observedAt: String(res['observed_at'] ?? new Date().toISOString()),
     };
   }
@@ -260,15 +267,22 @@ function mapRejectReason(
   raw: string,
 ): 'InvalidMission' | 'UnsupportedAction' | 'InvalidState' | 'DuplicateRequest' {
   switch (raw) {
-    case 'InvalidMission': return 'InvalidMission';
-    case 'UnsupportedAction': return 'UnsupportedAction';
-    case 'InvalidState': return 'InvalidState';
-    case 'DuplicateRequest': return 'DuplicateRequest';
-    default: return 'InvalidMission';
+    case 'InvalidMission':
+      return 'InvalidMission';
+    case 'UnsupportedAction':
+      return 'UnsupportedAction';
+    case 'InvalidState':
+      return 'InvalidState';
+    case 'DuplicateRequest':
+      return 'DuplicateRequest';
+    default:
+      return 'InvalidMission';
   }
 }
 
-function mapMissionStatus(raw: string): import('../../../domain/robots/mission-v1.js').MissionStatus {
+function mapMissionStatus(
+  raw: string,
+): import('../../../domain/robots/mission-v1.js').MissionStatus {
   const MAP: Record<string, import('../../../domain/robots/mission-v1.js').MissionStatus> = {
     pending: 'Pending',
     dispatched: 'Dispatched',

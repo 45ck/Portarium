@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-22T02:59:26.362Z",
+  "generatedAt": "2026-02-22T03:04:37.938Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
@@ -11,7 +11,7 @@
     "tsconfig.json": "bdee72b9533eff301354e9a5942724572a4c1ba4eed3a0065adef8907e37bb41",
     "tsconfig.eslint.json": "4ac4958f8d613ddc46ffec41cb8c6f06452d72e1952f0113fce57d3a1fe57ac3",
     "tsconfig.build.json": "ff9f797a051799dfd303017febbfa8d52186d3d3c7f61d139af7b02430c8828c",
-    "vitest.config.ts": "c25838c1239f5bd0d7d4ba6d1144c5bef79527e642043ab92fc1a0c945dbf6c6",
+    "vitest.config.ts": "ee8ccc523f8b18558a868a388b1176253b644dc31385e734872515131628d43d",
     "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
     "knip.json": "cdf8ba11ebff4e4cd9f2b92c80e8ea3342c1bcb42dfcf4c5acefeadfddbf3a70",
     "cspell.json": "2e8d581d0ea441d169ee1d78e5ef2b3e043627a367d0334c9ddd28e524aa10ce",

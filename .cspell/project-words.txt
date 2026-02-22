@@ -736,6 +736,35 @@ azuread
 slos
 pollers
 
+# OpenTelemetry Collector processor names
+spanmetrics
+servicegraph
+
+# Automotive / robotics terms
+GMAC
+undock
+Undock
+
+# Email / security terms
+smime
+
+# Kubernetes / auth terms
+creds
+tokenreviews
+
+# PWA / service worker terms
+Workbox
+
+# gRPC protobuf terms
+oneofs
+
+# Preemption states
+waitingpreemption
+
+# MQTT broker names
+hivemq
+HiveMQ
+
 # Database / backup terms
 quiescing
 

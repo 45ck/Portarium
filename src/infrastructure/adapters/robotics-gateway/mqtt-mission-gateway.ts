@@ -180,7 +180,9 @@ export class MqttMissionGateway implements MissionPort {
           return {
             missionId,
             status,
-            ...(retained['action_execution_id'] ? { actionExecutionId: String(retained['action_execution_id']) } : {}),
+            ...(retained['action_execution_id']
+              ? { actionExecutionId: String(retained['action_execution_id']) }
+              : {}),
             observedAt: String(retained['observed_at'] ?? new Date().toISOString()),
           };
         }
@@ -311,7 +313,7 @@ export class MqttMissionGateway implements MissionPort {
       if (res.status === 404) return null;
       if (!res.ok) return null;
 
-      const json = await res.json() as Record<string, unknown>;
+      const json = (await res.json()) as Record<string, unknown>;
       // EMQX wraps payload in base64; decode and parse.
       const raw = json['payload'] as string | undefined;
       if (!raw) return null;

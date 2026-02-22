@@ -16,12 +16,12 @@ kind: ClusterSPIFFEID
 metadata:
   name: robotics-gateway
 spec:
-  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/robotics-gateway/{{ .PodMeta.Name }}"
+  spiffeIDTemplate: 'spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/robotics-gateway/{{ .PodMeta.Name }}'
   podSelector:
     matchLabels:
       app.kubernetes.io/component: robotics-gateway
   dnsNameTemplates:
-    - "{{ .PodMeta.Name }}.robotics-gateway.portarium.svc.cluster.local"
+    - '{{ .PodMeta.Name }}.robotics-gateway.portarium.svc.cluster.local'
   ttl: 1h
 ---
 apiVersion: spire.spiffe.io/v1alpha1
@@ -29,7 +29,7 @@ kind: ClusterSPIFFEID
 metadata:
   name: control-plane
 spec:
-  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/control-plane/{{ .PodMeta.Name }}"
+  spiffeIDTemplate: 'spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/control-plane/{{ .PodMeta.Name }}'
   podSelector:
     matchLabels:
       app.kubernetes.io/component: control-plane
@@ -40,7 +40,7 @@ kind: ClusterSPIFFEID
 metadata:
   name: execution-plane
 spec:
-  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/execution-plane/{{ .PodMeta.Name }}"
+  spiffeIDTemplate: 'spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/execution-plane/{{ .PodMeta.Name }}'
   podSelector:
     matchLabels:
       app.kubernetes.io/component: execution-plane
