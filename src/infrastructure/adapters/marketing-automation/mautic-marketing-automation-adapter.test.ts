@@ -28,10 +28,11 @@ function makeFetch(body: unknown, status = 200) {
   });
 }
 
-function makeAdapter(fetchFn = makeFetch({})) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function makeAdapter(fetchFn: any = makeFetch({})) {
   return new MauticMarketingAutomationAdapter(
     { baseUrl: BASE_URL, username: 'admin', password: 'pass' },
-    fetchFn as unknown as typeof fetch,
+    fetchFn as typeof fetch,
   );
 }
 

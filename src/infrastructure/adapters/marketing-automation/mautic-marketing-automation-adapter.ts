@@ -53,7 +53,6 @@ interface MauticResponse<T> {
 
 function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: string): PartyV1 {
   const fields = (contact['fields'] as Record<string, Record<string, unknown>> | undefined)?.['all'] ?? {};
-  const email = typeof fields['email'] === 'string' ? fields['email'] : undefined;
   return {
     partyId: PartyId(String(contact['id'] ?? '')),
     tenantId: tenantId as PartyV1['tenantId'],
@@ -61,7 +60,7 @@ function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: str
     displayName:
       `${String(fields['firstname'] ?? '')} ${String(fields['lastname'] ?? '')}`.trim() ||
       String(fields['email'] ?? contact['id'] ?? ''),
-    ...(email !== undefined ? { email } : {}),
+    ...(typeof fields['email'] === 'string' ? { email: fields['email'] } : {}),
     roles: ['lead'],
   };
 }
