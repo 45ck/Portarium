@@ -3,3 +3,4 @@ export * from './capability-handshake-v1.js';
 export * from './machine-registration-v1.js';
 export * from './openclaw-tool-blast-radius-v1.js';
 export * from './robot-intent-command-v1.js';
+export * from './openclaw-agent-binding-v1.js';
