@@ -43,7 +43,9 @@
     "conns",
     "hnsw",
     "HNSW",
-    "pgvector"
+    "pgvector",
+    "janusgraph",
+    "JanusGraph"
   ],
   "ignorePaths": [
     "dist/**",
