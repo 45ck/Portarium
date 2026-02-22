@@ -12,6 +12,7 @@ import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
   AuthenticationPort,
   AuthorizationPort,
+  EventStreamBroadcast,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
@@ -67,6 +68,8 @@ export type ControlPlaneDeps = Readonly<{
   rateLimitStore?: RateLimitStore;
   /** Optional query cache for hot reads; when absent, caching is disabled. */
   queryCache?: QueryCache;
+  /** Optional event-stream broadcast; when absent, the SSE endpoint returns 503. */
+  eventStream?: EventStreamBroadcast;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';

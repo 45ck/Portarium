@@ -23,6 +23,7 @@ import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
 } from '../../infrastructure/rate-limiting/index.js';
+import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
@@ -220,6 +221,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authorization = buildAuthorization();
   const rateLimitStore = buildRateLimitStore();
   const queryCache = buildQueryCache();
+  const eventStream = new InMemoryEventStreamBroadcast();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
@@ -237,6 +239,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       runQueryStore: runStore,
       rateLimitStore,
       queryCache,
+      eventStream,
     };
   }
 
@@ -267,5 +270,13 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     saveRun: () => Promise.resolve(),
   };
 
-  return { authentication, authorization, workspaceStore, runStore, rateLimitStore, queryCache };
+  return {
+    authentication,
+    authorization,
+    workspaceStore,
+    runStore,
+    rateLimitStore,
+    queryCache,
+    eventStream,
+  };
 }

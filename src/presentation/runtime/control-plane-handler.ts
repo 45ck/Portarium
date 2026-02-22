@@ -43,6 +43,7 @@ import {
   handleListMapLayers,
   handleLocationEventsStream,
 } from './control-plane-handler.location.js';
+import { handleEventsStream } from './control-plane-handler.events.js';
 import {
   handleAssignHumanTask,
   handleCompleteHumanTask,
@@ -450,6 +451,15 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       workspaceId: c.req.param('workspaceId'),
       runId: c.req.param('runId'),
     });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/events:stream   (workspace-scoped SSE stream)
+  //
+  // Same colon-in-path treatment as location-events:stream below.
+  app.get('/v1/workspaces/:workspaceId/events:stream', async (c) => {
+    const ctx = c.get('ctx');
+    await handleEventsStream({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

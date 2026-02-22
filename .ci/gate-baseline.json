@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-02-22T22:24:07.780Z",
+  "generatedAt": "2026-02-22T22:54:59.786Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
     "scripts/ci/gate-baseline.shared.mjs": "06a9ae97da046764de48d84c2646b0747ddadbc1f5b21403f0020bab8d57514d",
-    ".gitattributes": "5063de8890f47be55a74d738765409c78e952fbf859cd9e4c4e0780e5d5ba2e9",
+    ".gitattributes": "348a3107920e0ceecb4c507089618e6b76edd94a2d4baf4ea7026d61d22e6b3a",
     ".dependency-cruiser.cjs": "8b59eff5ef2835963da76522c9dbed5b47583f932750d6a83d5d0ff30e4ecba7",
     "eslint.config.mjs": "39812d54b58b7bd05fe548e59d3ec235b9d00b05a809d44fc531d79b6f7b4350",
     "package.json": "1e7428ad2bd19ea8440ca4b2e6c986da31658b7b3f4a5e3fab5d36ebfa68f46a",
