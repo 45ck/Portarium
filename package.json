@@ -25,6 +25,8 @@
     "cockpit:demo:approvals-v2:showcase": "node scripts/qa/render-approvals-v2-showcase.mjs",
     "cockpit:demo:gallery": "node scripts/qa/render-demo-gallery.mjs",
     "cockpit:demo:gallery:dry-run": "node scripts/qa/render-demo-gallery.mjs --dry-run",
+    "cockpit:demo:redaction:check": "node scripts/qa/check-demo-redaction.mjs",
+    "cockpit:demo:redaction:check:strict": "node scripts/qa/check-demo-redaction.mjs --strict",
     "cockpit:qa:mobile-breakpoints": "node scripts/qa/capture-cockpit-mobile-breakpoints.mjs",
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
