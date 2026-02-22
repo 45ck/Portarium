@@ -252,3 +252,26 @@ Efforts are relative (“High” = substantial architecture work; “Low” = sm
 By following these practices and implementing the above changes, Portarium will achieve a robust, enterprise-quality design. The layered architecture and extensive documentation are strong foundations【27†L6-L14】【10†L8-L17】. Addressing the highlighted gaps (especially persistence and routing) will harden the system and improve maintainability and scalability for the long term.
 
 **Sources:** Portarium repository (architecture docs, code, tests)【27†L6-L14】【10†L8-L17】【37†L70-L78】【41†L100-L108】【82†L217-L224】 and associated ADR/spec documents【43†L99-L103】. These inform the analysis of current vs. recommended architecture.
+
+---
+
+## Architecture Review Triage (bead-ev20 + bead-lh3q — assessed 2026-02-22)
+
+### Validated findings
+
+| Finding | File(s) | Current state | Bead |
+|---------|---------|---------------|------|
+| Regex HTTP routing | `control-plane-handler.ts:188` — 19 `pattern: RegExp` route registrations in `ROUTES` array | **CONFIRMED OPEN** — still uses custom regex dispatch | bead-e1bh (P1, blocked by bead-lh3q) |
+| In-memory stub defaults | `control-plane-handler.bootstrap.ts:132,145,150` — `InMemoryRateLimitStore` + null workspace/run stores when `PORTARIUM_USE_POSTGRES_STORES` absent | **CONFIRMED OPEN** — silently degrades, no fail-fast for missing DB | bead-yz3x (P1, blocked by bead-lh3q); rate-limit covered by bead-dsnp |
+| Raw Error in HTTP responses | `src/presentation/runtime/` — no `res.json(err)` patterns found; `parseListQueryParams` returns `{ok:false, error:string}` but is currently unused | **NON-ISSUE** — consistent ProblemDetails pattern; `parseListQueryParams` flagged by knip |
+| Magic CloudEvent type strings | `nats-event-publisher.test.ts` — inline string literals only in test files; source files not checked | **LOW** — type strings in tests only; production publishers use typed constants |
+| Coverage artifact | `.github/workflows/ci.yml:60-65` | **DONE** — coverage artifact uploaded on every PR run |
+| Argo canary smoke test | `.github/workflows/cd-progressive.yml:137` | **PARTIAL** — canary monitoring exists; confirm pre-promote smoke step is automated |
+| Distributed caching | Not yet implemented for policy/config reads | **OPEN** | bead-mvuv (P1) |
+
+### Summary
+
+- Report written when codebase was in scaffold state; persistence (postgres stores) and coverage are now substantially implemented.
+- Two unique open findings: (1) regex routing (bead-e1bh), (2) caching layer (bead-mvuv).
+- In-memory rate limiting is tracked in bead-dsnp (P0). Bootstrap fail-fast tracked in bead-yz3x.
+- No new beads seeded — all findings map to existing beads above.
