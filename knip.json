@@ -20,6 +20,7 @@
     "@opentelemetry/api",
     "pg",
     "ioredis",
-    "hono"
+    "hono",
+    "esbuild"
   ]
 }
