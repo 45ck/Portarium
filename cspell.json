@@ -40,7 +40,10 @@
     "EXPIREAT",
     "logql",
     "traceql",
-    "conns"
+    "conns",
+    "hnsw",
+    "HNSW",
+    "pgvector"
   ],
   "ignorePaths": [
     "dist/**",
