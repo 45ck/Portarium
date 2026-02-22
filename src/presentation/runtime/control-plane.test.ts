@@ -10,12 +10,14 @@ afterEach(async () => {
   handle = undefined;
   delete process.env['PORTARIUM_CONTAINER_ROLE'];
   delete process.env['PORTARIUM_HTTP_PORT'];
+  delete process.env['DEV_STUB_STORES'];
 });
 
 describe('control-plane runtime main', () => {
   it('uses PORTARIUM_CONTAINER_ROLE and serves health', async () => {
     process.env['PORTARIUM_CONTAINER_ROLE'] = 'control-plane';
     process.env['PORTARIUM_HTTP_PORT'] = '0';
+    process.env['DEV_STUB_STORES'] = 'true';
 
     handle = await main({ host: '127.0.0.1' });
     const res = await fetch(`http://${handle.host}:${handle.port}/healthz`);

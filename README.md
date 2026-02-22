@@ -45,8 +45,15 @@ npm ci
 #   auth      — + HashiCorp Vault
 #   tools     — + OTel Collector + Tempo + Grafana
 COMPOSE_PROFILES=baseline,runtime,auth docker compose up -d
+PORTARIUM_USE_POSTGRES_STORES=true PORTARIUM_DATABASE_URL=postgresql://portarium:portarium@localhost:5432/portarium \
 npx tsx src/presentation/runtime/control-plane.ts
 ```
+
+> **Store configuration required.** The control plane will refuse to start unless either:
+> - `PORTARIUM_USE_POSTGRES_STORES=true` + `PORTARIUM_DATABASE_URL` is set (real Postgres), or
+> - `DEV_STUB_STORES=true` + `NODE_ENV=development` or `test` (in-memory stubs for local iteration only — data does not persist).
+>
+> Setting neither will produce a FATAL startup error. This prevents silently deploying a non-functional system.
 
 In another terminal:
 
