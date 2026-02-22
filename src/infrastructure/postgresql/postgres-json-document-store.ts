@@ -54,15 +54,40 @@ LIMIT 1;`,
   }
 
   public async list(
-    params: Readonly<{ tenantId: string; collection: string; workspaceId?: string }>,
+    params: Readonly<{
+      tenantId: string;
+      collection: string;
+      workspaceId?: string;
+      /**
+       * Maximum rows to return. Callers must always pass this to prevent
+       * unbounded full-table scans. Use `MAX_LIMIT + 1` for cursor-page
+       * detection (fetch one extra to detect whether a next page exists).
+       */
+      limit: number;
+      /**
+       * Keyset cursor: only rows with document_id strictly greater than this
+       * value are returned. Combines with limit for O(1) page fetches without
+       * OFFSET scans.
+       */
+      afterId?: string;
+    }>,
   ): Promise<readonly unknown[]> {
+    const sqlParams: unknown[] = [
+      params.tenantId,
+      params.collection,
+      params.workspaceId ?? null,
+      params.afterId ?? null,
+      params.limit,
+    ];
     const result = await this.#client.query<{ payload: unknown }>(
       `${SQL_JSON_DOC_SELECT_MANY}
 SELECT payload
 FROM domain_documents
 WHERE tenant_id = $1 AND collection = $2 AND ($3::text IS NULL OR workspace_id = $3)
-ORDER BY document_id ASC;`,
-      [params.tenantId, params.collection, params.workspaceId ?? null],
+  AND ($4::text IS NULL OR document_id > $4)
+ORDER BY document_id ASC
+LIMIT $5;`,
+      sqlParams,
     );
     return result.rows.map((row) => row.payload);
   }

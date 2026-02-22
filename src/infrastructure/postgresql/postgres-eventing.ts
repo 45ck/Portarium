@@ -36,6 +36,7 @@ export class PostgresEvidenceLog implements EvidenceLogPort {
       tenantId: String(tenantId),
       workspaceId: String(entry.workspaceId),
       collection: COLLECTION_EVIDENCE_LOG,
+      limit: 10_000, // evidence chains are ordered by hash; load all to find the tail
     });
 
     const existingEntries = existingPayloads
@@ -90,6 +91,7 @@ export class PostgresOutboxStore implements OutboxPort {
     const payloads = await this.#documents.list({
       tenantId: OUTBOX_TENANT,
       collection: COLLECTION_OUTBOX,
+      limit: limit * 4 + 1, // fetch more than needed to account for non-pending entries
     });
 
     const now = new Date().toISOString();

@@ -50,10 +50,16 @@ export class PostgresWorkItemStore implements WorkItemStore {
     workspaceId: string,
     filter: ListWorkItemsFilter,
   ): Promise<WorkItemListPage> {
+    const offset = cursorToOffset(filter.cursor);
+    const limit = normalizeLimit(filter.limit);
+    // Fetch only the rows needed: offset + limit + 1 (to detect next page),
+    // capped at a safety maximum to prevent full-collection scans.
+    const sqlLimit = Math.min(offset + limit + 1, normalizeLimit(undefined) * 4 + 1);
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_WORK_ITEMS,
+      limit: sqlLimit,
     });
 
     const sorted = payloads
@@ -61,8 +67,6 @@ export class PostgresWorkItemStore implements WorkItemStore {
       .filter((item) => matchesWorkItemFilter(item, filter))
       .sort((left, right) => String(left.workItemId).localeCompare(String(right.workItemId)));
 
-    const offset = cursorToOffset(filter.cursor);
-    const limit = normalizeLimit(filter.limit);
     const pageItems = sorted.slice(offset, offset + limit);
     const nextCursor = offset + limit < sorted.length ? String(offset + limit) : undefined;
 

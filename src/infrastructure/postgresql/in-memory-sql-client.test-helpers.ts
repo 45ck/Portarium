@@ -81,23 +81,30 @@ export class InMemorySqlClient implements SqlClient {
   }
 
   #selectMany<Row extends SqlRow>(params: readonly unknown[]): SqlQueryResult<Row> {
-    const [tenantId, collection, workspaceId] = params;
+    const [tenantId, collection, workspaceId, afterId, limit] = params;
     const wantedTenant = String(tenantId);
     const wantedCollection = String(collection);
     if (workspaceId !== null && typeof workspaceId !== 'string') {
       throw new Error('workspaceId must be string or null.');
     }
     const wantedWorkspace = workspaceId ?? undefined;
+    const afterIdStr = afterId != null ? String(afterId) : undefined;
+    const limitNum = limit != null ? Number(limit) : undefined;
 
-    const rows = [...this.#rows.values()]
+    let rows = [...this.#rows.values()]
       .filter(
         (row) =>
           row.tenantId === wantedTenant &&
           row.collection === wantedCollection &&
-          (wantedWorkspace === undefined || row.workspaceId === wantedWorkspace),
+          (wantedWorkspace === undefined || row.workspaceId === wantedWorkspace) &&
+          (afterIdStr === undefined || row.documentId > afterIdStr),
       )
       .sort((left, right) => left.documentId.localeCompare(right.documentId))
       .map((row) => ({ payload: row.payload }) as unknown as Row);
+
+    if (limitNum !== undefined) {
+      rows = rows.slice(0, limitNum);
+    }
 
     return {
       rows,
