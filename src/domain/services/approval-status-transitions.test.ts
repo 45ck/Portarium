@@ -28,12 +28,7 @@ import {
 // Constants used across tests
 // ---------------------------------------------------------------------------
 
-const ALL_STATUSES: readonly ApprovalStatus[] = [
-  'Pending',
-  'Approved',
-  'Denied',
-  'RequestChanges',
-];
+const ALL_STATUSES: readonly ApprovalStatus[] = ['Pending', 'Approved', 'Denied', 'RequestChanges'];
 
 const TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Approved', 'Denied', 'RequestChanges'];
 const NON_TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Pending'];
@@ -47,12 +42,9 @@ describe('isValidApprovalStatusTransition — valid moves', () => {
     ['Pending', 'Approved'],
     ['Pending', 'Denied'],
     ['Pending', 'RequestChanges'],
-  ] as [ApprovalStatus, ApprovalStatus][])(
-    '%s → %s is valid',
-    (from, to) => {
-      expect(isValidApprovalStatusTransition(from, to)).toBe(true);
-    },
-  );
+  ] as [ApprovalStatus, ApprovalStatus][])('%s → %s is valid', (from, to) => {
+    expect(isValidApprovalStatusTransition(from, to)).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -76,12 +68,9 @@ describe('isValidApprovalStatusTransition — invalid moves', () => {
     ['RequestChanges', 'RequestChanges'],
     // Self-transition on Pending
     ['Pending', 'Pending'],
-  ] as [ApprovalStatus, ApprovalStatus][])(
-    '%s → %s is invalid',
-    (from, to) => {
-      expect(isValidApprovalStatusTransition(from, to)).toBe(false);
-    },
-  );
+  ] as [ApprovalStatus, ApprovalStatus][])('%s → %s is invalid', (from, to) => {
+    expect(isValidApprovalStatusTransition(from, to)).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------

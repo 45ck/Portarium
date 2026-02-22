@@ -189,9 +189,9 @@ describe('parseEvidenceDurabilityPolicyV1 — parse errors', () => {
   });
 
   it('throws for unknown deletionPolicy', () => {
-    expect(() =>
-      parseEvidenceDurabilityPolicyV1(validPolicy({ deletionPolicy: 'shred' })),
-    ).toThrow(EvidenceDurabilityPolicyParseError);
+    expect(() => parseEvidenceDurabilityPolicyV1(validPolicy({ deletionPolicy: 'shred' }))).toThrow(
+      EvidenceDurabilityPolicyParseError,
+    );
   });
 
   it('throws for unknown preferredExportFormat', () => {
@@ -344,10 +344,16 @@ describe('canonical default policies', () => {
 
   it('Forensic default is never deletable (regardless of retention/hold)', () => {
     expect(
-      isDeletionPermitted(FORENSIC_DURABILITY_POLICY, { retentionExpired: true, legalHoldActive: false }),
+      isDeletionPermitted(FORENSIC_DURABILITY_POLICY, {
+        retentionExpired: true,
+        legalHoldActive: false,
+      }),
     ).toBe(false);
     expect(
-      isDeletionPermitted(FORENSIC_DURABILITY_POLICY, { retentionExpired: true, legalHoldActive: true }),
+      isDeletionPermitted(FORENSIC_DURABILITY_POLICY, {
+        retentionExpired: true,
+        legalHoldActive: true,
+      }),
     ).toBe(false);
   });
 

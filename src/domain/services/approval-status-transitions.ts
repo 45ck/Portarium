@@ -65,10 +65,7 @@ export class ApprovalStatusTransitionError extends Error {
   }
 }
 
-export function isValidApprovalStatusTransition(
-  from: ApprovalStatus,
-  to: ApprovalStatus,
-): boolean {
+export function isValidApprovalStatusTransition(from: ApprovalStatus, to: ApprovalStatus): boolean {
   return APPROVAL_STATUS_TRANSITIONS[from].includes(to);
 }
 

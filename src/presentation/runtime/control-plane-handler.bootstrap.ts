@@ -18,12 +18,43 @@ import {
 import { InMemoryRateLimitStore } from '../../infrastructure/rate-limiting/index.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 
+/**
+ * Returns any configuration warnings for the JWT authentication setup.
+ * Exported for testing; the bootstrap calls this and writes warnings to stderr.
+ */
+export function getJoseAuthConfigWarnings(
+  env: Record<string, string | undefined> = process.env,
+): readonly string[] {
+  const warnings: string[] = [];
+
+  if (!env['PORTARIUM_JWT_ISSUER']?.trim()) {
+    warnings.push(
+      '[portarium] WARNING: PORTARIUM_JWT_ISSUER is not set. ' +
+        'Without issuer validation, tokens from any issuer will be accepted. ' +
+        'Set PORTARIUM_JWT_ISSUER to the expected token issuer URL.',
+    );
+  }
+  if (!env['PORTARIUM_JWT_AUDIENCE']?.trim()) {
+    warnings.push(
+      '[portarium] WARNING: PORTARIUM_JWT_AUDIENCE is not set. ' +
+        'Without audience validation, tokens intended for other services will be accepted. ' +
+        'Set PORTARIUM_JWT_AUDIENCE to this service\'s expected audience value.',
+    );
+  }
+
+  return warnings;
+}
+
 function tryBuildJoseAuthentication(): AuthenticationPort | null {
   const jwksUri = process.env['PORTARIUM_JWKS_URI']?.trim();
   if (!jwksUri) return null;
 
   const issuer = process.env['PORTARIUM_JWT_ISSUER']?.trim();
   const audience = process.env['PORTARIUM_JWT_AUDIENCE']?.trim();
+
+  for (const warning of getJoseAuthConfigWarnings()) {
+    process.stderr.write(warning + '\n');
+  }
 
   return new JoseJwtAuthentication({
     jwksUri,

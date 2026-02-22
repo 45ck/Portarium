@@ -35,15 +35,15 @@ describe('checkDevAuthEnvGate', () => {
   });
 
   it('throws a fatal error when ENABLE_DEV_AUTH=true but NODE_ENV=production', () => {
-    expect(() =>
-      checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'production' }),
-    ).toThrow(/FATAL.*production/i);
+    expect(() => checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'production' })).toThrow(
+      /FATAL.*production/i,
+    );
   });
 
   it('throws a fatal error when ENABLE_DEV_AUTH=true but NODE_ENV=staging', () => {
-    expect(() =>
-      checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'staging' }),
-    ).toThrow(/FATAL/i);
+    expect(() => checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'staging' })).toThrow(
+      /FATAL/i,
+    );
   });
 
   it('throws a fatal error when ENABLE_DEV_AUTH=true but NODE_ENV is absent', () => {
@@ -55,8 +55,8 @@ describe('checkDevAuthEnvGate', () => {
   });
 
   it('error message names the offending NODE_ENV value', () => {
-    expect(() =>
-      checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'custom-env' }),
-    ).toThrow(/"custom-env"/);
+    expect(() => checkDevAuthEnvGate({ ENABLE_DEV_AUTH: 'true', NODE_ENV: 'custom-env' })).toThrow(
+      /"custom-env"/,
+    );
   });
 });

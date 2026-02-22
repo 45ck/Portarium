@@ -40,9 +40,7 @@ import {
 // ---------------------------------------------------------------------------
 
 /** All run statuses derived at runtime from the canonical table. */
-const ALL_RUN_STATUSES: readonly RunStatus[] = Object.keys(
-  RUN_STATUS_TRANSITIONS,
-) as RunStatus[];
+const ALL_RUN_STATUSES: readonly RunStatus[] = Object.keys(RUN_STATUS_TRANSITIONS) as RunStatus[];
 
 const ALL_RUN_PAIRS: ReadonlyArray<readonly [RunStatus, RunStatus]> = ALL_RUN_STATUSES.flatMap(
   (from) => ALL_RUN_STATUSES.map((to) => [from, to] as const),
@@ -240,9 +238,7 @@ const APPROVAL_STATUSES: readonly ApprovalStatus[] = Object.keys(
 ) as ApprovalStatus[];
 
 const ALL_APPROVAL_PAIRS: ReadonlyArray<readonly [ApprovalStatus, ApprovalStatus]> =
-  APPROVAL_STATUSES.flatMap((from) =>
-    APPROVAL_STATUSES.map((to) => [from, to] as const),
-  );
+  APPROVAL_STATUSES.flatMap((from) => APPROVAL_STATUSES.map((to) => [from, to] as const));
 
 describe('Approval state machine — structural invariants', () => {
   it('only Pending has outgoing transitions', () => {
@@ -316,9 +312,7 @@ describe('Approval state machine — reachability', () => {
       APPROVAL_STATUS_TRANSITIONS as unknown as Record<RunStatus, readonly RunStatus[]>,
     );
     for (const decision of TERMINAL_APPROVAL_STATUSES) {
-      expect(
-        reachable.has(decision as unknown as RunStatus),
-      ).toBe(true);
+      expect(reachable.has(decision as unknown as RunStatus)).toBe(true);
     }
   });
 });

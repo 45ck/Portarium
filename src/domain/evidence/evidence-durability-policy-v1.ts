@@ -113,7 +113,11 @@ export function parseEvidenceDurabilityPolicyV1(value: unknown): EvidenceDurabil
     EvidenceDurabilityPolicyParseError,
   );
 
-  const exportPermitted = readBoolean(record, 'exportPermitted', EvidenceDurabilityPolicyParseError);
+  const exportPermitted = readBoolean(
+    record,
+    'exportPermitted',
+    EvidenceDurabilityPolicyParseError,
+  );
 
   const preferredExportFormat = readEnum(
     record,
@@ -186,8 +190,7 @@ export function isDeletionPermitted(
  */
 export function requiresChainHash(policy: EvidenceDurabilityPolicyV1): boolean {
   return (
-    policy.tamperEvidenceLevel === 'chain-hash' ||
-    policy.tamperEvidenceLevel === 'signed-chain'
+    policy.tamperEvidenceLevel === 'chain-hash' || policy.tamperEvidenceLevel === 'signed-chain'
   );
 }
 

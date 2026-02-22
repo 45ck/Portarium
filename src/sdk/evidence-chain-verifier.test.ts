@@ -29,10 +29,7 @@ async function hashEntry(entry: PortableEvidenceEntry): Promise<string> {
 }
 
 /** Build a sorted-key object excluding specified keys — mirrors canonicalize(). */
-function sortedWithout(
-  obj: Record<string, unknown>,
-  exclude: string[],
-): Record<string, unknown> {
+function sortedWithout(obj: Record<string, unknown>, exclude: string[]): Record<string, unknown> {
   const excludeSet = new Set(exclude);
   const sorted: Record<string, unknown> = {};
   for (const k of Object.keys(obj).sort()) {
@@ -271,7 +268,7 @@ describe('verifyEvidenceChain', () => {
     it('error result includes index, reason, and message', async () => {
       const chain = await buildValidChain(3);
       const tampered = [chain[0]!, { ...chain[1]!, hashSha256: 'bad' }, chain[2]!];
-      const result = await verifyEvidenceChain(tampered) as Extract<
+      const result = (await verifyEvidenceChain(tampered)) as Extract<
         EvidenceChainVerificationResult,
         { ok: false }
       >;
