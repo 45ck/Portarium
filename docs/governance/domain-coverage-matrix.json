@@ -503,7 +503,7 @@
         "Asset",
         "ExternalObjectRef"
       ],
-      "coverageStatus": "partial",
+      "coverageStatus": "covered",
       "coverageBeads": [
         "bead-0505",
         "bead-0513",
@@ -518,10 +518,7 @@
         "bead-0519"
       ],
       "gapBeads": [],
-      "gaps": [
-        "Gateway adapter implementations and simulation harness remain open.",
-        "Security hardening for robotics identity and transport remains open."
-      ]
+      "gaps": []
     }
   ]
 }
