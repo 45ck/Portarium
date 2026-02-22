@@ -1,0 +1,46 @@
+{
+  "$schema": "./environment-schema.json",
+  "name": "dev",
+  "description": "Development environment — shared by all engineers, auto-deployed on merge to main.",
+  "tier": "non-production",
+  "promotion": {
+    "source": null,
+    "target": "staging",
+    "requiresApproval": false,
+    "autoPromoteOnSuccess": true
+  },
+  "kubernetes": {
+    "overlay": "infra/kubernetes/overlays/dev",
+    "namespace": "portarium",
+    "imageTag": "sha-${COMMIT_SHA}"
+  },
+  "terraform": {
+    "cloud": "aws",
+    "tfvars": "infra/terraform/aws/examples/dev.tfvars",
+    "backendKey": "portarium/dev/terraform.tfstate"
+  },
+  "config": {
+    "PORTARIUM_ENVIRONMENT": "development",
+    "PORTARIUM_TENANCY_DEFAULT_ISOLATION_TIER": "B",
+    "PORTARIUM_LOG_LEVEL": "debug",
+    "PORTARIUM_EVIDENCE_STORE_RETENTION_DAYS": "30",
+    "PORTARIUM_FEATURE_RATE_LIMITING": "true",
+    "PORTARIUM_FEATURE_APPROVAL_GATES": "true"
+  },
+  "scaling": {
+    "minReplicas": 1,
+    "maxReplicas": 2,
+    "workersMin": 1,
+    "workersMax": 3
+  },
+  "database": {
+    "multiAz": false,
+    "backupRetentionDays": 7,
+    "deletionProtection": false
+  },
+  "gates": {
+    "requireCiGreen": true,
+    "requireProvenance": false,
+    "requireSecurityScan": false
+  }
+}

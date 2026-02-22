@@ -1,0 +1,46 @@
+{
+  "$schema": "./environment-schema.json",
+  "name": "prod",
+  "description": "Production environment — requires explicit human approval, provenance verification, and full security scan gate.",
+  "tier": "production",
+  "promotion": {
+    "source": "staging",
+    "target": null,
+    "requiresApproval": true,
+    "autoPromoteOnSuccess": false
+  },
+  "kubernetes": {
+    "overlay": "infra/kubernetes/overlays/prod",
+    "namespace": "portarium",
+    "imageTag": "sha-${COMMIT_SHA}"
+  },
+  "terraform": {
+    "cloud": "aws",
+    "tfvars": "infra/terraform/aws/examples/prod.tfvars",
+    "backendKey": "portarium/prod/terraform.tfstate"
+  },
+  "config": {
+    "PORTARIUM_ENVIRONMENT": "production",
+    "PORTARIUM_TENANCY_DEFAULT_ISOLATION_TIER": "A",
+    "PORTARIUM_LOG_LEVEL": "warn",
+    "PORTARIUM_EVIDENCE_STORE_RETENTION_DAYS": "2555",
+    "PORTARIUM_FEATURE_RATE_LIMITING": "true",
+    "PORTARIUM_FEATURE_APPROVAL_GATES": "true"
+  },
+  "scaling": {
+    "minReplicas": 3,
+    "maxReplicas": 10,
+    "workersMin": 3,
+    "workersMax": 20
+  },
+  "database": {
+    "multiAz": true,
+    "backupRetentionDays": 35,
+    "deletionProtection": true
+  },
+  "gates": {
+    "requireCiGreen": true,
+    "requireProvenance": true,
+    "requireSecurityScan": true
+  }
+}

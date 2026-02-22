@@ -1,0 +1,46 @@
+{
+  "$schema": "./environment-schema.json",
+  "name": "staging",
+  "description": "Staging environment — mirrors production topology, gates on manual approval before promotion.",
+  "tier": "non-production",
+  "promotion": {
+    "source": "dev",
+    "target": "prod",
+    "requiresApproval": true,
+    "autoPromoteOnSuccess": false
+  },
+  "kubernetes": {
+    "overlay": "infra/kubernetes/overlays/staging",
+    "namespace": "portarium",
+    "imageTag": "sha-${COMMIT_SHA}"
+  },
+  "terraform": {
+    "cloud": "aws",
+    "tfvars": "infra/terraform/aws/examples/staging.tfvars",
+    "backendKey": "portarium/staging/terraform.tfstate"
+  },
+  "config": {
+    "PORTARIUM_ENVIRONMENT": "staging",
+    "PORTARIUM_TENANCY_DEFAULT_ISOLATION_TIER": "A",
+    "PORTARIUM_LOG_LEVEL": "info",
+    "PORTARIUM_EVIDENCE_STORE_RETENTION_DAYS": "365",
+    "PORTARIUM_FEATURE_RATE_LIMITING": "true",
+    "PORTARIUM_FEATURE_APPROVAL_GATES": "true"
+  },
+  "scaling": {
+    "minReplicas": 2,
+    "maxReplicas": 4,
+    "workersMin": 2,
+    "workersMax": 6
+  },
+  "database": {
+    "multiAz": true,
+    "backupRetentionDays": 14,
+    "deletionProtection": true
+  },
+  "gates": {
+    "requireCiGreen": true,
+    "requireProvenance": true,
+    "requireSecurityScan": true
+  }
+}

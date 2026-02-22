@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://portarium.io/schemas/environment-v1.json",
+  "title": "PortariumEnvironment",
+  "description": "Canonical definition of a Portarium deployment environment.",
+  "type": "object",
+  "required": ["name", "tier", "promotion", "kubernetes", "terraform", "config", "scaling", "database", "gates"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": {
+      "type": "string",
+      "enum": ["dev", "staging", "prod"],
+      "description": "Environment identifier."
+    },
+    "description": { "type": "string" },
+    "tier": {
+      "type": "string",
+      "enum": ["non-production", "production"]
+    },
+    "promotion": {
+      "type": "object",
+      "required": ["source", "target", "requiresApproval", "autoPromoteOnSuccess"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": ["string", "null"] },
+        "target": { "type": ["string", "null"] },
+        "requiresApproval": { "type": "boolean" },
+        "autoPromoteOnSuccess": { "type": "boolean" }
+      }
+    },
+    "kubernetes": {
+      "type": "object",
+      "required": ["overlay", "namespace", "imageTag"],
+      "additionalProperties": false,
+      "properties": {
+        "overlay": { "type": "string" },
+        "namespace": { "type": "string" },
+        "imageTag": { "type": "string" }
+      }
+    },
+    "terraform": {
+      "type": "object",
+      "required": ["cloud", "tfvars", "backendKey"],
+      "additionalProperties": false,
+      "properties": {
+        "cloud": { "type": "string", "enum": ["aws", "azure", "gcp"] },
+        "tfvars": { "type": "string" },
+        "backendKey": { "type": "string" }
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "Environment-specific application configuration (non-secret values).",
+      "additionalProperties": { "type": "string" }
+    },
+    "scaling": {
+      "type": "object",
+      "required": ["minReplicas", "maxReplicas", "workersMin", "workersMax"],
+      "additionalProperties": false,
+      "properties": {
+        "minReplicas": { "type": "integer", "minimum": 1 },
+        "maxReplicas": { "type": "integer", "minimum": 1 },
+        "workersMin": { "type": "integer", "minimum": 1 },
+        "workersMax": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "database": {
+      "type": "object",
+      "required": ["multiAz", "backupRetentionDays", "deletionProtection"],
+      "additionalProperties": false,
+      "properties": {
+        "multiAz": { "type": "boolean" },
+        "backupRetentionDays": { "type": "integer", "minimum": 1 },
+        "deletionProtection": { "type": "boolean" }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "required": ["requireCiGreen", "requireProvenance", "requireSecurityScan"],
+      "additionalProperties": false,
+      "properties": {
+        "requireCiGreen": { "type": "boolean" },
+        "requireProvenance": { "type": "boolean" },
+        "requireSecurityScan": { "type": "boolean" }
+      }
+    }
+  }
+}
