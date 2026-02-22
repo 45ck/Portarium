@@ -11,11 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { canAccess } from '@/lib/role-gate';
 import type { RunSummary, WorkflowActionSummary } from '@portarium/cockpit-types';
 
 function WorkflowDetailPage() {
   const { workflowId } = Route.useParams();
-  const { activeWorkspaceId: wsId } = useUIStore();
+  const { activeWorkspaceId: wsId, activePersona } = useUIStore();
+  const canEdit = canAccess(activePersona, 'workflows:edit');
 
   const workflow = useWorkflow(wsId, workflowId);
   const runs = useRuns(wsId);
@@ -131,14 +133,16 @@ function WorkflowDetailPage() {
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
         breadcrumb={[{ label: 'Workflows', to: '/workflows' }, { label: workflow.data.workflowId }]}
         action={
-          <Button asChild>
-            <Link
-              to={'/workflows/$workflowId/edit' as string}
-              params={{ workflowId: workflow.data.workflowId }}
-            >
-              Edit Workflow
-            </Link>
-          </Button>
+          canEdit ? (
+            <Button asChild>
+              <Link
+                to={'/workflows/$workflowId/edit' as string}
+                params={{ workflowId: workflow.data.workflowId }}
+              >
+                Edit Workflow
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 

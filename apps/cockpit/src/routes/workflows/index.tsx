@@ -28,7 +28,8 @@ const TRIGGER_OPTIONS = [
 ];
 
 function WorkflowsPage() {
-  const { activeWorkspaceId: wsId } = useUIStore();
+  const { activeWorkspaceId: wsId, activePersona } = useUIStore();
+  const canEdit = canAccess(activePersona, 'workflows:edit');
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, string>>({
     status: 'all',
@@ -121,22 +122,26 @@ function WorkflowsPage() {
         </Badge>
       ),
     },
-    {
-      key: 'actions',
-      header: 'Actions',
-      width: '120px',
-      render: (row: WorkflowSummary) => (
-        <Button asChild size="sm" variant="outline">
-          <Link
-            to={'/workflows/$workflowId/edit' as string}
-            params={{ workflowId: row.workflowId }}
-            onClick={(event) => event.stopPropagation()}
-          >
-            Edit
-          </Link>
-        </Button>
-      ),
-    },
+    ...(canEdit
+      ? [
+          {
+            key: 'actions',
+            header: 'Actions',
+            width: '120px',
+            render: (row: WorkflowSummary) => (
+              <Button asChild size="sm" variant="outline">
+                <Link
+                  to={'/workflows/$workflowId/edit' as string}
+                  params={{ workflowId: row.workflowId }}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  Edit
+                </Link>
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -146,9 +151,11 @@ function WorkflowsPage() {
         description="Runbook definitions and execution metadata"
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
         action={
-          <Button asChild>
-            <Link to="/workflows/builder">New Workflow</Link>
-          </Button>
+          canEdit ? (
+            <Button asChild>
+              <Link to="/workflows/builder">New Workflow</Link>
+            </Button>
+          ) : undefined
         }
       />
 
