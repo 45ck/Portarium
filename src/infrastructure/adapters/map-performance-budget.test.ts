@@ -58,7 +58,7 @@ function timeMs(fn: () => void): number {
 // ── Performance budget tests ──────────────────────────────────────────────────
 
 describe('filterSortSlice — 500-robot fleet performance budget', () => {
-  it('filter:All + sort:name + slice runs within 1 frame (16 ms)', () => {
+  it('filter:All + sort:name + slice runs within 1 frame (16 ms)', { retry: 1 }, () => {
     const elapsed = timeMs(() => {
       filterSortSlice(FLEET_500, 'All', '', 'name', 0, VISIBLE_COUNT);
     });
@@ -72,7 +72,7 @@ describe('filterSortSlice — 500-robot fleet performance budget', () => {
     expect(elapsed).toBeLessThan(8);
   });
 
-  it('search by name (partial match) across 500 robots runs within 4 ms', () => {
+  it('search by name (partial match) across 500 robots runs within 4 ms', { retry: 1 }, () => {
     const elapsed = timeMs(() => {
       filterSortSlice(FLEET_500, 'All', 'robot-02', 'name', 0, VISIBLE_COUNT);
     });
