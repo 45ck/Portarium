@@ -188,10 +188,9 @@
       "operationalDomains": ["software-delivery"],
       "canonicalObjects": ["Task", "Party", "Document"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0249", "bead-0250"],
-      "gapBeads": ["bead-0424", "bead-0166"],
+      "coverageBeads": ["bead-0249", "bead-0250", "bead-0424"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "Software-delivery reference adapter implementation remains open.",
         "Integration gate remains open for family completion."
       ]
     },
@@ -256,6 +255,17 @@
       "gaps": [
         "Gateway adapter implementations and simulation harness remain open.",
         "Security hardening for robotics identity and transport remains open."
+      ]
+    },
+    {
+      "portFamily": "SoftwareDev",
+      "operationalDomains": ["software-delivery"],
+      "canonicalObjects": ["Task", "Party", "Document"],
+      "coverageStatus": "gap",
+      "coverageBeads": ["bead-0424"],
+      "gapBeads": ["bead-0166"],
+      "gaps": [
+        "Integration gate remains open for family completion."
       ]
     }
   ]
