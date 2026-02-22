@@ -1,0 +1,10 @@
+namespace                  = "portarium"
+environment                = "dev"
+# gcp_project_id           = "your-project-id"  # required
+gke_node_count             = 1
+gke_min_node_count         = 1
+gke_max_node_count         = 3
+gke_machine_type           = "n2-standard-2"
+postgres_tier              = "db-g1-small"
+postgres_high_availability = false
+enable_evidence_retention  = false

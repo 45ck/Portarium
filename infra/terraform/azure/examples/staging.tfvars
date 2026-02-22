@@ -1,0 +1,13 @@
+location                       = "eastus"
+namespace                      = "portarium"
+environment                    = "staging"
+aks_node_count                 = 3
+aks_node_min_count             = 2
+aks_node_max_count             = 5
+aks_node_vm_size               = "Standard_D4s_v3"
+postgres_sku                   = "GP_Standard_D4s_v3"
+postgres_backup_retention_days = 14
+postgres_high_availability     = true
+enable_evidence_immutability   = true
+evidence_immutability_days     = 365
+# postgres_admin_password      = "changeme"  # inject via TF_VAR or CI secret

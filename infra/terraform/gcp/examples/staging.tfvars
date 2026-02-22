@@ -1,0 +1,11 @@
+namespace                    = "portarium"
+environment                  = "staging"
+# gcp_project_id             = "your-project-id"  # required
+gke_node_count               = 2
+gke_min_node_count           = 2
+gke_max_node_count           = 5
+gke_machine_type             = "n2-standard-4"
+postgres_tier                = "db-custom-4-15360"
+postgres_high_availability   = true
+enable_evidence_retention    = true
+evidence_retention_seconds   = 31536000
