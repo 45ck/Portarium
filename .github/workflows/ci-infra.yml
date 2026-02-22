@@ -25,20 +25,100 @@ jobs:
         with:
           terraform_version: 1.8.5
 
-      - name: Validate Terraform formatting and syntax
+      # -----------------------------------------------------------------------
+      # Terraform validation matrix: format + init + validate
+      # Covers all provider stacks AND bootstrap modules
+      # -----------------------------------------------------------------------
+      - name: Terraform — format check (all stacks)
+        id: tf-fmt
         run: |
+          FAIL=0
           for STACK_DIR in infra/terraform/*/; do
-            if [ ! -f "${STACK_DIR}main.tf" ] && [ ! -f "${STACK_DIR}versions.tf" ]; then
-              echo "Skipping ${STACK_DIR} (no Terraform stack manifest)"
+            if [ ! -f "${STACK_DIR}versions.tf" ] && [ ! -f "${STACK_DIR}main.tf" ]; then
+              echo "  skip ${STACK_DIR} (no TF manifest)"
               continue
             fi
-
-            echo "Initializing Terraform stack: $STACK_DIR"
-            terraform -chdir="$STACK_DIR" fmt -recursive -check
-            terraform -chdir="$STACK_DIR" init -backend=false
-            terraform -chdir="$STACK_DIR" validate
+            echo "  fmt-check: ${STACK_DIR}"
+            terraform -chdir="$STACK_DIR" fmt -recursive -check || FAIL=1
           done
+          [ $FAIL -eq 0 ] && echo "✓ all stacks pass fmt -check" || { echo "✗ fmt violations found"; exit 1; }
 
+      - name: Terraform — init + validate (all stacks)
+        id: tf-validate
+        run: |
+          FAIL=0
+          MATRIX=""
+          for STACK_DIR in infra/terraform/*/; do
+            if [ ! -f "${STACK_DIR}versions.tf" ] && [ ! -f "${STACK_DIR}main.tf" ]; then
+              echo "  skip ${STACK_DIR} (no TF manifest)"
+              continue
+            fi
+            echo "  init+validate: ${STACK_DIR}"
+            terraform -chdir="$STACK_DIR" init -backend=false -input=false 2>&1 | tail -3
+            if terraform -chdir="$STACK_DIR" validate -json 2>/dev/null | python3 -c \
+                "import sys,json; r=json.load(sys.stdin); sys.exit(0 if r.get('valid') else 1)"; then
+              MATRIX="${MATRIX}✓ ${STACK_DIR}\n"
+            else
+              MATRIX="${MATRIX}✗ ${STACK_DIR}\n"
+              FAIL=1
+            fi
+          done
+          echo -e "\nValidation matrix:\n${MATRIX}"
+          [ $FAIL -eq 0 ] || exit 1
+
+      # -----------------------------------------------------------------------
+      # Security lint — Trivy IaC scanner (open-source, no token required)
+      # -----------------------------------------------------------------------
+      - name: Terraform — security lint (Trivy IaC)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: infra/terraform
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          skip-dirs: '.git,node_modules'
+
+      # -----------------------------------------------------------------------
+      # Cost estimation — Infracost (advisory, non-blocking)
+      # -----------------------------------------------------------------------
+      - name: Setup Infracost
+        if: ${{ env.INFRACOST_API_KEY != '' }}
+        uses: infracost/actions/setup@v3
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Infracost — cost estimate (AWS stack, advisory)
+        if: ${{ env.INFRACOST_API_KEY != '' }}
+        continue-on-error: true
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          infracost breakdown \
+            --path infra/terraform/aws \
+            --terraform-init-flags="-backend=false" \
+            --format table \
+            --out-file /tmp/infracost-aws.txt
+          cat /tmp/infracost-aws.txt
+
+      - name: Infracost — cost estimate (AWS bootstrap, advisory)
+        if: ${{ env.INFRACOST_API_KEY != '' }}
+        continue-on-error: true
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          infracost breakdown \
+            --path infra/terraform/aws-backend-bootstrap \
+            --terraform-init-flags="-backend=false" \
+            --format table \
+            --out-file /tmp/infracost-aws-bootstrap.txt
+          cat /tmp/infracost-aws-bootstrap.txt
+
+      # -----------------------------------------------------------------------
+      # Kubernetes overlay validation
+      # -----------------------------------------------------------------------
       - name: Validate local Kubernetes overlays
         run: |
           for OVERLAY in infra/kubernetes/overlays/dev infra/kubernetes/overlays/staging infra/kubernetes/overlays/prod; do
