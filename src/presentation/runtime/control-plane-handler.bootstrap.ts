@@ -5,6 +5,7 @@ import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace
 import type {
   AuthenticationPort,
   AuthorizationPort,
+  QueryCache,
   RunStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -12,6 +13,7 @@ import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-auth
 import { checkDevAuthEnvGate } from '../../infrastructure/auth/dev-token-env-gate.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
+import { InMemoryQueryCache, RedisQueryCache } from '../../infrastructure/caching/index.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
 import {
   PostgresRunStore,
@@ -174,19 +176,68 @@ function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
   return new InMemoryRateLimitStore();
 }
 
+/**
+ * Build the query cache from environment variables.
+ *
+ * Env vars:
+ *   QUERY_CACHE_STORE=redis|memory   (default: memory)
+ *   REDIS_URL                        (required when QUERY_CACHE_STORE=redis)
+ */
+function buildQueryCache(): QueryCache {
+  const storeType = process.env['QUERY_CACHE_STORE']?.trim();
+  const redisUrl = process.env['REDIS_URL']?.trim();
+
+  if (storeType === 'redis') {
+    if (!redisUrl) {
+      process.stderr.write(
+        '[portarium] WARNING: QUERY_CACHE_STORE=redis but REDIS_URL is not set. ' +
+          'Falling back to in-memory query cache.\n',
+      );
+      return new InMemoryQueryCache();
+    }
+    const redis = new Redis(redisUrl, { enableOfflineQueue: false, lazyConnect: true });
+    const client = {
+      get: (key: string) => redis.get(key),
+      set: (key: string, value: string, expiry: 'EX', ttlSeconds: number) =>
+        redis.set(key, value, expiry, ttlSeconds),
+      del: (...keys: string[]) => redis.del(...keys),
+      scan: (cursor: string, ...args: string[]) =>
+        (
+          redis as unknown as {
+            scan: (cursor: string, ...a: string[]) => Promise<[string, string[]]>;
+          }
+        ).scan(cursor, ...args),
+    };
+    process.stderr.write('[portarium] Query cache store: Redis (' + redisUrl + ')\n');
+    return new RedisQueryCache(client);
+  }
+
+  return new InMemoryQueryCache();
+}
+
 export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
   const rateLimitStore = buildRateLimitStore();
+  const queryCache = buildQueryCache();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
 
   if (usePostgresStores && connectionString) {
     const sqlClient = new NodePostgresSqlClient({ connectionString });
-    const workspaceStore: WorkspaceStore = new PostgresWorkspaceStore(sqlClient);
-    const runStore: RunStore = new PostgresRunStore(sqlClient);
-    return { authentication, authorization, workspaceStore, runStore, rateLimitStore };
+    const workspaceStore = new PostgresWorkspaceStore(sqlClient);
+    const runStore = new PostgresRunStore(sqlClient);
+    return {
+      authentication,
+      authorization,
+      workspaceStore,
+      runStore,
+      workspaceQueryStore: workspaceStore,
+      runQueryStore: runStore,
+      rateLimitStore,
+      queryCache,
+    };
   }
 
   // Guard: in-memory stub stores require DEV_STUB_STORES=true in dev/test.
@@ -216,5 +267,5 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     saveRun: () => Promise.resolve(),
   };
 
-  return { authentication, authorization, workspaceStore, runStore, rateLimitStore };
+  return { authentication, authorization, workspaceStore, runStore, rateLimitStore, queryCache };
 }

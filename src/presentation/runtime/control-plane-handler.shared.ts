@@ -12,8 +12,11 @@ import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
   AuthenticationPort,
   AuthorizationPort,
+  QueryCache,
   RateLimitStore,
+  RunQueryStore,
   RunStore,
+  WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import type { AppContext } from '../../application/common/context.js';
@@ -56,8 +59,14 @@ export type ControlPlaneDeps = Readonly<{
   authorization: AuthorizationPort;
   workspaceStore: WorkspaceStore;
   runStore: RunStore;
+  /** Optional query store for listing workspaces; enables the GET /v1/workspaces route. */
+  workspaceQueryStore?: WorkspaceQueryStore;
+  /** Optional query store for listing runs; enables the GET /v1/workspaces/:id/runs route. */
+  runQueryStore?: RunQueryStore;
   /** Optional rate-limit store; when absent, rate limiting is disabled. */
   rateLimitStore?: RateLimitStore;
+  /** Optional query cache for hot reads; when absent, caching is disabled. */
+  queryCache?: QueryCache;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';

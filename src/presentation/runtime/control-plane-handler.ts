@@ -5,6 +5,8 @@ import { Hono } from 'hono';
 
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
+import { listRuns } from '../../application/queries/list-runs.js';
+import { listWorkspaces } from '../../application/queries/list-workspaces.js';
 import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
@@ -12,11 +14,13 @@ import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import {
+  assertReadAccess,
   authenticate,
   checkIfMatch,
   computeETag,
   normalizeCorrelationId,
   normalizeTraceContext,
+  parseListQueryParams,
   problemFromError,
   respondJson,
   respondProblem,
@@ -147,6 +151,149 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
+async function handleListWorkspaces(args: RequestContext): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext } = args;
+  const auth = await authenticate(deps, { req, correlationId, traceContext });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.workspaceQueryStore) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-implemented',
+        title: 'Not Implemented',
+        status: 501,
+        detail: 'Workspace listing is not available in this configuration.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const params = parseListQueryParams(url, ['name']);
+  if (!params.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: params.error,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const result = await listWorkspaces(
+    {
+      authorization: deps.authorization,
+      workspaceStore: deps.workspaceQueryStore,
+      queryCache: deps.queryCache ?? null,
+    },
+    auth.ctx,
+    {
+      ...(params.value.limit !== undefined ? { limit: params.value.limit } : {}),
+      ...(params.value.cursor ? { cursor: params.value.cursor } : {}),
+      ...(params.value.search ? { nameQuery: params.value.search } : {}),
+    },
+  );
+  if (!result.ok) {
+    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
+async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.runQueryStore) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-implemented',
+        title: 'Not Implemented',
+        status: 501,
+        detail: 'Run listing is not available in this configuration.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const params = parseListQueryParams(url, ['runId', 'status', 'createdAtIso', 'startedAtIso']);
+  if (!params.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: params.error,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const rawStatus = url.searchParams.get('status') ?? undefined;
+  const result = await listRuns(
+    {
+      authorization: deps.authorization,
+      runStore: deps.runQueryStore,
+      queryCache: deps.queryCache ?? null,
+    },
+    auth.ctx,
+    {
+      workspaceId,
+      ...(params.value.limit !== undefined ? { limit: params.value.limit } : {}),
+      ...(params.value.cursor ? { cursor: params.value.cursor } : {}),
+      ...(params.value.search ? { search: params.value.search } : {}),
+      ...(params.value.sort
+        ? { sortField: params.value.sort.field, sortDirection: params.value.sort.direction }
+        : {}),
+      ...(rawStatus ? { status: rawStatus as never } : {}),
+    },
+  );
+  if (!result.ok) {
+    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
 // ---------------------------------------------------------------------------
 // Hono app factory
 // ---------------------------------------------------------------------------
@@ -237,10 +384,24 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   // literal colon would otherwise be parsed as a Hono path parameter.
   // -------------------------------------------------------------------------
 
+  // GET /v1/workspaces
+  app.get('/v1/workspaces', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListWorkspaces(ctx);
+    return c.body(null);
+  });
+
   // GET /v1/workspaces/:workspaceId
   app.get('/v1/workspaces/:workspaceId', async (c) => {
     const ctx = c.get('ctx');
     await handleGetWorkspace({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/runs
+  app.get('/v1/workspaces/:workspaceId/runs', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListRuns({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 
