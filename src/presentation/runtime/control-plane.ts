@@ -2,6 +2,9 @@ import { startHealthServer, type HealthServerHandle } from './health-server.js';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import { createLogger } from '../../infrastructure/observability/logger.js';
+
+const log = createLogger('control-plane');
 
 export type ControlPlaneRuntimeOptions = Readonly<{
   port?: number;
@@ -29,7 +32,7 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
     handler: createControlPlaneHandler(),
   });
 
-  console.log(`Portarium ${role} listening on ${handle.host}:${handle.port}`);
+  log.info('Portarium server started', { role, host: handle.host, port: handle.port });
 
   const shutdown = async () => {
     await handle.close();

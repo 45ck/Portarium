@@ -1,5 +1,6 @@
 import type { EventPublisher } from '../../application/ports/event-publisher.js';
 import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
+import { withSpan } from '../observability/otel-setup.js';
 
 // ---------------------------------------------------------------------------
 // NATS JetStream event publisher (ADR-0074)
@@ -38,17 +39,18 @@ export class NatsEventPublisher implements EventPublisher {
 
   public async publish(event: PortariumCloudEventV1): Promise<void> {
     const subject = cloudEventTypeToNatsSubject(event.type);
-    const payload = new TextEncoder().encode(JSON.stringify(event));
-
-    try {
-      await this.#jetstream.publish(subject, payload);
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : 'Unknown NATS publish error.';
-      throw new NatsEventPublishError(
-        `NATS JetStream publish failed for subject ${subject}: ${reason}`,
-        { cause: error },
-      );
-    }
+    await withSpan('nats.publish', async () => {
+      const payload = new TextEncoder().encode(JSON.stringify(event));
+      try {
+        await this.#jetstream.publish(subject, payload);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : 'Unknown NATS publish error.';
+        throw new NatsEventPublishError(
+          `NATS JetStream publish failed for subject ${subject}: ${reason}`,
+          { cause: error },
+        );
+      }
+    }, { 'messaging.destination': subject });
   }
 }
 

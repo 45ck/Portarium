@@ -10,6 +10,13 @@ import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import {
+  defaultRegistry,
+  httpActiveConnections,
+  httpRequestDurationSeconds,
+  httpRequestsTotal,
+  rateLimitHitsTotal,
+} from '../../infrastructure/observability/prometheus-registry.js';
+import {
   authenticate,
   checkIfMatch,
   computeETag,
@@ -304,6 +311,7 @@ async function applyWorkspaceRateLimit(ctx: RequestContext): Promise<boolean> {
   const result = await checkRateLimit({ rateLimitStore: deps.rateLimitStore }, scope);
 
   if (!result.allowed) {
+    rateLimitHitsTotal.inc({ workspaceId: rawId });
     respondProblem(
       res,
       {
@@ -329,18 +337,53 @@ async function applyWorkspaceRateLimit(ctx: RequestContext): Promise<boolean> {
   return false;
 }
 
+function resolveRouteLabel(method: string, pathname: string): string {
+  for (const route of ROUTES) {
+    if (route.method === method && route.pattern.test(pathname)) {
+      return route.pattern.source;
+    }
+  }
+  return pathname.startsWith('/v1/') ? '/v1/:unknown' : pathname;
+}
+
+function respondMetrics(res: ServerResponse): void {
+  const body = defaultRegistry.format();
+  res.statusCode = 200;
+  res.setHeader('content-type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.end(body);
+}
+
 async function handleRequest(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
+  const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+  const method = req.method ?? 'GET';
+
+  if (pathname === '/metrics') {
+    respondMetrics(res);
+    return;
+  }
+
+  httpActiveConnections.inc();
+  const startMs = Date.now();
+  res.on('finish', () => {
+    httpActiveConnections.dec();
+    const durationSeconds = (Date.now() - startMs) / 1000;
+    const route = resolveRouteLabel(method, pathname);
+    const status = String(res.statusCode);
+    httpRequestsTotal.inc({ method, route, status });
+    httpRequestDurationSeconds.observe(durationSeconds, { method, route });
+  });
+
   const ctx: RequestContext = {
     deps,
     req,
     res,
     correlationId: normalizeCorrelationId(req),
     traceContext: normalizeTraceContext(req),
-    pathname: new URL(req.url ?? '/', 'http://localhost').pathname,
+    pathname,
   };
 
   if (await applyWorkspaceRateLimit(ctx)) return;

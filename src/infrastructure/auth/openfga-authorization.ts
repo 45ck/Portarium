@@ -2,6 +2,7 @@ import type { AppAction } from '../../application/common/actions.js';
 import type { AppContext } from '../../application/common/context.js';
 import { isAllowedWorkspaceAction } from '../../application/iam/rbac/workspace-rbac.js';
 import type { AuthorizationPort } from '../../application/ports/authorization.js';
+import { withSpan } from '../observability/otel-setup.js';
 
 export type OpenFgaAuthorizationConfig = Readonly<{
   apiUrl: string;
@@ -92,7 +93,12 @@ export class OpenFgaAuthorization implements AuthorizationPort {
     if (!isAllowedWorkspaceAction({ roles: ctx.roles }, action)) {
       return false;
     }
+    return withSpan('openfga.check', () => this.#checkWithFga(ctx, action), {
+      'fga.action': action,
+    });
+  }
 
+  async #checkWithFga(ctx: AppContext, action: AppAction): Promise<boolean> {
     const endpoint = `${this.#apiUrl}/stores/${encodeURIComponent(this.#storeId)}/check`;
     const payload = {
       tuple_key: {
