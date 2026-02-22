@@ -143,24 +143,18 @@
       "operationalDomains": ["it-support", "software-delivery"],
       "canonicalObjects": ["Party", "Asset"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0239", "bead-0240"],
-      "gapBeads": ["bead-0328", "bead-0166"],
-      "gaps": [
-        "Production AuthN/AuthZ hardening bead remains open.",
-        "Integration gate remains open before closure."
-      ]
+      "coverageBeads": ["bead-0239", "bead-0240", "bead-0328"],
+      "gapBeads": ["bead-0166"],
+      "gaps": ["Integration gate remains open before closure."]
     },
     {
       "portFamily": "SecretsVaulting",
       "operationalDomains": ["software-delivery"],
       "canonicalObjects": [],
       "coverageStatus": "gap",
-      "coverageBeads": ["bead-0241", "bead-0242"],
-      "gapBeads": ["bead-0327", "bead-0166"],
-      "gaps": [
-        "Execution-plane Vault workload-auth hardening is still open.",
-        "Integration gate remains open for final sign-off."
-      ]
+      "coverageBeads": ["bead-0241", "bead-0242", "bead-0327"],
+      "gapBeads": ["bead-0166"],
+      "gaps": ["Integration gate remains open for final sign-off."]
     },
     {
       "portFamily": "MarketingAutomation",
