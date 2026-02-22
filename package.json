@@ -12,6 +12,10 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "dev:all": "docker compose -f docker-compose.local.yml up --wait",
+    "dev:seed": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-all.mjs",
+    "dev:seed:openfga": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-openfga.mjs",
+    "dev:seed:odoo": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-odoo.mjs",
     "cockpit:dev": "npm run -w apps/cockpit dev",
     "cockpit:storybook": "npm run -w apps/cockpit storybook",
     "cockpit:build": "npm run -w apps/cockpit build",
@@ -109,6 +113,7 @@
     "migrate:deploy": "npm run migrate:dry-run:expand",
     "db:bootstrap": "tsx src/infrastructure/migrations/cli.ts bootstrap",
     "db:reset": "tsx src/infrastructure/migrations/cli.ts reset --confirm",
+    "seed:local": "tsx scripts/seed/seed-local.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
