@@ -1,0 +1,66 @@
+# Loki — structured log storage for Portarium
+#
+# Receives logs via OTLP/HTTP from the OTel Collector.
+# Queried by Grafana for cross-signal correlation (trace_id field links to Tempo).
+#
+# Bead: bead-0428
+
+auth_enabled: true
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+
+schema_config:
+  configs:
+    - from: "2024-01-01"
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: loki_index_
+        period: 24h
+
+ingester:
+  wal:
+    dir: /loki/wal
+
+limits_config:
+  # Enforce per-tenant (org) label cardinality limits.
+  max_label_names_per_series: 30
+  max_label_value_length: 2048
+  # Keep logs for 90 days in production.
+  retention_period: 2160h
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+# Cross-signal: derive trace_id label from OTLP log records so Grafana
+# can pivot from a log line directly to the matching Tempo trace.
+otlp_config:
+  resource_attributes:
+    attributes_config:
+      - attribute: service.name
+        action: index_label
+      - attribute: service.namespace
+        action: index_label
+      - attribute: deployment.environment
+        action: index_label
+  log_attributes:
+    attributes_config:
+      - attribute: trace_id
+        action: index_label
+      - attribute: span_id
+        action: structured_metadata

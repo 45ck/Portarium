@@ -8,3 +8,4 @@ storybook-static
 !src/**/*.ts
 !src/**/*.tsx
 !vite.config.ts
+!public/sw.js

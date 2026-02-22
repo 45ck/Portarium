@@ -252,6 +252,16 @@ export const PORT_FAMILY_CAPABILITIES = {
     'actuator:set_state',
     'actuator:get_state',
   ),
+  SoftwareDev: cap(
+    'pr:read',
+    'pr:write',
+    'deployment:read',
+    'deployment:write',
+    'repository:read',
+    'commit:read',
+    'workflow:read',
+    'metrics:read',
+  ),
 } as const satisfies Record<PortFamily, readonly PortCapability[]>;
 
 export function portFamilyCapabilities(family: PortFamily): readonly PortCapability[] {

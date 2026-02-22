@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SROS2 Access-Control Policy — Portarium Bridge Enclave
+  =======================================================
+  Governs which DDS topics/services/actions the portarium_bridge process
+  may publish, subscribe, call, or reply to. Follows the SROS2 XML access
+  control schema (OMG DDS Security 1.1, Annex C).
+
+  Enclave: /portarium_bridge
+  Trust domain: portarium.robotics
+  Bead: bead-0520
+-->
+<policy version="0.2.0"
+        xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <enclaves>
+    <enclave path="/portarium_bridge">
+
+      <!-- ── Domain: default ROS 2 domain (configurable via DOMAIN_ID) ────── -->
+      <profiles>
+        <profile ns="/" node="portarium_bridge_node">
+
+          <!-- ── Publish permissions ──────────────────────────────────────── -->
+          <topics publish="true">
+            <!-- Outbound mission goals sent to Nav2 -->
+            <topic>portarium/mission_goal</topic>
+            <!-- E-stop commands -->
+            <topic>portarium/estop</topic>
+            <!-- Health / heartbeat -->
+            <topic>portarium/bridge_status</topic>
+          </topics>
+
+          <!-- ── Subscribe permissions ────────────────────────────────────── -->
+          <topics subscribe="true">
+            <!-- Nav2 action feedback received by bridge for telemetry relay -->
+            <topic>navigate_to_pose/_action/feedback</topic>
+            <topic>navigate_to_pose/_action/status</topic>
+            <!-- Standard robot telemetry topics -->
+            <topic>robot/odom</topic>
+            <topic>robot/battery_state</topic>
+            <topic>robot/diagnostics</topic>
+            <!-- rosbridge action result notifications -->
+            <topic>rosbridge/action_result</topic>
+          </topics>
+
+          <!-- ── Service call permissions ─────────────────────────────────── -->
+          <services reply="true" request="true">
+            <!-- rosbridge call_service operations -->
+            <service>rosbridge_server/send_bytes</service>
+          </services>
+
+          <!-- ── Action client permissions ────────────────────────────────── -->
+          <actions call="true" execute="false">
+            <action>navigate_to_pose</action>
+            <action>dock</action>
+            <action>undock</action>
+            <action>spin</action>
+            <action>follow_waypoints</action>
+          </actions>
+
+        </profile>
+      </profiles>
+
+    </enclave>
+  </enclaves>
+
+</policy>

@@ -350,6 +350,7 @@ export const PORT_FAMILIES = [
   'MonitoringIncident',
   'ComplianceGrc',
   'RoboticsActuation',
+  'SoftwareDev',
 ] as const;
 
 export type PortFamily = (typeof PORT_FAMILIES)[number];

@@ -1,50 +1,160 @@
+# OTel Collector — Production Pipeline
+#
+# Signals:
+#   Traces  → Tempo (OTLP/gRPC) with exemplar injection
+#   Metrics → Prometheus remote-write (Mimir/VictoriaMetrics compatible)
+#   Logs    → Loki (via OTLP/HTTP)
+#
+# Cross-signal correlation:
+#   - spanmetrics connector derives RED metrics from traces (enables trace→metric exemplars)
+#   - servicegraph connector derives service-dependency metrics from traces
+#   - Resource attributes (service.name, service.namespace, tenant.id_hash)
+#     are propagated to all three signal types for unified filtering in Grafana
+#
+# Bead: bead-0428
+
 receivers:
   otlp:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 32
       http:
         endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "https://*.portarium.io"
+
+  # Pull-based Prometheus scrape for self-monitoring
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: otelcol
+          scrape_interval: 60s
+          static_configs:
+            - targets: ['localhost:8888']
 
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
+    path: /health
+    check_collector_pipeline:
+      enabled: true
+      interval: 5m
+      exporter_failure_threshold: 5
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+connectors:
+  # Derives RED metrics (request rate, error rate, duration histogram)
+  # from trace spans — enables exemplar links from metrics dashboards to traces.
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s]
+    dimensions:
+      - name: service.name
+      - name: service.namespace
+      - name: http.method
+      - name: http.status_code
+      - name: rpc.grpc.status_code
+    exemplars:
+      enabled: true
+    namespace: portarium_trace
+
+  # Builds a service-dependency graph metric (edges between services)
+  servicegraph:
+    metrics_exporter: prometheusremotewrite
+    latency_histogram_buckets: [10ms, 100ms, 250ms, 500ms, 1s, 5s]
+    dimensions:
+      - service.namespace
+    store:
+      ttl: 2s
+      max_items: 1000
 
 exporters:
-  logging:
-    verbosity: basic
-
-  # Placeholder for production trace backend (Tempo, Jaeger, etc.).
-  # Configure TLS and auth headers for production deployments.
+  # ── Traces → Tempo ────────────────────────────────────────────────────────
   otlp/tempo:
-    endpoint: tempo:4317
+    endpoint: ${env:TEMPO_ENDPOINT}  # e.g. tempo.monitoring.svc:4317
     tls:
-      insecure: true
+      insecure: ${env:TEMPO_TLS_INSECURE}  # false in production
+      ca_file: ${env:TEMPO_CA_FILE}
+    headers:
+      Authorization: "Bearer ${env:TEMPO_AUTH_TOKEN}"
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: 1000
 
-  # Placeholder for production metrics backend (Prometheus, Mimir, etc.).
-  # Uncomment and configure for production deployments.
-  # otlp/prometheus:
-  #   endpoint: prometheus:9090
-  #   tls:
-  #     cert_file: /etc/otelcol-contrib/tls/cert.pem
-  #     key_file: /etc/otelcol-contrib/tls/key.pem
-  #   headers:
-  #     Authorization: "Bearer ${OTEL_EXPORTER_AUTH_TOKEN}"
+  # ── Metrics → Prometheus remote-write (Mimir / VictoriaMetrics) ───────────
+  prometheusremotewrite:
+    endpoint: ${env:PROM_REMOTE_WRITE_URL}  # e.g. https://mimir.monitoring.svc/api/v1/push
+    tls:
+      insecure: false
+      ca_file: ${env:PROM_CA_FILE}
+    headers:
+      Authorization: "Bearer ${env:PROM_AUTH_TOKEN}"
+      X-Scope-OrgID: portarium
+    add_metric_suffixes: true
+    send_metadata: true
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  # ── Logs → Loki ───────────────────────────────────────────────────────────
+  otlphttp/loki:
+    endpoint: ${env:LOKI_ENDPOINT}  # e.g. https://loki.monitoring.svc/otlp
+    tls:
+      insecure: false
+      ca_file: ${env:LOKI_CA_FILE}
+    headers:
+      Authorization: "Bearer ${env:LOKI_AUTH_TOKEN}"
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+  # Keep local debug logging at warn level in production (turned off in CI)
+  debug:
+    verbosity: ${env:OTEL_DEBUG_VERBOSITY}  # basic | detailed | none
 
 processors:
-  batch:
+  # ── Safety ────────────────────────────────────────────────────────────────
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 75
+    spike_limit_percentage: 25
+
+  # ── Batching ──────────────────────────────────────────────────────────────
+  batch/traces:
     timeout: 1s
     send_batch_size: 512
     send_batch_max_size: 1024
 
-  # Memory limiter prevents OOM on high-volume spikes.
-  memory_limiter:
-    check_interval: 5s
-    limit_mib: 256
-    spike_limit_mib: 64
+  batch/metrics:
+    timeout: 15s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
 
-  # Redaction processor: obfuscate sensitive tenant/user fields in log attributes.
-  # tenantId is hashed rather than removed so traces remain joinable.
+  batch/logs:
+    timeout: 5s
+    send_batch_size: 256
+    send_batch_max_size: 512
+
+  # ── PII / security redaction ──────────────────────────────────────────────
+  # tenantId is hashed (not deleted) so traces remain joinable across signals.
   attributes/redact:
     actions:
       - key: tenant.id
@@ -53,50 +163,104 @@ processors:
         action: delete
       - key: user.ip
         action: delete
+      - key: enduser.id
+        action: delete
       - key: http.request.header.authorization
         action: delete
       - key: http.request.header.cookie
         action: delete
       - key: db.statement
         action: delete
+      - key: db.parameters
+        action: delete
 
-  # Resource detection: auto-tag spans with host/container metadata.
-  resource:
+  # ── Resource enrichment ───────────────────────────────────────────────────
+  # Auto-detect host/container metadata and tag with service.namespace.
+  resourcedetection:
+    detectors: [env, docker, kubernetes]
+    timeout: 5s
+    override: false
+
+  resource/namespace:
     attributes:
       - key: service.namespace
         value: portarium
         action: upsert
 
+  # ── Tail-sampling (traces) ────────────────────────────────────────────────
+  # Keep 100 % of error/slow spans; sample 5 % of healthy fast spans.
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100000
+    expected_new_traces_per_sec: 1000
+    policies:
+      - name: errors-policy
+        type: status_code
+        status_code: {status_codes: [ERROR]}
+      - name: slow-traces-policy
+        type: latency
+        latency: {threshold_ms: 1000}
+      - name: base-rate-policy
+        type: probabilistic
+        probabilistic: {sampling_percentage: 5}
+
+  # ── Metrics transform ─────────────────────────────────────────────────────
+  # Prefix Portarium application metrics to avoid collisions with system metrics.
+  metricstransform:
+    transforms:
+      - include: "^portarium_"
+        match_type: regexp
+        action: update
+        operations:
+          - action: add_label
+            new_label: source
+            new_value: otelcol
+
 service:
+  telemetry:
+    logs:
+      level: ${env:OTEL_LOG_LEVEL}  # info in production
+      encoding: json
+    metrics:
+      level: detailed
+      address: 0.0.0.0:8888
+
   extensions:
     - health_check
+    - zpages
+    - pprof
+
   pipelines:
-    metrics:
-      receivers:
-        - otlp
-      processors:
-        - memory_limiter
-        - batch
-      exporters:
-        - logging
+    # ── Traces ──────────────────────────────────────────────────────────────
     traces:
-      receivers:
-        - otlp
+      receivers: [otlp]
       processors:
         - memory_limiter
+        - resourcedetection
+        - resource/namespace
         - attributes/redact
-        - resource
-        - batch
-      exporters:
-        - logging
-        - otlp/tempo
+        - tail_sampling
+        - batch/traces
+      exporters: [otlp/tempo, spanmetrics, servicegraph, debug]
+
+    # ── Metrics (from app + spanmetrics + servicegraph + self-scrape) ────────
+    metrics:
+      receivers: [otlp, prometheus, spanmetrics, servicegraph]
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - resource/namespace
+        - metricstransform
+        - batch/metrics
+      exporters: [prometheusremotewrite, debug]
+
+    # ── Logs ─────────────────────────────────────────────────────────────────
     logs:
-      receivers:
-        - otlp
+      receivers: [otlp]
       processors:
         - memory_limiter
+        - resourcedetection
+        - resource/namespace
         - attributes/redact
-        - resource
-        - batch
-      exporters:
-        - logging
+        - batch/logs
+      exporters: [otlphttp/loki, debug]

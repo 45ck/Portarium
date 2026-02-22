@@ -1811,6 +1811,7 @@ components:
         - MonitoringIncident
         - ComplianceGrc
         - RoboticsActuation
+        - SoftwareDev
     ExternalObjectRef:
       type: object
       additionalProperties: false

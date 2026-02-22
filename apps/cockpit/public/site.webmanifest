@@ -1,9 +1,9 @@
 {
   "name": "Portarium Cockpit",
   "short_name": "Portarium",
-  "description": "Portarium Cockpit operational control plane UI",
+  "description": "Portarium Cockpit operational control plane UI — robot fleet monitoring and mission control",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
@@ -11,6 +11,7 @@
   "theme_color": "#0B1220",
   "orientation": "portrait-primary",
   "categories": ["business", "productivity", "utilities"],
+  "lang": "en",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -27,6 +28,34 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Operations Map",
+      "short_name": "Map",
+      "description": "Live robot fleet map",
+      "url": "/map?source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Pending Approvals",
+      "short_name": "Approvals",
+      "description": "Missions waiting for approval",
+      "url": "/approvals?source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Active Runs",
+      "short_name": "Runs",
+      "description": "Currently executing runs",
+      "url": "/runs?source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-32x32.png", "sizes": "32x32" }]
     }
   ]
 }

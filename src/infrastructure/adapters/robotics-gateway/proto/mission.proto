@@ -1,0 +1,95 @@
+// Mission gRPC service definition for Portarium edge gateways.
+//
+// This proto is used by GrpcMissionGateway to communicate with robot-side
+// edge gateway nodes over gRPC (HTTP/2 + protobuf).
+//
+// Bead: bead-0515
+
+syntax = "proto3";
+
+package portarium.robotics.v1;
+
+option java_package = "io.portarium.robotics.v1";
+
+// ── Common types ──────────────────────────────────────────────────────────────
+
+message ActionParameters {
+  map<string, string> fields = 1;
+}
+
+// ── DispatchMission ───────────────────────────────────────────────────────────
+
+message DispatchMissionRequest {
+  string mission_id = 1;
+  string correlation_id = 2;
+  string plan_effect_idempotency_key = 3;
+  string robot_id = 4;
+  string fleet_id = 5;
+  string action_type = 6;
+  string action_name = 7;
+  ActionParameters parameters = 8;
+  string idempotency_key = 9;
+  bool supports_preemption = 10;
+  bool bypass_tier_evaluation = 11;
+  string completion_mode = 12;
+  bool requires_operator_confirmation = 13;
+  string requested_at = 14;
+}
+
+enum DispatchStatus {
+  DISPATCH_STATUS_UNSPECIFIED = 0;
+  DISPATCH_STATUS_DISPATCHED = 1;
+  DISPATCH_STATUS_POLICY_BLOCKED = 2;
+  DISPATCH_STATUS_GATEWAY_UNREACHABLE = 3;
+  DISPATCH_STATUS_REJECTED = 4;
+}
+
+message DispatchMissionResponse {
+  DispatchStatus status = 1;
+  string mission_id = 2;
+  string correlation_id = 3;
+  string plan_effect_idempotency_key = 4;
+  string gateway_request_id = 5;
+  string dispatched_at = 6;
+  string policy_reason = 7;
+  string message = 8;
+  string reject_reason = 9;
+  int32 retry_after_seconds = 10;
+}
+
+// ── CancelMission ─────────────────────────────────────────────────────────────
+
+message CancelMissionRequest {
+  string mission_id = 1;
+  string correlation_id = 2;
+  string plan_effect_idempotency_key = 3;
+  string reason = 4;
+}
+
+message CancelMissionResponse {
+  bool accepted = 1;
+  string cancelled_at = 2;
+  string message = 3;
+}
+
+// ── GetMissionStatus ──────────────────────────────────────────────────────────
+
+message GetMissionStatusRequest {
+  string mission_id = 1;
+  string correlation_id = 2;
+}
+
+message GetMissionStatusResponse {
+  string mission_id = 1;
+  string status = 2;
+  string action_execution_id = 3;
+  string observed_at = 4;
+}
+
+// ── Service definition ────────────────────────────────────────────────────────
+
+service MissionService {
+  rpc DispatchMission(DispatchMissionRequest) returns (DispatchMissionResponse);
+  rpc CancelMission(CancelMissionRequest) returns (CancelMissionResponse);
+  rpc GetMissionStatus(GetMissionStatusRequest) returns (GetMissionStatusResponse);
+}

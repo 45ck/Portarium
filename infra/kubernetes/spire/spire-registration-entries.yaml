@@ -1,0 +1,47 @@
+---
+# SPIRE Registration Entries — Portarium workload identities
+#
+# Applied via: kubectl exec -n spire spire-server-0 -- \
+#   /opt/spire/bin/spire-server entry create -f /path/to/entries.json
+#
+# Or use the SpiffeID CRD with spire-controller-manager (preferred).
+# This file documents the intended SVID assignments.
+#
+# Trust domain: spiffe://portarium.robotics/
+# Bead: bead-0521
+#
+# Format: spire-controller-manager SpiffeID CRD (v1alpha1)
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: robotics-gateway
+spec:
+  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/robotics-gateway/{{ .PodMeta.Name }}"
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: robotics-gateway
+  dnsNameTemplates:
+    - "{{ .PodMeta.Name }}.robotics-gateway.portarium.svc.cluster.local"
+  ttl: 1h
+---
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: control-plane
+spec:
+  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/control-plane/{{ .PodMeta.Name }}"
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: control-plane
+  ttl: 1h
+---
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: execution-plane
+spec:
+  spiffeIDTemplate: "spiffe://portarium.robotics/ns/{{ .PodMeta.Namespace }}/sa/execution-plane/{{ .PodMeta.Name }}"
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: execution-plane
+  ttl: 1h
