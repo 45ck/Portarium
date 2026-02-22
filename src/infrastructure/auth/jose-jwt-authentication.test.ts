@@ -389,3 +389,137 @@ describe('JoseJwtAuthentication — trusted issuer allowlist', () => {
     expect(result.ok).toBe(true);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audience and single-issuer validation
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('JoseJwtAuthentication — audience validation', () => {
+  it('rejects token with wrong audience when audience is configured', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({ workspaceId: 'ws-1', roles: ['operator'] })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setAudience('other-service')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] }, audience: 'portarium-api' });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected unauthorized.');
+    expect(result.error.kind).toBe('Unauthorized');
+  });
+
+  it('accepts token with matching audience', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({ workspaceId: 'ws-1', roles: ['operator'] })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setAudience('portarium-api')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] }, audience: 'portarium-api' });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('JoseJwtAuthentication — single issuer validation', () => {
+  it('rejects token with wrong issuer when issuer is configured', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({ workspaceId: 'ws-1', roles: ['operator'] })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setIssuer('https://wrong-idp.example.com')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({
+      jwks: { keys: [jwk] },
+      issuer: 'https://idp.portarium.io',
+    });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected unauthorized.');
+    expect(result.error.kind).toBe('Unauthorized');
+  });
+
+  it('accepts token with matching issuer', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({ workspaceId: 'ws-1', roles: ['operator'] })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setIssuer('https://idp.portarium.io')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({
+      jwks: { keys: [jwk] },
+      issuer: 'https://idp.portarium.io',
+    });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Algorithm safety — alg:none must always be rejected
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('JoseJwtAuthentication — algorithm safety', () => {
+  it('rejects a crafted alg:none token (no key verification)', async () => {
+    const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+    const payload = Buffer.from(
+      JSON.stringify({ sub: 'attacker', workspaceId: 'ws-1', roles: ['admin'], exp: 9999999999 }),
+    ).toString('base64url');
+    const noneToken = `${header}.${payload}.`;
+
+    const { publicKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] } });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${noneToken}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected unauthorized — alg:none must be rejected.');
+    expect(result.error.kind).toBe('Unauthorized');
+  });
+});

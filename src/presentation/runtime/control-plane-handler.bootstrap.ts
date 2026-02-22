@@ -7,6 +7,7 @@ import type {
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
+import { checkDevAuthEnvGate } from '../../infrastructure/auth/dev-token-env-gate.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
@@ -35,6 +36,17 @@ function tryBuildDevAuthentication(): AuthenticationPort | null {
   const devToken = process.env['PORTARIUM_DEV_TOKEN']?.trim();
   const devWorkspaceId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim();
   if (!devToken || !devWorkspaceId) return null;
+
+  // Hard env-gate: ENABLE_DEV_AUTH=true must be explicitly set.
+  // Throws a fatal error if ENABLE_DEV_AUTH=true but NODE_ENV is not development/test.
+  const gate = checkDevAuthEnvGate();
+  if (!gate.allowed) {
+    process.stderr.write(
+      `[portarium] WARNING: PORTARIUM_DEV_TOKEN is set but dev token auth is NOT activated: ${gate.reason} ` +
+        'Set ENABLE_DEV_AUTH=true (in a development or test environment) to enable.\n',
+    );
+    return null;
+  }
 
   // Log a visible warning so operators know dev auth is active.
   process.stderr.write(
