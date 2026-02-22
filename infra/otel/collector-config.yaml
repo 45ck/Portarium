@@ -112,13 +112,18 @@ exporters:
       max_interval: 30s
       max_elapsed_time: 120s
 
-  # ── Logs → Loki ───────────────────────────────────────────────────────────
-  otlphttp/loki:
-    endpoint: ${env:LOKI_ENDPOINT} # e.g. https://loki.monitoring.svc/otlp
+  # ── Logs → Loki (native Loki exporter; OTLP endpoint configured via env) ──
+  loki:
+    endpoint: ${env:LOKI_ENDPOINT}  # e.g. http://loki:3100/loki/api/v1/push
     tls:
-      insecure: false
-      ca_file: ${env:LOKI_CA_FILE}
+      insecure: ${env:LOKI_TLS_INSECURE}  # true in dev/docker-compose, false in production
+    default_labels_enabled:
+      exporter: false
+      job: true
+      instance: false
+      level: true
     headers:
+      X-Scope-OrgID: portarium
       Authorization: 'Bearer ${env:LOKI_AUTH_TOKEN}'
     retry_on_failure:
       enabled: true
@@ -216,6 +221,16 @@ processors:
             new_label: source
             new_value: otelcol
 
+  # ── Cross-signal correlation ───────────────────────────────────────────────
+  # Inject trace_id and span_id into log records so logs can be correlated
+  # back to traces in Grafana.
+  transform/add_trace_id_to_logs:
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["trace_id"], trace_id.string) where trace_id != SpanID("0000000000000000")
+          - set(attributes["span_id"], span_id.string) where span_id != SpanID("00000000")
+
 service:
   telemetry:
     logs:
@@ -262,5 +277,6 @@ service:
         - resourcedetection
         - resource/namespace
         - attributes/redact
+        - transform/add_trace_id_to_logs
         - batch/logs
-      exporters: [otlphttp/loki, debug]
+      exporters: [loki, debug]
