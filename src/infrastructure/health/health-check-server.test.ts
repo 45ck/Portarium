@@ -3,7 +3,7 @@
  * Bead: bead-0396
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { HealthCheckServer } from './health-check-server.js';
 
 function getPort(): number {
