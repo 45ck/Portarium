@@ -1,0 +1,318 @@
+# Workflow Durability Fault-Injection Tests
+#
+# Validates that Temporal workflows resume correctly after infrastructure
+# failures:
+#
+#   pod-kill        — kill a random worker pod mid-workflow, verify resume
+#   db-failover     — trigger RDS Multi-AZ failover, verify workflow state
+#   network-partition — isolate worker pods from Temporal frontend, verify
+#                       workflow resumes after partition heals
+#
+# Uses AWS Fault Injection Service (FIS) for controlled experiments.
+# The target is the staging cluster only — never run against prod.
+#
+# Bead: bead-0399
+
+name: Fault Injection — Workflow Durability
+
+on:
+  schedule:
+    # Monthly: 03:00 UTC on the 1st of each month
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: Fault scenario
+        required: true
+        type: choice
+        default: pod-kill
+        options:
+          - pod-kill
+          - db-failover
+          - network-partition
+          - all
+      target_environment:
+        description: Target environment (must be staging)
+        required: true
+        default: staging
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+jobs:
+  pre-flight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject prod target
+        run: |
+          TARGET="${{ github.event.inputs.target_environment || 'staging' }}"
+          if [[ "$TARGET" == "prod" ]]; then
+            echo "::error::Fault injection must never target production."
+            exit 1
+          fi
+
+      - name: Open tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Fault Injection Drill — ${new Date().toISOString().slice(0, 10)}`,
+              body: [
+                `## Fault Injection: ${context.runId}`,
+                '',
+                `- **Scenario**: ${{ github.event.inputs.scenario || 'all' }}`,
+                `- **Environment**: ${{ github.event.inputs.target_environment || 'staging' }}`,
+                `- **Triggered by**: @${context.actor}`,
+                `- **Workflow run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              ].join('\n'),
+              labels: ['fault-injection', 'reliability'],
+            });
+
+  # ── Scenario 1: Pod kill ──────────────────────────────────────────────────
+  pod-kill:
+    needs: pre-flight
+    if: |
+      github.event.inputs.scenario == 'pod-kill' ||
+      github.event.inputs.scenario == 'all' ||
+      github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name "${{ vars.EKS_CLUSTER_NAME }}" \
+            --region "${{ vars.AWS_REGION }}"
+
+      - name: Start sentinel workflow
+        id: sentinel
+        run: |
+          WORKFLOW_ID="fault-test-pod-kill-$(date -u +%s)"
+          echo "workflow_id=${WORKFLOW_ID}" >> "$GITHUB_OUTPUT"
+
+          # Start a long-running test workflow via the control-plane API.
+          curl -sf -X POST \
+            "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/start" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"workflowId\":\"${WORKFLOW_ID}\",\"scenario\":\"pod-kill\",\"durationSeconds\":120}"
+
+      - name: Wait for workflow to reach first checkpoint
+        run: |
+          DEADLINE=$((SECONDS + 60))
+          while [[ $SECONDS -lt $DEADLINE ]]; do
+            STATUS=$(curl -sf \
+              "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/status/${{ steps.sentinel.outputs.workflow_id }}" \
+              -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" | \
+              python3 -c "import sys,json; print(json.load(sys.stdin)['checkpoint'])" 2>/dev/null || echo "waiting")
+            echo "Checkpoint: ${STATUS}"
+            if [[ "$STATUS" == "reached" ]]; then break; fi
+            sleep 5
+          done
+
+      - name: Kill a random execution-plane worker pod
+        run: |
+          POD=$(kubectl get pods -n portarium \
+            -l portarium.io/component=execution-plane \
+            -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+          if [[ -z "$POD" ]]; then
+            echo "::error::No execution-plane pod found"
+            exit 1
+          fi
+
+          echo "Killing pod: ${POD}"
+          kubectl delete pod "$POD" -n portarium --grace-period=0 --force
+
+      - name: Verify workflow resumes and completes
+        run: |
+          DEADLINE=$((SECONDS + 180))
+          while [[ $SECONDS -lt $DEADLINE ]]; do
+            STATUS=$(curl -sf \
+              "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/status/${{ steps.sentinel.outputs.workflow_id }}" \
+              -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" | \
+              python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "unknown")
+            echo "[$(date -u +%T)] Workflow status: ${STATUS}"
+            if [[ "$STATUS" == "completed" ]]; then
+              echo "Workflow resumed and completed successfully after pod kill."
+              exit 0
+            fi
+            if [[ "$STATUS" == "failed" ]]; then
+              echo "::error::Workflow failed after pod kill — durability regression."
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "::error::Workflow did not complete within 3 minutes after pod kill."
+          exit 1
+
+  # ── Scenario 2: DB failover ───────────────────────────────────────────────
+  db-failover:
+    needs: pre-flight
+    if: |
+      github.event.inputs.scenario == 'db-failover' ||
+      github.event.inputs.scenario == 'all'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Start sentinel workflow
+        id: sentinel
+        run: |
+          WORKFLOW_ID="fault-test-db-failover-$(date -u +%s)"
+          echo "workflow_id=${WORKFLOW_ID}" >> "$GITHUB_OUTPUT"
+          curl -sf -X POST \
+            "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/start" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"workflowId\":\"${WORKFLOW_ID}\",\"scenario\":\"db-failover\",\"durationSeconds\":300}"
+
+      - name: Trigger RDS Multi-AZ failover
+        run: |
+          aws rds failover-db-cluster \
+            --db-cluster-identifier "${{ vars.STAGING_DB_CLUSTER_IDENTIFIER }}" \
+            2>/dev/null || \
+          aws rds reboot-db-instance \
+            --db-instance-identifier "${{ vars.STAGING_DB_INSTANCE_IDENTIFIER }}" \
+            --force-failover
+
+          echo "DB failover triggered. Waiting for Multi-AZ promotion..."
+          aws rds wait db-instance-available \
+            --db-instance-identifier "${{ vars.STAGING_DB_INSTANCE_IDENTIFIER }}"
+        timeout-minutes: 15
+
+      - name: Verify workflow completes post-failover
+        run: |
+          DEADLINE=$((SECONDS + 300))
+          while [[ $SECONDS -lt $DEADLINE ]]; do
+            STATUS=$(curl -sf \
+              "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/status/${{ steps.sentinel.outputs.workflow_id }}" \
+              -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" | \
+              python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "unknown")
+            echo "[$(date -u +%T)] ${STATUS}"
+            if [[ "$STATUS" == "completed" ]]; then echo "PASS"; exit 0; fi
+            if [[ "$STATUS" == "failed" ]]; then echo "::error::Workflow failed post-failover"; exit 1; fi
+            sleep 15
+          done
+          echo "::error::Workflow did not complete within 5 minutes after DB failover."
+          exit 1
+
+  # ── Scenario 3: Network partition ─────────────────────────────────────────
+  network-partition:
+    needs: pre-flight
+    if: |
+      github.event.inputs.scenario == 'network-partition' ||
+      github.event.inputs.scenario == 'all'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Get EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name "${{ vars.EKS_CLUSTER_NAME }}" \
+            --region "${{ vars.AWS_REGION }}"
+
+      - name: Start sentinel workflow
+        id: sentinel
+        run: |
+          WORKFLOW_ID="fault-test-net-partition-$(date -u +%s)"
+          echo "workflow_id=${WORKFLOW_ID}" >> "$GITHUB_OUTPUT"
+          curl -sf -X POST \
+            "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/start" \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"workflowId\":\"${WORKFLOW_ID}\",\"scenario\":\"network-partition\",\"durationSeconds\":300}"
+
+      - name: Apply network partition (block worker→temporal egress)
+        run: |
+          # Add a NetworkPolicy that drops all egress to Temporal frontend (port 7233)
+          # from execution-plane pods for 60 seconds.
+          cat <<EOF | kubectl apply -f -
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: fault-injection-block-temporal
+            namespace: portarium
+            labels:
+              portarium.io/fault-injection: "true"
+          spec:
+            podSelector:
+              matchLabels:
+                portarium.io/component: execution-plane
+            policyTypes:
+              - Egress
+            egress:
+              - ports:
+                  - port: 443
+                  - port: 53
+                    protocol: UDP
+          EOF
+          echo "Network partition applied — workers cannot reach Temporal for 60s."
+
+      - name: Wait 60 seconds (partition duration)
+        run: sleep 60
+
+      - name: Remove network partition
+        run: kubectl delete networkpolicy fault-injection-block-temporal -n portarium --ignore-not-found=true
+
+      - name: Verify workflow resumes after partition heals
+        run: |
+          DEADLINE=$((SECONDS + 300))
+          while [[ $SECONDS -lt $DEADLINE ]]; do
+            STATUS=$(curl -sf \
+              "${{ vars.CONTROL_PLANE_URL }}/internal/fault-test/status/${{ steps.sentinel.outputs.workflow_id }}" \
+              -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" | \
+              python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "unknown")
+            echo "[$(date -u +%T)] ${STATUS}"
+            if [[ "$STATUS" == "completed" ]]; then echo "PASS — workflow resumed after network heal"; exit 0; fi
+            if [[ "$STATUS" == "failed" ]]; then echo "::error::Workflow failed after network partition"; exit 1; fi
+            sleep 10
+          done
+          echo "::error::Workflow did not resume within 5 minutes after partition healed."
+          exit 1
+
+  # ── Report ─────────────────────────────────────────────────────────────────
+  report:
+    needs: [pre-flight, pod-kill, db-failover, network-partition]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarise results
+        run: |
+          echo "## Fault Injection Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Scenario | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Pod Kill | ${{ needs.pod-kill.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| DB Failover | ${{ needs.db-failover.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Network Partition | ${{ needs.network-partition.result }} |" >> "$GITHUB_STEP_SUMMARY"
