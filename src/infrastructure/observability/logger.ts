@@ -49,7 +49,13 @@ function writeEntry(level: LogLevel, entry: LogEntry): void {
   }
 }
 
-function emit(level: LogLevel, name: string, msg: string, bindings: LogFields, fields?: LogFields): void {
+function emit(
+  level: LogLevel,
+  name: string,
+  msg: string,
+  bindings: LogFields,
+  fields?: LogFields,
+): void {
   const tid = activeTraceId();
   const entry: LogEntry = {
     level,

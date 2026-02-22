@@ -14,7 +14,9 @@ function labelsToString(labels: LabelMap): string {
   const entries = Object.entries(labels);
   if (entries.length === 0) return '';
   const pairs = entries
-    .map(([k, v]) => `${k}="${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`)
+    .map(
+      ([k, v]) => `${k}="${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`,
+    )
     .join(',');
   return `{${pairs}}`;
 }
@@ -53,7 +55,11 @@ export class PromCounter {
 
 const DEFAULT_BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10];
 
-interface HistogramSeries { readonly buckets: number[]; sum: number; count: number }
+interface HistogramSeries {
+  readonly buckets: number[];
+  sum: number;
+  count: number;
+}
 
 export class PromHistogram {
   readonly #name: string;

@@ -39,18 +39,22 @@ export class NatsEventPublisher implements EventPublisher {
 
   public async publish(event: PortariumCloudEventV1): Promise<void> {
     const subject = cloudEventTypeToNatsSubject(event.type);
-    await withSpan('nats.publish', async () => {
-      const payload = new TextEncoder().encode(JSON.stringify(event));
-      try {
-        await this.#jetstream.publish(subject, payload);
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : 'Unknown NATS publish error.';
-        throw new NatsEventPublishError(
-          `NATS JetStream publish failed for subject ${subject}: ${reason}`,
-          { cause: error },
-        );
-      }
-    }, { 'messaging.destination': subject });
+    await withSpan(
+      'nats.publish',
+      async () => {
+        const payload = new TextEncoder().encode(JSON.stringify(event));
+        try {
+          await this.#jetstream.publish(subject, payload);
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : 'Unknown NATS publish error.';
+          throw new NatsEventPublishError(
+            `NATS JetStream publish failed for subject ${subject}: ${reason}`,
+            { cause: error },
+          );
+        }
+      },
+      { 'messaging.destination': subject },
+    );
   }
 }
 
