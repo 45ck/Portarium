@@ -142,7 +142,7 @@ export async function faultTestWorkflow(
     throw new Error('DB connectivity check failed after fault injection');
   }
 
-  const { completedAt, durationMs } = await activities.recordFaultTestCompletion(
+  const { completedAt } = await activities.recordFaultTestCompletion(
     input,
     recordedAt,
   );
