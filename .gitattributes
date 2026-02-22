@@ -18,6 +18,9 @@
 *.css text eol=lf
 *.txt text eol=lf
 
+# Extensionless executables (bin/)
+bin/* text eol=lf
+
 # Repo config files
 .gitattributes text eol=lf
 .gitignore text eol=lf
