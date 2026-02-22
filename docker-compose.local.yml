@@ -27,11 +27,11 @@ services:
     environment:
       NODE_ENV: development
       # Store — connect to local Postgres (evidence-db service)
-      PORTARIUM_USE_POSTGRES_STORES: "true"
+      PORTARIUM_USE_POSTGRES_STORES: 'true'
       PORTARIUM_DATABASE_URL: postgresql://portarium:portarium@evidence-db:5432/portarium
       # Dev auth — static bearer token bypasses JWKS for local development.
       # Never use outside NODE_ENV=development/test.
-      ENABLE_DEV_AUTH: "true"
+      ENABLE_DEV_AUTH: 'true'
       PORTARIUM_DEV_TOKEN: portarium-dev-token
       PORTARIUM_DEV_WORKSPACE_ID: ws-local-dev
       PORTARIUM_DEV_USER_ID: user-local-dev
@@ -67,7 +67,7 @@ services:
     container_name: portarium-worker
     environment:
       NODE_ENV: development
-      PORTARIUM_ENABLE_TEMPORAL_WORKER: "true"
+      PORTARIUM_ENABLE_TEMPORAL_WORKER: 'true'
       PORTARIUM_TEMPORAL_ADDRESS: temporal:7233
       PORTARIUM_TEMPORAL_NAMESPACE: default
       PORTARIUM_TEMPORAL_TASK_QUEUE: portarium-runs
