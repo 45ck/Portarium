@@ -16,6 +16,10 @@ type Stored = Readonly<{
 export class InMemorySqlClient implements SqlClient {
   readonly #rows = new Map<string, Stored>();
 
+  public async withTransaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    return fn(this);
+  }
+
   public query<Row extends SqlRow = SqlRow>(
     statement: string,
     params: readonly unknown[] = [],

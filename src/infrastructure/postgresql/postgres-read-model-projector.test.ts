@@ -17,6 +17,10 @@ class MockSqlClient implements SqlClient {
     this.calls.push({ sql, params: [...params] });
     return Promise.resolve({ rows: [], rowCount: 0 });
   }
+
+  withTransaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    return fn(this);
+  }
 }
 
 describe('PostgresReadModelProjector', () => {
