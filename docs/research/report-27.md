@@ -257,3 +257,37 @@ Each deliverable maps to reducing specific risks (e.g. #1 reduces bug risk; #3 i
 - IEEE/CMMI definitions of Verification (“built it right”) vs Validation (“built the right thing”)【96†L294-L302】.  
 - IBM best practices: unit tests should be isolated with mocks, run in CI, and target ~70–80% coverage【98†L99-L107】【98†L122-L129】【98†L171-L178】.  
 - (Internal code excerpts were reviewed directly from the [45ck/Portarium](https://github.com/45ck/Portarium) repo.)
+
+---
+
+## Coverage Triage (bead-4jpd — assessed 2026-02-22)
+
+Report written before any tests existed; codebase now has **2 915 passing tests** across 317 test files. All six modules called out are now covered.
+
+### Module-level status
+
+| Module | Report finding | Current state | Notes |
+|--------|---------------|---------------|-------|
+| Pack resolver (`src/domain/packs/`) | No tests | **RESOLVED** — 7+ tests in `pack-resolver.test.ts`; covers version selection, core compat, conflict detection, cycles | Full scenario coverage confirmed |
+| SOD constraint evaluator (`src/domain/policy/`) | No tests | **RESOLVED** — `sod-constraints-v1.test.ts` (25 tests) + `sod-eligibility-v1.test.ts` (14 tests) | Happy path + violation cases covered |
+| Rate-limiter (`src/infrastructure/rate-limiting/`) | No tests | **RESOLVED** — 6 test files; token bucket, load, boundary tests | Time-simulation tests included |
+| CloudEvent publishers (`src/infrastructure/eventing/`) | No tests | **RESOLVED** — `activepieces-domain-event-trigger-publisher.test.ts` (253 lines), `nats-event-publisher.test.ts`, `outbox-dispatcher.test.ts` | Fetch mock; error path coverage |
+| Workflow orchestration use-cases (`src/application/commands/`) | No tests | **RESOLVED** — `start-workflow.test.ts` (296 lines), `trigger-routing.test.ts` | Orchestration + trigger routing |
+| Temporal worker loop (`src/infrastructure/temporal/`) | No tests | **RESOLVED** — `temporal-worker.test.ts`, `temporal-workflow-orchestrator.test.ts`, `activities.test.ts`, `workflows.test.ts` | Integration-level boundary tests |
+
+### CI quality gates
+
+| Recommendation | Status |
+|---------------|--------|
+| Coverage reporter (v8) | **DONE** — `vitest.config.ts` uses `@vitest/coverage-v8` with text/html/lcov reporters |
+| Coverage thresholds | **DONE** — statements: 83%, branches: 73%, functions: 88%, lines: 85% in `vitest.config.ts` |
+| Coverage artifact upload | **DONE** — CI uploads `coverage/` directory on every PR |
+| Test-results JUnit XML | **OPEN** — `vitest.config.ts` uses `reporters: ['default']` only; no `junit` reporter configured |
+
+### Remaining beads seeded
+
+| Bead | Priority | Title |
+|------|----------|-------|
+| bead-cov1 | P2 | Add JUnit XML test-results reporter to vitest config for CI artifact ingestion |
+
+Note: "0% coverage / no tests" critical finding from report is **fully resolved**. Coverage thresholds exceed the 70–80% target from report (functions 88%, statements 83%). One CI gap remains (JUnit XML).
