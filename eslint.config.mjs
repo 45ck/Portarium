@@ -34,6 +34,8 @@ export default tseslint.config(
       'scaffolds/**',
       // QA automation scripts — not production code
       'qa/**',
+      // Asset generation scripts use optional native deps (sharp) not in devDependencies
+      'scripts/assets/**',
       // UI capture scripts — not production
       'docs/ui/cockpit/screenshots/**',
       // Scratch/generator scripts left from interactive sessions
