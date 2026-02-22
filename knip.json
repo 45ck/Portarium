@@ -19,6 +19,7 @@
     "@aws-sdk/client-s3",
     "@opentelemetry/api",
     "pg",
-    "ioredis"
+    "ioredis",
+    "hono"
   ]
 }
