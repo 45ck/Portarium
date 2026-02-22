@@ -4,7 +4,7 @@
  * Bead: bead-0392
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   TenantStorageProvisioner,
   tenantToSchemaName,
