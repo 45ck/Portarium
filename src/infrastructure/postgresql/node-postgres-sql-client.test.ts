@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { NodePostgresSqlClient, type NodePostgresPool } from './node-postgres-sql-client.js';
+import {
+  NodePostgresSqlClient,
+  nodePostgresSqlClientConfigFromEnv,
+  type NodePostgresPool,
+} from './node-postgres-sql-client.js';
 import type { SqlClient } from './sql-client.js';
 
 // ---------------------------------------------------------------------------
@@ -32,6 +36,39 @@ function makeFakePool(clientOverride?: Partial<FakeClient>): {
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
+
+describe('nodePostgresSqlClientConfigFromEnv', () => {
+  it('returns defaults when no env vars are set', () => {
+    const cfg = nodePostgresSqlClientConfigFromEnv({ PORTARIUM_DATABASE_URL: 'postgres://x' });
+    expect(cfg.connectionString).toBe('postgres://x');
+    expect(cfg.maxConnections).toBe(10);
+    expect(cfg.idleTimeoutMs).toBe(10_000);
+    expect(cfg.connectionTimeoutMs).toBe(5_000);
+    expect(cfg.statementTimeoutMs).toBe(30_000);
+  });
+
+  it('reads all values from env vars', () => {
+    const cfg = nodePostgresSqlClientConfigFromEnv({
+      PORTARIUM_DATABASE_URL: 'postgres://y',
+      PORTARIUM_DB_POOL_MAX: '20',
+      PORTARIUM_DB_POOL_IDLE_TIMEOUT_MS: '15000',
+      PORTARIUM_DB_CONNECTION_TIMEOUT_MS: '3000',
+      PORTARIUM_DB_STATEMENT_TIMEOUT_MS: '60000',
+    });
+    expect(cfg.maxConnections).toBe(20);
+    expect(cfg.idleTimeoutMs).toBe(15_000);
+    expect(cfg.connectionTimeoutMs).toBe(3_000);
+    expect(cfg.statementTimeoutMs).toBe(60_000);
+  });
+
+  it('falls back to defaults for non-numeric env values', () => {
+    const cfg = nodePostgresSqlClientConfigFromEnv({
+      PORTARIUM_DATABASE_URL: 'postgres://z',
+      PORTARIUM_DB_POOL_MAX: 'notanumber',
+    });
+    expect(cfg.maxConnections).toBe(10);
+  });
+});
 
 describe('NodePostgresSqlClient.withTransaction', () => {
   it('issues BEGIN before fn and COMMIT after fn on success', async () => {
