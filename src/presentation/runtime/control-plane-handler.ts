@@ -386,6 +386,11 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
 
     if (!result.allowed) {
       rateLimitHitsTotal.inc({ workspaceId: rawId });
+      d.authEventLogger?.logRateLimitExceeded({
+        workspaceId: rawId,
+        path: pathname,
+        retryAfterSeconds: result.retryAfterSeconds,
+      });
       respondProblem(
         res,
         {

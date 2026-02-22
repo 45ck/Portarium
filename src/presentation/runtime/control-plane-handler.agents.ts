@@ -127,7 +127,7 @@ export async function handleMachineHeartbeat(args: MachineHeartbeatArgs): Promis
     respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
     return;
   }
-  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId, deps.authEventLogger);
   if (!scopeCheck.ok) {
     respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
     return;
@@ -175,7 +175,7 @@ export async function handleAgentHeartbeat(args: AgentArgs): Promise<void> {
     respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
     return;
   }
-  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId, deps.authEventLogger);
   if (!scopeCheck.ok) {
     respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
     return;
@@ -223,7 +223,7 @@ export async function handleGetAgentWorkItems(args: AgentArgs): Promise<void> {
     respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
     return;
   }
-  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId);
+  const scopeCheck = assertWorkspaceScope(auth.ctx, workspaceId, deps.authEventLogger);
   if (!scopeCheck.ok) {
     respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
     return;
