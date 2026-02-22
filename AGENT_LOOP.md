@@ -196,7 +196,7 @@ Because multiple agents run at the same time:
 | --------------------------------------------- | ------------------------------------------ |
 | Each agent works in `.trees/<id>/`            | Worktrees are isolated — no file conflicts |
 | `npm run bd -- issue start` is the claim gate | Sets `claimedBy` before creating worktree  |
-| Push claim immediately after start             | Other machines see ownership right away    |
+| Push claim immediately after start            | Other machines see ownership right away    |
 | "Branch already exists" → skip and retry      | Git itself prevents double-claiming        |
 | `git pull --rebase` before every push         | Keeps main clean with parallel pushes      |
 | Never force-push                              | Would destroy other agents' merged work    |

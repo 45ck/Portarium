@@ -163,9 +163,17 @@ describe('CloudEventSchemaRegistry', () => {
 
     const regs = registry.listRegistrations();
     expect(regs).toHaveLength(3);
-    expect(regs.some((r) => r.aggregate === 'run' && r.eventName === 'RunStarted' && r.version === 1)).toBe(true);
-    expect(regs.some((r) => r.aggregate === 'run' && r.eventName === 'RunStarted' && r.version === 2)).toBe(true);
-    expect(regs.some((r) => r.aggregate === 'approval' && r.eventName === 'ApprovalGranted' && r.version === 1)).toBe(true);
+    expect(
+      regs.some((r) => r.aggregate === 'run' && r.eventName === 'RunStarted' && r.version === 1),
+    ).toBe(true);
+    expect(
+      regs.some((r) => r.aggregate === 'run' && r.eventName === 'RunStarted' && r.version === 2),
+    ).toBe(true);
+    expect(
+      regs.some(
+        (r) => r.aggregate === 'approval' && r.eventName === 'ApprovalGranted' && r.version === 1,
+      ),
+    ).toBe(true);
   });
 
   // -------------------------------------------------------------------------

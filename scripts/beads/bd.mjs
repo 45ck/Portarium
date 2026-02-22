@@ -572,12 +572,16 @@ function main() {
       const retryPush = spawnGit(['push', 'origin', 'main'], root);
       if (retryPush.status !== 0) {
         process.stderr.write(`Warning: git push failed:\n${retryPush.stderr}\n`);
-        process.stderr.write(`Run manually: git pull --rebase origin main && git push origin main\n`);
+        process.stderr.write(
+          `Run manually: git pull --rebase origin main && git push origin main\n`,
+        );
       }
     }
 
     if (!asJson) {
-      process.stdout.write(`Finished ${id}: worktree removed, bead closed, pushed to origin/main.\n`);
+      process.stdout.write(
+        `Finished ${id}: worktree removed, bead closed, pushed to origin/main.\n`,
+      );
     } else {
       print(issues[idx], true);
     }

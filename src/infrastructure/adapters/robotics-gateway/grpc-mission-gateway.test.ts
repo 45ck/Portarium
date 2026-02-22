@@ -29,7 +29,9 @@ const ROBOT_ID = RobotId('robot-001');
 const GATEWAY_ID = GatewayId('gw-001');
 const FLEET_ID = FleetId('fleet-001');
 
-function makeDispatchRequest(overrides: Partial<MissionDispatchRequest['action']> = {}): MissionDispatchRequest {
+function makeDispatchRequest(
+  overrides: Partial<MissionDispatchRequest['action']> = {},
+): MissionDispatchRequest {
   return {
     missionId: MISSION_ID,
     correlationId: CORRELATION_ID,
@@ -126,7 +128,10 @@ describe('GrpcMissionGateway', () => {
   describe('close()', () => {
     it('can be called multiple times without throwing', () => {
       const gw = new GrpcMissionGateway(config);
-      expect(() => { gw.close(); gw.close(); }).not.toThrow();
+      expect(() => {
+        gw.close();
+        gw.close();
+      }).not.toThrow();
     });
   });
 });

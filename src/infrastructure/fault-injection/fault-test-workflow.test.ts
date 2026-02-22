@@ -46,7 +46,7 @@ describe('heartbeatSleep', () => {
 
     const result = await heartbeatSleep(30, heartbeat, sleep);
 
-    expect(sleep).toHaveBeenCalledTimes(3);   // 30s / 10s steps
+    expect(sleep).toHaveBeenCalledTimes(3); // 30s / 10s steps
     expect(result.sleptSeconds).toBe(30);
     expect(heartbeat).toHaveBeenCalledTimes(3);
   });
@@ -56,7 +56,7 @@ describe('heartbeatSleep', () => {
     const sleep = vi.fn().mockResolvedValue(undefined);
 
     const result = await heartbeatSleep(25, heartbeat, sleep);
-    expect(sleep).toHaveBeenCalledTimes(3);   // ceil(25/10) = 3
+    expect(sleep).toHaveBeenCalledTimes(3); // ceil(25/10) = 3
     expect(result.sleptSeconds).toBe(30);
   });
 });

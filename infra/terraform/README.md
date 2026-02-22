@@ -18,11 +18,11 @@ bootstrap step provisions the state storage **before** the main stack is first
 applied. After bootstrapping, uncomment the `backend` block in each stack's
 `backend.tf` and run `terraform init -migrate-state`.
 
-| Provider | Backend    | Lock mechanism              | Bootstrap dir               |
-| -------- | ---------- | --------------------------- | --------------------------- |
-| AWS      | S3         | DynamoDB (`LockID` table)   | `aws-backend-bootstrap/`    |
-| Azure    | azurerm    | Native blob lease           | `azure-backend-bootstrap/`  |
-| GCP      | gcs        | Native Cloud Storage lock   | `gcp-backend-bootstrap/`    |
+| Provider | Backend | Lock mechanism            | Bootstrap dir              |
+| -------- | ------- | ------------------------- | -------------------------- |
+| AWS      | S3      | DynamoDB (`LockID` table) | `aws-backend-bootstrap/`   |
+| Azure    | azurerm | Native blob lease         | `azure-backend-bootstrap/` |
+| GCP      | gcs     | Native Cloud Storage lock | `gcp-backend-bootstrap/`   |
 
 ### Bootstrap procedure (all providers)
 
@@ -52,6 +52,7 @@ portarium/<provider>/<stack>/terraform.tfstate
 ```
 
 Examples:
+
 - `portarium/aws/platform/terraform.tfstate`
 - `portarium/azure/platform/terraform.tfstate`
 - `portarium/gcp/platform/terraform.tfstate`

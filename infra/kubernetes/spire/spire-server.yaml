@@ -103,7 +103,7 @@ kind: ClusterRole
 metadata:
   name: spire-server-role
 rules:
-  - apiGroups: [""]
+  - apiGroups: ['']
     resources: [nodes, pods]
     verbs: [get, list, watch]
   - apiGroups: [authentication.k8s.io]

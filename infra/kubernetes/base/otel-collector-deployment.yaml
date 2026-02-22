@@ -20,9 +20,9 @@ spec:
         app.kubernetes.io/part-of: portarium
         app.kubernetes.io/component: observability
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8888"
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8888'
+        prometheus.io/path: '/metrics'
     spec:
       serviceAccountName: portarium-otel-collector
       securityContext:
@@ -58,7 +58,7 @@ spec:
                   name: otel-backends
                   key: TEMPO_ENDPOINT
             - name: TEMPO_TLS_INSECURE
-              value: "false"
+              value: 'false'
             - name: TEMPO_CA_FILE
               value: /etc/otelcol-contrib/tls/ca.crt
             - name: TEMPO_AUTH_TOKEN
@@ -92,9 +92,9 @@ spec:
                   key: LOKI_AUTH_TOKEN
             # Tune verbosity per environment
             - name: OTEL_DEBUG_VERBOSITY
-              value: "none"
+              value: 'none'
             - name: OTEL_LOG_LEVEL
-              value: "info"
+              value: 'info'
           volumeMounts:
             - name: collector-config
               mountPath: /etc/otelcol-contrib

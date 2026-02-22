@@ -16,10 +16,10 @@ persistence:
       sql:
         pluginName: postgres12
         databaseName: temporal
-        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectAddr: '{{ .Env.TEMPORAL_DB_HOST }}:5432'
         connectProtocol: tcp
-        user: "{{ .Env.TEMPORAL_DB_USER }}"
-        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        user: '{{ .Env.TEMPORAL_DB_USER }}'
+        password: '{{ .Env.TEMPORAL_DB_PASSWORD }}'
         maxConns: 40
         maxIdleConns: 20
         maxConnLifetime: 1h
@@ -32,10 +32,10 @@ persistence:
       sql:
         pluginName: postgres12
         databaseName: temporal_visibility
-        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectAddr: '{{ .Env.TEMPORAL_DB_HOST }}:5432'
         connectProtocol: tcp
-        user: "{{ .Env.TEMPORAL_DB_USER }}"
-        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        user: '{{ .Env.TEMPORAL_DB_USER }}'
+        password: '{{ .Env.TEMPORAL_DB_PASSWORD }}'
         maxConns: 20
         maxIdleConns: 10
         maxConnLifetime: 1h

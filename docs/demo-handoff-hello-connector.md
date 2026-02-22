@@ -10,6 +10,7 @@ first principles to a working integration in approximately 30 minutes.
 ## What You'll Build
 
 A custom Portarium connector that:
+
 1. Implements the `HelloConnectorAdapterPort` (or your own port).
 2. Passes the contract test suite against a stub adapter.
 3. Calls a real external HTTP endpoint via `HelloConnectorAdapter`.
@@ -34,6 +35,7 @@ HELLO_BASE_URL=http://localhost:9000 HELLO_TOKEN=dev npx tsx connector.ts
 ```
 
 Expected output:
+
 ```
 [hello-connector] connecting to http://localhost:9000
 [hello-connector] ping → error: ...   ← no server running, expected
@@ -115,7 +117,7 @@ export class StubMySystemAdapter implements MySystemAdapterPort {
 
   async closeTicket(id: string) {
     if (!this.reachable) return { ok: false as const, error: 'offline' };
-    const t = this.tickets.find(t => t.id === id);
+    const t = this.tickets.find((t) => t.id === id);
     if (!t) return { ok: false as const, error: 'not found' };
     t.status = 'closed';
     return { ok: true as const, value: undefined };
@@ -162,10 +164,10 @@ container.bind<MySystemAdapterPort>(MY_SYSTEM_PORT).to(StubMySystemAdapter);
 
 ## Reference: hello-connector files
 
-| File | Purpose |
-|---|---|
-| `examples/hello-connector/connector.ts` | Port interface, live adapter, stub adapter, demo entrypoint |
-| `examples/hello-connector/package.json` | Standalone package metadata |
-| `examples/hello-connector/README.md` | Quickstart + architecture diagram |
-| `src/infrastructure/adapters/hello-connector.test.ts` | 15-test contract suite |
-| `docs/demo-handoff-hello-connector.md` | This file |
+| File                                                  | Purpose                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------- |
+| `examples/hello-connector/connector.ts`               | Port interface, live adapter, stub adapter, demo entrypoint |
+| `examples/hello-connector/package.json`               | Standalone package metadata                                 |
+| `examples/hello-connector/README.md`                  | Quickstart + architecture diagram                           |
+| `src/infrastructure/adapters/hello-connector.test.ts` | 15-test contract suite                                      |
+| `docs/demo-handoff-hello-connector.md`                | This file                                                   |

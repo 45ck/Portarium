@@ -119,9 +119,9 @@ describe('TenantStorageProvisioner.provisionSchema', () => {
       provisioner.provisionSchema({ tenantId: 'INVALID', tier: 'shared' }),
     ).rejects.toThrow('Invalid tenantId');
 
-    await expect(
-      provisioner.provisionSchema({ tenantId: 'ab', tier: 'shared' }),
-    ).rejects.toThrow('Invalid tenantId');
+    await expect(provisioner.provisionSchema({ tenantId: 'ab', tier: 'shared' })).rejects.toThrow(
+      'Invalid tenantId',
+    );
 
     await expect(
       provisioner.provisionSchema({ tenantId: 'with spaces', tier: 'shared' }),

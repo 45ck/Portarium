@@ -23,6 +23,8 @@
     "cockpit:assets:optimize": "node scripts/assets/optimize-cockpit-assets.mjs",
     "cockpit:assets:check": "node scripts/assets/check-cockpit-assets.mjs",
     "cockpit:demo:approvals-v2:showcase": "node scripts/qa/render-approvals-v2-showcase.mjs",
+    "cockpit:demo:gallery": "node scripts/qa/render-demo-gallery.mjs",
+    "cockpit:demo:gallery:dry-run": "node scripts/qa/render-demo-gallery.mjs --dry-run",
     "cockpit:qa:mobile-breakpoints": "node scripts/qa/capture-cockpit-mobile-breakpoints.mjs",
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",

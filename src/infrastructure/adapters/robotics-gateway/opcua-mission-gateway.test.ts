@@ -89,7 +89,9 @@ function makeGateway(factory: OpcUaClientFactory) {
 describe('OpcUaMissionGateway', () => {
   describe('dispatchMission', () => {
     it('returns Dispatched on Good OPC UA status', async () => {
-      const gw = makeGateway(makeFactory({ statusCode: 0, outputArguments: [{ value: 'gw-req-42' }] }));
+      const gw = makeGateway(
+        makeFactory({ statusCode: 0, outputArguments: [{ value: 'gw-req-42' }] }),
+      );
       const result = await gw.dispatchMission(makeDispatchRequest());
 
       expect(result.kind).toBe('Dispatched');
@@ -138,10 +140,12 @@ describe('OpcUaMissionGateway', () => {
 
   describe('getMissionStatus', () => {
     it('maps SUCCEEDED result code to Succeeded status', async () => {
-      const gw = makeGateway(makeFactory({
-        statusCode: 0,
-        outputArguments: [{ value: 'SUCCEEDED' }, { value: 'action-exec-1' }],
-      }));
+      const gw = makeGateway(
+        makeFactory({
+          statusCode: 0,
+          outputArguments: [{ value: 'SUCCEEDED' }, { value: 'action-exec-1' }],
+        }),
+      );
       const result = await gw.getMissionStatus('mission-1' as never, 'corr-1' as never);
 
       expect(result.status).toBe('Succeeded');
@@ -149,7 +153,9 @@ describe('OpcUaMissionGateway', () => {
     });
 
     it('maps EXECUTING result code to Executing status', async () => {
-      const gw = makeGateway(makeFactory({ statusCode: 0, outputArguments: [{ value: 'EXECUTING' }] }));
+      const gw = makeGateway(
+        makeFactory({ statusCode: 0, outputArguments: [{ value: 'EXECUTING' }] }),
+      );
       const result = await gw.getMissionStatus('mission-1' as never, 'corr-1' as never);
 
       expect(result.status).toBe('Executing');

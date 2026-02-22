@@ -23,7 +23,7 @@ receivers:
         endpoint: 0.0.0.0:4318
         cors:
           allowed_origins:
-            - "https://*.portarium.io"
+            - 'https://*.portarium.io'
 
   # Pull-based Prometheus scrape for self-monitoring
   prometheus:
@@ -79,12 +79,12 @@ connectors:
 exporters:
   # ── Traces → Tempo ────────────────────────────────────────────────────────
   otlp/tempo:
-    endpoint: ${env:TEMPO_ENDPOINT}  # e.g. tempo.monitoring.svc:4317
+    endpoint: ${env:TEMPO_ENDPOINT} # e.g. tempo.monitoring.svc:4317
     tls:
-      insecure: ${env:TEMPO_TLS_INSECURE}  # false in production
+      insecure: ${env:TEMPO_TLS_INSECURE} # false in production
       ca_file: ${env:TEMPO_CA_FILE}
     headers:
-      Authorization: "Bearer ${env:TEMPO_AUTH_TOKEN}"
+      Authorization: 'Bearer ${env:TEMPO_AUTH_TOKEN}'
     retry_on_failure:
       enabled: true
       initial_interval: 5s
@@ -97,12 +97,12 @@ exporters:
 
   # ── Metrics → Prometheus remote-write (Mimir / VictoriaMetrics) ───────────
   prometheusremotewrite:
-    endpoint: ${env:PROM_REMOTE_WRITE_URL}  # e.g. https://mimir.monitoring.svc/api/v1/push
+    endpoint: ${env:PROM_REMOTE_WRITE_URL} # e.g. https://mimir.monitoring.svc/api/v1/push
     tls:
       insecure: false
       ca_file: ${env:PROM_CA_FILE}
     headers:
-      Authorization: "Bearer ${env:PROM_AUTH_TOKEN}"
+      Authorization: 'Bearer ${env:PROM_AUTH_TOKEN}'
       X-Scope-OrgID: portarium
     add_metric_suffixes: true
     send_metadata: true
@@ -114,12 +114,12 @@ exporters:
 
   # ── Logs → Loki ───────────────────────────────────────────────────────────
   otlphttp/loki:
-    endpoint: ${env:LOKI_ENDPOINT}  # e.g. https://loki.monitoring.svc/otlp
+    endpoint: ${env:LOKI_ENDPOINT} # e.g. https://loki.monitoring.svc/otlp
     tls:
       insecure: false
       ca_file: ${env:LOKI_CA_FILE}
     headers:
-      Authorization: "Bearer ${env:LOKI_AUTH_TOKEN}"
+      Authorization: 'Bearer ${env:LOKI_AUTH_TOKEN}'
     retry_on_failure:
       enabled: true
       initial_interval: 5s
@@ -128,7 +128,7 @@ exporters:
 
   # Keep local debug logging at warn level in production (turned off in CI)
   debug:
-    verbosity: ${env:OTEL_DEBUG_VERBOSITY}  # basic | detailed | none
+    verbosity: ${env:OTEL_DEBUG_VERBOSITY} # basic | detailed | none
 
 processors:
   # ── Safety ────────────────────────────────────────────────────────────────
@@ -196,19 +196,19 @@ processors:
     policies:
       - name: errors-policy
         type: status_code
-        status_code: {status_codes: [ERROR]}
+        status_code: { status_codes: [ERROR] }
       - name: slow-traces-policy
         type: latency
-        latency: {threshold_ms: 1000}
+        latency: { threshold_ms: 1000 }
       - name: base-rate-policy
         type: probabilistic
-        probabilistic: {sampling_percentage: 5}
+        probabilistic: { sampling_percentage: 5 }
 
   # ── Metrics transform ─────────────────────────────────────────────────────
   # Prefix Portarium application metrics to avoid collisions with system metrics.
   metricstransform:
     transforms:
-      - include: "^portarium_"
+      - include: '^portarium_'
         match_type: regexp
         action: update
         operations:
@@ -219,7 +219,7 @@ processors:
 service:
   telemetry:
     logs:
-      level: ${env:OTEL_LOG_LEVEL}  # info in production
+      level: ${env:OTEL_LOG_LEVEL} # info in production
       encoding: json
     metrics:
       level: detailed

@@ -13,11 +13,11 @@ workflow to interact with that system in a governed, audited way.
 `connector.ts` implements the `HelloConnectorAdapterPort` — a tiny example port
 that does three things:
 
-| Operation | Description |
-|---|---|
-| `ping` | Round-trip health-check to the external system |
-| `sendMessage` | Send a message string to the external system |
-| `getStatus` | Retrieve current connection status |
+| Operation     | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `ping`        | Round-trip health-check to the external system |
+| `sendMessage` | Send a message string to the external system   |
+| `getStatus`   | Retrieve current connection status             |
 
 The live connector calls a configurable HTTP endpoint; a provided stub
 (`StubHelloConnector`) lets you run the full path in tests without a real server.
@@ -97,8 +97,8 @@ This mirrors the pattern used by all first-party Portarium adapters under
 
 ## Environment Variables
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `HELLO_BASE_URL` | Yes | — | Base URL of the target system |
-| `HELLO_TOKEN` | Yes | — | Bearer token for auth |
-| `HELLO_TIMEOUT_MS` | No | `5000` | Per-request timeout in ms |
+| Variable           | Required | Default | Description                   |
+| ------------------ | -------- | ------- | ----------------------------- |
+| `HELLO_BASE_URL`   | Yes      | —       | Base URL of the target system |
+| `HELLO_TOKEN`      | Yes      | —       | Bearer token for auth         |
+| `HELLO_TIMEOUT_MS` | No       | `5000`  | Per-request timeout in ms     |

@@ -31,8 +31,8 @@ export interface PushRegistration {
   token: string;
   endpoint?: string; // Web push subscription endpoint
   expirationTime?: number | null;
-  p256dh?: string;   // Web push auth key
-  auth?: string;     // Web push auth secret
+  p256dh?: string; // Web push auth key
+  auth?: string; // Web push auth secret
 }
 
 export interface PushNotificationPayload {
@@ -61,8 +61,8 @@ export async function requestPushPermission(): Promise<PushPermissionStatus> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { PushNotifications } = await import('@capacitor/push-notifications') as any;
-      const result = await PushNotifications.requestPermissions() as { receive: string };
+      const { PushNotifications } = (await import('@capacitor/push-notifications')) as any;
+      const result = (await PushNotifications.requestPermissions()) as { receive: string };
       return result.receive === 'granted' ? 'granted' : 'denied';
     } catch {
       return 'denied';
@@ -94,7 +94,7 @@ export async function getPushRegistration(): Promise<PushRegistration | null> {
 async function getNativePushRegistration(): Promise<PushRegistration | null> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { PushNotifications } = await import('@capacitor/push-notifications') as any;
+    const { PushNotifications } = (await import('@capacitor/push-notifications')) as any;
     await PushNotifications.register();
 
     return await new Promise<PushRegistration | null>((resolve) => {
@@ -103,7 +103,8 @@ async function getNativePushRegistration(): Promise<PushRegistration | null> {
       void PushNotifications.addListener('registration', (token: { value: string }) => {
         clearTimeout(timeoutId);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const platform = (window as any).Capacitor?.getPlatform?.() === 'android' ? 'android' : 'ios';
+        const platform =
+          (window as any).Capacitor?.getPlatform?.() === 'android' ? 'android' : 'ios';
         resolve({ platform, token: token.value });
       });
 
@@ -169,10 +170,7 @@ export async function registerDeviceToken(
 /**
  * Remove device registration from the backend (on logout).
  */
-export async function unregisterDeviceToken(
-  token: string,
-  accessToken: string,
-): Promise<boolean> {
+export async function unregisterDeviceToken(token: string, accessToken: string): Promise<boolean> {
   try {
     const response = await fetch(`${DEVICE_TOKEN_ENDPOINT}/${encodeURIComponent(token)}`, {
       method: 'DELETE',
@@ -196,11 +194,14 @@ export type NotificationReceivedHandler = (notification: PushNotificationPayload
 export async function onForegroundNotification(
   handler: NotificationReceivedHandler,
 ): Promise<() => void> {
-  if (!isNative()) return () => { /* no-op */ };
+  if (!isNative())
+    return () => {
+      /* no-op */
+    };
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { PushNotifications } = await import('@capacitor/push-notifications') as any;
+    const { PushNotifications } = (await import('@capacitor/push-notifications')) as any;
     const listener = await PushNotifications.addListener(
       'pushNotificationReceived',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,9 +214,13 @@ export async function onForegroundNotification(
         });
       },
     );
-    return () => { void (listener as { remove(): Promise<void> }).remove(); };
+    return () => {
+      void (listener as { remove(): Promise<void> }).remove();
+    };
   } catch {
-    return () => { /* no-op */ };
+    return () => {
+      /* no-op */
+    };
   }
 }
 

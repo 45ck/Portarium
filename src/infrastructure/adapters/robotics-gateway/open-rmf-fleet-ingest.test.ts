@@ -34,7 +34,9 @@ function makeRobotState(name: string, mode: number, taskId: string = '') {
     battery_percent: 80,
     location: {
       t: { sec: 1708603200, nanosec: 0 },
-      x: 1.0, y: 2.0, yaw: 0.0,
+      x: 1.0,
+      y: 2.0,
+      yaw: 0.0,
       obey_approach_speed_limit: false,
       level_name: 'L1',
     },
@@ -84,7 +86,12 @@ describe('parseOpenRmfFleetState', () => {
 
 describe('parseOpenRmfTaskSummary', () => {
   it('parses a valid ACTIVE task', () => {
-    const msg = { task_id: 'task-001', fleet_name: 'warehouse', robot_name: 'robot-1', state: 'ACTIVE' };
+    const msg = {
+      task_id: 'task-001',
+      fleet_name: 'warehouse',
+      robot_name: 'robot-1',
+      state: 'ACTIVE',
+    };
     const result = parseOpenRmfTaskSummary(msg);
     expect(result.task_id).toBe('task-001');
     expect(result.state).toBe('ACTIVE');
@@ -103,7 +110,9 @@ describe('parseOpenRmfTaskSummary', () => {
   });
 
   it('throws OpenRmfParseError for invalid state', () => {
-    expect(() => parseOpenRmfTaskSummary({ task_id: 't', state: 'IN_PROGRESS' })).toThrow(OpenRmfParseError);
+    expect(() => parseOpenRmfTaskSummary({ task_id: 't', state: 'IN_PROGRESS' })).toThrow(
+      OpenRmfParseError,
+    );
     expect(() => parseOpenRmfTaskSummary({ task_id: 't', state: '' })).toThrow(OpenRmfParseError);
   });
 });
@@ -124,9 +133,9 @@ describe('parseOpenRmfApiRobotSummary', () => {
   });
 
   it('throws OpenRmfParseError when fleet_name is missing', () => {
-    expect(() =>
-      parseOpenRmfApiRobotSummary({ robot_name: 'r', status: {} }),
-    ).toThrow(OpenRmfParseError);
+    expect(() => parseOpenRmfApiRobotSummary({ robot_name: 'r', status: {} })).toThrow(
+      OpenRmfParseError,
+    );
   });
 
   it('throws OpenRmfParseError when status is not an object', () => {
@@ -139,31 +148,63 @@ describe('parseOpenRmfApiRobotSummary', () => {
 // ── Domain mapping ────────────────────────────────────────────────────────────
 
 describe('mapOpenRmfRobotModeToConnectivity', () => {
-  it('IDLE (0) → Online', () => { expect(mapOpenRmfRobotModeToConnectivity(0)).toBe('Online'); });
-  it('CHARGING (1) → Online', () => { expect(mapOpenRmfRobotModeToConnectivity(1)).toBe('Online'); });
-  it('MOVING (2) → Online', () => { expect(mapOpenRmfRobotModeToConnectivity(2)).toBe('Online'); });
-  it('PAUSING (3) → Online', () => { expect(mapOpenRmfRobotModeToConnectivity(3)).toBe('Online'); });
-  it('WAITING (4) → Online', () => { expect(mapOpenRmfRobotModeToConnectivity(4)).toBe('Online'); });
-  it('EMERGENCY (5) → Degraded', () => { expect(mapOpenRmfRobotModeToConnectivity(5)).toBe('Degraded'); });
-  it('ADAPTER_ERROR (8) → Degraded', () => { expect(mapOpenRmfRobotModeToConnectivity(8)).toBe('Degraded'); });
+  it('IDLE (0) → Online', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(0)).toBe('Online');
+  });
+  it('CHARGING (1) → Online', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(1)).toBe('Online');
+  });
+  it('MOVING (2) → Online', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(2)).toBe('Online');
+  });
+  it('PAUSING (3) → Online', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(3)).toBe('Online');
+  });
+  it('WAITING (4) → Online', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(4)).toBe('Online');
+  });
+  it('EMERGENCY (5) → Degraded', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(5)).toBe('Degraded');
+  });
+  it('ADAPTER_ERROR (8) → Degraded', () => {
+    expect(mapOpenRmfRobotModeToConnectivity(8)).toBe('Degraded');
+  });
   it('unknown ordinal → Degraded (fail-safe)', () => {
     expect(mapOpenRmfRobotModeToConnectivity(99)).toBe('Degraded');
   });
 });
 
 describe('mapOpenRmfTaskState', () => {
-  it('PENDING → Dispatched', () => { expect(mapOpenRmfTaskState('PENDING')).toBe('Dispatched'); });
-  it('ACTIVE → Executing', () => { expect(mapOpenRmfTaskState('ACTIVE')).toBe('Executing'); });
-  it('COMPLETED → Succeeded', () => { expect(mapOpenRmfTaskState('COMPLETED')).toBe('Succeeded'); });
-  it('FAILED → Failed', () => { expect(mapOpenRmfTaskState('FAILED')).toBe('Failed'); });
-  it('CANCELED → Cancelled', () => { expect(mapOpenRmfTaskState('CANCELED')).toBe('Cancelled'); });
-  it('KILLED → Cancelled', () => { expect(mapOpenRmfTaskState('KILLED')).toBe('Cancelled'); });
+  it('PENDING → Dispatched', () => {
+    expect(mapOpenRmfTaskState('PENDING')).toBe('Dispatched');
+  });
+  it('ACTIVE → Executing', () => {
+    expect(mapOpenRmfTaskState('ACTIVE')).toBe('Executing');
+  });
+  it('COMPLETED → Succeeded', () => {
+    expect(mapOpenRmfTaskState('COMPLETED')).toBe('Succeeded');
+  });
+  it('FAILED → Failed', () => {
+    expect(mapOpenRmfTaskState('FAILED')).toBe('Failed');
+  });
+  it('CANCELED → Cancelled', () => {
+    expect(mapOpenRmfTaskState('CANCELED')).toBe('Cancelled');
+  });
+  it('KILLED → Cancelled', () => {
+    expect(mapOpenRmfTaskState('KILLED')).toBe('Cancelled');
+  });
 });
 
 describe('mapOpenRmfModeStringToConnectivity', () => {
-  it('MOVING → Online', () => { expect(mapOpenRmfModeStringToConnectivity('MOVING')).toBe('Online'); });
-  it('EMERGENCY → Degraded', () => { expect(mapOpenRmfModeStringToConnectivity('EMERGENCY')).toBe('Degraded'); });
-  it('unknown string → Unknown', () => { expect(mapOpenRmfModeStringToConnectivity('DANCING')).toBe('Unknown'); });
+  it('MOVING → Online', () => {
+    expect(mapOpenRmfModeStringToConnectivity('MOVING')).toBe('Online');
+  });
+  it('EMERGENCY → Degraded', () => {
+    expect(mapOpenRmfModeStringToConnectivity('EMERGENCY')).toBe('Degraded');
+  });
+  it('unknown string → Unknown', () => {
+    expect(mapOpenRmfModeStringToConnectivity('DANCING')).toBe('Unknown');
+  });
   it('is case-insensitive', () => {
     expect(mapOpenRmfModeStringToConnectivity('idle')).toBe('Online');
     expect(mapOpenRmfModeStringToConnectivity('Moving')).toBe('Online');
