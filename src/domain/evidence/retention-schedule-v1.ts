@@ -7,7 +7,7 @@ import {
 
 export type RetentionClass = 'Operational' | 'Compliance' | 'Forensic';
 
-const RETENTION_CLASSES = ['Operational', 'Compliance', 'Forensic'] as const;
+export const RETENTION_CLASSES = ['Operational', 'Compliance', 'Forensic'] as const;
 
 export type RetentionScheduleV1 = Readonly<{
   retentionClass: RetentionClass;
