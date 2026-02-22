@@ -560,6 +560,8 @@ NOLOGIN
 noncompliant
 nonexistent
 Northwind
+noapp
+noexec
 notanumber
 NRPS
 nullability
