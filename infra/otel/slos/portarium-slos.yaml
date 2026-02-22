@@ -18,7 +18,7 @@ metadata:
   name: api-availability
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p0"
+    portarium.io/slo-tier: 'p0'
 spec:
   service: control-plane-api
   description: >
@@ -50,7 +50,7 @@ metadata:
   name: api-latency-p95
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p0"
+    portarium.io/slo-tier: 'p0'
 spec:
   service: control-plane-api
   description: >
@@ -83,7 +83,7 @@ metadata:
   name: workflow-completion-rate
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p0"
+    portarium.io/slo-tier: 'p0'
 spec:
   service: execution-plane
   description: >
@@ -117,7 +117,7 @@ metadata:
   name: workflow-latency-p90
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p1"
+    portarium.io/slo-tier: 'p1'
 spec:
   service: execution-plane
   description: >
@@ -150,7 +150,7 @@ metadata:
   name: worker-action-success-rate
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p0"
+    portarium.io/slo-tier: 'p0'
 spec:
   service: execution-plane-worker
   description: >
@@ -183,7 +183,7 @@ metadata:
   name: evidence-integrity-write-success
   namespace: portarium
   labels:
-    portarium.io/slo-tier: "p0"
+    portarium.io/slo-tier: 'p0'
 spec:
   service: evidence-store
   description: >

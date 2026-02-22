@@ -47,13 +47,13 @@ type FetchFn = typeof fetch;
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
 const ZAMMAD_STATE_MAP: Record<string, TicketV1['status']> = {
-  'new': 'open',
-  'open': 'open',
+  new: 'open',
+  open: 'open',
   'pending reminder': 'pending',
   'pending close': 'pending',
-  'closed': 'closed',
-  'merged': 'closed',
-  'removed': 'closed',
+  closed: 'closed',
+  merged: 'closed',
+  removed: 'closed',
 };
 
 const ZAMMAD_PRIORITY_MAP: Record<string, NonNullable<TicketV1['priority']>> = {
@@ -83,8 +83,9 @@ function mapZammadUser(rec: Record<string, unknown>, tenantId: string): PartyV1 
     partyId: PartyId(String(rec['id'])),
     tenantId: tenantId as PartyV1['tenantId'],
     schemaVersion: 1,
-    displayName: `${String(rec['firstname'] ?? '')} ${String(rec['lastname'] ?? '')}`.trim()
-      || String(rec['login'] ?? rec['id']),
+    displayName:
+      `${String(rec['firstname'] ?? '')} ${String(rec['lastname'] ?? '')}`.trim() ||
+      String(rec['login'] ?? rec['id']),
     ...(typeof rec['email'] === 'string' && rec['email'] ? { email: rec['email'] } : {}),
     ...(typeof rec['phone'] === 'string' && rec['phone'] ? { phone: rec['phone'] } : {}),
     roles: ['agent'],
@@ -103,14 +104,16 @@ function mapZammadArticle(
     title: String(rec['title'] ?? ''),
     mimeType: 'text/html',
     createdAtIso: String(rec['created_at'] ?? new Date().toISOString()),
-    externalRefs: [{
-      sorName: 'Zammad',
-      portFamily: 'CustomerSupport',
-      externalId: String(rec['id']),
-      externalType: 'knowledge_base_answer',
-      displayLabel: String(rec['title'] ?? ''),
-      deepLinkUrl: `${baseUrl}/#knowledge_base`,
-    }],
+    externalRefs: [
+      {
+        sorName: 'Zammad',
+        portFamily: 'CustomerSupport',
+        externalId: String(rec['id']),
+        externalType: 'knowledge_base_answer',
+        displayLabel: String(rec['title'] ?? ''),
+        deepLinkUrl: `${baseUrl}/#knowledge_base`,
+      },
+    ],
   };
 }
 
@@ -139,23 +142,42 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
   async execute(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
     try {
       switch (input.operation) {
-        case 'listTickets':                    return await this.#listTickets(input);
-        case 'getTicket':                      return await this.#getTicket(input);
-        case 'createTicket':                   return await this.#createTicket(input);
-        case 'updateTicket':                   return await this.#updateTicket(input);
-        case 'closeTicket':                    return await this.#closeTicket(input);
-        case 'listAgents':                     return await this.#listAgents(input);
-        case 'assignTicket':                   return await this.#assignTicket(input);
-        case 'addComment':                     return await this.#addComment(input);
-        case 'listComments':                   return await this.#listComments(input);
-        case 'listTags':                       return await this.#listTags(input);
-        case 'createTag':                      return await this.#createTag(input);
-        case 'getKnowledgeArticle':            return await this.#getKnowledgeArticle(input);
-        case 'listKnowledgeArticles':          return await this.#listKnowledgeArticles(input);
-        case 'getSLA':                         return await this.#getSLA(input);
-        case 'listCustomerSatisfactionRatings': return await this.#listCSATRatings(input);
+        case 'listTickets':
+          return await this.#listTickets(input);
+        case 'getTicket':
+          return await this.#getTicket(input);
+        case 'createTicket':
+          return await this.#createTicket(input);
+        case 'updateTicket':
+          return await this.#updateTicket(input);
+        case 'closeTicket':
+          return await this.#closeTicket(input);
+        case 'listAgents':
+          return await this.#listAgents(input);
+        case 'assignTicket':
+          return await this.#assignTicket(input);
+        case 'addComment':
+          return await this.#addComment(input);
+        case 'listComments':
+          return await this.#listComments(input);
+        case 'listTags':
+          return await this.#listTags(input);
+        case 'createTag':
+          return await this.#createTag(input);
+        case 'getKnowledgeArticle':
+          return await this.#getKnowledgeArticle(input);
+        case 'listKnowledgeArticles':
+          return await this.#listKnowledgeArticles(input);
+        case 'getSLA':
+          return await this.#getSLA(input);
+        case 'listCustomerSatisfactionRatings':
+          return await this.#listCSATRatings(input);
         default:
-          return { ok: false, error: 'unsupported_operation', message: `Unsupported: ${String(input.operation)}` };
+          return {
+            ok: false,
+            error: 'unsupported_operation',
+            message: `Unsupported: ${String(input.operation)}`,
+          };
       }
     } catch (err) {
       return {
@@ -168,24 +190,34 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
 
   // ── Tickets ───────────────────────────────────────────────────────────────
 
-  async #listTickets(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #listTickets(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const data = await this.#get<Record<string, unknown>[]>('tickets?expand=true&per_page=50');
-    const tickets = (Array.isArray(data) ? data : []).map((r) => mapZammadTicket(r, String(input.tenantId)));
+    const tickets = (Array.isArray(data) ? data : []).map((r) =>
+      mapZammadTicket(r, String(input.tenantId)),
+    );
     return { ok: true, result: { kind: 'tickets', tickets } };
   }
 
   async #getTicket(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
     const ticketId = String(input.payload?.['ticketId'] ?? '');
-    if (!ticketId) return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
+    if (!ticketId)
+      return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
 
     const data = await this.#get<Record<string, unknown>>(`tickets/${ticketId}?expand=true`);
     if (!data || typeof data['id'] === 'undefined') {
       return { ok: false, error: 'not_found', message: `Ticket ${ticketId} not found.` };
     }
-    return { ok: true, result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) },
+    };
   }
 
-  async #createTicket(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #createTicket(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const subject = String(input.payload?.['subject'] ?? '');
     const body = String(input.payload?.['body'] ?? '');
     const customerId = input.payload?.['customerId'];
@@ -204,45 +236,72 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
         internal: false,
       },
     });
-    return { ok: true, result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) },
+    };
   }
 
-  async #updateTicket(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #updateTicket(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const ticketId = String(input.payload?.['ticketId'] ?? '');
-    if (!ticketId) return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
+    if (!ticketId)
+      return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
 
     const updates: Record<string, unknown> = {};
     if (input.payload?.['subject']) updates['title'] = input.payload['subject'];
     if (input.payload?.['priority']) updates['priority'] = input.payload['priority'];
 
     const data = await this.#patch<Record<string, unknown>>(`tickets/${ticketId}`, updates);
-    return { ok: true, result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) },
+    };
   }
 
-  async #closeTicket(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #closeTicket(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const ticketId = String(input.payload?.['ticketId'] ?? '');
-    if (!ticketId) return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
+    if (!ticketId)
+      return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
 
-    const data = await this.#patch<Record<string, unknown>>(`tickets/${ticketId}`, { state: 'closed' });
-    return { ok: true, result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) } };
+    const data = await this.#patch<Record<string, unknown>>(`tickets/${ticketId}`, {
+      state: 'closed',
+    });
+    return {
+      ok: true,
+      result: { kind: 'ticket', ticket: mapZammadTicket(data, String(input.tenantId)) },
+    };
   }
 
   // ── Agents ────────────────────────────────────────────────────────────────
 
   async #listAgents(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
     const data = await this.#get<Record<string, unknown>[]>('users?role=Agent&per_page=100');
-    const agents = (Array.isArray(data) ? data : []).map((r) => mapZammadUser(r, String(input.tenantId)));
+    const agents = (Array.isArray(data) ? data : []).map((r) =>
+      mapZammadUser(r, String(input.tenantId)),
+    );
     return { ok: true, result: { kind: 'agents', agents } };
   }
 
-  async #assignTicket(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #assignTicket(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const ticketId = String(input.payload?.['ticketId'] ?? '');
     const agentId = String(input.payload?.['agentId'] ?? '');
     if (!ticketId || !agentId) {
-      return { ok: false, error: 'validation_error', message: 'ticketId and agentId are required.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'ticketId and agentId are required.',
+      };
     }
 
-    await this.#patch<Record<string, unknown>>(`tickets/${ticketId}`, { owner_id: Number(agentId) });
+    await this.#patch<Record<string, unknown>>(`tickets/${ticketId}`, {
+      owner_id: Number(agentId),
+    });
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
   }
 
@@ -265,11 +324,16 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
   }
 
-  async #listComments(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #listComments(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const ticketId = String(input.payload?.['ticketId'] ?? '');
-    if (!ticketId) return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
+    if (!ticketId)
+      return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
 
-    const data = await this.#get<Record<string, unknown>[]>(`ticket_articles/by_ticket/${ticketId}`);
+    const data = await this.#get<Record<string, unknown>[]>(
+      `ticket_articles/by_ticket/${ticketId}`,
+    );
     const refs: ExternalObjectRef[] = (Array.isArray(data) ? data : []).map((r) => ({
       sorName: 'Zammad',
       portFamily: 'CustomerSupport' as const,
@@ -288,7 +352,7 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
     const path = ticketId ? `tags?object=Ticket&o_id=${ticketId}` : 'tag_list';
     const data = await this.#get<{ tags?: string[] } | string[]>(path);
 
-    const tags: string[] = Array.isArray(data) ? data : (data as { tags?: string[] }).tags ?? [];
+    const tags: string[] = Array.isArray(data) ? data : ((data as { tags?: string[] }).tags ?? []);
     const refs: ExternalObjectRef[] = tags.map((t) => makeTagRef(t, this.#config.baseUrl));
     return { ok: true, result: { kind: 'externalRefs', externalRefs: refs } };
   }
@@ -309,22 +373,38 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
 
   // ── Knowledge Base ────────────────────────────────────────────────────────
 
-  async #getKnowledgeArticle(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #getKnowledgeArticle(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const articleId = String(input.payload?.['articleId'] ?? '');
-    if (!articleId) return { ok: false, error: 'validation_error', message: 'articleId is required.' };
+    if (!articleId)
+      return { ok: false, error: 'validation_error', message: 'articleId is required.' };
 
-    const data = await this.#get<Record<string, unknown>>(`knowledge_base/*/translation/*/answer/${articleId}/translation`);
+    const data = await this.#get<Record<string, unknown>>(
+      `knowledge_base/*/translation/*/answer/${articleId}/translation`,
+    );
     if (!data || typeof data['id'] === 'undefined') {
-      return { ok: false, error: 'not_found', message: `Knowledge article ${articleId} not found.` };
+      return {
+        ok: false,
+        error: 'not_found',
+        message: `Knowledge article ${articleId} not found.`,
+      };
     }
     return {
       ok: true,
-      result: { kind: 'document', document: mapZammadArticle(data, String(input.tenantId), this.#config.baseUrl) },
+      result: {
+        kind: 'document',
+        document: mapZammadArticle(data, String(input.tenantId), this.#config.baseUrl),
+      },
     };
   }
 
-  async #listKnowledgeArticles(input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
-    const data = await this.#get<Record<string, unknown>[]>('knowledge_base/*/translation/*/answer');
+  async #listKnowledgeArticles(
+    input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
+    const data = await this.#get<Record<string, unknown>[]>(
+      'knowledge_base/*/translation/*/answer',
+    );
     const docs = (Array.isArray(data) ? data : []).map((r) =>
       mapZammadArticle(r, String(input.tenantId), this.#config.baseUrl),
     );
@@ -343,7 +423,9 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
 
   // ── CSAT ──────────────────────────────────────────────────────────────────
 
-  async #listCSATRatings(_input: CustomerSupportExecuteInputV1): Promise<CustomerSupportExecuteOutputV1> {
+  async #listCSATRatings(
+    _input: CustomerSupportExecuteInputV1,
+  ): Promise<CustomerSupportExecuteOutputV1> {
     const data = await this.#get<Record<string, unknown>[]>('csat_surveys');
     return {
       ok: true,

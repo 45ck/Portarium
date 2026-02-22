@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ZammadCustomerSupportAdapter, type ZammadAdapterConfig } from './zammad-customer-support-adapter.js';
+import {
+  ZammadCustomerSupportAdapter,
+  type ZammadAdapterConfig,
+} from './zammad-customer-support-adapter.js';
 import type { CustomerSupportExecuteInputV1 } from '../../../application/ports/customer-support-adapter.js';
 import { TenantId } from '../../../domain/primitives/index.js';
 
@@ -87,7 +90,14 @@ describe('ZammadCustomerSupportAdapter', () => {
 
   describe('getTicket', () => {
     it('returns a single ticket when found', async () => {
-      const ticket = { id: 3, title: 'Printer broken', state: 'open', priority: '1 low', owner_id: 0, created_at: '2024-01-12T10:00:00Z' };
+      const ticket = {
+        id: 3,
+        title: 'Printer broken',
+        state: 'open',
+        priority: '1 low',
+        owner_id: 0,
+        created_at: '2024-01-12T10:00:00Z',
+      };
       const adapter = makeAdapter(makeFetch(ticket));
 
       const result = await adapter.execute(makeInput('getTicket', { ticketId: '3' }));
@@ -111,7 +121,14 @@ describe('ZammadCustomerSupportAdapter', () => {
 
   describe('createTicket', () => {
     it('creates a ticket and returns TicketV1', async () => {
-      const created = { id: 42, title: 'New issue', state: 'new', priority: '2 normal', owner_id: 0, created_at: '2024-02-01T00:00:00Z' };
+      const created = {
+        id: 42,
+        title: 'New issue',
+        state: 'new',
+        priority: '2 normal',
+        owner_id: 0,
+        created_at: '2024-02-01T00:00:00Z',
+      };
       const adapter = makeAdapter(makeFetch(created));
 
       const result = await adapter.execute(
@@ -137,7 +154,14 @@ describe('ZammadCustomerSupportAdapter', () => {
 
   describe('closeTicket', () => {
     it('patches ticket state to closed and returns ticket', async () => {
-      const closed = { id: 10, title: 'Resolved', state: 'closed', priority: '2 normal', owner_id: 0, created_at: '2024-01-01T00:00:00Z' };
+      const closed = {
+        id: 10,
+        title: 'Resolved',
+        state: 'closed',
+        priority: '2 normal',
+        owner_id: 0,
+        created_at: '2024-01-01T00:00:00Z',
+      };
       const fetchFn = makeFetch(closed);
       const adapter = makeAdapter(fetchFn);
 
@@ -188,7 +212,9 @@ describe('ZammadCustomerSupportAdapter', () => {
   describe('assignTicket', () => {
     it('returns accepted result', async () => {
       const adapter = makeAdapter(makeFetch({ id: 1 }));
-      const result = await adapter.execute(makeInput('assignTicket', { ticketId: '5', agentId: '3' }));
+      const result = await adapter.execute(
+        makeInput('assignTicket', { ticketId: '5', agentId: '3' }),
+      );
       expect(result.ok).toBe(true);
       if (!result.ok) return;
       expect(result.result.kind).toBe('accepted');

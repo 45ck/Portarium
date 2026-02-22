@@ -160,7 +160,7 @@ jobs:
         if: always()
         with:
           name: dr-results-db-${{ needs.setup.outputs.drill_id }}
-          path: "dr-results-db-*.json"
+          path: 'dr-results-db-*.json'
           retention-days: 365
 
   # ── Scenario 2: Cluster recreation ───────────────────────────────────────
@@ -182,7 +182,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "~1.8"
+          terraform_version: '~1.8'
 
       - name: Terraform init (DR workspace)
         run: |
@@ -281,7 +281,7 @@ jobs:
         if: always()
         with:
           name: dr-results-evidence-${{ needs.setup.outputs.drill_id }}
-          path: "dr-results-evidence-*.json"
+          path: 'dr-results-evidence-*.json'
           retention-days: 365
 
   # ── Report ────────────────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ jobs:
       - name: Download all drill results
         uses: actions/download-artifact@v4
         with:
-          pattern: "dr-results-*"
+          pattern: 'dr-results-*'
           merge-multiple: true
         continue-on-error: true
 

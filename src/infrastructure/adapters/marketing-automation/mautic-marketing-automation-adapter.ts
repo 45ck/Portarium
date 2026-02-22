@@ -52,7 +52,8 @@ interface MauticResponse<T> {
 // ── Mapper helpers ─────────────────────────────────────────────────────────
 
 function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: string): PartyV1 {
-  const fields = (contact['fields'] as Record<string, Record<string, unknown>> | undefined)?.['all'] ?? {};
+  const fields =
+    (contact['fields'] as Record<string, Record<string, unknown>> | undefined)?.['all'] ?? {};
   return {
     partyId: PartyId(String(contact['id'] ?? '')),
     tenantId: tenantId as PartyV1['tenantId'],
@@ -65,7 +66,10 @@ function mapMauticContactToParty(contact: Record<string, unknown>, tenantId: str
   };
 }
 
-function mapMauticCampaignToCampaign(campaign: Record<string, unknown>, tenantId: string): CampaignV1 {
+function mapMauticCampaignToCampaign(
+  campaign: Record<string, unknown>,
+  tenantId: string,
+): CampaignV1 {
   return {
     campaignId: CampaignId(String(campaign['id'] ?? '')),
     tenantId: tenantId as CampaignV1['tenantId'],
@@ -107,29 +111,53 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
     this.#authHeader = `Basic ${credentials}`;
   }
 
-  async execute(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async execute(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     try {
       switch (input.operation) {
-        case 'listContacts':     return await this.#listContacts(input);
-        case 'getContact':       return await this.#getContact(input);
-        case 'createContact':    return await this.#createContact(input);
-        case 'updateContact':    return await this.#updateContact(input);
-        case 'listLists':        return await this.#listSegments(input);
-        case 'getList':          return await this.#getSegment(input);
-        case 'addContactToList': return await this.#addContactToSegment(input);
-        case 'removeContactFromList': return await this.#removeContactFromSegment(input);
-        case 'listCampaigns':    return await this.#listCampaigns(input);
-        case 'getCampaign':      return await this.#getCampaign(input);
-        case 'createCampaign':   return await this.#createCampaign(input);
-        case 'sendCampaign':     return await this.#sendCampaign(input);
-        case 'getCampaignStats': return await this.#getCampaignStats(input);
-        case 'listAutomations':  return await this.#listCampaigns(input);   // Mautic campaigns = automations
-        case 'getAutomation':    return await this.#getCampaign(input);
-        case 'triggerAutomation': return await this.#triggerAutomation(input);
-        case 'listForms':        return await this.#listForms(input);
-        case 'getFormSubmissions': return await this.#getFormSubmissions(input);
+        case 'listContacts':
+          return await this.#listContacts(input);
+        case 'getContact':
+          return await this.#getContact(input);
+        case 'createContact':
+          return await this.#createContact(input);
+        case 'updateContact':
+          return await this.#updateContact(input);
+        case 'listLists':
+          return await this.#listSegments(input);
+        case 'getList':
+          return await this.#getSegment(input);
+        case 'addContactToList':
+          return await this.#addContactToSegment(input);
+        case 'removeContactFromList':
+          return await this.#removeContactFromSegment(input);
+        case 'listCampaigns':
+          return await this.#listCampaigns(input);
+        case 'getCampaign':
+          return await this.#getCampaign(input);
+        case 'createCampaign':
+          return await this.#createCampaign(input);
+        case 'sendCampaign':
+          return await this.#sendCampaign(input);
+        case 'getCampaignStats':
+          return await this.#getCampaignStats(input);
+        case 'listAutomations':
+          return await this.#listCampaigns(input); // Mautic campaigns = automations
+        case 'getAutomation':
+          return await this.#getCampaign(input);
+        case 'triggerAutomation':
+          return await this.#triggerAutomation(input);
+        case 'listForms':
+          return await this.#listForms(input);
+        case 'getFormSubmissions':
+          return await this.#getFormSubmissions(input);
         default:
-          return { ok: false, error: 'unsupported_operation', message: `Unsupported: ${String(input.operation)}` };
+          return {
+            ok: false,
+            error: 'unsupported_operation',
+            message: `Unsupported: ${String(input.operation)}`,
+          };
       }
     } catch (err) {
       return {
@@ -142,7 +170,9 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
   // ── Contacts ─────────────────────────────────────────────────────────────
 
-  async #listContacts(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #listContacts(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const data = await this.#get<{ contacts: Record<string, Record<string, unknown>> }>('contacts');
     const parties = Object.values(data.data.contacts).map((c) =>
       mapMauticContactToParty(c, String(input.tenantId)),
@@ -150,22 +180,32 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
     return { ok: true, result: { kind: 'parties', parties } };
   }
 
-  async #getContact(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #getContact(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const contactId = String(input.payload?.['contactId'] ?? '');
-    if (!contactId) return { ok: false, error: 'validation_error', message: 'contactId is required.' };
+    if (!contactId)
+      return { ok: false, error: 'validation_error', message: 'contactId is required.' };
 
     const data = await this.#get<{ contact: Record<string, unknown> }>(`contacts/${contactId}`);
-    if (!data.data.contact) return { ok: false, error: 'not_found', message: `Contact ${contactId} not found.` };
+    if (!data.data.contact)
+      return { ok: false, error: 'not_found', message: `Contact ${contactId} not found.` };
 
     return {
       ok: true,
-      result: { kind: 'party', party: mapMauticContactToParty(data.data.contact, String(input.tenantId)) },
+      result: {
+        kind: 'party',
+        party: mapMauticContactToParty(data.data.contact, String(input.tenantId)),
+      },
     };
   }
 
-  async #createContact(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #createContact(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const displayName = String(input.payload?.['displayName'] ?? '');
-    if (!displayName) return { ok: false, error: 'validation_error', message: 'displayName is required.' };
+    if (!displayName)
+      return { ok: false, error: 'validation_error', message: 'displayName is required.' };
 
     const [firstname, ...rest] = displayName.split(' ');
     const body: Record<string, string> = {
@@ -177,13 +217,19 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
     const data = await this.#post<{ contact: Record<string, unknown> }>('contacts/new', body);
     return {
       ok: true,
-      result: { kind: 'party', party: mapMauticContactToParty(data.data.contact, String(input.tenantId)) },
+      result: {
+        kind: 'party',
+        party: mapMauticContactToParty(data.data.contact, String(input.tenantId)),
+      },
     };
   }
 
-  async #updateContact(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #updateContact(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const contactId = String(input.payload?.['contactId'] ?? '');
-    if (!contactId) return { ok: false, error: 'validation_error', message: 'contactId is required.' };
+    if (!contactId)
+      return { ok: false, error: 'validation_error', message: 'contactId is required.' };
 
     const body: Record<string, string> = {};
     if (typeof input.payload?.['displayName'] === 'string') {
@@ -193,52 +239,89 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
     }
     if (typeof input.payload?.['email'] === 'string') body['email'] = input.payload['email'];
 
-    const data = await this.#patch<{ contact: Record<string, unknown> }>(`contacts/${contactId}/edit`, body);
+    const data = await this.#patch<{ contact: Record<string, unknown> }>(
+      `contacts/${contactId}/edit`,
+      body,
+    );
     return {
       ok: true,
-      result: { kind: 'party', party: mapMauticContactToParty(data.data.contact, String(input.tenantId)) },
+      result: {
+        kind: 'party',
+        party: mapMauticContactToParty(data.data.contact, String(input.tenantId)),
+      },
     };
   }
 
   // ── Segments (Lists) ───────────────────────────────────────────────────────
 
-  async #listSegments(_input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #listSegments(
+    _input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const data = await this.#get<{ lists: Record<string, Record<string, unknown>> }>('segments');
     const refs: ExternalObjectRef[] = Object.values(data.data.lists).map((seg) =>
-      makeExternalRef(seg['id'] as string, 'segment', String(seg['name'] ?? ''), this.#config.baseUrl, 's/segments'),
+      makeExternalRef(
+        seg['id'] as string,
+        'segment',
+        String(seg['name'] ?? ''),
+        this.#config.baseUrl,
+        's/segments',
+      ),
     );
     return { ok: true, result: { kind: 'externalRefs', externalRefs: refs } };
   }
 
-  async #getSegment(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #getSegment(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const listId = String(input.payload?.['listId'] ?? '');
     if (!listId) return { ok: false, error: 'validation_error', message: 'listId is required.' };
 
     const data = await this.#get<{ list: Record<string, unknown> }>(`segments/${listId}`);
-    if (!data.data.list) return { ok: false, error: 'not_found', message: `Segment ${listId} not found.` };
+    if (!data.data.list)
+      return { ok: false, error: 'not_found', message: `Segment ${listId} not found.` };
 
     return {
       ok: true,
       result: {
         kind: 'externalRef',
-        externalRef: makeExternalRef(data.data.list['id'] as string, 'segment', String(data.data.list['name'] ?? ''), this.#config.baseUrl, 's/segments'),
+        externalRef: makeExternalRef(
+          data.data.list['id'] as string,
+          'segment',
+          String(data.data.list['name'] ?? ''),
+          this.#config.baseUrl,
+          's/segments',
+        ),
       },
     };
   }
 
-  async #addContactToSegment(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #addContactToSegment(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const listId = String(input.payload?.['listId'] ?? '');
     const contactId = String(input.payload?.['contactId'] ?? '');
-    if (!listId || !contactId) return { ok: false, error: 'validation_error', message: 'listId and contactId are required.' };
+    if (!listId || !contactId)
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'listId and contactId are required.',
+      };
 
     await this.#post(`segments/${listId}/contact/${contactId}/add`, {});
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
   }
 
-  async #removeContactFromSegment(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #removeContactFromSegment(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const listId = String(input.payload?.['listId'] ?? '');
     const contactId = String(input.payload?.['contactId'] ?? '');
-    if (!listId || !contactId) return { ok: false, error: 'validation_error', message: 'listId and contactId are required.' };
+    if (!listId || !contactId)
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'listId and contactId are required.',
+      };
 
     await this.#post(`segments/${listId}/contact/${contactId}/remove`, {});
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
@@ -246,68 +329,110 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
   // ── Campaigns ─────────────────────────────────────────────────────────────
 
-  async #listCampaigns(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
-    const data = await this.#get<{ campaigns: Record<string, Record<string, unknown>> }>('campaigns');
+  async #listCampaigns(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
+    const data = await this.#get<{ campaigns: Record<string, Record<string, unknown>> }>(
+      'campaigns',
+    );
     const campaigns = Object.values(data.data.campaigns).map((c) =>
       mapMauticCampaignToCampaign(c, String(input.tenantId)),
     );
     return { ok: true, result: { kind: 'campaigns', campaigns } };
   }
 
-  async #getCampaign(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
-    const campaignId = String(input.payload?.['campaignId'] ?? input.payload?.['automationId'] ?? '');
-    if (!campaignId) return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
+  async #getCampaign(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
+    const campaignId = String(
+      input.payload?.['campaignId'] ?? input.payload?.['automationId'] ?? '',
+    );
+    if (!campaignId)
+      return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
 
     const data = await this.#get<{ campaign: Record<string, unknown> }>(`campaigns/${campaignId}`);
-    if (!data.data.campaign) return { ok: false, error: 'not_found', message: `Campaign ${campaignId} not found.` };
+    if (!data.data.campaign)
+      return { ok: false, error: 'not_found', message: `Campaign ${campaignId} not found.` };
 
     return {
       ok: true,
-      result: { kind: 'campaign', campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)) },
+      result: {
+        kind: 'campaign',
+        campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)),
+      },
     };
   }
 
-  async #createCampaign(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #createCampaign(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const name = String(input.payload?.['name'] ?? '');
     if (!name) return { ok: false, error: 'validation_error', message: 'name is required.' };
 
-    const data = await this.#post<{ campaign: Record<string, unknown> }>('campaigns/new', { name, isPublished: false });
+    const data = await this.#post<{ campaign: Record<string, unknown> }>('campaigns/new', {
+      name,
+      isPublished: false,
+    });
     return {
       ok: true,
-      result: { kind: 'campaign', campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)) },
+      result: {
+        kind: 'campaign',
+        campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)),
+      },
     };
   }
 
-  async #sendCampaign(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #sendCampaign(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const campaignId = String(input.payload?.['campaignId'] ?? '');
-    if (!campaignId) return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
+    if (!campaignId)
+      return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
 
     // Publish the campaign (Mautic uses isPublished to activate).
-    const data = await this.#patch<{ campaign: Record<string, unknown> }>(`campaigns/${campaignId}/edit`, { isPublished: true });
+    const data = await this.#patch<{ campaign: Record<string, unknown> }>(
+      `campaigns/${campaignId}/edit`,
+      { isPublished: true },
+    );
     return {
       ok: true,
-      result: { kind: 'campaign', campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)) },
+      result: {
+        kind: 'campaign',
+        campaign: mapMauticCampaignToCampaign(data.data.campaign, String(input.tenantId)),
+      },
     };
   }
 
-  async #getCampaignStats(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #getCampaignStats(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const campaignId = String(input.payload?.['campaignId'] ?? '');
-    if (!campaignId) return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
+    if (!campaignId)
+      return { ok: false, error: 'validation_error', message: 'campaignId is required.' };
 
     // Return as externalRef pointing to Mautic campaign stats page.
     return {
       ok: true,
       result: {
         kind: 'externalRef',
-        externalRef: makeExternalRef(campaignId, 'campaign_stats', `Campaign ${campaignId} stats`, this.#config.baseUrl, 's/campaigns/view'),
+        externalRef: makeExternalRef(
+          campaignId,
+          'campaign_stats',
+          `Campaign ${campaignId} stats`,
+          this.#config.baseUrl,
+          's/campaigns/view',
+        ),
       },
     };
   }
 
-  async #triggerAutomation(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #triggerAutomation(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const automationId = String(input.payload?.['automationId'] ?? '');
     const contactId = String(input.payload?.['contactId'] ?? '');
-    if (!automationId) return { ok: false, error: 'validation_error', message: 'automationId is required.' };
+    if (!automationId)
+      return { ok: false, error: 'validation_error', message: 'automationId is required.' };
 
     if (contactId) {
       await this.#post(`campaigns/${automationId}/contact/${contactId}/add`, {});
@@ -330,21 +455,39 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
   // ── Forms ─────────────────────────────────────────────────────────────────
 
-  async #listForms(_input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #listForms(
+    _input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const data = await this.#get<{ forms: Record<string, Record<string, unknown>> }>('forms');
     const refs: ExternalObjectRef[] = Object.values(data.data.forms).map((f) =>
-      makeExternalRef(f['id'] as string, 'form', String(f['name'] ?? ''), this.#config.baseUrl, 's/forms/view'),
+      makeExternalRef(
+        f['id'] as string,
+        'form',
+        String(f['name'] ?? ''),
+        this.#config.baseUrl,
+        's/forms/view',
+      ),
     );
     return { ok: true, result: { kind: 'externalRefs', externalRefs: refs } };
   }
 
-  async #getFormSubmissions(input: MarketingAutomationExecuteInputV1): Promise<MarketingAutomationExecuteOutputV1> {
+  async #getFormSubmissions(
+    input: MarketingAutomationExecuteInputV1,
+  ): Promise<MarketingAutomationExecuteOutputV1> {
     const formId = String(input.payload?.['formId'] ?? '');
     if (!formId) return { ok: false, error: 'validation_error', message: 'formId is required.' };
 
-    const data = await this.#get<{ submissions: Record<string, Record<string, unknown>> }>(`forms/${formId}/submissions`);
+    const data = await this.#get<{ submissions: Record<string, Record<string, unknown>> }>(
+      `forms/${formId}/submissions`,
+    );
     const refs: ExternalObjectRef[] = Object.values(data.data.submissions ?? {}).map((s) =>
-      makeExternalRef(s['id'] as string, 'form_submission', `Submission #${s['id']}`, this.#config.baseUrl, 's/forms/results'),
+      makeExternalRef(
+        s['id'] as string,
+        'form_submission',
+        `Submission #${s['id']}`,
+        this.#config.baseUrl,
+        's/forms/results',
+      ),
     );
     return { ok: true, result: { kind: 'externalRefs', externalRefs: refs } };
   }

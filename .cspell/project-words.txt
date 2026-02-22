@@ -711,6 +711,44 @@ resumable
 # Web performance terms
 TTFB
 
+# PostgreSQL system catalog column names (tenant-storage-provisioner)
+rolname
+NOLOGIN
+
+# Kubernetes health-check path suffixes
+startupz
+
+# FinOps / cloud cost management
+finops
+Karpenter
+showback
+
+# Cloud / infrastructure security acronyms
+BYOK
+SLSA
+PITR
+MWMBR
+
+# Azure identity terms
+azuread
+
+# SRE / observability terms
+slos
+pollers
+
+# Database / backup terms
+quiescing
+
+# Workflow / fault-injection terms
+checkpointed
+defn
+
+# Zammad / ITSM API terms
+slas
+
+# Python/Odoo RPC terms
+kwargs
+
 # URL-encoding artifacts (from test assertions with %2F-encoded path segments)
 Fwith
 

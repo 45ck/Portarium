@@ -70,7 +70,10 @@ describe('listContacts', () => {
 describe('getContact', () => {
   it('returns a PartyV1 for a known contact', async () => {
     const fetchFn = makeFetch({
-      contact: { id: '42', fields: { all: { firstname: 'Carol', lastname: 'Doe', email: 'carol@example.com' } } },
+      contact: {
+        id: '42',
+        fields: { all: { firstname: 'Carol', lastname: 'Doe', email: 'carol@example.com' } },
+      },
     });
     const adapter = makeAdapter(fetchFn);
     const result = await adapter.execute(makeInput('getContact', { contactId: '42' }));
@@ -103,13 +106,18 @@ describe('getContact', () => {
 describe('createContact', () => {
   it('creates contact and returns party', async () => {
     const fetchFn = makeFetch({
-      contact: { id: '100', fields: { all: { firstname: 'Dave', lastname: 'Doe', email: 'dave@example.com' } } },
+      contact: {
+        id: '100',
+        fields: { all: { firstname: 'Dave', lastname: 'Doe', email: 'dave@example.com' } },
+      },
     });
     const adapter = makeAdapter(fetchFn);
-    const result = await adapter.execute(makeInput('createContact', {
-      displayName: 'Dave Doe',
-      email: 'dave@example.com',
-    }));
+    const result = await adapter.execute(
+      makeInput('createContact', {
+        displayName: 'Dave Doe',
+        email: 'dave@example.com',
+      }),
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok || result.result.kind !== 'party') return;

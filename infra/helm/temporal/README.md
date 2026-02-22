@@ -13,11 +13,11 @@ helm repo update
 
 ## Environments
 
-| File | Target | Persistence | HA | Visibility |
-|---|---|---|---|---|
-| `values-dev.yaml` | dev cluster | PostgreSQL (single) | No | PostgreSQL standard |
-| `values-staging.yaml` | staging cluster | PostgreSQL (HA) | Yes (2 replicas) | PostgreSQL advanced |
-| `values-prod.yaml` | prod cluster | PostgreSQL (HA, multi-AZ) | Yes (3+ replicas) | PostgreSQL advanced |
+| File                  | Target          | Persistence               | HA                | Visibility          |
+| --------------------- | --------------- | ------------------------- | ----------------- | ------------------- |
+| `values-dev.yaml`     | dev cluster     | PostgreSQL (single)       | No                | PostgreSQL standard |
+| `values-staging.yaml` | staging cluster | PostgreSQL (HA)           | Yes (2 replicas)  | PostgreSQL advanced |
+| `values-prod.yaml`    | prod cluster    | PostgreSQL (HA, multi-AZ) | Yes (3+ replicas) | PostgreSQL advanced |
 
 ## Deploying
 

@@ -121,9 +121,7 @@
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0235", "bead-0236", "bead-0423"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for family completion."
-      ]
+      "gaps": ["Integration gate remains open for family completion."]
     },
     {
       "portFamily": "ItsmItOps",
@@ -132,9 +130,7 @@
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0237", "bead-0238", "bead-0399"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for rollout readiness."
-      ]
+      "gaps": ["Integration gate remains open for rollout readiness."]
     },
     {
       "portFamily": "IamDirectory",
@@ -161,9 +157,7 @@
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0243", "bead-0244", "bead-0421"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for family closure."
-      ]
+      "gaps": ["Integration gate remains open for family closure."]
     },
     {
       "portFamily": "AdsPlatforms",
