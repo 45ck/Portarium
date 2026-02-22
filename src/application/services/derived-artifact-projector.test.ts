@@ -285,4 +285,110 @@ describe('projectEvidenceBatch', () => {
     expect(entry?.metadata['embeddingModel']).toBe('stub-v1');
     expect(entry?.text).toBe('evidence text for ev-meta');
   });
+
+  describe('secret redaction (redactSecrets defaults to true)', () => {
+    it('redacts Bearer tokens from evidence text before embedding', async () => {
+      const deps = makeDeps();
+      const evidence: EvidencePayload = {
+        evidenceId: 'ev-bearer' as any,
+        workspaceId: 'ws-1' as any,
+        runId: 'run-1' as any,
+        // cspell:disable-next-line
+        text: 'Accessed with Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIn0.sig',
+        metadata: { source: 'api-log' },
+        createdAtIso: '2026-02-22T00:00:00.000Z',
+      };
+      await projectEvidenceBatch(deps, baseConfig, 'ws-1' as any, 'run-1' as any, [evidence]);
+
+      const entry = deps.semanticIndex.entries.get('emb:ws-1:ev-bearer');
+      // cspell:disable-next-line
+      expect(entry?.text).not.toContain('eyJhbGciOiJSUzI1NiJ9');
+      expect(entry?.text).toContain('Bearer [REDACTED]');
+    });
+
+    it('redacts secrets from metadata before semantic index upsert', async () => {
+      const deps = makeDeps();
+      const evidence: EvidencePayload = {
+        evidenceId: 'ev-meta-secret' as any,
+        workspaceId: 'ws-1' as any,
+        runId: 'run-1' as any,
+        text: 'Deployment event',
+        metadata: { token: 'sk-secret-1234567890abcdef', workspaceId: 'ws-1' },
+        createdAtIso: '2026-02-22T00:00:00.000Z',
+      };
+      await projectEvidenceBatch(deps, baseConfig, 'ws-1' as any, 'run-1' as any, [evidence]);
+
+      const entry = deps.semanticIndex.entries.get('emb:ws-1:ev-meta-secret');
+      expect(entry?.metadata['token']).toBe('[REDACTED]');
+      expect(entry?.metadata['workspaceId']).toBe('ws-1'); // safe key preserved
+    });
+
+    it('redacts secrets from graph node properties', async () => {
+      const deps = makeDeps();
+      const evidence: EvidencePayload = {
+        evidenceId: 'ev-graph-secret' as any,
+        workspaceId: 'ws-1' as any,
+        runId: 'run-1' as any,
+        text: 'Action executed',
+        metadata: { password: 'p@ssw0rd!', action: 'deploy' },
+        createdAtIso: '2026-02-22T00:00:00.000Z',
+      };
+      await projectEvidenceBatch(
+        deps,
+        { ...baseConfig, buildGraphNodes: true },
+        'ws-1' as any,
+        'run-1' as any,
+        [evidence],
+      );
+
+      const node = deps.knowledgeGraph.nodes.get('gnode:ws-1:ev-graph-secret');
+      expect(node?.properties['password']).toBe('[REDACTED]');
+      expect(node?.properties['action']).toBe('deploy'); // safe key preserved
+    });
+
+    it('passes raw text through when redactSecrets is explicitly false', async () => {
+      const deps = makeDeps();
+      // cspell:disable-next-line
+      const secret = 'Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIn0.sig';
+      const evidence: EvidencePayload = {
+        evidenceId: 'ev-no-redact' as any,
+        workspaceId: 'ws-1' as any,
+        runId: 'run-1' as any,
+        text: `token=${secret}`,
+        metadata: { source: 'test' },
+        createdAtIso: '2026-02-22T00:00:00.000Z',
+      };
+      await projectEvidenceBatch(
+        deps,
+        { ...baseConfig, redactSecrets: false },
+        'ws-1' as any,
+        'run-1' as any,
+        [evidence],
+      );
+
+      const entry = deps.semanticIndex.entries.get('emb:ws-1:ev-no-redact');
+      expect(entry?.text).toContain(secret); // not redacted
+    });
+
+    it('tenant A evidence is not visible in tenant B semantic index (isolation)', async () => {
+      const depsA = makeDeps();
+      const depsB = makeDeps();
+
+      await projectEvidenceBatch(depsA, baseConfig, 'ws-tenant-a' as any, 'run-1' as any, [
+        {
+          evidenceId: 'ev-a' as any,
+          workspaceId: 'ws-tenant-a' as any,
+          runId: 'run-1' as any,
+          text: 'Tenant A confidential evidence',
+          metadata: { classification: 'secret' },
+          createdAtIso: '2026-02-22T00:00:00.000Z',
+        },
+      ]);
+
+      // Tenant B projector has its own isolated index
+      expect(depsB.semanticIndex.entries.size).toBe(0);
+      // Tenant A's entry is only in tenant A's index
+      expect(depsA.semanticIndex.entries.has('emb:ws-tenant-a:ev-a')).toBe(true);
+    });
+  });
 });

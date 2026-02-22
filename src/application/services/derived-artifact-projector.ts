@@ -22,6 +22,7 @@ import type {
 } from '../../domain/derived-artifacts/retrieval-ports.js';
 import { parseDerivedArtifactV1 } from '../../domain/derived-artifacts/derived-artifact-v1.js';
 import type { Clock } from '../ports/clock.js';
+import { redactEvidenceText, redactMetadata } from './derived-artifact-redactor.js';
 
 // ---------------------------------------------------------------------------
 // Types used by callers
@@ -48,6 +49,12 @@ export type ProjectorConfig = Readonly<{
   embeddingModel?: string;
   /** Whether to build graph nodes for each evidence entry. Default true. */
   buildGraphNodes?: boolean;
+  /**
+   * Whether to redact secrets from evidence text and metadata before
+   * sending to external indices (embeddings, graph, semantic search).
+   * Default true. Set to false only in fully-isolated test environments.
+   */
+  redactSecrets?: boolean;
 }>;
 
 export type ProjectorResult = Readonly<{
@@ -92,6 +99,7 @@ export async function projectEvidenceBatch(
   const { registry, semanticIndex, knowledgeGraph, embeddingPort, clock } = deps;
   const buildGraph = config.buildGraphNodes ?? true;
   const projectorVersion = config.projectorVersion;
+  const shouldRedact = config.redactSecrets !== false; // default true
 
   // Load checkpoint for this workspace+run
   const checkpoint = await registry.loadCheckpoint(workspaceId, runId);
@@ -111,9 +119,13 @@ export async function projectEvidenceBatch(
     const nowIso = clock.nowIso();
     const embeddingArtifactId = `emb:${workspaceId}:${evidence.evidenceId}`;
 
-    // 1. Embed the text
+    // Redact secrets from evidence before sending to external systems.
+    const safeText = shouldRedact ? redactEvidenceText(evidence.text) : evidence.text;
+    const safeMetadata = shouldRedact ? redactMetadata(evidence.metadata) : evidence.metadata;
+
+    // 1. Embed the (redacted) text
     const { vector, model } = await embeddingPort.embed({
-      text: evidence.text,
+      text: safeText,
       ...(config.embeddingModel !== undefined ? { model: config.embeddingModel } : {}),
     });
 
@@ -129,15 +141,15 @@ export async function projectEvidenceBatch(
     });
     await registry.save(embeddingArtifact);
 
-    // 3. Upsert into semantic index
+    // 3. Upsert into semantic index (redacted text + metadata)
     await semanticIndex.upsert({
       artifactId: embeddingArtifactId,
       workspaceId,
       runId,
       evidenceId: evidence.evidenceId,
-      text: evidence.text,
+      text: safeText,
       vector,
-      metadata: { ...evidence.metadata, embeddingModel: model },
+      metadata: { ...safeMetadata, embeddingModel: model },
     });
     artifactsCreated++;
 
@@ -154,6 +166,7 @@ export async function projectEvidenceBatch(
         createdAtIso: nowIso,
       });
       await registry.save(nodeArtifact);
+      // Graph node properties use redacted metadata (secrets must not leave the boundary)
       await knowledgeGraph.upsertNode({
         nodeId: nodeArtifactId,
         workspaceId,
@@ -162,7 +175,7 @@ export async function projectEvidenceBatch(
         properties: {
           runId,
           createdAtIso: evidence.createdAtIso,
-          ...evidence.metadata,
+          ...safeMetadata,
         },
       });
       artifactsCreated++;
