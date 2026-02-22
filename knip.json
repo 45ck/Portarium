@@ -18,6 +18,7 @@
     "jose",
     "@aws-sdk/client-s3",
     "@opentelemetry/api",
-    "pg"
+    "pg",
+    "ioredis"
   ]
 }
