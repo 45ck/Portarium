@@ -211,10 +211,9 @@
       "operationalDomains": ["marketing", "finance", "accounting", "software-delivery"],
       "canonicalObjects": ["Party"],
       "coverageStatus": "gap",
-      "coverageBeads": ["bead-0253", "bead-0254"],
-      "gapBeads": ["bead-0428", "bead-0166"],
+      "coverageBeads": ["bead-0253", "bead-0254", "bead-0428"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "Production observability analytics pipeline bead remains open.",
         "Integration gate remains open for release qualification."
       ]
     },
