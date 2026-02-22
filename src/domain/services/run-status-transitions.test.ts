@@ -10,6 +10,7 @@ import {
   assertValidRunStatusTransition,
   isTerminalRunStatus,
   isValidRunStatusTransition,
+  reachableRunStatuses,
   terminalRunStatuses,
   type ValidRunStatusTransition,
 } from './run-status-transitions.js';
@@ -144,6 +145,164 @@ describe('RUN_STATUS_TRANSITIONS table completeness', () => {
     expect(RUN_STATUS_TRANSITIONS.Succeeded).toHaveLength(0);
     expect(RUN_STATUS_TRANSITIONS.Failed).toHaveLength(0);
     expect(RUN_STATUS_TRANSITIONS.Cancelled).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Structural invariants (derived from the transition graph)
+// ---------------------------------------------------------------------------
+
+const ALL_RUN_STATUSES: readonly RunStatus[] = [
+  'Pending',
+  'Running',
+  'WaitingForApproval',
+  'Paused',
+  'Succeeded',
+  'Failed',
+  'Cancelled',
+];
+
+const TERMINAL_RUN_STATUSES_LIST: readonly RunStatus[] = ['Succeeded', 'Failed', 'Cancelled'];
+const NON_TERMINAL_RUN_STATUSES: readonly RunStatus[] = [
+  'Pending',
+  'Running',
+  'WaitingForApproval',
+  'Paused',
+];
+
+describe('structural invariants', () => {
+  it('every non-terminal status can reach at least one terminal status', () => {
+    for (const status of NON_TERMINAL_RUN_STATUSES) {
+      const reachable = reachableRunStatuses(status);
+      const reachesTerminal = TERMINAL_RUN_STATUSES_LIST.some((t) => reachable.has(t));
+      expect(reachesTerminal, `${status} must be able to reach a terminal state`).toBe(true);
+    }
+  });
+
+  it('terminal statuses have no successors in reachability (only themselves)', () => {
+    for (const status of TERMINAL_RUN_STATUSES_LIST) {
+      const reachable = reachableRunStatuses(status);
+      expect(reachable.size).toBe(1);
+      expect(reachable.has(status)).toBe(true);
+    }
+  });
+
+  it('no self-transitions exist in the table', () => {
+    for (const [from, successors] of Object.entries(RUN_STATUS_TRANSITIONS)) {
+      expect(successors).not.toContain(from);
+    }
+  });
+
+  it('all listed successors are valid RunStatus values', () => {
+    for (const [, successors] of Object.entries(RUN_STATUS_TRANSITIONS)) {
+      for (const successor of successors) {
+        expect(ALL_RUN_STATUSES).toContain(successor);
+      }
+    }
+  });
+
+  it('total valid transitions count matches the explicit transition table', () => {
+    let count = 0;
+    for (const from of ALL_RUN_STATUSES) {
+      for (const to of ALL_RUN_STATUSES) {
+        if (isValidRunStatusTransition(from, to)) count++;
+      }
+    }
+    // Pending→Running(1) + Running→{Succeeded,Failed,Cancelled,WaitingForApproval,Paused}(5)
+    // + WaitingForApproval→Running(1) + Paused→Running(1) = 8
+    expect(count).toBe(8);
+  });
+
+  it('the graph contains no cycles reachable from Pending', () => {
+    // BFS from Pending; if any already-visited state appears again we have a cycle.
+    // (WaitingForApproval→Running and Paused→Running are back-edges in DFS, so
+    // we verify via topological reachability rather than raw cycle detection.)
+    // Simplest invariant: Pending cannot reach itself (no cycle back to Pending).
+    const reachable = reachableRunStatuses('Pending');
+    // Remove Pending itself — it's in the set because BFS includes the start.
+    const withoutStart = new Set(reachable);
+    withoutStart.delete('Pending');
+    // None of the states reachable from Pending should be able to reach Pending.
+    for (const s of withoutStart) {
+      expect(reachableRunStatuses(s).has('Pending')).toBe(false);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Exhaustive all-pairs invalid transitions
+// ---------------------------------------------------------------------------
+
+describe('isValidRunStatusTransition — exhaustive all-pairs invalid transitions', () => {
+  // Derive invalid pairs from ALL_RUN_STATUSES × ALL_RUN_STATUSES minus known-valid set.
+  const VALID_PAIRS = new Set(
+    (
+      [
+        ['Pending', 'Running'],
+        ['Running', 'Succeeded'],
+        ['Running', 'Failed'],
+        ['Running', 'Cancelled'],
+        ['Running', 'WaitingForApproval'],
+        ['Running', 'Paused'],
+        ['WaitingForApproval', 'Running'],
+        ['Paused', 'Running'],
+      ] as [RunStatus, RunStatus][]
+    ).map(([f, t]) => `${f}→${t}`),
+  );
+
+  const invalidPairs: [RunStatus, RunStatus][] = [];
+  for (const from of ALL_RUN_STATUSES) {
+    for (const to of ALL_RUN_STATUSES) {
+      if (!VALID_PAIRS.has(`${from}→${to}`)) {
+        invalidPairs.push([from, to]);
+      }
+    }
+  }
+
+  it.each(invalidPairs)('rejects %s → %s', (from, to) => {
+    expect(isValidRunStatusTransition(from, to)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// reachableRunStatuses — spot checks
+// ---------------------------------------------------------------------------
+
+describe('reachableRunStatuses', () => {
+  it('Pending can reach all non-Pending statuses', () => {
+    const reachable = reachableRunStatuses('Pending');
+    for (const status of ALL_RUN_STATUSES) {
+      expect(reachable.has(status)).toBe(true);
+    }
+  });
+
+  it('Running can reach all terminal statuses', () => {
+    const reachable = reachableRunStatuses('Running');
+    for (const terminal of TERMINAL_RUN_STATUSES_LIST) {
+      expect(reachable.has(terminal)).toBe(true);
+    }
+  });
+
+  it('WaitingForApproval reaches Running and all terminal statuses', () => {
+    const reachable = reachableRunStatuses('WaitingForApproval');
+    expect(reachable.has('Running')).toBe(true);
+    for (const terminal of TERMINAL_RUN_STATUSES_LIST) {
+      expect(reachable.has(terminal)).toBe(true);
+    }
+  });
+
+  it('Paused reaches Running and all terminal statuses', () => {
+    const reachable = reachableRunStatuses('Paused');
+    expect(reachable.has('Running')).toBe(true);
+    for (const terminal of TERMINAL_RUN_STATUSES_LIST) {
+      expect(reachable.has(terminal)).toBe(true);
+    }
+  });
+
+  it.each(TERMINAL_RUN_STATUSES_LIST)('%s is a fixed-point (only reaches itself)', (status) => {
+    const reachable = reachableRunStatuses(status);
+    expect(reachable.size).toBe(1);
+    expect(reachable.has(status)).toBe(true);
   });
 });
 

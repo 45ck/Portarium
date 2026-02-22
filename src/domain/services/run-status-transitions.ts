@@ -83,6 +83,26 @@ export function terminalRunStatuses(): readonly RunStatus[] {
   return TERMINAL_RUN_STATUSES;
 }
 
+/**
+ * BFS from `start` over the runtime transition table.
+ * Returns every status reachable from `start` (including `start` itself).
+ */
+export function reachableRunStatuses(start: RunStatus): Set<RunStatus> {
+  const visited = new Set<RunStatus>();
+  const queue: RunStatus[] = [start];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const next of RUN_STATUS_TRANSITIONS[current]) {
+      if (!visited.has(next)) queue.push(next);
+    }
+  }
+
+  return visited;
+}
+
 // ---------------------------------------------------------------------------
 // Compile-time consistency guard
 // ---------------------------------------------------------------------------
