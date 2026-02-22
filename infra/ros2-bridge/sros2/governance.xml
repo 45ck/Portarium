@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SROS2 Governance Policy — Portarium Trust Domain
+  =================================================
+  Defines domain-wide DDS-Security settings for the portarium.robotics
+  trust domain. Applied via the ros2 security keystore on each node.
+
+  Security profile summary:
+    - All discovery traffic: encrypted + authenticated
+    - Topic payloads: encrypted + authenticated (SignAndEncrypt)
+    - Non-allowlisted topics: DENY (default)
+    - Unauthenticated nodes: DENY
+
+  Reference: OMG DDS Security 1.1 §9.4 (Governance Document)
+  Bead: bead-0520
+-->
+<dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="http://www.omg.org/spec/DDS-SECURITY/20170901/omg_shared_ca_governance.xsd">
+  <domain_access_rules>
+
+    <!-- ── Domain 42 — Portarium production robotics domain ─────────────── -->
+    <domain_rule>
+      <domains>
+        <id>42</id>
+      </domains>
+
+      <!-- Require all participants to authenticate with an X.509 certificate. -->
+      <allow_unauthenticated_participants>false</allow_unauthenticated_participants>
+
+      <!-- Require access-control enforcement for all participants. -->
+      <enable_join_access_control>true</enable_join_access_control>
+
+      <!-- Encrypt + authenticate discovery SPDP/SEDP traffic. -->
+      <discovery_protection_kind>ENCRYPT_WITH_ORIGIN_AUTHENTICATION</discovery_protection_kind>
+
+      <!-- Encrypt + authenticate liveliness announcements. -->
+      <liveliness_protection_kind>ENCRYPT_WITH_ORIGIN_AUTHENTICATION</liveliness_protection_kind>
+
+      <!-- Encrypt + authenticate real-time message traffic on all topics. -->
+      <rtps_protection_kind>ENCRYPT</rtps_protection_kind>
+
+      <topic_access_rules>
+
+        <!-- Mission goal: encrypt + sign — safety-critical actuator command -->
+        <topic_rule>
+          <topic_expression>portarium/mission_goal</topic_expression>
+          <enable_discovery_protection>true</enable_discovery_protection>
+          <enable_liveliness_protection>true</enable_liveliness_protection>
+          <enable_read_access_control>true</enable_read_access_control>
+          <enable_write_access_control>true</enable_write_access_control>
+          <metadata_protection_kind>ENCRYPT_WITH_ORIGIN_AUTHENTICATION</metadata_protection_kind>
+          <data_protection_kind>ENCRYPT</data_protection_kind>
+        </topic_rule>
+
+        <!-- E-stop: encrypt + sign — highest safety class -->
+        <topic_rule>
+          <topic_expression>portarium/estop</topic_expression>
+          <enable_discovery_protection>true</enable_discovery_protection>
+          <enable_liveliness_protection>true</enable_liveliness_protection>
+          <enable_read_access_control>true</enable_read_access_control>
+          <enable_write_access_control>true</enable_write_access_control>
+          <metadata_protection_kind>ENCRYPT_WITH_ORIGIN_AUTHENTICATION</metadata_protection_kind>
+          <data_protection_kind>ENCRYPT</data_protection_kind>
+        </topic_rule>
+
+        <!-- Action feedback / status: sign only (high frequency, lower overhead) -->
+        <topic_rule>
+          <topic_expression>*/_action/*</topic_expression>
+          <enable_discovery_protection>true</enable_discovery_protection>
+          <enable_liveliness_protection>false</enable_liveliness_protection>
+          <enable_read_access_control>true</enable_read_access_control>
+          <enable_write_access_control>true</enable_write_access_control>
+          <metadata_protection_kind>SIGN</metadata_protection_kind>
+          <data_protection_kind>SIGN</data_protection_kind>
+        </topic_rule>
+
+        <!-- Standard telemetry: sign only -->
+        <topic_rule>
+          <topic_expression>robot/*</topic_expression>
+          <enable_discovery_protection>true</enable_discovery_protection>
+          <enable_liveliness_protection>false</enable_liveliness_protection>
+          <enable_read_access_control>true</enable_read_access_control>
+          <enable_write_access_control>true</enable_write_access_control>
+          <metadata_protection_kind>SIGN</metadata_protection_kind>
+          <data_protection_kind>SIGN</data_protection_kind>
+        </topic_rule>
+
+        <!-- Default catch-all: deny access to undeclared topics -->
+        <topic_rule>
+          <topic_expression>*</topic_expression>
+          <enable_discovery_protection>true</enable_discovery_protection>
+          <enable_liveliness_protection>true</enable_liveliness_protection>
+          <enable_read_access_control>true</enable_read_access_control>
+          <enable_write_access_control>true</enable_write_access_control>
+          <metadata_protection_kind>ENCRYPT_WITH_ORIGIN_AUTHENTICATION</metadata_protection_kind>
+          <data_protection_kind>ENCRYPT</data_protection_kind>
+        </topic_rule>
+
+      </topic_access_rules>
+    </domain_rule>
+
+  </domain_access_rules>
+</dds>
