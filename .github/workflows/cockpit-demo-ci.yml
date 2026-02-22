@@ -10,6 +10,8 @@ on:
       - 'scripts/qa/render-demo-gallery.mjs'
       - 'scripts/qa/render-approvals-v2-showcase.mjs'
       - 'src/infrastructure/adapters/demo-gallery-pipeline.test.ts'
+      - 'src/infrastructure/adapters/demo-redaction-guard.test.ts'
+      - 'scripts/qa/check-demo-redaction.mjs'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/cockpit-demo-ci.yml'
@@ -43,6 +45,12 @@ jobs:
 
       - name: Run demo gallery pipeline tests
         run: npm run test -- src/infrastructure/adapters/demo-gallery-pipeline.test.ts
+
+      - name: Run demo redaction guard tests
+        run: npm run test -- src/infrastructure/adapters/demo-redaction-guard.test.ts
+
+      - name: Check demo artifacts for sensitive data
+        run: npm run cockpit:demo:redaction:check
 
       - name: Verify gallery script is well-formed (dry-run)
         run: npm run cockpit:demo:gallery:dry-run

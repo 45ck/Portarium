@@ -8,6 +8,11 @@
  * Authentication: session-based (login via /web/session/authenticate) or
  * API key (X-API-Key header, Odoo 16+).
  *
+ * Transport options:
+ *   - `jsonrpc`       (default) — JSON-RPC 2.0 via /web/dataset/call_kw
+ *   - `external-json2`          — Odoo 17+ REST API via /api/* endpoints
+ *                                 with Bearer token auth (migration path)
+ *
  * Covered operations:
  *   listAccounts / getAccount    — res.partner / account.account
  *   createJournalEntry           — account.move (type=entry)
@@ -21,7 +26,7 @@
  *
  * Odoo JSON-RPC reference: https://www.odoo.com/documentation/17.0/developer/reference/external_api.html
  *
- * Bead: bead-0422
+ * Bead: bead-0422 / bead-0735
  */
 
 import type { AccountV1 } from '../../../domain/canonical/account-v1.js';
@@ -36,6 +41,8 @@ import type {
 
 // ── Config ────────────────────────────────────────────────────────────────
 
+export type OdooTransportMode = 'jsonrpc' | 'external-json2';
+
 export interface OdooAdapterConfig {
   /** Base URL (e.g. https://my-company.odoo.com). */
   baseUrl: string;
@@ -47,9 +54,233 @@ export interface OdooAdapterConfig {
   apiKey: string;
   /** Optional timeout in ms. Default: 15 000. */
   timeoutMs?: number;
+  /**
+   * Transport protocol to use.
+   * - `jsonrpc` (default): JSON-RPC 2.0 via /web/dataset/call_kw (Odoo 16/17)
+   * - `external-json2`: REST JSON API via /api/* endpoints (Odoo 17+)
+   */
+  transport?: OdooTransportMode;
 }
 
 type FetchFn = typeof fetch;
+
+interface SearchReadOptions {
+  limit?: number;
+  offset?: number;
+}
+
+// ── Transport interface ───────────────────────────────────────────────────
+
+/**
+ * Abstraction over Odoo wire protocols.
+ * Allows swapping JSON-RPC 2.0 for the Odoo 17+ REST External API
+ * without touching business-logic mappers.
+ */
+export interface OdooTransport {
+  authenticate(): Promise<number>;
+  searchRead<T>(
+    model: string,
+    domain: unknown[],
+    fields: string[],
+    options?: SearchReadOptions,
+  ): Promise<T[]>;
+  create(model: string, values: Record<string, unknown>): Promise<number>;
+  callKw(model: string, method: string, args: unknown[], kwargs: Record<string, unknown>): Promise<unknown>;
+}
+
+// ── JSON-RPC 2.0 transport ────────────────────────────────────────────────
+
+/**
+ * Classic Odoo JSON-RPC 2.0 transport.
+ * Uses /web/session/authenticate + /web/dataset/call_kw for all operations.
+ * Compatible with Odoo 16 and 17.
+ */
+export class JsonRpcTransport implements OdooTransport {
+  readonly #config: OdooAdapterConfig;
+  readonly #fetch: FetchFn;
+  #uid: number | null = null;
+
+  constructor(config: OdooAdapterConfig, fetchFn: FetchFn) {
+    this.#config = config;
+    this.#fetch = fetchFn;
+  }
+
+  async authenticate(): Promise<number> {
+    if (this.#uid !== null) return this.#uid;
+    const res = await this.#rpc<{ uid: number }>('/web/session/authenticate', {
+      db: this.#config.database,
+      login: this.#config.username,
+      password: this.#config.apiKey,
+    });
+    this.#uid = res.uid;
+    return this.#uid;
+  }
+
+  async searchRead<T>(
+    model: string,
+    domain: unknown[],
+    fields: string[],
+    options: SearchReadOptions = {},
+  ): Promise<T[]> {
+    await this.authenticate();
+    const res = await this.callKw(model, 'search_read', [domain], {
+      fields,
+      limit: options.limit ?? 100,
+      offset: options.offset ?? 0,
+    });
+    return res as T[];
+  }
+
+  async create(model: string, values: Record<string, unknown>): Promise<number> {
+    await this.authenticate();
+    const res = await this.callKw(model, 'create', [values], {});
+    return res as number;
+  }
+
+  async callKw(
+    model: string,
+    method: string,
+    args: unknown[],
+    kwargs: Record<string, unknown>,
+  ): Promise<unknown> {
+    const uid = this.#uid ?? (await this.authenticate());
+    return this.#rpc<unknown>('/web/dataset/call_kw', {
+      model,
+      method,
+      args,
+      kwargs: {
+        context: { lang: 'en_US', tz: 'UTC', uid },
+        ...kwargs,
+      },
+    });
+  }
+
+  async #rpc<T>(path: string, params: Record<string, unknown>): Promise<T> {
+    const url = `${this.#config.baseUrl}${path}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs ?? 15_000);
+
+    try {
+      const res = await this.#fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...(path !== '/web/session/authenticate'
+            ? { 'X-API-Key': this.#config.apiKey }
+            : {}),
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status} from Odoo (${path}): ${text}`);
+      }
+
+      const json = await res.json() as { result?: T; error?: { message: string; data?: { message: string } } };
+      if (json.error) {
+        throw new Error(json.error.data?.message ?? json.error.message);
+      }
+      return json.result as T;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+
+// ── External JSON-2 transport (Odoo 17+ REST) ─────────────────────────────
+
+/**
+ * Odoo 17+ External REST JSON API transport (migration path).
+ *
+ * Uses:
+ *   - Bearer token auth (Authorization: Bearer <api_key>).
+ *     authenticate() is a no-op — returns a sentinel uid (0) to signal
+ *     that Bearer auth is used and no session cookie is needed.
+ *   - POST /api/<model>/search_read  for search_read
+ *   - POST /api/<model>              for create
+ *   - POST /api/method/<model>/<method>  for arbitrary callKw methods
+ *
+ * Reference: https://www.odoo.com/documentation/17.0/developer/reference/external_api.html
+ */
+export class ExternalJson2Transport implements OdooTransport {
+  readonly #config: OdooAdapterConfig;
+  readonly #fetch: FetchFn;
+
+  constructor(config: OdooAdapterConfig, fetchFn: FetchFn) {
+    this.#config = config;
+    this.#fetch = fetchFn;
+  }
+
+  /** No session needed with Bearer auth; returns sentinel 0. */
+  async authenticate(): Promise<number> {
+    return 0;
+  }
+
+  async searchRead<T>(
+    model: string,
+    domain: unknown[],
+    fields: string[],
+    options: SearchReadOptions = {},
+  ): Promise<T[]> {
+    const path = `/api/${encodeURIComponent(model)}/search_read`;
+    const body = {
+      domain,
+      fields,
+      limit: options.limit ?? 100,
+      offset: options.offset ?? 0,
+    };
+    const res = await this.#post<{ records: T[] }>(path, body);
+    return res.records ?? (res as unknown as T[]);
+  }
+
+  async create(model: string, values: Record<string, unknown>): Promise<number> {
+    const path = `/api/${encodeURIComponent(model)}`;
+    const res = await this.#post<{ id: number }>(path, values);
+    return res.id;
+  }
+
+  async callKw(
+    model: string,
+    method: string,
+    args: unknown[],
+    kwargs: Record<string, unknown>,
+  ): Promise<unknown> {
+    // Odoo 17+ REST method call endpoint.
+    const path = `/api/method/${encodeURIComponent(model)}/${encodeURIComponent(method)}`;
+    return this.#post<unknown>(path, { args, kwargs });
+  }
+
+  async #post<T>(path: string, body: unknown): Promise<T> {
+    const url = `${this.#config.baseUrl}${path}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs ?? 15_000);
+
+    try {
+      const res = await this.#fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${this.#config.apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status} from Odoo External API (${path}): ${text}`);
+      }
+
+      return await res.json() as T;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 // ── Mappers ────────────────────────────────────────────────────────────────
 
@@ -59,20 +290,20 @@ function extractCurrencyCode(raw: unknown): string {
 }
 
 const ODOO_ACCOUNT_TYPE_MAP: Record<string, AccountV1['accountType']> = {
-  asset_receivable: 'asset',
-  asset_cash: 'asset',
-  asset_current: 'asset',
-  asset_non_current: 'asset',
-  liability_payable: 'liability',
-  liability_current: 'liability',
-  liability_non_current: 'liability',
-  equity: 'equity',
-  income: 'revenue',
-  income_other: 'revenue',
-  expense: 'expense',
-  expense_depreciation: 'expense',
-  expense_direct_cost: 'expense',
-  off_balance: 'asset',
+  'asset_receivable': 'asset',
+  'asset_cash': 'asset',
+  'asset_current': 'asset',
+  'asset_non_current': 'asset',
+  'liability_payable': 'liability',
+  'liability_current': 'liability',
+  'liability_non_current': 'liability',
+  'equity': 'equity',
+  'income': 'revenue',
+  'income_other': 'revenue',
+  'expense': 'expense',
+  'expense_depreciation': 'expense',
+  'expense_direct_cost': 'expense',
+  'off_balance': 'asset',
 };
 
 function mapOdooAccount(rec: Record<string, unknown>, tenantId: string): AccountV1 {
@@ -97,9 +328,8 @@ const ODOO_INVOICE_STATUS_MAP: Record<string, InvoiceV1['status']> = {
 function mapOdooInvoice(rec: Record<string, unknown>, tenantId: string): InvoiceV1 {
   const odooState = String(rec['payment_state'] ?? rec['state'] ?? 'draft');
   const status: InvoiceV1['status'] =
-    odooState === 'paid' || odooState === 'in_payment'
-      ? 'paid'
-      : (ODOO_INVOICE_STATUS_MAP[String(rec['state'] ?? 'draft')] ?? 'draft');
+    odooState === 'paid' || odooState === 'in_payment' ? 'paid'
+      : ODOO_INVOICE_STATUS_MAP[String(rec['state'] ?? 'draft')] ?? 'draft';
 
   return {
     invoiceId: InvoiceId(String(rec['id'])),
@@ -109,9 +339,7 @@ function mapOdooInvoice(rec: Record<string, unknown>, tenantId: string): Invoice
     status,
     currencyCode: extractCurrencyCode(rec['currency_id']),
     totalAmount: Number(rec['amount_total'] ?? 0),
-    issuedAtIso: String(
-      rec['invoice_date'] ?? rec['date'] ?? new Date().toISOString().slice(0, 10),
-    ),
+    issuedAtIso: String(rec['invoice_date'] ?? rec['date'] ?? new Date().toISOString().slice(0, 10)),
     ...(typeof rec['invoice_date_due'] === 'string' ? { dueDateIso: rec['invoice_date_due'] } : {}),
   };
 }
@@ -131,56 +359,38 @@ function mapOdooPartner(rec: Record<string, unknown>, tenantId: string): PartyV1
 // ── Adapter ───────────────────────────────────────────────────────────────
 
 export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPort {
-  readonly #config: OdooAdapterConfig;
-  readonly #fetch: FetchFn;
-  #uid: number | null = null;
+  readonly #transport: OdooTransport;
+  readonly #config: Pick<OdooAdapterConfig, 'baseUrl'>;
 
   constructor(config: OdooAdapterConfig, fetchFn: FetchFn = fetch) {
     this.#config = config;
-    this.#fetch = fetchFn;
+    this.#transport =
+      config.transport === 'external-json2'
+        ? new ExternalJson2Transport(config, fetchFn)
+        : new JsonRpcTransport(config, fetchFn);
   }
 
   async execute(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     try {
       switch (input.operation) {
-        case 'listAccounts':
-          return await this.#listAccounts(input);
-        case 'getAccount':
-          return await this.#getAccount(input);
-        case 'createJournalEntry':
-          return await this.#createJournalEntry(input);
-        case 'listJournalEntries':
-          return await this.#listJournalEntries(input);
-        case 'getTrialBalance':
-          return await this.#getReport(input, 'trial_balance');
-        case 'listInvoices':
-          return await this.#listMoves(input, 'out_invoice');
-        case 'getInvoice':
-          return await this.#getInvoice(input);
-        case 'createInvoice':
-          return await this.#createMove(input, 'out_invoice');
-        case 'listBills':
-          return await this.#listMoves(input, 'in_invoice');
-        case 'getBill':
-          return await this.#getInvoice(input, 'in_invoice');
-        case 'createBill':
-          return await this.#createMove(input, 'in_invoice');
-        case 'listVendors':
-          return await this.#listVendors(input);
-        case 'getVendor':
-          return await this.#getVendor(input);
-        case 'reconcileAccount':
-          return await this.#reconcileAccount(input);
-        case 'getBalanceSheet':
-          return await this.#getReport(input, 'balance_sheet');
-        case 'getProfitAndLoss':
-          return await this.#getReport(input, 'profit_loss');
+        case 'listAccounts':      return await this.#listAccounts(input);
+        case 'getAccount':        return await this.#getAccount(input);
+        case 'createJournalEntry': return await this.#createJournalEntry(input);
+        case 'listJournalEntries': return await this.#listJournalEntries(input);
+        case 'getTrialBalance':   return await this.#getReport(input, 'trial_balance');
+        case 'listInvoices':      return await this.#listMoves(input, 'out_invoice');
+        case 'getInvoice':        return await this.#getInvoice(input);
+        case 'createInvoice':     return await this.#createMove(input, 'out_invoice');
+        case 'listBills':         return await this.#listMoves(input, 'in_invoice');
+        case 'getBill':           return await this.#getInvoice(input, 'in_invoice');
+        case 'createBill':        return await this.#createMove(input, 'in_invoice');
+        case 'listVendors':       return await this.#listVendors(input);
+        case 'getVendor':         return await this.#getVendor(input);
+        case 'reconcileAccount':  return await this.#reconcileAccount(input);
+        case 'getBalanceSheet':   return await this.#getReport(input, 'balance_sheet');
+        case 'getProfitAndLoss':  return await this.#getReport(input, 'profit_loss');
         default:
-          return {
-            ok: false,
-            error: 'unsupported_operation',
-            message: `Unsupported: ${String(input.operation)}`,
-          };
+          return { ok: false, error: 'unsupported_operation', message: `Unsupported: ${String(input.operation)}` };
       }
     } catch (err) {
       return {
@@ -193,31 +403,23 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Accounts ───────────────────────────────────────────────────────────────
 
-  async #listAccounts(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    const records = await this.#searchRead<Record<string, unknown>>(
+  async #listAccounts(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'account.account',
       [],
       ['id', 'name', 'code', 'account_type', 'currency_id', 'active'],
     );
     return {
       ok: true,
-      result: {
-        kind: 'accounts',
-        accounts: records.map((r) => mapOdooAccount(r, String(input.tenantId))),
-      },
+      result: { kind: 'accounts', accounts: records.map((r) => mapOdooAccount(r, String(input.tenantId))) },
     };
   }
 
-  async #getAccount(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getAccount(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     const accountId = String(input.payload?.['accountId'] ?? '');
-    if (!accountId)
-      return { ok: false, error: 'validation_error', message: 'accountId is required.' };
+    if (!accountId) return { ok: false, error: 'validation_error', message: 'accountId is required.' };
 
-    const records = await this.#searchRead<Record<string, unknown>>(
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'account.account',
       [['id', '=', Number(accountId)]],
       ['id', 'name', 'code', 'account_type', 'currency_id', 'active'],
@@ -225,21 +427,16 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Account ${accountId} not found.` };
     }
-    return {
-      ok: true,
-      result: { kind: 'account', account: mapOdooAccount(records[0]!, String(input.tenantId)) },
-    };
+    return { ok: true, result: { kind: 'account', account: mapOdooAccount(records[0]!, String(input.tenantId)) } };
   }
 
   // ── Journal entries ────────────────────────────────────────────────────────
 
-  async #createJournalEntry(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
+  async #createJournalEntry(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     const date = String(input.payload?.['date'] ?? new Date().toISOString().slice(0, 10));
     const ref = String(input.payload?.['reference'] ?? '');
 
-    const id = await this.#create('account.move', {
+    const id = await this.#transport.create('account.move', {
       move_type: 'entry',
       date,
       ref,
@@ -253,10 +450,8 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     };
   }
 
-  async #listJournalEntries(
-    _input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    const records = await this.#searchRead<Record<string, unknown>>(
+  async #listJournalEntries(_input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'account.move',
       [['move_type', '=', 'entry']],
       ['id', 'name', 'date', 'ref', 'state'],
@@ -267,68 +462,37 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Invoices / Bills ───────────────────────────────────────────────────────
 
-  async #listMoves(
-    input: FinanceAccountingExecuteInputV1,
-    moveType: string,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    const records = await this.#searchRead<Record<string, unknown>>(
+  async #listMoves(input: FinanceAccountingExecuteInputV1, moveType: string): Promise<FinanceAccountingExecuteOutputV1> {
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'account.move',
       [['move_type', '=', moveType]],
-      [
-        'id',
-        'name',
-        'state',
-        'payment_state',
-        'currency_id',
-        'amount_total',
-        'invoice_date',
-        'invoice_date_due',
-      ],
+      ['id', 'name', 'state', 'payment_state', 'currency_id', 'amount_total', 'invoice_date', 'invoice_date_due'],
     );
     const invoices = records.map((r) => mapOdooInvoice(r, String(input.tenantId)));
     return { ok: true, result: { kind: 'invoices', invoices } };
   }
 
-  async #getInvoice(
-    input: FinanceAccountingExecuteInputV1,
-    _moveType?: string,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getInvoice(input: FinanceAccountingExecuteInputV1, _moveType?: string): Promise<FinanceAccountingExecuteOutputV1> {
     const invoiceId = String(input.payload?.['invoiceId'] ?? input.payload?.['billId'] ?? '');
-    if (!invoiceId)
-      return { ok: false, error: 'validation_error', message: 'invoiceId is required.' };
+    if (!invoiceId) return { ok: false, error: 'validation_error', message: 'invoiceId is required.' };
 
-    const records = await this.#searchRead<Record<string, unknown>>(
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'account.move',
       [['id', '=', Number(invoiceId)]],
-      [
-        'id',
-        'name',
-        'state',
-        'payment_state',
-        'currency_id',
-        'amount_total',
-        'invoice_date',
-        'invoice_date_due',
-      ],
+      ['id', 'name', 'state', 'payment_state', 'currency_id', 'amount_total', 'invoice_date', 'invoice_date_due'],
     );
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Invoice ${invoiceId} not found.` };
     }
-    return {
-      ok: true,
-      result: { kind: 'invoice', invoice: mapOdooInvoice(records[0]!, String(input.tenantId)) },
-    };
+    return { ok: true, result: { kind: 'invoice', invoice: mapOdooInvoice(records[0]!, String(input.tenantId)) } };
   }
 
-  async #createMove(
-    input: FinanceAccountingExecuteInputV1,
-    moveType: string,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
+  async #createMove(input: FinanceAccountingExecuteInputV1, moveType: string): Promise<FinanceAccountingExecuteOutputV1> {
     const totalAmount = Number(input.payload?.['totalAmount'] ?? 0);
     const currencyCode = String(input.payload?.['currencyCode'] ?? 'USD');
     const date = String(input.payload?.['issuedAtIso'] ?? new Date().toISOString().slice(0, 10));
 
-    const id = await this.#create('account.move', {
+    const id = await this.#transport.create('account.move', {
       move_type: moveType,
       invoice_date: date,
       amount_total: totalAmount,
@@ -354,58 +518,40 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Vendors ────────────────────────────────────────────────────────────────
 
-  async #listVendors(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    const records = await this.#searchRead<Record<string, unknown>>(
+  async #listVendors(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'res.partner',
       [['supplier_rank', '>', 0]],
       ['id', 'name', 'email', 'phone'],
     );
     return {
       ok: true,
-      result: {
-        kind: 'vendors',
-        vendors: records.map((r) => mapOdooPartner(r, String(input.tenantId))),
-      },
+      result: { kind: 'vendors', vendors: records.map((r) => mapOdooPartner(r, String(input.tenantId))) },
     };
   }
 
-  async #getVendor(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getVendor(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     const vendorId = String(input.payload?.['vendorId'] ?? '');
-    if (!vendorId)
-      return { ok: false, error: 'validation_error', message: 'vendorId is required.' };
+    if (!vendorId) return { ok: false, error: 'validation_error', message: 'vendorId is required.' };
 
-    const records = await this.#searchRead<Record<string, unknown>>(
+    const records = await this.#transport.searchRead<Record<string, unknown>>(
       'res.partner',
-      [
-        ['id', '=', Number(vendorId)],
-        ['supplier_rank', '>', 0],
-      ],
+      [['id', '=', Number(vendorId)], ['supplier_rank', '>', 0]],
       ['id', 'name', 'email', 'phone'],
     );
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Vendor ${vendorId} not found.` };
     }
-    return {
-      ok: true,
-      result: { kind: 'vendor', vendor: mapOdooPartner(records[0]!, String(input.tenantId)) },
-    };
+    return { ok: true, result: { kind: 'vendor', vendor: mapOdooPartner(records[0]!, String(input.tenantId)) } };
   }
 
   // ── Reconcile ─────────────────────────────────────────────────────────────
 
-  async #reconcileAccount(
-    input: FinanceAccountingExecuteInputV1,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    // Odoo reconcile: call account.move.line.auto_reconcile on the account.
+  async #reconcileAccount(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     const accountId = String(input.payload?.['accountId'] ?? '');
-    if (!accountId)
-      return { ok: false, error: 'validation_error', message: 'accountId is required.' };
+    if (!accountId) return { ok: false, error: 'validation_error', message: 'accountId is required.' };
 
-    await this.#callKw('account.move.line', 'auto_reconcile_lines', [], {
+    await this.#transport.callKw('account.move.line', 'auto_reconcile_lines', [], {
       account_id: Number(accountId),
     });
     return { ok: true, result: { kind: 'accepted', operation: input.operation } };
@@ -413,11 +559,7 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Reports (opaque) ───────────────────────────────────────────────────────
 
-  async #getReport(
-    _input: FinanceAccountingExecuteInputV1,
-    reportType: string,
-  ): Promise<FinanceAccountingExecuteOutputV1> {
-    // Odoo financial reports are rendered server-side. Return opaque ref.
+  async #getReport(_input: FinanceAccountingExecuteInputV1, reportType: string): Promise<FinanceAccountingExecuteOutputV1> {
     return {
       ok: true,
       result: {
@@ -429,94 +571,5 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
         },
       },
     };
-  }
-
-  // ── JSON-RPC primitives ────────────────────────────────────────────────────
-
-  async #ensureAuthenticated(): Promise<number> {
-    if (this.#uid !== null) return this.#uid;
-
-    const res = await this.#rpc<{ uid: number }>('/web/session/authenticate', {
-      db: this.#config.database,
-      login: this.#config.username,
-      password: this.#config.apiKey,
-    });
-    this.#uid = res.uid;
-    return this.#uid;
-  }
-
-  async #searchRead<T>(
-    model: string,
-    domain: unknown[],
-    fields: string[],
-    options: { limit?: number; offset?: number } = {},
-  ): Promise<T[]> {
-    await this.#ensureAuthenticated();
-    const res = await this.#callKw(model, 'search_read', [domain], {
-      fields,
-      limit: options.limit ?? 100,
-      offset: options.offset ?? 0,
-    });
-    return res as T[];
-  }
-
-  async #create(model: string, values: Record<string, unknown>): Promise<number> {
-    await this.#ensureAuthenticated();
-    const res = await this.#callKw(model, 'create', [values], {});
-    return res as number;
-  }
-
-  async #callKw(
-    model: string,
-    method: string,
-    args: unknown[],
-    kwargs: Record<string, unknown>,
-  ): Promise<unknown> {
-    const uid = this.#uid ?? (await this.#ensureAuthenticated());
-    return this.#rpc<unknown>('/web/dataset/call_kw', {
-      model,
-      method,
-      args,
-      kwargs: {
-        context: { lang: 'en_US', tz: 'UTC', uid },
-        ...kwargs,
-      },
-    });
-  }
-
-  async #rpc<T>(path: string, params: Record<string, unknown>): Promise<T> {
-    const url = `${this.#config.baseUrl}${path}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.#config.timeoutMs ?? 15_000);
-
-    try {
-      const res = await this.#fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          // API key auth (Odoo 16+): X-API-Key header.
-          ...(path !== '/web/session/authenticate' ? { 'X-API-Key': this.#config.apiKey } : {}),
-        },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} from Odoo (${path}): ${text}`);
-      }
-
-      const json = (await res.json()) as {
-        result?: T;
-        error?: { message: string; data?: { message: string } };
-      };
-      if (json.error) {
-        throw new Error(json.error.data?.message ?? json.error.message);
-      }
-      return json.result as T;
-    } finally {
-      clearTimeout(timeout);
-    }
   }
 }
