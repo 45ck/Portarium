@@ -910,3 +910,20 @@ XACK
 crossfades
 replayable
 SARIF
+
+# Infrastructure / Kubernetes terms (bead-0387)
+kustomization
+Kustomization
+KUBECONFIG
+Fulcio
+Rekor
+idempotently
+
+# Git / docs terms (pre-existing in review docs)
+oneline
+Infracost
+infracost
+INFRACOST
+
+# JWT token type (jose-jwt tests)
+dpop

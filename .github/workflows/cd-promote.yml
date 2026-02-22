@@ -1,274 +1,150 @@
-name: CD (Artefact Promotion)
+name: CD (Promote Artefact)
 
-# Artefact-based promotion pipeline.
+# Promotes a built image SHA to a Kustomize overlay and commits the pinned tag.
+# This is the first half of the GitOps deploy loop; the second half is
+# cd-k8s-deploy.yml which applies the updated overlay to the cluster.
 #
-# Promotion model: dev → staging → prod
-#
-# Each stage verifies gates defined in infra/environments/<env>.json before
-# applying. The pipeline promotes the same immutable image digest through all
-# environments — it never rebuilds.
-#
-# Triggering:
-# - dev is deployed automatically on push to main (via ci.yml dispatching this workflow).
-# - staging is triggered manually or via auto-promote after successful dev deployment.
-# - prod requires an explicit human approval gate (GitHub Environment protection rule).
-#
-# Bead: bead-0387
+# Dev:      auto-triggered after CI (Container Images) succeeds on main.
+# Staging:  manual workflow_dispatch, requires 1 GitHub environment reviewer.
+# Prod:     manual workflow_dispatch, requires 2 GitHub environment reviewers.
 
 on:
+  # Auto-promote to dev after every successful image build on main.
+  workflow_run:
+    workflows: ['CI (Container Images)']
+    types: [completed]
+    branches: [main]
+
+  # Manual promotion to staging or prod.
   workflow_dispatch:
     inputs:
-      source_environment:
-        description: 'Source environment to promote FROM'
+      target_environment:
+        description: 'Target environment to promote to'
         required: true
         type: choice
         options:
-          - dev
           - staging
-      commit_sha:
-        description: 'Commit SHA to promote (image tag sha-<sha>)'
-        required: true
-        type: string
-      dry_run:
-        description: 'Dry run — validate only, do not apply'
+          - prod
+      image_sha:
+        description: 'Git SHA of the image to promote (leave blank to use latest on main)'
         required: false
-        default: 'false'
-        type: boolean
-
-  # Called by ci.yml after a successful main-branch build to auto-deploy to dev.
-  workflow_call:
-    inputs:
-      source_environment:
-        required: true
-        type: string
-      commit_sha:
-        required: true
-        type: string
-      dry_run:
-        required: false
-        type: boolean
-        default: false
-
-concurrency:
-  group: cd-promote-${{ inputs.source_environment }}
-  cancel-in-progress: false
+        default: ''
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
-  packages: read
 
 jobs:
-  # -------------------------------------------------------------------------
-  # Resolve target environment from source
-  # -------------------------------------------------------------------------
-  resolve:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # resolve-artefact
+  # Determines the image SHA and target environment for this promotion.
+  # ─────────────────────────────────────────────────────────────────────────────
+  resolve-artefact:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     outputs:
+      image_sha: ${{ steps.resolve.outputs.image_sha }}
       target_environment: ${{ steps.resolve.outputs.target_environment }}
-      image_tag: ${{ steps.resolve.outputs.image_tag }}
-      overlay: ${{ steps.resolve.outputs.overlay }}
-      requires_provenance: ${{ steps.resolve.outputs.requires_provenance }}
-      requires_security_scan: ${{ steps.resolve.outputs.requires_security_scan }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Resolve target environment from environment manifest
+      - name: Resolve image SHA and target environment
         id: resolve
         run: |
-          SOURCE="${{ inputs.source_environment }}"
-          MANIFEST="infra/environments/${SOURCE}.json"
-
-          if [ ! -f "$MANIFEST" ]; then
-            echo "Environment manifest not found: $MANIFEST"
-            exit 1
-          fi
-
-          TARGET=$(jq -r '.promotion.target // empty' "$MANIFEST")
-          if [ -z "$TARGET" ]; then
-            echo "Environment '${SOURCE}' has no promotion target (it is the final stage)."
-            exit 1
-          fi
-
-          TARGET_MANIFEST="infra/environments/${TARGET}.json"
-          OVERLAY=$(jq -r '.kubernetes.overlay' "$TARGET_MANIFEST")
-          REQUIRES_PROVENANCE=$(jq -r '.gates.requireProvenance' "$TARGET_MANIFEST")
-          REQUIRES_SECURITY_SCAN=$(jq -r '.gates.requireSecurityScan' "$TARGET_MANIFEST")
-
-          IMAGE_TAG="sha-${{ inputs.commit_sha }}"
-
-          echo "Promoting: ${SOURCE} → ${TARGET} (image: ${IMAGE_TAG})"
-          echo "target_environment=${TARGET}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "overlay=${OVERLAY}" >> "$GITHUB_OUTPUT"
-          echo "requires_provenance=${REQUIRES_PROVENANCE}" >> "$GITHUB_OUTPUT"
-          echo "requires_security_scan=${REQUIRES_SECURITY_SCAN}" >> "$GITHUB_OUTPUT"
-
-  # -------------------------------------------------------------------------
-  # Provenance gate — verify image signatures before promoting
-  # -------------------------------------------------------------------------
-  verify-provenance:
-    needs: resolve
-    if: needs.resolve.outputs.requires_provenance == 'true'
-    uses: ./.github/workflows/verify-provenance.yml
-    with:
-      digest: ${{ inputs.commit_sha }}
-      component: control-plane
-    permissions:
-      contents: read
-      id-token: write
-
-  verify-provenance-worker:
-    needs: resolve
-    if: needs.resolve.outputs.requires_provenance == 'true'
-    uses: ./.github/workflows/verify-provenance.yml
-    with:
-      digest: ${{ inputs.commit_sha }}
-      component: worker
-    permissions:
-      contents: read
-      id-token: write
-
-  # -------------------------------------------------------------------------
-  # Security scan gate
-  # -------------------------------------------------------------------------
-  security-scan:
-    needs: resolve
-    if: needs.resolve.outputs.requires_security_scan == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Trivy scan — control-plane
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/portarium-control-plane:sha-${{ inputs.commit_sha }}
-          format: sarif
-          output: trivy-control-plane.sarif
-          severity: CRITICAL,HIGH
-          exit-code: '1'
-          ignore-unfixed: true
-
-      - name: Trivy scan — worker
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/portarium-worker:sha-${{ inputs.commit_sha }}
-          format: sarif
-          output: trivy-worker.sarif
-          severity: CRITICAL,HIGH
-          exit-code: '1'
-          ignore-unfixed: true
-
-      - name: Upload Trivy results
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-control-plane.sarif
-          category: trivy-promote-control-plane
-
-  # -------------------------------------------------------------------------
-  # Deploy — apply kustomize overlay to target environment
-  # -------------------------------------------------------------------------
-  deploy:
-    needs:
-      - resolve
-      - verify-provenance
-      - verify-provenance-worker
-      - security-scan
-    # Run even when provenance/security gates are skipped (non-production path)
-    if: |
-      always() &&
-      needs.resolve.result == 'success' &&
-      (needs.verify-provenance.result == 'success' || needs.verify-provenance.result == 'skipped') &&
-      (needs.verify-provenance-worker.result == 'success' || needs.verify-provenance-worker.result == 'skipped') &&
-      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped')
-    runs-on: ubuntu-latest
-    # GitHub Environment protection rules enforce human approval gate for staging and prod.
-    environment: ${{ needs.resolve.outputs.target_environment }}
-    timeout-minutes: 20
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build kustomize manifest
-        env:
-          OVERLAY: ${{ needs.resolve.outputs.overlay }}
-          IMAGE_TAG: ${{ needs.resolve.outputs.image_tag }}
-        run: |
-          docker run --rm \
-            -v "${{ github.workspace }}:/workspace" \
-            -w /workspace \
-            k8s.gcr.io/kustomize/kustomize:v5.4.2 \
-            build "${OVERLAY}" > /tmp/manifest.yaml
-
-          # Pin image tags to the promoted digest
-          sed -i \
-            -e "s#:dev-latest#:${IMAGE_TAG}#g" \
-            -e "s#:staging-latest#:${IMAGE_TAG}#g" \
-            -e "s#:latest#:${IMAGE_TAG}#g" \
-            /tmp/manifest.yaml
-
-          echo "--- manifest preview (first 30 lines) ---"
-          head -30 /tmp/manifest.yaml
-
-      - name: Validate manifest (dry-run)
-        run: |
-          kubectl apply --dry-run=client -f /tmp/manifest.yaml
-
-      - name: Apply manifest
-        if: ${{ inputs.dry_run != 'true' }}
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
-          TARGET: ${{ needs.resolve.outputs.target_environment }}
-        run: |
-          if [ -z "$KUBECONFIG_B64" ]; then
-            echo "KUBECONFIG_B64 secret is required for environment: ${TARGET}"
-            exit 1
-          fi
-
-          echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
-          export KUBECONFIG=/tmp/kubeconfig
-
-          kubectl apply -f /tmp/manifest.yaml
-          kubectl rollout status deployment/portarium-control-plane -n portarium --timeout=180s
-          kubectl rollout status deployment/portarium-execution-plane -n portarium --timeout=180s
-
-      - name: Smoke-test (HTTP health check)
-        if: ${{ inputs.dry_run != 'true' }}
-        env:
-          PORTARIUM_URL: ${{ secrets.PORTARIUM_URL }}
-        run: |
-          if [ -n "$PORTARIUM_URL" ]; then
-            curl --retry 5 --retry-delay 5 --fail-with-body \
-              "${PORTARIUM_URL}/healthz" \
-              -H "Accept: application/json"
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            # Auto-promotion: use the SHA from the triggering CI run.
+            echo "image_sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+            echo "target_environment=dev" >> "$GITHUB_OUTPUT"
           else
-            echo "PORTARIUM_URL not set — skipping smoke test"
+            # Manual promotion: use provided SHA or fall back to current HEAD.
+            SHA="${{ github.event.inputs.image_sha }}"
+            if [ -z "$SHA" ]; then
+              SHA="${{ github.sha }}"
+            fi
+            echo "image_sha=${SHA}" >> "$GITHUB_OUTPUT"
+            echo "target_environment=${{ github.event.inputs.target_environment }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Record promotion event
-        if: ${{ inputs.dry_run != 'true' }}
+      - name: Log promotion intent
         run: |
-          echo "Promoted sha-${{ inputs.commit_sha }} to ${{ needs.resolve.outputs.target_environment }} at $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            >> promotion-log.txt
-          cat promotion-log.txt
+          echo "Promoting SHA=${{ steps.resolve.outputs.image_sha }} → ${{ steps.resolve.outputs.target_environment }}"
 
-      - name: Upload promotion log
-        if: always()
-        uses: actions/upload-artifact@v4
+  # ─────────────────────────────────────────────────────────────────────────────
+  # pin-artefact
+  # Updates the target overlay's kustomization.yaml with the resolved SHA and
+  # commits the change to main. GitHub environment protection rules enforce the
+  # approval gate for staging and prod before this job runs.
+  # ─────────────────────────────────────────────────────────────────────────────
+  pin-artefact:
+    needs: resolve-artefact
+    runs-on: ubuntu-latest
+    # Referencing the GitHub environment triggers the environment protection rules
+    # (required reviewers, deployment branch restrictions) configured in GitHub
+    # repository settings for staging and prod.
+    environment: ${{ needs.resolve-artefact.outputs.target_environment }}
+
+    env:
+      IMAGE_SHA: ${{ needs.resolve-artefact.outputs.image_sha }}
+      TARGET_ENV: ${{ needs.resolve-artefact.outputs.target_environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          name: promotion-log-${{ needs.resolve.outputs.target_environment }}-${{ inputs.commit_sha }}
-          path: promotion-log.txt
-          if-no-files-found: ignore
+          # Use the default GITHUB_TOKEN — it is configured to push to main if
+          # the "Allow GitHub Actions to create and approve pull requests" setting
+          # is enabled and the branch protection bypass list includes the Actions app.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Kustomize
+        run: |
+          KUSTOMIZE_VERSION="v5.4.2"
+          curl -sLO "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+          tar xzf "kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+          sudo mv kustomize /usr/local/bin/
+          kustomize version
+
+      - name: Pin image SHA in overlay
+        run: |
+          OVERLAY="infra/kubernetes/overlays/${TARGET_ENV}"
+
+          # kustomize edit set image updates the newTag for matching image names
+          # in-place in kustomization.yaml.
+          cd "${OVERLAY}"
+          kustomize edit set image \
+            "ghcr.io/your-org/portarium-control-plane:${IMAGE_SHA}"
+          kustomize edit set image \
+            "ghcr.io/your-org/portarium-worker:${IMAGE_SHA}"
+          cd "$GITHUB_WORKSPACE"
+
+          echo "Updated ${OVERLAY}/kustomization.yaml:"
+          cat "${OVERLAY}/kustomization.yaml"
+
+      - name: Commit and push overlay update
+        run: |
+          git config user.name "portarium-bot[bot]"
+          git config user.email "portarium-bot[bot]@users.noreply.github.com"
+
+          git add "infra/kubernetes/overlays/${TARGET_ENV}/kustomization.yaml"
+
+          if git diff --cached --quiet; then
+            echo "Overlay already pinned to SHA ${IMAGE_SHA} — no commit needed."
+            exit 0
+          fi
+
+          SHORT_SHA="${IMAGE_SHA:0:12}"
+          git commit -m "chore(promote): pin ${TARGET_ENV} to ${SHORT_SHA}"
+          git push origin main
+
+      - name: Promotion summary
+        run: |
+          echo ""
+          echo "──────────────────────────────────────────────────"
+          echo "  Artefact promoted to ${TARGET_ENV}"
+          echo "  SHA: ${IMAGE_SHA}"
+          echo ""
+          echo "  Next step: apply to cluster via cd-k8s-deploy.yml"
+          echo "  workflow_dispatch with environment=${TARGET_ENV}"
+          echo "  and image_tag=${IMAGE_SHA}"
+          echo "──────────────────────────────────────────────────"

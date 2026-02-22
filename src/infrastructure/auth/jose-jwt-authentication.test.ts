@@ -205,7 +205,13 @@ describe('JoseJwtAuthentication', () => {
 
     expect(result.ok).toBe(true);
   });
+});
 
+// ─────────────────────────────────────────────────────────────────────────────
+// azp (authorized party), trustedIssuers, and non-standard claim extraction
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('JoseJwtAuthentication — authorization and issuer', () => {
   // -------------------------------------------------------------------------
   // azp (authorized party) validation
   // -------------------------------------------------------------------------

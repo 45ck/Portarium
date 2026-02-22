@@ -1,0 +1,143 @@
+{
+  "$schema": "https://portarium.example/schemas/environment-manifest-v1.json",
+  "_comment": "Canonical environment manifest. Single source of truth for environment topology, promotion rules, and compliance constraints. Consumed by CI/CD workflows and documentation generators.",
+  "artefactPinningStrategy": "git-sha",
+  "imageRegistry": "ghcr.io",
+  "imageNamespace": "your-org",
+  "components": ["control-plane", "worker"],
+  "promotionPath": ["dev", "staging", "prod"],
+  "environments": [
+    {
+      "name": "local",
+      "tier": "local",
+      "runtime": "docker-compose",
+      "composeFile": "docker-compose.yml",
+      "promotionAutomatic": false,
+      "promotionSource": null,
+      "promotionGate": null,
+      "compliance": {
+        "evidenceObjectLock": false,
+        "evidenceLockMode": null,
+        "evidenceLockDays": null,
+        "multiAz": false,
+        "deletionProtection": false
+      },
+      "kubernetes": null,
+      "terraform": null
+    },
+    {
+      "name": "dev",
+      "tier": "dev",
+      "runtime": "kubernetes",
+      "promotionAutomatic": true,
+      "promotionSource": null,
+      "promotionGate": "ci-images-success-on-main",
+      "compliance": {
+        "evidenceObjectLock": false,
+        "evidenceLockMode": null,
+        "evidenceLockDays": 7,
+        "multiAz": false,
+        "deletionProtection": false
+      },
+      "kubernetes": {
+        "overlay": "infra/kubernetes/overlays/dev",
+        "namespace": "portarium",
+        "controlPlaneReplicas": 1,
+        "executionPlaneReplicas": 1
+      },
+      "terraform": {
+        "aws": {
+          "stack": "infra/terraform/aws",
+          "bootstrap": "infra/terraform/aws-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/aws/examples/dev.tfvars"
+        },
+        "azure": {
+          "stack": "infra/terraform/azure",
+          "bootstrap": "infra/terraform/azure-backend-bootstrap",
+          "exampleTfvars": null
+        },
+        "gcp": {
+          "stack": "infra/terraform/gcp",
+          "bootstrap": "infra/terraform/gcp-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/gcp/examples/dev.tfvars"
+        }
+      }
+    },
+    {
+      "name": "staging",
+      "tier": "staging",
+      "runtime": "kubernetes",
+      "promotionAutomatic": false,
+      "promotionSource": "dev",
+      "promotionGate": "manual-approval",
+      "compliance": {
+        "evidenceObjectLock": true,
+        "evidenceLockMode": "GOVERNANCE",
+        "evidenceLockDays": 365,
+        "multiAz": true,
+        "deletionProtection": false
+      },
+      "kubernetes": {
+        "overlay": "infra/kubernetes/overlays/staging",
+        "namespace": "portarium",
+        "controlPlaneReplicas": 3,
+        "executionPlaneReplicas": 4
+      },
+      "terraform": {
+        "aws": {
+          "stack": "infra/terraform/aws",
+          "bootstrap": "infra/terraform/aws-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/aws/examples/staging.tfvars"
+        },
+        "azure": {
+          "stack": "infra/terraform/azure",
+          "bootstrap": "infra/terraform/azure-backend-bootstrap",
+          "exampleTfvars": null
+        },
+        "gcp": {
+          "stack": "infra/terraform/gcp",
+          "bootstrap": "infra/terraform/gcp-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/gcp/examples/staging.tfvars"
+        }
+      }
+    },
+    {
+      "name": "prod",
+      "tier": "prod",
+      "runtime": "kubernetes",
+      "promotionAutomatic": false,
+      "promotionSource": "staging",
+      "promotionGate": "manual-approval",
+      "compliance": {
+        "evidenceObjectLock": true,
+        "evidenceLockMode": "COMPLIANCE",
+        "evidenceLockDays": 1095,
+        "multiAz": true,
+        "deletionProtection": true
+      },
+      "kubernetes": {
+        "overlay": "infra/kubernetes/overlays/prod",
+        "namespace": "portarium",
+        "controlPlaneReplicas": 3,
+        "executionPlaneReplicas": 4
+      },
+      "terraform": {
+        "aws": {
+          "stack": "infra/terraform/aws",
+          "bootstrap": "infra/terraform/aws-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/aws/examples/prod.tfvars"
+        },
+        "azure": {
+          "stack": "infra/terraform/azure",
+          "bootstrap": "infra/terraform/azure-backend-bootstrap",
+          "exampleTfvars": null
+        },
+        "gcp": {
+          "stack": "infra/terraform/gcp",
+          "bootstrap": "infra/terraform/gcp-backend-bootstrap",
+          "exampleTfvars": "infra/terraform/gcp/examples/prod.tfvars"
+        }
+      }
+    }
+  ]
+}
