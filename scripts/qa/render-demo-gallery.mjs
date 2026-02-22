@@ -21,13 +21,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
-const rootDir = path.resolve(new URL('.', import.meta.url).pathname, '../..');
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const clipsDir = path.join(rootDir, 'docs/ui/cockpit/demo-machine/clips');
 const defaultOutputDir = path.join(rootDir, 'docs/ui/cockpit/demo-machine/gallery');
 const cockpitHtmlPath = path.join(rootDir, 'docs/ui/cockpit/index.html');
@@ -452,7 +452,7 @@ async function main() {
   console.log(`  outputDir : ${outputDir}`);
   console.log(`  dryRun    : ${dryRun}`);
 
-  if (!fs.existsSync(cockpitHtmlPath)) {
+  if (!dryRun && !fs.existsSync(cockpitHtmlPath)) {
     console.error(`[error] Cockpit HTML not found: ${cockpitHtmlPath}`);
     process.exit(1);
   }
