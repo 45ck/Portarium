@@ -23,6 +23,8 @@ export default tseslint.config(
       '**/research/sources/**',
       '**/domain-atlas/upstreams/**',
       '**/_tmp_bd/**',
+      // Git worktrees for parallel bead agents — not production code
+      '.trees/**',
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
