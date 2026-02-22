@@ -15,7 +15,6 @@ import {
   isTerminalApprovalLifecycleStatus,
   isActiveApprovalLifecycleStatus,
   isDecisionApprovalLifecycleStatus,
-  reachableApprovalLifecycleStatuses,
 } from '../approvals/approval-lifecycle-v1.js';
 
 import { type RunStatus, parseRunV1 } from '../runs/run-v1.js';
