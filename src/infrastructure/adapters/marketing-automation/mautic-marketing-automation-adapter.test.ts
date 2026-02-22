@@ -28,11 +28,10 @@ function makeFetch(body: unknown, status = 200) {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeAdapter(fetchFn: any = makeFetch({})) {
+function makeAdapter(fetchFn = makeFetch({})) {
   return new MauticMarketingAutomationAdapter(
     { baseUrl: BASE_URL, username: 'admin', password: 'pass' },
-    fetchFn as typeof fetch,
+    fetchFn as unknown as typeof fetch,
   );
 }
 
@@ -70,7 +69,10 @@ describe('listContacts', () => {
 describe('getContact', () => {
   it('returns a PartyV1 for a known contact', async () => {
     const fetchFn = makeFetch({
-      contact: { id: '42', fields: { all: { firstname: 'Carol', lastname: 'Doe', email: 'carol@example.com' } } },
+      contact: {
+        id: '42',
+        fields: { all: { firstname: 'Carol', lastname: 'Doe', email: 'carol@example.com' } },
+      },
     });
     const adapter = makeAdapter(fetchFn);
     const result = await adapter.execute(makeInput('getContact', { contactId: '42' }));
@@ -103,13 +105,18 @@ describe('getContact', () => {
 describe('createContact', () => {
   it('creates contact and returns party', async () => {
     const fetchFn = makeFetch({
-      contact: { id: '100', fields: { all: { firstname: 'Dave', lastname: 'Doe', email: 'dave@example.com' } } },
+      contact: {
+        id: '100',
+        fields: { all: { firstname: 'Dave', lastname: 'Doe', email: 'dave@example.com' } },
+      },
     });
     const adapter = makeAdapter(fetchFn);
-    const result = await adapter.execute(makeInput('createContact', {
-      displayName: 'Dave Doe',
-      email: 'dave@example.com',
-    }));
+    const result = await adapter.execute(
+      makeInput('createContact', {
+        displayName: 'Dave Doe',
+        email: 'dave@example.com',
+      }),
+    );
 
     expect(result.ok).toBe(true);
     if (!result.ok || result.result.kind !== 'party') return;
@@ -174,6 +181,118 @@ describe('listLists', () => {
     if (!result.ok || result.result.kind !== 'externalRefs') return;
     expect(result.result.externalRefs[0]?.externalId).toBe('5');
     expect(result.result.externalRefs[0]?.sorName).toBe('Mautic');
+  });
+});
+
+// ── updateContact ──────────────────────────────────────────────────────────
+
+describe('updateContact', () => {
+  it('patches contact and returns updated party', async () => {
+    const fetchFn = makeFetch({
+      contact: { id: '5', fields: { all: { firstname: 'Frank', lastname: 'Stone' } } },
+    });
+    const adapter = makeAdapter(fetchFn);
+    const result = await adapter.execute(
+      makeInput('updateContact', { contactId: '5', displayName: 'Frank Stone' }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.result.kind !== 'party') return;
+    expect(result.result.party.partyId).toBe('5');
+    expect((fetchFn.mock.calls[0] as [string, RequestInit])[1].method).toBe('PATCH');
+  });
+
+  it('returns validation_error when contactId is missing', async () => {
+    const result = await makeAdapter().execute(makeInput('updateContact', {}));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('validation_error');
+  });
+});
+
+// ── getCampaign ─────────────────────────────────────────────────────────────
+
+describe('getCampaign', () => {
+  it('returns not_found when campaign is missing', async () => {
+    const fetchFn = makeFetch({ campaign: null });
+    const result = await makeAdapter(fetchFn).execute(
+      makeInput('getCampaign', { campaignId: '99' }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('not_found');
+  });
+
+  it('returns validation_error when campaignId is missing', async () => {
+    const result = await makeAdapter().execute(makeInput('getCampaign'));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('validation_error');
+  });
+});
+
+// ── getCampaignStats ────────────────────────────────────────────────────────
+
+describe('getCampaignStats', () => {
+  it('returns externalRef pointing to stats page', async () => {
+    const result = await makeAdapter().execute(makeInput('getCampaignStats', { campaignId: '7' }));
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.result.kind !== 'externalRef') return;
+    expect(result.result.externalRef.externalId).toBe('7');
+    expect(result.result.externalRef.externalType).toBe('campaign_stats');
+    expect(result.result.externalRef.deepLinkUrl).toContain('7');
+  });
+
+  it('returns validation_error when campaignId is missing', async () => {
+    const result = await makeAdapter().execute(makeInput('getCampaignStats'));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('validation_error');
+  });
+});
+
+// ── listForms / getFormSubmissions ──────────────────────────────────────────
+
+describe('listForms', () => {
+  it('maps Mautic forms to ExternalObjectRefs', async () => {
+    const fetchFn = makeFetch({ forms: { '3': { id: '3', name: 'Contact Form' } } });
+    const result = await makeAdapter(fetchFn).execute(makeInput('listForms'));
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.result.kind !== 'externalRefs') return;
+    expect(result.result.externalRefs[0]?.externalId).toBe('3');
+  });
+});
+
+describe('getFormSubmissions', () => {
+  it('maps Mautic form submissions to ExternalObjectRefs', async () => {
+    const fetchFn = makeFetch({ submissions: { '10': { id: '10' } } });
+    const result = await makeAdapter(fetchFn).execute(
+      makeInput('getFormSubmissions', { formId: '3' }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok || result.result.kind !== 'externalRefs') return;
+    expect(result.result.externalRefs[0]?.externalId).toBe('10');
+  });
+
+  it('returns validation_error when formId is missing', async () => {
+    const result = await makeAdapter().execute(makeInput('getFormSubmissions'));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('validation_error');
+  });
+});
+
+// ── unsupported_operation ──────────────────────────────────────────────────
+
+describe('unsupported_operation', () => {
+  it('returns unsupported_operation for unknown operations', async () => {
+    const result = await makeAdapter().execute({
+      tenantId: TENANT,
+      operation: 'unknownOp' as MarketingAutomationExecuteInputV1['operation'],
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toBe('unsupported_operation');
   });
 });
 

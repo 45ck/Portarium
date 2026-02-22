@@ -927,3 +927,35 @@ INFRACOST
 
 # JWT token type (jose-jwt tests)
 dpop
+
+# Pre-existing ADR terms (bead-0423)
+BYOK
+quiescing
+PITR
+MWMBR
+slos
+pollers
+SLSA
+azuread
+showback
+finops
+Karpenter
+checkpointed
+
+# Zammad API paths / PostgreSQL schema terms (bead-0423)
+slas
+defn
+startupz
+# ADR-0084 (encryption / BYOK)
+# ADR-0085 (SLO / MWMBR)
+# ADR-0086 (pollers)
+# ADR-0087 (SLSA / Azure AD)
+# ADR-0089 (FinOps / Karpenter)
+# GitHub / SoftwareDevelopment adapter terms (bead-0424)
+# PostgreSQL system catalog terms (tenant-storage-provisioner.ts)
+# Temporal workflow terms (fault-test-workflow.ts)
+# health-check-server (/startupz endpoint)
+integ
+pullrequest
+rolname
+NOLOGIN

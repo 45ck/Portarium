@@ -13,7 +13,17 @@
  *   npx cap sync
  */
 
-import type { CapacitorConfig } from '@capacitor/cli';
+// Inline type stub — @capacitor/cli is not installed in the monorepo.
+// Kept minimal; extend when native plugins are wired up.
+type CapacitorConfig = {
+  appId: string;
+  appName?: string;
+  webDir?: string;
+  server?: Record<string, unknown>;
+  plugins?: Record<string, unknown>;
+  ios?: Record<string, unknown>;
+  android?: Record<string, unknown>;
+};
 
 const config: CapacitorConfig = {
   appId: 'com.portarium.cockpit',
