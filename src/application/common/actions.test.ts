@@ -19,6 +19,7 @@ describe('APP_ACTIONS contract', () => {
       'workspace:read',
       'agent:heartbeat',
       'machine-agent:register',
+      'machine-agent:read',
     ]);
   });
 

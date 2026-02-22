@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 17,
+  "operationCount": 21,
   "operations": [
     {
       "kind": "command",
@@ -339,6 +339,86 @@
         },
         "error": {
           "name": "ListWorkItemsError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getMachine",
+      "sourcePath": "src/application/queries/machine-agent-registry.ts",
+      "action": "machine-agent:read",
+      "types": {
+        "input": {
+          "name": "GetMachineInput",
+          "sha256": "44932dc4ecaeb2418b386c3941468b7944e169c2d6873f3f3cfba267aa432c59"
+        },
+        "output": {
+          "name": "GetMachineOutput",
+          "sha256": "97b7ff89e3ba5380f0bd1962ac206e17d55a8b119591cb235b9a0ead0ff519d6"
+        },
+        "error": {
+          "name": "GetMachineError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listMachines",
+      "sourcePath": "src/application/queries/machine-agent-registry.ts",
+      "action": "machine-agent:read",
+      "types": {
+        "input": {
+          "name": "ListMachinesInput",
+          "sha256": "433fd51cb768a72833e02ed2ec62401a1c469828f0af3c9a9c6eda64f35f63f8"
+        },
+        "output": {
+          "name": "ListMachinesOutput",
+          "sha256": "c3c360e1cd136c4ef7c9c06f8f1049ebbbadbda200519029938b34a92d12524a"
+        },
+        "error": {
+          "name": "ListMachinesError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getAgent",
+      "sourcePath": "src/application/queries/machine-agent-registry.ts",
+      "action": "machine-agent:read",
+      "types": {
+        "input": {
+          "name": "GetAgentInput",
+          "sha256": "61b52827c45502f3049766b5a2ab3407e6d9d287ccdff12dde6aec5a84bc1f83"
+        },
+        "output": {
+          "name": "GetAgentOutput",
+          "sha256": "c12df46e0162b87f5c49f1e77c4429ba138714a8925490a98cd6146451203c14"
+        },
+        "error": {
+          "name": "GetAgentError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listAgents",
+      "sourcePath": "src/application/queries/machine-agent-registry.ts",
+      "action": "machine-agent:read",
+      "types": {
+        "input": {
+          "name": "ListAgentsInput",
+          "sha256": "854b02f97c1cdeab39e5847f3556f19530ec242cb6834708ef76380160ba8f34"
+        },
+        "output": {
+          "name": "ListAgentsOutput",
+          "sha256": "c47ef2530cca75ca1de7a1509edee3b98161669724f8e58bc8614d8a1abb76ad"
+        },
+        "error": {
+          "name": "ListAgentsError",
           "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
         }
       }

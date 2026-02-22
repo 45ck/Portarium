@@ -12,7 +12,8 @@ export type ActionKey =
   | 'workspaceRegister'
   | 'workspaceRead'
   | 'agentHeartbeat'
-  | 'machineAgentRegister';
+  | 'machineAgentRegister'
+  | 'machineAgentRead';
 
 export type OperationContract = Readonly<{
   kind: OperationKind;
@@ -217,6 +218,50 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'ListWorkItemsInput',
       output: 'ListWorkItemsOutput',
       error: 'ListWorkItemsError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'getMachine',
+    sourcePath: 'src/application/queries/machine-agent-registry.ts',
+    actionKey: 'machineAgentRead',
+    types: {
+      input: 'GetMachineInput',
+      output: 'GetMachineOutput',
+      error: 'GetMachineError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'listMachines',
+    sourcePath: 'src/application/queries/machine-agent-registry.ts',
+    actionKey: 'machineAgentRead',
+    types: {
+      input: 'ListMachinesInput',
+      output: 'ListMachinesOutput',
+      error: 'ListMachinesError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'getAgent',
+    sourcePath: 'src/application/queries/machine-agent-registry.ts',
+    actionKey: 'machineAgentRead',
+    types: {
+      input: 'GetAgentInput',
+      output: 'GetAgentOutput',
+      error: 'GetAgentError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'listAgents',
+    sourcePath: 'src/application/queries/machine-agent-registry.ts',
+    actionKey: 'machineAgentRead',
+    types: {
+      input: 'ListAgentsInput',
+      output: 'ListAgentsOutput',
+      error: 'ListAgentsError',
     },
   },
 ] as const satisfies readonly OperationContract[];

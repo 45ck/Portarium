@@ -32,6 +32,10 @@ Define the complete application-layer command/query surface contract and keep it
 | `query`   | `listApprovals`           | `approval:read`          | `src/application/queries/list-approvals.ts`              | `ListApprovalsInput`           | `ListApprovalsOutput`           | `ListApprovalsError`            |
 | `query`   | `getWorkItem`             | `work-item:read`         | `src/application/queries/get-work-item.ts`               | `GetWorkItemInput`             | `GetWorkItemOutput`             | `GetWorkItemError`              |
 | `query`   | `listWorkItems`           | `work-item:read`         | `src/application/queries/list-work-items.ts`             | `ListWorkItemsInput`           | `ListWorkItemsOutput`           | `ListWorkItemsError`            |
+| `query`   | `getMachine`              | `machine-agent:read`     | `src/application/queries/machine-agent-registry.ts`      | `GetMachineInput`              | `GetMachineOutput`              | `GetMachineError`               |
+| `query`   | `listMachines`            | `machine-agent:read`     | `src/application/queries/machine-agent-registry.ts`      | `ListMachinesInput`            | `ListMachinesOutput`            | `ListMachinesError`             |
+| `query`   | `getAgent`                | `machine-agent:read`     | `src/application/queries/machine-agent-registry.ts`      | `GetAgentInput`                | `GetAgentOutput`                | `GetAgentError`                 |
+| `query`   | `listAgents`              | `machine-agent:read`     | `src/application/queries/machine-agent-registry.ts`      | `ListAgentsInput`              | `ListAgentsOutput`              | `ListAgentsError`               |
 
 ## Implementing Bead Mapping
 

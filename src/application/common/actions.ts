@@ -13,6 +13,8 @@ export const APP_ACTIONS = {
   agentHeartbeat: 'agent:heartbeat',
   /** Register or update a machine / agent in the machine registry. */
   machineAgentRegister: 'machine-agent:register',
+  /** Read machine or agent registrations. */
+  machineAgentRead: 'machine-agent:read',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
