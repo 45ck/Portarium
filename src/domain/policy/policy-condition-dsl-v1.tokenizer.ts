@@ -186,6 +186,18 @@ function toKeywordToken(lexeme: string, position: number): Token | null {
       return { type: 'or', lexeme, position };
     case 'not':
       return { type: 'not', lexeme, position };
+    case 'eq':
+      return { type: 'eq', lexeme, position };
+    case 'neq':
+      return { type: 'neq', lexeme, position };
+    case 'lt':
+      return { type: 'lt', lexeme, position };
+    case 'lte':
+      return { type: 'lte', lexeme, position };
+    case 'gt':
+      return { type: 'gt', lexeme, position };
+    case 'gte':
+      return { type: 'gte', lexeme, position };
     case 'in':
       return { type: 'in', lexeme, position };
     case 'contains':
