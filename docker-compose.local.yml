@@ -1,12 +1,20 @@
-version: '3.9'
+name: portarium-local
 
 # ---------------------------------------------------------------------------
-# Local override — builds API and worker from source (cockpit profile).
+# Local override — builds API server and worker from source (cockpit profile).
 #
 # Combine with the base compose file profiles to bring up the full stack:
 #
 #   COMPOSE_PROFILES=baseline,runtime,auth,cockpit \
 #     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+#
+# To also enable Redis-backed rate limiting:
+#   COMPOSE_PROFILES=baseline,runtime,auth,rate-limiting,cockpit \
+#     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+#
+# Health probes (available once containers start):
+#   curl http://localhost:8080/healthz   # API server
+#   curl http://localhost:8081/healthz   # Worker
 # ---------------------------------------------------------------------------
 
 services:
@@ -17,8 +25,18 @@ services:
       dockerfile: infra/docker/control-plane.Dockerfile
     container_name: portarium-api
     environment:
-      PORTARIUM_ENVIRONMENT: local
-      PORTARIUM_RUNTIME_PROFILE: local-sandbox
+      NODE_ENV: development
+      # Store — connect to local Postgres (evidence-db service)
+      PORTARIUM_USE_POSTGRES_STORES: "true"
+      PORTARIUM_DATABASE_URL: postgresql://portarium:portarium@evidence-db:5432/portarium
+      # Dev auth — static bearer token bypasses JWKS for local development.
+      # Never use outside NODE_ENV=development/test.
+      ENABLE_DEV_AUTH: "true"
+      PORTARIUM_DEV_TOKEN: portarium-dev-token
+      PORTARIUM_DEV_WORKSPACE_ID: ws-local-dev
+      PORTARIUM_DEV_USER_ID: user-local-dev
+      # OTel — forward to the tools-profile collector when active
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:
       temporal:
         condition: service_started
@@ -32,6 +50,12 @@ services:
         condition: service_started
     ports:
       - '8080:8080'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:8080/healthz >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     networks:
       - portarium-control
 
@@ -42,8 +66,13 @@ services:
       dockerfile: infra/docker/worker.Dockerfile
     container_name: portarium-worker
     environment:
-      PORTARIUM_ENVIRONMENT: local
-      PORTARIUM_RUNTIME_PROFILE: local-sandbox
+      NODE_ENV: development
+      PORTARIUM_ENABLE_TEMPORAL_WORKER: "true"
+      PORTARIUM_TEMPORAL_ADDRESS: temporal:7233
+      PORTARIUM_TEMPORAL_NAMESPACE: default
+      PORTARIUM_TEMPORAL_TASK_QUEUE: portarium-runs
+      # OTel — forward to the tools-profile collector when active
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:
       temporal:
         condition: service_started
@@ -55,5 +84,11 @@ services:
         condition: service_started
     ports:
       - '8081:8081'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:8081/healthz >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     networks:
       - portarium-control
