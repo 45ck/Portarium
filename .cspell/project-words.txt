@@ -1049,3 +1049,66 @@ AIBAAK
 AAABBBCCCDDDEEEFFFGGGHHH
 basenames
 prometheusremotewrite
+
+# Security and compliance terms (research reports 21-31, bead-nn3y/bead-ev20/bead-abk6/bead-m7b9)
+SIEM
+ABAC
+MTTD
+ASVS
+RDBMS
+pgcrypto
+Sidejacking
+sonarcloud
+deployers
+deprioritized
+screenreader
+filecite
+sharable
+unusably
+Longterm
+incl
+CNIL
+Oxley
+rigor
+
+# Bead IDs referenced in research docs (triage/tracking markers)
+tqqt
+dsnp
+mvuv
+
+# Markdown-bold rendering artifacts (e.g. **M**edium → edium)
+edium
+arge
+
+# Policy evaluation pipeline (bead-haxl)
+haxl
+
+# Research report terms (reports 21-31) — pre-existing in main after rebase
+Telemtery
+pseudonymized
+pseudonymization
+anemic
+Kubeflow
+Qube
+langchain
+COPPA
+Sarbanes
+CHAOSS
+BAML
+ONNX
+pgvector
+xyflow
+bpmnjs
+Thoughtworks
+secops
+Subresource
+exploitability
+typosquat
+drilldowns
+impls
+keyset
+mockups
+analyzer
+Millis
+parameterises
+TIMESTAMPTAMPTZ

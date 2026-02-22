@@ -39,7 +39,7 @@ export function getJoseAuthConfigWarnings(
     warnings.push(
       '[portarium] WARNING: PORTARIUM_JWT_AUDIENCE is not set. ' +
         'Without audience validation, tokens intended for other services will be accepted. ' +
-        'Set PORTARIUM_JWT_AUDIENCE to this service\'s expected audience value.',
+        "Set PORTARIUM_JWT_AUDIENCE to this service's expected audience value.",
     );
   }
 

@@ -28,14 +28,14 @@ import {
  * valid/invalid input variants. Tests iterate the matrix to ensure coverage.
  */
 
-type CommandConformanceCase = {
+interface CommandConformanceCase {
   readonly name: string;
   readonly validInput: Record<string, unknown>;
-  readonly invalidInputs: Array<{
+  readonly invalidInputs: {
     readonly description: string;
     readonly input: Record<string, unknown>;
-  }>;
-};
+  }[];
+}
 
 const COMMAND_CONFORMANCE_MATRIX: readonly CommandConformanceCase[] = [
   {
@@ -50,7 +50,15 @@ const COMMAND_CONFORMANCE_MATRIX: readonly CommandConformanceCase[] = [
     invalidInputs: [
       { description: 'missing workspaceId', input: { workflowId: 'wf-1', initiatedByUserId: 'u' } },
       { description: 'missing workflowId', input: { workspaceId: 'ws-1', initiatedByUserId: 'u' } },
-      { description: 'invalid executionTier', input: { workspaceId: 'ws-1', workflowId: 'wf-1', initiatedByUserId: 'u', executionTier: 'INVALID' } },
+      {
+        description: 'invalid executionTier',
+        input: {
+          workspaceId: 'ws-1',
+          workflowId: 'wf-1',
+          initiatedByUserId: 'u',
+          executionTier: 'INVALID',
+        },
+      },
     ],
   },
   {
@@ -63,8 +71,19 @@ const COMMAND_CONFORMANCE_MATRIX: readonly CommandConformanceCase[] = [
       comment: 'LGTM',
     },
     invalidInputs: [
-      { description: 'missing approvalId', input: { workspaceId: 'ws-1', decidedByUserId: 'u', decision: 'Approved' } },
-      { description: 'invalid decision', input: { approvalId: 'a-1', workspaceId: 'ws-1', decidedByUserId: 'u', decision: 'UNKNOWN' } },
+      {
+        description: 'missing approvalId',
+        input: { workspaceId: 'ws-1', decidedByUserId: 'u', decision: 'Approved' },
+      },
+      {
+        description: 'invalid decision',
+        input: {
+          approvalId: 'a-1',
+          workspaceId: 'ws-1',
+          decidedByUserId: 'u',
+          decision: 'UNKNOWN',
+        },
+      },
     ],
   },
   {
@@ -86,11 +105,11 @@ const COMMAND_CONFORMANCE_MATRIX: readonly CommandConformanceCase[] = [
 // Conformance matrix: query shape contracts
 // ---------------------------------------------------------------------------
 
-type QueryConformanceCase = {
+interface QueryConformanceCase {
   readonly name: string;
   readonly validInput: Record<string, unknown>;
   readonly requiredOutputFields: readonly string[];
-};
+}
 
 const QUERY_CONFORMANCE_MATRIX: readonly QueryConformanceCase[] = [
   {
@@ -138,10 +157,9 @@ describe('Command conformance matrix: required fields', () => {
     for (const cmd of COMMAND_CONFORMANCE_MATRIX) {
       const descriptions = cmd.invalidInputs.map((i) => i.description);
       const unique = new Set(descriptions);
-      expect(
-        unique.size,
-        `${cmd.name}: invalid input descriptions must be unique`,
-      ).toBe(descriptions.length);
+      expect(unique.size, `${cmd.name}: invalid input descriptions must be unique`).toBe(
+        descriptions.length,
+      );
     }
   });
 });

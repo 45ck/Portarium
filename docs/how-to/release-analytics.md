@@ -12,33 +12,33 @@
 
 ### 1.1 Adoption funnel
 
-| Stage | Metric | CHAOSS reference | Data source |
-|-------|--------|-----------------|-------------|
-| **Awareness** | Unique repository cloners (14-day window) | Clones | GitHub Traffic API |
-| **Awareness** | Unique page views (14-day window) | Views | GitHub Traffic API |
-| **Interest** | New GitHub stars (weekly) | Stars | GitHub Events API |
-| **Interest** | Forks created (weekly) | Forks | GitHub Events API |
-| **Activation** | Issues opened by first-time contributors | New Contributors | CHAOSS: `contributors` |
-| **Activation** | PRs opened by first-time contributors | New Contributors | GitHub Search API |
-| **Retention** | Contributors active in ≥ 2 consecutive months | Contributor Absence Factor | CHAOSS: contributor-absence-factor |
-| **Referral** | External mentions / backlinks | Social Listening | manual / Google Alerts |
+| Stage          | Metric                                        | CHAOSS reference           | Data source                        |
+| -------------- | --------------------------------------------- | -------------------------- | ---------------------------------- |
+| **Awareness**  | Unique repository cloners (14-day window)     | Clones                     | GitHub Traffic API                 |
+| **Awareness**  | Unique page views (14-day window)             | Views                      | GitHub Traffic API                 |
+| **Interest**   | New GitHub stars (weekly)                     | Stars                      | GitHub Events API                  |
+| **Interest**   | Forks created (weekly)                        | Forks                      | GitHub Events API                  |
+| **Activation** | Issues opened by first-time contributors      | New Contributors           | CHAOSS: `contributors`             |
+| **Activation** | PRs opened by first-time contributors         | New Contributors           | GitHub Search API                  |
+| **Retention**  | Contributors active in ≥ 2 consecutive months | Contributor Absence Factor | CHAOSS: contributor-absence-factor |
+| **Referral**   | External mentions / backlinks                 | Social Listening           | manual / Google Alerts             |
 
 ### 1.2 Community responsiveness
 
-| Metric | Target SLO | CHAOSS reference | Data source |
-|--------|-----------|-----------------|-------------|
-| Median time-to-first-response on issues | ≤ 48 h | Time to First Response | GitHub Issues API |
-| Median time-to-close on bugs | ≤ 14 days | Issue Resolution Duration | GitHub Issues API |
-| PR review turnaround (first review comment) | ≤ 72 h | Code Review Turnaround Time | GitHub PRs API |
-| Stale issues (open > 30 days, no activity) | < 20 % | Issue Age | GitHub Issues API |
+| Metric                                      | Target SLO | CHAOSS reference            | Data source       |
+| ------------------------------------------- | ---------- | --------------------------- | ----------------- |
+| Median time-to-first-response on issues     | ≤ 48 h     | Time to First Response      | GitHub Issues API |
+| Median time-to-close on bugs                | ≤ 14 days  | Issue Resolution Duration   | GitHub Issues API |
+| PR review turnaround (first review comment) | ≤ 72 h     | Code Review Turnaround Time | GitHub PRs API    |
+| Stale issues (open > 30 days, no activity)  | < 20 %     | Issue Age                   | GitHub Issues API |
 
 ### 1.3 Release cadence
 
-| Metric | Target | CHAOSS reference | Data source |
-|--------|--------|-----------------|-------------|
-| Releases per quarter | ≥ 1 | Release Frequency | GitHub Releases API |
-| Days since last release | ≤ 90 | Time Since Last Release | GitHub Releases API |
-| Changelog coverage (% of PRs with entry) | 100 % | manual | `docs/changelog.md` |
+| Metric                                   | Target | CHAOSS reference        | Data source         |
+| ---------------------------------------- | ------ | ----------------------- | ------------------- |
+| Releases per quarter                     | ≥ 1    | Release Frequency       | GitHub Releases API |
+| Days since last release                  | ≤ 90   | Time Since Last Release | GitHub Releases API |
+| Changelog coverage (% of PRs with entry) | 100 %  | manual                  | `docs/changelog.md` |
 
 ---
 
@@ -86,11 +86,11 @@ For quick checks without scripting:
 
 ## 3. Reporting cadence
 
-| Report | Frequency | Owner | Audience |
-|--------|-----------|-------|---------|
-| Weekly pulse (stars, clones, open issues) | Weekly (Monday) | DevRel | Maintainers |
-| Monthly community health dashboard | 1st of each month | Lead maintainer | Core team + sponsors |
-| Quarterly release retrospective | After each release | Release manager | All contributors |
+| Report                                    | Frequency          | Owner           | Audience             |
+| ----------------------------------------- | ------------------ | --------------- | -------------------- |
+| Weekly pulse (stars, clones, open issues) | Weekly (Monday)    | DevRel          | Maintainers          |
+| Monthly community health dashboard        | 1st of each month  | Lead maintainer | Core team + sponsors |
+| Quarterly release retrospective           | After each release | Release manager | All contributors     |
 
 ### Monthly dashboard template
 
@@ -98,36 +98,39 @@ For quick checks without scripting:
 ## Community Health — YYYY-MM
 
 ### Adoption funnel
-| Stage | Count | Δ vs last month |
-|-------|-------|----------------|
-| Clones (unique) | N | ±N |
-| Stars | N | ±N |
-| New contributors | N | ±N |
+
+| Stage            | Count | Δ vs last month |
+| ---------------- | ----- | --------------- |
+| Clones (unique)  | N     | ±N              |
+| Stars            | N     | ±N              |
+| New contributors | N     | ±N              |
 
 ### Responsiveness
-| Metric | Actual | Target |
-|--------|--------|--------|
-| Median time-to-first-response | N h | ≤ 48 h |
-| Stale issues | N % | < 20 % |
-| PR review turnaround | N h | ≤ 72 h |
+
+| Metric                        | Actual | Target |
+| ----------------------------- | ------ | ------ |
+| Median time-to-first-response | N h    | ≤ 48 h |
+| Stale issues                  | N %    | < 20 % |
+| PR review turnaround          | N h    | ≤ 72 h |
 
 ### Release
-| Metric | Value |
-|--------|-------|
-| Releases this quarter | N |
-| Days since last release | N |
+
+| Metric                  | Value |
+| ----------------------- | ----- |
+| Releases this quarter   | N     |
+| Days since last release | N     |
 ```
 
 ---
 
 ## 4. Thresholds and alerts
 
-| Signal | Alert threshold | Action |
-|--------|----------------|--------|
-| Clones drop > 50 % week-over-week | Investigate README / quickstart friction | Review top referrer pages |
-| Stale issues > 20 % | Triage sprint | Schedule dedicated triage hour |
-| Time-to-first-response > 72 h on bug reports | Escalate to on-call maintainer | Assign directly via `@mention` |
-| Zero releases in 90 days | Release readiness review | Check bead gate status |
+| Signal                                       | Alert threshold                          | Action                         |
+| -------------------------------------------- | ---------------------------------------- | ------------------------------ |
+| Clones drop > 50 % week-over-week            | Investigate README / quickstart friction | Review top referrer pages      |
+| Stale issues > 20 %                          | Triage sprint                            | Schedule dedicated triage hour |
+| Time-to-first-response > 72 h on bug reports | Escalate to on-call maintainer           | Assign directly via `@mention` |
+| Zero releases in 90 days                     | Release readiness review                 | Check bead gate status         |
 
 ---
 
@@ -142,9 +145,9 @@ For quick checks without scripting:
 
 ## 6. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/how-to/technical-adopter-gtm.md` | Conversion funnel targets and outreach |
-| `docs/how-to/demo-launch-kit.md` | Launch outreach checklist |
-| `docs/how-to/runnable-state-mvp-campaign.md` | Integration-complete gate |
-| `docs/changelog.md` | Release history |
+| Document                                     | Purpose                                |
+| -------------------------------------------- | -------------------------------------- |
+| `docs/how-to/technical-adopter-gtm.md`       | Conversion funnel targets and outreach |
+| `docs/how-to/demo-launch-kit.md`             | Launch outreach checklist              |
+| `docs/how-to/runnable-state-mvp-campaign.md` | Integration-complete gate              |
+| `docs/changelog.md`                          | Release history                        |

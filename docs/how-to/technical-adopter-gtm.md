@@ -10,12 +10,12 @@
 
 ## 1. Adopter personas
 
-| Persona | Primary goal | Entry point | Success signal |
-|---------|-------------|-------------|----------------|
-| **Integration engineer** | Wire an existing ERP/CRM into a governed workflow | `docs/tutorials/hello-governed-workflow.md` | First `npm run seed:local` + smoke test green |
-| **Platform / SRE** | Run the stack in their infra, hook into observability | `docs/onboarding/sre-track.md` | Health probes live, evidence chain verifiable |
-| **Security / compliance lead** | Validate audit trail and auth model | `docs/onboarding/secops-track.md` | Evidence chain verified, policy tier understood |
-| **OSS contributor** | Fix a bug or add a feature | `CONTRIBUTING.md` + dev-track | First PR merged |
+| Persona                        | Primary goal                                          | Entry point                                 | Success signal                                  |
+| ------------------------------ | ----------------------------------------------------- | ------------------------------------------- | ----------------------------------------------- |
+| **Integration engineer**       | Wire an existing ERP/CRM into a governed workflow     | `docs/tutorials/hello-governed-workflow.md` | First `npm run seed:local` + smoke test green   |
+| **Platform / SRE**             | Run the stack in their infra, hook into observability | `docs/onboarding/sre-track.md`              | Health probes live, evidence chain verifiable   |
+| **Security / compliance lead** | Validate audit trail and auth model                   | `docs/onboarding/secops-track.md`           | Evidence chain verified, policy tier understood |
+| **OSS contributor**            | Fix a bug or add a feature                            | `CONTRIBUTING.md` + dev-track               | First PR merged                                 |
 
 ---
 
@@ -84,12 +84,12 @@ First contribution or integration PR
 
 ### 4.2 Pain-point mapping
 
-| Pain point | Portarium answer |
-|------------|-----------------|
+| Pain point                                                 | Portarium answer                                                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | "AI agents are a black box — we can't audit what they did" | Hash-chained evidence log (`EvidenceEntryV1`) — every action is recorded and tamper-evident |
-| "We need human approval before high-risk steps" | Four-tier approval policy: Auto / Assisted / HumanApprove / ManualOnly |
-| "Our integrations are bespoke and fragile" | MIS v0.1 adapter interface — one contract, 20 port families |
-| "Compliance team wants SOC 2 / ISO 27001 artefacts" | Evidence chain maps directly to CC6/CC7 and A.12.4 controls |
+| "We need human approval before high-risk steps"            | Four-tier approval policy: Auto / Assisted / HumanApprove / ManualOnly                      |
+| "Our integrations are bespoke and fragile"                 | MIS v0.1 adapter interface — one contract, 20 port families                                 |
+| "Compliance team wants SOC 2 / ISO 27001 artefacts"        | Evidence chain maps directly to CC6/CC7 and A.12.4 controls                                 |
 
 ### 4.3 Proof points to surface early
 
@@ -132,13 +132,13 @@ First contribution or integration PR
 
 ## 6. Conversion funnel metrics
 
-| Stage | Event | Target (week 4) |
-|-------|-------|-----------------|
-| Awareness | Unique repo visitors | 500 |
-| Interest | README → tutorial click-through | 20 % |
-| Activation | `npm run seed:local` attempted | 50 |
-| Retention | Returns within 7 days | 30 % |
-| Referral | External mention / share | 10 |
+| Stage      | Event                           | Target (week 4) |
+| ---------- | ------------------------------- | --------------- |
+| Awareness  | Unique repo visitors            | 500             |
+| Interest   | README → tutorial click-through | 20 %            |
+| Activation | `npm run seed:local` attempted  | 50              |
+| Retention  | Returns within 7 days           | 30 %            |
+| Referral   | External mention / share        | 10              |
 
 Track with: GitHub Traffic → Insights (clones, views), Discussions activity, PR/issue counts.
 
@@ -164,11 +164,11 @@ Track with: GitHub Traffic → Insights (clones, views), Discussions activity, P
 
 ## 8. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/tutorials/hello-governed-workflow.md` | Entry-point tutorial |
-| `docs/onboarding/dev-track.md` | Developer onboarding |
-| `docs/onboarding/sre-track.md` | SRE onboarding |
-| `docs/onboarding/secops-track.md` | SecOps onboarding |
+| Document                                     | Purpose                            |
+| -------------------------------------------- | ---------------------------------- |
+| `docs/tutorials/hello-governed-workflow.md`  | Entry-point tutorial               |
+| `docs/onboarding/dev-track.md`               | Developer onboarding               |
+| `docs/onboarding/sre-track.md`               | SRE onboarding                     |
+| `docs/onboarding/secops-track.md`            | SecOps onboarding                  |
 | `docs/how-to/runnable-state-mvp-campaign.md` | Integration-complete campaign gate |
-| `docs/how-to/demo-launch-kit.md` | Demo outreach kit |
+| `docs/how-to/demo-launch-kit.md`             | Demo outreach kit                  |

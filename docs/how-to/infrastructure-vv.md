@@ -13,6 +13,7 @@
 ### 1.1 Workflow durability
 
 > A workflow run that has started and emitted at least one evidence entry must survive:
+>
 > - Process restart
 > - Database failover
 > - Network partition (between orchestrator and adapter)
@@ -33,6 +34,7 @@ same `correlationId` are delivered out of `occurredAtIso` order.
 
 > The hash-chained evidence log must remain verifiable (all hashes valid, no gaps)
 > even after:
+>
 > - Partial write failure (entry committed but hash not yet computed)
 > - Read-replica lag (consumer reads stale state)
 > - Storage migration
@@ -44,14 +46,14 @@ completed run's evidence sequence.
 
 ## 2. Failure injection scenarios
 
-| Scenario | Injection mechanism | Expected behaviour |
-|----------|--------------------|--------------------|
-| Orchestrator process killed mid-step | `SIGKILL` on orchestrator | Run resumes from last committed step on restart |
-| DB write fails at step completion | Mock DB error on `save()` | Step retried; evidence entry not duplicated (idempotency) |
-| Outbox flush interrupted | Kill flush goroutine mid-batch | Partially flushed batch re-delivered; consumers are idempotent |
-| Network timeout to adapter | Mock timeout on `MisAdapterV1.invoke()` | Step retried up to `maxRetries`; evidence records each attempt |
-| DB read returns stale replica | Mock lagging read | Evidence consumer catches up; no hash chain break |
-| Storage migration (table rename) | Migrate script applied mid-run | Migration is non-destructive; ongoing runs complete normally |
+| Scenario                             | Injection mechanism                     | Expected behaviour                                             |
+| ------------------------------------ | --------------------------------------- | -------------------------------------------------------------- |
+| Orchestrator process killed mid-step | `SIGKILL` on orchestrator               | Run resumes from last committed step on restart                |
+| DB write fails at step completion    | Mock DB error on `save()`               | Step retried; evidence entry not duplicated (idempotency)      |
+| Outbox flush interrupted             | Kill flush goroutine mid-batch          | Partially flushed batch re-delivered; consumers are idempotent |
+| Network timeout to adapter           | Mock timeout on `MisAdapterV1.invoke()` | Step retried up to `maxRetries`; evidence records each attempt |
+| DB read returns stale replica        | Mock lagging read                       | Evidence consumer catches up; no hash chain break              |
+| Storage migration (table rename)     | Migrate script applied mid-run          | Migration is non-destructive; ongoing runs complete normally   |
 
 ---
 
@@ -114,12 +116,12 @@ describe('evidence chain continuity', () => {
 
 ## 4. Infrastructure test file locations
 
-| Test file | Covers |
-|-----------|--------|
-| `src/infrastructure/vv/outbox-idempotency.test.ts` | Outbox deduplication |
-| `src/infrastructure/vv/outbox-ordering.test.ts` | FIFO delivery invariant |
+| Test file                                           | Covers                   |
+| --------------------------------------------------- | ------------------------ |
+| `src/infrastructure/vv/outbox-idempotency.test.ts`  | Outbox deduplication     |
+| `src/infrastructure/vv/outbox-ordering.test.ts`     | FIFO delivery invariant  |
 | `src/infrastructure/vv/evidence-continuity.test.ts` | Hash chain under failure |
-| `src/infrastructure/vv/workflow-durability.test.ts` | Crash recovery |
+| `src/infrastructure/vv/workflow-durability.test.ts` | Crash recovery           |
 
 ---
 
@@ -137,9 +139,9 @@ Infrastructure V&V is **complete** when:
 
 ## 6. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/how-to/vv-campaign.md` | V&V campaign overview |
-| `src/sdk/evidence-chain-verifier.ts` | Chain verification utility |
-| `docs/runbooks/` | Operational runbooks |
-| `docs/onboarding/sre-track.md` | SRE onboarding including health probes |
+| Document                             | Purpose                                |
+| ------------------------------------ | -------------------------------------- |
+| `docs/how-to/vv-campaign.md`         | V&V campaign overview                  |
+| `src/sdk/evidence-chain-verifier.ts` | Chain verification utility             |
+| `docs/runbooks/`                     | Operational runbooks                   |
+| `docs/onboarding/sre-track.md`       | SRE onboarding including health probes |

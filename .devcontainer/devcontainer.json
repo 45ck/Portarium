@@ -28,7 +28,7 @@
     4317, // OTel Collector (gRPC)
     4318, // OTel Collector (HTTP)
     3100, // Grafana Tempo
-    3200  // Grafana
+    3200 // Grafana
   ],
   "portsAttributes": {
     "3000": { "label": "Cockpit UI", "onAutoForward": "openBrowser" },

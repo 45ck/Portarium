@@ -1,4 +1,4 @@
-openapi: "3.1.0"
+openapi: '3.1.0'
 info:
   title: Portarium Control Plane — Retrieval & Graph Query Extension
   description: |
@@ -6,7 +6,7 @@ info:
     These endpoints extend the main control-plane API (`portarium-control-plane.v1.yaml`).
     They are versioned independently and will be merged into the main spec once
     the infrastructure adapters (beads 0772–0780) are implemented.
-  version: "0.1.0"
+  version: '0.1.0'
   contact:
     name: Portarium Core Team
 
@@ -15,7 +15,6 @@ servers:
     description: Control plane v1
 
 paths:
-
   /workspaces/{workspaceId}/retrieval/search:
     post:
       operationId: searchRetrievalIndex
@@ -27,30 +26,30 @@ paths:
       tags:
         - Retrieval
       parameters:
-        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: '#/components/parameters/WorkspaceId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RetrievalQueryV1"
+              $ref: '#/components/schemas/RetrievalQueryV1'
       responses:
-        "200":
+        '200':
           description: Search results with provenance
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RetrievalResultsV1"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "429":
-          $ref: "#/components/responses/RateLimited"
-        "500":
-          $ref: "#/components/responses/InternalError"
+                $ref: '#/components/schemas/RetrievalResultsV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
   /workspaces/{workspaceId}/graph/query:
     post:
@@ -63,28 +62,28 @@ paths:
       tags:
         - Graph
       parameters:
-        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: '#/components/parameters/WorkspaceId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GraphQueryV1"
+              $ref: '#/components/schemas/GraphQueryV1'
       responses:
-        "200":
+        '200':
           description: Graph query results
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GraphResultsV1"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalError"
+                $ref: '#/components/schemas/GraphResultsV1'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
   /workspaces/{workspaceId}/derived-artifacts:
     get:
@@ -93,7 +92,7 @@ paths:
       tags:
         - Retrieval
       parameters:
-        - $ref: "#/components/parameters/WorkspaceId"
+        - $ref: '#/components/parameters/WorkspaceId'
         - name: runId
           in: query
           schema:
@@ -115,19 +114,18 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Paginated list of derived artefacts
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DerivedArtifactListV1"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
+                $ref: '#/components/schemas/DerivedArtifactListV1'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
 components:
-
   parameters:
     WorkspaceId:
       name: workspaceId
@@ -137,7 +135,6 @@ components:
         type: string
 
   schemas:
-
     RetrievalQueryV1:
       type: object
       required: [query, topK, strategy]
@@ -185,7 +182,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/RetrievalResultItemV1"
+            $ref: '#/components/schemas/RetrievalResultItemV1'
         query:
           type: string
         strategy:
@@ -331,19 +328,19 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
     Unauthorized:
       description: Unauthenticated
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
     Forbidden:
       description: Unauthorised
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
     RateLimited:
       description: Rate limit exceeded
       headers:
@@ -353,10 +350,10 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'
     InternalError:
       description: Internal server error
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/ProblemDetail"
+            $ref: '#/components/schemas/ProblemDetail'

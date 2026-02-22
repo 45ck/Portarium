@@ -42,7 +42,7 @@ import {
 /** All run statuses derived at runtime from the canonical table. */
 const ALL_RUN_STATUSES: readonly RunStatus[] = Object.keys(RUN_STATUS_TRANSITIONS) as RunStatus[];
 
-const ALL_RUN_PAIRS: ReadonlyArray<readonly [RunStatus, RunStatus]> = ALL_RUN_STATUSES.flatMap(
+const ALL_RUN_PAIRS: readonly (readonly [RunStatus, RunStatus])[] = ALL_RUN_STATUSES.flatMap(
   (from) => ALL_RUN_STATUSES.map((to) => [from, to] as const),
 );
 
@@ -237,7 +237,7 @@ const APPROVAL_STATUSES: readonly ApprovalStatus[] = Object.keys(
   APPROVAL_STATUS_TRANSITIONS,
 ) as ApprovalStatus[];
 
-const ALL_APPROVAL_PAIRS: ReadonlyArray<readonly [ApprovalStatus, ApprovalStatus]> =
+const ALL_APPROVAL_PAIRS: readonly (readonly [ApprovalStatus, ApprovalStatus])[] =
   APPROVAL_STATUSES.flatMap((from) => APPROVAL_STATUSES.map((to) => [from, to] as const));
 
 describe('Approval state machine — structural invariants', () => {
@@ -260,12 +260,12 @@ describe('Approval state machine — structural invariants', () => {
   it('Pending can reach all decision states', () => {
     const decisions: ApprovalStatus[] = ['Approved', 'Denied', 'RequestChanges'];
     for (const decision of decisions) {
-      expect(APPROVAL_STATUS_TRANSITIONS['Pending']).toContain(decision);
+      expect(APPROVAL_STATUS_TRANSITIONS.Pending).toContain(decision);
     }
   });
 
   it('Pending cannot transition to itself', () => {
-    expect(APPROVAL_STATUS_TRANSITIONS['Pending']).not.toContain('Pending');
+    expect(APPROVAL_STATUS_TRANSITIONS.Pending).not.toContain('Pending');
   });
 
   it('no terminal approval state can transition to Pending', () => {
@@ -324,22 +324,22 @@ describe('Approval state machine — reachability', () => {
 
 describe('Mutation-targeted boundary tests', () => {
   it('Pending → Running is the ONLY transition from Pending', () => {
-    expect(RUN_STATUS_TRANSITIONS['Pending']).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS['Pending']).toHaveLength(1);
+    expect(RUN_STATUS_TRANSITIONS.Pending).toEqual(['Running']);
+    expect(RUN_STATUS_TRANSITIONS.Pending).toHaveLength(1);
   });
 
   it('Running has exactly 5 valid successor states', () => {
-    expect(RUN_STATUS_TRANSITIONS['Running']).toHaveLength(5);
+    expect(RUN_STATUS_TRANSITIONS.Running).toHaveLength(5);
   });
 
   it('WaitingForApproval → Running is the ONLY transition from WaitingForApproval', () => {
-    expect(RUN_STATUS_TRANSITIONS['WaitingForApproval']).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS['WaitingForApproval']).toHaveLength(1);
+    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toEqual(['Running']);
+    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toHaveLength(1);
   });
 
   it('Paused → Running is the ONLY transition from Paused', () => {
-    expect(RUN_STATUS_TRANSITIONS['Paused']).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS['Paused']).toHaveLength(1);
+    expect(RUN_STATUS_TRANSITIONS.Paused).toEqual(['Running']);
+    expect(RUN_STATUS_TRANSITIONS.Paused).toHaveLength(1);
   });
 
   it('exactly 3 terminal run statuses (Succeeded, Failed, Cancelled)', () => {

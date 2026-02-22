@@ -8,12 +8,12 @@ The strongest foundations already present are: a strict TypeScript configuration
 
 The most urgent technical risks to address (in priority order) are:
 
-- **API correctness + safety at the HTTP boundary**: request body handling needs explicit **resource limits**, timeouts, and consistent Problem Details responses, or the control plane is exposed to avoidable DoS/resource-consumption failures and inconsistent client behaviour. Node’s HTTP request object is a stream; safe servers must enforce limits and handle abort/close semantics deliberately. citeturn14search1 citeturn13search1  
-- **Pagination/filtering pushed down to data stores**: the current “load all then filter/sort in memory” pattern is workable for scaffolds but is a hard blocker for multi-tenant scale and cost control. OWASP’s API security guidance explicitly calls out “unrestricted resource consumption” as a major risk category for APIs. citeturn13search1  
-- **Worker lifecycle correctness**: the Temporal TypeScript SDK’s intended lifecycle is “`await worker.run()` then close the connection after the worker stops”; shutdown sequencing must respect the SDK model to avoid stuck drains or dropped completions. citeturn12view0  
+- **API correctness + safety at the HTTP boundary**: request body handling needs explicit **resource limits**, timeouts, and consistent Problem Details responses, or the control plane is exposed to avoidable DoS/resource-consumption failures and inconsistent client behaviour. Node’s HTTP request object is a stream; safe servers must enforce limits and handle abort/close semantics deliberately. citeturn14search1 citeturn13search1
+- **Pagination/filtering pushed down to data stores**: the current “load all then filter/sort in memory” pattern is workable for scaffolds but is a hard blocker for multi-tenant scale and cost control. OWASP’s API security guidance explicitly calls out “unrestricted resource consumption” as a major risk category for APIs. citeturn13search1
+- **Worker lifecycle correctness**: the Temporal TypeScript SDK’s intended lifecycle is “`await worker.run()` then close the connection after the worker stops”; shutdown sequencing must respect the SDK model to avoid stuck drains or dropped completions. citeturn12view0
 - **Security + ethics edge-hardening**: development bypasses (e.g., dev token auth) must remain strongly isolated to local profiles, and privacy protections must be made systematic across evidence, telemetry, and traces. The ACM Code of Ethics emphasises avoiding harm and respecting privacy, and W3C Trace Context includes privacy/security considerations that apply directly to trace propagation. citeturn11view2 citeturn11view1
 
-Portarium is already pointed in the right direction architecturally; the core work now is *turning the architecture from “documented intent” into “enforced reality”* via: stable ports, production-grade adapters, deterministic pagination/search semantics, and test coverage focused on boundary conditions and failure modes.
+Portarium is already pointed in the right direction architecturally; the core work now is _turning the architecture from “documented intent” into “enforced reality”_ via: stable ports, production-grade adapters, deterministic pagination/search semantics, and test coverage focused on boundary conditions and failure modes.
 
 ## Repository overview and topic mapping
 
@@ -25,12 +25,12 @@ The infrastructure baseline is unusually comprehensive for a scaffold: Postgres,
 
 ### Mapping of CS foundations to major repo modules
 
-| CS foundation area | Where it shows up most strongly in this repo | What to evaluate first |
-|---|---|---|
-| Programming fundamentals + OOP | Layering (`src/domain`, `src/application`, `src/infrastructure`, `src/presentation`), ports/adapters model fileciteturn9file0L1-L1 | Boundary enforcement, dependency direction, abstraction quality, error modelling |
-| Data structures + algorithms | Evidence chain integrity, rate limiting, pagination/cursor semantics, workflow planning/diffing | Complexity, correctness under edge cases, scale behaviour, determinism |
-| Operating systems fundamentals | HTTP server lifecycle, process signals, resource limits, container/runtime profiles, worker shutdown | Backpressure, memory bounds, graceful shutdown, timeouts, network I/O correctness |
-| Computing fundamentals (incl ethics) | Problem Details error model, trace context propagation, authn/authz, privacy minimisation, evidence retention | Data minimisation, auditability, security posture, ethics guardrails |
+| CS foundation area                   | Where it shows up most strongly in this repo                                                                                           | What to evaluate first                                                            |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Programming fundamentals + OOP       | Layering (`src/domain`, `src/application`, `src/infrastructure`, `src/presentation`), ports/adapters model fileciteturn9file0L1-L1 | Boundary enforcement, dependency direction, abstraction quality, error modelling  |
+| Data structures + algorithms         | Evidence chain integrity, rate limiting, pagination/cursor semantics, workflow planning/diffing                                        | Complexity, correctness under edge cases, scale behaviour, determinism            |
+| Operating systems fundamentals       | HTTP server lifecycle, process signals, resource limits, container/runtime profiles, worker shutdown                                   | Backpressure, memory bounds, graceful shutdown, timeouts, network I/O correctness |
+| Computing fundamentals (incl ethics) | Problem Details error model, trace context propagation, authn/authz, privacy minimisation, evidence retention                          | Data minimisation, auditability, security posture, ethics guardrails              |
 
 ### Current architecture as implied by docs
 
@@ -84,7 +84,7 @@ TypeScript strictness is explicitly configured (NodeNext modules, strict flags, 
 
 The ports-and-adapters framing is consistently described in docs, and the layer taxonomy is explicit: domain/application/infrastructure/presentation. fileciteturn9file0L1-L1 fileciteturn9file1L1-L1
 
-The risk is not the *existence* of these fundamentals, but whether they are *enforced in code*, especially at integration boundaries.
+The risk is not the _existence_ of these fundamentals, but whether they are _enforced in code_, especially at integration boundaries.
 
 ### Gaps and best-practice violations that will cost you later
 
@@ -100,12 +100,12 @@ At principal level, “hexagonal architecture” must be enforced by tooling, no
 
 If any domain modules import runtime-specific helpers (HTTP, env parsing) you will end up with “domain logic that can’t be reused”, and your tests will become integration-heavy.
 
-**Actionable recommendation**: add/strengthen a dependency rule system (e.g., dependency-cruiser is already in `devDependencies`) as a *hard* CI gate, with explicit layer rules and forbidden edges. (This aligns with the repo’s “strict boundaries” claim.) fileciteturn9file0L1-L1
+**Actionable recommendation**: add/strengthen a dependency rule system (e.g., dependency-cruiser is already in `devDependencies`) as a _hard_ CI gate, with explicit layer rules and forbidden edges. (This aligns with the repo’s “strict boundaries” claim.) fileciteturn9file0L1-L1
 
 #### Error modelling: inconsistent between “spec intent” and inevitable runtime reality
 
 The HTTP API intends to use Problem Details (`application/problem+json`) for errors. RFC 7807 defines the shape and intent of this format. citeturn11view3  
-At scale, you need *one* canonical error mapping layer:
+At scale, you need _one_ canonical error mapping layer:
 
 - domain/application errors → stable problem types
 - infrastructure errors → safe, redacted problem details
@@ -121,16 +121,16 @@ The CLI defaults and endpoint paths must match the runtime contract, or the CLI 
 A concrete example in this repo: the local compose stack maps **Grafana to localhost:3100**, which is explicitly documented as the visualisation endpoint. fileciteturn71file18L1-L1 fileciteturn71file0L1-L1  
 If the CLI is also defaulting its “base URL” to 3100, that is a correctness bug: it is pointing at observability, not the API.
 
-**Actionable recommendation**: treat API base URLs and path prefixes as *generated from the OpenAPI contract*, not manually duplicated. This eliminates drift.
+**Actionable recommendation**: treat API base URLs and path prefixes as _generated from the OpenAPI contract_, not manually duplicated. This eliminates drift.
 
 ### Current vs recommended state (Programming + OOP)
 
-| Dimension | Current state (as observed from repo intent + scaffolding) | Recommended state (principal-grade) |
-|---|---|---|
-| Layer boundaries | Documented clearly fileciteturn9file0L1-L1 | Enforced by automated dependency rules + CI gates; no “escape hatches” |
-| Abstractions | Ports/adapters model described fileciteturn9file1L1-L1 | Ports are small, stable, versioned; adapters are contract-tested; capability matrices are machine-checked |
-| Errors | Intends RFC 7807 usage citeturn11view3 | One canonical error mapping pipeline; deterministic error types; client-safe redaction |
-| API/CLI coupling | Risk of drift vs runtime and local infra fileciteturn71file18L1-L1 | CLI generated from spec (OpenAPI), not handwritten paths/defaults |
+| Dimension        | Current state (as observed from repo intent + scaffolding)             | Recommended state (principal-grade)                                                                       |
+| ---------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Layer boundaries | Documented clearly fileciteturn9file0L1-L1                         | Enforced by automated dependency rules + CI gates; no “escape hatches”                                    |
+| Abstractions     | Ports/adapters model described fileciteturn9file1L1-L1             | Ports are small, stable, versioned; adapters are contract-tested; capability matrices are machine-checked |
+| Errors           | Intends RFC 7807 usage citeturn11view3                              | One canonical error mapping pipeline; deterministic error types; client-safe redaction                    |
+| API/CLI coupling | Risk of drift vs runtime and local infra fileciteturn71file18L1-L1 | CLI generated from spec (OpenAPI), not handwritten paths/defaults                                         |
 
 ### Key refactoring example: route table + typed handlers
 
@@ -159,7 +159,7 @@ export class Router<Ctx> {
     // 3) extract params into ctx
     // 4) call handler
     // 5) fallback 404 ProblemDetails
-    throw new Error("not implemented");
+    throw new Error('not implemented');
   }
 }
 ```
@@ -181,7 +181,7 @@ OWASP’s API Top 10 includes “Unrestricted Resource Consumption” (API4:2023
 
 ### Architectural gaps and scalability risks
 
-#### Cursor pagination semantics must be deterministic and *source-of-truth*
+#### Cursor pagination semantics must be deterministic and _source-of-truth_
 
 When you paginate by cursor, you must define (and implement) at least:
 
@@ -202,9 +202,9 @@ If any endpoint constructs `nextCursor` from `limit` or array offsets, you will 
 
 Any list operation implemented as:
 
-1) load all records  
-2) filter and sort in JS  
-3) slice for pagination  
+1. load all records
+2. filter and sort in JS
+3. slice for pagination
 
 …is O(n log n) CPU with O(n) memory, and n is “tenant size”. That becomes a cost and latency cliff.
 
@@ -226,16 +226,16 @@ Similarly, RFC 9068 discusses privacy considerations for JWT access tokens, incl
 
 ### Current vs recommended state (Data structures + algorithms)
 
-| Dimension | Current risk pattern | Recommended pattern |
-|---|---|---|
-| Pagination | Cursor semantics at risk of being endpoint-local and inconsistent | Single cursor codec + canonical ordering rules + DB-backed pagination |
-| List endpoints | In-memory filter/sort creates O(n) memory + O(n log n) CPU pressure | Storage-level filtering (indexes) + bounded page sizes (hard max) |
-| Evidence integrity | Strong idea, but fixtures can undermine invariants | One evidence library; fixtures must use real hashing; property-based tests |
-| Rate limiting | May exist but must be distributed to matter | Token bucket/leaky bucket with shared state (Redis/Postgres advisory locks) |
+| Dimension          | Current risk pattern                                                | Recommended pattern                                                         |
+| ------------------ | ------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Pagination         | Cursor semantics at risk of being endpoint-local and inconsistent   | Single cursor codec + canonical ordering rules + DB-backed pagination       |
+| List endpoints     | In-memory filter/sort creates O(n) memory + O(n log n) CPU pressure | Storage-level filtering (indexes) + bounded page sizes (hard max)           |
+| Evidence integrity | Strong idea, but fixtures can undermine invariants                  | One evidence library; fixtures must use real hashing; property-based tests  |
+| Rate limiting      | May exist but must be distributed to matter                         | Token bucket/leaky bucket with shared state (Redis/Postgres advisory locks) |
 
 ### Key refactoring example: SQL-backed cursor pagination
 
-Pseudocode for an adapter method that *never* loads all rows:
+Pseudocode for an adapter method that _never_ loads all rows:
 
 ```sql
 -- Example for stable ID ordering
@@ -267,9 +267,9 @@ Node’s HTTP request object (`http.IncomingMessage`) is a Readable stream. If y
 
 At principal level, the HTTP boundary needs four explicit OS-adjacent behaviours:
 
-- **Body size limits** (hard max per route category)  
-- **Timeouts** (read timeout, handler timeout, upstream call timeout)  
-- **Abort + close handling** (don’t continue work after client disconnect)  
+- **Body size limits** (hard max per route category)
+- **Timeouts** (read timeout, handler timeout, upstream call timeout)
+- **Abort + close handling** (don’t continue work after client disconnect)
 - **Backpressure** (don’t write indefinitely to slow clients)
 
 OWASP API4:2023 (“Unrestricted Resource Consumption”) directly maps to unbounded body parsing and unbounded list endpoints. citeturn13search1
@@ -301,12 +301,12 @@ If you omit this, an infrastructure update can change authorisation semantics un
 
 ### Current vs recommended state (OS fundamentals)
 
-| OS concern | Current exposure | Recommended mitigation |
-|---|---|---|
-| HTTP request bodies | Risk of unbounded accumulation; inconsistent abort handling | Streaming parse with max bytes; route-specific limits; 413 responses |
-| Process signals | Signal listeners change exit behaviour citeturn15search0 | One shutdown controller: stop accepting traffic, drain, then exit |
-| Worker shutdown | Must follow Temporal run/close lifecycle citeturn12view0 | Connection closed only after `worker.run()` resolves; explicit drain windows |
-| External calls | Risk of hanging calls without timeouts | `AbortController`-based timeouts, retries, bulkheads |
+| OS concern          | Current exposure                                            | Recommended mitigation                                                       |
+| ------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| HTTP request bodies | Risk of unbounded accumulation; inconsistent abort handling | Streaming parse with max bytes; route-specific limits; 413 responses         |
+| Process signals     | Signal listeners change exit behaviour citeturn15search0 | One shutdown controller: stop accepting traffic, drain, then exit            |
+| Worker shutdown     | Must follow Temporal run/close lifecycle citeturn12view0 | Connection closed only after `worker.run()` resolves; explicit drain windows |
+| External calls      | Risk of hanging calls without timeouts                      | `AbortController`-based timeouts, retries, bulkheads                         |
 
 ### Key refactoring example: bounded JSON body parsing
 
@@ -348,8 +348,8 @@ This aligns with Node’s stream semantics and protects memory. citeturn14
 
 Several standards are directly relevant to Portarium’s primitives:
 
-- **Problem Details**: RFC 7807 defines the machine-readable error format for HTTP APIs; Portarium intends to use this shape. citeturn11view3  
-- **JWT access tokens**: RFC 9068 defines a specific JWT profile for OAuth2 access tokens (including `typ` and claim validation expectations). citeturn4search0  
+- **Problem Details**: RFC 7807 defines the machine-readable error format for HTTP APIs; Portarium intends to use this shape. citeturn11view3
+- **JWT access tokens**: RFC 9068 defines a specific JWT profile for OAuth2 access tokens (including `typ` and claim validation expectations). citeturn4search0
 - **Bearer token errors**: RFC 6750 defines `invalid_token`, `insufficient_scope`, and when to include error information in responses. citeturn7search3
 
 Principal-level guidance: treat these RFCs as **testable contracts**:
@@ -401,16 +401,16 @@ This roadmap focuses on reaching “principal-grade” reliability and maintaina
 
 ### Roadmap table
 
-| Priority | Theme | Action | Effort | Risk if delayed | Why it matters |
-|---|---|---:|:---:|:---:|---|
-| P0 | HTTP safety | Add request body size limits + timeouts + abort handling for all JSON endpoints | M | High | Prevents memory/CPU DoS; aligns with Node stream semantics citeturn14search1 |
-| P0 | Pagination correctness | Define a single cursor spec + implement DB-backed pagination; remove “offset-as-cursor” behaviours | L | High | Prevents correctness failures and uncontrolled resource consumption citeturn13search1 |
-| P0 | Worker lifecycle | Align Temporal shutdown sequencing to “run then close connection”; add drain metrics | S | High | Prevents stuck drains and dropped tasks; matches Temporal SDK docs citeturn12view0 |
-| P1 | Auth standards | Make JWT validation + bearer error responses conformant to RFC 9068/6750; add tests | M | Medium | Prevents subtle auth bypasses and inconsistent client semantics citeturn4search0 citeturn7search3 |
-| P1 | Ethics hardening | Enforce non-production dev-token usage technically; add ethics/purpose docs + telemetry policy tests | S | Medium | Prevents accidental unsafe deployments; supports privacy obligations fileciteturn9file3L1-L1 citeturn11view2 |
-| P1 | Observability | Ensure trace context propagation is correct and privacy-aware; standardise correlation IDs | M | Medium | Distributed systems debugging + privacy risk mitigation citeturn11view1 |
-| P2 | OpenFGA robustness | Pin `authorization_model_id`, add timeouts/retries/circuit breaker | M | Medium | Avoids auth semantic drift and dependency hangs citeturn5search1 |
-| P2 | Quality strategy | Add integration tests (Postgres/Temporal/MinIO) and perf tests for list endpoints | L | Medium | Proves behaviour under realistic failure modes |
+| Priority | Theme                  |                                                                                               Action | Effort | Risk if delayed | Why it matters                                                                                                      |
+| -------- | ---------------------- | ---------------------------------------------------------------------------------------------------: | :----: | :-------------: | ------------------------------------------------------------------------------------------------------------------- |
+| P0       | HTTP safety            |                      Add request body size limits + timeouts + abort handling for all JSON endpoints |   M    |      High       | Prevents memory/CPU DoS; aligns with Node stream semantics citeturn14search1                                     |
+| P0       | Pagination correctness |   Define a single cursor spec + implement DB-backed pagination; remove “offset-as-cursor” behaviours |   L    |      High       | Prevents correctness failures and uncontrolled resource consumption citeturn13search1                            |
+| P0       | Worker lifecycle       |                 Align Temporal shutdown sequencing to “run then close connection”; add drain metrics |   S    |      High       | Prevents stuck drains and dropped tasks; matches Temporal SDK docs citeturn12view0                               |
+| P1       | Auth standards         |                  Make JWT validation + bearer error responses conformant to RFC 9068/6750; add tests |   M    |     Medium      | Prevents subtle auth bypasses and inconsistent client semantics citeturn4search0 citeturn7search3             |
+| P1       | Ethics hardening       | Enforce non-production dev-token usage technically; add ethics/purpose docs + telemetry policy tests |   S    |     Medium      | Prevents accidental unsafe deployments; supports privacy obligations fileciteturn9file3L1-L1 citeturn11view2 |
+| P1       | Observability          |           Ensure trace context propagation is correct and privacy-aware; standardise correlation IDs |   M    |     Medium      | Distributed systems debugging + privacy risk mitigation citeturn11view1                                          |
+| P2       | OpenFGA robustness     |                                   Pin `authorization_model_id`, add timeouts/retries/circuit breaker |   M    |     Medium      | Avoids auth semantic drift and dependency hangs citeturn5search1                                                 |
+| P2       | Quality strategy       |                    Add integration tests (Postgres/Temporal/MinIO) and perf tests for list endpoints |   L    |     Medium      | Proves behaviour under realistic failure modes                                                                      |
 
 ### Recommended module relationships after remediation
 
@@ -469,7 +469,7 @@ To reach principal-grade operational confidence, extend the pipeline to enforce:
 Minimum principal-level docs set:
 
 - **Architecture invariants**: what must never be violated (dependency direction, ports, cursor semantics).
-- **API correctness rules**: pagination contract, max request sizes, error shapes (RFC 7807). citeturn11view3  
-- **Security model**: token profile expectations (RFC 9068) and bearer error behaviour (RFC 6750). citeturn4search0 citeturn7search3  
-- **Privacy & ethics**: purpose limitation for location/telemetry, retention, redaction, and “avoid harm” principles grounded in ACM. citeturn11view2  
+- **API correctness rules**: pagination contract, max request sizes, error shapes (RFC 7807). citeturn11view3
+- **Security model**: token profile expectations (RFC 9068) and bearer error behaviour (RFC 6750). citeturn4search0 citeturn7search3
+- **Privacy & ethics**: purpose limitation for location/telemetry, retention, redaction, and “avoid harm” principles grounded in ACM. citeturn11view2
 - **Operational runbooks**: graceful shutdown behaviour (Node signals + Temporal worker lifecycle). citeturn15search0 citeturn12view0

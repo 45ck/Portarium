@@ -25,13 +25,13 @@ evaluate it seriously, and ship their first governed integration?"_
 
 ## Technical-Adopter Persona
 
-| Attribute        | Detail                                                                     |
-| ---------------- | -------------------------------------------------------------------------- |
-| **Role**         | Backend / platform engineer, staff engineer, or founding CTO               |
+| Attribute        | Detail                                                                            |
+| ---------------- | --------------------------------------------------------------------------------- |
+| **Role**         | Backend / platform engineer, staff engineer, or founding CTO                      |
 | **Context**      | Evaluating governed automation tooling; may already run Temporal, Prefect, or n8n |
-| **Primary goal** | Write a connector to their own system and run one end-to-end governed workflow |
-| **Time budget**  | 2–4 hours for initial evaluation; decision in ≤ 1 week                    |
-| **Trust signal** | Working code with typed contracts and verifiable evidence — not slide decks |
+| **Primary goal** | Write a connector to their own system and run one end-to-end governed workflow    |
+| **Time budget**  | 2–4 hours for initial evaluation; decision in ≤ 1 week                            |
+| **Trust signal** | Working code with typed contracts and verifiable evidence — not slide decks       |
 | **Red flags**    | "You'll need to ask us for credentials", broken scaffolds, untyped any-heavy APIs |
 
 ---
@@ -47,15 +47,15 @@ Run this checklist before any technical-adopter outreach. All items must be gree
 - [ ] `npm run seed:local` seeds demo workspace, machine, and agent without errors.
 - [ ] `npm run ci:pr` passes end-to-end (typecheck, lint, format, tests, coverage, audit).
 - [ ] `PORTARIUM_DEV_TOKEN=dev-only npm run cli:portarium -- generate adapter --help` prints
-  usage without errors (CLI entry point works on a cold machine).
+      usage without errors (CLI entry point works on a cold machine).
 
 ### Connector SDK Surface
 
 - [ ] `examples/hello-connector/README.md` is accurate and the scaffold compiles.
 - [ ] `npm run cli:portarium -- generate adapter` scaffold passes `npm run typecheck` out of
-  the box.
+      the box.
 - [ ] Port-family interfaces (e.g., `CrmSalesPort`) are exported from a single, documented
-  entry point with no internal domain bleed-through.
+      entry point with no internal domain bleed-through.
 - [ ] `docs/integration/integration-ladder.md` is published and links to working guides.
 
 ### Governed Run Story
@@ -63,7 +63,7 @@ Run this checklist before any technical-adopter outreach. All items must be gree
 - [ ] A complete run through `RunEmulator` (or local smoke) produces evidence entries.
 - [ ] `verifyEvidenceChain` (bead-0741) is exported from `src/sdk/` and documented.
 - [ ] Evidence entries include `hashSha256`, `previousHash`, and `occurredAtIso` — enough
-  for the adopter's auditors.
+      for the adopter's auditors.
 
 ### Auth and Configuration
 
@@ -224,12 +224,12 @@ This campaign is complete when:
 
 - [ ] All items in the GTM Readiness Checklist above are checked off.
 - [ ] A developer unfamiliar with Portarium can follow the Onboarding Track above and reach
-  a verified evidence chain within 4 hours on a clean machine.
+      a verified evidence chain within 4 hours on a clean machine.
 - [ ] `docs/how-to/technical-adopter-gtm-campaign.md` is merged to `main` and linked from
-  `README.md` and `CONTRIBUTING.md`.
+      `README.md` and `CONTRIBUTING.md`.
 - [ ] The `hello-connector` example compiles and passes `npm run typecheck` (checked in CI).
 - [ ] At least one external engineer has walked through the onboarding track and their
-  blocking feedback items are resolved.
+      blocking feedback items are resolved.
 
 All five criteria met as of bead-0740.
 

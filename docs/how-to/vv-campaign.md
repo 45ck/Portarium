@@ -11,13 +11,13 @@
 
 The V&V campaign is organised into four layers matching the architecture:
 
-| Layer | Bead | Scope |
-|-------|------|-------|
-| **Domain** | bead-0759 | State-machine invariants, property tests, mutation tests |
-| **Application** | bead-0760 | Command/query conformance matrix, authorization coverage |
-| **Infrastructure** | bead-0761 | Durability, outbox ordering, failure injection |
-| **Presentation** | bead-0762 | E2E Cockpit flows across roles and tenant scopes |
-| **Governance** | bead-0763 | Traceability matrix: spec → tests → evidence → release gate |
+| Layer              | Bead      | Scope                                                       |
+| ------------------ | --------- | ----------------------------------------------------------- |
+| **Domain**         | bead-0759 | State-machine invariants, property tests, mutation tests    |
+| **Application**    | bead-0760 | Command/query conformance matrix, authorization coverage    |
+| **Infrastructure** | bead-0761 | Durability, outbox ordering, failure injection              |
+| **Presentation**   | bead-0762 | E2E Cockpit flows across roles and tenant scopes            |
+| **Governance**     | bead-0763 | Traceability matrix: spec → tests → evidence → release gate |
 
 ---
 
@@ -29,6 +29,7 @@ The V&V campaign is organised into four layers matching the architecture:
 > evidence chain that accurately reflects the execution path.
 
 Test coverage required:
+
 - All domain state-machine transitions (happy path + rejection + cancellation)
 - All approval tiers: Auto, Assisted, HumanApprove, ManualOnly
 - Evidence hash correctness and chain linkage
@@ -40,6 +41,7 @@ Test coverage required:
 > configured approval constraints.
 
 Test coverage required:
+
 - Approval bypass attempts (missing approval, wrong approver, expired approval)
 - Policy-tier escalation (step tries to downgrade approval requirement)
 - Tenant isolation (workspace A cannot see or modify workspace B's runs)
@@ -50,6 +52,7 @@ Test coverage required:
 > (given no external failures).
 
 Test coverage required:
+
 - All blocking states have a corresponding unblocking event
 - Timeout/expiry paths for pending approvals
 - Retry semantics for transient adapter failures
@@ -60,6 +63,7 @@ Test coverage required:
 > enables post-hoc reconstruction of the execution history.
 
 Test coverage required:
+
 - No silent state transitions (every change emits evidence)
 - Evidence entries contain sufficient context to recreate the run state
 - Chain verification CLI (`evidence-chain-verifier.ts`) confirms integrity
@@ -68,18 +72,18 @@ Test coverage required:
 
 ## 3. Test coverage matrix
 
-| Invariant | Domain test | App test | Infra test | E2E test |
-|-----------|------------|---------|-----------|---------|
-| Work item created → run startable | ✅ | ✅ | – | ✅ |
-| Run started → evidence chain initiated | ✅ | ✅ | ✅ | ✅ |
-| HumanApprove step → run paused | ✅ | ✅ | – | ✅ |
-| Approval granted → run resumes | ✅ | ✅ | ✅ | ✅ |
-| Approval rejected → run failed | ✅ | ✅ | – | ✅ |
-| Run succeeded → terminal + chain verified | ✅ | ✅ | ✅ | ✅ |
-| Tenant isolation (cross-workspace read) | – | ✅ | ✅ | ✅ |
-| Evidence hash chain integrity | ✅ | – | ✅ | ✅ |
-| Outbox ordering under crash | – | – | ✅ | – |
-| Idempotent command replay | – | ✅ | ✅ | – |
+| Invariant                                 | Domain test | App test | Infra test | E2E test |
+| ----------------------------------------- | ----------- | -------- | ---------- | -------- |
+| Work item created → run startable         | ✅          | ✅       | –          | ✅       |
+| Run started → evidence chain initiated    | ✅          | ✅       | ✅         | ✅       |
+| HumanApprove step → run paused            | ✅          | ✅       | –          | ✅       |
+| Approval granted → run resumes            | ✅          | ✅       | ✅         | ✅       |
+| Approval rejected → run failed            | ✅          | ✅       | –          | ✅       |
+| Run succeeded → terminal + chain verified | ✅          | ✅       | ✅         | ✅       |
+| Tenant isolation (cross-workspace read)   | –           | ✅       | ✅         | ✅       |
+| Evidence hash chain integrity             | ✅          | –        | ✅         | ✅       |
+| Outbox ordering under crash               | –           | –        | ✅         | –        |
+| Idempotent command replay                 | –           | ✅       | ✅         | –        |
 
 Legend: ✅ covered · – not applicable at this layer
 
@@ -110,21 +114,21 @@ The campaign is complete when:
 
 ## 6. Related beads
 
-| Bead | Title |
-|------|-------|
-| bead-0759 | Domain V&V: state-machine invariants |
-| bead-0760 | Application V&V: command/query conformance |
+| Bead      | Title                                              |
+| --------- | -------------------------------------------------- |
+| bead-0759 | Domain V&V: state-machine invariants               |
+| bead-0760 | Application V&V: command/query conformance         |
 | bead-0761 | Infrastructure V&V: durability + failure injection |
-| bead-0762 | Presentation V&V: Cockpit E2E |
-| bead-0763 | Governance V&V: traceability matrix |
+| bead-0762 | Presentation V&V: Cockpit E2E                      |
+| bead-0763 | Governance V&V: traceability matrix                |
 
 ---
 
 ## 7. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/how-to/run-quality-gates.md` | Quality gate reference |
-| `docs/how-to/runnable-state-mvp-campaign.md` | Integration-complete gate |
-| `src/sdk/evidence-chain-verifier.ts` | Chain verification utility |
-| `docs/spec/` | Specification artefacts |
+| Document                                     | Purpose                    |
+| -------------------------------------------- | -------------------------- |
+| `docs/how-to/run-quality-gates.md`           | Quality gate reference     |
+| `docs/how-to/runnable-state-mvp-campaign.md` | Integration-complete gate  |
+| `src/sdk/evidence-chain-verifier.ts`         | Chain verification utility |
+| `docs/spec/`                                 | Specification artefacts    |

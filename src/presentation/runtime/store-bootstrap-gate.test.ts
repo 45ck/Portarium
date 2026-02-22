@@ -41,9 +41,9 @@ describe('checkStoreBootstrapGate', () => {
   });
 
   it('throws a fatal error when DEV_STUB_STORES=true but NODE_ENV=staging', () => {
-    expect(() =>
-      checkStoreBootstrapGate({ DEV_STUB_STORES: 'true', NODE_ENV: 'staging' }),
-    ).toThrow(/FATAL/i);
+    expect(() => checkStoreBootstrapGate({ DEV_STUB_STORES: 'true', NODE_ENV: 'staging' })).toThrow(
+      /FATAL/i,
+    );
   });
 
   it('throws a fatal error when DEV_STUB_STORES=true but NODE_ENV is absent', () => {

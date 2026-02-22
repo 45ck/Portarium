@@ -77,10 +77,9 @@ describe('Approval lifecycle: terminal state invariants', () => {
       const hasAnyOutgoing = ALL_APPROVAL_STATUSES.some(
         (to) => to !== status && isValidApprovalLifecycleTransition(status, to),
       );
-      expect(
-        hasAnyOutgoing,
-        `Terminal status ${status} should have no outgoing transitions`,
-      ).toBe(false);
+      expect(hasAnyOutgoing, `Terminal status ${status} should have no outgoing transitions`).toBe(
+        false,
+      );
     }
   });
 
@@ -89,8 +88,8 @@ describe('Approval lifecycle: terminal state invariants', () => {
       (s) => !TERMINAL_APPROVAL_STATUSES.includes(s),
     );
     for (const status of nonTerminal) {
-      const hasAnyOutgoing = ALL_APPROVAL_STATUSES.some(
-        (to) => isValidApprovalLifecycleTransition(status, to),
+      const hasAnyOutgoing = ALL_APPROVAL_STATUSES.some((to) =>
+        isValidApprovalLifecycleTransition(status, to),
       );
       expect(
         hasAnyOutgoing,
@@ -181,10 +180,7 @@ describe('Approval lifecycle: transition graph invariants', () => {
         ) {
           // This pair is bidirectional — it must be in the allowed list
           const allowed = allowedBackward.some(([a, b]) => a === from && b === to);
-          expect(
-            allowed,
-            `Unexpected bidirectional edge: ${from} ↔ ${to}`,
-          ).toBe(true);
+          expect(allowed, `Unexpected bidirectional edge: ${from} ↔ ${to}`).toBe(true);
         }
       }
     }

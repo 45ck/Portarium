@@ -9,14 +9,14 @@
 
 ## 1. Threat model
 
-| Threat | Attack vector | Control |
-|--------|-------------|---------|
-| Known vulnerability in transitive dep | npm audit / CVE database | `npm audit --audit-level=high` in CI |
-| Malicious package (typosquat, hijack) | npm registry | Lockfile pinning + integrity checks |
-| License violation (GPL in production bundle) | Accidental dep upgrade | `license-checker` gate |
-| Outdated dep with unpatched CVE | Stale lockfile | Weekly Dependabot / Renovate alerts |
-| Compromised dev dep leaking into production build | No prod/dev separation | `--production` flag on audit |
-| Supply-chain attack via CI script | Compromised GitHub Action | Pin Actions by SHA, not tag |
+| Threat                                            | Attack vector             | Control                              |
+| ------------------------------------------------- | ------------------------- | ------------------------------------ |
+| Known vulnerability in transitive dep             | npm audit / CVE database  | `npm audit --audit-level=high` in CI |
+| Malicious package (typosquat, hijack)             | npm registry              | Lockfile pinning + integrity checks  |
+| License violation (GPL in production bundle)      | Accidental dep upgrade    | `license-checker` gate               |
+| Outdated dep with unpatched CVE                   | Stale lockfile            | Weekly Dependabot / Renovate alerts  |
+| Compromised dev dep leaking into production build | No prod/dev separation    | `--production` flag on audit         |
+| Supply-chain attack via CI script                 | Compromised GitHub Action | Pin Actions by SHA, not tag          |
 
 ---
 
@@ -74,7 +74,7 @@ All GitHub Actions in `.github/workflows/` must be pinned to a full SHA:
 
 ```yaml
 # Good
-- uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+- uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
 # Bad — tag can be moved maliciously
 - uses: actions/checkout@v4
@@ -103,9 +103,11 @@ If any CDN-hosted resource is used in `index.html`, it **must** include a Subres
 Integrity (SRI) hash:
 
 ```html
-<script src="https://cdn.example.com/lib.js"
-        integrity="sha384-..."
-        crossorigin="anonymous"></script>
+<script
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-..."
+  crossorigin="anonymous"
+></script>
 ```
 
 Prefer: bundle all dependencies locally (no CDN at runtime).
@@ -194,9 +196,9 @@ Configure Renovate (or Dependabot) in `.github/renovate.json`:
 
 ## 8. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/how-to/licensing-gate.md` | License compliance checklist |
-| `docs/how-to/security-baseline-gates.md` | Security pre-release gates |
-| `docs/adr/ADR-0080-credential-boundary-model.md` | Credential isolation |
-| `scripts/ci/audit-high.mjs` | Existing vulnerability CI script |
+| Document                                         | Purpose                          |
+| ------------------------------------------------ | -------------------------------- |
+| `docs/how-to/licensing-gate.md`                  | License compliance checklist     |
+| `docs/how-to/security-baseline-gates.md`         | Security pre-release gates       |
+| `docs/adr/ADR-0080-credential-boundary-model.md` | Credential isolation             |
+| `scripts/ci/audit-high.mjs`                      | Existing vulnerability CI script |

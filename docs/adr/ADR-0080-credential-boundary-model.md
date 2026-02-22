@@ -77,12 +77,12 @@ export interface CredentialStore {
 
 ### Implementations
 
-| Environment | Implementation | Notes |
-|-------------|---------------|-------|
-| Local dev | `EnvCredentialStore` — reads `process.env` | `grants/odoo-prod-token` → `GRANTS_ODOO_PROD_TOKEN` |
-| CI | `EnvCredentialStore` — injected via GitHub secrets | Same as local |
-| Staging / Prod | `VaultCredentialStore` — HashiCorp Vault KV v2 | Path: `secret/workspaces/:wsId/:secretRef` |
-| Kubernetes | `K8sSecretCredentialStore` — Kubernetes Secrets + projected volumes | Secret name: sanitised secretRef |
+| Environment    | Implementation                                                      | Notes                                               |
+| -------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
+| Local dev      | `EnvCredentialStore` — reads `process.env`                          | `grants/odoo-prod-token` → `GRANTS_ODOO_PROD_TOKEN` |
+| CI             | `EnvCredentialStore` — injected via GitHub secrets                  | Same as local                                       |
+| Staging / Prod | `VaultCredentialStore` — HashiCorp Vault KV v2                      | Path: `secret/workspaces/:wsId/:secretRef`          |
+| Kubernetes     | `K8sSecretCredentialStore` — Kubernetes Secrets + projected volumes | Secret name: sanitised secretRef                    |
 
 ---
 
@@ -94,6 +94,7 @@ The `EvidenceEntryV1` payload **must never** contain credential values.
 The orchestration layer is responsible for stripping credentials before evidence emission.
 
 Enforced by:
+
 - `src/application/evidence-emitter.ts` — allowlist of safe payload fields
 - Dependency-cruiser rule: `src/domain/` cannot import `src/infrastructure/credentials/`
 
@@ -125,12 +126,14 @@ The orchestration layer enforces this before dispatching to `MisAdapterV1.invoke
 ## Consequences
 
 **Positive**:
+
 - Workflow definitions are credential-free → safe to commit to git
 - Credential rotation requires only updating the Credential Store, not redeploying workflows
 - Local dev and production use the same code path (just different `CredentialStore` impls)
 - Evidence chain is clean — no accidental token leakage
 
 **Negative**:
+
 - Adds a `CredentialStore` abstraction layer (small implementation cost)
 - Local dev must set environment variables for each `secretRef` used in seed data
   (documented in `docs/how-to/first-run-local-integrations.md`)

@@ -21,12 +21,11 @@
  * Bead: bead-sgt7
  */
 
-import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 
 import { NodePostgresSqlClient } from '../../src/infrastructure/postgresql/node-postgres-sql-client.js';
 import { PostgresWorkspaceStore } from '../../src/infrastructure/postgresql/postgres-store-adapters.js';
-import { TenantId, WorkspaceId, EvidenceId } from '../../src/domain/primitives/index.js';
+import { TenantId, WorkspaceId } from '../../src/domain/primitives/index.js';
 import {
   createCanonicalWorkspaceSeedV1,
   createCanonicalPolicySeedV1,

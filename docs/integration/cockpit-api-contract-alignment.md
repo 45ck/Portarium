@@ -28,45 +28,45 @@ and must:
 
 ### 2.1 Workspace context
 
-| Endpoint | Method | Cockpit use |
-|----------|--------|-------------|
-| `GET /v1/workspaces/:wsId` | Read | Workspace header, name, settings |
-| `GET /v1/workspaces/:wsId/members` | List | Team member list in settings |
+| Endpoint                           | Method | Cockpit use                      |
+| ---------------------------------- | ------ | -------------------------------- |
+| `GET /v1/workspaces/:wsId`         | Read   | Workspace header, name, settings |
+| `GET /v1/workspaces/:wsId/members` | List   | Team member list in settings     |
 
 ### 2.2 Work items
 
-| Endpoint | Method | Cockpit use |
-|----------|--------|-------------|
-| `GET /v1/workspaces/:wsId/work-items` | List | Work-Item Hub table |
-| `POST /v1/workspaces/:wsId/work-items` | Create | New Work Item form |
-| `GET /v1/workspaces/:wsId/work-items/:id` | Read | Work-Item Detail |
-| `PATCH /v1/workspaces/:wsId/work-items/:id` | Update | Edit title/description/assignee |
-| `POST /v1/workspaces/:wsId/work-items/:id/archive` | Archive | Archive action |
+| Endpoint                                           | Method  | Cockpit use                     |
+| -------------------------------------------------- | ------- | ------------------------------- |
+| `GET /v1/workspaces/:wsId/work-items`              | List    | Work-Item Hub table             |
+| `POST /v1/workspaces/:wsId/work-items`             | Create  | New Work Item form              |
+| `GET /v1/workspaces/:wsId/work-items/:id`          | Read    | Work-Item Detail                |
+| `PATCH /v1/workspaces/:wsId/work-items/:id`        | Update  | Edit title/description/assignee |
+| `POST /v1/workspaces/:wsId/work-items/:id/archive` | Archive | Archive action                  |
 
 ### 2.3 Runs
 
-| Endpoint | Method | Cockpit use |
-|----------|--------|-------------|
-| `GET /v1/workspaces/:wsId/runs` | List | Run Hub table |
-| `POST /v1/workspaces/:wsId/work-items/:id/runs` | Start | Start Run action |
-| `GET /v1/workspaces/:wsId/runs/:runId` | Read | Run Detail |
-| `POST /v1/workspaces/:wsId/runs/:runId/cancel` | Cancel | Cancel action |
-| `GET /v1/workspaces/:wsId/runs/:runId/evidence` | List | Evidence feed |
+| Endpoint                                        | Method | Cockpit use      |
+| ----------------------------------------------- | ------ | ---------------- |
+| `GET /v1/workspaces/:wsId/runs`                 | List   | Run Hub table    |
+| `POST /v1/workspaces/:wsId/work-items/:id/runs` | Start  | Start Run action |
+| `GET /v1/workspaces/:wsId/runs/:runId`          | Read   | Run Detail       |
+| `POST /v1/workspaces/:wsId/runs/:runId/cancel`  | Cancel | Cancel action    |
+| `GET /v1/workspaces/:wsId/runs/:runId/evidence` | List   | Evidence feed    |
 
 ### 2.4 Approvals
 
-| Endpoint | Method | Cockpit use |
-|----------|--------|-------------|
-| `GET /v1/workspaces/:wsId/approvals` | List | Approvals Hub (filterable by assignee, status) |
-| `GET /v1/workspaces/:wsId/approvals/:id` | Read | Approval Detail |
-| `POST /v1/workspaces/:wsId/approvals/:id/decide` | Decide | Approve/Reject form |
+| Endpoint                                         | Method | Cockpit use                                    |
+| ------------------------------------------------ | ------ | ---------------------------------------------- |
+| `GET /v1/workspaces/:wsId/approvals`             | List   | Approvals Hub (filterable by assignee, status) |
+| `GET /v1/workspaces/:wsId/approvals/:id`         | Read   | Approval Detail                                |
+| `POST /v1/workspaces/:wsId/approvals/:id/decide` | Decide | Approve/Reject form                            |
 
 ### 2.5 Evidence
 
-| Endpoint | Method | Cockpit use |
-|----------|--------|-------------|
-| `GET /v1/workspaces/:wsId/evidence` | Search | Evidence Explorer (cross-run) |
-| `GET /v1/workspaces/:wsId/runs/:runId/evidence/:entryId` | Read | Single entry detail |
+| Endpoint                                                 | Method | Cockpit use                   |
+| -------------------------------------------------------- | ------ | ----------------------------- |
+| `GET /v1/workspaces/:wsId/evidence`                      | Search | Evidence Explorer (cross-run) |
+| `GET /v1/workspaces/:wsId/runs/:runId/evidence/:entryId` | Read   | Single entry detail           |
 
 ---
 
@@ -83,7 +83,7 @@ interface PaginatedResponse<T> {
     total: number;
     page: number;
     pageSize: number;
-    nextCursor?: string;  // cursor-based pagination for evidence feeds
+    nextCursor?: string; // cursor-based pagination for evidence feeds
   };
 }
 ```
@@ -92,15 +92,15 @@ interface PaginatedResponse<T> {
 
 ```typescript
 interface WorkItemResponse {
-  id: string;            // WorkItemId branded string
+  id: string; // WorkItemId branded string
   workspaceId: string;
   title: string;
   description?: string;
   status: 'draft' | 'active' | 'paused' | 'closed';
-  assignedTo?: string;   // userId
+  assignedTo?: string; // userId
   workflowDefinitionId?: string;
   tags: string[];
-  createdAt: string;     // ISO 8601
+  createdAt: string; // ISO 8601
   updatedAt: string;
 }
 ```
@@ -109,12 +109,12 @@ interface WorkItemResponse {
 
 ```typescript
 interface RunResponse {
-  id: string;            // RunId
+  id: string; // RunId
   workItemId: string;
   workspaceId: string;
   status: 'pending' | 'running' | 'paused' | 'succeeded' | 'failed' | 'cancelled';
   correlationId: string;
-  triggeredBy: string;   // userId or 'system'
+  triggeredBy: string; // userId or 'system'
   startedAt: string;
   completedAt?: string;
   evidenceCount: number;
@@ -133,7 +133,7 @@ interface EvidenceEntryResponse {
   occurredAtIso: string;
   previousHash?: string;
   hashSha256: string;
-  kind: string;          // e.g. 'run:step:completed', 'approval:requested'
+  kind: string; // e.g. 'run:step:completed', 'approval:requested'
   payload: Record<string, unknown>;
 }
 ```
@@ -153,7 +153,7 @@ interface ApprovalRequestResponse {
   decidedBy?: string;
   decision?: 'approved' | 'rejected';
   comment?: string;
-  aiSummary?: string;    // Assisted tier only
+  aiSummary?: string; // Assisted tier only
 }
 ```
 
@@ -165,26 +165,26 @@ All error responses follow the RFC 7807 Problem Details format:
 
 ```typescript
 interface ProblemDetail {
-  type: string;        // URI reference identifying the problem
-  title: string;       // Human-readable summary
-  status: number;      // HTTP status code
-  detail?: string;     // Specific explanation
-  instance?: string;   // URI of the specific occurrence
+  type: string; // URI reference identifying the problem
+  title: string; // Human-readable summary
+  status: number; // HTTP status code
+  detail?: string; // Specific explanation
+  instance?: string; // URI of the specific occurrence
   correlationId?: string;
 }
 ```
 
 HTTP status codes used:
 
-| Code | Meaning | Cockpit handling |
-|------|---------|-----------------|
-| 400 | Validation error | Show inline field errors |
-| 401 | Unauthenticated | Redirect to login |
-| 403 | Unauthorised | Show "Access denied" toast |
-| 404 | Not found | Show 404 page or toast |
-| 409 | Conflict (optimistic lock) | Show "Refresh and retry" prompt |
-| 429 | Rate limited | Exponential backoff + toast |
-| 500 | Server error | Show "Something went wrong" + correlationId |
+| Code | Meaning                    | Cockpit handling                            |
+| ---- | -------------------------- | ------------------------------------------- |
+| 400  | Validation error           | Show inline field errors                    |
+| 401  | Unauthenticated            | Redirect to login                           |
+| 403  | Unauthorised               | Show "Access denied" toast                  |
+| 404  | Not found                  | Show 404 page or toast                      |
+| 409  | Conflict (optimistic lock) | Show "Refresh and retry" prompt             |
+| 429  | Rate limited               | Exponential backoff + toast                 |
+| 500  | Server error               | Show "Something went wrong" + correlationId |
 
 ---
 
@@ -224,9 +224,9 @@ export const COCKPIT_ENDPOINTS = [
 
 ## 7. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/ui/cockpit/ia-baseline.md` | Cockpit view/data inventory |
-| `docs/spec/` | OpenAPI specification |
-| `docs/adr/` | Architecture decision records |
-| `docs/onboarding/dev-track.md` | Developer onboarding |
+| Document                         | Purpose                       |
+| -------------------------------- | ----------------------------- |
+| `docs/ui/cockpit/ia-baseline.md` | Cockpit view/data inventory   |
+| `docs/spec/`                     | OpenAPI specification         |
+| `docs/adr/`                      | Architecture decision records |
+| `docs/onboarding/dev-track.md`   | Developer onboarding          |

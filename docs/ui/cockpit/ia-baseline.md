@@ -44,12 +44,14 @@ Cockpit
 **Purpose**: At-a-glance operational status.
 
 **Data shown**:
+
 - Count: pending approvals requiring my action (badge)
 - Count: active runs (in-progress)
 - Count: failed runs (last 24 h)
 - Recent activity feed (last 10 events: work-item created, run started, approval granted)
 
 **Primary actions**:
+
 - "Review pending approvals" → `/approvals/pending`
 - "Start new work item" → `/work-items/new`
 
@@ -79,6 +81,7 @@ Cockpit
 **Purpose**: Full view of a single work item and its execution history.
 
 **Sections**:
+
 1. **Header**: title, status badge, assignee, tags
 2. **Description**: rich-text or markdown body
 3. **Workflow spec**: read-only YAML/JSON renderer of the attached workflow definition
@@ -113,6 +116,7 @@ Cockpit
 **Purpose**: Full context for a single approval decision.
 
 **Sections**:
+
 1. **Request context**: checkpoint name, policy tier, run state at decision point
 2. **Evidence summary**: last N evidence entries before this checkpoint
 3. **AI summary** (Assisted tier): LLM-generated rationale for the proposed action
@@ -142,6 +146,7 @@ Cockpit
 **Purpose**: Full timeline and evidence chain for a single run.
 
 **Sections**:
+
 1. **Run header**: status, duration, triggeredBy
 2. **Step timeline**: ordered list of steps with status icons and timestamps
 3. **Evidence feed**: real-time-updating list of `EvidenceEntryV1` records
@@ -155,14 +160,16 @@ Cockpit
 **Purpose**: Cross-run evidence search and chain verification.
 
 **Features**:
+
 - Search by: run ID, work item, date range, event kind
 - Chain viewer: visualize hash-chain linkage, highlight broken links
 - Export: download chain as JSON for external verification
 
 **Chain viewer states**:
+
 - 🟢 Verified — all hashes match, timestamps monotonic
 - 🔴 Tampered — hash mismatch at index N
-- ⚠️  Incomplete — missing entries (gaps in sequence)
+- ⚠️ Incomplete — missing entries (gaps in sequence)
 
 ---
 
@@ -185,31 +192,31 @@ end-to-end tracing.
 
 ## 4. Component inventory (MVP)
 
-| Component | Used in | Notes |
-|-----------|---------|-------|
-| `StatusBadge` | All hubs | work-item / run / approval status |
-| `EvidenceChainViewer` | Run Detail, Evidence Explorer | Uses `evidence-chain-verifier.ts` |
-| `ApprovalForm` | Approval Detail, Run Detail | Approve/Reject + comment |
-| `StepTimeline` | Run Detail | Ordered step list with icons |
-| `WorkItemTable` | Work-Item Hub | Sortable/filterable table |
-| `RunTable` | Run Hub, Work-Item Detail | Same pattern |
-| `ApprovalQueue` | Dashboard, Approvals Hub | Pending approval list |
-| `AIRationaleSummary` | Approval Detail | Assisted-tier LLM summary |
-| `CorrelationBreadcrumb` | Run Detail, Evidence | Work item → Run → Evidence trail |
+| Component               | Used in                       | Notes                             |
+| ----------------------- | ----------------------------- | --------------------------------- |
+| `StatusBadge`           | All hubs                      | work-item / run / approval status |
+| `EvidenceChainViewer`   | Run Detail, Evidence Explorer | Uses `evidence-chain-verifier.ts` |
+| `ApprovalForm`          | Approval Detail, Run Detail   | Approve/Reject + comment          |
+| `StepTimeline`          | Run Detail                    | Ordered step list with icons      |
+| `WorkItemTable`         | Work-Item Hub                 | Sortable/filterable table         |
+| `RunTable`              | Run Hub, Work-Item Detail     | Same pattern                      |
+| `ApprovalQueue`         | Dashboard, Approvals Hub      | Pending approval list             |
+| `AIRationaleSummary`    | Approval Detail               | Assisted-tier LLM summary         |
+| `CorrelationBreadcrumb` | Run Detail, Evidence          | Work item → Run → Evidence trail  |
 
 ---
 
 ## 5. API surface required (control-plane)
 
-| View | Endpoint | Method |
-|------|----------|--------|
-| Work-Item Hub | `GET /workspaces/:wsId/work-items` | List |
-| Work-Item Detail | `GET /workspaces/:wsId/work-items/:id` | Read |
-| Run Hub | `GET /workspaces/:wsId/runs` | List |
-| Run Detail | `GET /workspaces/:wsId/runs/:id` | Read |
-| Evidence feed | `GET /workspaces/:wsId/runs/:id/evidence` | List |
-| Approval queue | `GET /workspaces/:wsId/approvals?status=pending&assignee=me` | List |
-| Approve | `POST /workspaces/:wsId/approvals/:id/decide` | Write |
+| View             | Endpoint                                                     | Method |
+| ---------------- | ------------------------------------------------------------ | ------ |
+| Work-Item Hub    | `GET /workspaces/:wsId/work-items`                           | List   |
+| Work-Item Detail | `GET /workspaces/:wsId/work-items/:id`                       | Read   |
+| Run Hub          | `GET /workspaces/:wsId/runs`                                 | List   |
+| Run Detail       | `GET /workspaces/:wsId/runs/:id`                             | Read   |
+| Evidence feed    | `GET /workspaces/:wsId/runs/:id/evidence`                    | List   |
+| Approval queue   | `GET /workspaces/:wsId/approvals?status=pending&assignee=me` | List   |
+| Approve          | `POST /workspaces/:wsId/approvals/:id/decide`                | Write  |
 
 See `bead-0752` for contract alignment work.
 
@@ -229,10 +236,10 @@ See `bead-0752` for contract alignment work.
 
 ## 7. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `docs/ui/cockpit/` | Existing Cockpit design docs |
-| `docs/onboarding/dev-track.md` | Developer onboarding |
-| `docs/tutorials/hello-governed-workflow.md` | End-to-end workflow tutorial |
-| `src/sdk/evidence-chain-verifier.ts` | Client-side chain verification |
-| `src/sdk/mis-v1.ts` | Adapter interface |
+| Document                                    | Purpose                        |
+| ------------------------------------------- | ------------------------------ |
+| `docs/ui/cockpit/`                          | Existing Cockpit design docs   |
+| `docs/onboarding/dev-track.md`              | Developer onboarding           |
+| `docs/tutorials/hello-governed-workflow.md` | End-to-end workflow tutorial   |
+| `src/sdk/evidence-chain-verifier.ts`        | Client-side chain verification |
+| `src/sdk/mis-v1.ts`                         | Adapter interface              |

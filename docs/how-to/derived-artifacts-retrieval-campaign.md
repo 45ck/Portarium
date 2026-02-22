@@ -11,14 +11,14 @@
 ## 1. Why derived artefacts?
 
 Governed workflows produce **evidence chains** — tamper-evident logs of what happened.
-Derived artefacts transform those logs into *queryable knowledge*:
+Derived artefacts transform those logs into _queryable knowledge_:
 
-| Evidence chain | Derived artefact | Enables |
-|---------------|-----------------|---------|
-| Raw `EvidenceEntryV1` records | Semantic embedding | "Find runs similar to this one" |
-| Run step sequence | Graph projection | "What depends on this approval?" |
-| Approval decisions over time | Time-series index | "How long do approvals take by tier?" |
-| Document attachments (if any) | RAG chunk index | "What policy governs this workflow?" |
+| Evidence chain                | Derived artefact   | Enables                               |
+| ----------------------------- | ------------------ | ------------------------------------- |
+| Raw `EvidenceEntryV1` records | Semantic embedding | "Find runs similar to this one"       |
+| Run step sequence             | Graph projection   | "What depends on this approval?"      |
+| Approval decisions over time  | Time-series index  | "How long do approvals take by tier?" |
+| Document attachments (if any) | RAG chunk index    | "What policy governs this workflow?"  |
 
 ---
 
@@ -54,12 +54,12 @@ API endpoint (bead-0766 — OpenAPI spec)
 
 ## 3. Port families (MIS v0.1 alignment)
 
-| Port | MIS family | Bead |
-|------|-----------|------|
-| `SemanticIndexPort` | `vector-db` | bead-0774 (Weaviate), bead-0776 (pgvector fallback) |
-| `GraphProjectionPort` | `graph-db` | bead-0775 (Neo4j), bead-0777 (in-process fallback) |
-| `EmbeddingPort` | `embedding` | bead-0778 (OpenAI), bead-0779 (local ONNX) |
-| `ChunkingPort` | `chunking` | bead-0780 (recursive, sentence, BAML-structured) |
+| Port                  | MIS family  | Bead                                                |
+| --------------------- | ----------- | --------------------------------------------------- |
+| `SemanticIndexPort`   | `vector-db` | bead-0774 (Weaviate), bead-0776 (pgvector fallback) |
+| `GraphProjectionPort` | `graph-db`  | bead-0775 (Neo4j), bead-0777 (in-process fallback)  |
+| `EmbeddingPort`       | `embedding` | bead-0778 (OpenAI), bead-0779 (local ONNX)          |
+| `ChunkingPort`        | `chunking`  | bead-0780 (recursive, sentence, BAML-structured)    |
 
 ---
 
@@ -77,7 +77,7 @@ type DerivedArtifactV1 = Readonly<{
   kind: 'embedding' | 'graph-node' | 'graph-edge' | 'chunk-index';
   provenance: DerivedArtifactProvenance;
   createdAtIso: string;
-  expiresAtIso?: string;  // retention policy
+  expiresAtIso?: string; // retention policy
 }>;
 ```
 
@@ -133,20 +133,20 @@ type RetrievalQueryV1 = Readonly<{
 
 ## 6. Decision gates
 
-| Gate | Question | Pass criteria |
-|------|----------|--------------|
-| M0 | Are all deps license-compatible? | `npm run license:check` exits 0 |
-| M1 | Is projection idempotent? | Re-projection of same run produces identical artefacts |
-| M2 | Does Weaviate adapter pass `SemanticIndexPort` contract tests? | MIS v0.1 adapter test suite green |
-| M3 | Can the Cockpit return semantically relevant runs for a query? | Manual QA: top-3 results are relevant for 3/3 test queries |
+| Gate | Question                                                       | Pass criteria                                              |
+| ---- | -------------------------------------------------------------- | ---------------------------------------------------------- |
+| M0   | Are all deps license-compatible?                               | `npm run license:check` exits 0                            |
+| M1   | Is projection idempotent?                                      | Re-projection of same run produces identical artefacts     |
+| M2   | Does Weaviate adapter pass `SemanticIndexPort` contract tests? | MIS v0.1 adapter test suite green                          |
+| M3   | Can the Cockpit return semantically relevant runs for a query? | Manual QA: top-3 results are relevant for 3/3 test queries |
 
 ---
 
 ## 7. Related documents
 
-| Document | Purpose |
-|----------|---------|
-| `src/sdk/mis-v1.ts` | MIS adapter interface |
-| `docs/how-to/vv-campaign.md` | V&V campaign overview |
-| `docs/how-to/licensing-gate.md` | License compliance |
+| Document                                         | Purpose                                 |
+| ------------------------------------------------ | --------------------------------------- |
+| `src/sdk/mis-v1.ts`                              | MIS adapter interface                   |
+| `docs/how-to/vv-campaign.md`                     | V&V campaign overview                   |
+| `docs/how-to/licensing-gate.md`                  | License compliance                      |
 | `docs/adr/ADR-0080-credential-boundary-model.md` | Credential isolation for embedding APIs |

@@ -31,3 +31,4 @@ build_gen*.mjs
 bd_issues_tmp.json
 infra/helm/**/templates/*.yaml
 docs/ui/cockpit/index.html
+tmp
