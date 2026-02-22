@@ -13,9 +13,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { parseRunV1, type RunV1 } from '../../domain/runs/run-v1.js';
+import { parseRunV1 } from '../../domain/runs/run-v1.js';
 import {
-  type ApprovalLifecycleStatus,
   isValidApprovalLifecycleTransition,
   isTerminalApprovalLifecycleStatus,
 } from '../../domain/approvals/approval-lifecycle-v1.js';
@@ -160,7 +159,7 @@ describe('Command conformance matrix: StartWorkflow', () => {
 
   it('executionTier in valid input is a known tier', () => {
     const knownTiers = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'];
-    expect(knownTiers).toContain(cmd.validInput.executionTier);
+    expect(knownTiers).toContain(cmd.validInput['executionTier']);
   });
 
   it('invalid inputs cover missing workspaceId, workflowId, and invalid tier', () => {
@@ -176,7 +175,7 @@ describe('Command conformance matrix: SubmitApproval', () => {
 
   it('valid decision is Approved or Denied', () => {
     const validDecisions = ['Approved', 'Denied', 'ChangesRequested'];
-    expect(validDecisions).toContain(cmd.validInput.decision);
+    expect(validDecisions).toContain(cmd.validInput['decision']);
   });
 
   it('invalid decision variant is present', () => {
@@ -262,7 +261,7 @@ describe('Run lifecycle conformance: parseRunV1 ↔ application layer alignment'
 
   it('StartWorkflow command executionTier aligns with domain RunV1 tier values', () => {
     const startWorkflow = COMMAND_CONFORMANCE_MATRIX.find((c) => c.name === 'StartWorkflow')!;
-    const tier = startWorkflow.validInput.executionTier as string;
+    const tier = startWorkflow.validInput['executionTier'] as string;
     const validTiers: string[] = [...VALID_EXECUTION_TIERS];
     expect(validTiers).toContain(tier);
   });
