@@ -17,6 +17,7 @@ import {
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import { InMemoryRateLimitStore } from '../../infrastructure/rate-limiting/index.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
+import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
 /**
  * Returns any configuration warnings for the JWT authentication setup.
@@ -140,6 +141,23 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const runStore: RunStore = new PostgresRunStore(sqlClient);
     return { authentication, authorization, workspaceStore, runStore, rateLimitStore };
   }
+
+  // Guard: in-memory stub stores require DEV_STUB_STORES=true in dev/test.
+  const gate = checkStoreBootstrapGate();
+  if (!gate.allowed) {
+    throw new Error(
+      `[portarium] FATAL: No persistent store configured and DEV_STUB_STORES is not enabled. ` +
+        `Set PORTARIUM_USE_POSTGRES_STORES=true and PORTARIUM_DATABASE_URL to use Postgres, ` +
+        `or set DEV_STUB_STORES=true (in NODE_ENV=development or test) to allow in-memory stubs. ` +
+        `(${gate.reason})`,
+    );
+  }
+
+  // DEV_STUB_STORES=true in development/test: warn and use in-memory stubs.
+  process.stderr.write(
+    '[portarium] WARNING: Using in-memory stub stores (DEV_STUB_STORES=true). ' +
+      'Data will not persist across restarts. Do not use in production.\n',
+  );
 
   const workspaceStore: WorkspaceStore = {
     getWorkspaceById: () => Promise.resolve(null),

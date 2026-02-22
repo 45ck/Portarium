@@ -39,6 +39,10 @@ class MockSqlClient implements SqlClient {
     }
     return Promise.resolve({ rows: [], rowCount: 0 });
   }
+
+  withTransaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    return fn(this);
+  }
 }
 
 describe('buildSchemaName', () => {

@@ -103,12 +103,12 @@ export class PostgresWorkforceMemberStore implements WorkforceMemberStore {
   }
 
   public async listWorkforceMembersByIds(tenantId: string, workforceMemberIds: readonly string[]) {
-    const members = await Promise.all(
-      workforceMemberIds.map((workforceMemberId) =>
-        this.getWorkforceMemberById(tenantId, String(workforceMemberId)),
-      ),
+    const payloads = await this.#documents.listByIds(
+      String(tenantId),
+      COLLECTION_WORKFORCE_MEMBERS,
+      workforceMemberIds.map(String),
     );
-    return members.filter((member): member is WorkforceMemberV1 => member !== null);
+    return payloads.map(parseWorkforceMemberV1);
   }
 }
 

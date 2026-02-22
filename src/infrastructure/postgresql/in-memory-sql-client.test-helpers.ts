@@ -1,4 +1,5 @@
 import {
+  SQL_JSON_DOC_SELECT_BY_IDS,
   SQL_JSON_DOC_SELECT_MANY,
   SQL_JSON_DOC_SELECT_ONE,
   SQL_JSON_DOC_UPSERT,
@@ -16,6 +17,10 @@ type Stored = Readonly<{
 export class InMemorySqlClient implements SqlClient {
   readonly #rows = new Map<string, Stored>();
 
+  public async withTransaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    return fn(this);
+  }
+
   public query<Row extends SqlRow = SqlRow>(
     statement: string,
     params: readonly unknown[] = [],
@@ -29,6 +34,9 @@ export class InMemorySqlClient implements SqlClient {
     }
     if (statement.startsWith(SQL_JSON_DOC_SELECT_MANY)) {
       return Promise.resolve(this.#selectMany<Row>(params));
+    }
+    if (statement.startsWith(SQL_JSON_DOC_SELECT_BY_IDS)) {
+      return Promise.resolve(this.#selectByIds<Row>(params));
     }
     throw new Error(`Unsupported SQL statement tag: ${statement.split('\n')[0]}`);
   }
@@ -87,6 +95,31 @@ export class InMemorySqlClient implements SqlClient {
           row.tenantId === wantedTenant &&
           row.collection === wantedCollection &&
           (wantedWorkspace === undefined || row.workspaceId === wantedWorkspace),
+      )
+      .sort((left, right) => left.documentId.localeCompare(right.documentId))
+      .map((row) => ({ payload: row.payload }) as unknown as Row);
+
+    return {
+      rows,
+      rowCount: rows.length,
+    };
+  }
+
+  #selectByIds<Row extends SqlRow>(params: readonly unknown[]): SqlQueryResult<Row> {
+    const [tenantId, collection, documentIds] = params;
+    const wantedTenant = String(tenantId);
+    const wantedCollection = String(collection);
+    if (!Array.isArray(documentIds)) {
+      throw new Error('selectByIds: third param must be an array of document IDs.');
+    }
+    const idSet = new Set((documentIds as unknown[]).map(String));
+
+    const rows = [...this.#rows.values()]
+      .filter(
+        (row) =>
+          row.tenantId === wantedTenant &&
+          row.collection === wantedCollection &&
+          idSet.has(row.documentId),
       )
       .sort((left, right) => left.documentId.localeCompare(right.documentId))
       .map((row) => ({ payload: row.payload }) as unknown as Row);

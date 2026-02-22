@@ -57,6 +57,10 @@ class FakeSqlClient implements SqlClient {
     return { rows: [] as Row[], rowCount: 0 };
   }
 
+  public withTransaction<T>(fn: (tx: SqlClient) => Promise<T>): Promise<T> {
+    return fn(this);
+  }
+
   public executed(): readonly string[] {
     return [...this.#executed];
   }
