@@ -1,0 +1,105 @@
+name: Runnable-State Smoke CI
+
+on:
+  pull_request:
+    paths:
+      - 'src/infrastructure/adapters/governed-run-smoke.test.ts'
+      - 'src/application/commands/submit-approval.ts'
+      - 'src/application/ports/**'
+      - 'src/domain/approvals/**'
+      - 'src/domain/primitives/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/runnable-state-smoke.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/infrastructure/adapters/governed-run-smoke.test.ts'
+      - 'src/application/commands/submit-approval.ts'
+      - 'src/application/ports/**'
+      - 'src/domain/approvals/**'
+      - 'src/domain/primitives/**'
+  workflow_dispatch:
+    inputs:
+      integration_mode:
+        description: 'Run integration-mode tests against a live local stack'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  # -------------------------------------------------------------------
+  # Job 1: Unit-mode smoke (always runs — no external dependencies)
+  # -------------------------------------------------------------------
+  unit-smoke:
+    name: Governed-run unit smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run governed-run smoke tests (unit mode)
+        run: npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
+
+      - name: Typecheck governed-run smoke
+        run: npx tsc -p tsconfig.json --noEmit
+
+  # -------------------------------------------------------------------
+  # Job 2: Integration-mode smoke (dispatch-only, requires local stack)
+  # -------------------------------------------------------------------
+  integration-smoke:
+    name: Governed-run integration smoke
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.integration_mode == 'true'
+    services:
+      portarium-stack:
+        image: ghcr.io/45ck/portarium-local:latest
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd "curl -f http://localhost:3000/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run governed-run smoke tests (integration mode)
+        env:
+          GOVERNED_RUN_INTEGRATION: 'true'
+          LOCAL_STACK_URL: 'http://localhost:3000'
+        run: npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
+
+  # -------------------------------------------------------------------
+  # Job 3: Gate (always runs — reports overall result)
+  # -------------------------------------------------------------------
+  gate:
+    name: Smoke gate
+    runs-on: ubuntu-latest
+    needs: [unit-smoke]
+    if: always()
+    steps:
+      - name: Check smoke result
+        run: |
+          if [ "${{ needs.unit-smoke.result }}" != "success" ]; then
+            echo "::error::Governed-run unit smoke failed"
+            exit 1
+          fi
+          echo "Governed-run smoke gate passed"

@@ -17,7 +17,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { filterSortSlice, VISIBLE_COUNT } from '../../../apps/cockpit/src/hooks/use-virtual-robot-list.js';
+import {
+  filterSortSlice,
+  VISIBLE_COUNT,
+} from '../../../apps/cockpit/src/hooks/use-virtual-robot-list.js';
 import type { RobotLocation } from '../../../apps/cockpit/src/mocks/fixtures/robot-locations.js';
 import type { RobotStatus } from '../../../apps/cockpit/src/types/robotics.js';
 
@@ -30,7 +33,7 @@ function makeFleet(size: number): RobotLocation[] {
     robotId: `robot-${String(i).padStart(4, '0')}`,
     name: `Robot ${String(i).padStart(4, '0')}`,
     status: STATUS_CYCLE[i % STATUS_CYCLE.length]!,
-    batteryPct: (i % 101),
+    batteryPct: i % 101,
     lat: 37.7749 + (i % 100) * 0.001,
     lng: -122.4194 + (i % 100) * 0.001,
     heading: i % 360,
@@ -44,8 +47,9 @@ function makeFleet(size: number): RobotLocation[] {
 const FLEET_500 = makeFleet(500);
 const FLEET_100 = makeFleet(100);
 
-/** Measure elapsed ms for a synchronous function. */
+/** Measure elapsed ms for a synchronous function. Runs fn once to warm the JIT, then times it. */
 function timeMs(fn: () => void): number {
+  fn(); // warm-up — lets V8 JIT-compile before we measure
   const start = performance.now();
   fn();
   return performance.now() - start;
@@ -154,11 +158,21 @@ describe('filterSortSlice — correctness', () => {
   });
 
   it('returns empty array when status filter matches nothing in small fleet', () => {
-    const singleRobot: RobotLocation[] = [{
-      robotId: 'r-1', name: 'Robot 1', status: 'Online' as RobotStatus,
-      batteryPct: 80, lat: 0, lng: 0, heading: 0,
-      robotClass: 'AMR' as const, speedMps: 0, updatedAtIso: '', trail: [],
-    }];
+    const singleRobot: RobotLocation[] = [
+      {
+        robotId: 'r-1',
+        name: 'Robot 1',
+        status: 'Online' as RobotStatus,
+        batteryPct: 80,
+        lat: 0,
+        lng: 0,
+        heading: 0,
+        robotClass: 'AMR' as const,
+        speedMps: 0,
+        updatedAtIso: '',
+        trail: [],
+      },
+    ];
     const result = filterSortSlice(singleRobot, 'Offline', '', 'name', 0, VISIBLE_COUNT);
     expect(result).toHaveLength(0);
   });

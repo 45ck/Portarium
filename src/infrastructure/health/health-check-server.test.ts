@@ -99,9 +99,9 @@ describe('HealthCheckServer', () => {
       }),
     }));
     const { body } = await get(server.actualPort, '/health/ready');
-    expect(
-      (body as { checks: { database: { status: string } } }).checks.database.status,
-    ).toBe('ok');
+    expect((body as { checks: { database: { status: string } } }).checks.database.status).toBe(
+      'ok',
+    );
   });
 
   it('supports async health check functions', async () => {

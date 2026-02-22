@@ -89,7 +89,9 @@ describe('OpenFgaAuthorization', () => {
       fetchImpl: vi.fn<typeof fetch>(),
     });
 
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('authorizationModelId is not pinned'));
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('authorizationModelId is not pinned'),
+    );
     warn.mockRestore();
   });
 

@@ -73,7 +73,9 @@ export function useServiceWorker(): ServiceWorkerState {
 
     return () => {
       navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
-      registration?.unregister().catch(() => {/* ignore */});
+      registration?.unregister().catch(() => {
+        /* ignore */
+      });
     };
   }, []);
 

@@ -48,10 +48,19 @@ let connectionOk = false;
 
 function connectToRosBridge(url: string, timeoutMs = 5000): Promise<WebSocket> {
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => reject(new Error(`rosbridge connect timeout (${url})`)), timeoutMs);
+    const timeoutId = setTimeout(
+      () => reject(new Error(`rosbridge connect timeout (${url})`)),
+      timeoutMs,
+    );
     const ws = new WebSocket(url);
-    ws.onopen = () => { clearTimeout(timeoutId); resolve(ws); };
-    ws.onerror = (err) => { clearTimeout(timeoutId); reject(new Error(`WebSocket error: ${String(err)}`)); };
+    ws.onopen = () => {
+      clearTimeout(timeoutId);
+      resolve(ws);
+    };
+    ws.onerror = (err) => {
+      clearTimeout(timeoutId);
+      reject(new Error(`WebSocket error: ${String(err)}`));
+    };
   });
 }
 
@@ -62,7 +71,10 @@ function sendAndReceive(
   timeoutMs = 3000,
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => reject(new Error(`timeout waiting for ${waitForOpType}`)), timeoutMs);
+    const timeoutId = setTimeout(
+      () => reject(new Error(`timeout waiting for ${waitForOpType}`)),
+      timeoutMs,
+    );
     const handler = (event: MessageEvent) => {
       try {
         const data = JSON.parse(String(event.data)) as { op: string };
@@ -89,7 +101,9 @@ beforeAll(async () => {
     websocket = await connectToRosBridge(ROS_BRIDGE_URL, 5000);
     connectionOk = true;
   } catch (err) {
-    console.warn(`[simulation-smoke] Could not connect to rosbridge at ${ROS_BRIDGE_URL}: ${String(err)}`);
+    console.warn(
+      `[simulation-smoke] Could not connect to rosbridge at ${ROS_BRIDGE_URL}: ${String(err)}`,
+    );
     connectionOk = false;
   }
 });
@@ -152,12 +166,14 @@ describe('rosbridge WebSocket connectivity', () => {
         }
       };
       websocket!.addEventListener('message', handler);
-      websocket!.send(JSON.stringify({
-        op: 'subscribe',
-        id: 'smoke-sub-1',
-        topic: '/rosout',
-        type: 'rcl_interfaces/msg/Log',
-      }));
+      websocket!.send(
+        JSON.stringify({
+          op: 'subscribe',
+          id: 'smoke-sub-1',
+          topic: '/rosout',
+          type: 'rcl_interfaces/msg/Log',
+        }),
+      );
     });
 
     expect(received).toBeDefined();
@@ -170,21 +186,23 @@ describe('ros2-action-bridge mission lifecycle', () => {
 
     // Send a goal to /navigate_to_pose action via rosbridge action client protocol
     const goalId = `smoke-goal-${Date.now()}`;
-    websocket.send(JSON.stringify({
-      op: 'send_goal',
-      id: goalId,
-      action: '/navigate_to_pose',
-      action_type: 'nav2_msgs/action/NavigateToPose',
-      goal: {
-        pose: {
-          header: { frame_id: 'map' },
+    websocket.send(
+      JSON.stringify({
+        op: 'send_goal',
+        id: goalId,
+        action: '/navigate_to_pose',
+        action_type: 'nav2_msgs/action/NavigateToPose',
+        goal: {
           pose: {
-            position: { x: 1.0, y: 0.0, z: 0.0 },
-            orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
+            header: { frame_id: 'map' },
+            pose: {
+              position: { x: 1.0, y: 0.0, z: 0.0 },
+              orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
+            },
           },
         },
-      },
-    }));
+      }),
+    );
 
     // In simulation, the action server acknowledges or rejects the goal
     // Wait briefly for any response — we are checking connectivity, not Nav2 routing
@@ -198,30 +216,34 @@ describe('ros2-action-bridge mission lifecycle', () => {
     const goalId = `smoke-cancel-${Date.now()}`;
 
     // Dispatch
-    websocket.send(JSON.stringify({
-      op: 'send_goal',
-      id: goalId,
-      action: '/navigate_to_pose',
-      action_type: 'nav2_msgs/action/NavigateToPose',
-      goal: {
-        pose: {
-          header: { frame_id: 'map' },
+    websocket.send(
+      JSON.stringify({
+        op: 'send_goal',
+        id: goalId,
+        action: '/navigate_to_pose',
+        action_type: 'nav2_msgs/action/NavigateToPose',
+        goal: {
           pose: {
-            position: { x: 5.0, y: 5.0, z: 0.0 },
-            orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
+            header: { frame_id: 'map' },
+            pose: {
+              position: { x: 5.0, y: 5.0, z: 0.0 },
+              orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
+            },
           },
         },
-      },
-    }));
+      }),
+    );
 
     // Immediately cancel
     await new Promise((resolve) => setTimeout(resolve, 100));
-    websocket.send(JSON.stringify({
-      op: 'cancel_goal',
-      id: `cancel-${goalId}`,
-      action: '/navigate_to_pose',
-      goal_id: goalId,
-    }));
+    websocket.send(
+      JSON.stringify({
+        op: 'cancel_goal',
+        id: `cancel-${goalId}`,
+        action: '/navigate_to_pose',
+        goal_id: goalId,
+      }),
+    );
 
     await new Promise((resolve) => setTimeout(resolve, 200));
     expect(true).toBe(true); // Cancel did not throw
@@ -238,7 +260,11 @@ describe('VDA 5050 simulation ingest', () => {
       const timeoutId = setTimeout(() => reject(new Error('VDA5050 topic timeout')), 5000);
       const handler = (event: MessageEvent) => {
         try {
-          const msg = JSON.parse(String(event.data)) as { op: string; topic?: string; msg?: { data?: string } };
+          const msg = JSON.parse(String(event.data)) as {
+            op: string;
+            topic?: string;
+            msg?: { data?: string };
+          };
           if (msg.op === 'publish' && msg.topic === '/vda5050/sim_fleet/state') {
             clearTimeout(timeoutId);
             websocket!.removeEventListener('message', handler);
@@ -249,12 +275,14 @@ describe('VDA 5050 simulation ingest', () => {
         }
       };
       websocket!.addEventListener('message', handler);
-      websocket!.send(JSON.stringify({
-        op: 'subscribe',
-        id: 'vda5050-sub',
-        topic: '/vda5050/sim_fleet/state',
-        type: 'std_msgs/msg/String',
-      }));
+      websocket!.send(
+        JSON.stringify({
+          op: 'subscribe',
+          id: 'vda5050-sub',
+          topic: '/vda5050/sim_fleet/state',
+          type: 'std_msgs/msg/String',
+        }),
+      );
     });
 
     // Validate that the received data is a parseable VDA 5050 state message
@@ -273,7 +301,11 @@ describe('Open-RMF fleet state ingest', () => {
       const timeoutId = setTimeout(() => reject(new Error('Open-RMF fleet topic timeout')), 5000);
       const handler = (event: MessageEvent) => {
         try {
-          const msg = JSON.parse(String(event.data)) as { op: string; topic?: string; msg?: unknown };
+          const msg = JSON.parse(String(event.data)) as {
+            op: string;
+            topic?: string;
+            msg?: unknown;
+          };
           if (msg.op === 'publish' && msg.topic === '/fleet_states') {
             clearTimeout(timeoutId);
             websocket!.removeEventListener('message', handler);
@@ -284,12 +316,14 @@ describe('Open-RMF fleet state ingest', () => {
         }
       };
       websocket!.addEventListener('message', handler);
-      websocket!.send(JSON.stringify({
-        op: 'subscribe',
-        id: 'fleet-state-sub',
-        topic: '/fleet_states',
-        type: 'rmf_fleet_msgs/msg/FleetState',
-      }));
+      websocket!.send(
+        JSON.stringify({
+          op: 'subscribe',
+          id: 'fleet-state-sub',
+          topic: '/fleet_states',
+          type: 'rmf_fleet_msgs/msg/FleetState',
+        }),
+      );
     });
 
     if (received !== undefined) {

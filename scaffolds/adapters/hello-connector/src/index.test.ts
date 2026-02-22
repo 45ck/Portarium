@@ -13,7 +13,11 @@ describe('hello-connector adapter scaffold', () => {
     expect(result.ok).toBe(true);
     const items = result.output?.['items'] as { id: string; title: string; status: string }[];
     expect(items.length).toBeGreaterThan(0);
-    expect(items[0]).toMatchObject({ id: expect.any(String), title: expect.any(String), status: expect.any(String) });
+    expect(items[0]).toMatchObject({
+      id: expect.any(String),
+      title: expect.any(String),
+      status: expect.any(String),
+    });
   });
 
   it('getItem returns a single canonical task', async () => {
@@ -24,7 +28,11 @@ describe('hello-connector adapter scaffold', () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.output?.['item']).toMatchObject({ id: 'item-001', title: 'Set up CI pipeline', status: 'done' });
+    expect(result.output?.['item']).toMatchObject({
+      id: 'item-001',
+      title: 'Set up CI pipeline',
+      status: 'done',
+    });
   });
 
   it('getItem returns error for unknown id', async () => {

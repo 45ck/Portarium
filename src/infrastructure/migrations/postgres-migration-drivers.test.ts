@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PostgresMigrationJournalStore,
   PostgresMigrationSqlDriver,
+  SchemaScopedMigrationSqlDriver,
 } from './postgres-migration-drivers.js';
 import type { SqlClient, SqlQueryResult, SqlRow } from '../postgresql/sql-client.js';
 
@@ -173,5 +174,45 @@ describe('PostgresMigrationSqlDriver', () => {
     await driver.execute({ target: 'workspace-default', statement: stmt });
 
     expect(client.executed()).toContain(stmt);
+  });
+});
+
+describe('SchemaScopedMigrationSqlDriver', () => {
+  it('sets search_path before each statement', async () => {
+    const client = new FakeSqlClient();
+    const driver = new SchemaScopedMigrationSqlDriver(client, 'tenant_acme');
+
+    await driver.execute({
+      target: 'tenant-acme',
+      statement: 'CREATE TABLE IF NOT EXISTS widgets (id TEXT PRIMARY KEY);',
+    });
+
+    const executed = client.executed();
+    expect(executed[0]).toBe('SET search_path TO "tenant_acme";');
+    expect(executed[1]).toBe('CREATE TABLE IF NOT EXISTS widgets (id TEXT PRIMARY KEY);');
+  });
+
+  it('exposes the schema name via schemaName getter', () => {
+    const client = new FakeSqlClient();
+    const driver = new SchemaScopedMigrationSqlDriver(client, 'tenant_beta');
+    expect(driver.schemaName).toBe('tenant_beta');
+  });
+
+  it('sets search_path on every execute call', async () => {
+    const client = new FakeSqlClient();
+    const driver = new SchemaScopedMigrationSqlDriver(client, 'tenant_gamma');
+    const stmt1 = 'ALTER TABLE t ADD COLUMN c1 TEXT;';
+    const stmt2 = 'ALTER TABLE t ADD COLUMN c2 TEXT;';
+
+    await driver.execute({ target: 'tenant-gamma', statement: stmt1 });
+    await driver.execute({ target: 'tenant-gamma', statement: stmt2 });
+
+    const executed = client.executed();
+    expect(executed).toEqual([
+      'SET search_path TO "tenant_gamma";',
+      stmt1,
+      'SET search_path TO "tenant_gamma";',
+      stmt2,
+    ]);
   });
 });

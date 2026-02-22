@@ -14,9 +14,7 @@
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type HelloConnectorResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: string };
+export type HelloConnectorResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
 export interface HelloConnectorStatus {
   connected: boolean;
@@ -167,7 +165,11 @@ async function demo(): Promise<void> {
   }
 
   const msgResult = await connector.sendMessage('hello from Portarium');
-  console.log(msgResult.ok ? '[hello-connector] sendMessage → delivered' : `[hello-connector] sendMessage → ${msgResult.error}`);
+  console.log(
+    msgResult.ok
+      ? '[hello-connector] sendMessage → delivered'
+      : `[hello-connector] sendMessage → ${msgResult.error}`,
+  );
 
   const statusResult = await connector.getStatus();
   if (statusResult.ok) {
@@ -178,5 +180,6 @@ async function demo(): Promise<void> {
 }
 
 // Run if executed directly
-const isMain = process.argv[1]?.endsWith('connector.ts') || process.argv[1]?.endsWith('connector.js');
+const isMain =
+  process.argv[1]?.endsWith('connector.ts') || process.argv[1]?.endsWith('connector.js');
 if (isMain) void demo();

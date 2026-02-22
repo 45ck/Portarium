@@ -959,3 +959,68 @@ integ
 pullrequest
 rolname
 NOLOGIN
+
+# Robotics adapter terms (bead-0567, bead-0534, bead-0519, bead-0720+)
+undock
+Undock
+hivemq
+HiveMQ
+massrobotics
+MassRobotics
+VDMA
+uagv
+CONNECTIONBROKEN
+TEACHIN
+conv
+waitingpreemption
+oneofs
+creds
+tokenreviews
+Workbox
+GMAC
+smime
+spanmetrics
+servicegraph
+nanosec
+openrmf
+rosapi
+rosout
+
+# iOS / Android / mobile CI build terms (bead-0720, bead-0723)
+xcarchive
+xcodeproj
+pbxproj
+gradlew
+
+# Push-notification and mobile-smoke test fixture tokens
+Rdre
+ALRFX
+OOUHK
+wtaz
+svbpez
+Vloto
+
+# Tenant-storage-provisioner test terms (bead-0392)
+contoso
+bigcorp
+bigco
+tierc
+upserts
+sqls
+Sqls
+datname
+malley
+
+# JWT token type (RFC 9449 DPoP)
+DPoP
+
+# Infrastructure cost tooling
+Infracost
+infracost
+INFRACOST
+
+# Git/review one-liners
+oneline
+
+# kwargs (Python/Odoo RPC)
+kwargs

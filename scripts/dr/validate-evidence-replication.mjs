@@ -28,9 +28,7 @@ import { writeFileSync } from 'node:fs';
 import {
   S3Client,
   PutObjectCommand,
-  GetObjectCommand,
   HeadObjectCommand,
-  GetObjectLegalHoldCommand,
   GetObjectRetentionCommand,
 } from '@aws-sdk/client-s3';
 
@@ -39,8 +37,8 @@ const { values: args } = parseArgs({
     'source-bucket': { type: 'string' },
     'replica-bucket': { type: 'string' },
     'drill-id': { type: 'string' },
-    'output': { type: 'string' },
-    'region': { type: 'string', default: process.env.AWS_REGION ?? 'us-east-1' },
+    output: { type: 'string' },
+    region: { type: 'string', default: process.env.AWS_REGION ?? 'us-east-1' },
   },
 });
 
@@ -57,7 +55,11 @@ if (!sourceBucket || !replicaBucket || !drillId) {
 
 const client = new S3Client({ region });
 const TEST_KEY = `dr-drills/${drillId}/replication-test.json`;
-const TEST_BODY = JSON.stringify({ drillId, timestamp: new Date().toISOString(), type: 'replication-test' });
+const TEST_BODY = JSON.stringify({
+  drillId,
+  timestamp: new Date().toISOString(),
+  type: 'replication-test',
+});
 
 const results = {
   drillId,
@@ -72,12 +74,14 @@ const start = Date.now();
 
 try {
   // Step 1: Write test object to source.
-  await client.send(new PutObjectCommand({
-    Bucket: sourceBucket,
-    Key: TEST_KEY,
-    Body: TEST_BODY,
-    ContentType: 'application/json',
-  }));
+  await client.send(
+    new PutObjectCommand({
+      Bucket: sourceBucket,
+      Key: TEST_KEY,
+      Body: TEST_BODY,
+      ContentType: 'application/json',
+    }),
+  );
   console.log(`[✓] Wrote test object to s3://${sourceBucket}/${TEST_KEY}`);
   results.checks.writeSource = { passed: true };
 
@@ -86,11 +90,15 @@ try {
   const deadline = Date.now() + 15 * 60 * 1000;
   while (Date.now() < deadline) {
     try {
-      replicaHead = await client.send(new HeadObjectCommand({
-        Bucket: replicaBucket,
-        Key: TEST_KEY,
-      }));
-      console.log(`[✓] Object appeared in replica after ${Math.round((Date.now() - start) / 1000)}s`);
+      replicaHead = await client.send(
+        new HeadObjectCommand({
+          Bucket: replicaBucket,
+          Key: TEST_KEY,
+        }),
+      );
+      console.log(
+        `[✓] Object appeared in replica after ${Math.round((Date.now() - start) / 1000)}s`,
+      );
       break;
     } catch {
       process.stdout.write('.');
@@ -107,14 +115,18 @@ try {
   };
 
   // Step 3: Compare ETag between source and replica.
-  const sourceHead = await client.send(new HeadObjectCommand({
-    Bucket: sourceBucket,
-    Key: TEST_KEY,
-  }));
+  const sourceHead = await client.send(
+    new HeadObjectCommand({
+      Bucket: sourceBucket,
+      Key: TEST_KEY,
+    }),
+  );
 
   const etagMatch = sourceHead.ETag === replicaHead.ETag;
   const sizeMatch = sourceHead.ContentLength === replicaHead.ContentLength;
-  console.log(`[${etagMatch ? '✓' : '✗'}] ETag match: source=${sourceHead.ETag} replica=${replicaHead.ETag}`);
+  console.log(
+    `[${etagMatch ? '✓' : '✗'}] ETag match: source=${sourceHead.ETag} replica=${replicaHead.ETag}`,
+  );
   console.log(`[${sizeMatch ? '✓' : '✗'}] Size match: ${sourceHead.ContentLength} bytes`);
   results.checks.integrity = { passed: etagMatch && sizeMatch, etagMatch, sizeMatch };
 
@@ -124,14 +136,18 @@ try {
 
   // Step 4: Verify object-lock retention on source (if bucket has object lock).
   try {
-    const retention = await client.send(new GetObjectRetentionCommand({
-      Bucket: sourceBucket,
-      Key: TEST_KEY,
-    }));
+    const retention = await client.send(
+      new GetObjectRetentionCommand({
+        Bucket: sourceBucket,
+        Key: TEST_KEY,
+      }),
+    );
     const retainUntil = new Date(retention.Retention?.RetainUntilDate ?? 0);
     const tomorrow = new Date(Date.now() + 86400_000);
     const lockValid = retainUntil > tomorrow;
-    console.log(`[${lockValid ? '✓' : '✗'}] Object lock retention until ${retainUntil.toISOString()}`);
+    console.log(
+      `[${lockValid ? '✓' : '✗'}] Object lock retention until ${retainUntil.toISOString()}`,
+    );
     results.checks.objectLock = { passed: lockValid, retainUntil: retainUntil.toISOString() };
   } catch (err) {
     // Bucket may not have object lock — record as skipped, not failed.
@@ -140,7 +156,9 @@ try {
 
   results.passed = true;
   results.durationMs = Date.now() - start;
-  console.log(`\n[✓] Evidence replication drill PASSED in ${Math.round(results.durationMs / 1000)}s`);
+  console.log(
+    `\n[✓] Evidence replication drill PASSED in ${Math.round(results.durationMs / 1000)}s`,
+  );
 } catch (err) {
   results.passed = false;
   results.error = String(err);

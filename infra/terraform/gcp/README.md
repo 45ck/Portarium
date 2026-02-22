@@ -32,6 +32,7 @@ terraform apply -var-file=examples/dev.tfvars -var="gcp_project_id=your-project"
 
 Uses Application Default Credentials (ADC). For CI, bind a Workload Identity
 service account with the following roles:
+
 - `roles/container.admin` (GKE)
 - `roles/cloudsql.admin` (Cloud SQL)
 - `roles/storage.admin` (GCS)
@@ -40,10 +41,10 @@ service account with the following roles:
 
 ## Environment comparison
 
-| Setting | dev | staging | prod |
-|---------|-----|---------|------|
-| GKE nodes (per zone / max) | 1/3 | 2/5 | 3/8 |
-| Machine type | n2-standard-2 | n2-standard-4 | n2-standard-8 |
-| Cloud SQL tier | db-g1-small | db-custom-4-15360 | db-custom-8-30720 |
-| Cloud SQL HA | false | true | true |
-| Evidence retention | disabled | 365d | 3 years |
+| Setting                    | dev           | staging           | prod              |
+| -------------------------- | ------------- | ----------------- | ----------------- |
+| GKE nodes (per zone / max) | 1/3           | 2/5               | 3/8               |
+| Machine type               | n2-standard-2 | n2-standard-4     | n2-standard-8     |
+| Cloud SQL tier             | db-g1-small   | db-custom-4-15360 | db-custom-8-30720 |
+| Cloud SQL HA               | false         | true              | true              |
+| Evidence retention         | disabled      | 365d              | 3 years           |

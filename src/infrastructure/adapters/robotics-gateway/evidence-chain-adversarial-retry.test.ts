@@ -51,15 +51,22 @@ class TestMissionPort implements MissionPort {
   /** Inject: artificially delay status updates. */
   #statusDelay = 0;
 
-  setUnreachable(count: number) { this.#unreachableCount = count; }
-  setStatusDelay(ms: number) { this.#statusDelay = ms; }
+  setUnreachable(count: number) {
+    this.#unreachableCount = count;
+  }
+  setStatusDelay(ms: number) {
+    this.#statusDelay = ms;
+  }
 
   forceStatus(missionId: string, status: MissionStatus) {
     const rec = this.#missions.get(missionId);
-    if (rec) this.#missions.set(missionId, { ...rec, status, observedAt: new Date().toISOString() });
+    if (rec)
+      this.#missions.set(missionId, { ...rec, status, observedAt: new Date().toISOString() });
   }
 
-  get dispatchLog(): readonly string[] { return this.#dispatchLog; }
+  get dispatchLog(): readonly string[] {
+    return this.#dispatchLog;
+  }
 
   async dispatchMission(request: MissionDispatchRequest): Promise<MissionDispatchResult> {
     const missionId = String(request.missionId);
@@ -276,7 +283,9 @@ describe('Evidence-chain adversarial retry scenarios', () => {
       );
 
       for (const s of statuses) {
-        expect(['Executing', 'WaitingPreemption', 'Succeeded', 'Failed', 'Cancelled']).toContain(s.status);
+        expect(['Executing', 'WaitingPreemption', 'Succeeded', 'Failed', 'Cancelled']).toContain(
+          s.status,
+        );
       }
     });
 

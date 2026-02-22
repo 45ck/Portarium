@@ -185,6 +185,29 @@ export default tseslint.config(
     },
   },
 
+  // Reference adapter implementations talk to real external services.
+  // They dispatch across many operations through a single execute() method and
+  // legitimately need higher complexity/size budgets.
+  // String coercion via String() on Record<string, unknown> API responses is
+  // intentional; no-base-to-string is suppressed for these files.
+  {
+    files: [
+      'src/infrastructure/adapters/**/*.ts',
+      '!src/infrastructure/adapters/**/in-memory-*.ts',
+    ],
+    rules: {
+      complexity: 'off',
+      'max-depth': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'max-params': 'off',
+      'sonarjs/cognitive-complexity': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
+
   // QA scripts that use browser/puppeteer APIs — allow browser globals.
   {
     files: ['scripts/qa/**/*.mjs'],

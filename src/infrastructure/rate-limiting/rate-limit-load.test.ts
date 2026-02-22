@@ -8,6 +8,9 @@
  * 1. 429 / Retry-After correctness under load
  * 2. Graceful shedding — behaviour at 10× and 100× over the configured limit
  * 3. Multi-tenant isolation — one tenant's traffic cannot exhaust another's quota
+ * 4. Concurrent record correctness — no silent drops or double-counts
+ *
+ * (Window boundary and token bucket tests: rate-limit-boundary-token-bucket.test.ts)
  *
  * Bead: bead-0381
  */
@@ -17,7 +20,10 @@ import { describe, expect, it } from 'vitest';
 import { TenantId, UserId } from '../../domain/primitives/index.js';
 import type { RateLimitRuleV1, RateLimitScope } from '../../domain/rate-limiting/index.js';
 import { InMemoryRateLimitStore } from './in-memory-rate-limit-store.js';
-import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
+import {
+  checkRateLimit,
+  recordRateLimitedRequest,
+} from '../../application/services/rate-limit-guard.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -311,5 +317,57 @@ describe('rate-limit load: multi-tenant isolation', () => {
 
     expect(tenantResult.allowed).toBe(false);
     expect(userResult.allowed).toBe(true);
+  });
+
+  it('recordRateLimitedRequest increments usage without affecting allow/reject decision', async () => {
+    const store = new InMemoryRateLimitStore();
+    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId('count-tenant') };
+    const rule: RateLimitRuleV1 = {
+      schemaVersion: 1,
+      scope,
+      window: 'PerMinute',
+      maxRequests: 1000,
+    };
+    store.setRules(scope, [rule]);
+
+    const nowIso = '2026-02-22T10:00:05.000Z';
+    const count = 200;
+    const deps = { rateLimitStore: store, clock: () => nowIso };
+
+    for (let i = 0; i < count; i++) {
+      await recordRateLimitedRequest(deps, scope, rule);
+    }
+
+    const result = await checkRateLimit(deps, scope);
+    expect(result.allowed).toBe(true);
+    expect(result.usage.requestCount).toBe(count);
+  });
+
+  it('all requests in a burst are checked against the same window', async () => {
+    const store = new InMemoryRateLimitStore();
+    const scope: RateLimitScope = { kind: 'User', userId: UserId('burst-user') };
+    const limit = 50;
+    const rule: RateLimitRuleV1 = {
+      schemaVersion: 1,
+      scope,
+      window: 'PerHour',
+      maxRequests: limit,
+    };
+    store.setRules(scope, [rule]);
+
+    const nowIso = '2026-02-22T10:30:00.000Z';
+    for (let i = 0; i < limit; i++) {
+      await store.recordRequest({ scope, window: 'PerHour', nowIso });
+    }
+
+    // All subsequent requests in the same hour should be rejected
+    const results = await Promise.all(
+      Array.from({ length: 30 }, () =>
+        checkRateLimit({ rateLimitStore: store, clock: () => nowIso }, scope),
+      ),
+    );
+
+    expect(results.every((r) => !r.allowed)).toBe(true);
+    expect(results.every((r) => !r.allowed && r.usage.window === 'PerHour')).toBe(true);
   });
 });

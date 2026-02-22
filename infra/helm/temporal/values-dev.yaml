@@ -13,7 +13,7 @@ server:
 
   image:
     repository: temporalio/server
-    tag: "1.25.2"
+    tag: '1.25.2'
     pullPolicy: IfNotPresent
 
   # Temporal server configuration (overrides chart defaults)
@@ -31,7 +31,7 @@ server:
           sql:
             pluginName: postgres12
             databaseName: temporal
-            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectAddr: '$(TEMPORAL_DB_HOST):5432'
             connectProtocol: tcp
             user: temporal
             # password injected at deploy time via --set
@@ -43,7 +43,7 @@ server:
           sql:
             pluginName: postgres12
             databaseName: temporal_visibility
-            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectAddr: '$(TEMPORAL_DB_HOST):5432'
             connectProtocol: tcp
             user: temporal
             # password injected at deploy time via --set
@@ -96,7 +96,7 @@ admintools:
   enabled: true
   image:
     repository: temporalio/admin-tools
-    tag: "1.25.2"
+    tag: '1.25.2'
 
 # ---------------------------------------------------------------------------
 # Bundled Cassandra/MySQL/PostgreSQL — disabled (external DB used)

@@ -123,7 +123,10 @@ function makeNavigateToPoseGoal(params: Record<string, unknown>): Record<string,
   };
 }
 
-function buildGoalForAction(actionName: string, params: Record<string, unknown>): Record<string, unknown> {
+function buildGoalForAction(
+  actionName: string,
+  params: Record<string, unknown>,
+): Record<string, unknown> {
   if (actionName === '/navigate_to_pose') {
     return makeNavigateToPoseGoal(params);
   }
@@ -160,13 +163,17 @@ export class Ros2ActionBridge implements MissionPort {
         correlationId: request.correlationId,
         planEffectIdempotencyKey: request.planEffectIdempotencyKey,
         reason: 'UnsupportedAction',
-        message: `Action '${request.action.actionName}' is not mapped to a ROS 2 action type. ` +
+        message:
+          `Action '${request.action.actionName}' is not mapped to a ROS 2 action type. ` +
           `Known actions: ${Object.keys(ACTION_MAP).join(', ')}`,
       };
     }
 
     const rosbridgeId = `${request.missionId}-${Date.now()}`;
-    const goal = buildGoalForAction(actionEntry.name, request.action.parameters as Record<string, unknown>);
+    const goal = buildGoalForAction(
+      actionEntry.name,
+      request.action.parameters as Record<string, unknown>,
+    );
 
     let ws: InstanceType<typeof WebSocket>;
     try {
@@ -193,7 +200,9 @@ export class Ros2ActionBridge implements MissionPort {
     // Set up message listener to track action result/feedback
     ws.on('message', (rawData: Buffer | string) => {
       try {
-        const msg = JSON.parse(typeof rawData === 'string' ? rawData : rawData.toString()) as Record<string, unknown>;
+        const msg = JSON.parse(
+          typeof rawData === 'string' ? rawData : rawData.toString(),
+        ) as Record<string, unknown>;
         this.#handleRosbridgeMessage(String(request.missionId), msg);
       } catch {
         // Ignore parse errors
@@ -245,7 +254,10 @@ export class Ros2ActionBridge implements MissionPort {
     }
 
     const actionEntry = ACTION_MAP['navigate_to']; // Default; could be stored per mission
-    const cancelMsg = makeCancelGoalMsg(record.rosbridgeId, actionEntry?.name ?? '/navigate_to_pose');
+    const cancelMsg = makeCancelGoalMsg(
+      record.rosbridgeId,
+      actionEntry?.name ?? '/navigate_to_pose',
+    );
 
     try {
       record.ws.send(JSON.stringify(cancelMsg));
@@ -294,7 +306,11 @@ export class Ros2ActionBridge implements MissionPort {
       case 'action_feedback':
         // Update to Executing when we receive feedback
         if (record.status === 'Dispatched') {
-          this.#missions.set(missionId, { ...record, status: 'Executing', observedAt: new Date().toISOString() });
+          this.#missions.set(missionId, {
+            ...record,
+            status: 'Executing',
+            observedAt: new Date().toISOString(),
+          });
         }
         break;
       case 'action_result': {

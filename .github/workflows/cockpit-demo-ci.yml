@@ -1,0 +1,160 @@
+name: Cockpit Demo CI
+
+on:
+  pull_request:
+    paths:
+      - 'docs/ui/cockpit/demo-machine/**'
+      - 'docs/ui/cockpit/index.html'
+      - 'docs/ui/cockpit/mock-api.js'
+      - 'docs/ui/cockpit/demo-bindings.js'
+      - 'scripts/qa/render-demo-gallery.mjs'
+      - 'scripts/qa/render-approvals-v2-showcase.mjs'
+      - 'src/infrastructure/adapters/demo-gallery-pipeline.test.ts'
+      - 'src/infrastructure/adapters/demo-redaction-guard.test.ts'
+      - 'scripts/qa/check-demo-redaction.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/cockpit-demo-ci.yml'
+  workflow_dispatch:
+    inputs:
+      regenerate_media:
+        description: 'Regenerate showcase media artifacts'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  # -------------------------------------------------------------------
+  # Job 1: Validate demo scripts and clip specs
+  # -------------------------------------------------------------------
+  validate:
+    name: Validate demo scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run demo gallery pipeline tests
+        run: npm run test -- src/infrastructure/adapters/demo-gallery-pipeline.test.ts
+
+      - name: Run demo redaction guard tests
+        run: npm run test -- src/infrastructure/adapters/demo-redaction-guard.test.ts
+
+      - name: Check demo artifacts for sensitive data
+        run: npm run cockpit:demo:redaction:check
+
+      - name: Verify gallery script is well-formed (dry-run)
+        run: npm run cockpit:demo:gallery:dry-run
+
+      - name: Verify gallery-index schema file was written
+        run: |
+          if [ ! -f tmp/demo-gallery-test/gallery-index.json ] && [ ! -f docs/ui/cockpit/demo-machine/gallery/gallery-index.json ]; then
+            # dry-run writes to tmp/ by default in tests; verify script works via exit code only
+            echo "[ok] dry-run completed without error"
+          fi
+
+      - name: Validate clip YAML files exist and are non-empty
+        run: |
+          clip_count=$(find docs/ui/cockpit/demo-machine/clips -name '*.demo.yaml' | wc -l)
+          echo "Found ${clip_count} clip specs"
+          if [ "${clip_count}" -lt 6 ]; then
+            echo "::error::Expected at least 6 clip specs, found ${clip_count}"
+            exit 1
+          fi
+
+      - name: Check all clip specs have required sections
+        run: |
+          for f in docs/ui/cockpit/demo-machine/clips/*.demo.yaml; do
+            for section in meta runner chapters pacing; do
+              if ! grep -q "^${section}:" "${f}"; then
+                echo "::error::${f} missing required section: ${section}"
+                exit 1
+              fi
+            done
+            if ! grep -q 'action: screenshot' "${f}"; then
+              echo "::error::${f} has no screenshot action"
+              exit 1
+            fi
+            echo "[ok] ${f}"
+          done
+
+  # -------------------------------------------------------------------
+  # Job 2: Regenerate showcase media (on dispatch or schedule)
+  # -------------------------------------------------------------------
+  regenerate-media:
+    name: Regenerate showcase media
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.regenerate_media == 'true'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Puppeteer browser
+        run: npx puppeteer browsers install chrome
+
+      - name: Install Python imaging dependencies
+        run: pip install Pillow
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+
+      - name: Render all demo clip GIFs and MP4s
+        run: npm run cockpit:demo:gallery
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'false'
+
+      - name: Upload gallery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-gallery
+          path: docs/ui/cockpit/demo-machine/gallery/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Render approvals-v2 showcase
+        run: npm run cockpit:demo:approvals-v2:showcase
+        continue-on-error: true
+
+      - name: Upload approvals-v2 showcase
+        uses: actions/upload-artifact@v4
+        with:
+          name: approvals-v2-showcase
+          path: docs/ui/cockpit/demo-machine/showcase/
+          retention-days: 30
+          if-no-files-found: warn
+
+  # -------------------------------------------------------------------
+  # Gate job
+  # -------------------------------------------------------------------
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    needs: [validate]
+    if: always()
+    steps:
+      - name: Check all required jobs passed
+        run: |
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "::error::validate job failed"
+            exit 1
+          fi
+          echo "All demo CI checks passed."

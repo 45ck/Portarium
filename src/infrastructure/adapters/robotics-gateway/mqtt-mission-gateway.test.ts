@@ -1,7 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MqttMissionGateway, type MqttBrokerApiConfig } from './mqtt-mission-gateway.js';
-import type { MissionDispatchRequest, MissionCancelRequest } from '../../../application/ports/mission-port.js';
-import { CorrelationId, FleetId, GatewayId, MissionId, RobotId } from '../../../domain/primitives/index.js';
+import type {
+  MissionDispatchRequest,
+  MissionCancelRequest,
+} from '../../../application/ports/mission-port.js';
+import {
+  CorrelationId,
+  FleetId,
+  GatewayId,
+  MissionId,
+  RobotId,
+} from '../../../domain/primitives/index.js';
 import { TenantId } from '../../../domain/primitives/index.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -152,9 +161,10 @@ describe('MqttMissionGateway', () => {
       const fetchFn = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({
-          payload: Buffer.from(JSON.stringify(retainedMsg)).toString('base64'),
-        }),
+        json: () =>
+          Promise.resolve({
+            payload: Buffer.from(JSON.stringify(retainedMsg)).toString('base64'),
+          }),
       });
       const gw = new MqttMissionGateway(
         { ...DEFAULT_CONFIG, statusPollIntervalMs: 0, statusPollMaxAttempts: 1 },
@@ -196,7 +206,9 @@ describe('MqttMissionGateway', () => {
 
       await gw.dispatchMission(makeDispatchRequest());
 
-      const body = JSON.parse((fetchFn.mock.calls[0] as [string, RequestInit])[1].body as string) as Record<string, unknown>;
+      const body = JSON.parse(
+        (fetchFn.mock.calls[0] as [string, RequestInit])[1].body as string,
+      ) as Record<string, unknown>;
       expect(String(body['topic'])).toContain('portarium/my-tenant/robots/');
     });
 

@@ -15,21 +15,21 @@ const API_CACHE = `portarium-api-${CACHE_VERSION}`;
 const ASSETS_CACHE = `portarium-assets-${CACHE_VERSION}`;
 
 // App shell — precached on install
-const APP_SHELL_URLS = [
-  '/',
-  '/index.html',
-];
+const APP_SHELL_URLS = ['/', '/index.html'];
 
 // ── Lifecycle: install ────────────────────────────────────────────────────────
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) =>
-      cache.addAll(APP_SHELL_URLS).catch((err) => {
-        // Non-fatal: may fail in dev with hot-reload
-        console.warn('[sw] Shell precache failed:', err);
-      }),
-    ).then(() => self.skipWaiting()),
+    caches
+      .open(SHELL_CACHE)
+      .then((cache) =>
+        cache.addAll(APP_SHELL_URLS).catch((err) => {
+          // Non-fatal: may fail in dev with hot-reload
+          console.warn('[sw] Shell precache failed:', err);
+        }),
+      )
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -39,13 +39,10 @@ self.addEventListener('activate', (event) => {
   const validCaches = new Set([SHELL_CACHE, API_CACHE, ASSETS_CACHE]);
 
   event.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => !validCaches.has(k))
-            .map((k) => caches.delete(k)),
-        ),
+        Promise.all(keys.filter((k) => !validCaches.has(k)).map((k) => caches.delete(k))),
       )
       .then(() => self.clients.claim()),
   );
@@ -106,13 +103,11 @@ self.addEventListener('notificationclick', (event) => {
 
   const targetUrl = event.notification.data?.url ?? '/';
   event.waitUntil(
-    self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then((windowClients) => {
-        const focused = windowClients.find((c) => c.url === targetUrl && 'focus' in c);
-        if (focused) return focused.focus();
-        return self.clients.openWindow(targetUrl);
-      }),
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      const focused = windowClients.find((c) => c.url === targetUrl && 'focus' in c);
+      if (focused) return focused.focus();
+      return self.clients.openWindow(targetUrl);
+    }),
   );
 });
 

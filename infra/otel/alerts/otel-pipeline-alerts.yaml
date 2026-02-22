@@ -20,7 +20,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "OTel Collector exporter {{ $labels.exporter }} dropping spans"
+          summary: 'OTel Collector exporter {{ $labels.exporter }} dropping spans'
           description: >
             Exporter {{ $labels.exporter }} has been dropping spans for 2+ minutes.
             Check backend connectivity and TLS configuration.
@@ -35,7 +35,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "OTel Collector exporter {{ $labels.exporter }} dropping metrics"
+          summary: 'OTel Collector exporter {{ $labels.exporter }} dropping metrics'
           description: >
             Exporter {{ $labels.exporter }} has been dropping metric points.
             Prometheus remote-write or Mimir may be unavailable.
@@ -50,7 +50,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "OTel Collector exporter {{ $labels.exporter }} dropping logs"
+          summary: 'OTel Collector exporter {{ $labels.exporter }} dropping logs'
           description: >
             Exporter {{ $labels.exporter }} has been dropping log records.
             Loki may be unavailable.
@@ -65,7 +65,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "OTel Collector export queue {{ $labels.exporter }} > 80% full"
+          summary: 'OTel Collector export queue {{ $labels.exporter }} > 80% full'
           description: >
             The export queue for {{ $labels.exporter }} is above 80% capacity.
             Increase queue_size or investigate backend latency.
@@ -79,7 +79,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "OTel Collector memory usage > 400 MiB"
+          summary: 'OTel Collector memory usage > 400 MiB'
           description: >
             The OTel Collector process is using more than 400 MiB RSS.
             Memory limiter processor should prevent OOM but investigate root cause.
@@ -93,7 +93,7 @@ groups:
           severity: critical
           team: platform
         annotations:
-          summary: "OTel Collector is down"
+          summary: 'OTel Collector is down'
           description: >
             No otelcol_process_uptime metric received for 3 minutes.
             The OTel Collector may be crashed or unreachable.
@@ -110,7 +110,7 @@ groups:
           severity: warning
           team: platform
         annotations:
-          summary: "spanmetrics connector producing no trace-derived metrics"
+          summary: 'spanmetrics connector producing no trace-derived metrics'
           description: >
             portarium_trace_calls_total has been absent for 10 minutes.
             The spanmetrics connector in the OTel Collector may be misconfigured

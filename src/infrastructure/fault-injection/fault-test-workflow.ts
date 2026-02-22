@@ -38,15 +38,13 @@ export interface FaultTestState {
 //  `proxyActivities`; here we expose them as plain async functions for
 //  testability without the Temporal SDK.)
 
-export interface HeartbeatFn {
-  (details?: unknown): void;
-}
+export type HeartbeatFn = (details?: unknown) => void;
 
 /**
  * Step 1: Record workflow start in the evidence store.
  * Validates that write-ahead logging survives faults.
  */
-export async function recordFaultTestStart(
+export function recordFaultTestStart(
   input: FaultTestInput,
   heartbeat: HeartbeatFn,
 ): Promise<{ recordedAt: string }> {
@@ -56,7 +54,7 @@ export async function recordFaultTestStart(
   const recordedAt = new Date().toISOString();
 
   heartbeat({ step: 'start', recordedAt });
-  return { recordedAt };
+  return Promise.resolve({ recordedAt });
 }
 
 /**
@@ -96,7 +94,7 @@ export async function verifyDbConnectivity(
 /**
  * Step 4: Record workflow completion in the evidence store.
  */
-export async function recordFaultTestCompletion(
+export function recordFaultTestCompletion(
   input: FaultTestInput,
   startedAt: string,
   heartbeat: HeartbeatFn,
@@ -107,7 +105,7 @@ export async function recordFaultTestCompletion(
   const durationMs = new Date(completedAt).getTime() - new Date(startedAt).getTime();
 
   heartbeat({ step: 'complete', durationMs });
-  return { completedAt, durationMs };
+  return Promise.resolve({ completedAt, durationMs });
 }
 
 // ── Workflow orchestration ──────────────────────────────────────────────────
@@ -142,10 +140,7 @@ export async function faultTestWorkflow(
     throw new Error('DB connectivity check failed after fault injection');
   }
 
-  const { completedAt } = await activities.recordFaultTestCompletion(
-    input,
-    recordedAt,
-  );
+  const { completedAt } = await activities.recordFaultTestCompletion(input, recordedAt);
 
   return {
     workflowId: input.workflowId,

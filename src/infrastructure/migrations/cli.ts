@@ -8,9 +8,12 @@ import {
   type MigrationPhase,
   type MigrationRunResult,
 } from './schema-migrator.js';
+import { PostgresTenantStorageProvisioner } from './tenant-storage-provisioner.js';
+import type { TenantStorageTier } from './tenant-storage-tier.js';
 
 // Tables to drop in reverse dependency order for a deterministic reset.
 const RESET_DROP_STATEMENTS: readonly string[] = [
+  'DROP TABLE IF EXISTS tenant_storage_tiers;',
   'DROP INDEX IF EXISTS idx_workflow_runs_status;',
   'DROP TABLE IF EXISTS workflow_runs;',
   'DROP INDEX IF EXISTS idx_domain_documents_workspace;',
@@ -40,6 +43,14 @@ async function main(): Promise<void> {
   }
   if (command === 'reset') {
     await runReset();
+    return;
+  }
+  if (command === 'provision-tenant') {
+    await runProvisionTenant();
+    return;
+  }
+  if (command === 'deprovision-tenant') {
+    await runDeprovisionTenant();
     return;
   }
 
@@ -202,6 +213,68 @@ function parseTenants(raw: string | undefined): readonly string[] {
     .split(',')
     .map((tenant) => tenant.trim())
     .filter((tenant) => tenant.length > 0);
+}
+
+function parseTier(raw: string | undefined): TenantStorageTier {
+  if (raw === 'TierA' || raw === 'TierB' || raw === 'TierC') {
+    return raw;
+  }
+  throw new Error(`Invalid tier: ${raw ?? '(none)'}. Use TierA|TierB|TierC.`);
+}
+
+async function runProvisionTenant(): Promise<void> {
+  const connectionString = requireEnv('DATABASE_URL');
+  const tenantId = readArg('--tenant-id');
+  if (tenantId === undefined || tenantId.trim() === '') {
+    throw new Error('provision-tenant requires --tenant-id');
+  }
+  const tier = parseTier(readArg('--tier'));
+  const namespace = readArg('--namespace') ?? 'portarium';
+
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+  try {
+    const provisioner = new PostgresTenantStorageProvisioner({
+      adminClient: sqlClient,
+      sharedClient: sqlClient,
+      namespace,
+    });
+    const config = await provisioner.provision(tenantId.trim(), tier);
+    process.stdout.write(
+      `${JSON.stringify({ action: 'provisioned', tenantId: config.tenantId, tier: config.tier, schemaName: config.schemaName ?? null, connectionString: config.connectionString ?? null }, null, 2)}\n`,
+    );
+  } finally {
+    await sqlClient.close();
+  }
+}
+
+async function runDeprovisionTenant(): Promise<void> {
+  const connectionString = requireEnv('DATABASE_URL');
+  const tenantId = readArg('--tenant-id');
+  if (tenantId === undefined || tenantId.trim() === '') {
+    throw new Error('deprovision-tenant requires --tenant-id');
+  }
+  if (!readFlag('--confirm')) {
+    process.stderr.write(
+      'deprovision-tenant is destructive — pass --confirm to proceed (destroys tenant data).\n',
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+  try {
+    const provisioner = new PostgresTenantStorageProvisioner({
+      adminClient: sqlClient,
+      sharedClient: sqlClient,
+      namespace: readArg('--namespace') ?? 'portarium',
+    });
+    await provisioner.deprovision(tenantId.trim());
+    process.stdout.write(
+      `${JSON.stringify({ action: 'deprovisioned', tenantId: tenantId.trim() }, null, 2)}\n`,
+    );
+  } finally {
+    await sqlClient.close();
+  }
 }
 
 main().catch((error: unknown) => {

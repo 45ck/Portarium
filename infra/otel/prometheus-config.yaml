@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: local
+    namespace: portarium
+
+rule_files:
+  - /etc/prometheus/rules/*.yaml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  - job_name: otel-collector
+    static_configs:
+      - targets:
+          - otel-collector:8888
+
+  - job_name: portarium-control-plane
+    static_configs:
+      - targets:
+          - portarium-control-plane:8080
+
+  - job_name: portarium-worker
+    static_configs:
+      - targets:
+          - portarium-worker:8080

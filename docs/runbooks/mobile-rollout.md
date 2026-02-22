@@ -9,11 +9,11 @@
 
 Portarium Cockpit is distributed as:
 
-| Track | Artifact | Channel |
-|---|---|---|
-| PWA | `apps/cockpit/dist/` | HTTPS via CDN |
-| iOS | `App.xcarchive` → IPA | TestFlight → App Store |
-| Android | `app-release.aab` | Internal track → Play Store |
+| Track   | Artifact              | Channel                     |
+| ------- | --------------------- | --------------------------- |
+| PWA     | `apps/cockpit/dist/`  | HTTPS via CDN               |
+| iOS     | `App.xcarchive` → IPA | TestFlight → App Store      |
+| Android | `app-release.aab`     | Internal track → Play Store |
 
 Native builds are a Capacitor wrapper around the same React SPA. Every native release must pass the CI gate (`cockpit-mobile-ci.yml`) before promotion.
 
@@ -47,6 +47,7 @@ npx cap open ios
 ```
 
 In Xcode:
+
 - Set scheme to **App**, target to **Any iOS Device**.
 - Product → Archive.
 
@@ -59,6 +60,7 @@ In Xcode:
 ### 3. Smoke test on TestFlight
 
 Run through the [smoke test checklist](#smoke-test-checklist) on at least:
+
 - iPhone (iOS 15, minimum supported)
 - iPhone (iOS 17, latest)
 
@@ -113,6 +115,7 @@ Keystore is managed via CI secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIA
 Run on both iOS and Android (simulator/emulator acceptable for non-push items):
 
 ### Auth
+
 - [ ] Cold launch → login screen appears
 - [ ] OIDC PKCE login completes and returns to app
 - [ ] JWT claims extracted (sub, email, tenant, roles)
@@ -120,24 +123,28 @@ Run on both iOS and Android (simulator/emulator acceptable for non-push items):
 - [ ] Logout clears stored tokens
 
 ### Push notifications
+
 - [ ] Push permission prompt appears on first launch
 - [ ] Device token registered to backend (`POST /api/notifications/device-tokens`)
 - [ ] Foreground notification renders title + body
 - [ ] Notification tap opens correct in-app route
 
 ### Core navigation
+
 - [ ] Operations Map loads
 - [ ] Approval queue loads
 - [ ] Active run detail page loads
 - [ ] Deep link `portarium://app/runs/{id}` routes correctly
 
 ### Native capabilities
+
 - [ ] Haptic feedback on primary actions
 - [ ] Clipboard write works
 - [ ] Status bar style correct (dark icons on light background)
 - [ ] Splash screen appears and dismisses correctly
 
 ### Offline resilience
+
 - [ ] App shell loads when offline (PWA cache)
 - [ ] Network error state shown for data fetches
 - [ ] App recovers gracefully when connectivity restored
@@ -147,14 +154,17 @@ Run on both iOS and Android (simulator/emulator acceptable for non-push items):
 ## Rollback procedure
 
 ### iOS
+
 1. In App Store Connect → phased release → **Pause** (stops new downloads from getting the version).
 2. If critical: submit an expedited review for the fixed build, or request App Store removal and re-release.
 
 ### Android
+
 1. Play Console → Halt rollout (immediately stops further device updates).
 2. If urgent: use the "Roll back" button to revert to the previous production build.
 
 ### Backend compatibility
+
 - All API changes must be backward-compatible for at least two release cycles.
 - If a breaking change is needed: use API versioning (`/v2/`) and keep `/v1/` alive until old mobile versions drop below 5% install share.
 
@@ -164,13 +174,13 @@ Run on both iOS and Android (simulator/emulator acceptable for non-push items):
 
 The `cockpit-mobile-ci.yml` workflow runs on every PR touching `apps/cockpit/`:
 
-| Job | Runs on | What it checks |
-|---|---|---|
-| `web-build` | ubuntu-latest | `vite build` succeeds |
-| `ios-build` | macos-14 | Xcode simulator build |
-| `android-build` | ubuntu-latest | Gradle debug APK |
-| `smoke-tests` | ubuntu-latest | 19 unit-level smoke tests |
-| `mobile-ci-ok` | ubuntu-latest | Required gate (blocks merge) |
+| Job             | Runs on       | What it checks               |
+| --------------- | ------------- | ---------------------------- |
+| `web-build`     | ubuntu-latest | `vite build` succeeds        |
+| `ios-build`     | macos-14      | Xcode simulator build        |
+| `android-build` | ubuntu-latest | Gradle debug APK             |
+| `smoke-tests`   | ubuntu-latest | 19 unit-level smoke tests    |
+| `mobile-ci-ok`  | ubuntu-latest | Required gate (blocks merge) |
 
 iOS and Android native builds are gated on `workflow_dispatch` or PR, and upload build artifacts for inspection.
 
@@ -178,13 +188,13 @@ iOS and Android native builds are gated on `workflow_dispatch` or PR, and upload
 
 ## Environment secrets required
 
-| Secret | Used by |
-|---|---|
-| `VITE_VAPID_PUBLIC_KEY` | Web push subscription (CI build env) |
-| `ANDROID_KEYSTORE_BASE64` | Release signing (CD workflow) |
-| `ANDROID_KEY_ALIAS` | Release signing |
-| `ANDROID_KEY_PASSWORD` | Release signing |
-| `ANDROID_STORE_PASSWORD` | Release signing |
-| `APPLE_API_KEY_ID` | Fastlane App Store Connect upload |
-| `APPLE_API_ISSUER_ID` | Fastlane |
-| `APPLE_API_PRIVATE_KEY` | Fastlane |
+| Secret                    | Used by                              |
+| ------------------------- | ------------------------------------ |
+| `VITE_VAPID_PUBLIC_KEY`   | Web push subscription (CI build env) |
+| `ANDROID_KEYSTORE_BASE64` | Release signing (CD workflow)        |
+| `ANDROID_KEY_ALIAS`       | Release signing                      |
+| `ANDROID_KEY_PASSWORD`    | Release signing                      |
+| `ANDROID_STORE_PASSWORD`  | Release signing                      |
+| `APPLE_API_KEY_ID`        | Fastlane App Store Connect upload    |
+| `APPLE_API_ISSUER_ID`     | Fastlane                             |
+| `APPLE_API_PRIVATE_KEY`   | Fastlane                             |

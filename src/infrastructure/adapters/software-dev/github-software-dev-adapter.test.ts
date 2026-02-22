@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { GitHubSoftwareDevAdapter, type GitHubAdapterConfig } from './github-software-dev-adapter.js';
+import {
+  GitHubSoftwareDevAdapter,
+  type GitHubAdapterConfig,
+} from './github-software-dev-adapter.js';
 import type { SoftwareDevExecuteInputV1 } from '../../../application/ports/software-dev-adapter.js';
 import { TenantId } from '../../../domain/primitives/index.js';
 
@@ -70,11 +73,20 @@ describe('GitHubSoftwareDevAdapter', () => {
 
   describe('createPullRequest', () => {
     it('creates PR and returns externalRef', async () => {
-      const created = { number: 50, title: 'Feature branch', html_url: 'https://github.com/my-org/repo/pull/50' };
+      const created = {
+        number: 50,
+        title: 'Feature branch',
+        html_url: 'https://github.com/my-org/repo/pull/50',
+      };
       const adapter = makeAdapter(makeFetch(created));
 
       const result = await adapter.execute(
-        makeInput('createPullRequest', { repo: 'my-repo', title: 'Feature branch', head: 'feature/x', base: 'main' }),
+        makeInput('createPullRequest', {
+          repo: 'my-repo',
+          title: 'Feature branch',
+          head: 'feature/x',
+          base: 'main',
+        }),
       );
 
       expect(result.ok).toBe(true);
@@ -86,7 +98,9 @@ describe('GitHubSoftwareDevAdapter', () => {
 
     it('returns validation_error when title missing', async () => {
       const adapter = makeAdapter(makeFetch({}));
-      const result = await adapter.execute(makeInput('createPullRequest', { repo: 'r', head: 'feature/x' }));
+      const result = await adapter.execute(
+        makeInput('createPullRequest', { repo: 'r', head: 'feature/x' }),
+      );
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.error).toBe('validation_error');
@@ -136,8 +150,18 @@ describe('GitHubSoftwareDevAdapter', () => {
   describe('listRepositories', () => {
     it('returns externalRefs for repos', async () => {
       const repos = [
-        { id: 1, name: 'control-plane', full_name: 'my-org/control-plane', html_url: 'https://github.com/my-org/control-plane' },
-        { id: 2, name: 'worker', full_name: 'my-org/worker', html_url: 'https://github.com/my-org/worker' },
+        {
+          id: 1,
+          name: 'control-plane',
+          full_name: 'my-org/control-plane',
+          html_url: 'https://github.com/my-org/control-plane',
+        },
+        {
+          id: 2,
+          name: 'worker',
+          full_name: 'my-org/worker',
+          html_url: 'https://github.com/my-org/worker',
+        },
       ];
       const adapter = makeAdapter(makeFetch(repos));
       const result = await adapter.execute(makeInput('listRepositories'));
@@ -157,7 +181,14 @@ describe('GitHubSoftwareDevAdapter', () => {
     it('returns externalRefs for workflow runs', async () => {
       const payload = {
         workflow_runs: [
-          { id: 555, name: 'CI', run_number: 123, status: 'completed', conclusion: 'success', html_url: 'https://github.com/...' },
+          {
+            id: 555,
+            name: 'CI',
+            run_number: 123,
+            status: 'completed',
+            conclusion: 'success',
+            html_url: 'https://github.com/...',
+          },
         ],
       };
       const adapter = makeAdapter(makeFetch(payload));
@@ -180,15 +211,16 @@ describe('GitHubSoftwareDevAdapter', () => {
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const merged = {
         created_at: new Date(sevenDaysAgo.getTime() + 1 * 60 * 60 * 1000).toISOString(), // +1h
-        merged_at: new Date(sevenDaysAgo.getTime() + 5 * 60 * 60 * 1000).toISOString(),  // +5h
+        merged_at: new Date(sevenDaysAgo.getTime() + 5 * 60 * 60 * 1000).toISOString(), // +5h
       };
 
       let callCount = 0;
       const fetchFn = vi.fn().mockImplementation(async () => {
         callCount++;
-        const body = callCount === 1
-          ? JSON.stringify([merged]) // PRs
-          : JSON.stringify([{ id: 1, created_at: sevenDaysAgo.toISOString() }]); // deployments
+        const body =
+          callCount === 1
+            ? JSON.stringify([merged]) // PRs
+            : JSON.stringify([{ id: 1, created_at: sevenDaysAgo.toISOString() }]); // deployments
         return { ok: true, status: 200, text: () => Promise.resolve(body) };
       });
 

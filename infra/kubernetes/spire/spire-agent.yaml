@@ -25,7 +25,8 @@ spec:
       initContainers:
         - name: init-bundle
           image: ghcr.io/spiffe/spire-agent:1.9.6
-          command: [/opt/spire/bin/spire-agent, api, fetch, -socketPath, /run/spire/sockets/agent.sock]
+          command:
+            [/opt/spire/bin/spire-agent, api, fetch, -socketPath, /run/spire/sockets/agent.sock]
           volumeMounts:
             - name: spire-agent-socket
               mountPath: /run/spire/sockets
@@ -89,7 +90,7 @@ kind: ClusterRole
 metadata:
   name: spire-agent-role
 rules:
-  - apiGroups: [""]
+  - apiGroups: ['']
     resources: [nodes]
     verbs: [get]
 ---

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   OdooFinanceAccountingAdapter,
+  ExternalJson2Transport,
+  JsonRpcTransport,
   type OdooAdapterConfig,
 } from './odoo-finance-accounting-adapter.js';
 import type { FinanceAccountingExecuteInputV1 } from '../../../application/ports/finance-accounting-adapter.js';
@@ -18,10 +20,7 @@ const DEFAULT_CONFIG: OdooAdapterConfig = {
 };
 
 /** Build a fetch mock that handles auth then a single subsequent call. */
-function makeFetchMock(
-  dataResponse: unknown,
-  { authUid = 7 }: { authUid?: number } = {},
-) {
+function makeFetchMock(dataResponse: unknown, { authUid = 7 }: { authUid?: number } = {}) {
   let callCount = 0;
   return vi.fn(async (_url: string, _init: RequestInit) => {
     callCount++;
@@ -52,8 +51,22 @@ describe('OdooFinanceAccountingAdapter', () => {
   describe('listAccounts', () => {
     it('maps Odoo account records to AccountV1 array', async () => {
       const odooAccounts = [
-        { id: 1, name: 'Cash', code: '101000', account_type: 'asset_cash', currency_id: [1, 'USD'], active: true },
-        { id: 2, name: 'Revenue', code: '400000', account_type: 'income', currency_id: false, active: true },
+        {
+          id: 1,
+          name: 'Cash',
+          code: '101000',
+          account_type: 'asset_cash',
+          currency_id: [1, 'USD'],
+          active: true,
+        },
+        {
+          id: 2,
+          name: 'Revenue',
+          code: '400000',
+          account_type: 'income',
+          currency_id: false,
+          active: true,
+        },
       ];
       const fetchFn = makeFetchMock(odooAccounts);
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
@@ -87,7 +100,14 @@ describe('OdooFinanceAccountingAdapter', () => {
   describe('getAccount', () => {
     it('returns a single account when found', async () => {
       const odooAccounts = [
-        { id: 5, name: 'Accounts Payable', code: '201000', account_type: 'liability_payable', currency_id: false, active: true },
+        {
+          id: 5,
+          name: 'Accounts Payable',
+          code: '201000',
+          account_type: 'liability_payable',
+          currency_id: false,
+          active: true,
+        },
       ];
       const fetchFn = makeFetchMock(odooAccounts);
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
@@ -191,7 +211,11 @@ describe('OdooFinanceAccountingAdapter', () => {
 
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
       const result = await adapter.execute(
-        makeInput('createInvoice', { totalAmount: 800, currencyCode: 'GBP', issuedAtIso: '2024-03-01' }),
+        makeInput('createInvoice', {
+          totalAmount: 800,
+          currencyCode: 'GBP',
+          issuedAtIso: '2024-03-01',
+        }),
       );
 
       expect(result.ok).toBe(true);
@@ -305,7 +329,9 @@ describe('OdooFinanceAccountingAdapter', () => {
     });
 
     it('wraps network failures as provider_error', async () => {
-      const fetchFn = vi.fn(async () => { throw new Error('ECONNREFUSED'); });
+      const fetchFn = vi.fn(async () => {
+        throw new Error('ECONNREFUSED');
+      });
 
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
       const result = await adapter.execute(makeInput('listAccounts'));
@@ -353,5 +379,150 @@ describe('OdooFinanceAccountingAdapter', () => {
       const authUrl = (fetchFn.mock.calls[0] as unknown as [string])[0];
       expect(authUrl).toContain('/web/session/authenticate');
     });
+  });
+});
+
+// ── Transport compatibility tests ─────────────────────────────────────────
+
+describe('JsonRpcTransport', () => {
+  it('uses /web/session/authenticate for auth', async () => {
+    const fetchFn = vi.fn(async (url: string) => {
+      if (String(url).includes('/web/session/authenticate')) {
+        return new Response(JSON.stringify({ result: { uid: 42 } }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ result: [] }), { status: 200 });
+    });
+    const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    const uid = await transport.authenticate();
+    expect(uid).toBe(42);
+    expect((fetchFn.mock.calls[0] as unknown as [string])[0]).toContain('/web/session/authenticate');
+  });
+
+  it('uses /web/dataset/call_kw for callKw', async () => {
+    const fetchFn = vi.fn(async (url: string) => {
+      if (String(url).includes('/web/session/authenticate')) {
+        return new Response(JSON.stringify({ result: { uid: 7 } }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ result: [] }), { status: 200 });
+    });
+    const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await transport.callKw('account.account', 'search_read', [[]], { fields: ['id'] });
+    const dataUrl = (fetchFn.mock.calls[1] as unknown as [string])[0];
+    expect(dataUrl).toContain('/web/dataset/call_kw');
+  });
+
+  it('sends X-API-Key header on data calls', async () => {
+    const fetchFn = vi.fn(async (url: string) => {
+      if (String(url).includes('/web/session/authenticate')) {
+        return new Response(JSON.stringify({ result: { uid: 7 } }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ result: [] }), { status: 200 });
+    });
+    const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await transport.searchRead('account.account', [], ['id']);
+    const [, init] = fetchFn.mock.calls[1] as unknown as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['X-API-Key']).toBe(DEFAULT_CONFIG.apiKey);
+  });
+
+  it('caches uid across multiple calls', async () => {
+    const fetchFn = vi.fn(async (url: string) => {
+      if (String(url).includes('/web/session/authenticate')) {
+        return new Response(JSON.stringify({ result: { uid: 5 } }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ result: [] }), { status: 200 });
+    });
+    const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await transport.authenticate();
+    await transport.authenticate();
+    const authCalls = (fetchFn.mock.calls as unknown as [string][]).filter(([url]) => url.includes('authenticate'));
+    expect(authCalls).toHaveLength(1);
+  });
+});
+
+describe('ExternalJson2Transport', () => {
+  it('authenticate() returns 0 without making an HTTP call', async () => {
+    const fetchFn = vi.fn();
+    const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    const uid = await transport.authenticate();
+    expect(uid).toBe(0);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('searchRead uses /api/<model>/search_read with Bearer auth', async () => {
+    const records = [{ id: 1, name: 'Cash' }];
+    const fetchFn = vi.fn(async () =>
+      new Response(JSON.stringify({ records }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    const result = await transport.searchRead('account.account', [], ['id', 'name']);
+
+    expect(result).toEqual(records);
+    const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain('/api/account.account/search_read');
+    expect((init.headers as Record<string, string>)['Authorization']).toBe(`Bearer ${DEFAULT_CONFIG.apiKey}`);
+  });
+
+  it('create uses POST /api/<model> and returns id', async () => {
+    const fetchFn = vi.fn(async () =>
+      new Response(JSON.stringify({ id: 99 }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    const id = await transport.create('account.move', { move_type: 'entry' });
+
+    expect(id).toBe(99);
+    const [url] = fetchFn.mock.calls[0] as unknown as [string];
+    expect(url).toContain('/api/account.move');
+    expect(url).not.toContain('/search_read');
+  });
+
+  it('callKw uses /api/method/<model>/<method>', async () => {
+    const fetchFn = vi.fn(async () =>
+      new Response(JSON.stringify(null), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await transport.callKw('account.move.line', 'auto_reconcile_lines', [], { account_id: 5 });
+
+    const [url] = fetchFn.mock.calls[0] as unknown as [string];
+    expect(url).toContain('/api/method/account.move.line/auto_reconcile_lines');
+  });
+
+  it('throws on HTTP error', async () => {
+    const fetchFn = vi.fn(async () =>
+      new Response('Unauthorized', { status: 401 }),
+    );
+    const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await expect(transport.searchRead('account.account', [], ['id'])).rejects.toThrow('HTTP 401');
+  });
+});
+
+describe('OdooFinanceAccountingAdapter transport selection', () => {
+  it('defaults to JsonRpcTransport when transport is not specified', async () => {
+    const fetchFn = makeFetchMock([{ id: 1, name: 'Cash', code: '101', account_type: 'asset_cash', currency_id: false, active: true }]);
+    const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
+    await adapter.execute(makeInput('listAccounts'));
+    // JSON-RPC always starts with auth call
+    const firstUrl = (fetchFn.mock.calls[0] as unknown as [string])[0];
+    expect(firstUrl).toContain('/web/session/authenticate');
+  });
+
+  it('uses ExternalJson2Transport when transport is external-json2', async () => {
+    const fetchFn = vi.fn(async () =>
+      new Response(
+        JSON.stringify({ records: [{ id: 1, name: 'Cash', code: '101', account_type: 'asset_cash', currency_id: false, active: true }] }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      ),
+    );
+    const config: OdooAdapterConfig = { ...DEFAULT_CONFIG, transport: 'external-json2' };
+    const adapter = new OdooFinanceAccountingAdapter(config, fetchFn as typeof fetch);
+    const result = await adapter.execute(makeInput('listAccounts'));
+
+    expect(result.ok).toBe(true);
+    // ExternalJson2 does NOT call authenticate endpoint
+    const urls = (fetchFn.mock.calls as unknown as [string][]).map(([url]) => url);
+    expect(urls.every((url) => !url.includes('/web/session/authenticate'))).toBe(true);
+    expect(urls[0]).toContain('/api/account.account/search_read');
+    // Bearer auth header used
+    const [, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect((init.headers as Record<string, string>)['Authorization']).toBe(`Bearer ${DEFAULT_CONFIG.apiKey}`);
   });
 });
