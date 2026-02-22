@@ -1,0 +1,58 @@
+# VaultAuth: Kubernetes auth method bindings for each Portarium service account.
+#
+# The VSO uses projected ServiceAccount tokens (audience: vault) to authenticate
+# with Vault's Kubernetes auth backend. Each component has its own policy with
+# least-privilege secret access.
+#
+# Vault Kubernetes auth must be enabled and configured:
+#   vault auth enable kubernetes
+#   vault write auth/kubernetes/config \
+#     kubernetes_host="https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT" \
+#     token_reviewer_jwt="<sa-token>"
+#
+# Bead: bead-0327
+
+---
+# VaultAuth for the execution-plane (workers).
+# Grants access to: portarium/execution-plane/* (adapter credentials, SoR tokens).
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: portarium-execution-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/component: execution-plane
+spec:
+  vaultConnectionRef: portarium-vault
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: portarium-execution-plane
+    serviceAccount: portarium-execution-plane
+    audiences:
+      - vault
+  # Token TTL for Vault auth; short-lived for execution workers.
+  tokenExpirationSeconds: 600
+
+---
+# VaultAuth for the control-plane.
+# Grants access to: portarium/control-plane/* (DB credentials, signing keys).
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: portarium-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/component: control-plane
+spec:
+  vaultConnectionRef: portarium-vault
+  method: kubernetes
+  mount: kubernetes
+  kubernetes:
+    role: portarium-control-plane
+    serviceAccount: portarium-control-plane
+    audiences:
+      - vault
+  tokenExpirationSeconds: 900

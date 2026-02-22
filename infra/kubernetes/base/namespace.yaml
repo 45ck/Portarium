@@ -5,3 +5,34 @@ metadata:
   labels:
     app.kubernetes.io/name: portarium
     app.kubernetes.io/part-of: portarium-control-plane
+    kubernetes.io/metadata.name: portarium
+    # PodSecurity: baseline for the control-plane namespace (permits some
+    # privileged capabilities needed by SPIRE agent DaemonSet).
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+
+---
+# Dedicated namespace for execution-plane workers.
+#
+# Isolation rationale: workers execute external adapter calls and may process
+# tenant-supplied data. A separate namespace with PodSecurity=restricted and
+# dedicated NetworkPolicies limits lateral movement if a worker is compromised.
+#
+# Bead: bead-0327
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: portarium-execution
+  labels:
+    app.kubernetes.io/name: portarium-execution
+    app.kubernetes.io/part-of: portarium
+    kubernetes.io/metadata.name: portarium-execution
+    # PodSecurity: restricted — no privilege escalation, read-only rootfs,
+    # dropped capabilities, non-root user. Mirrors execution-plane container
+    # securityContext already enforced in execution-plane-deployment.yaml.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest

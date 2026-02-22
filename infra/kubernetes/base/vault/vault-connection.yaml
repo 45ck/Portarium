@@ -1,0 +1,23 @@
+# VaultConnection: points the Vault Secrets Operator at the in-cluster Vault service.
+#
+# The VSO uses this to authenticate and retrieve secrets on behalf of
+# execution-plane and control-plane service accounts.
+#
+# Bead: bead-0327
+
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultConnection
+metadata:
+  name: portarium-vault
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+spec:
+  address: http://vault.vault.svc.cluster.local:8200
+  # skipTLSVerify is false by default; set to true only for non-production dev
+  skipTLSVerify: false
+  # caCertSecretRef references a Secret containing the Vault CA certificate.
+  # Uncomment once the CA cert Secret is provisioned.
+  # caCertSecretRef:
+  #   name: vault-ca-cert
+  #   key: ca.crt

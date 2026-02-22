@@ -22,6 +22,10 @@ resources:
   - execution-plane-network-policy.yaml
   - network-policies/agent-egress-deny.yaml
   - network-policies/execution-plane-egress.yaml
+  - network-policies/execution-plane-ingress.yaml
+  - vault/vault-connection.yaml
+  - vault/vault-auth.yaml
+  - vault/vault-secrets.yaml
   - spire/spire-server.yaml
   - spire/spire-agent.yaml
   - spire/registration-entries.yaml

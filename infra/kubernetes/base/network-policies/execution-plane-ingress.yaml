@@ -1,0 +1,82 @@
+# NetworkPolicy: ingress isolation for execution-plane worker pods.
+#
+# Workers are high-risk components (they execute adapter calls to external SoR
+# systems). Only the control-plane should be able to reach them — all other
+# ingress is denied.
+#
+# Bead: bead-0327
+
+---
+# Deny all ingress to execution-plane pods by default.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-ingress-deny-default
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: ingress-deny-default
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Ingress
+  ingress: []
+
+---
+# Allow the control-plane to reach execution-plane pods (work dispatch, health
+# probes, and evidence collection).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-ingress-allow-control-plane
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: ingress-allow-control-plane
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 8081
+
+---
+# Allow the Prometheus / OTel scraper to collect metrics from execution-plane.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-ingress-allow-metrics-scrape
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: ingress-allow-metrics-scrape
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              portarium.io/component: otel-collector
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8081

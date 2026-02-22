@@ -7,9 +7,11 @@
 # - Temporal server (workflow orchestration)
 # - OTel collector (telemetry export)
 # - DNS
-# - External SoR endpoints (via egressAllowlist per MachineExecutionPolicy)
+# - External SoR endpoints (HTTPS/443 + HTTP/80, allowlist enforced at application
+#   layer via MachineExecutionPolicy.egressAllowlist; FQDN-level filtering requires
+#   Cilium NetworkPolicy or Istio ServiceEntry — see docs/adr/ADR-0080.md)
 #
-# Bead: bead-0673
+# Bead: bead-0673 (original), bead-0327 (SoR egress + ingress isolation hardening)
 # See: .specify/specs/egress-network-policy-v1.md
 
 apiVersion: networking.k8s.io/v1
@@ -156,3 +158,33 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+
+---
+# Allow workers to call external SoR endpoints over HTTPS.
+#
+# NetworkPolicy cannot filter by hostname; the application layer is responsible
+# for enforcing MachineExecutionPolicy.egressAllowlist before opening any
+# outbound connection. This policy gates the transport layer only.
+#
+# For FQDN-level enforcement deploy Cilium and use CiliumNetworkPolicy
+# with toFQDNs selectors (see docs/adr/ADR-0080.md).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: execution-plane-egress-allow-sor-https
+  namespace: portarium
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: egress-allow-sor-https
+spec:
+  podSelector:
+    matchLabels:
+      portarium.io/component: execution-plane
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
