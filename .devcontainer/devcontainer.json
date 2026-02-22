@@ -1,0 +1,123 @@
+{
+  "name": "Portarium Dev",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22",
+
+  // ---------------------------------------------------------------------------
+  // Dev Container Features
+  // ---------------------------------------------------------------------------
+  "features": {
+    // Docker-in-Docker: run docker compose from within the container
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    // GitHub CLI — for gh pr, gh issue, etc.
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // ---------------------------------------------------------------------------
+  // Port forwards (host ↔ container)
+  // ---------------------------------------------------------------------------
+  "forwardPorts": [
+    3000, // Cockpit dev server (Vite)
+    8080, // Control-plane API
+    5432, // PostgreSQL (evidence-db)
+    7233, // Temporal frontend
+    4566, // MinIO (S3-compatible evidence store)
+    8200, // HashiCorp Vault
+    4317, // OTel Collector (gRPC)
+    4318, // OTel Collector (HTTP)
+    3100, // Grafana Tempo
+    3200  // Grafana
+  ],
+  "portsAttributes": {
+    "3000": { "label": "Cockpit UI", "onAutoForward": "openBrowser" },
+    "8080": { "label": "API", "onAutoForward": "notify" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "7233": { "label": "Temporal", "onAutoForward": "silent" },
+    "4566": { "label": "MinIO", "onAutoForward": "silent" },
+    "8200": { "label": "Vault", "onAutoForward": "silent" },
+    "3200": { "label": "Grafana", "onAutoForward": "notify" }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle hooks
+  // ---------------------------------------------------------------------------
+
+  // Install all dependencies after the container is created
+  "postCreateCommand": "npm install && cp -n .env.local.example .env.local || true",
+
+  // Start the local services whenever the container starts
+  "postStartCommand": "docker compose -f docker-compose.yml --profile baseline up -d 2>/dev/null || true",
+
+  // ---------------------------------------------------------------------------
+  // VS Code customisations
+  // ---------------------------------------------------------------------------
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // TypeScript
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+
+        // Editor
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+
+        // ESLint
+        "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+        "eslint.workingDirectories": [".", "apps/cockpit"],
+
+        // Prettier
+        "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+        "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+        "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+        "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+        // File associations
+        "files.associations": {
+          "*.mjs": "javascript"
+        },
+
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        // TypeScript + JavaScript
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+
+        // Testing
+        "vitest.explorer",
+
+        // Docker
+        "ms-azuretools.vscode-docker",
+
+        // REST client (for testing the API manually)
+        "humao.rest-client",
+
+        // Spell checking (mirrors the cspell config)
+        "streetsidesoftware.code-spell-checker",
+
+        // Markdown
+        "yzhang.markdown-all-in-one",
+
+        // Misc DX
+        "christian-kohler.path-intellisense",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // Container user
+  // ---------------------------------------------------------------------------
+  "remoteUser": "node"
+}
