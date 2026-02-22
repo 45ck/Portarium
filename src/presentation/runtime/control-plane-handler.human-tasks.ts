@@ -80,6 +80,12 @@ async function authorizeOperatorWrite(
   if (!auth) return undefined;
   if (hasRole(auth.ctx, 'admin') || hasRole(auth.ctx, 'operator')) return auth;
 
+  args.deps.authEventLogger?.logForbidden({
+    correlationId: args.correlationId,
+    workspaceId: args.workspaceId,
+    action: 'operator.write',
+    reason: detail,
+  });
   respondProblem(
     args.res,
     {

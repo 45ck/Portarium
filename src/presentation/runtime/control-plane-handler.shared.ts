@@ -33,6 +33,7 @@ import type {
   Unauthorized,
   ValidationFailed,
 } from '../../application/common/errors.js';
+import type { AuthEventLogger } from '../../infrastructure/observability/auth-event-logger.js';
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -70,6 +71,8 @@ export type ControlPlaneDeps = Readonly<{
   queryCache?: QueryCache;
   /** Optional event-stream broadcast; when absent, the SSE endpoint returns 503. */
   eventStream?: EventStreamBroadcast;
+  /** Optional structured logger for 401/403/429 security events. */
+  authEventLogger?: AuthEventLogger;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
@@ -261,14 +264,25 @@ export async function authenticate(
     ...(expectedWorkspaceId ? { expectedWorkspaceId } : {}),
   });
   if (auth.ok) return { ok: true, ctx: auth.value };
+  deps.authEventLogger?.logUnauthorized({
+    correlationId,
+    ...(expectedWorkspaceId !== undefined && { workspaceId: expectedWorkspaceId }),
+    reason: auth.error.message,
+  });
   return { ok: false, error: auth.error };
 }
 
 export function assertWorkspaceScope(
   ctx: AppContext,
   workspaceId: string,
+  authEventLogger?: AuthEventLogger,
 ): { ok: true } | { ok: false; error: Forbidden } {
   if (String(ctx.tenantId) !== workspaceId) {
+    authEventLogger?.logForbidden({
+      workspaceId,
+      action: String(APP_ACTIONS.workspaceRead),
+      reason: `Token workspace does not match requested workspace: ${workspaceId}`,
+    });
     return {
       ok: false,
       error: {
@@ -312,7 +326,12 @@ export async function assertReadAccess(
     hasRole(ctx, 'operator') ||
     hasRole(ctx, 'approver') ||
     hasRole(ctx, 'auditor');
-  if (!readable)
+  if (!readable) {
+    deps.authEventLogger?.logForbidden({
+      workspaceId: String(ctx.tenantId),
+      action: String(APP_ACTIONS.workspaceRead),
+      reason: 'Read access denied.',
+    });
     return {
       ok: false,
       error: {
@@ -321,8 +340,14 @@ export async function assertReadAccess(
         message: 'Read access denied.',
       },
     };
+  }
   const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.workspaceRead);
   if (allowed) return { ok: true };
+  deps.authEventLogger?.logForbidden({
+    workspaceId: String(ctx.tenantId),
+    action: String(APP_ACTIONS.workspaceRead),
+    reason: 'Read access denied.',
+  });
   return {
     ok: false,
     error: { kind: 'Forbidden', action: APP_ACTIONS.workspaceRead, message: 'Read access denied.' },
