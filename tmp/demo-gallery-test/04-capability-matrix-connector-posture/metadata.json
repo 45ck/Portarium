@@ -1,0 +1,19 @@
+{
+  "id": "04-capability-matrix-connector-posture",
+  "title": "Cockpit Demo: Capability Matrix Connector Posture",
+  "tags": [
+    "cockpit",
+    "adapters",
+    "capability-matrix",
+    "bead-0726"
+  ],
+  "chapters": [
+    "Precondition Reset",
+    "Inspect Settings Capability Matrix",
+    "Inspect Adapter Posture",
+    "Cleanup Reset"
+  ],
+  "generatedAt": "2026-02-22T08:10:02.804Z",
+  "frames": [],
+  "outputs": {}
+}

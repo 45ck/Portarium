@@ -1,5 +1,7 @@
 # Release Analytics: Adoption Funnel & Community Responsiveness
 
+> **Bead**: bead-0745 — Release analytics: adoption funnel + community responsiveness metrics (CHAOSS-aligned)
+>
 > **Audience**: Project maintainers, DevRel, and community managers.
 >
 > **Goal**: Track the health of community adoption and maintainer responsiveness using

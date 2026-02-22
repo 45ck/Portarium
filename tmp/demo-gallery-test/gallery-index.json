@@ -1,0 +1,86 @@
+{
+  "$schema": "./gallery-index.schema.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-02-22T08:10:02.808Z",
+  "generator": "scripts/qa/render-demo-gallery.mjs",
+  "clips": [
+    {
+      "id": "01-approval-gate-unblocks-run",
+      "title": "Cockpit Demo: Approval Gate Unblocks Run",
+      "tags": [
+        "cockpit",
+        "governance",
+        "approvals",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.794Z",
+      "outputs": {},
+      "frameCount": 0
+    },
+    {
+      "id": "02-evidence-chain-update-on-decision",
+      "title": "Cockpit Demo: Evidence Chain Updates On Decision",
+      "tags": [
+        "cockpit",
+        "evidence",
+        "approvals",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.801Z",
+      "outputs": {},
+      "frameCount": 0
+    },
+    {
+      "id": "03-correlation-context-traversal",
+      "title": "Cockpit Demo: Correlation And Context Traversal",
+      "tags": [
+        "cockpit",
+        "correlation",
+        "context",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.803Z",
+      "outputs": {},
+      "frameCount": 0
+    },
+    {
+      "id": "04-capability-matrix-connector-posture",
+      "title": "Cockpit Demo: Capability Matrix Connector Posture",
+      "tags": [
+        "cockpit",
+        "adapters",
+        "capability-matrix",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.804Z",
+      "outputs": {},
+      "frameCount": 0
+    },
+    {
+      "id": "05-degraded-realtime-safety-ux",
+      "title": "Cockpit Demo: Degraded Realtime Safety UX",
+      "tags": [
+        "cockpit",
+        "safety",
+        "degraded-realtime",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.806Z",
+      "outputs": {},
+      "frameCount": 0
+    },
+    {
+      "id": "06-agent-integration-quickstart",
+      "title": "Cockpit Demo: Agent Integration Quickstart",
+      "tags": [
+        "cockpit",
+        "agents",
+        "integration",
+        "bead-0726"
+      ],
+      "generatedAt": "2026-02-22T08:10:02.808Z",
+      "outputs": {},
+      "frameCount": 0
+    }
+  ]
+}

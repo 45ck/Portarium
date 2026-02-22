@@ -1,0 +1,19 @@
+{
+  "id": "01-approval-gate-unblocks-run",
+  "title": "Cockpit Demo: Approval Gate Unblocks Run",
+  "tags": [
+    "cockpit",
+    "governance",
+    "approvals",
+    "bead-0726"
+  ],
+  "chapters": [
+    "Precondition Reset",
+    "Approve Gate",
+    "Verify Run Outcome",
+    "Cleanup Reset"
+  ],
+  "generatedAt": "2026-02-22T08:10:02.794Z",
+  "frames": [],
+  "outputs": {}
+}

@@ -116,6 +116,7 @@
     "dev:db:init": "node scripts/db/init-local.mjs",
     "dev:db:reset": "node scripts/db/reset-local.mjs",
     "seed:local": "tsx scripts/seed/seed-local.ts",
+    "analytics:adoption-snapshot": "node scripts/analytics/adoption-snapshot.mjs",
     "seed:bundle": "tsx scripts/seed/seed-bundle.ts",
     "test": "vitest run",
     "test:watch": "vitest",

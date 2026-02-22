@@ -1,0 +1,19 @@
+{
+  "id": "05-degraded-realtime-safety-ux",
+  "title": "Cockpit Demo: Degraded Realtime Safety UX",
+  "tags": [
+    "cockpit",
+    "safety",
+    "degraded-realtime",
+    "bead-0726"
+  ],
+  "chapters": [
+    "Precondition Reset",
+    "Set Degraded State",
+    "Review Safety Signals",
+    "Cleanup Reset"
+  ],
+  "generatedAt": "2026-02-22T08:10:02.806Z",
+  "frames": [],
+  "outputs": {}
+}

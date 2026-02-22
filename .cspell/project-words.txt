@@ -1050,65 +1050,59 @@ AAABBBCCCDDDEEEFFFGGGHHH
 basenames
 prometheusremotewrite
 
-# Security and compliance terms (research reports 21-31, bead-nn3y/bead-ev20/bead-abk6/bead-m7b9)
-SIEM
-ABAC
-MTTD
-ASVS
-RDBMS
-pgcrypto
-Sidejacking
-sonarcloud
-deployers
-deprioritized
-screenreader
+# Research report terms (report-26 through report-31)
 filecite
-sharable
-unusably
-Longterm
 incl
-CNIL
-Oxley
-rigor
-
-# Bead IDs referenced in research docs (triage/tracking markers)
+deprioritized
+sonarcloud
+MTTD
+Sidejacking
+pgcrypto
+SIEM
+Longterm
+ASVS
 tqqt
+rigor
+RDBMS
 dsnp
 mvuv
 
-# Markdown-bold rendering artifacts (e.g. **M**edium → edium)
-edium
-arge
+# CHAOSS metrics framework (bead-0745)
+CHAOSS
 
-# Policy evaluation pipeline (bead-haxl)
-haxl
-
-# Research report terms (reports 21-31) — pre-existing in main after rebase
+# Pre-existing doc terms (bead-0745 format pass)
+impls
+pgvector
+ONNX
+BAML
+xyflow
+bpmnjs
+typosquat
+analyzer
+Subresource
+exploitability
+secops
+TIMESTAMPTAMPTZ
+keyset
+parameterises
+Millis
+Thoughtworks
+drilldowns
+mockups
 Telemtery
 pseudonymized
-pseudonymization
+CNIL
 anemic
 Kubeflow
+pseudonymization
 Qube
 langchain
 COPPA
 Sarbanes
-CHAOSS
-BAML
-ONNX
-pgvector
-xyflow
-bpmnjs
-Thoughtworks
-secops
-Subresource
-exploitability
-typosquat
-drilldowns
-impls
-keyset
-mockups
-analyzer
-Millis
-parameterises
-TIMESTAMPTAMPTZ
+Oxley
+ABAC
+unusably
+sharable
+screenreader
+edium
+arge
