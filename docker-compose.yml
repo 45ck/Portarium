@@ -1,7 +1,29 @@
 name: portarium-local
 
+# ---------------------------------------------------------------------------
+# Docker Compose profiles (bead-pysp)
+#
+# Services are grouped into four named profiles so developers can start only
+# what they need.  Use `--profile <name>` or COMPOSE_PROFILES env var.
+#
+#   baseline  — Postgres (evidence-db).  All other profiles depend on this.
+#   runtime   — Temporal workflow engine + MinIO evidence store.
+#   auth      — HashiCorp Vault (dev mode, local secrets).
+#   tools     — OTel Collector, Tempo, Grafana (observability stack).
+#
+# Common invocations:
+#   docker compose --profile baseline up -d
+#   docker compose --profile baseline --profile runtime up -d
+#   docker compose --profile baseline --profile runtime --profile auth up -d
+#   docker compose --profile baseline --profile runtime --profile auth --profile tools up -d
+#
+# Shorthand via COMPOSE_PROFILES env var:
+#   COMPOSE_PROFILES=baseline,runtime,auth,tools docker compose up -d
+# ---------------------------------------------------------------------------
+
 services:
   evidence-db:
+    profiles: [baseline]
     image: postgres:16-alpine
     container_name: portarium-postgres
     environment:
@@ -21,6 +43,7 @@ services:
       - portarium-control
 
   temporal:
+    profiles: [runtime]
     # Migrated from deprecated temporalio/auto-setup to temporalio/server (bead-0400).
     # Uses SQLite persistence so Temporal no longer depends on the Postgres instance.
     image: temporalio/server:latest
@@ -45,6 +68,7 @@ services:
       - portarium-control
 
   evidence-store:
+    profiles: [runtime]
     image: minio/minio:latest
     container_name: portarium-evidence-store
     command: server /data --console-address ":9001"
@@ -65,6 +89,7 @@ services:
       - portarium-control
 
   evidence-store-init:
+    profiles: [runtime]
     image: minio/mc:latest
     container_name: portarium-evidence-store-init
     depends_on:
@@ -86,6 +111,7 @@ services:
       - portarium-control
 
   vault:
+    profiles: [auth]
     image: hashicorp/vault:latest
     container_name: portarium-vault
     environment:
@@ -105,6 +131,7 @@ services:
       - portarium-control
 
   otel-collector:
+    profiles: [tools]
     image: otel/opentelemetry-collector-contrib:latest
     container_name: portarium-otel-collector
     command: ['--config=/etc/otelcol-contrib/config.yaml']
@@ -126,6 +153,7 @@ services:
       - portarium-control
 
   tempo:
+    profiles: [tools]
     image: grafana/tempo:latest
     container_name: portarium-tempo
     command: ['-config.file=/etc/tempo.yaml']
@@ -138,6 +166,7 @@ services:
       - portarium-control
 
   grafana:
+    profiles: [tools]
     image: grafana/grafana:latest
     container_name: portarium-grafana
     environment:
@@ -154,8 +183,8 @@ services:
     networks:
       - portarium-control
 
-  # API and worker services are intentionally omitted from this baseline compose file.
-  # Add them in a local override when Dockerfiles / container images are available.
+  # API and worker services live in docker-compose.local.yml (cockpit profile).
+  # They are built from local Dockerfiles and kept separate from infrastructure.
 
 volumes:
   evidence-db-data:

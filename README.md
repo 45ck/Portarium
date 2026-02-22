@@ -39,7 +39,12 @@ Prerequisites: Node.js `>=22`, Docker + Docker Compose, npm
 
 ```bash
 npm ci
-docker compose up -d
+# Start infrastructure (choose the profiles you need):
+#   baseline  — Postgres only (unit tests + migrations)
+#   runtime   — + Temporal + MinIO evidence store
+#   auth      — + HashiCorp Vault
+#   tools     — + OTel Collector + Tempo + Grafana
+COMPOSE_PROFILES=baseline,runtime,auth docker compose up -d
 npx tsx src/presentation/runtime/control-plane.ts
 ```
 

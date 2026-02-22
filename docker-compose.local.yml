@@ -1,7 +1,17 @@
 version: '3.9'
 
+# ---------------------------------------------------------------------------
+# Local override — builds API and worker from source (cockpit profile).
+#
+# Combine with the base compose file profiles to bring up the full stack:
+#
+#   COMPOSE_PROFILES=baseline,runtime,auth,cockpit \
+#     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+# ---------------------------------------------------------------------------
+
 services:
   api:
+    profiles: [cockpit]
     build:
       context: .
       dockerfile: infra/docker/control-plane.Dockerfile
@@ -26,6 +36,7 @@ services:
       - portarium-control
 
   worker:
+    profiles: [cockpit]
     build:
       context: .
       dockerfile: infra/docker/worker.Dockerfile
