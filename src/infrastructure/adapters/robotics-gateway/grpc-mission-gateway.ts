@@ -33,9 +33,8 @@ import type { CorrelationId, MissionId } from '../../../domain/primitives/index.
 
 const require = createRequire(import.meta.url);
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const grpc = require('@grpc/grpc-js') as typeof import('@grpc/grpc-js');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const protoLoader = require('@grpc/proto-loader') as typeof import('@grpc/proto-loader');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -118,7 +117,7 @@ export class GrpcMissionGateway implements MissionPort {
         { deadline },
         (err, res) => {
           if (err) reject(err);
-          else resolve(res as TRes);
+          else resolve(res);
         },
       );
     });

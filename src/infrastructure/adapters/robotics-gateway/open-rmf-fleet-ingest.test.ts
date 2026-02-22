@@ -24,7 +24,7 @@ import {
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
-function makeRobotState(name: string, mode: number, taskId: string = '') {
+function makeRobotState(name: string, mode: number, taskId = '') {
   return {
     name,
     model: 'TurtleBot4',

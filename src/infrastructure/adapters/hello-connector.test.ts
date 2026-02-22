@@ -112,7 +112,7 @@ describe('HelloConnectorAdapter — structural contract', () => {
 // ── Live adapter HTTP contract (uses mocked fetch) ────────────────────────────
 
 describe('HelloConnectorAdapter — HTTP contract', () => {
-  const mockFetch = vi.fn() as ReturnType<typeof vi.fn>;
+  const mockFetch = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();

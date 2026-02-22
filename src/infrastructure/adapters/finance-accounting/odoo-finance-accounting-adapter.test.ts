@@ -395,7 +395,9 @@ describe('JsonRpcTransport', () => {
     const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     const uid = await transport.authenticate();
     expect(uid).toBe(42);
-    expect((fetchFn.mock.calls[0] as unknown as [string])[0]).toContain('/web/session/authenticate');
+    expect((fetchFn.mock.calls[0] as unknown as [string])[0]).toContain(
+      '/web/session/authenticate',
+    );
   });
 
   it('uses /web/dataset/call_kw for callKw', async () => {
@@ -434,7 +436,9 @@ describe('JsonRpcTransport', () => {
     const transport = new JsonRpcTransport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     await transport.authenticate();
     await transport.authenticate();
-    const authCalls = (fetchFn.mock.calls as unknown as [string][]).filter(([url]) => url.includes('authenticate'));
+    const authCalls = (fetchFn.mock.calls as unknown as [string][]).filter(([url]) =>
+      url.includes('authenticate'),
+    );
     expect(authCalls).toHaveLength(1);
   });
 });
@@ -450,8 +454,12 @@ describe('ExternalJson2Transport', () => {
 
   it('searchRead uses /api/<model>/search_read with Bearer auth', async () => {
     const records = [{ id: 1, name: 'Cash' }];
-    const fetchFn = vi.fn(async () =>
-      new Response(JSON.stringify({ records }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    const fetchFn = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ records }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
     );
     const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     const result = await transport.searchRead('account.account', [], ['id', 'name']);
@@ -459,12 +467,18 @@ describe('ExternalJson2Transport', () => {
     expect(result).toEqual(records);
     const [url, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toContain('/api/account.account/search_read');
-    expect((init.headers as Record<string, string>)['Authorization']).toBe(`Bearer ${DEFAULT_CONFIG.apiKey}`);
+    expect((init.headers as Record<string, string>)['Authorization']).toBe(
+      `Bearer ${DEFAULT_CONFIG.apiKey}`,
+    );
   });
 
   it('create uses POST /api/<model> and returns id', async () => {
-    const fetchFn = vi.fn(async () =>
-      new Response(JSON.stringify({ id: 99 }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    const fetchFn = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ id: 99 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
     );
     const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     const id = await transport.create('account.move', { move_type: 'entry' });
@@ -476,8 +490,12 @@ describe('ExternalJson2Transport', () => {
   });
 
   it('callKw uses /api/method/<model>/<method>', async () => {
-    const fetchFn = vi.fn(async () =>
-      new Response(JSON.stringify(null), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    const fetchFn = vi.fn(
+      async () =>
+        new Response(JSON.stringify(null), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
     );
     const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     await transport.callKw('account.move.line', 'auto_reconcile_lines', [], { account_id: 5 });
@@ -487,9 +505,7 @@ describe('ExternalJson2Transport', () => {
   });
 
   it('throws on HTTP error', async () => {
-    const fetchFn = vi.fn(async () =>
-      new Response('Unauthorized', { status: 401 }),
-    );
+    const fetchFn = vi.fn(async () => new Response('Unauthorized', { status: 401 }));
     const transport = new ExternalJson2Transport(DEFAULT_CONFIG, fetchFn as typeof fetch);
     await expect(transport.searchRead('account.account', [], ['id'])).rejects.toThrow('HTTP 401');
   });
@@ -497,7 +513,16 @@ describe('ExternalJson2Transport', () => {
 
 describe('OdooFinanceAccountingAdapter transport selection', () => {
   it('defaults to JsonRpcTransport when transport is not specified', async () => {
-    const fetchFn = makeFetchMock([{ id: 1, name: 'Cash', code: '101', account_type: 'asset_cash', currency_id: false, active: true }]);
+    const fetchFn = makeFetchMock([
+      {
+        id: 1,
+        name: 'Cash',
+        code: '101',
+        account_type: 'asset_cash',
+        currency_id: false,
+        active: true,
+      },
+    ]);
     const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
     await adapter.execute(makeInput('listAccounts'));
     // JSON-RPC always starts with auth call
@@ -506,11 +531,23 @@ describe('OdooFinanceAccountingAdapter transport selection', () => {
   });
 
   it('uses ExternalJson2Transport when transport is external-json2', async () => {
-    const fetchFn = vi.fn(async () =>
-      new Response(
-        JSON.stringify({ records: [{ id: 1, name: 'Cash', code: '101', account_type: 'asset_cash', currency_id: false, active: true }] }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
+    const fetchFn = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            records: [
+              {
+                id: 1,
+                name: 'Cash',
+                code: '101',
+                account_type: 'asset_cash',
+                currency_id: false,
+                active: true,
+              },
+            ],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
     );
     const config: OdooAdapterConfig = { ...DEFAULT_CONFIG, transport: 'external-json2' };
     const adapter = new OdooFinanceAccountingAdapter(config, fetchFn as typeof fetch);
@@ -523,6 +560,8 @@ describe('OdooFinanceAccountingAdapter transport selection', () => {
     expect(urls[0]).toContain('/api/account.account/search_read');
     // Bearer auth header used
     const [, init] = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
-    expect((init.headers as Record<string, string>)['Authorization']).toBe(`Bearer ${DEFAULT_CONFIG.apiKey}`);
+    expect((init.headers as Record<string, string>)['Authorization']).toBe(
+      `Bearer ${DEFAULT_CONFIG.apiKey}`,
+    );
   });
 });

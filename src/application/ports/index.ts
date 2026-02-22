@@ -45,3 +45,5 @@ export * from './compliance-grc-adapter.js';
 export * from './credential-store.js';
 export * from './credential-provider.js';
 export * from './machine-registry-store.js';
+export * from './query-cache.js';
+export * from './read-model-projector.js';

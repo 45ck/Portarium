@@ -61,8 +61,8 @@ export interface Vda5050StateMessage {
   orderUpdateId?: number;
   lastNodeId?: string;
   lastNodeSequenceId?: number;
-  nodeStates?: Array<{ nodeId: string; released: boolean; sequenceId: number }>;
-  edgeStates?: Array<{ edgeId: string; released: boolean; sequenceId: number }>;
+  nodeStates?: { nodeId: string; released: boolean; sequenceId: number }[];
+  edgeStates?: { edgeId: string; released: boolean; sequenceId: number }[];
   driving: boolean;
   paused?: boolean;
   newBaseRequest?: boolean;
@@ -76,11 +76,11 @@ export interface Vda5050StateMessage {
     charging: boolean;
     reach?: number;
   };
-  errors: Array<{
+  errors: {
     errorType: string;
     errorLevel: Vda5050ErrorLevel;
     errorDescription?: string;
-  }>;
+  }[];
   loads?: unknown[];
   actionStates?: Vda5050ActionState[];
   safetyState: {

@@ -39,9 +39,10 @@
       "operationalDomains": ["finance", "accounting"],
       "canonicalObjects": ["Account", "Invoice", "Payment", "Party", "Order"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0223", "bead-0224", "bead-0422"],
+      "coverageBeads": ["bead-0223", "bead-0224"],
       "gapBeads": ["bead-0166"],
       "gaps": [
+        "Reference adapter implementation for production-grade FinanceAccounting flows remains open.",
         "Integration phase gate is still open for cross-family release readiness."
       ]
     },

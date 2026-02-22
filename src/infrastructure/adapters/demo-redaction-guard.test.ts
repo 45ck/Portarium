@@ -51,7 +51,7 @@ const SECRET_PATTERNS = [
   { name: 'GitHub PAT (classic)', regex: /\\bghp_[A-Za-z0-9]{36}\\b/, severity: 'error' },
   { name: 'GitHub fine-grained PAT', regex: /\\bgithub_pat_[A-Za-z0-9_]{82}\\b/, severity: 'error' },
   { name: 'Slack token', regex: /\\bxox[boaprstu]-[0-9A-Za-z-]{24,}\\b/, severity: 'error' },
-  { name: 'Bearer token in content', regex: /Bearer\\s+eyJ[A-Za-z0-9_.\/-]{20,}/, severity: 'error' },
+  { name: 'Bearer token in content', regex: /Bearer\\s+eyJ[A-Za-z0-9_./-]{20,}/, severity: 'error' },
   { name: 'Private key block', regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, severity: 'error' },
 ];
 

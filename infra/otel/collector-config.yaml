@@ -114,9 +114,9 @@ exporters:
 
   # ── Logs → Loki (native Loki exporter; OTLP endpoint configured via env) ──
   loki:
-    endpoint: ${env:LOKI_ENDPOINT}  # e.g. http://loki:3100/loki/api/v1/push
+    endpoint: ${env:LOKI_ENDPOINT} # e.g. http://loki:3100/loki/api/v1/push
     tls:
-      insecure: ${env:LOKI_TLS_INSECURE}  # true in dev/docker-compose, false in production
+      insecure: ${env:LOKI_TLS_INSECURE} # true in dev/docker-compose, false in production
     default_labels_enabled:
       exporter: false
       job: true

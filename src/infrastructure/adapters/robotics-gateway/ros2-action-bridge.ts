@@ -35,8 +35,8 @@ import type { CorrelationId, MissionId } from '../../../domain/primitives/index.
 import type { MissionStatus } from '../../../domain/robots/mission-v1.js';
 
 const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-const WebSocket = require('ws') as any;
+
+const WebSocket = require('ws');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -131,7 +131,7 @@ function buildGoalForAction(
     return makeNavigateToPoseGoal(params);
   }
   // For other actions, pass parameters directly as the goal
-  return params as Record<string, unknown>;
+  return params;
 }
 
 // ── In-memory mission status store ────────────────────────────────────────────
@@ -211,7 +211,7 @@ export class Ros2ActionBridge implements MissionPort {
 
     ws.on('close', () => {
       const record = this.#missions.get(String(request.missionId));
-      if (record && record.status === 'Executing') {
+      if (record?.status === 'Executing') {
         this.#missions.set(String(request.missionId), {
           ...record,
           status: 'Failed',
@@ -249,7 +249,7 @@ export class Ros2ActionBridge implements MissionPort {
 
   async cancelMission(request: MissionCancelRequest): Promise<MissionCancelResult> {
     const record = this.#missions.get(String(request.missionId));
-    if (!record || !record.ws) {
+    if (!record?.ws) {
       return { accepted: false, message: 'Mission not found or already completed.' };
     }
 
@@ -336,7 +336,7 @@ export class Ros2ActionBridge implements MissionPort {
         this.#config.connectTimeoutMs ?? 5_000,
       );
 
-      const ws = new WebSocket(this.#config.rosbridgeUrl) as InstanceType<typeof WebSocket>;
+      const ws = new WebSocket(this.#config.rosbridgeUrl);
 
       ws.once('open', () => {
         clearTimeout(connectTimeout);

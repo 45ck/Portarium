@@ -16,10 +16,12 @@ import { OpcUaMissionGateway, type OpcUaClientFactory } from './opcua-mission-ga
 
 // ── Mock factory helpers ──────────────────────────────────────────────────────
 
-type CallResult = { statusCode: number; outputArguments: Array<{ value: unknown }> };
+interface CallResult {
+  statusCode: number;
+  outputArguments: { value: unknown }[];
+}
 
 function makeFactory(callResult: CallResult | Error): OpcUaClientFactory {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockCall = vi.fn() as any;
   if (callResult instanceof Error) {
     mockCall.mockRejectedValue(callResult);
@@ -27,7 +29,6 @@ function makeFactory(callResult: CallResult | Error): OpcUaClientFactory {
     mockCall.mockResolvedValue(callResult);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return async () => ({
     client: { DataType: { String: 12 } } as any,
     session: { call: mockCall, close: vi.fn().mockResolvedValue(undefined) },
@@ -177,7 +178,7 @@ describe('OpcUaMissionGateway', () => {
   });
 
   describe('resultCodeToStatus mapping', () => {
-    const mappings: Array<[string, string]> = [
+    const mappings: [string, string][] = [
       ['DISPATCHED', 'Dispatched'],
       ['CANCELLED', 'Cancelled'],
       ['CANCELED', 'Cancelled'],

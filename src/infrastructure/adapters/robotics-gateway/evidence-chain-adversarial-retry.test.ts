@@ -73,7 +73,7 @@ class TestMissionPort implements MissionPort {
 
     // Idempotency: if already dispatched with same key, return Dispatched without re-sending
     const existing = this.#missions.get(missionId);
-    if (existing && existing.idempotencyKey === request.planEffectIdempotencyKey) {
+    if (existing?.idempotencyKey === request.planEffectIdempotencyKey) {
       // Return the original dispatched result — do NOT re-execute
       return {
         kind: 'Dispatched',

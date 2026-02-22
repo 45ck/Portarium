@@ -206,7 +206,7 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
       return { ok: false, error: 'validation_error', message: 'ticketId is required.' };
 
     const data = await this.#get<Record<string, unknown>>(`tickets/${ticketId}?expand=true`);
-    if (!data || typeof data['id'] === 'undefined') {
+    if (typeof data?.['id'] === 'undefined') {
       return { ok: false, error: 'not_found', message: `Ticket ${ticketId} not found.` };
     }
     return {
@@ -383,7 +383,7 @@ export class ZammadCustomerSupportAdapter implements CustomerSupportAdapterPort 
     const data = await this.#get<Record<string, unknown>>(
       `knowledge_base/*/translation/*/answer/${articleId}/translation`,
     );
-    if (!data || typeof data['id'] === 'undefined') {
+    if (typeof data?.['id'] === 'undefined') {
       return {
         ok: false,
         error: 'not_found',

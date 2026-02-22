@@ -130,11 +130,11 @@ export class OpcUaMissionGateway implements MissionPort {
         },
       ];
 
-      const result = (await session.call({
+      const result = await session.call({
         objectId: objectNodeId,
         methodId: methodNodeId,
         inputArguments: inputArgs,
-      })) as OpcUaCallResult;
+      });
 
       if (!isGoodStatus(result.statusCode)) {
         return {
@@ -179,7 +179,7 @@ export class OpcUaMissionGateway implements MissionPort {
       const ns = this.#config.namespaceIndex ?? 1;
       const obj = this.#config.objectPath ?? 'Portarium.Mission';
 
-      const result = (await session.call({
+      const result = await session.call({
         objectId: `ns=${ns};s=${obj}`,
         methodId: `ns=${ns};s=${obj}/CancelMission`,
         inputArguments: [
@@ -188,7 +188,7 @@ export class OpcUaMissionGateway implements MissionPort {
             ? [{ dataType: client.DataType?.['String'] ?? 12, value: request.reason }]
             : []),
         ],
-      })) as OpcUaCallResult;
+      });
 
       if (!isGoodStatus(result.statusCode)) {
         return {
@@ -222,11 +222,11 @@ export class OpcUaMissionGateway implements MissionPort {
       const ns = this.#config.namespaceIndex ?? 1;
       const obj = this.#config.objectPath ?? 'Portarium.Mission';
 
-      const result = (await session.call({
+      const result = await session.call({
         objectId: `ns=${ns};s=${obj}`,
         methodId: `ns=${ns};s=${obj}/GetMissionStatus`,
         inputArguments: [{ dataType: client.DataType?.['String'] ?? 12, value: String(missionId) }],
-      })) as OpcUaCallResult;
+      });
 
       if (!isGoodStatus(result.statusCode)) {
         return { missionId, status: 'Failed', observedAt: new Date().toISOString() };
@@ -253,8 +253,7 @@ export class OpcUaMissionGateway implements MissionPort {
   async #openSessionInternal(
     cfg: OpcUaMissionGatewayConfig,
   ): Promise<{ client: OpcUaClientLike; session: OpcUaSessionLike; cleanup: () => Promise<void> }> {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-    const opcua = require('node-opcua') as any;
+    const opcua = require('node-opcua');
 
     const client: OpcUaClientLike = opcua.OPCUAClient.create({
       endpointMustExist: false,
@@ -294,7 +293,7 @@ export class OpcUaMissionGateway implements MissionPort {
 
 interface OpcUaCallResult {
   statusCode?: number;
-  outputArguments?: Array<{ value: unknown }>;
+  outputArguments?: { value: unknown }[];
 }
 
 interface OpcUaClientLike {
@@ -308,7 +307,7 @@ interface OpcUaSessionLike {
   call(request: {
     objectId: string;
     methodId: string;
-    inputArguments: Array<{ dataType: number; value: unknown }>;
+    inputArguments: { dataType: number; value: unknown }[];
   }): Promise<OpcUaCallResult>;
   close(): Promise<void>;
 }

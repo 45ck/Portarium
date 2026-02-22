@@ -34,7 +34,7 @@
     "cockpit:qa:mobile-breakpoints": "node scripts/qa/capture-cockpit-mobile-breakpoints.mjs",
     "prepare": "husky",
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
     "typecheck:slow": "tsc -p tsconfig.json --noEmit --skipLibCheck false",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",

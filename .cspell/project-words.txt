@@ -1024,3 +1024,28 @@ oneline
 
 # kwargs (Python/Odoo RPC)
 kwargs
+
+# AWS IAM access key ID prefixes (used in security redaction tests)
+AKIA
+ABIA
+ACCA
+AGPA
+AIDA
+AIPA
+ANPA
+ANVA
+APKA
+AKIAIOSFODNN
+
+# Token test fixture strings
+bghp
+bxox
+boaprstu
+
+# Demo redaction test fixture identifiers
+alphanum
+fakesig
+AIBAAK
+AAABBBCCCDDDEEEFFFGGGHHH
+basenames
+prometheusremotewrite

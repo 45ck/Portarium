@@ -52,7 +52,10 @@ describe('SchemaMigrator', () => {
       '0004_expand_domain_documents_table:global',
       '0005_expand_workflow_runs_table:workspace-a',
       '0005_expand_workflow_runs_table:workspace-b',
-      '0006_expand_tenant_storage_tiers_table:global',
+      '0006_expand_workflow_runs_projection_columns:workspace-a',
+      '0006_expand_workflow_runs_projection_columns:workspace-b',
+      '0007_expand_workspace_summary_table:global',
+      '0008_expand_tenant_storage_tiers_table:global',
     ]);
   });
 

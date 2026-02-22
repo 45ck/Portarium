@@ -297,7 +297,7 @@ export function openRmfFleetId(fleetName: string): ReturnType<typeof FleetId> {
  */
 export function extractFleetRobotIds(
   fleetState: OpenRmfFleetState,
-): Array<{ fleetName: string; robotName: string; robotId: ReturnType<typeof RobotId> }> {
+): { fleetName: string; robotName: string; robotId: ReturnType<typeof RobotId> }[] {
   return fleetState.robots.map((r) => ({
     fleetName: fleetState.name,
     robotName: r.name,

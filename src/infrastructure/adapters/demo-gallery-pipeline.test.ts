@@ -80,7 +80,7 @@ describe('demo clip specs', () => {
 
     for (const file of files) {
       const content = fs.readFileSync(file, 'utf8');
-      const titleMatch = content.match(/title:\s*['"](.+?)['"]/);
+      const titleMatch = /title:\s*['"](.+?)['"]/.exec(content);
       expect(titleMatch, `${path.basename(file)} missing meta.title`).not.toBeNull();
       const titleValue: string = titleMatch?.[1] ?? '';
       expect(titleValue.length, `${path.basename(file)} title is empty`).toBeGreaterThan(0);

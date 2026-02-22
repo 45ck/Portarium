@@ -10,10 +10,12 @@ import {
 } from '../common/index.js';
 import type {
   ListWorkspacesFilter,
+  QueryCache,
   WorkspaceListPage,
   WorkspaceQueryStore,
   AuthorizationPort,
 } from '../ports/index.js';
+import { queryCacheKey } from '../ports/query-cache.js';
 
 export type ListWorkspacesInput = Readonly<{
   nameQuery?: string;
@@ -28,6 +30,8 @@ export type ListWorkspacesError = Forbidden | ValidationFailed;
 export interface ListWorkspacesDeps {
   authorization: AuthorizationPort;
   workspaceStore: WorkspaceQueryStore;
+  /** Optional cache-aside cache. Pass null to disable caching. */
+  queryCache?: QueryCache | null;
 }
 
 function validatePositiveLimit(limit: number | undefined): Result<void, ValidationFailed> {
@@ -79,6 +83,27 @@ export async function listWorkspaces(
   const validated = validateInput(input);
   if (!validated.ok) {
     return validated;
+  }
+
+  const cache = deps.queryCache ?? null;
+  if (cache) {
+    const cacheKey = queryCacheKey(
+      ctx.tenantId,
+      'listWorkspaces',
+      input.nameQuery ?? '',
+      input.cursor ?? '',
+      String(input.limit ?? ''),
+    );
+    const cached = await cache.get<ListWorkspacesOutput>(cacheKey);
+    if (cached !== null) return ok(cached);
+
+    const page = await deps.workspaceStore.listWorkspaces(ctx.tenantId, validated.value);
+    const result: ListWorkspacesOutput = {
+      items: page.items.map((workspace): WorkspaceV1 => workspace),
+      ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}),
+    };
+    await cache.set(cacheKey, result, 30);
+    return ok(result);
   }
 
   const page = await deps.workspaceStore.listWorkspaces(ctx.tenantId, validated.value);

@@ -95,7 +95,62 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
   },
   {
     version: 6,
-    id: '0006_expand_tenant_storage_tiers_table',
+    id: '0006_expand_workflow_runs_projection_columns',
+    description:
+      'Adds workspace_id, workflow_id, initiated_by_user_id, started_at, ended_at, and event_seq ' +
+      'columns to workflow_runs to support full read-model projection (bead-0315).',
+    phase: 'Expand',
+    scope: 'Tenant',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS workspace_id TEXT NULL;',
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS workflow_id TEXT NULL;',
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS initiated_by_user_id TEXT NULL;',
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ NULL;',
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ NULL;',
+      'ALTER TABLE IF EXISTS workflow_runs ADD COLUMN IF NOT EXISTS event_seq BIGINT NOT NULL DEFAULT 0;',
+      'CREATE INDEX IF NOT EXISTS idx_workflow_runs_workspace ON workflow_runs (tenant_id, workspace_id);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_workflow_runs_workspace;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS event_seq;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS ended_at;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS started_at;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS initiated_by_user_id;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS workflow_id;',
+      'ALTER TABLE IF EXISTS workflow_runs DROP COLUMN IF EXISTS workspace_id;',
+    ],
+  },
+  {
+    version: 7,
+    id: '0007_expand_workspace_summary_table',
+    description:
+      'Creates workspace_summary denormalized read table for workspace query projections (bead-0315).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS workspace_summary (
+  tenant_id    TEXT        NOT NULL,
+  workspace_id TEXT        NOT NULL,
+  name         TEXT        NOT NULL,
+  status       TEXT        NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL,
+  event_seq    BIGINT      NOT NULL DEFAULT 0,
+  PRIMARY KEY (tenant_id, workspace_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_workspace_summary_status ON workspace_summary (tenant_id, status);',
+      'CREATE INDEX IF NOT EXISTS idx_workspace_summary_name ON workspace_summary (tenant_id, name text_pattern_ops);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_workspace_summary_name;',
+      'DROP INDEX IF EXISTS idx_workspace_summary_status;',
+      'DROP TABLE IF EXISTS workspace_summary;',
+    ],
+  },
+  {
+    version: 8,
+    id: '0008_expand_tenant_storage_tiers_table',
     description:
       'Creates tenant_storage_tiers registry for ADR-0049 Tier B/C storage provisioning.',
     phase: 'Expand',

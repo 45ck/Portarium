@@ -22,182 +22,182 @@ This scorecard applies the same acceptance rubric to every open bead so owners c
 
 ## Open Bead Scorecard
 
-| Bead | Score | Band | Spec | Tests | Review | Docs | Security | Performance | Title |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| bead-1i3v | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Design approval state machine (lifecycle transitions) |
-| bead-2luc | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | API versioning strategy — compatibility rules + deprecation policy |
-| bead-4emp | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Design embedded/streaming approval API for off-platform surfaces |
-| bead-7gfq | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | PDB validation + maintenance runbook |
-| bead-7rlf | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement separation of duties and maker-checker enforcement |
-| bead-08gp | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | SPIFFE/SPIRE identity lifecycle — issuance, rotation, revocation, workspace boundaries |
-| bead-8w3q | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Design immutable approval payload domain model |
-| bead-10sx | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Add DevContainer configuration for reproducible dev environment |
-| bead-47v1 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Add SECURITY.md + enable private vulnerability reporting |
-| bead-58yp | 1/4 (25%) | red | fail | fail | pass | fail | n/a | n/a | Implement review mode (deep inspection UX) |
-| bead-64zs | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | AI risk controls framework — lightweight NIST AI RMF adoption |
-| bead-0163 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Phase gate: Application complete — requires DTOs, use-cases, orchestration tests, and approval/run policy mapping are closed |
-| bead-0164 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Phase gate: Infrastructure complete — requires persistence, outbox, migration, observability, and security containment beads are closed |
-| bead-0165 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Phase gate: Presentation complete — requires OpenAPI route parity, middleware, authN/RBAC, and envelope mapping beads are closed |
-| bead-0166 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Phase gate: Integration complete — requires per-family readiness, contract fixtures, and end-to-end smoke beads are closed |
-| bead-0167 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Phase gate: Security complete — requires vulnerability, secret hygiene, tenant isolation, SoD, and sandboxing beads are closed |
-| bead-0168 | 1/4 (25%) | red | fail | fail | pass | fail | n/a | n/a | Phase gate: Release complete — requires ci:pr, quality gates, review audit, and QA evidence are closed |
-| bead-0169 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release freeze: block new families while release closure bead is unresolved |
-| bead-0298 | 2/4 (50%) | red | pass | fail | pass | fail | n/a | n/a | Implement concrete infrastructure execution baseline (Terraform and deploy automation) |
-| bead-0315 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application query read-model projection strategy (denormalized read tables or materialized views) with cache + invalidation |
-| bead-0317 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Application-level rate limiting and anti-abuse guard (tenant/user/action quotas, 429 semantics, retry-after policy) |
-| bead-0321 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Add end-to-end integration tests for application-layer idempotency, replay safety, outbox dispatch ordering, and failure injections |
-| bead-0322 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Provision and document Terraform remote state + locking for all infra stacks |
-| bead-0323 | 2/4 (50%) | red | fail | pass | pass | fail | n/a | n/a | Code review: application-layer completion: acceptance evidence, test coverage, architecture-guard evidence, and rollback plan |
-| bead-0324 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Add Terraform state validation matrix in CI (format/init/validate + cost/security lint) across AWS/Azure/GCP stacks |
-| bead-0325 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Build and validate AWS control-plane bootstrap script (EKS/VPC/RDS/S3/KMS) + one-click dev/staging/prod apply pattern |
-| bead-0327 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Hardening pass: enforce egress allowlist, namespace isolation, and Vault workload auth in Kubernetes execution plane |
-| bead-0328 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | AuthN/AuthZ production hardening (OIDC validation claims, tenancy checks, role scoping, token refresh and rotation strategy) |
-| bead-0329 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement CI/CD provenance and image signing for control-plane/execution-plane containers (SBOM + attestation) |
-| bead-0330 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Draft Azure and GCP Terraform baselines to match AWS control-plane contract and evidence immutability assumptions |
-| bead-0381 | 2/5 (40%) | red | fail | pass | fail | fail | n/a | pass | App: load and stress testing (rate-limit validation under synthetic load, 429/Retry-After correctness, graceful shedding) |
-| bead-0383 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | App: event schema versioning governance (CloudEvents type versioning rules, schema registry pattern, consumer resilience) |
-| bead-0387 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion) |
-| bead-0388 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend) |
-| bead-0390 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: OTel Collector deployment and observability backend wiring (Collector Helm chart, OTLP pipelines, metrics/traces/logs backend integration) |
-| bead-0392 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Infra: multi-tenant storage tier automation (schema-per-tenant provisioning, DB-per-tenant lifecycle, backup/restore per tier) |
-| bead-0393 | 1/5 (20%) | red | fail | fail | fail | fail | n/a | pass | Infra: SLO definitions, dashboards, and alerting (API latency/error, workflow completion, worker actions, evidence integrity) |
-| bead-0394 | 1/5 (20%) | red | fail | fail | fail | fail | n/a | pass | Infra: progressive delivery pipeline (canary or blue-green deployment, traffic shifting, automated rollback on SLO breach) |
-| bead-0395 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: CI OIDC federation for cloud access (GitHub Actions OIDC to cloud providers, no long-lived credentials) |
-| bead-0396 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: Kubernetes health probes and PodDisruptionBudgets for all control-plane and worker services |
-| bead-0397 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification) |
-| bead-0398 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy) |
-| bead-0399 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume) |
-| bead-0428 | 4/4 (100%) | green | pass | pass | pass | pass | n/a | n/a | Infra: OTel Collector production pipeline - add OTLP trace/metrics/logs backend, alerting, and cross-signal correlation beyond current logging-only config |
-| bead-0515 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: gRPC edge gateway adapter implementing MissionPort — prototype |
-| bead-0516 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: MQTT gateway adapter for IoT-style actuator commands and telemetry — prototype |
-| bead-0517 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: ROS 2 Action bridge via edge gateway — Nav2 NavigateTo mission prototype |
-| bead-0518 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: OPC UA connector prototype using node-opcua for industrial PLC actuation |
-| bead-0519 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite |
-| bead-0520 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: SROS2 and DDS-Security hardening for ROS 2 mission traffic across trust boundaries |
-| bead-0521 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: mTLS workload identity for robot gateways using SPIFFE/SPIRE |
-| bead-0528 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Testing: evidence-chain verification under adversarial retries for robot actions |
-| bead-0529 | 2/5 (40%) | red | fail | pass | fail | fail | n/a | pass | Testing: pre-emption and stop-path latency benchmark for robot missions |
-| bead-0530 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Testing: multi-robot dispatch and fleet coordination via Open-RMF integration |
-| bead-0567 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration v1: ingest adapters for VDA 5050 and MassRobotics location/state feeds |
-| bead-0595 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Cockpit: Users/RBAC management page (/config/users) |
-| bead-0705 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Publish integration ladder docs (Level 0-3) and demo walkthrough |
-| bead-0714 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit mobile delivery campaign: PWA-first + Capacitor iOS/Android |
-| bead-0717 | 1/5 (20%) | red | fail | fail | fail | fail | n/a | pass | Cockpit mobile map mode: performance-budgeted Operations Map UX |
-| bead-0719 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit mobile packaging A: installable PWA (manifest, service worker, update strategy) |
-| bead-0720 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit mobile packaging B: Capacitor iOS/Android wrapper with deep links and secure storage |
-| bead-0721 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Cockpit mobile auth: OIDC PKCE login flow aligned to JWT claim requirements |
-| bead-0722 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit mobile notifications: native push pipeline (device registration + approval/run events) |
-| bead-0723 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Cockpit mobile release hardening: iOS/Android CI builds, smoke tests, and rollout playbook |
-| bead-0724 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Demo showcase campaign: scripted Cockpit governance demos + integration readiness |
-| bead-0727 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Demo media pipeline: render MP4 + GIF previews and publish gallery artifacts |
-| bead-0728 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | CI automation for demo assets: validate scripts and regenerate showcase media |
-| bead-0729 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Docs: run Cockpit demos locally + integration showcase ladder (L0-L3) |
-| bead-0730 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration showcase level-2: hello-connector scaffold and guided demo handoff |
-| bead-0731 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Demo trust hardening: enforce redaction checks for scripted captures |
-| bead-0732 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Demo launch kit: outreach templates, publish checklist, and post-launch metrics |
-| bead-0733 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | DX: one-command local runnable seed for workspace, policy, users, adapters, and machine registration |
-| bead-0734 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: pin OpenFGA model ID and enforce tuple PII guardrails |
-| bead-0735 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration: Odoo adapter transport compatibility (JSON-RPC today, External JSON-2 migration path) |
-| bead-0736 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Integration: local governed-run smoke (approval gate -> adapter action -> machine action -> evidence chain) |
-| bead-0737 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Release: CI runnable-state smoke pipeline for local stack |
-| bead-0738 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Docs: first-run guide for local real-data integrations (Keycloak, OpenFGA, Odoo sandbox, OpenClaw) |
-| bead-0739 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Runnable-state MVP campaign: local real-data + integration-complete governed run |
-| bead-0740 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Adoption campaign: technical-adopter GTM and onboarding readiness |
-| bead-0741 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration DX: ergonomic SDK wrapper + portable evidence-chain verifier helpers |
-| bead-0742 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration DX: AI-assisted scaffold prompt packs + validation guardrails (Codex CLI, Claude Code) |
-| bead-0743 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration: define MIS v0.1 (minimal integration surface) and freeze SDK scope |
-| bead-0744 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Docs: Hello Governed Workflow tutorial + role-based onboarding tracks (Dev, SRE, SecOps) |
-| bead-0745 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release analytics: adoption funnel + community responsiveness metrics (CHAOSS-aligned) |
-| bead-0746 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security trust signals: OpenSSF Best Practices badge + SLSA mapping for release artifacts |
-| bead-0747 | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Adoption outreach: design-partner pipeline + first technical webinar runbook |
-| bead-0748 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Governance: funding rails setup (GitHub Sponsors + Open Collective) with maintainer policy |
-| bead-0750 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Licensing gate: third-party workflow UI/components compliance checklist |
-| bead-0751 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit IA baseline: work-item hub, approvals, evidence, correlation |
-| bead-0752 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | API contract alignment: cockpit-to-control-plane compatibility layer |
-| bead-0753 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Evaluate n8n Embed path vs native cockpit workflow editor |
-| bead-0754 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Credential boundary model for agentic workflows |
-| bead-0755 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Supply-chain guardrails for cockpit and connector dependencies |
-| bead-0757 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Cockpit MVP plan with milestone estimates and decision gates |
-| bead-0758 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Workflow system V&V campaign: cross-layer verification from domain invariants to cockpit behavior |
-| bead-0759 | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Domain V&V: workflow/approval/run state-machine invariant suite with property and mutation testing |
-| bead-0760 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application V&V: command/query conformance matrix for workflow lifecycle and authorization |
-| bead-0761 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure V&V: workflow durability, outbox ordering, and evidence continuity under failure injection |
-| bead-0762 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Presentation V&V: workflow editor and operations cockpit E2E behavior across roles and tenant scopes |
-| bead-0763 | 2/4 (50%) | red | pass | fail | fail | pass | n/a | n/a | Governance V&V: workflow traceability matrix (spec -> tests -> evidence -> release gate) |
-| bead-0764 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Derived Artifacts + Retrieval campaign: RAG/vector/graph integration plan |
-| bead-0766 | 2/4 (50%) | red | pass | fail | fail | pass | n/a | n/a | Spec + OpenAPI: workspace retrieval and graph query endpoints |
-| bead-0767 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Licensing/compliance gate: vector+graph+embedding dependencies |
-| bead-0768 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Domain/Application contracts: retrieval, graph projection, embedding, checkpoints |
-| bead-0769 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Domain model: Derived Artifact invariants, provenance, and retention mapping |
-| bead-0770 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application service: derived-artifact projector orchestration + idempotency |
-| bead-0771 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application service: retrieval query routing and provenance assembly |
-| bead-0772 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: projection checkpoint and derived artifact registry migrations |
-| bead-0773 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: JetStream projection worker for derived artifacts |
-| bead-0774 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: Weaviate adapter for SemanticIndexPort (primary vector backend) |
-| bead-0775 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: Neo4j adapter for KnowledgeGraphPort (primary graph backend) |
-| bead-0776 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure spike: fallback vector backend parity (pgvector/Milvus) |
-| bead-0777 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure spike: fallback graph backend parity (JanusGraph) |
-| bead-0778 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Presentation/API: retrieval and graph routes with workspace-scoped authz |
-| bead-0779 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Presentation/Cockpit: semantic search + graph neighbourhood UX |
-| bead-0780 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: derived-artifact redaction, tenant isolation, and secret boundaries |
-| bead-0781 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration: end-to-end replay, idempotency, and provenance verification suite |
-| bead-0782 | 1/5 (20%) | red | fail | fail | fail | fail | n/a | pass | Release readiness: retrieval performance, projection lag, and cost guardrails |
-| bead-0783 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release gate: Derived Artifacts + Retrieval MVP closure |
-| bead-0784 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | OpenClaw full-integration campaign: create, connect, display, and governed execution |
-| bead-0785 | 2/4 (50%) | red | pass | fail | fail | pass | n/a | n/a | ADR: Full OpenClaw integration architecture for Portarium control plane and cockpit |
-| bead-0786 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Governance contract gate: align OpenClaw HTTP error semantics and policy mapping |
-| bead-0787 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Governance: machines/agents API versioning and migration policy (v1 -> v2) |
-| bead-0788 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Domain: machine-bound OpenClaw agent model alignment and invariants |
-| bead-0789 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application: machine/agent registry command-query orchestration |
-| bead-0790 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Application: OpenClaw management bridge use-cases for agent lifecycle sync |
-| bead-0791 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: persistent MachineRegistryStore and heartbeat tracking |
-| bead-0792 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: harden OpenClaw HTTP invoker semantics and policy/error handling |
-| bead-0793 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: OpenClaw operator WebSocket client for agent management |
-| bead-0794 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure: OpenClaw agent presence and drift sync pipeline |
-| bead-0795 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Presentation/API: machines and agents registry endpoints for OpenClaw integration |
-| bead-0796 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Presentation/Cockpit: real API wiring and MSW isolation for OpenClaw surfaces |
-| bead-0797 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Presentation/Cockpit: Machines screen for OpenClaw gateway registration and health |
-| bead-0798 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Presentation/Cockpit: OpenClaw agent create/connect/display with policy-tier controls |
-| bead-0799 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: enforce per-workspace OpenClaw gateway isolation invariants |
-| bead-0800 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Security: OpenClaw gateway token handling and browser-exposure prevention |
-| bead-0801 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration: full OpenClaw create-connect-display-run end-to-end verification |
-| bead-0802 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release: machines/agents API migration rollout and backward-compat execution |
-| bead-0803 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release gate: OpenClaw full integration production readiness and rollback |
-| bead-0804 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Infrastructure spike: per-workspace OpenClaw sidecar bridge evaluation |
-| bead-0805 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Integration spike: OpenClaw plugin callback strategy evaluation |
-| bead-a1xo | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Trace-context propagation + correlation model across all services |
-| bead-cgtt | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | Local governed-run smoke test — approval gate to adapter to machine to evidence |
-| bead-d5ta | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Approval Workflows — Universal Decision Surface |
-| bead-dawn | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Define SLIs/SLOs + error budget policy |
-| bead-efra | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Multi-tenant infrastructure isolation — network policy, namespace, workload identity |
-| bead-f908 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Evidence durability policy — retention, export, deletion, tamper-evidence |
-| bead-fv8i | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | DDS-Security defaults enforcement — no harden-later for robotics |
-| bead-g6re | 2/4 (50%) | red | pass | fail | fail | pass | n/a | n/a | Health probe semantics spec — liveness vs readiness vs backing stores |
-| bead-h575 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Build renderer registry for domain-specific approval views |
-| bead-haxl | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement policy evaluation pipeline with explainability |
-| bead-jg3z | 1/4 (25%) | red | fail | fail | fail | pass | n/a | n/a | Fix docs/project-overview.md claim of one-command local compose |
-| bead-knnc | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Production Readiness Gaps — governance, release engineering, ops, tenancy, AI/robotics risk |
-| bead-mlwr | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | SBOM generation + artefact signing + provenance attestations |
-| bead-mu8k | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Release unit definition — Helm charts, image build/push, promotion flows |
-| bead-nxid | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement triage mode (rapid swipe-based approval UX) |
-| bead-pysp | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Docker Compose profiles — baseline + runtime/auth/cockpit/tools profiles |
-| bead-qr8v | 1/4 (25%) | red | fail | pass | fail | fail | n/a | n/a | kind-based deployment smoke for infra parity |
-| bead-rmud | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Robotics semantic mapping + safety invariants for VDA 5050 / MassRobotics |
-| bead-s9wv | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Supported versions + patch cadence policy |
-| bead-sgt7 | 1/5 (20%) | red | fail | fail | fail | fail | n/a | pass | Seed command — load canonical bundle into stores + optional evidence payloads |
-| bead-smul | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | OCI images for API server + worker wired into Compose |
-| bead-tz6c | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | LLM security controls — output validation, prompt-injection resistance, agency boundaries |
-| bead-v8sj | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | CI-to-cloud OIDC trust policy hardening |
-| bead-vkzz | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Build approval shell UI (stable container component) |
-| bead-vuz4 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | RAG tenancy isolation model — workspace-scoped vector + graph retrieval |
-| bead-wk44 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | OpenSSF Best Practices badge + SLSA provenance mapping |
-| bead-x941 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | CI-to-cloud OIDC trust policy hardening |
-| bead-y5ob | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement evidence-first audit trail for approvals |
-| bead-yd14 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Implement block-based presentation DSL for approval evidence |
-| bead-ywee | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Implement security controls for agent-supplied approval content |
-| bead-zhp7 | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Local schema bootstrap — create tables/indexes + deterministic reset command |
-| bead-zmf3 | 1/5 (20%) | red | fail | fail | fail | fail | pass | n/a | Local auth story — dev-only token mode or bundled OIDC/JWKS provider |
-| bead-zmvb | 0/4 (0%) | red | fail | fail | fail | fail | n/a | n/a | Local-First Developer Experience — one-command seeded stack |
+| Bead      | Score      | Band  | Spec | Tests | Review | Docs | Security | Performance | Title                                                                                                                                                      |
+| --------- | ---------- | ----- | ---- | ----- | ------ | ---- | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bead-1i3v | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Design approval state machine (lifecycle transitions)                                                                                                      |
+| bead-2luc | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | API versioning strategy — compatibility rules + deprecation policy                                                                                         |
+| bead-4emp | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Design embedded/streaming approval API for off-platform surfaces                                                                                           |
+| bead-7gfq | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | PDB validation + maintenance runbook                                                                                                                       |
+| bead-7rlf | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement separation of duties and maker-checker enforcement                                                                                               |
+| bead-08gp | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | SPIFFE/SPIRE identity lifecycle — issuance, rotation, revocation, workspace boundaries                                                                     |
+| bead-8w3q | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Design immutable approval payload domain model                                                                                                             |
+| bead-10sx | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Add DevContainer configuration for reproducible dev environment                                                                                            |
+| bead-47v1 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Add SECURITY.md + enable private vulnerability reporting                                                                                                   |
+| bead-58yp | 1/4 (25%)  | red   | fail | fail  | pass   | fail | n/a      | n/a         | Implement review mode (deep inspection UX)                                                                                                                 |
+| bead-64zs | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | AI risk controls framework — lightweight NIST AI RMF adoption                                                                                              |
+| bead-0163 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Phase gate: Application complete — requires DTOs, use-cases, orchestration tests, and approval/run policy mapping are closed                               |
+| bead-0164 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Phase gate: Infrastructure complete — requires persistence, outbox, migration, observability, and security containment beads are closed                    |
+| bead-0165 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Phase gate: Presentation complete — requires OpenAPI route parity, middleware, authN/RBAC, and envelope mapping beads are closed                           |
+| bead-0166 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Phase gate: Integration complete — requires per-family readiness, contract fixtures, and end-to-end smoke beads are closed                                 |
+| bead-0167 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Phase gate: Security complete — requires vulnerability, secret hygiene, tenant isolation, SoD, and sandboxing beads are closed                             |
+| bead-0168 | 1/4 (25%)  | red   | fail | fail  | pass   | fail | n/a      | n/a         | Phase gate: Release complete — requires ci:pr, quality gates, review audit, and QA evidence are closed                                                     |
+| bead-0169 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release freeze: block new families while release closure bead is unresolved                                                                                |
+| bead-0298 | 2/4 (50%)  | red   | pass | fail  | pass   | fail | n/a      | n/a         | Implement concrete infrastructure execution baseline (Terraform and deploy automation)                                                                     |
+| bead-0315 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application query read-model projection strategy (denormalized read tables or materialized views) with cache + invalidation                                |
+| bead-0317 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Application-level rate limiting and anti-abuse guard (tenant/user/action quotas, 429 semantics, retry-after policy)                                        |
+| bead-0321 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Add end-to-end integration tests for application-layer idempotency, replay safety, outbox dispatch ordering, and failure injections                        |
+| bead-0322 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Provision and document Terraform remote state + locking for all infra stacks                                                                               |
+| bead-0323 | 2/4 (50%)  | red   | fail | pass  | pass   | fail | n/a      | n/a         | Code review: application-layer completion: acceptance evidence, test coverage, architecture-guard evidence, and rollback plan                              |
+| bead-0324 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Add Terraform state validation matrix in CI (format/init/validate + cost/security lint) across AWS/Azure/GCP stacks                                        |
+| bead-0325 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Build and validate AWS control-plane bootstrap script (EKS/VPC/RDS/S3/KMS) + one-click dev/staging/prod apply pattern                                      |
+| bead-0327 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Hardening pass: enforce egress allowlist, namespace isolation, and Vault workload auth in Kubernetes execution plane                                       |
+| bead-0328 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | AuthN/AuthZ production hardening (OIDC validation claims, tenancy checks, role scoping, token refresh and rotation strategy)                               |
+| bead-0329 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement CI/CD provenance and image signing for control-plane/execution-plane containers (SBOM + attestation)                                             |
+| bead-0330 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Draft Azure and GCP Terraform baselines to match AWS control-plane contract and evidence immutability assumptions                                          |
+| bead-0381 | 2/5 (40%)  | red   | fail | pass  | fail   | fail | n/a      | pass        | App: load and stress testing (rate-limit validation under synthetic load, 429/Retry-After correctness, graceful shedding)                                  |
+| bead-0383 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | App: event schema versioning governance (CloudEvents type versioning rules, schema registry pattern, consumer resilience)                                  |
+| bead-0387 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: environment model and artefact promotion pipeline (dev/staging/prod definitions, config-per-env, artefact-based promotion)                          |
+| bead-0388 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: Temporal workflow runtime deployment (Helm chart, persistence stores, HA configuration, visibility backend)                                         |
+| bead-0390 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: OTel Collector deployment and observability backend wiring (Collector Helm chart, OTLP pipelines, metrics/traces/logs backend integration)          |
+| bead-0392 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Infra: multi-tenant storage tier automation (schema-per-tenant provisioning, DB-per-tenant lifecycle, backup/restore per tier)                             |
+| bead-0393 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | n/a      | pass        | Infra: SLO definitions, dashboards, and alerting (API latency/error, workflow completion, worker actions, evidence integrity)                              |
+| bead-0394 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | n/a      | pass        | Infra: progressive delivery pipeline (canary or blue-green deployment, traffic shifting, automated rollback on SLO breach)                                 |
+| bead-0395 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: CI OIDC federation for cloud access (GitHub Actions OIDC to cloud providers, no long-lived credentials)                                             |
+| bead-0396 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: Kubernetes health probes and PodDisruptionBudgets for all control-plane and worker services                                                         |
+| bead-0397 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: DR drills and automated recovery validation (DB restore, cluster recreation from IaC, evidence store replication verification)                      |
+| bead-0398 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: FinOps tagging and cost governance (resource tagging, environment budgets, right-sizing, autoscaling strategy)                                      |
+| bead-0399 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Infra: workflow durability fault-injection testing (pod kill, DB failover, network partition, verify workflow resume)                                      |
+| bead-0428 | 4/4 (100%) | green | pass | pass  | pass   | pass | n/a      | n/a         | Infra: OTel Collector production pipeline - add OTLP trace/metrics/logs backend, alerting, and cross-signal correlation beyond current logging-only config |
+| bead-0515 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: gRPC edge gateway adapter implementing MissionPort — prototype                                                                                      |
+| bead-0516 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: MQTT gateway adapter for IoT-style actuator commands and telemetry — prototype                                                                      |
+| bead-0517 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: ROS 2 Action bridge via edge gateway — Nav2 NavigateTo mission prototype                                                                            |
+| bead-0518 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: OPC UA connector prototype using node-opcua for industrial PLC actuation                                                                            |
+| bead-0519 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infra: simulation CI harness for robotics integration — Gazebo or Webots regression suite                                                                  |
+| bead-0520 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: SROS2 and DDS-Security hardening for ROS 2 mission traffic across trust boundaries                                                               |
+| bead-0521 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: mTLS workload identity for robot gateways using SPIFFE/SPIRE                                                                                     |
+| bead-0528 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Testing: evidence-chain verification under adversarial retries for robot actions                                                                           |
+| bead-0529 | 2/5 (40%)  | red   | fail | pass  | fail   | fail | n/a      | pass        | Testing: pre-emption and stop-path latency benchmark for robot missions                                                                                    |
+| bead-0530 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Testing: multi-robot dispatch and fleet coordination via Open-RMF integration                                                                              |
+| bead-0567 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration v1: ingest adapters for VDA 5050 and MassRobotics location/state feeds                                                                         |
+| bead-0595 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Cockpit: Users/RBAC management page (/config/users)                                                                                                        |
+| bead-0705 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Publish integration ladder docs (Level 0-3) and demo walkthrough                                                                                           |
+| bead-0714 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit mobile delivery campaign: PWA-first + Capacitor iOS/Android                                                                                        |
+| bead-0717 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | n/a      | pass        | Cockpit mobile map mode: performance-budgeted Operations Map UX                                                                                            |
+| bead-0719 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit mobile packaging A: installable PWA (manifest, service worker, update strategy)                                                                    |
+| bead-0720 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit mobile packaging B: Capacitor iOS/Android wrapper with deep links and secure storage                                                               |
+| bead-0721 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Cockpit mobile auth: OIDC PKCE login flow aligned to JWT claim requirements                                                                                |
+| bead-0722 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit mobile notifications: native push pipeline (device registration + approval/run events)                                                             |
+| bead-0723 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Cockpit mobile release hardening: iOS/Android CI builds, smoke tests, and rollout playbook                                                                 |
+| bead-0724 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Demo showcase campaign: scripted Cockpit governance demos + integration readiness                                                                          |
+| bead-0727 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Demo media pipeline: render MP4 + GIF previews and publish gallery artifacts                                                                               |
+| bead-0728 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | CI automation for demo assets: validate scripts and regenerate showcase media                                                                              |
+| bead-0729 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Docs: run Cockpit demos locally + integration showcase ladder (L0-L3)                                                                                      |
+| bead-0730 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration showcase level-2: hello-connector scaffold and guided demo handoff                                                                             |
+| bead-0731 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Demo trust hardening: enforce redaction checks for scripted captures                                                                                       |
+| bead-0732 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Demo launch kit: outreach templates, publish checklist, and post-launch metrics                                                                            |
+| bead-0733 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | DX: one-command local runnable seed for workspace, policy, users, adapters, and machine registration                                                       |
+| bead-0734 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: pin OpenFGA model ID and enforce tuple PII guardrails                                                                                            |
+| bead-0735 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration: Odoo adapter transport compatibility (JSON-RPC today, External JSON-2 migration path)                                                         |
+| bead-0736 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Integration: local governed-run smoke (approval gate -> adapter action -> machine action -> evidence chain)                                                |
+| bead-0737 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Release: CI runnable-state smoke pipeline for local stack                                                                                                  |
+| bead-0738 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Docs: first-run guide for local real-data integrations (Keycloak, OpenFGA, Odoo sandbox, OpenClaw)                                                         |
+| bead-0739 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Runnable-state MVP campaign: local real-data + integration-complete governed run                                                                           |
+| bead-0740 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Adoption campaign: technical-adopter GTM and onboarding readiness                                                                                          |
+| bead-0741 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration DX: ergonomic SDK wrapper + portable evidence-chain verifier helpers                                                                           |
+| bead-0742 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration DX: AI-assisted scaffold prompt packs + validation guardrails (Codex CLI, Claude Code)                                                         |
+| bead-0743 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration: define MIS v0.1 (minimal integration surface) and freeze SDK scope                                                                            |
+| bead-0744 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Docs: Hello Governed Workflow tutorial + role-based onboarding tracks (Dev, SRE, SecOps)                                                                   |
+| bead-0745 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release analytics: adoption funnel + community responsiveness metrics (CHAOSS-aligned)                                                                     |
+| bead-0746 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security trust signals: OpenSSF Best Practices badge + SLSA mapping for release artifacts                                                                  |
+| bead-0747 | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Adoption outreach: design-partner pipeline + first technical webinar runbook                                                                               |
+| bead-0748 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Governance: funding rails setup (GitHub Sponsors + Open Collective) with maintainer policy                                                                 |
+| bead-0750 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Licensing gate: third-party workflow UI/components compliance checklist                                                                                    |
+| bead-0751 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit IA baseline: work-item hub, approvals, evidence, correlation                                                                                       |
+| bead-0752 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | API contract alignment: cockpit-to-control-plane compatibility layer                                                                                       |
+| bead-0753 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Evaluate n8n Embed path vs native cockpit workflow editor                                                                                                  |
+| bead-0754 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Credential boundary model for agentic workflows                                                                                                            |
+| bead-0755 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Supply-chain guardrails for cockpit and connector dependencies                                                                                             |
+| bead-0757 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Cockpit MVP plan with milestone estimates and decision gates                                                                                               |
+| bead-0758 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Workflow system V&V campaign: cross-layer verification from domain invariants to cockpit behavior                                                          |
+| bead-0759 | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Domain V&V: workflow/approval/run state-machine invariant suite with property and mutation testing                                                         |
+| bead-0760 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application V&V: command/query conformance matrix for workflow lifecycle and authorization                                                                 |
+| bead-0761 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure V&V: workflow durability, outbox ordering, and evidence continuity under failure injection                                                  |
+| bead-0762 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Presentation V&V: workflow editor and operations cockpit E2E behavior across roles and tenant scopes                                                       |
+| bead-0763 | 2/4 (50%)  | red   | pass | fail  | fail   | pass | n/a      | n/a         | Governance V&V: workflow traceability matrix (spec -> tests -> evidence -> release gate)                                                                   |
+| bead-0764 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Derived Artifacts + Retrieval campaign: RAG/vector/graph integration plan                                                                                  |
+| bead-0766 | 2/4 (50%)  | red   | pass | fail  | fail   | pass | n/a      | n/a         | Spec + OpenAPI: workspace retrieval and graph query endpoints                                                                                              |
+| bead-0767 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Licensing/compliance gate: vector+graph+embedding dependencies                                                                                             |
+| bead-0768 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Domain/Application contracts: retrieval, graph projection, embedding, checkpoints                                                                          |
+| bead-0769 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Domain model: Derived Artifact invariants, provenance, and retention mapping                                                                               |
+| bead-0770 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application service: derived-artifact projector orchestration + idempotency                                                                                |
+| bead-0771 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application service: retrieval query routing and provenance assembly                                                                                       |
+| bead-0772 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: projection checkpoint and derived artifact registry migrations                                                                             |
+| bead-0773 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: JetStream projection worker for derived artifacts                                                                                          |
+| bead-0774 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: Weaviate adapter for SemanticIndexPort (primary vector backend)                                                                            |
+| bead-0775 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: Neo4j adapter for KnowledgeGraphPort (primary graph backend)                                                                               |
+| bead-0776 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure spike: fallback vector backend parity (pgvector/Milvus)                                                                                     |
+| bead-0777 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure spike: fallback graph backend parity (JanusGraph)                                                                                           |
+| bead-0778 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Presentation/API: retrieval and graph routes with workspace-scoped authz                                                                                   |
+| bead-0779 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Presentation/Cockpit: semantic search + graph neighbourhood UX                                                                                             |
+| bead-0780 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: derived-artifact redaction, tenant isolation, and secret boundaries                                                                              |
+| bead-0781 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration: end-to-end replay, idempotency, and provenance verification suite                                                                             |
+| bead-0782 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | n/a      | pass        | Release readiness: retrieval performance, projection lag, and cost guardrails                                                                              |
+| bead-0783 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release gate: Derived Artifacts + Retrieval MVP closure                                                                                                    |
+| bead-0784 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | OpenClaw full-integration campaign: create, connect, display, and governed execution                                                                       |
+| bead-0785 | 2/4 (50%)  | red   | pass | fail  | fail   | pass | n/a      | n/a         | ADR: Full OpenClaw integration architecture for Portarium control plane and cockpit                                                                        |
+| bead-0786 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Governance contract gate: align OpenClaw HTTP error semantics and policy mapping                                                                           |
+| bead-0787 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Governance: machines/agents API versioning and migration policy (v1 -> v2)                                                                                 |
+| bead-0788 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Domain: machine-bound OpenClaw agent model alignment and invariants                                                                                        |
+| bead-0789 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application: machine/agent registry command-query orchestration                                                                                            |
+| bead-0790 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Application: OpenClaw management bridge use-cases for agent lifecycle sync                                                                                 |
+| bead-0791 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: persistent MachineRegistryStore and heartbeat tracking                                                                                     |
+| bead-0792 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: harden OpenClaw HTTP invoker semantics and policy/error handling                                                                           |
+| bead-0793 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: OpenClaw operator WebSocket client for agent management                                                                                    |
+| bead-0794 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure: OpenClaw agent presence and drift sync pipeline                                                                                            |
+| bead-0795 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Presentation/API: machines and agents registry endpoints for OpenClaw integration                                                                          |
+| bead-0796 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Presentation/Cockpit: real API wiring and MSW isolation for OpenClaw surfaces                                                                              |
+| bead-0797 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Presentation/Cockpit: Machines screen for OpenClaw gateway registration and health                                                                         |
+| bead-0798 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Presentation/Cockpit: OpenClaw agent create/connect/display with policy-tier controls                                                                      |
+| bead-0799 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: enforce per-workspace OpenClaw gateway isolation invariants                                                                                      |
+| bead-0800 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Security: OpenClaw gateway token handling and browser-exposure prevention                                                                                  |
+| bead-0801 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration: full OpenClaw create-connect-display-run end-to-end verification                                                                              |
+| bead-0802 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release: machines/agents API migration rollout and backward-compat execution                                                                               |
+| bead-0803 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release gate: OpenClaw full integration production readiness and rollback                                                                                  |
+| bead-0804 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Infrastructure spike: per-workspace OpenClaw sidecar bridge evaluation                                                                                     |
+| bead-0805 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Integration spike: OpenClaw plugin callback strategy evaluation                                                                                            |
+| bead-a1xo | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Trace-context propagation + correlation model across all services                                                                                          |
+| bead-cgtt | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | Local governed-run smoke test — approval gate to adapter to machine to evidence                                                                            |
+| bead-d5ta | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Approval Workflows — Universal Decision Surface                                                                                                            |
+| bead-dawn | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Define SLIs/SLOs + error budget policy                                                                                                                     |
+| bead-efra | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Multi-tenant infrastructure isolation — network policy, namespace, workload identity                                                                       |
+| bead-f908 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Evidence durability policy — retention, export, deletion, tamper-evidence                                                                                  |
+| bead-fv8i | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | DDS-Security defaults enforcement — no harden-later for robotics                                                                                           |
+| bead-g6re | 2/4 (50%)  | red   | pass | fail  | fail   | pass | n/a      | n/a         | Health probe semantics spec — liveness vs readiness vs backing stores                                                                                      |
+| bead-h575 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Build renderer registry for domain-specific approval views                                                                                                 |
+| bead-haxl | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement policy evaluation pipeline with explainability                                                                                                   |
+| bead-jg3z | 1/4 (25%)  | red   | fail | fail  | fail   | pass | n/a      | n/a         | Fix docs/project-overview.md claim of one-command local compose                                                                                            |
+| bead-knnc | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Production Readiness Gaps — governance, release engineering, ops, tenancy, AI/robotics risk                                                                |
+| bead-mlwr | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | SBOM generation + artefact signing + provenance attestations                                                                                               |
+| bead-mu8k | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Release unit definition — Helm charts, image build/push, promotion flows                                                                                   |
+| bead-nxid | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement triage mode (rapid swipe-based approval UX)                                                                                                      |
+| bead-pysp | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Docker Compose profiles — baseline + runtime/auth/cockpit/tools profiles                                                                                   |
+| bead-qr8v | 1/4 (25%)  | red   | fail | pass  | fail   | fail | n/a      | n/a         | kind-based deployment smoke for infra parity                                                                                                               |
+| bead-rmud | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Robotics semantic mapping + safety invariants for VDA 5050 / MassRobotics                                                                                  |
+| bead-s9wv | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Supported versions + patch cadence policy                                                                                                                  |
+| bead-sgt7 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | n/a      | pass        | Seed command — load canonical bundle into stores + optional evidence payloads                                                                              |
+| bead-smul | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | OCI images for API server + worker wired into Compose                                                                                                      |
+| bead-tz6c | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | LLM security controls — output validation, prompt-injection resistance, agency boundaries                                                                  |
+| bead-v8sj | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | CI-to-cloud OIDC trust policy hardening                                                                                                                    |
+| bead-vkzz | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Build approval shell UI (stable container component)                                                                                                       |
+| bead-vuz4 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | RAG tenancy isolation model — workspace-scoped vector + graph retrieval                                                                                    |
+| bead-wk44 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | OpenSSF Best Practices badge + SLSA provenance mapping                                                                                                     |
+| bead-x941 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | CI-to-cloud OIDC trust policy hardening                                                                                                                    |
+| bead-y5ob | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement evidence-first audit trail for approvals                                                                                                         |
+| bead-yd14 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Implement block-based presentation DSL for approval evidence                                                                                               |
+| bead-ywee | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Implement security controls for agent-supplied approval content                                                                                            |
+| bead-zhp7 | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Local schema bootstrap — create tables/indexes + deterministic reset command                                                                               |
+| bead-zmf3 | 1/5 (20%)  | red   | fail | fail  | fail   | fail | pass     | n/a         | Local auth story — dev-only token mode or bundled OIDC/JWKS provider                                                                                       |
+| bead-zmvb | 0/4 (0%)   | red   | fail | fail  | fail   | fail | n/a      | n/a         | Local-First Developer Experience — one-command seeded stack                                                                                                |
 
 ## Rules
 

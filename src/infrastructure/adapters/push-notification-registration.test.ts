@@ -22,8 +22,6 @@ interface PushRegistration {
 }
 
 // ── Mock fetch ────────────────────────────────────────────────────────────────
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockFetch = vi.fn() as any;
 vi.stubGlobal('fetch', mockFetch);
 
@@ -93,7 +91,7 @@ describe('registerDeviceToken', () => {
     );
 
     const call = mockFetch.mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse((call[1] as RequestInit)?.body as string) as PushRegistration;
+    const body = JSON.parse(call[1]?.body as string) as PushRegistration;
     expect(body.platform).toBe('ios');
     expect(body.token).toBe('apns-token-abc123');
   });
@@ -112,7 +110,7 @@ describe('registerDeviceToken', () => {
     await registerDeviceToken(reg, 'access-token-xyz');
 
     const call = mockFetch.mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse((call[1] as RequestInit)?.body as string) as PushRegistration;
+    const body = JSON.parse(call[1]?.body as string) as PushRegistration;
     expect(body.platform).toBe('web');
     expect(body.p256dh).toBeDefined();
     expect(body.auth).toBeDefined();

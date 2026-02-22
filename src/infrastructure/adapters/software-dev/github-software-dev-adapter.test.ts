@@ -23,8 +23,6 @@ function makeFetch(body: unknown, status = 200) {
     text: () => Promise.resolve(JSON.stringify(body)),
   });
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeAdapter(fetchFn: any = makeFetch([])) {
   return new GitHubSoftwareDevAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
 }

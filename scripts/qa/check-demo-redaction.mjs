@@ -25,7 +25,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRequire } from 'node:module';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -144,7 +143,7 @@ function collectRecursive(dir, acc) {
  */
 function checkEmailDomains(content, filePath) {
   const violations = [];
-  const emailRegex = /[a-zA-Z0-9._%+\-]+@([a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g;
+  const emailRegex = /[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
   let match;
   while ((match = emailRegex.exec(content)) !== null) {
     const domain = match[1].toLowerCase();

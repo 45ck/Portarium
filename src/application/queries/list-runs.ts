@@ -27,9 +27,11 @@ import type { Page, SortClause, SortDirection } from '../common/query.js';
 import type {
   AuthorizationPort,
   ListRunsQuery,
+  QueryCache,
   RunFieldFilter,
   RunQueryStore,
 } from '../ports/index.js';
+import { queryCacheKey } from '../ports/query-cache.js';
 import { RUN_SORTABLE_FIELDS } from '../ports/run-store.js';
 
 const RUN_STATUSES = [
@@ -62,6 +64,8 @@ export type ListRunsError = Forbidden | ValidationFailed;
 export interface ListRunsDeps {
   authorization: AuthorizationPort;
   runStore: RunQueryStore;
+  /** Optional cache-aside cache. Pass null to disable caching. */
+  queryCache?: QueryCache | null;
 }
 
 function parseIds(input: ListRunsInput): Result<
@@ -151,6 +155,26 @@ export async function listRuns(
 
   const filter = buildFilter(input, parsed.value);
   const query = buildQuery(input, filter);
+
+  const cache = deps.queryCache ?? null;
+  if (cache) {
+    const sort = query.sort;
+    const cacheKey = queryCacheKey(
+      ctx.tenantId,
+      'listRuns',
+      input.workspaceId,
+      JSON.stringify(sort),
+      input.cursor ?? '',
+      String(input.limit ?? ''),
+    );
+    const cached = await cache.get<ListRunsOutput>(cacheKey);
+    if (cached !== null) return ok(cached);
+
+    const page = await deps.runStore.listRuns(ctx.tenantId, parsed.value.workspaceId, query);
+    await cache.set(cacheKey, page, 30);
+    return ok(page);
+  }
+
   const page = await deps.runStore.listRuns(ctx.tenantId, parsed.value.workspaceId, query);
   return ok(page);
 }

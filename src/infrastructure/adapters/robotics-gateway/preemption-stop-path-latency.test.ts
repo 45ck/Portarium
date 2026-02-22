@@ -76,7 +76,7 @@ class LatencyTestMissionPort implements MissionPort {
     await this.#delay();
     const id = String(req.missionId);
     const existing = this.#missions.get(id);
-    if (existing && existing.idempotencyKey === req.planEffectIdempotencyKey) {
+    if (existing?.idempotencyKey === req.planEffectIdempotencyKey) {
       return {
         kind: 'Dispatched',
         missionId: req.missionId,

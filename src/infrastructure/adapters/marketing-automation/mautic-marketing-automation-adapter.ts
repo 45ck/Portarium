@@ -233,7 +233,7 @@ export class MauticMarketingAutomationAdapter implements MarketingAutomationAdap
 
     const body: Record<string, string> = {};
     if (typeof input.payload?.['displayName'] === 'string') {
-      const [f, ...r] = (input.payload['displayName'] as string).split(' ');
+      const [f, ...r] = input.payload['displayName'].split(' ');
       body['firstname'] = f ?? '';
       body['lastname'] = r.join(' ');
     }

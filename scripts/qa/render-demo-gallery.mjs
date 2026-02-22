@@ -125,7 +125,7 @@ function parseSteps(raw) {
   const steps = [];
   // Find all step blocks: each starts with `- action: <type>`
   const stepBlocks = [
-    ...raw.matchAll(/- action:\s*(\S+)([\s\S]*?)(?=\n\s+- action:|\n  - title:|\nchapters:|\z)/g),
+    ...raw.matchAll(/- action:\s*(\S+)([\s\S]*?)(?=\n\s+- action:|\n {2}- title:|\nchapters:|$)/g),
   ];
   for (const block of stepBlocks) {
     const actionType = block[1].trim();
@@ -152,7 +152,7 @@ function parseSteps(raw) {
 /**
  * Execute a parsed step list against a Puppeteer page, returning frame paths.
  */
-async function executeSteps(page, steps, framesDir, clipId) {
+async function executeSteps(page, steps, framesDir, _clipId) {
   const framePaths = [];
   let frameCounter = 0;
 
