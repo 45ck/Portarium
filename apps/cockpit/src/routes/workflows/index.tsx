@@ -11,6 +11,7 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AlertCircle, RotateCcw } from 'lucide-react';
 import type { WorkflowSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
@@ -158,6 +159,27 @@ function WorkflowsPage() {
         values={filters}
         onChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
       />
+
+      {(workflows.isError || runs.isError) && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load workflows</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void workflows.refetch();
+              void runs.refetch();
+            }}
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      )}
 
       <DataTable
         columns={columns}

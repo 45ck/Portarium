@@ -11,6 +11,7 @@ import { FilterBar } from '@/components/cockpit/filter-bar';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { Button } from '@/components/ui/button';
+import { AlertCircle, RotateCcw } from 'lucide-react';
 
 const CATEGORY_OPTIONS = [
   { label: 'Plan', value: 'Plan' },
@@ -25,7 +26,7 @@ const EVIDENCE_PAGE_SIZE = 20;
 
 function EvidencePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useEvidence(wsId);
+  const { data, isLoading, isError, refetch } = useEvidence(wsId);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     category: 'all',
   });
@@ -70,7 +71,21 @@ function EvidencePage() {
         }}
       />
 
-      {!isLoading && filtered.length === 0 ? (
+      {isError && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load evidence</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {!isError && !isLoading && filtered.length === 0 ? (
         <EmptyState title="No evidence" description="No evidence entries match your filters." />
       ) : (
         <>

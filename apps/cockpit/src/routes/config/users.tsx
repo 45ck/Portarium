@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createRoute } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RotateCcw } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useUsers, useInviteUser, usePatchUser } from '@/hooks/queries/use-users';
@@ -45,7 +45,7 @@ const statusClassName: Record<string, string> = {
 
 function UsersPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useUsers(wsId);
+  const { data, isLoading, isError, refetch } = useUsers(wsId);
   const inviteMutation = useInviteUser(wsId);
   const patchMutation = usePatchUser(wsId);
 
@@ -156,6 +156,20 @@ function UsersPage() {
           </Button>
         }
       />
+
+      {isError && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">Failed to load users</p>
+            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
+      )}
 
       <DataTable
         columns={columns}

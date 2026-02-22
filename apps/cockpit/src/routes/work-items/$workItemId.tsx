@@ -19,6 +19,7 @@ import { OwnerPicker } from '@/components/cockpit/owner-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/cockpit/error-boundary';
 import { User } from 'lucide-react';
 import type { RunSummary } from '@portarium/cockpit-types';
 
@@ -95,141 +96,145 @@ function WorkItemDetailPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title={item.title}
-        icon={<EntityIcon entityType="work-item" size="md" decorative />}
-        breadcrumb={[{ label: 'Work Items', to: '/work-items' }, { label: item.title }]}
-      />
+    <ErrorBoundary>
+      <div className="p-6 space-y-6">
+        <PageHeader
+          title={item.title}
+          icon={<EntityIcon entityType="work-item" size="md" decorative />}
+          breadcrumb={[{ label: 'Work Items', to: '/work-items' }, { label: item.title }]}
+        />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column: metadata */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left column: metadata */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={item.status === 'Open' ? 'default' : 'secondary'}
+                  className="text-[10px]"
+                >
+                  {item.status}
+                </Badge>
+              </div>
+              <div className="text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created by</span>
+                  <span>{item.createdByUserId}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Owner</span>
+                  <div className="flex items-center gap-2">
+                    {item.ownerUserId ? (
+                      <span className="inline-flex items-center gap-1">
+                        <User className="h-3 w-3 text-muted-foreground" />
+                        {ownerMember?.displayName ?? item.ownerUserId}
+                      </span>
+                    ) : null}
+                    <OwnerPicker
+                      members={workforceMembers}
+                      currentMemberId={ownerMember?.workforceMemberId}
+                      onSelect={(memberId) => {
+                        const member = workforceMembers.find(
+                          (m) => m.workforceMemberId === memberId,
+                        );
+                        if (member) {
+                          updateWorkItem.mutate({ ownerUserId: member.linkedUserId });
+                        }
+                      }}
+                      label={item.ownerUserId ? 'Change' : 'Assign owner'}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created</span>
+                  <span>{format(new Date(item.createdAtIso), 'MMM d, yyyy HH:mm')}</span>
+                </div>
+                {item.sla?.dueAtIso && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">SLA Due</span>
+                    <span>{format(new Date(item.sla.dueAtIso), 'MMM d, yyyy HH:mm')}</span>
+                  </div>
+                )}
+              </div>
+              {item.links?.externalRefs && item.links.externalRefs.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">External References</p>
+                  <div className="flex flex-wrap gap-1">
+                    {item.links.externalRefs.map((ref, i) => (
+                      <SorRefPill key={i} externalRef={ref} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Right column: linked data */}
+          <div className="space-y-4">
+            <Card className="shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Linked Runs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {linkedRuns.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No linked runs</p>
+                ) : (
+                  <DataTable
+                    columns={runColumns}
+                    data={linkedRuns}
+                    loading={runs.isLoading}
+                    getRowKey={(row) => row.runId}
+                    onRowClick={(row) =>
+                      navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })
+                    }
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Linked Approvals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {linkedApprovals.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No linked approvals</p>
+                ) : (
+                  <div className="space-y-2">
+                    {linkedApprovals.map((a) => (
+                      <Link
+                        key={a.approvalId}
+                        to={'/approvals/$approvalId' as string}
+                        params={{ approvalId: a.approvalId }}
+                        className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs truncate">{a.prompt}</p>
+                        </div>
+                        <ApprovalStatusBadge status={a.status} />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Evidence timeline */}
         <Card className="shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Details</CardTitle>
+            <CardTitle className="text-sm">Evidence</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={item.status === 'Open' ? 'default' : 'secondary'}
-                className="text-[10px]"
-              >
-                {item.status}
-              </Badge>
-            </div>
-            <div className="text-xs space-y-1.5">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created by</span>
-                <span>{item.createdByUserId}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Owner</span>
-                <div className="flex items-center gap-2">
-                  {item.ownerUserId ? (
-                    <span className="inline-flex items-center gap-1">
-                      <User className="h-3 w-3 text-muted-foreground" />
-                      {ownerMember?.displayName ?? item.ownerUserId}
-                    </span>
-                  ) : null}
-                  <OwnerPicker
-                    members={workforceMembers}
-                    currentMemberId={ownerMember?.workforceMemberId}
-                    onSelect={(memberId) => {
-                      const member = workforceMembers.find((m) => m.workforceMemberId === memberId);
-                      if (member) {
-                        updateWorkItem.mutate({ ownerUserId: member.linkedUserId });
-                      }
-                    }}
-                    label={item.ownerUserId ? 'Change' : 'Assign owner'}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created</span>
-                <span>{format(new Date(item.createdAtIso), 'MMM d, yyyy HH:mm')}</span>
-              </div>
-              {item.sla?.dueAtIso && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">SLA Due</span>
-                  <span>{format(new Date(item.sla.dueAtIso), 'MMM d, yyyy HH:mm')}</span>
-                </div>
-              )}
-            </div>
-            {item.links?.externalRefs && item.links.externalRefs.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground">External References</p>
-                <div className="flex flex-wrap gap-1">
-                  {item.links.externalRefs.map((ref, i) => (
-                    <SorRefPill key={i} externalRef={ref} />
-                  ))}
-                </div>
-              </div>
-            )}
+          <CardContent>
+            <EvidenceTimeline entries={linkedEvidence} loading={evidence.isLoading} />
           </CardContent>
         </Card>
-
-        {/* Right column: linked data */}
-        <div className="space-y-4">
-          <Card className="shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Linked Runs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {linkedRuns.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No linked runs</p>
-              ) : (
-                <DataTable
-                  columns={runColumns}
-                  data={linkedRuns}
-                  loading={runs.isLoading}
-                  getRowKey={(row) => row.runId}
-                  onRowClick={(row) =>
-                    navigate({ to: '/runs/$runId' as string, params: { runId: row.runId } })
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Linked Approvals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {linkedApprovals.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No linked approvals</p>
-              ) : (
-                <div className="space-y-2">
-                  {linkedApprovals.map((a) => (
-                    <Link
-                      key={a.approvalId}
-                      to={'/approvals/$approvalId' as string}
-                      params={{ approvalId: a.approvalId }}
-                      className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs truncate">{a.prompt}</p>
-                      </div>
-                      <ApprovalStatusBadge status={a.status} />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
-
-      {/* Evidence timeline */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Evidence</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EvidenceTimeline entries={linkedEvidence} loading={evidence.isLoading} />
-        </CardContent>
-      </Card>
-    </div>
+    </ErrorBoundary>
   );
 }
 

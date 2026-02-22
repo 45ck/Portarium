@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { controlPlaneClient } from '@/lib/control-plane-client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/cockpit/error-boundary';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -203,145 +204,147 @@ function RunDetailPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title={`Run: ${runId}`}
-        icon={<EntityIcon entityType="run" size="md" decorative />}
-        breadcrumb={[{ label: 'Runs', to: '/runs' }, { label: runId }]}
-      />
+    <ErrorBoundary>
+      <div className="p-6 space-y-6">
+        <PageHeader
+          title={`Run: ${runId}`}
+          icon={<EntityIcon entityType="run" size="md" decorative />}
+          breadcrumb={[{ label: 'Runs', to: '/runs' }, { label: runId }]}
+        />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <RunStatusBadge status={run.status} />
-        <ExecutionTierBadge tier={run.executionTier} />
-        {(run.status === 'Running' ||
-          run.status === 'WaitingForApproval' ||
-          run.status === 'Paused') && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setCancelDialogOpen(true)}
-            disabled={cancelRun.isPending}
-          >
-            Cancel Run
-          </Button>
-        )}
-      </div>
-
-      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this run?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will cancel run {runId}. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelRun.isPending}>Keep Running</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        <div className="flex flex-wrap items-center gap-3">
+          <RunStatusBadge status={run.status} />
+          <ExecutionTierBadge tier={run.executionTier} />
+          {(run.status === 'Running' ||
+            run.status === 'WaitingForApproval' ||
+            run.status === 'Paused') && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setCancelDialogOpen(true)}
               disabled={cancelRun.isPending}
-              onClick={(e) => {
-                e.preventDefault();
-                cancelRun.mutate();
-              }}
             >
-              {cancelRun.isPending ? 'Cancelling...' : 'Confirm Cancel'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              Cancel Run
+            </Button>
+          )}
+        </div>
 
-      <ChainIntegrityBanner status={evidence.isLoading ? 'pending' : 'verified'} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
-        <Tabs defaultValue="steps">
-          <TabsList>
-            <TabsTrigger value="steps">Steps</TabsTrigger>
-            <TabsTrigger value="effects">Effects</TabsTrigger>
-            <TabsTrigger value="evidence">Evidence</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="steps">
-            <Card className="shadow-none mt-2">
-              <CardContent className="pt-4">
-                <StepList
-                  steps={steps}
-                  currentStep={steps.find((s) => s.status === 'running')?.stepId}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="effects">
-            <Card className="shadow-none mt-2">
-              <CardContent className="pt-4">
-                <EffectsList
-                  planned={plan?.plannedEffects ?? []}
-                  predicted={plan?.predictedEffects}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="evidence">
-            <Card className="shadow-none mt-2">
-              <CardContent className="pt-4">
-                <EvidenceTimeline entries={evidenceForRun} loading={evidence.isLoading} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {run.status === 'WaitingForApproval' && pendingApproval && (
-          <div className="lg:sticky lg:top-6 self-start">
-            <ApprovalGatePanel
-              approval={pendingApproval}
-              onDecide={(decision, rationale) =>
-                void approvalDecisionOutbox
-                  .submitDecision(pendingApproval.approvalId, { decision, rationale })
-                  .then((result) => {
-                    if (result.queued) {
-                      toast.info('Offline: decision queued and will replay on reconnect.');
-                      return;
-                    }
-                    toast.success('Decision submitted');
-                  })
-                  .catch(() => {
-                    toast.error('Failed to submit decision');
-                  })
-              }
-              loading={approvalDecisionOutbox.isFlushing}
-            />
-          </div>
-        )}
-      </div>
-
-      {runApprovals.length > 0 && (
-        <Card className="shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Approvals</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {runApprovals.map((a) => (
-              <Link
-                key={a.approvalId}
-                to={'/approvals/$approvalId' as string}
-                params={{ approvalId: a.approvalId }}
-                className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
+        <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel this run?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will cancel run {runId}. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={cancelRun.isPending}>Keep Running</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={cancelRun.isPending}
+                onClick={(e) => {
+                  e.preventDefault();
+                  cancelRun.mutate();
+                }}
               >
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs truncate">{a.prompt}</p>
-                  <p className="text-[10px] text-muted-foreground font-mono">{a.approvalId}</p>
-                </div>
-                <ApprovalStatusBadge status={a.status} />
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+                {cancelRun.isPending ? 'Cancelling...' : 'Confirm Cancel'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      <RelatedEntities entities={relatedEntities} />
-    </div>
+        <ChainIntegrityBanner status={evidence.isLoading ? 'pending' : 'verified'} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+          <Tabs defaultValue="steps">
+            <TabsList>
+              <TabsTrigger value="steps">Steps</TabsTrigger>
+              <TabsTrigger value="effects">Effects</TabsTrigger>
+              <TabsTrigger value="evidence">Evidence</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="steps">
+              <Card className="shadow-none mt-2">
+                <CardContent className="pt-4">
+                  <StepList
+                    steps={steps}
+                    currentStep={steps.find((s) => s.status === 'running')?.stepId}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="effects">
+              <Card className="shadow-none mt-2">
+                <CardContent className="pt-4">
+                  <EffectsList
+                    planned={plan?.plannedEffects ?? []}
+                    predicted={plan?.predictedEffects}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="evidence">
+              <Card className="shadow-none mt-2">
+                <CardContent className="pt-4">
+                  <EvidenceTimeline entries={evidenceForRun} loading={evidence.isLoading} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {run.status === 'WaitingForApproval' && pendingApproval && (
+            <div className="lg:sticky lg:top-6 self-start">
+              <ApprovalGatePanel
+                approval={pendingApproval}
+                onDecide={(decision, rationale) =>
+                  void approvalDecisionOutbox
+                    .submitDecision(pendingApproval.approvalId, { decision, rationale })
+                    .then((result) => {
+                      if (result.queued) {
+                        toast.info('Offline: decision queued and will replay on reconnect.');
+                        return;
+                      }
+                      toast.success('Decision submitted');
+                    })
+                    .catch(() => {
+                      toast.error('Failed to submit decision');
+                    })
+                }
+                loading={approvalDecisionOutbox.isFlushing}
+              />
+            </div>
+          )}
+        </div>
+
+        {runApprovals.length > 0 && (
+          <Card className="shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Approvals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {runApprovals.map((a) => (
+                <Link
+                  key={a.approvalId}
+                  to={'/approvals/$approvalId' as string}
+                  params={{ approvalId: a.approvalId }}
+                  className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs truncate">{a.prompt}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{a.approvalId}</p>
+                  </div>
+                  <ApprovalStatusBadge status={a.status} />
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        <RelatedEntities entities={relatedEntities} />
+      </div>
+    </ErrorBoundary>
   );
 }
 

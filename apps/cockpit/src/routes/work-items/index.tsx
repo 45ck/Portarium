@@ -109,7 +109,7 @@ function WorkItemsPage() {
     },
   ];
 
-  if (isError && filtered.length === 0) {
+  if (isError) {
     return (
       <div className="p-6 space-y-4">
         <PageHeader
