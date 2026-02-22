@@ -2,7 +2,7 @@
   "version": 1,
   "review": {
     "cycleId": "2026-W08",
-    "reviewedAt": "2026-02-20",
+    "reviewedAt": "2026-02-22",
     "reviewedBy": "codex-agent",
     "cadence": "weekly"
   },
@@ -160,10 +160,9 @@
       "operationalDomains": ["marketing"],
       "canonicalObjects": ["Party", "Campaign", "Document"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0243", "bead-0244"],
-      "gapBeads": ["bead-0421", "bead-0166"],
+      "coverageBeads": ["bead-0243", "bead-0244", "bead-0421"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "Mautic reference adapter implementation bead remains open.",
         "Integration gate remains open for family closure."
       ]
     },
