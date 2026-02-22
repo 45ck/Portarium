@@ -196,7 +196,48 @@ flowchart TD
 |          | **Auditing:** Feed Vault/Postgres/Audit logs into SIEM. Setup regular security reviews. | High   | Security Engineering      |
 |          | **Continuous Improvement:** Regularly update dependencies, apply OWASP ASVS changes.    | Ongoing| Dev Team                 |
 
-Each task should be assigned to the specified role (or equivalent). Effort estimates (Low/Medium/High) guide planning but should be refined. For example, *“Disable Dev Token”* is quick (code check), whereas *“High Availability”* involves architecture changes. 
+Each task should be assigned to the specified role (or equivalent). Effort estimates (Low/Medium/High) guide planning but should be refined. For example, *”Disable Dev Token”* is quick (code check), whereas *”High Availability”* involves architecture changes.
+
+---
+
+# Severity Triage (bead-nn3y — assessed 2026-02-22)
+
+## Assessment against live codebase
+
+| # | Finding | Section | Severity | Current State | Status |
+|---|---------|---------|----------|---------------|--------|
+| 1 | Dev-mode static bearer token active without explicit opt-in | IAM | **Critical** | Fixed: `checkDevAuthEnvGate` requires `ENABLE_DEV_AUTH=true`; throws fatal if `NODE_ENV≠dev/test` | ✅ Fixed (bead-tqqt) |
+| 2 | `alg:none` JWT not explicitly rejected | IAM | **High** | Fixed: `jose` rejects unsigned tokens; added explicit test for crafted `alg:none` token | ✅ Fixed (bead-tqqt) |
+| 3 | JWT `iss`/`aud` optional — not enforced in production bootstrap | IAM | **High** | `PORTARIUM_JWT_ISSUER` / `PORTARIUM_JWT_AUDIENCE` are optional env vars; tests confirm they work when set, but not required | ⚠️ Open (bead-pj5a) |
+| 4 | RBAC `ACTION_MATRIX` coverage gaps if new actions added without entry | IAM | **Medium** | Safe by design: `Record<AppAction, ...>` enforces exhaustiveness at compile-time | ✅ Safe by design |
+| 5 | Token revocation not implemented (long-lived JWTs) | IAM | **Medium** | No revocation mechanism; risk documented; mitigation = short expiry guidance | 📝 Doc risk (bead-rv3k) |
+| 6 | OpenFGA `authorizationModelId` not pinned in production | IAM | **Medium** | Logs warning if unset; should fail-fast in non-dev environments | ⚠️ Open (bead-8qmt) |
+| 7 | Evidence `hashSha256` is random, not content-derived | Crypto | **High** | Fixed: `NodeCryptoEvidenceHasher.sha256Hex()` uses real SHA-256 of content string | ✅ Fixed (existing infra) |
+| 8 | `Math.random()` usage in security-relevant ID generation | Crypto | **High** | Non-issue: only used for timing jitter in backoff (quota-aware-execution); not IDs | ✅ Non-issue |
+| 9 | `npm audit` not in CI | Secure coding | **High** | Fixed: `scripts/ci/audit-high.mjs` runs in `ci:pr` as final gate | ✅ Fixed (existing CI) |
+| 10 | Auth rejection tests missing | Secure coding | **High** | Fixed: JWT audience/issuer/alg:none/expired/missing tests added (19 tests total) | ✅ Fixed (bead-tqqt) |
+| 11 | In-memory rate limiter — not HA, no per-IP throttling | Network | **Medium** | Known limitation; `InMemoryRateLimitStore` only; no Redis adapter | ⚠️ Open (bead-nj7i area; infra concern) |
+| 12 | No structured security event logging (401/403/429) | Secure coding | **Medium** | Auth errors produce correct HTTP responses but no structured log lines | ⚠️ Open (bead-7zzq) |
+| 13 | TLS enforcement at app layer | Network | **Low** | Deployment-level concern (ingress TLS); not app responsibility | 🏗️ Infra concern |
+| 14 | WAF / API gateway | Network | **Low** | Deployment-level concern | 🏗️ Infra concern |
+| 15 | No formal threat model documented | Architecture | **Low** | ADR-0070 covers hybrid architecture; no full STRIDE model | 📝 Deferred |
+
+## Summary
+
+- **Critical**: 1 finding → 1 fixed (bead-tqqt)
+- **High**: 5 findings → 4 fixed, 1 open (JWT iss/aud enforcement — bead-pj5a)
+- **Medium**: 5 findings → 1 safe-by-design, 1 infra-concern, 3 open (bead-8qmt, bead-rv3k, bead-7zzq)
+- **Low**: 3 findings → 2 infra-concerns, 1 deferred
+
+## Seeded beads
+
+| Bead | Title | Priority |
+|------|-------|----------|
+| bead-pj5a | Security: require JWT issuer + audience in production bootstrap | P1 |
+| bead-8qmt | Security: OpenFGA production model-pin enforcement (fail-fast if unpinned in non-dev) | P2 |
+| bead-rv3k | Security: document JWT short-expiry guidance and revocation risk in ADR | P2 |
+| bead-7zzq | Security: structured auth event logging for 401/403/429 responses | P2 |
+
 
 # Specific Code References
 
