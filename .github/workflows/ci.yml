@@ -37,7 +37,22 @@ jobs:
 
   pr:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: portarium
+          POSTGRES_USER: portarium
+          POSTGRES_PASSWORD: portarium
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v4
@@ -51,10 +66,17 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Validate schema migration framework
+      - name: Validate schema migration framework (dry-run)
         run: npm run migrate:ci
 
+      - name: Apply schema migrations against test DB
+        env:
+          DATABASE_URL: postgresql://portarium:portarium@localhost:5432/portarium
+        run: npm run migrate:apply:ci
+
       - name: Run PR gates
+        env:
+          DATABASE_URL: postgresql://portarium:portarium@localhost:5432/portarium
         run: npm run ci:pr
 
       - name: Upload coverage

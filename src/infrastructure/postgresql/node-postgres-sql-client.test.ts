@@ -11,10 +11,10 @@ import type { SqlClient } from './sql-client.js';
 // Fake pool builder
 // ---------------------------------------------------------------------------
 
-type FakeClient = {
+interface FakeClient {
   query: ReturnType<typeof vi.fn>;
   release: ReturnType<typeof vi.fn>;
-};
+}
 
 function makeFakePool(clientOverride?: Partial<FakeClient>): {
   pool: NodePostgresPool;

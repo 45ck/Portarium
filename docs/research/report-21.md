@@ -331,22 +331,21 @@ This turns your “document DB on Postgres” approach from “works at 10k rows
 
 ---
 
-**Unspecified details (explicit):** production database topology (single RDS vs Aurora vs self-managed), actual pooling mode (PgBouncer presence/config), and runtime transaction isolation levels are not concretely specified in the inspected sources; recommendations above therefore assume standard PostgreSQL behaviour and must be verified against the actual deployment environment. fileciteturn69file1L1-L1 citeturn9search0turn13search0
----
+## **Unspecified details (explicit):** production database topology (single RDS vs Aurora vs self-managed), actual pooling mode (PgBouncer presence/config), and runtime transaction isolation levels are not concretely specified in the inspected sources; recommendations above therefore assume standard PostgreSQL behaviour and must be verified against the actual deployment environment. fileciteturn69file1L1-L1 citeturn9search0turn13search0
 
 ## Data Layer Triage (bead-abk6 — assessed 2026-02-22)
 
 Cross-referenced all 8 prioritised findings against the live codebase (commit 8bf12ff).
 
-| Finding | Status | Evidence | Bead |
-|---|---|---|---|
-| Deploy pipeline does not apply migrations | CONFIRMED | `package.json:112` `migrate:ci` = check + dry-run:expand only; no Postgres service container in CI; CD also dry-run only | bead-mig1 (P1, seeded) |
-| Store adapters do "load all then filter/sort" | CONFIRMED | `postgres-store-adapters.ts` + `postgres-workforce-store-adapters.ts` have in-memory filter/sort patterns | bead-sql2 (P1, seeded); bead-nj7i (pagination, blocked by bead-8k55) |
-| N+1 reads in workforce member listing | CONFIRMED | `postgres-workforce-store-adapters.ts:106` uses `Promise.all` over `getById` | bead-sql2 (P1, seeded) |
-| No unit-of-work / transaction boundary | CONFIRMED | `sql-client.ts` exposes only `query()`; no `withTransaction`; outbox insert not atomic with state write | bead-tx1 (P1, seeded) |
-| Outbox design is ambiguous/incomplete | PARTIAL | `postgres-eventing.ts` implements `PostgresOutboxStore` via `domain_documents` 'outbox' collection; no dedicated outbox table; no transaction pairing | bead-tx1 (P1) covers atomicity |
-| Tenancy isolation model mismatch | OPEN | ADR-0049 vs ADR-0084 not reconciled; architectural decision required | Deferred — P2 tenancy epic work |
-| Pool config relies on defaults | CONFIRMED | `node-postgres-sql-client.ts:9` `new Pool({ connectionString })` only | bead-pool1 (P2, seeded) |
-| Tests do not hit real Postgres | CONFIRMED | CI uses `InMemorySqlClient`; `migrate:ci` = dry-run; no Postgres service container | bead-mig1 (P1); bead-ijlt (P1, blocked by bead-8k55) |
+| Finding                                       | Status    | Evidence                                                                                                                                              | Bead                                                                 |
+| --------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Deploy pipeline does not apply migrations     | CONFIRMED | `package.json:112` `migrate:ci` = check + dry-run:expand only; no Postgres service container in CI; CD also dry-run only                              | bead-mig1 (P1, seeded)                                               |
+| Store adapters do "load all then filter/sort" | CONFIRMED | `postgres-store-adapters.ts` + `postgres-workforce-store-adapters.ts` have in-memory filter/sort patterns                                             | bead-sql2 (P1, seeded); bead-nj7i (pagination, blocked by bead-8k55) |
+| N+1 reads in workforce member listing         | CONFIRMED | `postgres-workforce-store-adapters.ts:106` uses `Promise.all` over `getById`                                                                          | bead-sql2 (P1, seeded)                                               |
+| No unit-of-work / transaction boundary        | CONFIRMED | `sql-client.ts` exposes only `query()`; no `withTransaction`; outbox insert not atomic with state write                                               | bead-tx1 (P1, seeded)                                                |
+| Outbox design is ambiguous/incomplete         | PARTIAL   | `postgres-eventing.ts` implements `PostgresOutboxStore` via `domain_documents` 'outbox' collection; no dedicated outbox table; no transaction pairing | bead-tx1 (P1) covers atomicity                                       |
+| Tenancy isolation model mismatch              | OPEN      | ADR-0049 vs ADR-0084 not reconciled; architectural decision required                                                                                  | Deferred — P2 tenancy epic work                                      |
+| Pool config relies on defaults                | CONFIRMED | `node-postgres-sql-client.ts:9` `new Pool({ connectionString })` only                                                                                 | bead-pool1 (P2, seeded)                                              |
+| Tests do not hit real Postgres                | CONFIRMED | CI uses `InMemorySqlClient`; `migrate:ci` = dry-run; no Postgres service container                                                                    | bead-mig1 (P1); bead-ijlt (P1, blocked by bead-8k55)                 |
 
 **New beads seeded:** bead-mig1 (migration apply in CD), bead-sql2 (N+1 + in-memory filter), bead-tx1 (unit-of-work), bead-pool1 (pool config).

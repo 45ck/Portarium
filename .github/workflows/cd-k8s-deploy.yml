@@ -68,6 +68,17 @@ jobs:
       - name: Dry-run schema migrations (expand phase)
         run: npm run migrate:deploy
 
+      - name: Apply schema migrations to target environment
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::DATABASE_URL secret not set — skipping live migration apply."
+            echo "Set DATABASE_URL in the GitHub environment secrets to enable automated migrations."
+          else
+            npm run migrate:apply
+          fi
+
       - name: Resolve overlay and image tag
         id: resolve
         shell: bash

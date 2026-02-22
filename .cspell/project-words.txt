@@ -1112,3 +1112,15 @@ analyzer
 Millis
 parameterises
 TIMESTAMPTAMPTZ
+pinecone
+qdrant
+onnxruntime
+xenova
+huggingface
+BAAI
+gnode
+notanumber
+unparseable
+ijlt
+erso
+mig1

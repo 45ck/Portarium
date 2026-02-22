@@ -140,19 +140,19 @@ Each recommendation follows best practices from authoritative sources (e.g. hori
 
 Cross-referenced all 12 findings against the live codebase (commit a319875).
 
-| Finding | Status | Evidence | Bead |
-|---|---|---|---|
-| No HTTP rate-limiting | OPEN | `src/infrastructure/rate-limiting/` has in-memory store only | bead-dsnp (P0) |
-| No caching layer | OPEN | No cache-aside pattern in handler or use-cases | bead-mvuv (P1, blocked by bead-0js5) |
-| Single Node instance | NOT IN SCOPE | Operational/deployment concern; no code change needed | — |
-| Incomplete SSE event stream | PARTIAL | `location-events:stream` route exists (`control-plane-handler.location.ts:333`); workspace-wide `/events/stream` route absent from ROUTES | bead-sse1 (seeded) |
-| Sparse automated tests | RESOLVED | 2931 tests pass; vitest coverage thresholds active | beads closed bead-z28o, bead-54g5 |
-| No structured logging/metrics | PARTIAL | OTel infra exists (`otel-setup.ts`, `agent-side-effect-logger.ts`, `command-observability.ts`, `structured-log.ts`); metrics bridge is a noop stub; no `/metrics` endpoint; request-scoped logging not wired | bead-erso (P1, blocked by bead-0js5), bead-0390 (P0) |
-| Missing HTTPS enforcement | NOT IN SCOPE | Deployment/proxy concern; not enforced in application code | — |
-| JWT integrity checks | RESOLVED | `JoseJwtAuthentication` uses jose; issuer/audience warnings added (bead-pj5a); dev-token env gate (bead-tqqt) | closed |
-| No input validation | OPEN | No AJV/Zod schema validation visible in route handlers | bead-inv1 (seeded) |
-| Monolithic CLI | NOT CURRENT SCOPE | CLI refactor is a maintainability concern; no security impact | — |
-| No e2e test environments | PARTIAL | `DEV_STUB_STORES=true` allows in-memory stubs for integration tests; no Playwright e2e | — |
-| Hard-coded `ws-default` | LOW | Present in SDK/CLI test fixtures; not a runtime blocker | — |
+| Finding                       | Status            | Evidence                                                                                                                                                                                                     | Bead                                                 |
+| ----------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| No HTTP rate-limiting         | OPEN              | `src/infrastructure/rate-limiting/` has in-memory store only                                                                                                                                                 | bead-dsnp (P0)                                       |
+| No caching layer              | OPEN              | No cache-aside pattern in handler or use-cases                                                                                                                                                               | bead-mvuv (P1, blocked by bead-0js5)                 |
+| Single Node instance          | NOT IN SCOPE      | Operational/deployment concern; no code change needed                                                                                                                                                        | —                                                    |
+| Incomplete SSE event stream   | PARTIAL           | `location-events:stream` route exists (`control-plane-handler.location.ts:333`); workspace-wide `/events/stream` route absent from ROUTES                                                                    | bead-sse1 (seeded)                                   |
+| Sparse automated tests        | RESOLVED          | 2931 tests pass; vitest coverage thresholds active                                                                                                                                                           | beads closed bead-z28o, bead-54g5                    |
+| No structured logging/metrics | PARTIAL           | OTel infra exists (`otel-setup.ts`, `agent-side-effect-logger.ts`, `command-observability.ts`, `structured-log.ts`); metrics bridge is a noop stub; no `/metrics` endpoint; request-scoped logging not wired | bead-erso (P1, blocked by bead-0js5), bead-0390 (P0) |
+| Missing HTTPS enforcement     | NOT IN SCOPE      | Deployment/proxy concern; not enforced in application code                                                                                                                                                   | —                                                    |
+| JWT integrity checks          | RESOLVED          | `JoseJwtAuthentication` uses jose; issuer/audience warnings added (bead-pj5a); dev-token env gate (bead-tqqt)                                                                                                | closed                                               |
+| No input validation           | OPEN              | No AJV/Zod schema validation visible in route handlers                                                                                                                                                       | bead-inv1 (seeded)                                   |
+| Monolithic CLI                | NOT CURRENT SCOPE | CLI refactor is a maintainability concern; no security impact                                                                                                                                                | —                                                    |
+| No e2e test environments      | PARTIAL           | `DEV_STUB_STORES=true` allows in-memory stubs for integration tests; no Playwright e2e                                                                                                                       | —                                                    |
+| Hard-coded `ws-default`       | LOW               | Present in SDK/CLI test fixtures; not a runtime blocker                                                                                                                                                      | —                                                    |
 
 **New beads seeded from this triage:** bead-sse1 (workspace event stream), bead-inv1 (input validation).
