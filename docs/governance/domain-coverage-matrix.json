@@ -119,12 +119,9 @@
       "operationalDomains": ["it-support"],
       "canonicalObjects": ["Ticket", "Party", "Document"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0235", "bead-0236"],
-      "gapBeads": ["bead-0423", "bead-0166"],
-      "gaps": [
-        "Zammad reference adapter implementation bead remains open.",
-        "Integration gate remains open for family completion."
-      ]
+      "coverageBeads": ["bead-0235", "bead-0236", "bead-0423"],
+      "gapBeads": ["bead-0166"],
+      "gaps": ["Integration gate remains open for family completion."]
     },
     {
       "portFamily": "ItsmItOps",
@@ -133,9 +130,7 @@
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0237", "bead-0238", "bead-0399"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for rollout readiness."
-      ]
+      "gaps": ["Integration gate remains open for rollout readiness."]
     },
     {
       "portFamily": "IamDirectory",
@@ -162,9 +157,7 @@
       "coverageStatus": "partial",
       "coverageBeads": ["bead-0243", "bead-0244", "bead-0421"],
       "gapBeads": ["bead-0166"],
-      "gaps": [
-        "Integration gate remains open for family closure."
-      ]
+      "gaps": ["Integration gate remains open for family closure."]
     },
     {
       "portFamily": "AdsPlatforms",
@@ -189,12 +182,9 @@
       "operationalDomains": ["software-delivery"],
       "canonicalObjects": ["Task", "Party", "Document"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0249", "bead-0250"],
-      "gapBeads": ["bead-0424", "bead-0166"],
-      "gaps": [
-        "Software-delivery reference adapter implementation remains open.",
-        "Integration gate remains open for family completion."
-      ]
+      "coverageBeads": ["bead-0249", "bead-0250", "bead-0424"],
+      "gapBeads": ["bead-0166"],
+      "gaps": ["Integration gate remains open for family completion."]
     },
     {
       "portFamily": "DocumentsEsign",
