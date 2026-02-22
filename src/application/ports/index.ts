@@ -47,5 +47,8 @@ export * from './credential-provider.js';
 export * from './machine-registry-store.js';
 export * from './query-cache.js';
 export * from './read-model-projector.js';
+<<<<<<< HEAD
 export * from './event-stream.js';
+=======
+>>>>>>> 5b7fb7e (feat(application): machine/agent registry command-query orchestration (bead-0789))
 export * from './machine-query-store.js';
