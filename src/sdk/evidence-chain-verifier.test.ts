@@ -1,152 +1,285 @@
 /**
- * Tests for the portable evidence-chain verifier SDK helper.
- * Bead: bead-0741
+ * Tests for the portable evidence-chain verifier (bead-0741).
+ *
+ * Uses the Web Crypto API via the test-setup polyfill — same environment
+ * as the production runtime (Node.js 22+).
  */
 
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import {
+  type EvidenceChainVerificationResult,
+  type PortableEvidenceEntry,
   verifyEvidenceChain,
-  canonicalJson,
-  sha256Hex,
-  type EvidenceEntryShape,
 } from './evidence-chain-verifier.js';
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Test helpers
+// ---------------------------------------------------------------------------
 
-function makeEntry(
-  overrides: Partial<EvidenceEntryShape> & { evidenceId: string },
-  prev?: EvidenceEntryShape,
-): EvidenceEntryShape {
-  const raw: Record<string, unknown> = {
-    occurredAtIso: '2026-02-22T00:00:00.000Z',
-    summary: `Entry ${overrides.evidenceId}`,
-    ...overrides,
-    ...(prev ? { previousHash: prev.hashSha256 } : {}),
-  };
-  delete raw['hashSha256'];
-  const hashSha256 = sha256Hex(canonicalJson(raw));
-  return { ...raw, hashSha256 } as EvidenceEntryShape;
+/** Compute the canonical SHA-256 hex for an entry (mirrors verifier internals). */
+async function hashEntry(entry: PortableEvidenceEntry): Promise<string> {
+  // Build canonical representation (sorted keys, exclude hashSha256/signatureBase64)
+  const clean = sortedWithout(entry, ['hashSha256', 'signatureBase64']);
+  const encoded = new TextEncoder().encode(JSON.stringify(clean, null));
+  const digest = await crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
-function chainOf(count: number): EvidenceEntryShape[] {
-  const entries: EvidenceEntryShape[] = [];
-  for (let i = 0; i < count; i++) {
-    const prev = entries[i - 1];
-    entries.push(
-      makeEntry(
-        {
-          evidenceId: `ev-${i}`,
-          occurredAtIso: `2026-02-22T00:0${i}:00.000Z`,
-        },
-        prev,
-      ),
-    );
+/** Build a sorted-key object excluding specified keys — mirrors canonicalize(). */
+function sortedWithout(
+  obj: Record<string, unknown>,
+  exclude: string[],
+): Record<string, unknown> {
+  const excludeSet = new Set(exclude);
+  const sorted: Record<string, unknown> = {};
+  for (const k of Object.keys(obj).sort()) {
+    if (!excludeSet.has(k)) sorted[k] = obj[k];
   }
+  return sorted;
+}
+
+/**
+ * Build a valid chained entry list of a given length.
+ * Each entry gets correct hashes so the chain is verifiable.
+ */
+async function buildValidChain(count: number): Promise<PortableEvidenceEntry[]> {
+  const entries: PortableEvidenceEntry[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const base: Record<string, unknown> = {
+      evidenceId: `ev-${i}`,
+      occurredAtIso: `2026-02-22T00:0${i}:00.000Z`,
+      category: 'System',
+      summary: `Entry ${i}`,
+      actor: { kind: 'System' },
+      ...(i > 0 ? { previousHash: entries[i - 1]!.hashSha256 } : {}),
+    };
+
+    const hashSha256 = await hashEntry({ ...base, hashSha256: '' } as PortableEvidenceEntry);
+    entries.push({ ...base, hashSha256 } as PortableEvidenceEntry);
+  }
+
   return entries;
 }
 
-// ── canonicalJson ─────────────────────────────────────────────────────────
-
-describe('canonicalJson', () => {
-  it('sorts keys deterministically', () => {
-    expect(canonicalJson({ z: 1, a: 2 })).toBe('{"a":2,"z":1}');
-  });
-
-  it('handles nested objects', () => {
-    const result = canonicalJson({ b: { y: 1, x: 2 }, a: 'v' });
-    expect(result).toBe('{"a":"v","b":{"x":2,"y":1}}');
-  });
-
-  it('handles arrays', () => {
-    expect(canonicalJson([3, 1, 2])).toBe('[3,1,2]');
-  });
-
-  it('handles null and primitives', () => {
-    expect(canonicalJson(null)).toBe('null');
-    expect(canonicalJson(42)).toBe('42');
-    expect(canonicalJson('hello')).toBe('"hello"');
-  });
-});
-
-// ── verifyEvidenceChain ───────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 describe('verifyEvidenceChain', () => {
-  it('accepts an empty chain', () => {
-    const result = verifyEvidenceChain([]);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.count).toBe(0);
+  describe('empty chain', () => {
+    it('accepts an empty chain', async () => {
+      const result = await verifyEvidenceChain([]);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.entryCount).toBe(0);
+    });
   });
 
-  it('accepts a single-entry chain', () => {
-    const entry = makeEntry({ evidenceId: 'ev-0' });
-    const result = verifyEvidenceChain([entry]);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.count).toBe(1);
+  describe('single entry (no previous hash)', () => {
+    let entry: PortableEvidenceEntry;
+
+    beforeEach(async () => {
+      const base = {
+        evidenceId: 'ev-0',
+        occurredAtIso: '2026-02-22T00:00:00.000Z',
+        category: 'Approval',
+        summary: 'Test entry',
+        actor: { kind: 'User', userId: 'user-1' },
+      };
+      const hashSha256 = await hashEntry({ ...base, hashSha256: '' } as PortableEvidenceEntry);
+      entry = { ...base, hashSha256 };
+    });
+
+    it('accepts a valid single entry', async () => {
+      const result = await verifyEvidenceChain([entry]);
+      expect(result.ok).toBe(true);
+    });
+
+    it('rejects a single entry with a previousHash', async () => {
+      const tampered = { ...entry, previousHash: 'unexpected' };
+      const result = await verifyEvidenceChain([tampered]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('unexpected_previous_hash');
+    });
+
+    it('rejects a single entry with a wrong hash', async () => {
+      const tampered = { ...entry, hashSha256: 'a'.repeat(64) };
+      const result = await verifyEvidenceChain([tampered]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('hash_mismatch');
+    });
   });
 
-  it('accepts a valid multi-entry chain', () => {
-    const entries = chainOf(5);
-    const result = verifyEvidenceChain(entries);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.count).toBe(5);
+  describe('multi-entry valid chains', () => {
+    it('accepts a valid 3-entry chain', async () => {
+      const chain = await buildValidChain(3);
+      const result = await verifyEvidenceChain(chain);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.entryCount).toBe(3);
+    });
+
+    it('accepts a valid 10-entry chain', async () => {
+      const chain = await buildValidChain(10);
+      const result = await verifyEvidenceChain(chain);
+      expect(result.ok).toBe(true);
+    });
   });
 
-  it('detects hash_mismatch when an entry is tampered', () => {
-    const entries = chainOf(3);
-    // Tamper the summary of the second entry without recomputing the hash
-    const tampered = { ...entries[1]!, summary: 'TAMPERED' };
-    const chain = [entries[0]!, tampered, entries[2]!];
+  describe('broken hash chain (previous_hash_link_broken)', () => {
+    it('detects a broken previousHash link at index 1', async () => {
+      const chain = await buildValidChain(3);
+      // Break the link: entry[1].previousHash should be entry[0].hashSha256
+      const broken = { ...chain[1]!, previousHash: 'wrong-hash' };
+      const tampered = [chain[0]!, broken, chain[2]!];
+      const result = await verifyEvidenceChain(tampered);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toBe('previous_hash_link_broken');
+        expect(result.index).toBe(1);
+      }
+    });
 
-    const result = verifyEvidenceChain(chain);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.index).toBe(1);
-      expect(result.reason).toBe('hash_mismatch');
-    }
+    it('detects a broken previousHash link at index 2 in a 5-entry chain', async () => {
+      const chain = await buildValidChain(5);
+      const broken = { ...chain[2]!, previousHash: 'deadbeef' };
+      const tampered = [...chain.slice(0, 2), broken, ...chain.slice(3)];
+      const result = await verifyEvidenceChain(tampered);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toBe('previous_hash_link_broken');
+        expect(result.index).toBe(2);
+      }
+    });
   });
 
-  it('detects previous_hash_mismatch when link is broken', () => {
-    const entries = chainOf(3);
-    // Corrupt the previousHash of the third entry
-    const broken = { ...entries[2]!, previousHash: 'deadbeef'.repeat(8) };
-    const chain = [entries[0]!, entries[1]!, broken];
+  describe('hash mismatch (tampered content)', () => {
+    it('detects tampered content at index 0', async () => {
+      const chain = await buildValidChain(2);
+      // Mutate content without recalculating hash
+      const tampered = [{ ...chain[0]!, summary: 'TAMPERED' }, chain[1]!];
+      const result = await verifyEvidenceChain(tampered);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toBe('hash_mismatch');
+        expect(result.index).toBe(0);
+      }
+    });
 
-    const result = verifyEvidenceChain(chain);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.index).toBe(2);
-      expect(result.reason).toBe('previous_hash_mismatch');
-    }
+    it('detects tampered content in the middle of a chain', async () => {
+      const chain = await buildValidChain(5);
+      const tampered = [
+        chain[0]!,
+        chain[1]!,
+        { ...chain[2]!, category: 'INJECTED' },
+        chain[3]!,
+        chain[4]!,
+      ];
+      const result = await verifyEvidenceChain(tampered);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toBe('hash_mismatch');
+        expect(result.index).toBe(2);
+      }
+    });
   });
 
-  it('detects unexpected_previous_hash on first entry', () => {
-    const entry = makeEntry({ evidenceId: 'ev-0', previousHash: 'some-hash' } as Parameters<
-      typeof makeEntry
-    >[0]);
-    const result = verifyEvidenceChain([entry]);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.index).toBe(0);
-      expect(result.reason).toBe('unexpected_previous_hash');
-    }
+  describe('timestamp monotonicity', () => {
+    it('detects non-monotonic timestamp at index 1', async () => {
+      const chain = await buildValidChain(3);
+      // entry[1] gets a timestamp earlier than entry[0]
+      const broken = { ...chain[1]!, occurredAtIso: '2025-01-01T00:00:00.000Z' };
+      const tampered = [chain[0]!, broken, chain[2]!];
+      const result = await verifyEvidenceChain(tampered);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.reason).toBe('timestamp_not_monotonic');
+        expect(result.index).toBe(1);
+      }
+    });
+
+    it('accepts equal timestamps (same second, different entries)', async () => {
+      // Build chain manually with same timestamps
+      const base0 = {
+        evidenceId: 'ev-0',
+        occurredAtIso: '2026-02-22T00:00:00.000Z',
+        category: 'System',
+        summary: 'A',
+        actor: { kind: 'System' },
+      };
+      const hash0 = await hashEntry({ ...base0, hashSha256: '' } as PortableEvidenceEntry);
+      const entry0 = { ...base0, hashSha256: hash0 };
+
+      const base1 = {
+        evidenceId: 'ev-1',
+        occurredAtIso: '2026-02-22T00:00:00.000Z', // same timestamp
+        category: 'System',
+        summary: 'B',
+        actor: { kind: 'System' },
+        previousHash: hash0,
+      };
+      const hash1 = await hashEntry({ ...base1, hashSha256: '' } as PortableEvidenceEntry);
+      const entry1 = { ...base1, hashSha256: hash1 };
+
+      const result = await verifyEvidenceChain([entry0, entry1]);
+      expect(result.ok).toBe(true);
+    });
   });
 
-  it('detects timestamp_not_monotonic', () => {
-    const e0 = makeEntry({ evidenceId: 'ev-0', occurredAtIso: '2026-02-22T00:01:00.000Z' });
-    const e1 = makeEntry({ evidenceId: 'ev-1', occurredAtIso: '2026-02-22T00:00:00.000Z' }, e0);
+  describe('missing required fields', () => {
+    it('rejects entry missing evidenceId', async () => {
+      const bad = {
+        occurredAtIso: '2026-02-22T00:00:00.000Z',
+        hashSha256: 'abc',
+      } as unknown as PortableEvidenceEntry;
+      const result = await verifyEvidenceChain([bad]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('entry_missing_required_fields');
+    });
 
-    const result = verifyEvidenceChain([e0, e1]);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.index).toBe(1);
-      expect(result.reason).toBe('timestamp_not_monotonic');
-    }
+    it('rejects entry missing occurredAtIso', async () => {
+      const bad = {
+        evidenceId: 'ev-0',
+        hashSha256: 'abc',
+      } as unknown as PortableEvidenceEntry;
+      const result = await verifyEvidenceChain([bad]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('entry_missing_required_fields');
+    });
+
+    it('rejects entry missing hashSha256', async () => {
+      const bad = {
+        evidenceId: 'ev-0',
+        occurredAtIso: '2026-02-22T00:00:00.000Z',
+      } as unknown as PortableEvidenceEntry;
+      const result = await verifyEvidenceChain([bad]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toBe('entry_missing_required_fields');
+    });
   });
 
-  it('accepts a custom computeHash function', () => {
-    const entries = chainOf(2);
-    // Provide a custom hasher that wraps sha256Hex (same algo, proves extensibility)
-    const result = verifyEvidenceChain(entries, { computeHash: sha256Hex });
-    expect(result.ok).toBe(true);
+  describe('result shape', () => {
+    it('ok result includes entryCount', async () => {
+      const chain = await buildValidChain(4);
+      const result = await verifyEvidenceChain(chain);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.entryCount).toBe(4);
+    });
+
+    it('error result includes index, reason, and message', async () => {
+      const chain = await buildValidChain(3);
+      const tampered = [chain[0]!, { ...chain[1]!, hashSha256: 'bad' }, chain[2]!];
+      const result = await verifyEvidenceChain(tampered) as Extract<
+        EvidenceChainVerificationResult,
+        { ok: false }
+      >;
+      expect(result.ok).toBe(false);
+      expect(typeof result.index).toBe('number');
+      expect(typeof result.reason).toBe('string');
+      expect(typeof result.message).toBe('string');
+      expect(result.entryCount).toBe(3);
+    });
   });
 });
