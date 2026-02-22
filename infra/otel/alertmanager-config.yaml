@@ -1,0 +1,52 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by:
+    - alertname
+    - service
+    - slo
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  receiver: webhook-default
+  routes:
+    - matchers:
+        - severity = "page"
+      receiver: webhook-page
+      continue: false
+    - matchers:
+        - severity = "ticket"
+      receiver: webhook-ticket
+      continue: false
+
+receivers:
+  - name: webhook-default
+    webhook_configs:
+      - url: http://localhost:9999/webhook
+        send_resolved: true
+
+  - name: webhook-page
+    webhook_configs:
+      - url: '${ALERTMANAGER_PAGE_WEBHOOK_URL:-http://localhost:9999/webhook}'
+        send_resolved: true
+        http_config:
+          authorization:
+            credentials: '${ALERTMANAGER_WEBHOOK_TOKEN:-dev-token}'
+
+  - name: webhook-ticket
+    webhook_configs:
+      - url: '${ALERTMANAGER_TICKET_WEBHOOK_URL:-http://localhost:9999/webhook}'
+        send_resolved: true
+        http_config:
+          authorization:
+            credentials: '${ALERTMANAGER_WEBHOOK_TOKEN:-dev-token}'
+
+inhibit_rules:
+  - source_matchers:
+      - severity = "page"
+    target_matchers:
+      - severity = "ticket"
+    equal:
+      - alertname
+      - slo

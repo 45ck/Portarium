@@ -5,23 +5,27 @@
 #
 # Bead: bead-0428
 
-auth_enabled: true
+auth_enabled: false
 
 server:
   http_listen_port: 3100
   grpc_listen_port: 9096
 
 common:
+  instance_addr: 127.0.0.1
   path_prefix: /loki
   storage:
     filesystem:
       chunks_directory: /loki/chunks
       rules_directory: /loki/rules
   replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
 
 schema_config:
   configs:
-    - from: '2024-01-01'
+    - from: "2024-01-01"
       store: tsdb
       object_store: filesystem
       schema: v13
@@ -39,6 +43,7 @@ limits_config:
   max_label_value_length: 2048
   # Keep logs for 90 days in production.
   retention_period: 2160h
+  max_query_series: 500
 
 query_range:
   results_cache:
@@ -64,3 +69,6 @@ otlp_config:
         action: index_label
       - attribute: span_id
         action: structured_metadata
+
+ruler:
+  alertmanager_url: http://alertmanager:9093
