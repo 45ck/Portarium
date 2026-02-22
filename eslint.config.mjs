@@ -76,6 +76,9 @@ export default tseslint.config(
         typescript: {
           project: ['./tsconfig.json'],
         },
+        // node fallback: resolves packages that the TypeScript resolver misses
+        // (e.g. when node_modules is a junction/symlink on Windows in worktrees)
+        node: true,
       },
     },
     rules: {

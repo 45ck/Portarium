@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-02-22T20:19:08.549Z",
+  "generatedAt": "2026-02-22T20:27:37.726Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
     "scripts/ci/gate-baseline.shared.mjs": "06a9ae97da046764de48d84c2646b0747ddadbc1f5b21403f0020bab8d57514d",
     ".gitattributes": "d69fefe6d7f0706c85b23497577a32f91be3dcc73fe78175cf4cf5bbf0fc0e10",
     ".dependency-cruiser.cjs": "8b59eff5ef2835963da76522c9dbed5b47583f932750d6a83d5d0ff30e4ecba7",
-    "eslint.config.mjs": "8ea4a23b74dd9a80299f5021808ba723717e3accebb2b76eb92d81261a22d185",
+    "eslint.config.mjs": "d847a289c1cd2f057ecbef11eb0d01c70b4a9e63ce3dac7cc9458401c10958f6",
     "package.json": "1d518bff5f847174f2eecdb73a87cb857c002de4154a2046274c77382cada535",
     "tsconfig.json": "d2e4634ccae8fd4f7d5358709819512b342e335f509b5cc21b504808566eeea4",
     "tsconfig.eslint.json": "a7a19e65d39a5f952031ac17444972fa67b468b83e69b37a938394f85db946ae",
@@ -14,7 +14,7 @@
     "vitest.config.ts": "fb7767f493adb71014f2939239ac99414de6e1729c75519f64b185cbcd417821",
     "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
     "knip.json": "d139ad04d4e39a1559bcdf6fe243c11e96b5d9cf74aff3fe04c30d64304ccc05",
-    "cspell.json": "2e8d581d0ea441d169ee1d78e5ef2b3e043627a367d0334c9ddd28e524aa10ce",
+    "cspell.json": "43030ca86132c7c51be2fe6737d07c85a6ef39bacd50986919dacec9a5f2b67d",
     ".prettierrc.json": "4327187804b79827a218473e09d1482078b7b9d91ac9e2b4a814284f8727062f",
     ".github/workflows/ci.yml": "a8eefe9299e8c7045e14a6f47e563e7ba4fa0f16c1b4de5c3e5899e3ee763ee9",
     ".github/workflows/nightly.yml": "58d0752235fdde08b08fe1772bd7b81cf8f1315db583f0439ddf9ac74c944af0",

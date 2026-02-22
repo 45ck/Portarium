@@ -7,7 +7,7 @@ interface RegisterCockpitPwaOptions {
 let waitingServiceWorker: ServiceWorker | null = null;
 
 export function hasServiceWorkerSupport(): boolean {
-  return typeof window !== 'undefined' && 'serviceWorker' in navigator;
+  return typeof window !== 'undefined' && !!navigator.serviceWorker;
 }
 
 export function applyWaitingPwaUpdate(): boolean {

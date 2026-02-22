@@ -3,16 +3,26 @@
  *
  * Cache strategy:
  *   - App shell (HTML, critical JS/CSS): Cache-first with network fallback.
- *   - API calls (/api/**): Network-first with 5s timeout, stale-while-revalidate.
+ *   - API reads for hot endpoints (approvals, work-items, runs): Network-first,
+ *     stale-while-revalidate with 5 s timeout.
+ *   - Other API calls (/api/**): Network-only.
  *   - Static assets (icons, fonts): Cache-first (long-lived).
  *
- * Version: 1.0.0 (bead-0719)
+ * Update strategy:
+ *   - New SW installs and waits (skipWaiting is NOT called automatically).
+ *   - App calls postMessage({ type: 'SKIP_WAITING' }) to trigger the swap.
+ *   - On controllerchange the app reloads to pick up the new version.
+ *
+ * Version: bead-0719
  */
 
-const CACHE_VERSION = 'v1';
-const SHELL_CACHE = `portarium-shell-${CACHE_VERSION}`;
-const API_CACHE = `portarium-api-${CACHE_VERSION}`;
-const ASSETS_CACHE = `portarium-assets-${CACHE_VERSION}`;
+const VERSION = 'portarium-cockpit-pwa-v1';
+const SHELL_CACHE = `${VERSION}-shell`;
+const API_CACHE = `${VERSION}-api`;
+const ASSETS_CACHE = `${VERSION}-assets`;
+
+// Regex matching API read endpoints we selectively cache for offline resilience
+const SELECTED_READ_ENDPOINTS = /\/api\/[^/]+\/(approvals|work-items|runs)(\/|$|\?)/;
 
 // App shell — precached on install
 const APP_SHELL_URLS = ['/', '/index.html'];
@@ -21,15 +31,13 @@ const APP_SHELL_URLS = ['/', '/index.html'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) =>
-        cache.addAll(APP_SHELL_URLS).catch((err) => {
-          // Non-fatal: may fail in dev with hot-reload
-          console.warn('[sw] Shell precache failed:', err);
-        }),
-      )
-      .then(() => self.skipWaiting()),
+    caches.open(SHELL_CACHE).then((cache) =>
+      cache.addAll(APP_SHELL_URLS).catch((err) => {
+        // Non-fatal: may fail in dev with hot-reload
+        console.warn('[sw] Shell precache failed:', err);
+      }),
+    ),
+    // Do NOT skipWaiting automatically — app drives the update via postMessage
   );
 });
 
@@ -48,6 +56,14 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// ── Update via postMessage ────────────────────────────────────────────────────
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // ── Fetch strategy ────────────────────────────────────────────────────────────
 
 self.addEventListener('fetch', (event) => {
@@ -57,13 +73,18 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  // API: network-first with 5s timeout
-  if (url.pathname.startsWith('/api/')) {
+  // Selected read API endpoints: network-first, stale-while-revalidate
+  if (SELECTED_READ_ENDPOINTS.test(url.pathname)) {
     event.respondWith(networkFirstWithTimeout(event.request, API_CACHE, 5000));
     return;
   }
 
-  // Static assets: cache-first
+  // Other API calls: network-only (no stale data for mutations)
+  if (url.pathname.startsWith('/api/')) {
+    return; // Let the browser handle it
+  }
+
+  // Static assets: cache-first (long-lived)
   if (isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(event.request, ASSETS_CACHE));
     return;
@@ -148,19 +169,19 @@ async function networkFirstWithTimeout(request, cacheName, timeoutMs) {
 }
 
 async function shellFirst(request) {
-  const cached = await caches.match(request);
+  const cache = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(request);
   if (cached) return cached;
 
   try {
     const response = await fetch(request);
     if (response.ok) {
-      const cache = await caches.open(SHELL_CACHE);
       cache.put(request, response.clone());
     }
     return response;
   } catch {
     // SPA fallback: serve index.html for navigation requests
-    const indexHtml = await caches.match('/index.html');
+    const indexHtml = await cache.match('/index.html');
     return indexHtml ?? Response.error();
   }
 }

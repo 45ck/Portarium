@@ -35,7 +35,9 @@
     "slos",
     "BYOK",
     "quiescing",
-    "PITR"
+    "PITR",
+    "numkeys",
+    "EXPIREAT"
   ],
   "ignorePaths": [
     "dist/**",
