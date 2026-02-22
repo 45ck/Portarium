@@ -181,7 +181,36 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // -------------------------------------------------------------------------
-  // Middleware 2: workspace-level rate limiting
+  // Metrics endpoint — serve before other middleware to avoid auth overhead
+  // -------------------------------------------------------------------------
+  app.get('/metrics', (c) => {
+    c.env.outgoing.statusCode = 200;
+    c.env.outgoing.setHeader('content-type', 'text/plain; version=0.0.4; charset=utf-8');
+    c.env.outgoing.end(defaultRegistry.format());
+    return c.body(null);
+  });
+
+  // -------------------------------------------------------------------------
+  // Middleware 2: request metrics (duration, count, active connections)
+  // -------------------------------------------------------------------------
+  app.use('*', async (c, next) => {
+    const { outgoing } = c.env;
+    httpActiveConnections.inc();
+    const startMs = Date.now();
+    outgoing.on('finish', () => {
+      httpActiveConnections.dec();
+      const durationSeconds = (Date.now() - startMs) / 1000;
+      const route = c.req.routePath;
+      const method = c.req.method;
+      const status = String(outgoing.statusCode);
+      httpRequestsTotal.inc({ method, route, status });
+      httpRequestDurationSeconds.observe(durationSeconds, { method, route });
+    });
+    await next();
+  });
+
+  // -------------------------------------------------------------------------
+  // Middleware 3: workspace-level rate limiting
   // -------------------------------------------------------------------------
   app.use('/v1/workspaces/*', async (c, next) => {
     const ctx = c.get('ctx');
@@ -201,6 +230,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const result = await checkRateLimit({ rateLimitStore: d.rateLimitStore }, scope);
 
     if (!result.allowed) {
+      rateLimitHitsTotal.inc({ workspaceId: rawId });
       respondProblem(
         res,
         {
