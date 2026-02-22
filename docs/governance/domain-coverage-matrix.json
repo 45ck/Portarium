@@ -228,10 +228,9 @@
       "canonicalObjects": ["Ticket", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0255", "bead-0256"],
-      "gapBeads": ["bead-0399", "bead-0393"],
+      "gapBeads": ["bead-0399"],
       "gaps": [
-        "IT-ops automation platform evaluation is still open.",
-        "SLO and alerting implementation for incident visibility remains open."
+        "IT-ops automation platform evaluation is still open."
       ]
     },
     {
