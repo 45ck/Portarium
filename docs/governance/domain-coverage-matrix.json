@@ -240,10 +240,9 @@
       "operationalDomains": ["software-delivery"],
       "canonicalObjects": ["Asset", "Task", "Document", "Party"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0589"],
-      "gapBeads": ["bead-0424", "bead-0166"],
+      "coverageBeads": ["bead-0589", "bead-0424"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "GitHub reference adapter implementation bead remains open.",
         "Integration gate remains open for family completion."
       ]
     },
