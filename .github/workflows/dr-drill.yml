@@ -1,0 +1,366 @@
+# Disaster Recovery Drill Workflow
+#
+# Runs quarterly (or on-demand) to validate that Portarium's recovery
+# procedures work end-to-end.  Each drill exercises a specific failure
+# scenario in an isolated DR environment.
+#
+# Scenarios:
+#   db-restore       — restore from latest RDS automated snapshot, verify data integrity
+#   cluster-recreate — terraform apply from scratch against DR state, verify services
+#   evidence-replication — verify S3 cross-region replication and object lock integrity
+#   full             — all three scenarios (quarterly drill)
+#
+# Results are stored as GitHub Actions artefacts and reported to the
+# DR drill log in GitHub Issues.
+#
+# Bead: bead-0397
+
+name: DR Drill
+
+on:
+  schedule:
+    # Quarterly: 02:00 UTC on the 1st of Jan, Apr, Jul, Oct
+    - cron: '0 2 1 1,4,7,10 *'
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: DR scenario to run
+        required: true
+        type: choice
+        default: full
+        options:
+          - db-restore
+          - cluster-recreate
+          - evidence-replication
+          - full
+      dr_environment:
+        description: Target DR environment label
+        required: false
+        default: dr-drill
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+env:
+  DR_ENVIRONMENT: ${{ github.event.inputs.dr_environment || 'dr-drill' }}
+  SCENARIO: ${{ github.event.inputs.scenario || 'full' }}
+
+jobs:
+  # ── Shared setup ──────────────────────────────────────────────────────────
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      drill_id: ${{ steps.id.outputs.drill_id }}
+      run_db: ${{ steps.scenarios.outputs.run_db }}
+      run_cluster: ${{ steps.scenarios.outputs.run_cluster }}
+      run_evidence: ${{ steps.scenarios.outputs.run_evidence }}
+    steps:
+      - name: Generate drill ID
+        id: id
+        run: echo "drill_id=dr-$(date -u +%Y%m%d-%H%M%S)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve scenarios
+        id: scenarios
+        run: |
+          SCENARIO="${{ env.SCENARIO }}"
+          echo "run_db=$([ "$SCENARIO" = 'db-restore' ] || [ "$SCENARIO" = 'full' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "run_cluster=$([ "$SCENARIO" = 'cluster-recreate' ] || [ "$SCENARIO" = 'full' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "run_evidence=$([ "$SCENARIO" = 'evidence-replication' ] || [ "$SCENARIO" = 'full' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Open DR drill tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `DR Drill — ${{ steps.id.outputs.drill_id }}`,
+              body: [
+                `## DR Drill: ${{ steps.id.outputs.drill_id }}`,
+                '',
+                `- **Scenario**: ${{ env.SCENARIO }}`,
+                `- **Environment**: ${{ env.DR_ENVIRONMENT }}`,
+                `- **Triggered by**: @${context.actor}`,
+                `- **Workflow run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                'Results will be appended below as each scenario completes.',
+              ].join('\n'),
+              labels: ['dr-drill', 'reliability'],
+            });
+            core.exportVariable('DRILL_ISSUE_NUMBER', data.number);
+
+  # ── Scenario 1: DB restore ────────────────────────────────────────────────
+  db-restore:
+    needs: setup
+    if: needs.setup.outputs.run_db == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.dr_environment || 'dr-drill' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Find latest automated snapshot
+        id: snapshot
+        run: |
+          SNAPSHOT_ID=$(aws rds describe-db-snapshots \
+            --db-instance-identifier "${{ vars.DR_SOURCE_DB_IDENTIFIER }}" \
+            --snapshot-type automated \
+            --query 'sort_by(DBSnapshots, &SnapshotCreateTime)[-1].DBSnapshotIdentifier' \
+            --output text)
+          echo "snapshot_id=${SNAPSHOT_ID}" >> "$GITHUB_OUTPUT"
+          echo "Found snapshot: ${SNAPSHOT_ID}"
+
+      - name: Restore DB snapshot to DR instance
+        run: |
+          DRILL_ID="${{ needs.setup.outputs.drill_id }}"
+          aws rds restore-db-instance-from-db-snapshot \
+            --db-instance-identifier "portarium-dr-${DRILL_ID}" \
+            --db-snapshot-identifier "${{ steps.snapshot.outputs.snapshot_id }}" \
+            --db-instance-class db.t4g.medium \
+            --no-publicly-accessible \
+            --no-multi-az \
+            --tags Key=DRDrill,Value="${DRILL_ID}" Key=AutoDelete,Value=true
+
+      - name: Wait for DR instance to be available
+        run: |
+          aws rds wait db-instance-available \
+            --db-instance-identifier "portarium-dr-${{ needs.setup.outputs.drill_id }}"
+        timeout-minutes: 30
+
+      - name: Run data integrity validation
+        run: |
+          DRILL_ID="${{ needs.setup.outputs.drill_id }}"
+          DR_HOST=$(aws rds describe-db-instances \
+            --db-instance-identifier "portarium-dr-${DRILL_ID}" \
+            --query 'DBInstances[0].Endpoint.Address' \
+            --output text)
+
+          node scripts/dr/validate-db-restore.mjs \
+            --host "$DR_HOST" \
+            --drill-id "$DRILL_ID" \
+            --output "dr-results-db-${DRILL_ID}.json"
+
+      - name: Delete DR instance
+        if: always()
+        run: |
+          aws rds delete-db-instance \
+            --db-instance-identifier "portarium-dr-${{ needs.setup.outputs.drill_id }}" \
+            --skip-final-snapshot || true
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dr-results-db-${{ needs.setup.outputs.drill_id }}
+          path: "dr-results-db-*.json"
+          retention-days: 365
+
+  # ── Scenario 2: Cluster recreation ───────────────────────────────────────
+  cluster-recreate:
+    needs: setup
+    if: needs.setup.outputs.run_cluster == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.dr_environment || 'dr-drill' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_DR_REGION || vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.8"
+
+      - name: Terraform init (DR workspace)
+        run: |
+          cd infra/terraform/aws
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=portarium/dr-drill-${{ needs.setup.outputs.drill_id }}/terraform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}"
+
+      - name: Terraform plan (DR environment)
+        run: |
+          cd infra/terraform/aws
+          terraform plan \
+            -var="environment=dr-${{ needs.setup.outputs.drill_id }}" \
+            -var="namespace=portarium" \
+            -var="eks_node_desired_size=2" \
+            -var="eks_node_min_size=1" \
+            -var="eks_node_max_size=3" \
+            -out=dr.tfplan
+        timeout-minutes: 10
+
+      - name: Terraform apply (DR cluster)
+        run: |
+          cd infra/terraform/aws
+          terraform apply dr.tfplan
+        timeout-minutes: 30
+
+      - name: Deploy core services to DR cluster
+        run: |
+          DRILL_ID="${{ needs.setup.outputs.drill_id }}"
+          ENV="dr-${DRILL_ID}"
+          aws eks update-kubeconfig \
+            --name "portarium-${ENV}" \
+            --region "${{ vars.AWS_DR_REGION || vars.AWS_REGION }}"
+
+          # Apply base manifests
+          kubectl apply -k infra/kubernetes/base/
+
+          # Verify all deployments are ready within 10 minutes
+          kubectl rollout status deployment/portarium-control-plane -n portarium --timeout=600s
+          kubectl rollout status deployment/portarium-execution-plane -n portarium --timeout=600s
+
+          # Run smoke test
+          CP_LB=$(kubectl get svc portarium-control-plane -n portarium \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          for i in {1..12}; do
+            if curl -sf "http://${CP_LB}/health/ready" > /dev/null 2>&1; then
+              echo "DR control-plane is healthy after $((i*10))s"
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Terraform destroy (DR cluster)
+        if: always()
+        run: |
+          cd infra/terraform/aws
+          terraform destroy -auto-approve \
+            -var="environment=dr-${{ needs.setup.outputs.drill_id }}" \
+            -var="namespace=portarium" || true
+        timeout-minutes: 30
+
+  # ── Scenario 3: Evidence replication ─────────────────────────────────────
+  evidence-replication:
+    needs: setup
+    if: needs.setup.outputs.run_evidence == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.dr_environment || 'dr-drill' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verify S3 cross-region replication status
+        id: replication
+        run: |
+          node scripts/dr/validate-evidence-replication.mjs \
+            --source-bucket "${{ vars.EVIDENCE_BUCKET_NAME }}" \
+            --replica-bucket "${{ vars.EVIDENCE_REPLICA_BUCKET_NAME }}" \
+            --drill-id "${{ needs.setup.outputs.drill_id }}" \
+            --output "dr-results-evidence-${{ needs.setup.outputs.drill_id }}.json"
+
+      - name: Verify object lock configuration
+        run: |
+          node scripts/dr/validate-evidence-object-lock.mjs \
+            --bucket "${{ vars.EVIDENCE_BUCKET_NAME }}" \
+            --drill-id "${{ needs.setup.outputs.drill_id }}"
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dr-results-evidence-${{ needs.setup.outputs.drill_id }}
+          path: "dr-results-evidence-*.json"
+          retention-days: 365
+
+  # ── Report ────────────────────────────────────────────────────────────────
+  report:
+    needs: [setup, db-restore, cluster-recreate, evidence-replication]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all drill results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "dr-results-*"
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Generate drill report
+        id: report
+        run: |
+          DRILL_ID="${{ needs.setup.outputs.drill_id }}"
+          DB_RESULT="${{ needs.db-restore.result }}"
+          CLUSTER_RESULT="${{ needs.cluster-recreate.result }}"
+          EVIDENCE_RESULT="${{ needs.evidence-replication.result }}"
+
+          OVERALL="success"
+          if [[ "$DB_RESULT" == "failure" ]] || [[ "$CLUSTER_RESULT" == "failure" ]] || [[ "$EVIDENCE_RESULT" == "failure" ]]; then
+            OVERALL="failure"
+          fi
+
+          echo "## DR Drill Results — ${DRILL_ID}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Scenario | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| DB Restore | ${DB_RESULT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Cluster Recreate | ${CLUSTER_RESULT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Evidence Replication | ${EVIDENCE_RESULT} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Overall: ${OVERALL}**" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "overall=${OVERALL}" >> "$GITHUB_OUTPUT"
+          echo "drill_id=${DRILL_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Post results to tracking issue
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'dr-drill',
+              state: 'open',
+              per_page: 1,
+            });
+            if (issues.data.length === 0) return;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issues.data[0].number,
+              body: [
+                `## Drill Results — ${{ steps.report.outputs.drill_id }}`,
+                '',
+                `| Scenario | Result |`,
+                `|---|---|`,
+                `| DB Restore | ${{ needs.db-restore.result }} |`,
+                `| Cluster Recreate | ${{ needs.cluster-recreate.result }} |`,
+                `| Evidence Replication | ${{ needs.evidence-replication.result }} |`,
+                '',
+                `**Overall**: ${{ steps.report.outputs.overall }}`,
+                '',
+                `[Workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              ].join('\n'),
+            });
+
+            if ('${{ steps.report.outputs.overall }}' === 'success') {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                state: 'closed',
+              });
+            }
