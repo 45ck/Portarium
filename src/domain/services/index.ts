@@ -4,3 +4,4 @@ export * from './approval-routing.js';
 export * from './planning.js';
 export * from './diff.js';
 export * from './run-status-transitions.js';
+export * from './approval-status-transitions.js';
