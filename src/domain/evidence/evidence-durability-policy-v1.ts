@@ -14,13 +14,7 @@
  *  - Tamper-evidence level controls the hashing/signing enforcement.
  */
 
-import {
-  readBoolean,
-  readEnum,
-  readOptionalBoolean,
-  readOptionalString,
-  readRecord,
-} from '../validation/parse-utils.js';
+import { readBoolean, readEnum, readRecord } from '../validation/parse-utils.js';
 import type { RetentionClass } from './retention-schedule-v1.js';
 import { RETENTION_CLASSES } from './retention-schedule-v1.js';
 
