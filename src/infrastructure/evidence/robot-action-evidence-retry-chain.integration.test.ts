@@ -143,4 +143,175 @@ describe('robot action evidence chain under adversarial retries', () => {
     await hooks.record(duplicate);
     await expect(hooks.record(duplicate)).rejects.toBeInstanceOf(EvidencePayloadAlreadyExistsError);
   });
+
+  it('concurrent duplicate event injection: first write wins, second throws (WORM race)', async () => {
+    const payloadStore = new InMemoryWormEvidencePayloadStore();
+    const evidenceLog = new InMemoryEvidenceLog();
+    const eventPublisher = new InMemoryEventPublisher();
+    const hooks = new AgentActionEvidenceHooks({ payloadStore, evidenceLog, eventPublisher });
+    const evt = agentEvent('ActionFailed', 'evt-race-1', '2026-02-22T00:02:00.000Z', {
+      runId: 'run-robot-2',
+      actionId: 'action-robot-2',
+      toolName: 'robot:execute_action',
+      status: 'failed',
+      errorMessage: 'Concurrent duplicate injection',
+    });
+
+    // Both record calls are started synchronously — the first put() wins before the second sees the map
+    const [r1, r2] = await Promise.allSettled([hooks.record(evt), hooks.record(evt)]);
+
+    const fulfilled = [r1, r2].filter((r) => r.status === 'fulfilled');
+    const rejected = [r1, r2].filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0]!.reason).toBeInstanceOf(EvidencePayloadAlreadyExistsError);
+
+    // Chain must have exactly one entry (the successful write)
+    const entries = evidenceLog.listByRun(TenantId('workspace-robotics-1'), 'run-robot-2');
+    expect(entries).toHaveLength(1);
+    expect(verifyEvidenceChainV1(entries, new NodeCryptoEvidenceHasher())).toEqual({ ok: true });
+  });
+
+  it('concurrent recording of two distinct actions in the same run produces a valid chain', async () => {
+    const payloadStore = new InMemoryWormEvidencePayloadStore();
+    const evidenceLog = new InMemoryEvidenceLog();
+    const eventPublisher = new InMemoryEventPublisher();
+    const hooks = new AgentActionEvidenceHooks({ payloadStore, evidenceLog, eventPublisher });
+
+    await Promise.all([
+      hooks.record(
+        agentEvent('ActionDispatched', 'evt-par-A', '2026-02-22T00:03:00.000Z', {
+          runId: 'run-robot-3',
+          actionId: 'action-robot-A',
+          toolName: 'robot:execute_action',
+          status: 'queued',
+        }),
+      ),
+      hooks.record(
+        agentEvent('ActionDispatched', 'evt-par-B', '2026-02-22T00:03:00.001Z', {
+          runId: 'run-robot-3',
+          actionId: 'action-robot-B',
+          toolName: 'robot:execute_action',
+          status: 'queued',
+        }),
+      ),
+    ]);
+
+    const entries = evidenceLog.listByRun(TenantId('workspace-robotics-1'), 'run-robot-3');
+    expect(entries).toHaveLength(2);
+    expect(verifyEvidenceChainV1(entries, new NodeCryptoEvidenceHasher())).toEqual({ ok: true });
+  });
+
+  it('cancellation sequence (dispatch → fail with cancel reason) produces a valid chain', async () => {
+    const payloadStore = new InMemoryWormEvidencePayloadStore();
+    const evidenceLog = new InMemoryEvidenceLog();
+    const eventPublisher = new InMemoryEventPublisher();
+    const hooks = new AgentActionEvidenceHooks({ payloadStore, evidenceLog, eventPublisher });
+
+    const cancelSequence: DomainEventV1[] = [
+      agentEvent('ActionDispatched', 'evt-cancel-dispatched', '2026-02-22T00:04:00.000Z', {
+        runId: 'run-robot-4',
+        actionId: 'action-robot-4',
+        toolName: 'robot:execute_action',
+        status: 'queued',
+      }),
+      agentEvent('ActionFailed', 'evt-cancel-failed', '2026-02-22T00:04:01.000Z', {
+        runId: 'run-robot-4',
+        actionId: 'action-robot-4',
+        toolName: 'robot:execute_action',
+        status: 'cancelled',
+        errorMessage: 'Operator cancelled mission before execution',
+      }),
+    ];
+
+    for (const event of cancelSequence) {
+      await hooks.record(event);
+    }
+
+    const entries = evidenceLog.listByRun(TenantId('workspace-robotics-1'), 'run-robot-4');
+    expect(entries).toHaveLength(2);
+    expect(verifyEvidenceChainV1(entries, new NodeCryptoEvidenceHasher())).toEqual({ ok: true });
+    // Both entries must reference their payload
+    expect(entries.every((e) => (e.payloadRefs?.length ?? 0) === 1)).toBe(true);
+  });
+
+  it('publishes one EvidenceRecorded cloud event per action event recorded', async () => {
+    const payloadStore = new InMemoryWormEvidencePayloadStore();
+    const evidenceLog = new InMemoryEvidenceLog();
+    const eventPublisher = new InMemoryEventPublisher();
+    const hooks = new AgentActionEvidenceHooks({ payloadStore, evidenceLog, eventPublisher });
+
+    const events: DomainEventV1[] = [
+      agentEvent('ActionDispatched', 'evt-pub-1', '2026-02-22T00:05:00.000Z', {
+        runId: 'run-robot-5',
+        actionId: 'action-robot-5',
+        toolName: 'robot:execute_action',
+        status: 'queued',
+      }),
+      agentEvent('ActionFailed', 'evt-pub-2', '2026-02-22T00:05:01.000Z', {
+        runId: 'run-robot-5',
+        actionId: 'action-robot-5',
+        toolName: 'robot:execute_action',
+        status: 'failed',
+        errorMessage: 'Retry timeout',
+      }),
+      agentEvent('ActionCompleted', 'evt-pub-3', '2026-02-22T00:05:02.000Z', {
+        runId: 'run-robot-5',
+        actionId: 'action-robot-5',
+        toolName: 'robot:execute_action',
+        status: 'succeeded',
+      }),
+    ];
+
+    for (const event of events) {
+      await hooks.record(event);
+    }
+
+    expect(eventPublisher.events).toHaveLength(3);
+    // Each published cloud event carries the original domain event id
+    const publishedIds = eventPublisher.events.map((e) => e.id);
+    expect(publishedIds).toEqual(['evt-pub-1', 'evt-pub-2', 'evt-pub-3']);
+  });
+
+  it('stress: 10-event retry chain verifies end-to-end', async () => {
+    const payloadStore = new InMemoryWormEvidencePayloadStore();
+    const evidenceLog = new InMemoryEvidenceLog();
+    const eventPublisher = new InMemoryEventPublisher();
+    const hooks = new AgentActionEvidenceHooks({ payloadStore, evidenceLog, eventPublisher });
+
+    const stressEvents: DomainEventV1[] = [];
+    for (let i = 0; i < 9; i++) {
+      stressEvents.push(
+        agentEvent(
+          'ActionFailed',
+          `evt-stress-fail-${i}`,
+          new Date(Date.UTC(2026, 1, 22, 0, 6, i)).toISOString(),
+          {
+            runId: 'run-robot-6',
+            actionId: 'action-robot-6',
+            toolName: 'robot:execute_action',
+            status: 'failed',
+            errorMessage: `Adversarial transient failure #${i}`,
+          },
+        ),
+      );
+    }
+    stressEvents.push(
+      agentEvent('ActionCompleted', 'evt-stress-success', '2026-02-22T00:06:09.000Z', {
+        runId: 'run-robot-6',
+        actionId: 'action-robot-6',
+        toolName: 'robot:execute_action',
+        status: 'succeeded',
+      }),
+    );
+
+    for (const event of stressEvents) {
+      await hooks.record(event);
+    }
+
+    const entries = evidenceLog.listByRun(TenantId('workspace-robotics-1'), 'run-robot-6');
+    expect(entries).toHaveLength(10);
+    expect(verifyEvidenceChainV1(entries, new NodeCryptoEvidenceHasher())).toEqual({ ok: true });
+  });
 });
