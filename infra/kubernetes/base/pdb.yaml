@@ -1,23 +1,64 @@
+# PodDisruptionBudgets for all Portarium control-plane and worker services.
+#
+# Policy:
+#   - control-plane: minAvailable 1 (staging), overlaid to 2 in prod by
+#     kustomize patch (values-prod minAvailable: 2).
+#   - execution-plane (worker): minAvailable 2 — Temporal requires enough
+#     pollers to avoid task-queue starvation during drains.
+#   - OTel collector: minAvailable 1 — loss of all collectors causes metric
+#     gaps but is not a data-loss event.
+#
+# Bead: bead-0396
+
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: portarium-control-plane
+  name: portarium-control-plane-pdb
   namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-control-plane
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: control-plane
 spec:
   minAvailable: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: portarium-control-plane
       app.kubernetes.io/part-of: portarium
+
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: portarium-execution-plane
+  name: portarium-execution-plane-pdb
   namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-execution-plane
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: execution-plane
 spec:
+  # Keep at least 2 pollers alive; Temporal distributes tasks across all
+  # running workers so 1 poller remaining would starve task-queue capacity.
   minAvailable: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: portarium-execution-plane
+      app.kubernetes.io/part-of: portarium
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: portarium-otel-collector-pdb
+  namespace: portarium
+  labels:
+    app.kubernetes.io/name: portarium-otel-collector
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: otel-collector
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: portarium-otel-collector
       app.kubernetes.io/part-of: portarium
