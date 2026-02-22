@@ -37,7 +37,10 @@
     "quiescing",
     "PITR",
     "numkeys",
-    "EXPIREAT"
+    "EXPIREAT",
+    "logql",
+    "traceql",
+    "conns"
   ],
   "ignorePaths": [
     "dist/**",
