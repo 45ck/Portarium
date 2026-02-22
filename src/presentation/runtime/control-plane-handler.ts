@@ -12,6 +12,13 @@ import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import {
+  defaultRegistry,
+  httpActiveConnections,
+  httpRequestDurationSeconds,
+  httpRequestsTotal,
+  rateLimitHitsTotal,
+} from '../../infrastructure/observability/prometheus-registry.js';
+import {
   authenticate,
   checkIfMatch,
   computeETag,
