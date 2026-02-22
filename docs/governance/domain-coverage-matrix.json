@@ -235,10 +235,8 @@
       "canonicalObjects": ["Ticket", "Asset", "Document", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0257", "bead-0258"],
-      "gapBeads": ["bead-47v1"],
-      "gaps": [
-        "Security policy and disclosure deliverables remain open before governance closeout."
-      ]
+      "gapBeads": [],
+      "gaps": []
     },
     {
       "portFamily": "RoboticsActuation",
