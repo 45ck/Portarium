@@ -12,7 +12,13 @@ export default defineConfig({
       reportsDirectory: './coverage',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/**/index.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/index.ts',
+        // CLI entry points are process-level wiring; exclude from unit coverage
+        'src/infrastructure/migrations/cli.ts',
+        'src/infrastructure/observability/otel-setup.ts',
+      ],
       thresholds: {
         statements: 85,
         branches: 75,

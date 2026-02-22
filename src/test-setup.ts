@@ -7,6 +7,5 @@
 import { webcrypto } from 'node:crypto';
 
 if (typeof globalThis.crypto === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).crypto = webcrypto;
+  Object.assign(globalThis, { crypto: webcrypto });
 }

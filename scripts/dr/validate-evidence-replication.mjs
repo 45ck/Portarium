@@ -28,9 +28,7 @@ import { writeFileSync } from 'node:fs';
 import {
   S3Client,
   PutObjectCommand,
-  GetObjectCommand,
   HeadObjectCommand,
-  GetObjectLegalHoldCommand,
   GetObjectRetentionCommand,
 } from '@aws-sdk/client-s3';
 

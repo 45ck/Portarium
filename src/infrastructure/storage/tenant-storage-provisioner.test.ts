@@ -14,8 +14,8 @@ import type { SqlClient, SqlQueryResult } from '../postgresql/sql-client.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function makeSqlClient(): SqlClient & { calls: Array<{ sql: string; params: unknown[] }> } {
-  const calls: Array<{ sql: string; params: unknown[] }> = [];
+function makeSqlClient(): SqlClient & { calls: { sql: string; params: unknown[] }[] } {
+  const calls: { sql: string; params: unknown[] }[] = [];
   const responses = new Map<string, SqlQueryResult>();
 
   const client = {
@@ -36,7 +36,7 @@ function makeSqlClient(): SqlClient & { calls: Array<{ sql: string; params: unkn
       return { rows: [], rowCount: 0 };
     },
   };
-  return client as unknown as SqlClient & { calls: Array<{ sql: string; params: unknown[] }> };
+  return client as unknown as SqlClient & { calls: { sql: string; params: unknown[] }[] };
 }
 
 // ── Name helpers ────────────────────────────────────────────────────────────

@@ -23,9 +23,8 @@ function makeFetch(body: unknown, status = 200) {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeAdapter(fetchFn: any = makeFetch([])) {
-  return new ZammadCustomerSupportAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
+function makeAdapter(fetchFn = makeFetch([]) as unknown as typeof fetch) {
+  return new ZammadCustomerSupportAdapter(DEFAULT_CONFIG, fetchFn);
 }
 
 function makeInput(
