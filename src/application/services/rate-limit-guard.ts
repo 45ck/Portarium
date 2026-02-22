@@ -49,26 +49,23 @@ export async function checkRateLimit(
     };
   }
 
-  // Check each rule — track the usage returned by the last check so we
-  // report the correct (potentially window-reset) usage without re-fetching
-  // stale data from the store.
-  let lastAllowedUsage = null;
+  // Check each rule, collecting the usage from the last checked rule.
+  let lastResult: RateLimitCheckResultV1 | null = null;
   for (const rule of rules) {
     const result = await checkSingleRule(deps, scope, rule, nowIso);
+    lastResult = result;
     if (!result.allowed) {
       // First violated rule determines the response
       return result;
     }
-    lastAllowedUsage = result.usage;
   }
 
-  // All rules passed — use the usage captured from the last rule check so that
-  // a window reset is reflected in the returned usage (not overwritten by a
-  // re-fetch of the stale previous window from the store).
-  if (lastAllowedUsage) {
-    return { allowed: true, usage: lastAllowedUsage };
+  // All rules passed — return the usage from the last checked rule.
+  if (lastResult) {
+    return lastResult;
   }
 
+  // Fallback (no rules, unreachable given the guard above, kept for type safety).
   const boundaries = computeWindowBoundaries({ nowIso, window: rules[0]!.window });
   return {
     allowed: true,
