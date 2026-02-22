@@ -3,22 +3,24 @@ name: portarium-local
 # ---------------------------------------------------------------------------
 # Docker Compose profiles (bead-pysp)
 #
-# Services are grouped into four named profiles so developers can start only
+# Services are grouped into named profiles so developers can start only
 # what they need.  Use `--profile <name>` or COMPOSE_PROFILES env var.
 #
-#   baseline  — Postgres (evidence-db).  All other profiles depend on this.
-#   runtime   — Temporal workflow engine + MinIO evidence store.
-#   auth      — HashiCorp Vault (dev mode, local secrets).
-#   tools     — OTel Collector, Tempo, Grafana (observability stack).
+#   baseline      — Postgres (evidence-db).  All other profiles depend on this.
+#   runtime       — Temporal workflow engine + MinIO evidence store.
+#   auth          — HashiCorp Vault (dev mode, local secrets).
+#   rate-limiting — Redis (distributed rate-limit store, bead-dsnp).
+#   tools         — OTel Collector, Tempo, Grafana (observability stack).
 #
 # Common invocations:
 #   docker compose --profile baseline up -d
 #   docker compose --profile baseline --profile runtime up -d
 #   docker compose --profile baseline --profile runtime --profile auth up -d
+#   docker compose --profile baseline --profile runtime --profile auth --profile rate-limiting up -d
 #   docker compose --profile baseline --profile runtime --profile auth --profile tools up -d
 #
 # Shorthand via COMPOSE_PROFILES env var:
-#   COMPOSE_PROFILES=baseline,runtime,auth,tools docker compose up -d
+#   COMPOSE_PROFILES=baseline,runtime,auth,rate-limiting,tools docker compose up -d
 # ---------------------------------------------------------------------------
 
 services:
@@ -180,6 +182,21 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - tempo
+    networks:
+      - portarium-control
+
+  rate-limit-store:
+    profiles: [rate-limiting]
+    image: redis:7-alpine
+    container_name: portarium-redis
+    command: redis-server --save "" --appendonly no
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 12
     networks:
       - portarium-control
 

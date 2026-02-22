@@ -1,3 +1,5 @@
+import { Redis } from 'ioredis';
+
 import { err } from '../../application/common/result.js';
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import type {
@@ -15,7 +17,10 @@ import {
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
-import { InMemoryRateLimitStore } from '../../infrastructure/rate-limiting/index.js';
+import {
+  InMemoryRateLimitStore,
+  RedisRateLimitStore,
+} from '../../infrastructure/rate-limiting/index.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
@@ -127,10 +132,52 @@ function buildAuthorization(): AuthorizationPort {
   return new WorkspaceRbacAuthorization();
 }
 
+/**
+ * Build the rate-limit store from environment variables.
+ *
+ * Env vars:
+ *   RATE_LIMIT_STORE=redis|memory   (default: memory)
+ *   REDIS_URL                       (required when RATE_LIMIT_STORE=redis)
+ */
+function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
+  const storeType = process.env['RATE_LIMIT_STORE']?.trim();
+  const redisUrl = process.env['REDIS_URL']?.trim();
+
+  if (storeType === 'redis') {
+    if (!redisUrl) {
+      process.stderr.write(
+        '[portarium] WARNING: RATE_LIMIT_STORE=redis but REDIS_URL is not set. ' +
+          'Falling back to in-memory rate-limit store.\n',
+      );
+      return new InMemoryRateLimitStore();
+    }
+    // ioredis connects lazily; fail-open is handled inside RedisRateLimitStore.
+    // Wrap in an adapter to satisfy the RedisRateLimitClient interface without
+    // fighting ioredis's complex overloaded scan() type signatures.
+    const redis = new Redis(redisUrl, { enableOfflineQueue: false, lazyConnect: true });
+    const client = {
+      get: (key: string) => redis.get(key),
+      eval: (script: string, numkeys: number, ...args: (string | number)[]) =>
+        redis.eval(script, numkeys, ...args),
+      scan: (cursor: string, ...args: string[]) =>
+        (
+          redis as unknown as {
+            scan: (cursor: string, ...a: string[]) => Promise<[string, string[]]>;
+          }
+        ).scan(cursor, ...args),
+      del: (...keys: string[]) => redis.del(...keys),
+    };
+    process.stderr.write('[portarium] Rate-limit store: Redis (' + redisUrl + ')\n');
+    return new RedisRateLimitStore(client);
+  }
+
+  return new InMemoryRateLimitStore();
+}
+
 export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
-  const rateLimitStore = new InMemoryRateLimitStore();
+  const rateLimitStore = buildRateLimitStore();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
