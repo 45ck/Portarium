@@ -514,11 +514,10 @@
         "bead-0518",
         "bead-0520",
         "bead-0521",
-        "bead-0567"
-      ],
-      "gapBeads": [
+        "bead-0567",
         "bead-0519"
       ],
+      "gapBeads": [],
       "gaps": [
         "Gateway adapter implementations and simulation harness remain open.",
         "Security hardening for robotics identity and transport remains open."

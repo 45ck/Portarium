@@ -1,0 +1,179 @@
+name: Robotics Simulation CI
+
+# Regression suite for Portarium robotics integration using headless Gazebo
+# simulation. Runs adapter contract tests + mission lifecycle smoke tests
+# against a simulated ROS 2 + rosbridge environment.
+#
+# Triggered:
+#   - PRs touching robotics infrastructure or adapter code
+#   - Nightly (for full regression; faster subset on PR)
+#
+# Bead: bead-0519
+
+on:
+  pull_request:
+    paths:
+      - 'src/infrastructure/adapters/robotics-gateway/**'
+      - 'infra/ros2-bridge/**'
+      - '.github/workflows/robotics-simulation-ci.yml'
+  schedule:
+    # Nightly at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Test suite to run (unit | smoke | full)'
+        required: false
+        default: 'smoke'
+
+concurrency:
+  group: robotics-sim-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ROS_DISTRO: humble
+  GAZEBO_VERSION: fortress
+  NODE_VERSION: '24'
+
+# ── Jobs ──────────────────────────────────────────────────────────────────────
+
+jobs:
+  # ── Unit + contract tests (no simulation required) ─────────────────────────
+  unit-tests:
+    name: Adapter contract tests (unit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run robotics adapter unit tests
+        run: |
+          npm run test -- --run \
+            src/infrastructure/adapters/robotics-gateway/ros2-action-bridge.test.ts \
+            src/infrastructure/adapters/robotics-gateway/mqtt-mission-gateway.test.ts \
+            src/infrastructure/adapters/robotics-gateway/opcua-mission-gateway.test.ts \
+            src/infrastructure/adapters/robotics-gateway/grpc-mission-gateway.test.ts \
+            src/infrastructure/adapters/robotics-gateway/spiffe-workload-credential.test.ts \
+            src/infrastructure/adapters/robotics-gateway/evidence-chain-adversarial-retry.test.ts \
+            src/infrastructure/adapters/robotics-gateway/preemption-stop-path-latency.test.ts \
+            src/infrastructure/adapters/robotics-gateway/vda5050-ingest.test.ts \
+            src/infrastructure/adapters/robotics-gateway/massrobotics-ingest.test.ts \
+            src/infrastructure/adapters/robotics-gateway/open-rmf-fleet-ingest.test.ts
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robotics-unit-test-results
+          path: reports/test/
+          retention-days: 7
+
+  # ── Simulation smoke tests (Gazebo + ROS 2) ────────────────────────────────
+  simulation-smoke:
+    name: Simulation smoke (Gazebo + rosbridge)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    # Only run on schedule/manual or when simulation infra changes
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.changed_files, 'infra/ros2-bridge/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install ROS 2 Humble (binary)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y locales curl
+          locale-gen en_US.UTF-8
+          sudo update-locale LANG=en_US.UTF-8
+          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+            -o /usr/share/keyrings/ros-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) \
+            signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+            http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+            | sudo tee /etc/apt/sources.list.d/ros2.list
+          sudo apt-get update -q
+          sudo apt-get install -y ros-humble-ros-base python3-colcon-common-extensions
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Install rosbridge_suite
+        run: |
+          source /opt/ros/humble/setup.bash
+          sudo apt-get install -y ros-humble-rosbridge-suite
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Install Gazebo Fortress (headless)
+        run: |
+          sudo apt-get install -y ignition-fortress
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        continue-on-error: true # Gazebo may not be available in all runner images
+
+      - name: Start rosbridge WebSocket server
+        run: |
+          source /opt/ros/humble/setup.bash
+          ros2 launch rosbridge_server rosbridge_websocket_launch.xml \
+            port:=9090 &
+          echo "ROSBRIDGE_PID=$!" >> $GITHUB_ENV
+          # Wait for rosbridge to be ready
+          for i in $(seq 1 30); do
+            if curl -sf --max-time 2 http://localhost:9090 2>/dev/null; then break; fi
+            sleep 1
+          done
+        continue-on-error: true
+
+      - name: Run simulation smoke tests
+        run: npm run test -- --run src/infrastructure/adapters/robotics-gateway/simulation-smoke.test.ts
+        env:
+          ROS_BRIDGE_URL: ws://localhost:9090
+          SIMULATION_MODE: 'true'
+        timeout-minutes: 5
+
+      - name: Stop rosbridge
+        if: always()
+        run: |
+          if [[ -n "$ROSBRIDGE_PID" ]]; then kill "$ROSBRIDGE_PID" 2>/dev/null || true; fi
+
+      - name: Upload simulation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-smoke-logs
+          path: /tmp/robotics-sim-*.log
+          retention-days: 3
+
+  # ── Required gate ─────────────────────────────────────────────────────────
+  robotics-ci-ok:
+    name: Robotics CI gate
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    if: always()
+
+    steps:
+      - name: Check unit-tests result
+        run: |
+          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
+            echo "Robotics unit tests failed"; exit 1
+          fi
+          echo "Robotics CI passed"
