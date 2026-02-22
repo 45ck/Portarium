@@ -20,7 +20,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # Required for keyless Sigstore signing via GitHub OIDC.
       id-token: write
+      # Required to upload SBOM to GitHub dependency graph.
+      security-events: write
 
     strategy:
       fail-fast: false
@@ -55,30 +58,89 @@ jobs:
           fi
 
       - name: Build and push container images
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: infra/docker/${{ matrix.component }}.Dockerfile
           push: true
           tags: ${{ steps.tags.outputs.TAGS }}
+          # provenance: true emits a SLSA Build Provenance Level 2 attestation
+          # via Buildkit's built-in attestation support (cosign-compatible).
           provenance: true
+          sbom: true
           labels: |
             org.opencontainers.image.title=Portarium-${{ matrix.component }}
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
 
-      - name: Generate SBOM for image artifact
+      # Install cosign for keyless signing and SBOM attestation.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      # Sign the image digest using keyless Sigstore (Fulcio CA + Rekor transparency
+      # log). The OIDC token from the GitHub Actions workflow is used as the identity.
+      # Signature is pushed to the registry as a referrer (OCI 1.1).
+      - name: Sign image with Sigstore keyless
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_PREFIX: ${{ steps.tags.outputs.IMAGE_PREFIX }}
+        run: |
+          cosign sign --yes \
+            "${IMAGE_PREFIX}@${DIGEST}"
+
+      # Generate SPDX SBOM using Syft (Anchore), then push it as a signed
+      # attestation referrer so downstream consumers can retrieve it with:
+      #   cosign download attestation <image> | jq .payload -r | base64 -d
+      - name: Generate SBOM (SPDX)
         uses: anchore/sbom-action@v0
         with:
           image: ${{ steps.tags.outputs.IMAGE_SHA }}
           format: spdx-json
           output-file: sbom-${{ matrix.component }}.spdx.json
 
+      - name: Attest SBOM to registry
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_PREFIX: ${{ steps.tags.outputs.IMAGE_PREFIX }}
+        run: |
+          cosign attest --yes \
+            --predicate sbom-${{ matrix.component }}.spdx.json \
+            --type spdxjson \
+            "${IMAGE_PREFIX}@${DIGEST}"
+
+      # Scan the built image for CVEs. CRITICAL/HIGH severity findings fail
+      # the build; MEDIUM and below are reported only.
+      - name: Trivy image vulnerability scan
+        id: trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.tags.outputs.IMAGE_SHA }}
+          format: sarif
+          output: trivy-${{ matrix.component }}.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Upload Trivy SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.component }}.sarif
+          category: trivy-image-${{ matrix.component }}
+
       - name: Emit release metadata
         run: |
           mkdir -p artifacts
-          cat > artifacts/${{ matrix.component }}-build-metadata.json <<'EOF'
-          {"component":"${{ matrix.component }}","commit":"${{ github.sha }}","ref":"${{ github.ref }}","tags":"${{ steps.tags.outputs.TAGS }}"}
+          cat > artifacts/${{ matrix.component }}-build-metadata.json <<EOF
+          {
+            "component": "${{ matrix.component }}",
+            "commit": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "tags": "${{ steps.tags.outputs.TAGS }}",
+            "digest": "${{ steps.build.outputs.digest }}"
+          }
           EOF
 
       - name: Archive release metadata

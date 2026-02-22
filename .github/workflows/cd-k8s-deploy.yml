@@ -27,7 +27,29 @@ permissions:
   id-token: write
 
 jobs:
+  # Verify image provenance before deploying.
+  # Both images must be signed by Sigstore and have a valid SBOM attestation
+  # produced by the ci-images workflow on refs/heads/main.
+  verify-control-plane:
+    uses: ./.github/workflows/verify-provenance.yml
+    with:
+      digest: ${{ github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+      component: control-plane
+    permissions:
+      contents: read
+      id-token: write
+
+  verify-worker:
+    uses: ./.github/workflows/verify-provenance.yml
+    with:
+      digest: ${{ github.event.inputs.image_tag != '' && github.event.inputs.image_tag || github.sha }}
+      component: worker
+    permissions:
+      contents: read
+      id-token: write
+
   deploy:
+    needs: [verify-control-plane, verify-worker]
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
 

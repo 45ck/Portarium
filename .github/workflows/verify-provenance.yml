@@ -1,0 +1,82 @@
+name: Verify Image Provenance
+
+# Runs as a gate before any deployment workflow.
+# Verifies that the container images have been signed by Sigstore and that
+# their SBOM attestation was produced by the expected GitHub Actions workflow.
+#
+# Bead: bead-0329
+
+on:
+  workflow_call:
+    inputs:
+      digest:
+        required: true
+        type: string
+        description: 'Image digest to verify (e.g. sha256:abc...)'
+      component:
+        required: true
+        type: string
+        description: 'Component name (control-plane or worker)'
+  workflow_dispatch:
+    inputs:
+      digest:
+        required: true
+        type: string
+        description: 'Image digest to verify'
+      component:
+        required: true
+        type: string
+        description: 'Component name'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Verify the Sigstore keyless signature.
+      #
+      # The --certificate-identity-regexp enforces that the signing identity
+      # is the ci-images workflow in this repository (not a fork or rogue workflow).
+      # The --certificate-oidc-issuer pin ensures it was signed via GitHub Actions
+      # OIDC, not some other Fulcio issuer.
+      - name: Verify image signature
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/portarium-${{ inputs.component }}@${{ inputs.digest }}
+          EXPECTED_ISSUER: https://token.actions.githubusercontent.com
+          EXPECTED_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/ci-images.yml@refs/heads/main
+        run: |
+          cosign verify \
+            --certificate-identity "${EXPECTED_IDENTITY}" \
+            --certificate-oidc-issuer "${EXPECTED_ISSUER}" \
+            "${IMAGE}" \
+          | jq -r '.[0] | "Verified: \(.critical.identity["docker-reference"]) at \(.optional.Bundle.Payload.integratedTime)"'
+
+      # Verify the SBOM attestation and extract the SPDX document.
+      - name: Verify and download SBOM attestation
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/portarium-${{ inputs.component }}@${{ inputs.digest }}
+          EXPECTED_ISSUER: https://token.actions.githubusercontent.com
+          EXPECTED_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/ci-images.yml@refs/heads/main
+        run: |
+          cosign verify-attestation \
+            --certificate-identity "${EXPECTED_IDENTITY}" \
+            --certificate-oidc-issuer "${EXPECTED_ISSUER}" \
+            --type spdxjson \
+            "${IMAGE}" \
+          | jq -r '.payload' | base64 -d \
+          | jq -r '.predicate.name // "SBOM verified (unnamed)"'
+          echo "SBOM attestation verified."
