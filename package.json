@@ -12,10 +12,12 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev:all": "docker compose -f docker-compose.local.yml up --wait",
-    "dev:seed": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-all.mjs",
-    "dev:seed:openfga": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-openfga.mjs",
-    "dev:seed:odoo": "docker compose -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-odoo.mjs",
+    "dev:all": "docker compose --profile baseline --profile runtime --profile auth --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",
+    "dev:seed": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-all.mjs",
+    "dev:seed:openfga": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-openfga.mjs",
+    "dev:seed:odoo": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-odoo.mjs",
+    "smoke:stack": "npm run dev:all && npm run dev:seed && npm run smoke:stack:test",
+    "smoke:stack:test": "GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 node node_modules/vitest/vitest.mjs run src/infrastructure/adapters/governed-run-smoke.test.ts",
     "cockpit:dev": "npm run -w apps/cockpit dev",
     "cockpit:storybook": "npm run -w apps/cockpit storybook",
     "cockpit:build": "npm run -w apps/cockpit build",
