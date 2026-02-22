@@ -119,10 +119,9 @@
       "operationalDomains": ["it-support"],
       "canonicalObjects": ["Ticket", "Party", "Document"],
       "coverageStatus": "partial",
-      "coverageBeads": ["bead-0235", "bead-0236"],
-      "gapBeads": ["bead-0423", "bead-0166"],
+      "coverageBeads": ["bead-0235", "bead-0236", "bead-0423"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "Zammad reference adapter implementation bead remains open.",
         "Integration gate remains open for family completion."
       ]
     },
