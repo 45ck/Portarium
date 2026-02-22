@@ -13,6 +13,7 @@
  */
 
 import type { AppContext } from '../../application/common/context.js';
+import { sanitizePrincipalForTuple } from './openfga-authorization.js';
 
 // ---------------------------------------------------------------------------
 // Resource types and relations
@@ -138,6 +139,13 @@ export class OpenFgaResourceAuthorization implements ResourceAuthorizationPort {
     this.#authorizationModelId = config.authorizationModelId;
     this.#apiToken = config.apiToken;
     this.#fetchImpl = config.fetchImpl ?? fetch;
+
+    if (!config.authorizationModelId) {
+      console.warn(
+        '[OpenFGA] WARNING: authorizationModelId is not pinned. Authorization checks will use ' +
+          'the latest model version. Set authorizationModelId to a specific model ID in production.',
+      );
+    }
   }
 
   public async isResourceAllowed<T extends OpenFgaResourceType>(
@@ -148,7 +156,7 @@ export class OpenFgaResourceAuthorization implements ResourceAuthorizationPort {
 
     const payload = {
       tuple_key: {
-        user: `user:${ctx.principalId}`,
+        user: `user:${sanitizePrincipalForTuple(ctx.principalId)}`,
         relation: check.relation,
         object: `${check.resourceType}:${check.resourceId}`,
       },

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { APP_ACTIONS } from '../../application/common/actions.js';
-import { OpenFgaAuthorization } from './openfga-authorization.js';
+import { OpenFgaAuthorization, sanitizePrincipalForTuple } from './openfga-authorization.js';
 
 describe('OpenFgaAuthorization', () => {
   function makeCtx(
@@ -79,5 +79,70 @@ describe('OpenFgaAuthorization', () => {
     const allowed = await authz.isAllowed(makeCtx(['operator']), APP_ACTIONS.runRead);
 
     expect(allowed).toBe(false);
+  });
+
+  it('emits a console.warn when authorizationModelId is not pinned', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaAuthorization({
+      apiUrl: 'http://openfga.local',
+      storeId: 'store-1',
+      fetchImpl: vi.fn<typeof fetch>(),
+    });
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('authorizationModelId is not pinned'));
+    warn.mockRestore();
+  });
+
+  it('does not warn when authorizationModelId is pinned', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    new OpenFgaAuthorization({
+      apiUrl: 'http://openfga.local',
+      storeId: 'store-1',
+      authorizationModelId: 'model-pinned',
+      fetchImpl: vi.fn<typeof fetch>(),
+    });
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('strips email domain from principalId in tuple key (PII guardrail)', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ allowed: true }), { status: 200 }),
+    );
+    const ctx = toAppContext({
+      tenantId: 'ws-1',
+      principalId: 'alice@example.com',
+      roles: ['operator'],
+      correlationId: 'corr-1',
+    });
+    const authz = new OpenFgaAuthorization({
+      apiUrl: 'http://openfga.local',
+      storeId: 'store-1',
+      authorizationModelId: 'model-1',
+      fetchImpl,
+    });
+
+    await authz.isAllowed(ctx, APP_ACTIONS.runStart);
+
+    const requestBody = fetchImpl.mock.calls[0]?.[1]?.body;
+    const body = JSON.parse(typeof requestBody === 'string' ? requestBody : '') as {
+      tuple_key: { user: string };
+    };
+    expect(body.tuple_key.user).toBe('user:alice');
+  });
+});
+
+describe('sanitizePrincipalForTuple', () => {
+  it('strips email domain', () => {
+    expect(sanitizePrincipalForTuple('alice@example.com')).toBe('alice');
+  });
+
+  it('returns plain id unchanged', () => {
+    expect(sanitizePrincipalForTuple('user-abc-123')).toBe('user-abc-123');
+  });
+
+  it('handles id with no @ character', () => {
+    expect(sanitizePrincipalForTuple('principal')).toBe('principal');
   });
 });
