@@ -31,12 +31,7 @@ export type MassRoboticsOperationalState =
   | 'UNKNOWN';
 
 /** MassRobotics task state values. */
-export type MassRoboticsTaskState =
-  | 'ASSIGNED'
-  | 'EXECUTING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'CANCELLED';
+export type MassRoboticsTaskState = 'ASSIGNED' | 'EXECUTING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 /** MassRobotics 2D location. */
 export interface MassRoboticsLocation2D {
@@ -87,7 +82,9 @@ export interface MassRoboticsIdentityMessage {
 
 export class MassRoboticsParseError extends Error {
   public override readonly name = 'MassRoboticsParseError';
-  public constructor(message: string) { super(message); }
+  public constructor(message: string) {
+    super(message);
+  }
 }
 
 // ── Utility ───────────────────────────────────────────────────────────────────
@@ -108,11 +105,21 @@ function readString(obj: Record<string, unknown>, key: string): string {
 }
 
 const VALID_OPERATIONAL_STATES: MassRoboticsOperationalState[] = [
-  'IDLE', 'MOVING', 'CHARGING', 'PAUSED', 'ERROR', 'OFFLINE', 'UNKNOWN',
+  'IDLE',
+  'MOVING',
+  'CHARGING',
+  'PAUSED',
+  'ERROR',
+  'OFFLINE',
+  'UNKNOWN',
 ];
 
 const VALID_TASK_STATES: MassRoboticsTaskState[] = [
-  'ASSIGNED', 'EXECUTING', 'COMPLETED', 'FAILED', 'CANCELLED',
+  'ASSIGNED',
+  'EXECUTING',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
 ];
 
 // ── Status message parser ─────────────────────────────────────────────────────
@@ -166,10 +173,14 @@ export function mapMassRoboticsOperationalState(
     case 'IDLE':
     case 'MOVING':
     case 'CHARGING':
-    case 'PAUSED': return 'Online';
-    case 'ERROR': return 'Degraded';
-    case 'OFFLINE': return 'Offline';
-    case 'UNKNOWN': return 'Unknown';
+    case 'PAUSED':
+      return 'Online';
+    case 'ERROR':
+      return 'Degraded';
+    case 'OFFLINE':
+      return 'Offline';
+    case 'UNKNOWN':
+      return 'Unknown';
   }
 }
 
@@ -182,11 +193,16 @@ export function mapMassRoboticsTaskState(
 ): MissionStatus | null {
   if (state === undefined) return null;
   switch (state) {
-    case 'ASSIGNED': return 'Dispatched';
-    case 'EXECUTING': return 'Executing';
-    case 'COMPLETED': return 'Succeeded';
-    case 'FAILED': return 'Failed';
-    case 'CANCELLED': return 'Cancelled';
+    case 'ASSIGNED':
+      return 'Dispatched';
+    case 'EXECUTING':
+      return 'Executing';
+    case 'COMPLETED':
+      return 'Succeeded';
+    case 'FAILED':
+      return 'Failed';
+    case 'CANCELLED':
+      return 'Cancelled';
   }
 }
 

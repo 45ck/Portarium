@@ -95,7 +95,11 @@ export class OpcUaMissionGateway implements MissionPort {
   }
 
   async dispatchMission(request: MissionDispatchRequest): Promise<MissionDispatchResult> {
-    let opened: { client: OpcUaClientLike; session: OpcUaSessionLike; cleanup: () => Promise<void> };
+    let opened: {
+      client: OpcUaClientLike;
+      session: OpcUaSessionLike;
+      cleanup: () => Promise<void>;
+    };
     try {
       opened = await this.#clientFactory(this.#config);
     } catch (err) {
@@ -120,7 +124,10 @@ export class OpcUaMissionGateway implements MissionPort {
       const inputArgs = [
         { dataType: client.DataType?.['String'] ?? 12, value: String(request.missionId) },
         { dataType: client.DataType?.['String'] ?? 12, value: request.action.actionName },
-        { dataType: client.DataType?.['String'] ?? 12, value: JSON.stringify(request.action.parameters) },
+        {
+          dataType: client.DataType?.['String'] ?? 12,
+          value: JSON.stringify(request.action.parameters),
+        },
       ];
 
       const result = (await session.call({
@@ -201,7 +208,10 @@ export class OpcUaMissionGateway implements MissionPort {
     }
   }
 
-  async getMissionStatus(missionId: MissionId, _correlationId: CorrelationId): Promise<MissionStatusResult> {
+  async getMissionStatus(
+    missionId: MissionId,
+    _correlationId: CorrelationId,
+  ): Promise<MissionStatusResult> {
     let cleanup: (() => Promise<void>) | undefined;
 
     try {
@@ -215,9 +225,7 @@ export class OpcUaMissionGateway implements MissionPort {
       const result = (await session.call({
         objectId: `ns=${ns};s=${obj}`,
         methodId: `ns=${ns};s=${obj}/GetMissionStatus`,
-        inputArguments: [
-          { dataType: client.DataType?.['String'] ?? 12, value: String(missionId) },
-        ],
+        inputArguments: [{ dataType: client.DataType?.['String'] ?? 12, value: String(missionId) }],
       })) as OpcUaCallResult;
 
       if (!isGoodStatus(result.statusCode)) {
@@ -242,14 +250,18 @@ export class OpcUaMissionGateway implements MissionPort {
 
   // ── OPC UA session helpers ────────────────────────────────────────────────
 
-  async #openSessionInternal(cfg: OpcUaMissionGatewayConfig): Promise<{ client: OpcUaClientLike; session: OpcUaSessionLike; cleanup: () => Promise<void> }> {
+  async #openSessionInternal(
+    cfg: OpcUaMissionGatewayConfig,
+  ): Promise<{ client: OpcUaClientLike; session: OpcUaSessionLike; cleanup: () => Promise<void> }> {
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
     const opcua = require('node-opcua') as any;
 
     const client: OpcUaClientLike = opcua.OPCUAClient.create({
       endpointMustExist: false,
       securityMode: opcua.MessageSecurityMode?.[cfg.securityMode ?? 'None'] ?? 1,
-      securityPolicy: opcua.SecurityPolicy?.[cfg.securityPolicy ?? 'None'] ?? 'http://opcfoundation.org/UA/SecurityPolicy#None',
+      securityPolicy:
+        opcua.SecurityPolicy?.[cfg.securityPolicy ?? 'None'] ??
+        'http://opcfoundation.org/UA/SecurityPolicy#None',
       connectionStrategy: {
         maxRetry: 0,
         initialDelay: 100,
@@ -262,8 +274,16 @@ export class OpcUaMissionGateway implements MissionPort {
     const session: OpcUaSessionLike = await client.createSession();
 
     const cleanup = async () => {
-      try { await session.close(); } catch { /* ignore */ }
-      try { await client.disconnect(); } catch { /* ignore */ }
+      try {
+        await session.close();
+      } catch {
+        /* ignore */
+      }
+      try {
+        await client.disconnect();
+      } catch {
+        /* ignore */
+      }
     };
 
     return { client, session, cleanup };

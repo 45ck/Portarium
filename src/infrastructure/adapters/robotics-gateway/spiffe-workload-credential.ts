@@ -87,9 +87,7 @@ export function clearSvidCache(): void {
 
 async function fetchFromWorkloadApi(socketPath?: string): Promise<SpiffeX509Svid> {
   const socket =
-    socketPath ??
-    process.env['SPIFFE_ENDPOINT_SOCKET'] ??
-    'unix:///run/spire/sockets/agent.sock';
+    socketPath ?? process.env['SPIFFE_ENDPOINT_SOCKET'] ?? 'unix:///run/spire/sockets/agent.sock';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let workloadApi: any;
@@ -98,15 +96,15 @@ async function fetchFromWorkloadApi(socketPath?: string): Promise<SpiffeX509Svid
   } catch {
     throw new Error(
       'SPIFFE Workload API client not available. ' +
-      'Install @spiffe/spiffe-workload-api or ensure the package is in node_modules. ' +
-      `Socket: ${socket}`,
+        'Install @spiffe/spiffe-workload-api or ensure the package is in node_modules. ' +
+        `Socket: ${socket}`,
     );
   }
 
   const client = workloadApi.X509Source
     ? new workloadApi.X509Source({ socketPath: socket })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    : workloadApi.createX509Source?.({ socketPath: socket }) as any;
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (workloadApi.createX509Source?.({ socketPath: socket }) as any);
 
   if (!client) {
     throw new Error('SPIFFE Workload API: no X509Source constructor found in package.');

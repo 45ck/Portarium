@@ -52,7 +52,12 @@ function prRef(pr: Record<string, unknown>, htmlUrl: string): ExternalObjectRef 
   };
 }
 
-function deployRef(d: Record<string, unknown>, owner: string, repo: string, _apiBase: string): ExternalObjectRef {
+function deployRef(
+  d: Record<string, unknown>,
+  owner: string,
+  repo: string,
+  _apiBase: string,
+): ExternalObjectRef {
   return {
     sorName: 'GitHub',
     portFamily: 'SoftwareDev',
@@ -90,22 +95,40 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
   async execute(input: SoftwareDevExecuteInputV1): Promise<SoftwareDevExecuteOutputV1> {
     try {
       switch (input.operation) {
-        case 'listPullRequests':      return await this.#listPullRequests(input);
-        case 'getPullRequest':        return await this.#getPullRequest(input);
-        case 'createPullRequest':     return await this.#createPullRequest(input);
-        case 'mergePullRequest':      return await this.#mergePullRequest(input);
-        case 'listDeployments':       return await this.#listDeployments(input);
-        case 'getDeployment':         return await this.#getDeployment(input);
-        case 'createDeployment':      return await this.#createDeployment(input);
-        case 'updateDeploymentStatus': return await this.#updateDeploymentStatus(input);
-        case 'listRepositories':      return await this.#listRepositories(input);
-        case 'getRepository':         return await this.#getRepository(input);
-        case 'listBranches':          return await this.#listBranches(input);
-        case 'getCommit':             return await this.#getCommit(input);
-        case 'listWorkflowRuns':      return await this.#listWorkflowRuns(input);
-        case 'getDoraMetrics':        return await this.#getDoraMetrics(input);
+        case 'listPullRequests':
+          return await this.#listPullRequests(input);
+        case 'getPullRequest':
+          return await this.#getPullRequest(input);
+        case 'createPullRequest':
+          return await this.#createPullRequest(input);
+        case 'mergePullRequest':
+          return await this.#mergePullRequest(input);
+        case 'listDeployments':
+          return await this.#listDeployments(input);
+        case 'getDeployment':
+          return await this.#getDeployment(input);
+        case 'createDeployment':
+          return await this.#createDeployment(input);
+        case 'updateDeploymentStatus':
+          return await this.#updateDeploymentStatus(input);
+        case 'listRepositories':
+          return await this.#listRepositories(input);
+        case 'getRepository':
+          return await this.#getRepository(input);
+        case 'listBranches':
+          return await this.#listBranches(input);
+        case 'getCommit':
+          return await this.#getCommit(input);
+        case 'listWorkflowRuns':
+          return await this.#listWorkflowRuns(input);
+        case 'getDoraMetrics':
+          return await this.#getDoraMetrics(input);
         default:
-          return { ok: false, error: 'unsupported_operation', message: `Unsupported: ${String(input.operation)}` };
+          return {
+            ok: false,
+            error: 'unsupported_operation',
+            message: `Unsupported: ${String(input.operation)}`,
+          };
       }
     } catch (err) {
       return {
@@ -126,7 +149,9 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const prs = await this.#get<Record<string, unknown>[]>(
       `/repos/${this.#config.owner}/${repo}/pulls?state=${state}&per_page=50`,
     );
-    const refs = prs.map((pr) => prRef(pr, `https://github.com/${this.#config.owner}/${repo}/pulls`));
+    const refs = prs.map((pr) =>
+      prRef(pr, `https://github.com/${this.#config.owner}/${repo}/pulls`),
+    );
     return { ok: true, result: { kind: 'externalRefs', externalRefs: refs } };
   }
 
@@ -140,7 +165,10 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const pr = await this.#get<Record<string, unknown>>(
       `/repos/${this.#config.owner}/${repo}/pulls/${prNumber}`,
     );
-    return { ok: true, result: { kind: 'externalRef', externalRef: prRef(pr, String(pr['html_url'] ?? '')) } };
+    return {
+      ok: true,
+      result: { kind: 'externalRef', externalRef: prRef(pr, String(pr['html_url'] ?? '')) },
+    };
   }
 
   async #createPullRequest(input: SoftwareDevExecuteInputV1): Promise<SoftwareDevExecuteOutputV1> {
@@ -149,14 +177,21 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const head = String(input.payload?.['head'] ?? '');
     const base = String(input.payload?.['base'] ?? 'main');
     if (!repo || !title || !head) {
-      return { ok: false, error: 'validation_error', message: 'repo, title, and head are required.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'repo, title, and head are required.',
+      };
     }
 
     const pr = await this.#post<Record<string, unknown>>(
       `/repos/${this.#config.owner}/${repo}/pulls`,
       { title, head, base, body: String(input.payload?.['body'] ?? '') },
     );
-    return { ok: true, result: { kind: 'externalRef', externalRef: prRef(pr, String(pr['html_url'] ?? '')) } };
+    return {
+      ok: true,
+      result: { kind: 'externalRef', externalRef: prRef(pr, String(pr['html_url'] ?? '')) },
+    };
   }
 
   async #mergePullRequest(input: SoftwareDevExecuteInputV1): Promise<SoftwareDevExecuteOutputV1> {
@@ -179,7 +214,9 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const repo = String(input.payload?.['repo'] ?? '');
     if (!repo) return { ok: false, error: 'validation_error', message: 'repo is required.' };
 
-    const env = input.payload?.['environment'] ? `?environment=${input.payload['environment']}` : '';
+    const env = input.payload?.['environment']
+      ? `?environment=${input.payload['environment']}`
+      : '';
     const deployments = await this.#get<Record<string, unknown>[]>(
       `/repos/${this.#config.owner}/${repo}/deployments${env}`,
     );
@@ -191,13 +228,23 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const repo = String(input.payload?.['repo'] ?? '');
     const deploymentId = String(input.payload?.['deploymentId'] ?? '');
     if (!repo || !deploymentId) {
-      return { ok: false, error: 'validation_error', message: 'repo and deploymentId are required.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'repo and deploymentId are required.',
+      };
     }
 
     const d = await this.#get<Record<string, unknown>>(
       `/repos/${this.#config.owner}/${repo}/deployments/${deploymentId}`,
     );
-    return { ok: true, result: { kind: 'externalRef', externalRef: deployRef(d, this.#config.owner, repo, this.#base) } };
+    return {
+      ok: true,
+      result: {
+        kind: 'externalRef',
+        externalRef: deployRef(d, this.#config.owner, repo, this.#base),
+      },
+    };
   }
 
   async #createDeployment(input: SoftwareDevExecuteInputV1): Promise<SoftwareDevExecuteOutputV1> {
@@ -212,15 +259,27 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
       `/repos/${this.#config.owner}/${repo}/deployments`,
       { ref, environment, auto_merge: false, required_contexts: [] },
     );
-    return { ok: true, result: { kind: 'externalRef', externalRef: deployRef(d, this.#config.owner, repo, this.#base) } };
+    return {
+      ok: true,
+      result: {
+        kind: 'externalRef',
+        externalRef: deployRef(d, this.#config.owner, repo, this.#base),
+      },
+    };
   }
 
-  async #updateDeploymentStatus(input: SoftwareDevExecuteInputV1): Promise<SoftwareDevExecuteOutputV1> {
+  async #updateDeploymentStatus(
+    input: SoftwareDevExecuteInputV1,
+  ): Promise<SoftwareDevExecuteOutputV1> {
     const repo = String(input.payload?.['repo'] ?? '');
     const deploymentId = String(input.payload?.['deploymentId'] ?? '');
     const state = String(input.payload?.['state'] ?? 'success');
     if (!repo || !deploymentId) {
-      return { ok: false, error: 'validation_error', message: 'repo and deploymentId are required.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'repo and deploymentId are required.',
+      };
     }
 
     await this.#post<Record<string, unknown>>(
@@ -275,7 +334,7 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
     const commit = await this.#get<Record<string, unknown>>(
       `/repos/${this.#config.owner}/${repo}/commits/${sha}`,
     );
-    const commitData = commit['commit'] as Record<string, unknown> | undefined ?? {};
+    const commitData = (commit['commit'] as Record<string, unknown> | undefined) ?? {};
     return {
       ok: true,
       result: {
@@ -284,7 +343,9 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
           sha: String(commit['sha'] ?? sha),
           message: String((commitData['message'] as string | undefined) ?? ''),
           author: commitData['author'],
-          committedAt: String(((commitData['committer'] as Record<string, unknown> | undefined)?.['date']) ?? ''),
+          committedAt: String(
+            (commitData['committer'] as Record<string, unknown> | undefined)?.['date'] ?? '',
+          ),
         },
       },
     };
@@ -347,9 +408,10 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
         const merged = new Date(String(pr['merged_at'])).getTime();
         return (merged - created) / (1000 * 60 * 60);
       });
-    const avgLeadTimeHours = leadTimesHours.length > 0
-      ? leadTimesHours.reduce((a, b) => a + b, 0) / leadTimesHours.length
-      : null;
+    const avgLeadTimeHours =
+      leadTimesHours.length > 0
+        ? leadTimesHours.reduce((a, b) => a + b, 0) / leadTimesHours.length
+        : null;
 
     // Deployment frequency: deployments per day
     const windowDays = (Date.now() - since.getTime()) / (1000 * 60 * 60 * 24);
@@ -373,7 +435,8 @@ export class GitHubSoftwareDevAdapter implements SoftwareDevAdapterPort {
           },
           // Change failure rate and MTTR require deployment status data;
           // surface as opaque refs for further analysis.
-          changeFailureRateNote: 'Requires deployment status webhook data; not available via REST polling.',
+          changeFailureRateNote:
+            'Requires deployment status webhook data; not available via REST polling.',
           mttrNote: 'Requires incident/rollback correlation; not available via REST polling.',
         },
       },

@@ -59,20 +59,20 @@ function extractCurrencyCode(raw: unknown): string {
 }
 
 const ODOO_ACCOUNT_TYPE_MAP: Record<string, AccountV1['accountType']> = {
-  'asset_receivable': 'asset',
-  'asset_cash': 'asset',
-  'asset_current': 'asset',
-  'asset_non_current': 'asset',
-  'liability_payable': 'liability',
-  'liability_current': 'liability',
-  'liability_non_current': 'liability',
-  'equity': 'equity',
-  'income': 'revenue',
-  'income_other': 'revenue',
-  'expense': 'expense',
-  'expense_depreciation': 'expense',
-  'expense_direct_cost': 'expense',
-  'off_balance': 'asset',
+  asset_receivable: 'asset',
+  asset_cash: 'asset',
+  asset_current: 'asset',
+  asset_non_current: 'asset',
+  liability_payable: 'liability',
+  liability_current: 'liability',
+  liability_non_current: 'liability',
+  equity: 'equity',
+  income: 'revenue',
+  income_other: 'revenue',
+  expense: 'expense',
+  expense_depreciation: 'expense',
+  expense_direct_cost: 'expense',
+  off_balance: 'asset',
 };
 
 function mapOdooAccount(rec: Record<string, unknown>, tenantId: string): AccountV1 {
@@ -97,8 +97,9 @@ const ODOO_INVOICE_STATUS_MAP: Record<string, InvoiceV1['status']> = {
 function mapOdooInvoice(rec: Record<string, unknown>, tenantId: string): InvoiceV1 {
   const odooState = String(rec['payment_state'] ?? rec['state'] ?? 'draft');
   const status: InvoiceV1['status'] =
-    odooState === 'paid' || odooState === 'in_payment' ? 'paid'
-      : ODOO_INVOICE_STATUS_MAP[String(rec['state'] ?? 'draft')] ?? 'draft';
+    odooState === 'paid' || odooState === 'in_payment'
+      ? 'paid'
+      : (ODOO_INVOICE_STATUS_MAP[String(rec['state'] ?? 'draft')] ?? 'draft');
 
   return {
     invoiceId: InvoiceId(String(rec['id'])),
@@ -108,7 +109,9 @@ function mapOdooInvoice(rec: Record<string, unknown>, tenantId: string): Invoice
     status,
     currencyCode: extractCurrencyCode(rec['currency_id']),
     totalAmount: Number(rec['amount_total'] ?? 0),
-    issuedAtIso: String(rec['invoice_date'] ?? rec['date'] ?? new Date().toISOString().slice(0, 10)),
+    issuedAtIso: String(
+      rec['invoice_date'] ?? rec['date'] ?? new Date().toISOString().slice(0, 10),
+    ),
     ...(typeof rec['invoice_date_due'] === 'string' ? { dueDateIso: rec['invoice_date_due'] } : {}),
   };
 }
@@ -140,24 +143,44 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
   async execute(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
     try {
       switch (input.operation) {
-        case 'listAccounts':      return await this.#listAccounts(input);
-        case 'getAccount':        return await this.#getAccount(input);
-        case 'createJournalEntry': return await this.#createJournalEntry(input);
-        case 'listJournalEntries': return await this.#listJournalEntries(input);
-        case 'getTrialBalance':   return await this.#getReport(input, 'trial_balance');
-        case 'listInvoices':      return await this.#listMoves(input, 'out_invoice');
-        case 'getInvoice':        return await this.#getInvoice(input);
-        case 'createInvoice':     return await this.#createMove(input, 'out_invoice');
-        case 'listBills':         return await this.#listMoves(input, 'in_invoice');
-        case 'getBill':           return await this.#getInvoice(input, 'in_invoice');
-        case 'createBill':        return await this.#createMove(input, 'in_invoice');
-        case 'listVendors':       return await this.#listVendors(input);
-        case 'getVendor':         return await this.#getVendor(input);
-        case 'reconcileAccount':  return await this.#reconcileAccount(input);
-        case 'getBalanceSheet':   return await this.#getReport(input, 'balance_sheet');
-        case 'getProfitAndLoss':  return await this.#getReport(input, 'profit_loss');
+        case 'listAccounts':
+          return await this.#listAccounts(input);
+        case 'getAccount':
+          return await this.#getAccount(input);
+        case 'createJournalEntry':
+          return await this.#createJournalEntry(input);
+        case 'listJournalEntries':
+          return await this.#listJournalEntries(input);
+        case 'getTrialBalance':
+          return await this.#getReport(input, 'trial_balance');
+        case 'listInvoices':
+          return await this.#listMoves(input, 'out_invoice');
+        case 'getInvoice':
+          return await this.#getInvoice(input);
+        case 'createInvoice':
+          return await this.#createMove(input, 'out_invoice');
+        case 'listBills':
+          return await this.#listMoves(input, 'in_invoice');
+        case 'getBill':
+          return await this.#getInvoice(input, 'in_invoice');
+        case 'createBill':
+          return await this.#createMove(input, 'in_invoice');
+        case 'listVendors':
+          return await this.#listVendors(input);
+        case 'getVendor':
+          return await this.#getVendor(input);
+        case 'reconcileAccount':
+          return await this.#reconcileAccount(input);
+        case 'getBalanceSheet':
+          return await this.#getReport(input, 'balance_sheet');
+        case 'getProfitAndLoss':
+          return await this.#getReport(input, 'profit_loss');
         default:
-          return { ok: false, error: 'unsupported_operation', message: `Unsupported: ${String(input.operation)}` };
+          return {
+            ok: false,
+            error: 'unsupported_operation',
+            message: `Unsupported: ${String(input.operation)}`,
+          };
       }
     } catch (err) {
       return {
@@ -170,7 +193,9 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Accounts ───────────────────────────────────────────────────────────────
 
-  async #listAccounts(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #listAccounts(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const records = await this.#searchRead<Record<string, unknown>>(
       'account.account',
       [],
@@ -178,13 +203,19 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     );
     return {
       ok: true,
-      result: { kind: 'accounts', accounts: records.map((r) => mapOdooAccount(r, String(input.tenantId))) },
+      result: {
+        kind: 'accounts',
+        accounts: records.map((r) => mapOdooAccount(r, String(input.tenantId))),
+      },
     };
   }
 
-  async #getAccount(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getAccount(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const accountId = String(input.payload?.['accountId'] ?? '');
-    if (!accountId) return { ok: false, error: 'validation_error', message: 'accountId is required.' };
+    if (!accountId)
+      return { ok: false, error: 'validation_error', message: 'accountId is required.' };
 
     const records = await this.#searchRead<Record<string, unknown>>(
       'account.account',
@@ -194,12 +225,17 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Account ${accountId} not found.` };
     }
-    return { ok: true, result: { kind: 'account', account: mapOdooAccount(records[0]!, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'account', account: mapOdooAccount(records[0]!, String(input.tenantId)) },
+    };
   }
 
   // ── Journal entries ────────────────────────────────────────────────────────
 
-  async #createJournalEntry(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #createJournalEntry(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const date = String(input.payload?.['date'] ?? new Date().toISOString().slice(0, 10));
     const ref = String(input.payload?.['reference'] ?? '');
 
@@ -217,7 +253,9 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     };
   }
 
-  async #listJournalEntries(_input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #listJournalEntries(
+    _input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const records = await this.#searchRead<Record<string, unknown>>(
       'account.move',
       [['move_type', '=', 'entry']],
@@ -229,32 +267,63 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Invoices / Bills ───────────────────────────────────────────────────────
 
-  async #listMoves(input: FinanceAccountingExecuteInputV1, moveType: string): Promise<FinanceAccountingExecuteOutputV1> {
+  async #listMoves(
+    input: FinanceAccountingExecuteInputV1,
+    moveType: string,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const records = await this.#searchRead<Record<string, unknown>>(
       'account.move',
       [['move_type', '=', moveType]],
-      ['id', 'name', 'state', 'payment_state', 'currency_id', 'amount_total', 'invoice_date', 'invoice_date_due'],
+      [
+        'id',
+        'name',
+        'state',
+        'payment_state',
+        'currency_id',
+        'amount_total',
+        'invoice_date',
+        'invoice_date_due',
+      ],
     );
     const invoices = records.map((r) => mapOdooInvoice(r, String(input.tenantId)));
     return { ok: true, result: { kind: 'invoices', invoices } };
   }
 
-  async #getInvoice(input: FinanceAccountingExecuteInputV1, _moveType?: string): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getInvoice(
+    input: FinanceAccountingExecuteInputV1,
+    _moveType?: string,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const invoiceId = String(input.payload?.['invoiceId'] ?? input.payload?.['billId'] ?? '');
-    if (!invoiceId) return { ok: false, error: 'validation_error', message: 'invoiceId is required.' };
+    if (!invoiceId)
+      return { ok: false, error: 'validation_error', message: 'invoiceId is required.' };
 
     const records = await this.#searchRead<Record<string, unknown>>(
       'account.move',
       [['id', '=', Number(invoiceId)]],
-      ['id', 'name', 'state', 'payment_state', 'currency_id', 'amount_total', 'invoice_date', 'invoice_date_due'],
+      [
+        'id',
+        'name',
+        'state',
+        'payment_state',
+        'currency_id',
+        'amount_total',
+        'invoice_date',
+        'invoice_date_due',
+      ],
     );
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Invoice ${invoiceId} not found.` };
     }
-    return { ok: true, result: { kind: 'invoice', invoice: mapOdooInvoice(records[0]!, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'invoice', invoice: mapOdooInvoice(records[0]!, String(input.tenantId)) },
+    };
   }
 
-  async #createMove(input: FinanceAccountingExecuteInputV1, moveType: string): Promise<FinanceAccountingExecuteOutputV1> {
+  async #createMove(
+    input: FinanceAccountingExecuteInputV1,
+    moveType: string,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const totalAmount = Number(input.payload?.['totalAmount'] ?? 0);
     const currencyCode = String(input.payload?.['currencyCode'] ?? 'USD');
     const date = String(input.payload?.['issuedAtIso'] ?? new Date().toISOString().slice(0, 10));
@@ -285,7 +354,9 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Vendors ────────────────────────────────────────────────────────────────
 
-  async #listVendors(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #listVendors(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const records = await this.#searchRead<Record<string, unknown>>(
       'res.partner',
       [['supplier_rank', '>', 0]],
@@ -293,31 +364,46 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     );
     return {
       ok: true,
-      result: { kind: 'vendors', vendors: records.map((r) => mapOdooPartner(r, String(input.tenantId))) },
+      result: {
+        kind: 'vendors',
+        vendors: records.map((r) => mapOdooPartner(r, String(input.tenantId))),
+      },
     };
   }
 
-  async #getVendor(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getVendor(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     const vendorId = String(input.payload?.['vendorId'] ?? '');
-    if (!vendorId) return { ok: false, error: 'validation_error', message: 'vendorId is required.' };
+    if (!vendorId)
+      return { ok: false, error: 'validation_error', message: 'vendorId is required.' };
 
     const records = await this.#searchRead<Record<string, unknown>>(
       'res.partner',
-      [['id', '=', Number(vendorId)], ['supplier_rank', '>', 0]],
+      [
+        ['id', '=', Number(vendorId)],
+        ['supplier_rank', '>', 0],
+      ],
       ['id', 'name', 'email', 'phone'],
     );
     if (records.length === 0) {
       return { ok: false, error: 'not_found', message: `Vendor ${vendorId} not found.` };
     }
-    return { ok: true, result: { kind: 'vendor', vendor: mapOdooPartner(records[0]!, String(input.tenantId)) } };
+    return {
+      ok: true,
+      result: { kind: 'vendor', vendor: mapOdooPartner(records[0]!, String(input.tenantId)) },
+    };
   }
 
   // ── Reconcile ─────────────────────────────────────────────────────────────
 
-  async #reconcileAccount(input: FinanceAccountingExecuteInputV1): Promise<FinanceAccountingExecuteOutputV1> {
+  async #reconcileAccount(
+    input: FinanceAccountingExecuteInputV1,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     // Odoo reconcile: call account.move.line.auto_reconcile on the account.
     const accountId = String(input.payload?.['accountId'] ?? '');
-    if (!accountId) return { ok: false, error: 'validation_error', message: 'accountId is required.' };
+    if (!accountId)
+      return { ok: false, error: 'validation_error', message: 'accountId is required.' };
 
     await this.#callKw('account.move.line', 'auto_reconcile_lines', [], {
       account_id: Number(accountId),
@@ -327,7 +413,10 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
 
   // ── Reports (opaque) ───────────────────────────────────────────────────────
 
-  async #getReport(_input: FinanceAccountingExecuteInputV1, reportType: string): Promise<FinanceAccountingExecuteOutputV1> {
+  async #getReport(
+    _input: FinanceAccountingExecuteInputV1,
+    reportType: string,
+  ): Promise<FinanceAccountingExecuteOutputV1> {
     // Odoo financial reports are rendered server-side. Return opaque ref.
     return {
       ok: true,
@@ -377,7 +466,12 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
     return res as number;
   }
 
-  async #callKw(model: string, method: string, args: unknown[], kwargs: Record<string, unknown>): Promise<unknown> {
+  async #callKw(
+    model: string,
+    method: string,
+    args: unknown[],
+    kwargs: Record<string, unknown>,
+  ): Promise<unknown> {
     const uid = this.#uid ?? (await this.#ensureAuthenticated());
     return this.#rpc<unknown>('/web/dataset/call_kw', {
       model,
@@ -402,9 +496,7 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
           'Content-Type': 'application/json',
           Accept: 'application/json',
           // API key auth (Odoo 16+): X-API-Key header.
-          ...(path !== '/web/session/authenticate'
-            ? { 'X-API-Key': this.#config.apiKey }
-            : {}),
+          ...(path !== '/web/session/authenticate' ? { 'X-API-Key': this.#config.apiKey } : {}),
         },
         body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1, params }),
         signal: controller.signal,
@@ -415,7 +507,10 @@ export class OdooFinanceAccountingAdapter implements FinanceAccountingAdapterPor
         throw new Error(`HTTP ${res.status} from Odoo (${path}): ${text}`);
       }
 
-      const json = await res.json() as { result?: T; error?: { message: string; data?: { message: string } } };
+      const json = (await res.json()) as {
+        result?: T;
+        error?: { message: string; data?: { message: string } };
+      };
       if (json.error) {
         throw new Error(json.error.data?.message ?? json.error.message);
       }

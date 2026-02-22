@@ -112,7 +112,9 @@ export interface OpenRmfApiRobotSummary {
 
 export class OpenRmfParseError extends Error {
   public override readonly name = 'OpenRmfParseError';
-  public constructor(message: string) { super(message); }
+  public constructor(message: string) {
+    super(message);
+  }
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
@@ -144,20 +146,25 @@ function readArray(obj: Record<string, unknown>, key: string): unknown[] {
 
 /** rmf_fleet_msgs/RobotMode ordinal → symbolic name. */
 const ROBOT_MODE_ORDINALS: Record<number, OpenRmfRobotMode> = {
-  0:  'IDLE',
-  1:  'CHARGING',
-  2:  'MOVING',
-  3:  'PAUSING',
-  4:  'WAITING',
-  5:  'EMERGENCY',
-  6:  'GOING_HOME',
-  7:  'DOCK_CHARGING',
-  8:  'ADAPTER_ERROR',
-  9:  'REQUEST_ERROR',
+  0: 'IDLE',
+  1: 'CHARGING',
+  2: 'MOVING',
+  3: 'PAUSING',
+  4: 'WAITING',
+  5: 'EMERGENCY',
+  6: 'GOING_HOME',
+  7: 'DOCK_CHARGING',
+  8: 'ADAPTER_ERROR',
+  9: 'REQUEST_ERROR',
 };
 
 const TASK_STATE_VALUES = new Set<string>([
-  'PENDING', 'ACTIVE', 'COMPLETED', 'FAILED', 'CANCELED', 'KILLED',
+  'PENDING',
+  'ACTIVE',
+  'COMPLETED',
+  'FAILED',
+  'CANCELED',
+  'KILLED',
 ]);
 
 // ── Parsers ───────────────────────────────────────────────────────────────────
@@ -213,10 +220,12 @@ export function mapOpenRmfRobotModeToConnectivity(modeOrdinal: number): RobotCon
     case 'PAUSING':
     case 'WAITING':
     case 'GOING_HOME':
-    case 'DOCK_CHARGING': return 'Online';
+    case 'DOCK_CHARGING':
+      return 'Online';
     case 'EMERGENCY':
     case 'ADAPTER_ERROR':
-    case 'REQUEST_ERROR': return 'Degraded';
+    case 'REQUEST_ERROR':
+      return 'Degraded';
   }
 }
 
@@ -225,12 +234,17 @@ export function mapOpenRmfRobotModeToConnectivity(modeOrdinal: number): RobotCon
  */
 export function mapOpenRmfTaskState(state: OpenRmfTaskState): MissionStatus {
   switch (state) {
-    case 'PENDING': return 'Dispatched';
-    case 'ACTIVE': return 'Executing';
-    case 'COMPLETED': return 'Succeeded';
-    case 'FAILED': return 'Failed';
+    case 'PENDING':
+      return 'Dispatched';
+    case 'ACTIVE':
+      return 'Executing';
+    case 'COMPLETED':
+      return 'Succeeded';
+    case 'FAILED':
+      return 'Failed';
     case 'CANCELED':
-    case 'KILLED': return 'Cancelled';
+    case 'KILLED':
+      return 'Cancelled';
   }
 }
 
@@ -246,11 +260,14 @@ export function mapOpenRmfModeStringToConnectivity(mode: string): RobotConnectiv
     case 'PAUSING':
     case 'WAITING':
     case 'GOING_HOME':
-    case 'DOCK_CHARGING': return 'Online';
+    case 'DOCK_CHARGING':
+      return 'Online';
     case 'EMERGENCY':
     case 'ADAPTER_ERROR':
-    case 'REQUEST_ERROR': return 'Degraded';
-    default: return 'Unknown';
+    case 'REQUEST_ERROR':
+      return 'Degraded';
+    default:
+      return 'Unknown';
   }
 }
 

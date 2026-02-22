@@ -13,7 +13,7 @@ name: FinOps Cost Report
 
 on:
   schedule:
-    - cron: '0 8 * * 1'   # Monday 08:00 UTC
+    - cron: '0 8 * * 1' # Monday 08:00 UTC
   workflow_dispatch:
     inputs:
       days:
@@ -115,5 +115,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cost-reports-$(date -u +%Y%m%d)
-          path: "cost-by-*.json"
+          path: 'cost-by-*.json'
           retention-days: 90

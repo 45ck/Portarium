@@ -18,10 +18,7 @@ const DEFAULT_CONFIG: OdooAdapterConfig = {
 };
 
 /** Build a fetch mock that handles auth then a single subsequent call. */
-function makeFetchMock(
-  dataResponse: unknown,
-  { authUid = 7 }: { authUid?: number } = {},
-) {
+function makeFetchMock(dataResponse: unknown, { authUid = 7 }: { authUid?: number } = {}) {
   let callCount = 0;
   return vi.fn(async (_url: string, _init: RequestInit) => {
     callCount++;
@@ -52,8 +49,22 @@ describe('OdooFinanceAccountingAdapter', () => {
   describe('listAccounts', () => {
     it('maps Odoo account records to AccountV1 array', async () => {
       const odooAccounts = [
-        { id: 1, name: 'Cash', code: '101000', account_type: 'asset_cash', currency_id: [1, 'USD'], active: true },
-        { id: 2, name: 'Revenue', code: '400000', account_type: 'income', currency_id: false, active: true },
+        {
+          id: 1,
+          name: 'Cash',
+          code: '101000',
+          account_type: 'asset_cash',
+          currency_id: [1, 'USD'],
+          active: true,
+        },
+        {
+          id: 2,
+          name: 'Revenue',
+          code: '400000',
+          account_type: 'income',
+          currency_id: false,
+          active: true,
+        },
       ];
       const fetchFn = makeFetchMock(odooAccounts);
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
@@ -87,7 +98,14 @@ describe('OdooFinanceAccountingAdapter', () => {
   describe('getAccount', () => {
     it('returns a single account when found', async () => {
       const odooAccounts = [
-        { id: 5, name: 'Accounts Payable', code: '201000', account_type: 'liability_payable', currency_id: false, active: true },
+        {
+          id: 5,
+          name: 'Accounts Payable',
+          code: '201000',
+          account_type: 'liability_payable',
+          currency_id: false,
+          active: true,
+        },
       ];
       const fetchFn = makeFetchMock(odooAccounts);
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
@@ -191,7 +209,11 @@ describe('OdooFinanceAccountingAdapter', () => {
 
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
       const result = await adapter.execute(
-        makeInput('createInvoice', { totalAmount: 800, currencyCode: 'GBP', issuedAtIso: '2024-03-01' }),
+        makeInput('createInvoice', {
+          totalAmount: 800,
+          currencyCode: 'GBP',
+          issuedAtIso: '2024-03-01',
+        }),
       );
 
       expect(result.ok).toBe(true);
@@ -305,7 +327,9 @@ describe('OdooFinanceAccountingAdapter', () => {
     });
 
     it('wraps network failures as provider_error', async () => {
-      const fetchFn = vi.fn(async () => { throw new Error('ECONNREFUSED'); });
+      const fetchFn = vi.fn(async () => {
+        throw new Error('ECONNREFUSED');
+      });
 
       const adapter = new OdooFinanceAccountingAdapter(DEFAULT_CONFIG, fetchFn as typeof fetch);
       const result = await adapter.execute(makeInput('listAccounts'));

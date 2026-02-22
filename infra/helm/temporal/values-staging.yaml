@@ -10,7 +10,7 @@ server:
 
   image:
     repository: temporalio/server
-    tag: "1.25.2"
+    tag: '1.25.2'
     pullPolicy: IfNotPresent
 
   config:
@@ -28,7 +28,7 @@ server:
           sql:
             pluginName: postgres12
             databaseName: temporal
-            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectAddr: '$(TEMPORAL_DB_HOST):5432'
             connectProtocol: tcp
             user: temporal
             maxConns: 40
@@ -43,7 +43,7 @@ server:
           sql:
             pluginName: postgres12
             databaseName: temporal_visibility
-            connectAddr: "$(TEMPORAL_DB_HOST):5432"
+            connectAddr: '$(TEMPORAL_DB_HOST):5432'
             connectProtocol: tcp
             user: temporal
             maxConns: 20
@@ -107,7 +107,7 @@ admintools:
   enabled: true
   image:
     repository: temporalio/admin-tools
-    tag: "1.25.2"
+    tag: '1.25.2'
 
 cassandra:
   enabled: false

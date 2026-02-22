@@ -116,14 +116,10 @@ export class TenantStorageProvisioner {
     );
 
     // Create schema owned by the tenant role.
-    await this.sql.query(
-      `CREATE SCHEMA IF NOT EXISTS ${schemaName} AUTHORIZATION ${roleName}`,
-    );
+    await this.sql.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName} AUTHORIZATION ${roleName}`);
 
     // Grant usage to shared service account so the application can connect.
-    await this.sql.query(
-      `GRANT USAGE ON SCHEMA ${schemaName} TO portarium_shared`,
-    );
+    await this.sql.query(`GRANT USAGE ON SCHEMA ${schemaName} TO portarium_shared`);
     await this.sql.query(
       `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schemaName}
        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO portarium_shared`,
@@ -156,9 +152,7 @@ export class TenantStorageProvisioner {
       `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schemaName}
        REVOKE ALL ON TABLES FROM portarium_shared`,
     );
-    await this.sql.query(
-      `REVOKE ALL ON SCHEMA ${schemaName} FROM portarium_shared`,
-    );
+    await this.sql.query(`REVOKE ALL ON SCHEMA ${schemaName} FROM portarium_shared`);
 
     // Drop schema and all contained objects.
     await this.sql.query(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);
@@ -187,8 +181,6 @@ export class TenantStorageProvisioner {
        ORDER BY schema_name`,
     );
 
-    return result.rows.map((r) =>
-      r.schema_name.replace(/^tenant_/, '').replace(/_/g, '-'),
-    );
+    return result.rows.map((r) => r.schema_name.replace(/^tenant_/, '').replace(/_/g, '-'));
   }
 }

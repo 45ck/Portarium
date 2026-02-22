@@ -15,10 +15,10 @@ persistence:
       sql:
         pluginName: postgres12
         databaseName: temporal
-        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectAddr: '{{ .Env.TEMPORAL_DB_HOST }}:5432'
         connectProtocol: tcp
-        user: "{{ .Env.TEMPORAL_DB_USER }}"
-        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        user: '{{ .Env.TEMPORAL_DB_USER }}'
+        password: '{{ .Env.TEMPORAL_DB_PASSWORD }}'
         maxConns: 100
         maxIdleConns: 50
         maxConnLifetime: 30m
@@ -31,10 +31,10 @@ persistence:
       sql:
         pluginName: postgres12
         databaseName: temporal_visibility
-        connectAddr: "{{ .Env.TEMPORAL_DB_HOST }}:5432"
+        connectAddr: '{{ .Env.TEMPORAL_DB_HOST }}:5432'
         connectProtocol: tcp
-        user: "{{ .Env.TEMPORAL_DB_USER }}"
-        password: "{{ .Env.TEMPORAL_DB_PASSWORD }}"
+        user: '{{ .Env.TEMPORAL_DB_USER }}'
+        password: '{{ .Env.TEMPORAL_DB_PASSWORD }}'
         maxConns: 50
         maxIdleConns: 25
         maxConnLifetime: 30m
@@ -122,7 +122,7 @@ archival:
     enableRead: false
     provider:
       s3store:
-        region: "{{ .Env.AWS_REGION }}"
+        region: '{{ .Env.AWS_REGION }}'
   visibility:
     state: 'disabled'
     enableRead: false

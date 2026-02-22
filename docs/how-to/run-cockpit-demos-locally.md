@@ -35,14 +35,14 @@ demo-machine run docs/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-ru
 
 **Available clips:**
 
-| # | File | Story |
-|---|------|-------|
-| 01 | `01-approval-gate-unblocks-run.demo.yaml` | Approval gate unblocks a stalled run |
-| 02 | `02-evidence-chain-update-on-decision.demo.yaml` | Evidence chain updates on approval decision |
-| 03 | `03-correlation-context-traversal.demo.yaml` | Correlation/context traversal across runs |
-| 04 | `04-capability-matrix-connector-posture.demo.yaml` | Capability matrix connector posture |
-| 05 | `05-degraded-realtime-safety-ux.demo.yaml` | Degraded real-time safety UX |
-| 06 | `06-agent-integration-quickstart.demo.yaml` | Agent integration quickstart |
+| #   | File                                               | Story                                       |
+| --- | -------------------------------------------------- | ------------------------------------------- |
+| 01  | `01-approval-gate-unblocks-run.demo.yaml`          | Approval gate unblocks a stalled run        |
+| 02  | `02-evidence-chain-update-on-decision.demo.yaml`   | Evidence chain updates on approval decision |
+| 03  | `03-correlation-context-traversal.demo.yaml`       | Correlation/context traversal across runs   |
+| 04  | `04-capability-matrix-connector-posture.demo.yaml` | Capability matrix connector posture         |
+| 05  | `05-degraded-realtime-safety-ux.demo.yaml`         | Degraded real-time safety UX                |
+| 06  | `06-agent-integration-quickstart.demo.yaml`        | Agent integration quickstart                |
 
 ---
 
@@ -55,6 +55,7 @@ npm run cockpit:demo:approvals-v2:showcase
 ```
 
 Outputs:
+
 - `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif`
 - `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.json`
 

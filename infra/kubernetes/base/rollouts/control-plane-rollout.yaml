@@ -73,7 +73,7 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
-              drop: ["ALL"]
+              drop: ['ALL']
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -101,7 +101,7 @@ spec:
 
       # Canary analysis runs every 2 minutes throughout each step.
       analysis:
-        startingStep: 2            # begin analysis at the 20% step
+        startingStep: 2 # begin analysis at the 20% step
 
       # Progressive traffic steps with SLO-gated pauses.
       steps:
@@ -129,7 +129,7 @@ spec:
         failureLimit: 1
         metrics:
           - name: api-error-rate
-            successCondition: result < 0.001   # < 0.1% error rate
+            successCondition: result < 0.001 # < 0.1% error rate
             failureLimit: 1
             provider:
               prometheus:
@@ -140,7 +140,7 @@ spec:
                   clamp_min(sum(rate(http_requests_total{service="portarium-control-plane"}[2m])), 0.0001)
 
           - name: api-latency-p95
-            successCondition: result < 500   # < 500 ms
+            successCondition: result < 500 # < 500 ms
             failureLimit: 1
             provider:
               prometheus:

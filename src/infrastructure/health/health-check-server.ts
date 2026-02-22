@@ -108,10 +108,7 @@ export class HealthCheckServer {
     });
   }
 
-  private async handleRequest(
-    req: IncomingMessage,
-    res: ServerResponse,
-  ): Promise<void> {
+  private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = req.url ?? '/';
 
     let checkFn: HealthCheckFn;

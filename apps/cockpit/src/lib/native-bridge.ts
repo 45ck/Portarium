@@ -14,17 +14,21 @@
 
 /** Returns true when running inside a Capacitor native shell (iOS/Android). */
 export function isNative(): boolean {
-  return typeof window !== 'undefined' &&
+  return (
+    typeof window !== 'undefined' &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    !!(window as any).Capacitor?.isNativePlatform?.();
+    !!(window as any).Capacitor?.isNativePlatform?.()
+  );
 }
 
 /** Returns true when the app is installed as a PWA (display-mode: standalone). */
 export function isInstalledPwa(): boolean {
   if (typeof window === 'undefined') return false;
-  return window.matchMedia('(display-mode: standalone)').matches ||
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    !!(navigator as any).standalone;
+    !!(navigator as any).standalone
+  );
 }
 
 /** Returns 'native', 'pwa', or 'browser'. */
@@ -45,10 +49,12 @@ export async function secureSet(key: string, value: string): Promise<void> {
       // @capacitor/preferences uses Keychain (iOS) / EncryptedSharedPreferences (Android).
       // Dynamically imported so the build does not hard-depend on the package.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Preferences } = await import('@capacitor/preferences') as any;
+      const { Preferences } = (await import('@capacitor/preferences')) as any;
       await Preferences.set({ key, value });
       return;
-    } catch { /* fall through to web storage */ }
+    } catch {
+      /* fall through to web storage */
+    }
   }
   sessionStorage.setItem(key, value);
 }
@@ -58,10 +64,12 @@ export async function secureGet(key: string): Promise<string | null> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Preferences } = await import('@capacitor/preferences') as any;
-      const { value } = await Preferences.get({ key }) as { value: string | null };
+      const { Preferences } = (await import('@capacitor/preferences')) as any;
+      const { value } = (await Preferences.get({ key })) as { value: string | null };
       return value;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return sessionStorage.getItem(key);
 }
@@ -71,10 +79,12 @@ export async function secureRemove(key: string): Promise<void> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Preferences } = await import('@capacitor/preferences') as any;
+      const { Preferences } = (await import('@capacitor/preferences')) as any;
       await Preferences.remove({ key });
       return;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   sessionStorage.removeItem(key);
 }
@@ -99,17 +109,23 @@ export async function onDeepLink(handler: DeepLinkHandler): Promise<() => void> 
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { App } = await import('@capacitor/app') as any;
+      const { App } = (await import('@capacitor/app')) as any;
       const listener = await App.addListener('appUrlOpen', (event: { url: string }) => {
         handler(event.url);
       });
-      _deepLinkCleanup = () => { void (listener as { remove(): Promise<void> }).remove(); };
+      _deepLinkCleanup = () => {
+        void (listener as { remove(): Promise<void> }).remove();
+      };
       return _deepLinkCleanup;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
 
   // Web fallback: treat popstate as navigation deep-link
-  const webHandler = () => { handler(window.location.href); };
+  const webHandler = () => {
+    handler(window.location.href);
+  };
   window.addEventListener('popstate', webHandler);
   _deepLinkCleanup = () => window.removeEventListener('popstate', webHandler);
   return _deepLinkCleanup;
@@ -121,10 +137,12 @@ export async function writeToClipboard(text: string): Promise<void> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Clipboard } = await import('@capacitor/clipboard') as any;
+      const { Clipboard } = (await import('@capacitor/clipboard')) as any;
       await Clipboard.write({ string: text });
       return;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   await navigator.clipboard.writeText(text);
 }
@@ -135,9 +153,11 @@ export async function hapticTap(): Promise<void> {
   if (!isNative()) return;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { Haptics, ImpactStyle } = await import('@capacitor/haptics') as any;
+    const { Haptics, ImpactStyle } = (await import('@capacitor/haptics')) as any;
     await Haptics.impact({ style: ImpactStyle.Light });
-  } catch { /* devices without haptics */ }
+  } catch {
+    /* devices without haptics */
+  }
 }
 
 // ── Share ─────────────────────────────────────────────────────────────────────
@@ -152,10 +172,12 @@ export async function share(options: ShareOptions): Promise<void> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Share } = await import('@capacitor/share') as any;
+      const { Share } = (await import('@capacitor/share')) as any;
       await Share.share(options);
       return;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   if (navigator.share) {
     await navigator.share(options);
@@ -168,10 +190,12 @@ export async function openInAppBrowser(url: string): Promise<void> {
   if (isNative()) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { Browser } = await import('@capacitor/browser') as any;
+      const { Browser } = (await import('@capacitor/browser')) as any;
       await Browser.open({ url, presentationStyle: 'popover' });
       return;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   window.open(url, '_blank', 'noopener,noreferrer');
 }
@@ -180,9 +204,11 @@ export async function closeInAppBrowser(): Promise<void> {
   if (!isNative()) return;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { Browser } = await import('@capacitor/browser') as any;
+    const { Browser } = (await import('@capacitor/browser')) as any;
     await Browser.close();
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // ── App info ──────────────────────────────────────────────────────────────────
@@ -198,7 +224,7 @@ export async function getAppInfo(): Promise<AppInfo | null> {
   if (!isNative()) return null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { App } = await import('@capacitor/app') as any;
+    const { App } = (await import('@capacitor/app')) as any;
     return (await App.getInfo()) as AppInfo;
   } catch {
     return null;
@@ -211,7 +237,9 @@ export async function setStatusBarStyle(style: 'light' | 'dark'): Promise<void> 
   if (!isNative()) return;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { StatusBar, Style } = await import('@capacitor/status-bar') as any;
+    const { StatusBar, Style } = (await import('@capacitor/status-bar')) as any;
     await StatusBar.setStyle({ style: style === 'light' ? Style.Light : Style.Dark });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }

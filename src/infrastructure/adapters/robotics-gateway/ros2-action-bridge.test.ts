@@ -5,7 +5,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { MissionDispatchRequest, MissionCancelRequest } from '../../../application/ports/mission-port.js';
+import type {
+  MissionDispatchRequest,
+  MissionCancelRequest,
+} from '../../../application/ports/mission-port.js';
 import type { MissionActionRequestV1 } from '../../../domain/robots/mission-action-semantics-v1.js';
 import { Ros2ActionBridge } from './ros2-action-bridge.js';
 
@@ -50,7 +53,10 @@ function makeCancelRequest(): MissionCancelRequest {
 describe('Ros2ActionBridge', () => {
   describe('dispatchMission — unsupported action', () => {
     it('returns Rejected when actionName is not in ACTION_MAP', async () => {
-      const bridge = new Ros2ActionBridge({ rosbridgeUrl: 'ws://robot:9090', connectTimeoutMs: 100 });
+      const bridge = new Ros2ActionBridge({
+        rosbridgeUrl: 'ws://robot:9090',
+        connectTimeoutMs: 100,
+      });
       const result = await bridge.dispatchMission(makeDispatchRequest('fly_drone'));
 
       expect(result.kind).toBe('Rejected');
