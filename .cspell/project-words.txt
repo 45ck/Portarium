@@ -931,9 +931,23 @@ idempotently
 
 # Git / docs terms (pre-existing in review docs)
 oneline
+
+# Multi-tenant storage provisioner (bead-0392)
+datname
+contoso
+bigcorp
+malley
+bigco
+tierc
+upserts
+sqls
+Sqls
+
+# DPoP token type (RFC 9449, pre-existing in jose-jwt tests)
+dpop
+DPoP
+
+# Terraform cost estimation tool (pre-existing in docs/review)
 Infracost
 infracost
 INFRACOST
-
-# JWT token type (jose-jwt tests)
-dpop

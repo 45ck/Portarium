@@ -8,6 +8,9 @@
  * 1. 429 / Retry-After correctness under load
  * 2. Graceful shedding — behaviour at 10× and 100× over the configured limit
  * 3. Multi-tenant isolation — one tenant's traffic cannot exhaust another's quota
+ * 4. Concurrent record correctness — no silent drops or double-counts
+ *
+ * (Window boundary and token bucket tests: rate-limit-boundary-token-bucket.test.ts)
  *
  * Bead: bead-0381
  */
@@ -366,72 +369,5 @@ describe('rate-limit load: multi-tenant isolation', () => {
 
     expect(results.every((r) => !r.allowed)).toBe(true);
     expect(results.every((r) => !r.allowed && r.usage.window === 'PerHour')).toBe(true);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Window boundary correctness
-// ---------------------------------------------------------------------------
-
-describe('rate-limit load: window boundary correctness', () => {
-  it('allows a fresh burst immediately after the window resets', async () => {
-    const store = new InMemoryRateLimitStore();
-    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId('boundary-tenant') };
-    const limit = 10;
-    const rule: RateLimitRuleV1 = {
-      schemaVersion: 1,
-      scope,
-      window: 'PerMinute',
-      maxRequests: limit,
-    };
-    store.setRules(scope, [rule]);
-
-    // Exhaust in minute 0
-    for (let i = 0; i < limit; i++) {
-      await store.recordRequest({ scope, window: 'PerMinute', nowIso: '2026-02-22T10:00:30.000Z' });
-    }
-
-    // All rejected at end of minute 0
-    const endOfMinute = await checkRateLimit(
-      { rateLimitStore: store, clock: () => '2026-02-22T10:00:59.000Z' },
-      scope,
-    );
-    expect(endOfMinute.allowed).toBe(false);
-
-    // Minute 1 starts — limit resets
-    const startOfMinute1 = await checkRateLimit(
-      { rateLimitStore: store, clock: () => '2026-02-22T10:01:00.000Z' },
-      scope,
-    );
-    expect(startOfMinute1.allowed).toBe(true);
-    expect(startOfMinute1.usage.requestCount).toBe(0);
-  });
-
-  it('per-day window resets at UTC midnight', async () => {
-    const store = new InMemoryRateLimitStore();
-    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId('daily-tenant') };
-    const rule: RateLimitRuleV1 = {
-      schemaVersion: 1,
-      scope,
-      window: 'PerDay',
-      maxRequests: 100,
-    };
-    store.setRules(scope, [rule]);
-
-    const dayOneIso = '2026-02-22T23:59:59.000Z';
-    for (let i = 0; i < 100; i++) {
-      await store.recordRequest({ scope, window: 'PerDay', nowIso: dayOneIso });
-    }
-
-    const endOfDay = await checkRateLimit({ rateLimitStore: store, clock: () => dayOneIso }, scope);
-    expect(endOfDay.allowed).toBe(false);
-
-    // One second later is UTC midnight day 2
-    const startOfDay2 = await checkRateLimit(
-      { rateLimitStore: store, clock: () => '2026-02-23T00:00:00.000Z' },
-      scope,
-    );
-    expect(startOfDay2.allowed).toBe(true);
-    expect(startOfDay2.usage.requestCount).toBe(0);
   });
 });

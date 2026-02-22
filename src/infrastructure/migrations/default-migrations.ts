@@ -93,4 +93,23 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       'DROP TABLE IF EXISTS workflow_runs;',
     ],
   },
+  {
+    version: 6,
+    id: '0006_expand_tenant_storage_tiers_table',
+    description:
+      'Creates tenant_storage_tiers registry for ADR-0049 Tier B/C storage provisioning.',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS tenant_storage_tiers (
+  tenant_id         TEXT        NOT NULL PRIMARY KEY,
+  tier              TEXT        NOT NULL,
+  schema_name       TEXT        NULL,
+  connection_string TEXT        NULL,
+  provisioned_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);`,
+    ],
+    downSql: ['DROP TABLE IF EXISTS tenant_storage_tiers;'],
+  },
 ];
