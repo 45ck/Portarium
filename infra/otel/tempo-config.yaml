@@ -1,5 +1,14 @@
+# Tempo — distributed tracing backend for Portarium
+#
+# Receives traces from OTel Collector (OTLP/gRPC).
+# metrics_generator derives RED metrics + service graph and remote-writes to Prometheus,
+# enabling exemplar links from Grafana metrics dashboards to individual traces.
+#
+# Bead: bead-0428
+
 server:
   http_listen_port: 3200
+  grpc_listen_port: 9095
 
 distributor:
   receivers:
@@ -7,15 +16,51 @@ distributor:
       protocols:
         grpc:
           endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+ingester:
+  max_block_duration: 5m
+  trace_idle_period: 10s
+
+compactor:
+  compaction:
+    block_retention: 336h  # 14 days
 
 storage:
   trace:
-    backend: local
-    local:
-      path: /var/tempo/traces
+    backend: s3
+    s3:
+      bucket: ${TEMPO_S3_BUCKET}
+      endpoint: ${TEMPO_S3_ENDPOINT}
+      region: ${TEMPO_S3_REGION}
+      insecure: false
     wal:
       path: /var/tempo/wal
+    local:
+      path: /var/tempo/blocks
 
 metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      service_namespace: portarium
   storage:
     path: /var/tempo/metrics
+    remote_write:
+      - url: ${PROM_REMOTE_WRITE_URL}
+        send_exemplars: true
+        headers:
+          Authorization: "Bearer ${PROM_AUTH_TOKEN}"
+  processors:
+    - service-graphs
+    - span-metrics
+
+overrides:
+  # Enable metrics generation for all tenants.
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+      generate_native_histograms: both

@@ -6,8 +6,9 @@ metadata:
   labels:
     app.kubernetes.io/name: portarium-otel-collector
     app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: observability
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: portarium-otel-collector
@@ -17,46 +18,119 @@ spec:
       labels:
         app.kubernetes.io/name: portarium-otel-collector
         app.kubernetes.io/part-of: portarium
+        app.kubernetes.io/component: observability
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+        prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: portarium-otel-collector
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
       containers:
         - name: otel-collector
-          image: otel/opentelemetry-collector-contrib:0.103.0
+          image: otel/opentelemetry-collector-contrib:0.119.0
           imagePullPolicy: IfNotPresent
           args: ['--config=/etc/otelcol-contrib/config.yaml']
           ports:
             - name: otlp-grpc
               containerPort: 4317
+              protocol: TCP
             - name: otlp-http
               containerPort: 4318
-            - name: metrics
-              containerPort: 9464
+              protocol: TCP
+            - name: self-metrics
+              containerPort: 8888
+              protocol: TCP
             - name: health
               containerPort: 13133
+              protocol: TCP
+            - name: zpages
+              containerPort: 55679
+              protocol: TCP
+          env:
+            # Backend endpoints
+            - name: TEMPO_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: TEMPO_ENDPOINT
+            - name: TEMPO_TLS_INSECURE
+              value: "false"
+            - name: TEMPO_CA_FILE
+              value: /etc/otelcol-contrib/tls/ca.crt
+            - name: TEMPO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: TEMPO_AUTH_TOKEN
+            - name: PROM_REMOTE_WRITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: PROM_REMOTE_WRITE_URL
+            - name: PROM_CA_FILE
+              value: /etc/otelcol-contrib/tls/ca.crt
+            - name: PROM_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: PROM_AUTH_TOKEN
+            - name: LOKI_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: LOKI_ENDPOINT
+            - name: LOKI_CA_FILE
+              value: /etc/otelcol-contrib/tls/ca.crt
+            - name: LOKI_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: otel-backends
+                  key: LOKI_AUTH_TOKEN
+            # Tune verbosity per environment
+            - name: OTEL_DEBUG_VERBOSITY
+              value: "none"
+            - name: OTEL_LOG_LEVEL
+              value: "info"
           volumeMounts:
             - name: collector-config
               mountPath: /etc/otelcol-contrib
+              readOnly: true
+            - name: tls
+              mountPath: /etc/otelcol-contrib/tls
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
-            tcpSocket:
-              port: 4317
+            httpGet:
+              path: /health
+              port: health
             initialDelaySeconds: 5
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
-            tcpSocket:
-              port: 4317
+            httpGet:
+              path: /health
+              port: health
             initialDelaySeconds: 15
             periodSeconds: 20
+            failureThreshold: 3
           startupProbe:
-            tcpSocket:
-              port: 4317
+            httpGet:
+              path: /health
+              port: health
             failureThreshold: 20
             periodSeconds: 10
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
+              cpu: 200m
               memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -67,3 +141,16 @@ spec:
         - name: collector-config
           configMap:
             name: portarium-otel-config
+        - name: tls
+          secret:
+            secretName: otel-tls-ca
+            optional: true
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: portarium-otel-collector

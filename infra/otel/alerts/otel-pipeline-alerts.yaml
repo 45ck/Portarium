@@ -1,0 +1,117 @@
+# OTel Collector pipeline health alerts
+#
+# Alert on pipeline failures, queue saturation, and export errors so the
+# observability layer itself is observable.
+#
+# Bead: bead-0428
+
+groups:
+  - name: otel_pipeline_health
+    interval: 60s
+    rules:
+      # Exporter is dropping data — immediate action required.
+      - alert: OtelExporterDroppedSpans
+        expr: |
+          sum by (exporter) (
+            rate(otelcol_exporter_send_failed_spans_total[5m])
+          ) > 0
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "OTel Collector exporter {{ $labels.exporter }} dropping spans"
+          description: >
+            Exporter {{ $labels.exporter }} has been dropping spans for 2+ minutes.
+            Check backend connectivity and TLS configuration.
+
+      - alert: OtelExporterDroppedMetrics
+        expr: |
+          sum by (exporter) (
+            rate(otelcol_exporter_send_failed_metric_points_total[5m])
+          ) > 0
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "OTel Collector exporter {{ $labels.exporter }} dropping metrics"
+          description: >
+            Exporter {{ $labels.exporter }} has been dropping metric points.
+            Prometheus remote-write or Mimir may be unavailable.
+
+      - alert: OtelExporterDroppedLogs
+        expr: |
+          sum by (exporter) (
+            rate(otelcol_exporter_send_failed_log_records_total[5m])
+          ) > 0
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "OTel Collector exporter {{ $labels.exporter }} dropping logs"
+          description: >
+            Exporter {{ $labels.exporter }} has been dropping log records.
+            Loki may be unavailable.
+
+      # Queue is saturating — data loss risk.
+      - alert: OtelExporterQueueFull
+        expr: |
+          otelcol_exporter_queue_capacity > 0 and
+          otelcol_exporter_queue_size / otelcol_exporter_queue_capacity > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "OTel Collector export queue {{ $labels.exporter }} > 80% full"
+          description: >
+            The export queue for {{ $labels.exporter }} is above 80% capacity.
+            Increase queue_size or investigate backend latency.
+
+      # Memory pressure — OOM risk.
+      - alert: OtelCollectorHighMemory
+        expr: |
+          process_resident_memory_bytes{job="otelcol"} / 1024 / 1024 > 400
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "OTel Collector memory usage > 400 MiB"
+          description: >
+            The OTel Collector process is using more than 400 MiB RSS.
+            Memory limiter processor should prevent OOM but investigate root cause.
+
+      # Collector not scraping / no data flow.
+      - alert: OtelCollectorDown
+        expr: |
+          absent(otelcol_process_uptime{job="otelcol"})
+        for: 3m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "OTel Collector is down"
+          description: >
+            No otelcol_process_uptime metric received for 3 minutes.
+            The OTel Collector may be crashed or unreachable.
+
+  - name: cross_signal_correlation
+    interval: 60s
+    rules:
+      # Detect when spanmetrics connector is not producing expected RED metrics.
+      - alert: SpanmetricsConnectorStalled
+        expr: |
+          absent(portarium_trace_calls_total)
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "spanmetrics connector producing no trace-derived metrics"
+          description: >
+            portarium_trace_calls_total has been absent for 10 minutes.
+            The spanmetrics connector in the OTel Collector may be misconfigured
+            or no traces are being received.
