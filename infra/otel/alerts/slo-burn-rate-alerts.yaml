@@ -1,0 +1,252 @@
+# Portarium SLO Burn-Rate Alerting Rules
+#
+# Multi-window, multi-burn-rate (MWMBR) alerts following the Google SRE
+# Workbook chapter 5 guidance.  Two severity levels per SLO:
+#
+#   page   — fast burn: >14× budget consumed at 1h|5m windows → PagerDuty P1
+#   ticket — slow burn:  >6× budget consumed at 6h|30m windows → PagerDuty P2
+#
+# These rules reference recording rules that sloth/pyrra generates from
+# infra/otel/slos/portarium-slos.yaml.  Until sloth is wired into CI,
+# the recording rule names follow the sloth v2 naming convention:
+#   slo:<name>:error_rate<window>
+#
+# Bead: bead-0393
+
+groups:
+
+  # ── API Availability ──────────────────────────────────────────────────────
+  - name: portarium-slo-api-availability
+    rules:
+      - alert: SLOApiAvailabilityFastBurn
+        expr: |
+          (
+            slo:api_availability:error_rate1h > (14 * (1 - 0.999))
+            and
+            slo:api_availability:error_rate5m > (14 * (1 - 0.999))
+          )
+        for: 2m
+        labels:
+          severity: page
+          slo: api-availability
+          service: control-plane-api
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: API Availability fast burn (14× budget, 1h+5m)"
+          description: >
+            Control-plane API is burning error budget at 14× the allowed rate.
+            Current 1h error rate: {{ $value | humanizePercentage }}.
+            Runbook: https://portarium.internal/runbooks/slo-api-availability
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+      - alert: SLOApiAvailabilitySlowBurn
+        expr: |
+          (
+            slo:api_availability:error_rate6h > (6 * (1 - 0.999))
+            and
+            slo:api_availability:error_rate30m > (6 * (1 - 0.999))
+          )
+        for: 15m
+        labels:
+          severity: ticket
+          slo: api-availability
+          service: control-plane-api
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: API Availability slow burn (6× budget, 6h+30m)"
+          description: >
+            Control-plane API is steadily burning error budget at 6× the allowed
+            rate over the last 6 hours. Investigate before the monthly budget
+            is exhausted.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+  # ── API Latency ───────────────────────────────────────────────────────────
+  - name: portarium-slo-api-latency
+    rules:
+      - alert: SLOApiLatencyFastBurn
+        expr: |
+          (
+            slo:api_latency_p95:error_rate1h > (14 * (1 - 0.95))
+            and
+            slo:api_latency_p95:error_rate5m > (14 * (1 - 0.95))
+          )
+        for: 2m
+        labels:
+          severity: page
+          slo: api-latency-p95
+          service: control-plane-api
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: API Latency fast burn — p95 > 500ms"
+          description: >
+            More than 14× the allowed fraction of requests are exceeding the
+            500ms latency SLO in the last 1h+5m window.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+      - alert: SLOApiLatencySlowBurn
+        expr: |
+          (
+            slo:api_latency_p95:error_rate6h > (6 * (1 - 0.95))
+            and
+            slo:api_latency_p95:error_rate30m > (6 * (1 - 0.95))
+          )
+        for: 15m
+        labels:
+          severity: ticket
+          slo: api-latency-p95
+          service: control-plane-api
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: API Latency slow burn — p95 > 500ms"
+          description: >
+            Sustained latency degradation burning 6× the allowed error budget
+            over the last 6h+30m window.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+  # ── Workflow Completion Rate ──────────────────────────────────────────────
+  - name: portarium-slo-workflow-completion
+    rules:
+      - alert: SLOWorkflowCompletionFastBurn
+        expr: |
+          (
+            slo:workflow_completion_rate:error_rate1h > (14 * (1 - 0.99))
+            and
+            slo:workflow_completion_rate:error_rate5m > (14 * (1 - 0.99))
+          )
+        for: 2m
+        labels:
+          severity: page
+          slo: workflow-completion-rate
+          service: execution-plane
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Workflow Completion fast burn"
+          description: >
+            Workflow runs are failing or stalling at 14× the allowed rate.
+            Check Temporal worker health and DB connectivity.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+      - alert: SLOWorkflowCompletionSlowBurn
+        expr: |
+          (
+            slo:workflow_completion_rate:error_rate6h > (6 * (1 - 0.99))
+            and
+            slo:workflow_completion_rate:error_rate30m > (6 * (1 - 0.99))
+          )
+        for: 15m
+        labels:
+          severity: ticket
+          slo: workflow-completion-rate
+          service: execution-plane
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Workflow Completion slow burn"
+          description: >
+            Sustained workflow failure / stall rate burning 6× error budget.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+  # ── Worker Action Success Rate ────────────────────────────────────────────
+  - name: portarium-slo-worker-actions
+    rules:
+      - alert: SLOWorkerActionFastBurn
+        expr: |
+          (
+            slo:worker_action_success_rate:error_rate1h > (14 * (1 - 0.995))
+            and
+            slo:worker_action_success_rate:error_rate5m > (14 * (1 - 0.995))
+          )
+        for: 2m
+        labels:
+          severity: page
+          slo: worker-action-success-rate
+          service: execution-plane-worker
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Worker Action Success fast burn"
+          description: >
+            Worker activity failure rate exceeds 14× the SLO budget.
+            Check execution-plane logs and SoR connectivity.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+      - alert: SLOWorkerActionSlowBurn
+        expr: |
+          (
+            slo:worker_action_success_rate:error_rate6h > (6 * (1 - 0.995))
+            and
+            slo:worker_action_success_rate:error_rate30m > (6 * (1 - 0.995))
+          )
+        for: 15m
+        labels:
+          severity: ticket
+          slo: worker-action-success-rate
+          service: execution-plane-worker
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Worker Action Success slow burn"
+          description: >
+            Sustained worker action failure rate burning 6× error budget.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+  # ── Evidence Integrity ────────────────────────────────────────────────────
+  - name: portarium-slo-evidence-integrity
+    rules:
+      - alert: SLOEvidenceIntegrityFastBurn
+        expr: |
+          (
+            slo:evidence_integrity_write_success:error_rate1h > (14 * (1 - 0.9999))
+            and
+            slo:evidence_integrity_write_success:error_rate5m > (14 * (1 - 0.9999))
+          )
+        for: 2m
+        labels:
+          severity: page
+          slo: evidence-integrity-write-success
+          service: evidence-store
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Evidence Integrity CRITICAL — fast burn"
+          description: >
+            Evidence log write failures at 14× the SLO budget. This risks
+            audit trail gaps. Escalate immediately.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+      - alert: SLOEvidenceIntegritySlowBurn
+        expr: |
+          (
+            slo:evidence_integrity_write_success:error_rate6h > (6 * (1 - 0.9999))
+            and
+            slo:evidence_integrity_write_success:error_rate30m > (6 * (1 - 0.9999))
+          )
+        for: 15m
+        labels:
+          severity: page
+          slo: evidence-integrity-write-success
+          service: evidence-store
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO: Evidence Integrity slow burn"
+          description: >
+            Sustained evidence write failure rate. Even slow burn warrants
+            paging for this SLO given the 99.99% target.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"
+
+  # ── Budget Exhaustion Warnings ────────────────────────────────────────────
+  - name: portarium-slo-budget-exhaustion
+    rules:
+      - alert: SLOErrorBudgetLow
+        expr: |
+          (
+            slo:api_availability:error_budget_remaining < 0.10
+            or slo:workflow_completion_rate:error_budget_remaining < 0.10
+            or slo:worker_action_success_rate:error_budget_remaining < 0.10
+            or slo:evidence_integrity_write_success:error_budget_remaining < 0.10
+          )
+        labels:
+          severity: ticket
+          portarium_io_slo_tier: p0
+        annotations:
+          summary: "SLO error budget below 10% — {{ $labels.slo }}"
+          description: >
+            Less than 10% of the 30-day error budget remains for SLO
+            {{ $labels.slo }}. Freeze risky deployments until budget recovers.
+          dashboard: "https://grafana.portarium.internal/d/slo-overview"

@@ -1,0 +1,208 @@
+# Portarium SLO Definitions
+#
+# Format: OpenSLO v1 (openslo.com/v1)
+# Rendered to Prometheus recording rules by sloth (sloth.dev) or pyrra.
+#
+# Run:
+#   sloth generate -i infra/otel/slos/portarium-slos.yaml \
+#     -o infra/otel/alerts/slo-recording-rules.yaml
+#
+# Bead: bead-0393
+
+---
+# ── 1. Control-Plane API Availability ─────────────────────────────────────
+# 99.9% of HTTP requests return non-5xx responses.
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: api-availability
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p0"
+spec:
+  service: control-plane-api
+  description: >
+    99.9% of all HTTP requests to the control-plane API must succeed (non-5xx).
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(http_requests_total{service="portarium-control-plane",code!~"5.."}[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(http_requests_total{service="portarium-control-plane"}[{{.window}}]))
+      target: 0.999
+
+---
+# ── 2. Control-Plane API Latency ──────────────────────────────────────────
+# 95% of requests served within 500 ms.
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: api-latency-p95
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p0"
+spec:
+  service: control-plane-api
+  description: >
+    95% of HTTP requests to the control-plane API must complete in ≤ 500 ms.
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(http_request_duration_ms_bucket{service="portarium-control-plane",le="500"}[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(http_request_duration_ms_count{service="portarium-control-plane"}[{{.window}}]))
+      target: 0.95
+
+---
+# ── 3. Workflow Completion Rate ────────────────────────────────────────────
+# 99% of workflow runs that start must eventually reach a terminal state
+# (completed or failed) within their configured timeout.
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: workflow-completion-rate
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p0"
+spec:
+  service: execution-plane
+  description: >
+    99% of workflow runs must reach a terminal state within their configured
+    timeout. Stuck / orphaned runs count as failures.
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_run_completed_total[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_run_started_total[{{.window}}]))
+      target: 0.99
+
+---
+# ── 4. Workflow Completion Latency ────────────────────────────────────────
+# 90% of workflow runs complete within 60 s (excluding runs with
+# human-approval steps, which have unbounded wait time by design).
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: workflow-latency-p90
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p1"
+spec:
+  service: execution-plane
+  description: >
+    90% of automated workflow runs (no approval gate) must complete in ≤ 60 s.
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_run_duration_ms_bucket{requires_approval="false",le="60000"}[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_run_duration_ms_count{requires_approval="false"}[{{.window}}]))
+      target: 0.90
+
+---
+# ── 5. Worker Action Success Rate ─────────────────────────────────────────
+# 99.5% of worker actions (Temporal activity executions) succeed without
+# application-level error (retries are counted per attempt).
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: worker-action-success-rate
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p0"
+spec:
+  service: execution-plane-worker
+  description: >
+    99.5% of worker action attempts must succeed. Application-level errors
+    returned to Temporal (non-retriable) count as failures.
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_worker_action_succeeded_total[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_worker_action_started_total[{{.window}}]))
+      target: 0.995
+
+---
+# ── 6. Evidence Integrity Write Success Rate ──────────────────────────────
+# 99.99% of evidence log write operations must durably commit.
+apiVersion: openslo.com/v1
+kind: SLO
+metadata:
+  name: evidence-integrity-write-success
+  namespace: portarium
+  labels:
+    portarium.io/slo-tier: "p0"
+spec:
+  service: evidence-store
+  description: >
+    99.99% of evidence log write attempts must succeed and be durably persisted.
+    Failed writes jeopardise audit trail integrity.
+  timeWindow:
+    - duration: 30d
+      isRolling: true
+  budgetingMethod: Occurrences
+  objectives:
+    - ratioMetrics:
+        good:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_evidence_write_succeeded_total[{{.window}}]))
+        total:
+          source: prometheus
+          queryType: promql
+          query: |
+            sum(rate(portarium_evidence_write_attempted_total[{{.window}}]))
+      target: 0.9999
