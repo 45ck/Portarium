@@ -910,3 +910,26 @@ XACK
 crossfades
 replayable
 SARIF
+
+# Multi-tenant storage provisioner (bead-0392)
+datname
+contoso
+bigcorp
+malley
+bigco
+tierc
+upserts
+sqls
+Sqls
+
+# DPoP token type (RFC 9449, pre-existing in jose-jwt tests)
+dpop
+DPoP
+
+# Terraform cost estimation tool (pre-existing in docs/review)
+Infracost
+infracost
+INFRACOST
+
+# Pre-existing English terms in docs
+oneline

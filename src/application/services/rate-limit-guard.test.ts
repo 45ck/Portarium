@@ -9,7 +9,9 @@ import type {
 import type { RateLimitStore } from '../ports/rate-limit-store.js';
 import { checkRateLimit, recordRateLimitedRequest } from './rate-limit-guard.js';
 
-type TestStore = RateLimitStore & { _setRules: (scope: RateLimitScope, rules: RateLimitRuleV1[]) => void };
+type TestStore = RateLimitStore & {
+  _setRules: (scope: RateLimitScope, rules: RateLimitRuleV1[]) => void;
+};
 
 function createInMemoryStore(): TestStore {
   const rules = new Map<string, RateLimitRuleV1[]>();
@@ -72,7 +74,7 @@ function createInMemoryStore(): TestStore {
       const windowStartedAtIso = new Date(windowStartMs).toISOString();
       const windowResetsAtIso = new Date(windowEndMs).toISOString();
 
-      if (!existing || existing.windowStartedAtIso !== windowStartedAtIso) {
+      if (existing?.windowStartedAtIso !== windowStartedAtIso) {
         // New window
         const newUsage: RateLimitUsageV1 = {
           scope: params.scope,
@@ -127,7 +129,7 @@ describe('rate-limit-guard', () => {
         maxRequests: 10,
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 5 requests
       for (let i = 0; i < 5; i++) {
@@ -162,7 +164,7 @@ describe('rate-limit-guard', () => {
         maxRequests: 3,
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 3 requests (at limit)
       for (let i = 0; i < 3; i++) {
@@ -200,7 +202,7 @@ describe('rate-limit-guard', () => {
         burstAllowance: 5, // Can handle up to 15 total
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 12 requests (over base limit, under burst limit)
       for (let i = 0; i < 12; i++) {
@@ -232,7 +234,7 @@ describe('rate-limit-guard', () => {
         maxRequests: 5,
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 5 requests in minute 1
       for (let i = 0; i < 5; i++) {
@@ -268,7 +270,7 @@ describe('rate-limit-guard', () => {
         maxRequests: 1000,
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 1000 requests
       for (let i = 0; i < 1000; i++) {
@@ -307,7 +309,7 @@ describe('rate-limit-guard', () => {
         maxRequests: 2,
       };
 
-      (store as ReturnType<typeof createInMemoryStore>)._setRules(scope, [rule]);
+      store._setRules(scope, [rule]);
 
       // Record 2 requests
       for (let i = 0; i < 2; i++) {

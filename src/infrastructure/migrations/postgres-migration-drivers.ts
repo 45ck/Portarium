@@ -69,3 +69,31 @@ export class PostgresMigrationSqlDriver implements MigrationSqlDriver {
     await this.#client.query(params.statement);
   }
 }
+
+/**
+ * Migration SQL driver for Tier B (schema-per-tenant).
+ *
+ * Before each migration statement it sets the PostgreSQL `search_path` to the
+ * tenant's dedicated schema so that unqualified table references resolve there.
+ * The schema must already exist (created by TenantStorageProvisioner.provision).
+ */
+export class SchemaScopedMigrationSqlDriver implements MigrationSqlDriver {
+  readonly #client: SqlClient;
+  readonly #schemaName: string;
+
+  public constructor(client: SqlClient, schemaName: string) {
+    this.#client = client;
+    this.#schemaName = schemaName;
+  }
+
+  public get schemaName(): string {
+    return this.#schemaName;
+  }
+
+  public async execute(
+    params: Readonly<{ target: MigrationTarget; statement: string }>,
+  ): Promise<void> {
+    await this.#client.query(`SET search_path TO "${this.#schemaName}";`);
+    await this.#client.query(params.statement);
+  }
+}

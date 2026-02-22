@@ -20,20 +20,20 @@ export class InMemoryRateLimitStore implements RateLimitStore {
   readonly #rules = new Map<string, RateLimitRuleV1[]>();
   readonly #usage = new Map<string, RateLimitUsageV1>();
 
-  async getRulesForScope(scope: RateLimitScope): Promise<readonly RateLimitRuleV1[]> {
+  getRulesForScope(scope: RateLimitScope): Promise<readonly RateLimitRuleV1[]> {
     const key = serializeRateLimitScope(scope);
-    return this.#rules.get(key) ?? [];
+    return Promise.resolve(this.#rules.get(key) ?? []);
   }
 
-  async getUsage(params: {
+  getUsage(params: {
     scope: RateLimitScope;
     window: RateLimitWindow;
   }): Promise<RateLimitUsageV1 | null> {
     const key = this.#serializeUsageKey(params.scope, params.window);
-    return this.#usage.get(key) ?? null;
+    return Promise.resolve(this.#usage.get(key) ?? null);
   }
 
-  async recordRequest(params: {
+  recordRequest(params: {
     scope: RateLimitScope;
     window: RateLimitWindow;
     nowIso: string;
@@ -43,7 +43,7 @@ export class InMemoryRateLimitStore implements RateLimitStore {
     const boundaries = computeWindowBoundaries({ nowIso: params.nowIso, window: params.window });
 
     // Check if window has reset
-    if (!existing || existing.windowStartedAtIso !== boundaries.windowStartedAtIso) {
+    if (existing?.windowStartedAtIso !== boundaries.windowStartedAtIso) {
       const newUsage: RateLimitUsageV1 = {
         scope: params.scope,
         window: params.window,
@@ -52,7 +52,7 @@ export class InMemoryRateLimitStore implements RateLimitStore {
         windowResetsAtIso: boundaries.windowResetsAtIso,
       };
       this.#usage.set(key, newUsage);
-      return newUsage;
+      return Promise.resolve(newUsage);
     }
 
     // Increment existing usage
@@ -61,16 +61,17 @@ export class InMemoryRateLimitStore implements RateLimitStore {
       requestCount: existing.requestCount + 1,
     };
     this.#usage.set(key, updated);
-    return updated;
+    return Promise.resolve(updated);
   }
 
-  async resetUsage(scope: RateLimitScope): Promise<void> {
+  resetUsage(scope: RateLimitScope): Promise<void> {
     const prefix = serializeRateLimitScope(scope);
     for (const key of this.#usage.keys()) {
       if (key.startsWith(prefix)) {
         this.#usage.delete(key);
       }
     }
+    return Promise.resolve();
   }
 
   /**

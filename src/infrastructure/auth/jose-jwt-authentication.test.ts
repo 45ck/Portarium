@@ -298,11 +298,9 @@ describe('JoseJwtAuthentication', () => {
 
     expect(result.ok).toBe(true);
   });
+});
 
-  // -------------------------------------------------------------------------
-  // Trusted issuer allowlist
-  // -------------------------------------------------------------------------
-
+describe('JoseJwtAuthentication — trusted issuer allowlist', () => {
   it('rejects token from issuer not in trustedIssuers allowlist', async () => {
     const { publicKey, privateKey } = await generateKeyPair('RS256');
     const jwk = await exportJWK(publicKey);
