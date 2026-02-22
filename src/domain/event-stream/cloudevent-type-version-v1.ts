@@ -83,11 +83,7 @@ export function parseCloudEventType(type: string): ParsedCloudEventType | undefi
  * buildCloudEventType('run', 'RunStarted', 1)
  * // → 'com.portarium.run.RunStarted.v1'
  */
-export function buildCloudEventType(
-  aggregate: string,
-  eventName: string,
-  version: number,
-): string {
+export function buildCloudEventType(aggregate: string, eventName: string, version: number): string {
   if (!aggregate.trim() || !eventName.trim()) {
     throw new Error('aggregate and eventName must be non-empty strings.');
   }

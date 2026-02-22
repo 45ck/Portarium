@@ -6,6 +6,7 @@ import type {
   RunStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
+import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
@@ -15,28 +16,52 @@ import {
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 
-function buildAuthentication(): AuthenticationPort {
+function tryBuildJoseAuthentication(): AuthenticationPort | null {
   const jwksUri = process.env['PORTARIUM_JWKS_URI']?.trim();
+  if (!jwksUri) return null;
+
   const issuer = process.env['PORTARIUM_JWT_ISSUER']?.trim();
   const audience = process.env['PORTARIUM_JWT_AUDIENCE']?.trim();
 
-  if (jwksUri) {
-    return new JoseJwtAuthentication({
-      jwksUri,
-      ...(issuer && issuer !== '' ? { issuer } : {}),
-      ...(audience && audience !== '' ? { audience } : {}),
-    });
-  }
+  return new JoseJwtAuthentication({
+    jwksUri,
+    ...(issuer ? { issuer } : {}),
+    ...(audience ? { audience } : {}),
+  });
+}
 
-  return {
-    authenticateBearerToken: ({ correlationId }) =>
-      Promise.resolve(
-        err({
-          kind: 'Unauthorized',
-          message: `Authentication not configured. (${correlationId})`,
-        }),
-      ),
-  };
+function tryBuildDevAuthentication(): AuthenticationPort | null {
+  const devToken = process.env['PORTARIUM_DEV_TOKEN']?.trim();
+  const devWorkspaceId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim();
+  if (!devToken || !devWorkspaceId) return null;
+
+  // Log a visible warning so operators know dev auth is active.
+  process.stderr.write(
+    '[portarium] WARNING: Dev token auth is enabled (PORTARIUM_DEV_TOKEN). ' +
+      'This bypasses JWKS validation and must never be used in production.\n',
+  );
+
+  const devUserId = process.env['PORTARIUM_DEV_USER_ID']?.trim();
+  return new DevTokenAuthentication({
+    token: devToken,
+    workspaceId: devWorkspaceId,
+    ...(devUserId ? { userId: devUserId } : {}),
+  });
+}
+
+function buildAuthentication(): AuthenticationPort {
+  return (
+    tryBuildJoseAuthentication() ??
+    tryBuildDevAuthentication() ?? {
+      authenticateBearerToken: ({ correlationId }) =>
+        Promise.resolve(
+          err({
+            kind: 'Unauthorized',
+            message: `Authentication not configured. (${correlationId})`,
+          }),
+        ),
+    }
+  );
 }
 
 function buildAuthorization(): AuthorizationPort {

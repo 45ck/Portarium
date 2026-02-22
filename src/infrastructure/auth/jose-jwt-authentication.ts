@@ -325,9 +325,7 @@ export class JoseJwtAuthentication implements AuthenticationPort {
     this.#clockToleranceSeconds = config.clockToleranceSeconds ?? 0;
   }
 
-  async #verifyPayload(
-    token: string,
-  ): Promise<Result<Record<string, unknown>, Unauthorized>> {
+  async #verifyPayload(token: string): Promise<Result<Record<string, unknown>, Unauthorized>> {
     try {
       const options = buildVerifyOptions({
         issuer: this.#issuer,

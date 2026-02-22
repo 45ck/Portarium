@@ -46,8 +46,7 @@ export type RegistryWarning = Readonly<{
 
 interface HandlerEntry {
   version: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: SchemaRegistryHandler<any>;
+  handler: SchemaRegistryHandler<unknown>;
 }
 
 /**
@@ -105,7 +104,7 @@ export class CloudEventSchemaRegistry {
       );
     }
 
-    entries.push({ version, handler });
+    entries.push({ version, handler: handler as SchemaRegistryHandler<unknown> });
     entries.sort((a, b) => a.version - b.version);
   }
 
@@ -172,11 +171,11 @@ export class CloudEventSchemaRegistry {
    * Return all registered (aggregate, eventName, version) tuples — useful for
    * introspection and compatibility matrix generation.
    */
-  public listRegistrations(): ReadonlyArray<{
+  public listRegistrations(): readonly {
     aggregate: string;
     eventName: string;
     version: number;
-  }> {
+  }[] {
     const out: { aggregate: string; eventName: string; version: number }[] = [];
     for (const [key, entries] of this.#handlers) {
       const [aggregate, ...rest] = key.split('.');

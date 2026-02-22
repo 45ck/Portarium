@@ -22,6 +22,7 @@ End-to-end review of `src/application/` to confirm:
 ## Evidence Reviewed
 
 **Source files:**
+
 - `src/application/commands/` — 8 commands + bus
 - `src/application/queries/` — 10 queries + bus
 - `src/application/ports/` — 48 port interface files
@@ -31,10 +32,12 @@ End-to-end review of `src/application/` to confirm:
 - `src/application/integration/` — 3 integration test suites
 
 **Specs:**
+
 - `.specify/specs/application-layer-v1.md`
 - `.specify/specs/application-command-query-contract-v1.md`
 
 **ADRs:**
+
 - ADR-0070 (hybrid orchestration-choreography)
 - ADR-0069 (PostgreSQL store adapter contract)
 
@@ -44,55 +47,55 @@ End-to-end review of `src/application/` to confirm:
 
 ### 1. Command coverage
 
-| Command | Handler file | Test file | Status |
-|---------|-------------|-----------|--------|
-| `workspace:register` | `register-workspace.ts` | `register-workspace.test.ts` | ✅ |
-| `run:start` | `start-workflow.ts` | `start-workflow.test.ts` + `start-workflow.trigger-routing.test.ts` | ✅ |
-| `approval:submit` | `submit-approval.ts` | `submit-approval.test.ts` | ✅ |
-| `map-command:submit` | `submit-map-command-intent.ts` | `submit-map-command-intent.test.ts` | ✅ |
-| `workforce:assign` | `assign-workforce-member.ts` | `assign-workforce-member.test.ts` | ✅ |
-| `workforce:complete` | `complete-human-task.ts` | `complete-human-task.test.ts` | ✅ |
-| `machine-agent:register` | `machine-agent-registration.ts` | `machine-agent-registration.test.ts` | ✅ |
-| `agent:heartbeat` | `agent-heartbeat.ts` | `agent-heartbeat.test.ts` | ✅ |
+| Command                  | Handler file                    | Test file                                                           | Status |
+| ------------------------ | ------------------------------- | ------------------------------------------------------------------- | ------ |
+| `workspace:register`     | `register-workspace.ts`         | `register-workspace.test.ts`                                        | ✅     |
+| `run:start`              | `start-workflow.ts`             | `start-workflow.test.ts` + `start-workflow.trigger-routing.test.ts` | ✅     |
+| `approval:submit`        | `submit-approval.ts`            | `submit-approval.test.ts`                                           | ✅     |
+| `map-command:submit`     | `submit-map-command-intent.ts`  | `submit-map-command-intent.test.ts`                                 | ✅     |
+| `workforce:assign`       | `assign-workforce-member.ts`    | `assign-workforce-member.test.ts`                                   | ✅     |
+| `workforce:complete`     | `complete-human-task.ts`        | `complete-human-task.test.ts`                                       | ✅     |
+| `machine-agent:register` | `machine-agent-registration.ts` | `machine-agent-registration.test.ts`                                | ✅     |
+| `agent:heartbeat`        | `agent-heartbeat.ts`            | `agent-heartbeat.test.ts`                                           | ✅     |
 
 ### 2. Query coverage
 
-| Query | Handler file | Test file | Status |
-|-------|-------------|-----------|--------|
-| `workspace:read` (get) | `get-workspace.ts` | `get-workspace.test.ts` | ✅ |
-| `workspace:read` (list) | `list-workspaces.ts` | `list-workspaces.test.ts` | ✅ |
-| `run:read` (get) | `get-run.ts` | `get-run.test.ts` | ✅ |
-| `run:read` (list) | `list-runs.ts` | `list-runs.test.ts` | ✅ |
-| `approval:read` (get) | `get-approval.ts` | `get-approval.test.ts` | ✅ |
-| `approval:read` (list) | `list-approvals.ts` | `list-approvals.test.ts` | ✅ |
-| `work-item:read` (get) | `get-work-item.ts` | `get-work-item.test.ts` | ✅ |
-| `work-item:read` (list) | `list-work-items.ts` | `list-work-items.test.ts` | ✅ |
-| `agent-work-item:read` | `get-agent-work-items.ts` | `get-agent-work-items.test.ts` | ✅ |
+| Query                   | Handler file              | Test file                      | Status |
+| ----------------------- | ------------------------- | ------------------------------ | ------ |
+| `workspace:read` (get)  | `get-workspace.ts`        | `get-workspace.test.ts`        | ✅     |
+| `workspace:read` (list) | `list-workspaces.ts`      | `list-workspaces.test.ts`      | ✅     |
+| `run:read` (get)        | `get-run.ts`              | `get-run.test.ts`              | ✅     |
+| `run:read` (list)       | `list-runs.ts`            | `list-runs.test.ts`            | ✅     |
+| `approval:read` (get)   | `get-approval.ts`         | `get-approval.test.ts`         | ✅     |
+| `approval:read` (list)  | `list-approvals.ts`       | `list-approvals.test.ts`       | ✅     |
+| `work-item:read` (get)  | `get-work-item.ts`        | `get-work-item.test.ts`        | ✅     |
+| `work-item:read` (list) | `list-work-items.ts`      | `list-work-items.test.ts`      | ✅     |
+| `agent-work-item:read`  | `get-agent-work-items.ts` | `get-agent-work-items.test.ts` | ✅     |
 
 ### 3. Application service coverage
 
-| Service | File | Test file | Purpose |
-|---------|------|-----------|---------|
-| Rate limit guard | `rate-limit-guard.ts` | `rate-limit-guard.test.ts` | Token/tenant quota enforcement (429) |
-| Quota-aware execution | `quota-aware-execution.ts` | `quota-aware-execution.test.ts` | SoR adapter quota management |
-| Outbox dispatcher | `outbox-dispatcher.ts` | `outbox-dispatcher.test.ts` | Transactional event delivery |
-| Repository invariants | `repository-aggregate-invariants.ts` | `repository-aggregate-invariants.test.ts` | Aggregate consistency guards |
-| Trigger execution router | `trigger-execution-router.ts` | `trigger-execution-router.test.ts` | Workflow trigger dispatch |
+| Service                  | File                                 | Test file                                 | Purpose                              |
+| ------------------------ | ------------------------------------ | ----------------------------------------- | ------------------------------------ |
+| Rate limit guard         | `rate-limit-guard.ts`                | `rate-limit-guard.test.ts`                | Token/tenant quota enforcement (429) |
+| Quota-aware execution    | `quota-aware-execution.ts`           | `quota-aware-execution.test.ts`           | SoR adapter quota management         |
+| Outbox dispatcher        | `outbox-dispatcher.ts`               | `outbox-dispatcher.test.ts`               | Transactional event delivery         |
+| Repository invariants    | `repository-aggregate-invariants.ts` | `repository-aggregate-invariants.test.ts` | Aggregate consistency guards         |
+| Trigger execution router | `trigger-execution-router.ts`        | `trigger-execution-router.test.ts`        | Workflow trigger dispatch            |
 
 ### 4. Error taxonomy
 
 Verified `src/application/common/errors.ts` exports:
 
-| Error kind | HTTP | Present |
-|------------|------|---------|
-| `Unauthorized` | 401 | ✅ |
-| `Forbidden` | 403 | ✅ |
-| `ValidationFailed` | 422 | ✅ |
-| `Conflict` | 409 | ✅ |
-| `NotFound` | 404 | ✅ |
-| `DependencyFailure` | 502 | ✅ |
-| `PreconditionFailed` | 412 | ✅ |
-| `RateLimitExceeded` | 429 | ✅ (added bead-0317) |
+| Error kind           | HTTP | Present              |
+| -------------------- | ---- | -------------------- |
+| `Unauthorized`       | 401  | ✅                   |
+| `Forbidden`          | 403  | ✅                   |
+| `ValidationFailed`   | 422  | ✅                   |
+| `Conflict`           | 409  | ✅                   |
+| `NotFound`           | 404  | ✅                   |
+| `DependencyFailure`  | 502  | ✅                   |
+| `PreconditionFailed` | 412  | ✅                   |
+| `RateLimitExceeded`  | 429  | ✅ (added bead-0317) |
 
 `isAppError()` type guard and `toHttpStatus()` mapping updated for all 8 kinds.
 
@@ -117,6 +120,7 @@ Note: `dependency-cruiser` CLI requires Node 20+ (`styleText` from `node:util`).
 ### 6. Contract enforcement test
 
 `src/application/contracts/application-command-query-contract.test.ts` — enforces:
+
 - Input schema presence for all registered commands/queries
 - Output schema presence
 - Error schema completeness
@@ -125,11 +129,11 @@ Status: file present with tests ✅
 
 ### 7. Integration tests
 
-| Integration test | Coverage |
-|-----------------|----------|
-| `register-workspace-flow.integration.test.ts` | Full workspace registration flow |
-| `start-workflow-flow.integration.test.ts` | Workflow start with policy/approval routing |
-| `agent-capability-drift-quarantine.integration.test.ts` | Agent drift detection and quarantine |
+| Integration test                                        | Coverage                                    |
+| ------------------------------------------------------- | ------------------------------------------- |
+| `register-workspace-flow.integration.test.ts`           | Full workspace registration flow            |
+| `start-workflow-flow.integration.test.ts`               | Workflow start with policy/approval routing |
+| `agent-capability-drift-quarantine.integration.test.ts` | Agent drift detection and quarantine        |
 
 ---
 
@@ -138,9 +142,11 @@ Status: file present with tests ✅
 **High severity:** none.
 
 **Medium severity:**
+
 - `dependency-cruiser` CLI cannot run in current environment (Node 18.20.5; requires Node 20+ for `node:util#styleText`). Architecture boundary compliance is verified by static import scan, which covers the same rules. Workaround: static grep scan confirmed 0 violations. Upgrade to Node 20+ is tracked separately.
 
 **Low severity:**
+
 - `src/application/ports/rate-limit-store.ts` uses `RateLimitWindow` inline type (`Extract<RateLimitUsageV1, unknown>['window']`). Should use the named `RateLimitWindow` type directly for clarity. Non-blocking.
 - Test runner (vitest) cannot execute in Node 18 environment (`std-env` missing ESM file). Test code has been inspected and is structurally correct. Pending Node 20 upgrade for execution verification.
 
@@ -153,6 +159,7 @@ If the application layer changes in this phase need to be reverted:
 ### Scope of changes (since domain phase gate bead-0162)
 
 Primary application-layer additions subject to rollback:
+
 1. `src/application/services/rate-limit-guard.ts` + port + domain types (bead-0317)
 2. `src/application/common/errors.ts` — `RateLimitExceeded` addition (bead-0317)
 3. `src/application/ports/rate-limit-store.ts` (bead-0317)
@@ -218,6 +225,7 @@ npm run typecheck
 Application layer completion review: **passed with conditions**.
 
 Conditions:
+
 1. Node 20 upgrade required for full `dependency-cruiser` and `vitest` execution.
 2. Low-severity type clarity item in `rate-limit-store.ts` — non-blocking.
 

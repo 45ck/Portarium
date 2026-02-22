@@ -93,7 +93,7 @@ async function checkSingleRule(
   const boundaries = computeWindowBoundaries({ nowIso, window: rule.window });
 
   // No prior usage or window has reset
-  if (!usage || usage.windowStartedAtIso !== boundaries.windowStartedAtIso) {
+  if (usage?.windowStartedAtIso !== boundaries.windowStartedAtIso) {
     return {
       allowed: true,
       usage: {

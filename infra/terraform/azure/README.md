@@ -31,11 +31,11 @@ variable or a CI secret — never commit passwords to VCS.
 
 ## Environment comparison
 
-| Setting | dev | staging | prod |
-|---------|-----|---------|------|
-| AKS nodes (desired/max) | 2/3 | 3/5 | 4/8 |
-| VM size | Standard_D2s_v3 | Standard_D4s_v3 | Standard_D8s_v3 |
-| PostgreSQL SKU | GP_Standard_D2s_v3 | GP_Standard_D4s_v3 | GP_Standard_D8s_v3 |
-| PostgreSQL HA | false | true | true |
-| Backup retention | 7d | 14d | 30d |
-| Evidence immutability | disabled | enabled (365d) | enabled (1095d) |
+| Setting                 | dev                | staging            | prod               |
+| ----------------------- | ------------------ | ------------------ | ------------------ |
+| AKS nodes (desired/max) | 2/3                | 3/5                | 4/8                |
+| VM size                 | Standard_D2s_v3    | Standard_D4s_v3    | Standard_D8s_v3    |
+| PostgreSQL SKU          | GP_Standard_D2s_v3 | GP_Standard_D4s_v3 | GP_Standard_D8s_v3 |
+| PostgreSQL HA           | false              | true               | true               |
+| Backup retention        | 7d                 | 14d                | 30d                |
+| Evidence immutability   | disabled           | enabled (365d)     | enabled (1095d)    |

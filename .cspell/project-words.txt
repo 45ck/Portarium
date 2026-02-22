@@ -582,6 +582,16 @@ serialisers
 # IAM / authz terms
 authzmodel
 Userset
+dpop
+DPoP
+
+# Infrastructure cost tooling
+Infracost
+infracost
+INFRACOST
+
+# One-liner / compound word
+oneline
 
 # Protobuf terms
 sfixed

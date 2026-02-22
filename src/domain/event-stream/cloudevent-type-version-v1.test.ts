@@ -49,9 +49,7 @@ describe('parseCloudEventType', () => {
 
 describe('buildCloudEventType', () => {
   it('builds a versioned type string', () => {
-    expect(buildCloudEventType('run', 'RunStarted', 1)).toBe(
-      'com.portarium.run.RunStarted.v1',
-    );
+    expect(buildCloudEventType('run', 'RunStarted', 1)).toBe('com.portarium.run.RunStarted.v1');
   });
 
   it('lowercases the aggregate segment', () => {
