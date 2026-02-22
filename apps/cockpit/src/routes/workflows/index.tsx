@@ -12,6 +12,7 @@ import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RotateCcw } from 'lucide-react';
+import { canAccess } from '@/lib/role-gate';
 import type { WorkflowSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
