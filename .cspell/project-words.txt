@@ -582,16 +582,6 @@ serialisers
 # IAM / authz terms
 authzmodel
 Userset
-dpop
-DPoP
-
-# Infrastructure cost tooling
-Infracost
-infracost
-INFRACOST
-
-# One-liner / compound word
-oneline
 
 # Protobuf terms
 sfixed
@@ -710,100 +700,6 @@ resumable
 
 # Web performance terms
 TTFB
-
-# PostgreSQL system catalog column names (tenant-storage-provisioner)
-rolname
-NOLOGIN
-
-# Kubernetes health-check path suffixes
-startupz
-
-# FinOps / cloud cost management
-finops
-Karpenter
-showback
-
-# Cloud / infrastructure security acronyms
-BYOK
-SLSA
-PITR
-MWMBR
-
-# Azure identity terms
-azuread
-
-# SRE / observability terms
-slos
-pollers
-
-# OpenTelemetry Collector processor names
-spanmetrics
-servicegraph
-
-# Automotive / robotics terms
-GMAC
-undock
-Undock
-
-# Email / security terms
-smime
-
-# Kubernetes / auth terms
-creds
-tokenreviews
-
-# PWA / service worker terms
-Workbox
-
-# gRPC protobuf terms
-oneofs
-
-# Preemption states
-waitingpreemption
-
-# MQTT broker names
-hivemq
-HiveMQ
-
-# Database / backup terms
-quiescing
-
-# iOS / Android CI and build terms
-xcarchive
-xcodeproj
-pbxproj
-gradlew
-
-# Robotics consortium / protocol names
-massrobotics
-MassRobotics
-VDMA
-uagv
-
-# VDA 5050 (AGV/AMR messaging protocol) status codes
-CONNECTIONBROKEN
-TEACHIN
-
-# Short abbreviations in test fixtures
-conv
-
-# Test fixture random tokens (push-notification and mobile-smoke tests)
-Rdre
-ALRFX
-OOUHK
-wtaz
-svbpez
-Vloto
-
-# Workflow / fault-injection terms
-checkpointed
-defn
-
-# Zammad / ITSM API terms
-slas
-
-# Python/Odoo RPC terms
-kwargs
 
 # URL-encoding artifacts (from test assertions with %2F-encoded path segments)
 Fwith
@@ -1025,23 +921,41 @@ idempotently
 
 # Git / docs terms (pre-existing in review docs)
 oneline
-
-# Multi-tenant storage provisioner (bead-0392)
-datname
-contoso
-bigcorp
-malley
-bigco
-tierc
-upserts
-sqls
-Sqls
-
-# DPoP token type (RFC 9449, pre-existing in jose-jwt tests)
-dpop
-DPoP
-
-# Terraform cost estimation tool (pre-existing in docs/review)
 Infracost
 infracost
 INFRACOST
+
+# JWT token type (jose-jwt tests)
+dpop
+
+# Pre-existing ADR terms (bead-0423)
+BYOK
+quiescing
+PITR
+MWMBR
+slos
+pollers
+SLSA
+azuread
+showback
+finops
+Karpenter
+checkpointed
+
+# Zammad API paths / PostgreSQL schema terms (bead-0423)
+slas
+defn
+startupz
+# ADR-0084 (encryption / BYOK)
+# ADR-0085 (SLO / MWMBR)
+# ADR-0086 (pollers)
+# ADR-0087 (SLSA / Azure AD)
+# ADR-0089 (FinOps / Karpenter)
+# GitHub / SoftwareDevelopment adapter terms (bead-0424)
+# PostgreSQL system catalog terms (tenant-storage-provisioner.ts)
+# Temporal workflow terms (fault-test-workflow.ts)
+# health-check-server (/startupz endpoint)
+integ
+pullrequest
+rolname
+NOLOGIN
