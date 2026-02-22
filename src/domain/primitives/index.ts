@@ -124,6 +124,9 @@ export type ProjectId = Branded<string, 'ProjectId'>;
 /** Unique identifier for a credential grant. */
 export type CredentialGrantId = Branded<string, 'CredentialGrantId'>;
 
+/** Unique identifier for an agent credential boundary (run-scoped credential set). */
+export type AgentCredentialBoundaryId = Branded<string, 'AgentCredentialBoundaryId'>;
+
 /** Unique identifier for a party (person, org, etc.). */
 export type PartyId = Branded<string, 'PartyId'>;
 
@@ -268,6 +271,8 @@ export const UserId = (value: string): UserId => brand<string, 'UserId'>(value);
 export const ProjectId = (value: string): ProjectId => brand<string, 'ProjectId'>(value);
 export const CredentialGrantId = (value: string): CredentialGrantId =>
   brand<string, 'CredentialGrantId'>(value);
+export const AgentCredentialBoundaryId = (value: string): AgentCredentialBoundaryId =>
+  brand<string, 'AgentCredentialBoundaryId'>(value);
 export const PartyId = (value: string): PartyId => brand<string, 'PartyId'>(value);
 export const TicketId = (value: string): TicketId => brand<string, 'TicketId'>(value);
 export const InvoiceId = (value: string): InvoiceId => brand<string, 'InvoiceId'>(value);

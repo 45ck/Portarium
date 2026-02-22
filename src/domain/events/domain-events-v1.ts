@@ -27,6 +27,8 @@ export type DomainEventType =
   | 'CredentialGrantIssued'
   | 'CredentialGrantRotated'
   | 'CredentialGrantRevoked'
+  | 'AgentCredentialBoundaryIssued'
+  | 'AgentCredentialBoundaryRevoked'
   // Workflow aggregate
   | 'WorkflowCreated'
   | 'WorkflowUpdated'
@@ -144,6 +146,8 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'CredentialGrantIssued',
   'CredentialGrantRotated',
   'CredentialGrantRevoked',
+  'AgentCredentialBoundaryIssued',
+  'AgentCredentialBoundaryRevoked',
   // Workflow aggregate
   'WorkflowCreated',
   'WorkflowUpdated',
