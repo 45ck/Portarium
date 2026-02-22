@@ -117,7 +117,7 @@ describe('MqttMissionGateway', () => {
       expect(result.accepted).toBe(true);
       expect(result.cancelledAt).toBeDefined();
 
-      const [url, init] = fetchFn.mock.calls[0] as [string, RequestInit];
+      const [_url, init] = fetchFn.mock.calls[0] as [string, RequestInit];
       const body = JSON.parse(init.body as string) as Record<string, unknown>;
       expect(String(body['topic'])).toContain(`missions/${MISSION_ID}/cancel`);
     });
