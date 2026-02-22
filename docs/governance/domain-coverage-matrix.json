@@ -131,10 +131,9 @@
       "operationalDomains": ["it-support", "software-delivery"],
       "canonicalObjects": ["Ticket", "Asset", "Party", "Document", "Subscription", "Product"],
       "coverageStatus": "gap",
-      "coverageBeads": ["bead-0237", "bead-0238"],
-      "gapBeads": ["bead-0399", "bead-0166"],
+      "coverageBeads": ["bead-0237", "bead-0238", "bead-0399"],
+      "gapBeads": ["bead-0166"],
       "gaps": [
-        "Event-driven IT ops execution-platform fit is still under spike evaluation.",
         "Integration gate remains open for rollout readiness."
       ]
     },
@@ -228,10 +227,8 @@
       "canonicalObjects": ["Ticket", "Party"],
       "coverageStatus": "gap",
       "coverageBeads": ["bead-0255", "bead-0256"],
-      "gapBeads": ["bead-0399"],
-      "gaps": [
-        "IT-ops automation platform evaluation is still open."
-      ]
+      "gapBeads": [],
+      "gaps": []
     },
     {
       "portFamily": "ComplianceGrc",
