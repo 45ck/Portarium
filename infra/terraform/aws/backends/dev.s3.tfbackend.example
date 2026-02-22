@@ -1,0 +1,16 @@
+# Partial backend configuration for the dev environment.
+#
+# Usage:
+#   cp backends/dev.s3.tfbackend.example backends/dev.s3.tfbackend
+#   # Fill in the actual values from the bootstrap outputs, then:
+#   terraform init -backend-config=backends/dev.s3.tfbackend
+#
+# Note: *.s3.tfbackend files are gitignored (they contain real bucket names).
+# Only the *.example counterparts are committed.
+
+bucket         = "portarium-dev-tfstate-XXXXXXXX"
+key            = "aws/dev/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "portarium-dev-tfstate-lock"
+encrypt        = true
+kms_key_id     = "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"

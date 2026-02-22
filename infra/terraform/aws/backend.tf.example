@@ -1,0 +1,37 @@
+# Remote state backend for the Portarium AWS stack.
+#
+# Prerequisites:
+#   Run infra/terraform/bootstrap first to create the S3 bucket and DynamoDB
+#   table, then copy this file to `backend.tf` and fill in the values from the
+#   bootstrap outputs:
+#     terraform -chdir=infra/terraform/bootstrap output -raw backend_config_snippet
+#
+# IMPORTANT: Do NOT commit `backend.tf` — it contains environment-specific
+# values that differ between deployments. This `.example` file documents the
+# expected shape. Add `backend.tf` to `.gitignore` if you keep it locally.
+#
+# Alternatively, use a partial backend config file (see backends/*.s3.tfbackend.example)
+# and pass it with: terraform init -backend-config=backends/dev.s3.tfbackend
+
+terraform {
+  backend "s3" {
+    # Replace with the value of: terraform output -raw state_bucket_name
+    bucket = "portarium-dev-tfstate-XXXXXXXX"
+
+    # Unique key path within the bucket — one per environment/stack.
+    # Convention: <stack-name>/<environment>/terraform.tfstate
+    key = "aws/dev/terraform.tfstate"
+
+    # Must match the region used in the bootstrap stack.
+    region = "us-east-1"
+
+    # Replace with the value of: terraform output -raw lock_table_name
+    dynamodb_table = "portarium-dev-tfstate-lock"
+
+    # Always encrypt state at rest.
+    encrypt = true
+
+    # Replace with the value of: terraform output -raw kms_key_arn
+    kms_key_id = "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
+  }
+}

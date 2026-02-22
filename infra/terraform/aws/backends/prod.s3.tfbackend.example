@@ -1,0 +1,16 @@
+# Partial backend configuration for the production environment.
+#
+# Usage:
+#   cp backends/prod.s3.tfbackend.example backends/prod.s3.tfbackend
+#   # Fill in the actual values from the bootstrap outputs (prod apply), then:
+#   terraform init -backend-config=backends/prod.s3.tfbackend
+#
+# Production note: Use a dedicated AWS account and separate KMS key with
+# restricted IAM policies. Require MFA for console access to state resources.
+
+bucket         = "portarium-prod-tfstate-XXXXXXXX"
+key            = "aws/prod/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "portarium-prod-tfstate-lock"
+encrypt        = true
+kms_key_id     = "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"

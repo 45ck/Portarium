@@ -55,6 +55,18 @@ nul
 .trees/
 .claude/worktrees/
 
+# Terraform — do not commit real backend configs or local state files
+# (only *.example counterparts are checked in)
+infra/terraform/**/.terraform/
+infra/terraform/**/terraform.tfstate
+infra/terraform/**/terraform.tfstate.backup
+infra/terraform/**/*.tfplan
+infra/terraform/**/backend.tf
+infra/terraform/**/*.s3.tfbackend
+infra/terraform/**/*.azurerm.tfbackend
+infra/terraform/**/*.gcs.tfbackend
+infra/terraform/**/.terraform.lock.hcl
+
 # Beads SQLite database (generated; .beads/issues.jsonl is the git-portable format)
 .beads/beads.db
 .beads/beads.db-shm

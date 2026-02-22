@@ -1,0 +1,13 @@
+# Partial backend configuration for the staging environment.
+#
+# Usage:
+#   cp backends/staging.s3.tfbackend.example backends/staging.s3.tfbackend
+#   # Fill in the actual values from the bootstrap outputs (staging apply), then:
+#   terraform init -backend-config=backends/staging.s3.tfbackend
+
+bucket         = "portarium-staging-tfstate-XXXXXXXX"
+key            = "aws/staging/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "portarium-staging-tfstate-lock"
+encrypt        = true
+kms_key_id     = "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
