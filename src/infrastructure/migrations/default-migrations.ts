@@ -221,4 +221,59 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       'ALTER TABLE workflow_runs DROP CONSTRAINT IF EXISTS fk_workflow_runs_tenant;',
     ],
   },
+  {
+    version: 11,
+    id: '0011_expand_derived_artifacts_table',
+    description:
+      'Creates derived_artifacts registry table for computed artefacts (embeddings, graph nodes, ' +
+      'chunk indexes) produced by the projection worker (bead-0772).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS derived_artifacts (
+  tenant_id         TEXT        NOT NULL,
+  workspace_id      TEXT        NOT NULL,
+  artifact_id       TEXT        NOT NULL,
+  kind              TEXT        NOT NULL,
+  run_id            TEXT        NOT NULL,
+  evidence_id       TEXT        NULL,
+  projector_version TEXT        NOT NULL,
+  retention_policy  TEXT        NOT NULL,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at        TIMESTAMPTZ NULL,
+  PRIMARY KEY (tenant_id, workspace_id, artifact_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_derived_artifacts_run ON derived_artifacts (tenant_id, workspace_id, run_id);',
+      'CREATE INDEX IF NOT EXISTS idx_derived_artifacts_expires ON derived_artifacts (expires_at) WHERE expires_at IS NOT NULL;',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_derived_artifacts_expires;',
+      'DROP INDEX IF EXISTS idx_derived_artifacts_run;',
+      'DROP TABLE IF EXISTS derived_artifacts;',
+    ],
+  },
+  {
+    version: 12,
+    id: '0012_expand_projection_checkpoints_table',
+    description:
+      'Creates projection_checkpoints table for at-least-once delivery tracking by the ' +
+      'derived-artifact projection worker (bead-0772).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS projection_checkpoints (
+  tenant_id                   TEXT        NOT NULL,
+  workspace_id                TEXT        NOT NULL,
+  run_id                      TEXT        NOT NULL,
+  last_processed_evidence_id  TEXT        NOT NULL,
+  last_processed_at           TIMESTAMPTZ NOT NULL,
+  projector_version           TEXT        NOT NULL,
+  updated_at                  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, workspace_id, run_id)
+);`,
+    ],
+    downSql: ['DROP TABLE IF EXISTS projection_checkpoints;'],
+  },
 ];

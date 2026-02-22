@@ -58,6 +58,8 @@ describe('SchemaMigrator', () => {
       '0008_expand_tenant_storage_tiers_table:global',
       '0009_expand_data_layer_indexes:global',
       '0010_expand_data_layer_fk_constraints:global',
+      '0011_expand_derived_artifacts_table:global',
+      '0012_expand_projection_checkpoints_table:global',
     ]);
   });
 
