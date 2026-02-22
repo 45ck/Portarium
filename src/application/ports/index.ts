@@ -47,3 +47,4 @@ export * from './credential-provider.js';
 export * from './machine-registry-store.js';
 export * from './query-cache.js';
 export * from './read-model-projector.js';
+export * from './machine-query-store.js';

@@ -29,6 +29,8 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   // Machine / agent identity plane — operators can send heartbeats; only admins can register
   'agent:heartbeat': ['admin', 'operator'],
   'machine-agent:register': ['admin'],
+  /** Read machines and agents — available to operators and auditors. */
+  'machine-agent:read': ['admin', 'operator', 'auditor'],
 };
 
 export function isAllowedWorkspaceAction(
