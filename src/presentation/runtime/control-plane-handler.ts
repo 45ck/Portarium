@@ -3,7 +3,10 @@ import { randomUUID } from 'node:crypto';
 
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
+import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
+import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
+import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import {
@@ -286,6 +289,46 @@ async function dispatchRoute(ctx: RequestContext): Promise<boolean> {
   return false;
 }
 
+/**
+ * Apply workspace-level rate limiting.
+ * Returns true when the request was rejected and a 429 response was already sent.
+ */
+async function applyWorkspaceRateLimit(ctx: RequestContext): Promise<boolean> {
+  const { deps, pathname, res, correlationId, traceContext } = ctx;
+  if (!deps.rateLimitStore) return false;
+
+  const rawId = decodeURIComponent(/^\/v1\/workspaces\/([^/]+)/.exec(pathname)?.[1] ?? '').trim();
+  if (!rawId) return false;
+
+  const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId(rawId) };
+  const result = await checkRateLimit({ rateLimitStore: deps.rateLimitStore }, scope);
+
+  if (!result.allowed) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/rate-limit-exceeded',
+        title: 'Too Many Requests',
+        status: 429,
+        detail: `Rate limit exceeded. Retry after ${result.retryAfterSeconds} seconds.`,
+        instance: pathname,
+        retryAfterSeconds: result.retryAfterSeconds,
+      },
+      correlationId,
+      traceContext,
+    );
+    return true;
+  }
+
+  // Record the allowed request against the window returned by the rate-limit check.
+  await deps.rateLimitStore.recordRequest({
+    scope,
+    window: result.usage.window,
+    nowIso: new Date().toISOString(),
+  });
+  return false;
+}
+
 async function handleRequest(
   deps: ControlPlaneDeps,
   req: IncomingMessage,
@@ -299,6 +342,8 @@ async function handleRequest(
     traceContext: normalizeTraceContext(req),
     pathname: new URL(req.url ?? '/', 'http://localhost').pathname,
   };
+
+  if (await applyWorkspaceRateLimit(ctx)) return;
 
   const handled = await dispatchRoute(ctx);
   if (handled) return;

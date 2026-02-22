@@ -142,7 +142,8 @@ export default tseslint.config(
   {
     files: ['**/*.test.ts'],
     rules: {
-      'max-lines-per-function': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      'max-lines': 'off',
+      'max-lines-per-function': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',

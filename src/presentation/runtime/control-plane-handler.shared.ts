@@ -12,6 +12,7 @@ import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
   AuthenticationPort,
   AuthorizationPort,
+  RateLimitStore,
   RunStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -39,6 +40,8 @@ export type ProblemDetails = Readonly<{
   status: number;
   detail?: string;
   instance?: string;
+  /** Seconds until the rate-limit window resets. Sets the HTTP Retry-After header when present. */
+  retryAfterSeconds?: number;
 }>;
 
 export type QueryError =
@@ -53,6 +56,8 @@ export type ControlPlaneDeps = Readonly<{
   authorization: AuthorizationPort;
   workspaceStore: WorkspaceStore;
   runStore: RunStore;
+  /** Optional rate-limit store; when absent, rate limiting is disabled. */
+  rateLimitStore?: RateLimitStore;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
@@ -160,6 +165,8 @@ export function respondProblem(
   res.setHeader('x-correlation-id', correlationId);
   res.setHeader('traceparent', traceContext.traceparent);
   if (traceContext.tracestate) res.setHeader('tracestate', traceContext.tracestate);
+  if (problem.retryAfterSeconds !== undefined)
+    res.setHeader('Retry-After', String(problem.retryAfterSeconds));
   res.end(JSON.stringify(problem));
 }
 
@@ -209,8 +216,7 @@ export function problemFromError(error: QueryError, instance: string): ProblemDe
 }
 
 export function computeETag(content: unknown): string {
-  const hash = createHash('sha256').update(JSON.stringify(content)).digest('hex').slice(0, 12);
-  return `"${hash}"`;
+  return `"${createHash('sha256').update(JSON.stringify(content)).digest('hex').slice(0, 12)}"`;
 }
 
 export function checkIfMatch(
@@ -218,9 +224,7 @@ export function checkIfMatch(
   currentETag: string,
 ): { ok: true } | { ok: false; error: PreconditionFailed } {
   const ifMatch = req.headers['if-match'];
-  if (!ifMatch) return { ok: true };
-  if (ifMatch === '*') return { ok: true };
-  if (ifMatch === currentETag) return { ok: true };
+  if (!ifMatch || ifMatch === '*' || ifMatch === currentETag) return { ok: true };
   return {
     ok: false,
     error: { kind: 'PreconditionFailed', message: 'ETag does not match.', ifMatch },

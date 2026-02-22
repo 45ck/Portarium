@@ -13,6 +13,7 @@ import {
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
+import { InMemoryRateLimitStore } from '../../infrastructure/rate-limiting/index.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 
 function buildAuthentication(): AuthenticationPort {
@@ -60,6 +61,7 @@ function buildAuthorization(): AuthorizationPort {
 export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
+  const rateLimitStore = new InMemoryRateLimitStore();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
@@ -68,7 +70,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const sqlClient = new NodePostgresSqlClient({ connectionString });
     const workspaceStore: WorkspaceStore = new PostgresWorkspaceStore(sqlClient);
     const runStore: RunStore = new PostgresRunStore(sqlClient);
-    return { authentication, authorization, workspaceStore, runStore };
+    return { authentication, authorization, workspaceStore, runStore, rateLimitStore };
   }
 
   const workspaceStore: WorkspaceStore = {
@@ -81,5 +83,5 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     saveRun: () => Promise.resolve(),
   };
 
-  return { authentication, authorization, workspaceStore, runStore };
+  return { authentication, authorization, workspaceStore, runStore, rateLimitStore };
 }
