@@ -195,12 +195,7 @@ export class PostgresRunStore implements RunStore, RunQueryStore {
       items.sort((a, b) => String(a.runId).localeCompare(String(b.runId)));
     }
 
-    return pageByCursor(
-      items,
-      (run) => String(run.runId),
-      pageLimit,
-      query.pagination.cursor,
-    );
+    return pageByCursor(items, (run) => String(run.runId), pageLimit, query.pagination.cursor);
   }
 }
 

@@ -15,10 +15,7 @@ import type {
   EmbeddingPort,
 } from '../../domain/derived-artifacts/retrieval-ports.js';
 import type { WorkspaceId } from '../../domain/primitives/index.js';
-import {
-  routeRetrievalQuery,
-  type RetrievalQueryRouterDeps,
-} from './retrieval-query-router.js';
+import { routeRetrievalQuery, type RetrievalQueryRouterDeps } from './retrieval-query-router.js';
 
 // ---------------------------------------------------------------------------
 // Stubs

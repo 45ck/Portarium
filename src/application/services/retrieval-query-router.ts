@@ -218,7 +218,9 @@ function semanticResultToHit(
     provenance: {
       workspaceId: r.provenance.workspaceId,
       runId: r.provenance.runId as string,
-      ...(r.provenance.evidenceId !== undefined ? { evidenceId: r.provenance.evidenceId as string } : {}),
+      ...(r.provenance.evidenceId !== undefined
+        ? { evidenceId: r.provenance.evidenceId as string }
+        : {}),
     },
   };
 }
