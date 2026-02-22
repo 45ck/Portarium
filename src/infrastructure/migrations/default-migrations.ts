@@ -276,4 +276,65 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
     ],
     downSql: ['DROP TABLE IF EXISTS projection_checkpoints;'],
   },
+  {
+    version: 13,
+    id: '0013_expand_machine_registrations_table',
+    description:
+      'Creates machine_registrations table for persistent OpenClaw gateway registration ' +
+      'and live heartbeat tracking (bead-0791).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS machine_registrations (
+  tenant_id          TEXT        NOT NULL,
+  machine_id         TEXT        NOT NULL,
+  workspace_id       TEXT        NOT NULL,
+  payload            JSONB       NOT NULL,
+  heartbeat_status   TEXT        NULL,
+  heartbeat_at       TIMESTAMPTZ NULL,
+  heartbeat_metrics  JSONB       NULL,
+  heartbeat_location JSONB       NULL,
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  registered_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, machine_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_machine_registrations_workspace ON machine_registrations (tenant_id, workspace_id);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_machine_registrations_workspace;',
+      'DROP TABLE IF EXISTS machine_registrations;',
+    ],
+  },
+  {
+    version: 14,
+    id: '0014_expand_agent_configs_table',
+    description:
+      'Creates agent_configs table for persistent OpenClaw agent configuration ' +
+      'and heartbeat tracking (bead-0791).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS agent_configs (
+  tenant_id        TEXT        NOT NULL,
+  agent_id         TEXT        NOT NULL,
+  machine_id       TEXT        NOT NULL,
+  workspace_id     TEXT        NOT NULL,
+  payload          JSONB       NOT NULL,
+  heartbeat_status TEXT        NULL,
+  heartbeat_at     TIMESTAMPTZ NULL,
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  registered_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, agent_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_agent_configs_machine ON agent_configs (tenant_id, machine_id);',
+      'CREATE INDEX IF NOT EXISTS idx_agent_configs_workspace ON agent_configs (tenant_id, workspace_id);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_agent_configs_workspace;',
+      'DROP INDEX IF EXISTS idx_agent_configs_machine;',
+      'DROP TABLE IF EXISTS agent_configs;',
+    ],
+  },
 ];

@@ -60,6 +60,8 @@ describe('SchemaMigrator', () => {
       '0010_expand_data_layer_fk_constraints:global',
       '0011_expand_derived_artifacts_table:global',
       '0012_expand_projection_checkpoints_table:global',
+      '0013_expand_machine_registrations_table:global',
+      '0014_expand_agent_configs_table:global',
     ]);
   });
 
