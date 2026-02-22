@@ -56,6 +56,8 @@ describe('SchemaMigrator', () => {
       '0006_expand_workflow_runs_projection_columns:workspace-b',
       '0007_expand_workspace_summary_table:global',
       '0008_expand_tenant_storage_tiers_table:global',
+      '0009_expand_data_layer_indexes:global',
+      '0010_expand_data_layer_fk_constraints:global',
     ]);
   });
 

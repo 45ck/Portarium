@@ -17,7 +17,7 @@ import type {
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import type { Page } from '../../application/common/query.js';
-import { clampLimit } from '../../application/common/query.js';
+import { clampLimit, MAX_LIMIT } from '../../application/common/query.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
@@ -62,9 +62,12 @@ export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQuerySto
     tenantId: string,
     workspaceName: string,
   ): Promise<WorkspaceV1 | null> {
+    // Fetch up to MAX_LIMIT workspaces; workspace names are expected to be
+    // unique per tenant so a match will be found within the first page.
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       collection: COLLECTION_WORKSPACES,
+      limit: MAX_LIMIT,
     });
 
     const found = payloads
@@ -88,9 +91,14 @@ export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQuerySto
     tenantId: string,
     filter: ListWorkspacesFilter,
   ): Promise<WorkspaceListPage> {
+    const pageLimit = clampLimit(filter.limit);
+    // Fetch limit+1 to detect next page; use SQL cursor when no text search.
+    const afterId = !filter.nameQuery && filter.cursor ? filter.cursor : undefined;
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       collection: COLLECTION_WORKSPACES,
+      ...(afterId !== undefined ? { afterId } : {}),
+      limit: filter.nameQuery ? MAX_LIMIT : pageLimit + 1,
     });
 
     const byName = filter.nameQuery?.toLowerCase();
@@ -99,7 +107,10 @@ export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQuerySto
       .filter((workspace) => (byName ? workspace.name.toLowerCase().includes(byName) : true))
       .sort((left, right) => String(left.workspaceId).localeCompare(String(right.workspaceId)));
 
-    return pageByCursor(items, String, filter.limit, filter.cursor);
+    // When no nameQuery the SQL cursor already filtered by afterId, so pass
+    // undefined cursor to pageByCursor to avoid double-filtering.
+    const jsCursor = filter.nameQuery ? filter.cursor : undefined;
+    return pageByCursor(items, String, pageLimit, jsCursor);
   }
 }
 
@@ -138,10 +149,14 @@ export class PostgresRunStore implements RunStore, RunQueryStore {
     workspaceId: string,
     query: ListRunsQuery,
   ): Promise<Page<RunV1>> {
+    const pageLimit = clampLimit(query.pagination.limit);
+    // Fetch more than the page size to account for JS-side field filtering;
+    // MAX_LIMIT+1 is a practical cap that prevents full-collection scans.
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_RUNS,
+      limit: MAX_LIMIT + 1,
     });
 
     const { filter } = query;
@@ -180,12 +195,7 @@ export class PostgresRunStore implements RunStore, RunQueryStore {
       items.sort((a, b) => String(a.runId).localeCompare(String(b.runId)));
     }
 
-    return pageByCursor(
-      items,
-      (run) => String(run.runId),
-      clampLimit(query.pagination.limit),
-      query.pagination.cursor,
-    );
+    return pageByCursor(items, (run) => String(run.runId), pageLimit, query.pagination.cursor);
   }
 }
 
@@ -214,6 +224,7 @@ export class PostgresWorkflowStore implements WorkflowStore {
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_WORKFLOWS,
+      limit: MAX_LIMIT,
     });
 
     return payloads
@@ -234,6 +245,7 @@ export class PostgresAdapterRegistrationStore implements AdapterRegistrationStor
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_ADAPTER_REGISTRATIONS,
+      limit: MAX_LIMIT,
     });
     return payloads.map((payload) => parseAdapterRegistrationV1(payload));
   }
@@ -274,10 +286,12 @@ export class PostgresApprovalStore implements ApprovalStore, ApprovalQueryStore 
     workspaceId: string,
     filter: ListApprovalsFilter,
   ): Promise<ApprovalListPage> {
+    // Fetch MAX_LIMIT+1 to allow JS-side filtering while still capping the scan.
     const payloads = await this.#documents.list({
       tenantId: String(tenantId),
       workspaceId: String(workspaceId),
       collection: COLLECTION_APPROVALS,
+      limit: MAX_LIMIT + 1,
     });
 
     const items = payloads

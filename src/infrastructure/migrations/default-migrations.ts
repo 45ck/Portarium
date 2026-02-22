@@ -167,4 +167,58 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
     ],
     downSql: ['DROP TABLE IF EXISTS tenant_storage_tiers;'],
   },
+  {
+    version: 9,
+    id: '0009_expand_data_layer_indexes',
+    description:
+      'Adds missing B-tree indexes on hot-path WHERE/ORDER BY columns in workflow_runs, ' +
+      'domain_documents, and workspace_summary (bead-nj7i).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      // domain_documents: (tenant_id, collection) is the most common scan path
+      'CREATE INDEX IF NOT EXISTS idx_domain_documents_collection ON domain_documents (tenant_id, collection);',
+      // domain_documents: order/filter by most-recently updated
+      'CREATE INDEX IF NOT EXISTS idx_domain_documents_updated_at ON domain_documents (tenant_id, collection, updated_at DESC);',
+      // workflow_runs: filter by workflow_id
+      'CREATE INDEX IF NOT EXISTS idx_workflow_runs_workflow_id ON workflow_runs (tenant_id, workflow_id) WHERE workflow_id IS NOT NULL;',
+      // workflow_runs: filter by initiating user
+      'CREATE INDEX IF NOT EXISTS idx_workflow_runs_user_id ON workflow_runs (tenant_id, initiated_by_user_id) WHERE initiated_by_user_id IS NOT NULL;',
+      // workflow_runs: order by created_at for time-based list queries
+      'CREATE INDEX IF NOT EXISTS idx_workflow_runs_created_at ON workflow_runs (tenant_id, created_at DESC);',
+      // workspace_summary: order by created_at
+      'CREATE INDEX IF NOT EXISTS idx_workspace_summary_created_at ON workspace_summary (tenant_id, created_at DESC);',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_workspace_summary_created_at;',
+      'DROP INDEX IF EXISTS idx_workflow_runs_created_at;',
+      'DROP INDEX IF EXISTS idx_workflow_runs_user_id;',
+      'DROP INDEX IF EXISTS idx_workflow_runs_workflow_id;',
+      'DROP INDEX IF EXISTS idx_domain_documents_updated_at;',
+      'DROP INDEX IF EXISTS idx_domain_documents_collection;',
+    ],
+  },
+  {
+    version: 10,
+    id: '0010_expand_data_layer_fk_constraints',
+    description:
+      'Adds FK constraints from workflow_runs, workspace_summary, and domain_documents ' +
+      'to workspace_registry with ON DELETE CASCADE (bead-nj7i). Constraints are added ' +
+      'NOT VALID to avoid blocking on existing data; run VALIDATE CONSTRAINT separately ' +
+      'for zero-downtime backfill verification.',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      'ALTER TABLE workflow_runs ADD CONSTRAINT fk_workflow_runs_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
+      'ALTER TABLE workspace_summary ADD CONSTRAINT fk_workspace_summary_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
+      'ALTER TABLE domain_documents ADD CONSTRAINT fk_domain_documents_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
+    ],
+    downSql: [
+      'ALTER TABLE domain_documents DROP CONSTRAINT IF EXISTS fk_domain_documents_tenant;',
+      'ALTER TABLE workspace_summary DROP CONSTRAINT IF EXISTS fk_workspace_summary_tenant;',
+      'ALTER TABLE workflow_runs DROP CONSTRAINT IF EXISTS fk_workflow_runs_tenant;',
+    ],
+  },
 ];
