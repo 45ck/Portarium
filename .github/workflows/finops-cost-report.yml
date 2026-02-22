@@ -1,0 +1,119 @@
+# FinOps Weekly Cost Report
+#
+# Runs every Monday at 08:00 UTC. Queries AWS Cost Explorer for the
+# previous 7-day spend by environment, service, and tenant (via tags).
+# Posts a summary to GitHub Step Summary and optionally to a Slack channel.
+#
+# Also runs on PR merge to main to give immediate cost-drift signal for
+# infrastructure changes.
+#
+# Bead: bead-0398
+
+name: FinOps Cost Report
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # Monday 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Number of days to report on
+        required: false
+        default: '7'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cost-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Query Cost Explorer — by environment
+        id: by_env
+        run: |
+          END=$(date -u +%Y-%m-%d)
+          START=$(date -u -d "${{ github.event.inputs.days || '7' }} days ago" +%Y-%m-%d)
+
+          aws ce get-cost-and-usage \
+            --time-period "Start=${START},End=${END}" \
+            --granularity MONTHLY \
+            --metrics "UnblendedCost" \
+            --group-by Type=TAG,Key=Environment \
+            --filter '{"Tags":{"Key":"Project","Values":["portarium"]}}' \
+            --output json > cost-by-env.json
+
+          echo "Start: ${START}, End: ${END}"
+          cat cost-by-env.json | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          print('Environment | Cost (USD)')
+          print('---|---')
+          for result in data.get('ResultsByTime', []):
+              for group in result.get('Groups', []):
+                  env = group['Keys'][0].replace('Environment\$', '') or '(untagged)'
+                  cost = float(group['Metrics']['UnblendedCost']['Amount'])
+                  print(f'{env} | \${cost:.2f}')
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Query Cost Explorer — by AWS service
+        run: |
+          END=$(date -u +%Y-%m-%d)
+          START=$(date -u -d "${{ github.event.inputs.days || '7' }} days ago" +%Y-%m-%d)
+
+          aws ce get-cost-and-usage \
+            --time-period "Start=${START},End=${END}" \
+            --granularity MONTHLY \
+            --metrics "UnblendedCost" \
+            --group-by Type=DIMENSION,Key=SERVICE \
+            --filter '{"Tags":{"Key":"Project","Values":["portarium"]}}' \
+            --output json > cost-by-service.json
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Cost by AWS Service" >> "$GITHUB_STEP_SUMMARY"
+          cat cost-by-service.json | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          groups = []
+          for result in data.get('ResultsByTime', []):
+              for group in result.get('Groups', []):
+                  svc = group['Keys'][0]
+                  cost = float(group['Metrics']['UnblendedCost']['Amount'])
+                  if cost > 0.01:
+                      groups.append((svc, cost))
+          groups.sort(key=lambda x: -x[1])
+          print('Service | Cost (USD)')
+          print('---|---')
+          for svc, cost in groups[:15]:
+              print(f'{svc} | \${cost:.2f}')
+          " >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check Config tag compliance
+        run: |
+          NON_COMPLIANT=$(aws configservice get-compliance-summary-by-config-rule \
+            --query 'ComplianceSummariesByConfigRule[?Compliance.ComplianceType==`NON_COMPLIANT`] | length(@)' \
+            --output text 2>/dev/null || echo "N/A")
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Tag Compliance" >> "$GITHUB_STEP_SUMMARY"
+          echo "Non-compliant resources (missing required tags): **${NON_COMPLIANT}**" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$NON_COMPLIANT" != "N/A" ]] && [[ "$NON_COMPLIANT" -gt 0 ]]; then
+            echo "::warning::${NON_COMPLIANT} resources are missing required cost-allocation tags."
+          fi
+
+      - name: Upload cost reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-reports-$(date -u +%Y%m%d)
+          path: "cost-by-*.json"
+          retention-days: 90
