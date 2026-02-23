@@ -12,7 +12,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev:all": "docker compose --profile baseline --profile runtime --profile auth --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",
+    "dev:all": "docker compose --profile baseline --profile runtime --profile auth --profile idp --profile authz --profile erp --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",
     "dev:seed": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-all.mjs",
     "dev:seed:openfga": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-openfga.mjs",
     "dev:seed:odoo": "docker compose --profile cockpit -f docker-compose.yml -f docker-compose.local.yml exec portarium-api node scripts/seed/seed-odoo.mjs",
