@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "portarium-dataset",
+          "value": "demo"
+        },
+        {
+          "name": "portarium-cockpit-query-cache-v1",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

@@ -92,7 +92,7 @@ export class ControlPlaneClient {
     const base = (config.baseUrl ?? DEFAULT_BASE_URL).trim();
     this.baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
     this.getBearerToken = config.getBearerToken ?? defaultGetBearerToken;
-    this.fetchImpl = config.fetchImpl ?? fetch;
+    this.fetchImpl = config.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
   }
 
   public listApprovals(workspaceId: string): Promise<CursorPage<ApprovalSummary>> {

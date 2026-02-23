@@ -21,6 +21,7 @@
     "smoke:stack:test": "GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 node node_modules/vitest/vitest.mjs run src/infrastructure/adapters/governed-run-smoke.test.ts",
     "cockpit:test:coverage": "npm run -w apps/cockpit test:coverage",
     "cockpit:dev": "npm run -w apps/cockpit dev",
+    "cockpit:dev:e2e": "npm run -w apps/cockpit dev:e2e",
     "cockpit:storybook": "npm run -w apps/cockpit storybook",
     "cockpit:build": "npm run -w apps/cockpit build",
     "cockpit:build-storybook": "npm run -w apps/cockpit build-storybook",
@@ -140,8 +141,10 @@
     "test": "node node_modules/vitest/vitest.mjs run",
     "test:watch": "node node_modules/vitest/vitest.mjs",
     "test:coverage": "node node_modules/vitest/vitest.mjs run --coverage",
+    "test:unit": "npm run test:coverage && npm run cockpit:test:coverage",
     "mutation": "stryker run",
-    "ci:pr": "npm run ci:gates && npm run ci:cockpit:api-drift && npm run migrate:ci && npm run typecheck && npm run lint && npm run format:check && npm run spell && npm run depcruise && npm run knip && npm run test:coverage && npm run cockpit:test:coverage && node scripts/ci/audit-high.mjs",
+    "e2e:install": "node node_modules/@playwright/test/cli.js install chromium",
+    "ci:pr": "npm run ci:gates && npm run ci:cockpit:api-drift && npm run migrate:ci && npm run typecheck && npm run lint && npm run format:check && npm run spell && npm run depcruise && npm run knip && npm run test:unit && npm run cockpit:build-storybook && npm run test:e2e:smoke && node scripts/ci/audit-high.mjs",
     "audit:high": "node scripts/ci/audit-high.mjs",
     "audit:licenses": "node scripts/ci/audit-licenses.mjs",
     "ci:security-gates": "npm run audit:high && npm run audit:licenses",
@@ -150,7 +153,7 @@
     "docs:lint": "npm run docs:spell && prettier --check \"README.md\" \"CONTRIBUTING.md\" \"docs/index.md\" \"docs/changelog.md\" \"docs/faq.md\" \"docs/getting-started/**/*.md\" \"docs/how-to/**/*.md\" \"docs/tutorials/**/*.md\" \"docs/reference/**/*.md\" \"docs/explanation/**/*.md\" \"docs/_meta/**/*.md\" \"docs/assets/**/*.md\"",
     "docs:assets:optimize": "npx svgo -rf docs/assets -o docs/assets && npx svgo -rf .github/assets -o .github/assets",
     "ab": "node scripts/ab.mjs",
-    "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium",
+    "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium --workers=1",
     "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13",
     "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium"
   },
@@ -216,5 +219,10 @@
     "ioredis": "^5.9.3",
     "jose": "^6.1.3",
     "pg": "^8.18.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "apps\\cockpit\\public"
+    ]
   }
 }

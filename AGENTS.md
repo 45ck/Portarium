@@ -29,10 +29,10 @@ For manual QA, exploratory testing, or UI exploration before writing tests, use 
 
 ```bash
 # Start the cockpit dev server first
-cd apps/cockpit && npx vite
+npm run cockpit:dev   # stable URL: http://cockpit.localhost:1355
 
 # Then in another terminal, use the wrapper:
-npm run ab -- open http://localhost:5173 --headed   # launch browser
+npm run ab -- open http://cockpit.localhost:1355 --headed   # launch browser
 npm run ab -- snapshot -i                           # get interactive elements with refs
 npm run ab -- click @e2                             # interact by ref
 npm run ab -- fill @e3 "test value"                 # fill inputs

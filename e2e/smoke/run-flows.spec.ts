@@ -151,8 +151,10 @@ test.describe('Evidence chain-of-trust', () => {
     await page.goto('/runs/run-2003');
     await page.getByRole('tab', { name: 'Evidence' }).click();
 
-    // Should see the payout reconciliation entry
-    await expect(page.getByText('Stripe payout reconciliation', { exact: false })).toBeVisible({
+    // Should see the payout reconciliation entry (multiple matches possible — just need one)
+    await expect(
+      page.getByText('Stripe payout reconciliation', { exact: false }).first(),
+    ).toBeVisible({
       timeout: 10_000,
     });
 
@@ -176,24 +178,28 @@ test.describe('Staleness and offline banner', () => {
     // Navigate to a page that uses useOfflineQuery (approvals page)
     await page.goto('/approvals');
 
-    // Wait for data to load (no offline banner visible in nominal state)
-    // The OfflineSyncBanner only renders when isOffline || isStaleData || pendingCount > 0
-    // In nominal online state it should not be visible.
+    // Wait for the triage deck to be ready (data fully loaded from MSW)
+    await expect(page.getByTitle('Approve (A)')).toBeVisible({ timeout: 10_000 });
+
+    // No offline banner in nominal state
     const offlineBanner = page.getByText('Offline mode active');
     await expect(offlineBanner)
-      .not.toBeVisible({ timeout: 5_000 })
+      .not.toBeVisible({ timeout: 3_000 })
       .catch(() => {
         // Banner may already be showing from previous data state — that's ok for this test
       });
 
-    // Simulate going offline — triggers window 'offline' event in the page
+    // Simulate going offline. Playwright's CDP-level setOffline doesn't always fire
+    // the DOM offline event, so we dispatch it explicitly as well.
     await context.setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 
     // OfflineSyncBanner should now show
     await expect(page.getByText('Offline mode active')).toBeVisible({ timeout: 5_000 });
 
-    // Restore online
+    // Restore online — dispatch DOM event explicitly for symmetry
     await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
 
     // Banner should clear once connection is restored and data refetches
     await expect(page.getByText('Offline mode active')).not.toBeVisible({ timeout: 10_000 });
@@ -205,15 +211,17 @@ test.describe('Staleness and offline banner', () => {
     // Wait for the runs list to load (at least one run visible)
     await expect(page.getByText('run-2002', { exact: false })).toBeVisible({ timeout: 10_000 });
 
-    // Go offline
+    // Go offline — dispatch DOM event explicitly alongside CDP-level block
     await context.setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 
     // The entity list shell renders OfflineSyncBanner in both header and body
     // when offlineMeta.isOffline is true
     await expect(page.getByText('Offline mode active').first()).toBeVisible({ timeout: 5_000 });
 
-    // Restore
+    // Restore — dispatch DOM event explicitly
     await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(page.getByText('Offline mode active').first()).not.toBeVisible({
       timeout: 10_000,
     });
