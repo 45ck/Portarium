@@ -1,3 +1,4 @@
+export * from './approval-audit-events-v1.js';
 export * from './canonical-json.js';
 export * from './evidence-chain-v1.js';
 export * from './evidence-durability-policy-v1.js';
