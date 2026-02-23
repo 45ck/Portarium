@@ -15,9 +15,9 @@ declare module 'ajv' {
   }
   class Ajv {
     constructor(options?: AjvOptions);
-    compile<T = unknown>(schema: Record<string, unknown>): ValidateFunction<T>;
-    validate(schema: Record<string, unknown> | string, data: unknown): boolean;
-    addSchema(schema: Record<string, unknown>, key?: string): this;
+    compile<T = unknown>(schema: object): ValidateFunction<T>;
+    validate(schema: object | string, data: unknown): boolean;
+    addSchema(schema: object, key?: string): this;
     addFormat(name: string, format: { validate: (data: string) => boolean } | RegExp): this;
     addKeyword(definition: Record<string, unknown>): this;
     errors?: Array<{ message?: string; instancePath?: string }> | null;

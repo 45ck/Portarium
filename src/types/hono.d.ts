@@ -4,7 +4,7 @@
  * This stub provides the subset used in this codebase (control-plane handler).
  */
 declare module 'hono' {
-  export type Env = { Variables: Record<string, unknown>; Bindings: Record<string, unknown> };
+  export type Env = { Variables: Record<string, unknown>; Bindings: object };
   export type Next = () => Promise<void>;
 
   export type Context<E extends Env = Env> = {
@@ -12,7 +12,7 @@ declare module 'hono' {
       header(name: string): string | undefined;
       json<T = unknown>(): Promise<T>;
       query(name: string): string | undefined;
-      param(name: string): string | undefined;
+      param(name: string): string;
       url: string;
       method: string;
       path: string;
