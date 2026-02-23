@@ -42,10 +42,10 @@ DerivedArtifactProjectorService
 
 ### Lag SLA table
 
-| Scenario | p50 target | p95 target | p99 target |
-|----------|-----------|-----------|-----------|
-| Normal operation (steady state) | ≤ 500 ms | ≤ 2 000 ms | ≤ 5 000 ms |
-| Burst (100 events in < 1 s) | ≤ 2 000 ms | ≤ 8 000 ms | ≤ 15 000 ms |
+| Scenario                         | p50 target  | p95 target  | p99 target  |
+| -------------------------------- | ----------- | ----------- | ----------- |
+| Normal operation (steady state)  | ≤ 500 ms    | ≤ 2 000 ms  | ≤ 5 000 ms  |
+| Burst (100 events in < 1 s)      | ≤ 2 000 ms  | ≤ 8 000 ms  | ≤ 15 000 ms |
 | Post-restart checkpoint recovery | ≤ 10 000 ms | ≤ 30 000 ms | ≤ 60 000 ms |
 
 ### Measurement
@@ -68,24 +68,24 @@ search), `graph` (entity traversal), and `hybrid` (vector + graph + keyword).
 
 ### Latency SLA table
 
-| Strategy | topK | p50 target | p95 target | p99 target |
-|----------|------|-----------|-----------|-----------|
-| `semantic` | 10 | ≤ 50 ms | ≤ 200 ms | ≤ 500 ms |
-| `semantic` | 100 | ≤ 150 ms | ≤ 500 ms | ≤ 1 000 ms |
-| `graph` | depth 2 | ≤ 100 ms | ≤ 400 ms | ≤ 800 ms |
-| `graph` | depth 4 | ≤ 500 ms | ≤ 2 000 ms | ≤ 4 000 ms |
-| `hybrid` | 10 | ≤ 200 ms | ≤ 800 ms | ≤ 2 000 ms |
+| Strategy   | topK    | p50 target | p95 target | p99 target |
+| ---------- | ------- | ---------- | ---------- | ---------- |
+| `semantic` | 10      | ≤ 50 ms    | ≤ 200 ms   | ≤ 500 ms   |
+| `semantic` | 100     | ≤ 150 ms   | ≤ 500 ms   | ≤ 1 000 ms |
+| `graph`    | depth 2 | ≤ 100 ms   | ≤ 400 ms   | ≤ 800 ms   |
+| `graph`    | depth 4 | ≤ 500 ms   | ≤ 2 000 ms | ≤ 4 000 ms |
+| `hybrid`   | 10      | ≤ 200 ms   | ≤ 800 ms   | ≤ 2 000 ms |
 
 Latencies are measured at the `RetrievalQueryRouter` boundary (wall-clock
 time from router entry to first result byte returned).
 
 ### Throughput SLA
 
-| Strategy | Minimum sustained QPS (per workspace) |
-|----------|--------------------------------------|
-| `semantic` | 20 QPS |
-| `graph` | 10 QPS |
-| `hybrid` | 5 QPS |
+| Strategy   | Minimum sustained QPS (per workspace) |
+| ---------- | ------------------------------------- |
+| `semantic` | 20 QPS                                |
+| `graph`    | 10 QPS                                |
+| `hybrid`   | 5 QPS                                 |
 
 ### Rollback trigger
 
@@ -99,20 +99,20 @@ incident.
 
 ### Embedding cost ceiling
 
-| Metric | Ceiling | Action on breach |
-|--------|---------|-----------------|
-| Tokens per evidence entry | ≤ 8 192 tokens | Truncate + log warning |
-| OpenAI embedding cost per 1 000 entries | ≤ USD 0.10 | Alert on-call; pause projector if > 2× |
-| Monthly embedding spend per workspace | ≤ USD 50 | Hard cap via CloudWatch/Datadog alarm |
+| Metric                                  | Ceiling        | Action on breach                       |
+| --------------------------------------- | -------------- | -------------------------------------- |
+| Tokens per evidence entry               | ≤ 8 192 tokens | Truncate + log warning                 |
+| OpenAI embedding cost per 1 000 entries | ≤ USD 0.10     | Alert on-call; pause projector if > 2× |
+| Monthly embedding spend per workspace   | ≤ USD 50       | Hard cap via CloudWatch/Datadog alarm  |
 
 ### Storage cost ceiling
 
-| Component | Ceiling per workspace | Action on breach |
-|-----------|-----------------------|-----------------|
-| pgvector rows | 10 million entries | Alert at 80%; block new projections at 100% |
-| Neo4j/JanusGraph nodes | 5 million nodes | Alert at 80%; block new projections at 100% |
-| Neo4j/JanusGraph edges | 20 million edges | Alert at 80%; block new projections at 100% |
-| PostgreSQL registry rows | 50 million entries | Alert at 80%; archive old checkpoints |
+| Component                | Ceiling per workspace | Action on breach                            |
+| ------------------------ | --------------------- | ------------------------------------------- |
+| pgvector rows            | 10 million entries    | Alert at 80%; block new projections at 100% |
+| Neo4j/JanusGraph nodes   | 5 million nodes       | Alert at 80%; block new projections at 100% |
+| Neo4j/JanusGraph edges   | 20 million edges      | Alert at 80%; block new projections at 100% |
+| PostgreSQL registry rows | 50 million entries    | Alert at 80%; archive old checkpoints       |
 
 ### Monthly budget alarm
 
@@ -127,13 +127,13 @@ A CloudWatch/Datadog composite alarm must be configured at:
 
 ## 4. Rollback Triggers
 
-| # | Trigger | Severity | Scope | Action |
-|---|---------|----------|-------|--------|
-| R1 | Projection lag p95 > 2× SLA for 5 min | High | L1: projection worker | Stop JetStream worker; drain in-flight; re-enable after fix |
-| R2 | Retrieval p95 latency > 3× SLA for 5 min | High | L1: retrieval endpoint | Disable `/v1/retrieval/query`; restore after fix |
-| R3 | Cross-workspace artifact leak detected | Critical | L2: full retrieval system | Disable all retrieval endpoints; audit workspace_id scoping; re-enable after fix and audit |
-| R4 | Embedding cost breach > 2× monthly ceiling | High | L1: embedding calls | Pause embedding projections for breaching workspace; alert finance |
-| R5 | Contract test suite failure in CI | High | L2: deploy gate | Block deployment; fix contract tests before re-enabling |
+| #   | Trigger                                    | Severity | Scope                     | Action                                                                                     |
+| --- | ------------------------------------------ | -------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| R1  | Projection lag p95 > 2× SLA for 5 min      | High     | L1: projection worker     | Stop JetStream worker; drain in-flight; re-enable after fix                                |
+| R2  | Retrieval p95 latency > 3× SLA for 5 min   | High     | L1: retrieval endpoint    | Disable `/v1/retrieval/query`; restore after fix                                           |
+| R3  | Cross-workspace artifact leak detected     | Critical | L2: full retrieval system | Disable all retrieval endpoints; audit workspace_id scoping; re-enable after fix and audit |
+| R4  | Embedding cost breach > 2× monthly ceiling | High     | L1: embedding calls       | Pause embedding projections for breaching workspace; alert finance                         |
+| R5  | Contract test suite failure in CI          | High     | L2: deploy gate           | Block deployment; fix contract tests before re-enabling                                    |
 
 ### L1 rollback steps (projection worker)
 
@@ -172,27 +172,27 @@ MVP is considered shippable:
 
 ## 6. Required Artifacts
 
-| Category | Path |
-|----------|------|
-| Domain contracts | `src/domain/derived-artifacts/retrieval-ports.ts` |
-| Domain model | `src/domain/derived-artifacts/derived-artifact-v1.ts` |
-| Projector service | `src/application/services/derived-artifact-projector.ts` |
-| Retrieval query router | `src/application/services/retrieval-query-router.ts` |
-| JetStream projection worker | `src/infrastructure/eventing/jetstream-projection-worker.ts` |
-| pgvector adapter | `src/infrastructure/pgvector/pgvector-semantic-index-adapter.ts` |
-| JanusGraph adapter | `src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.ts` |
-| Derived artifact registry | `src/infrastructure/postgresql/postgres-derived-artifact-registry.ts` |
-| Projector tests | `src/application/services/derived-artifact-projector.test.ts` |
-| Retrieval router tests | `src/application/services/retrieval-query-router.test.ts` |
-| Redactor tests | `src/application/services/derived-artifact-redactor.test.ts` |
-| JetStream worker tests | `src/infrastructure/eventing/jetstream-projection-worker.test.ts` |
-| pgvector adapter tests | `src/infrastructure/pgvector/pgvector-semantic-index-adapter.test.ts` |
-| JanusGraph adapter tests | `src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.test.ts` |
-| Postgres registry tests | `src/infrastructure/postgresql/postgres-derived-artifact-registry.test.ts` |
+| Category                    | Path                                                                                      |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| Domain contracts            | `src/domain/derived-artifacts/retrieval-ports.ts`                                         |
+| Domain model                | `src/domain/derived-artifacts/derived-artifact-v1.ts`                                     |
+| Projector service           | `src/application/services/derived-artifact-projector.ts`                                  |
+| Retrieval query router      | `src/application/services/retrieval-query-router.ts`                                      |
+| JetStream projection worker | `src/infrastructure/eventing/jetstream-projection-worker.ts`                              |
+| pgvector adapter            | `src/infrastructure/pgvector/pgvector-semantic-index-adapter.ts`                          |
+| JanusGraph adapter          | `src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.ts`                     |
+| Derived artifact registry   | `src/infrastructure/postgresql/postgres-derived-artifact-registry.ts`                     |
+| Projector tests             | `src/application/services/derived-artifact-projector.test.ts`                             |
+| Retrieval router tests      | `src/application/services/retrieval-query-router.test.ts`                                 |
+| Redactor tests              | `src/application/services/derived-artifact-redactor.test.ts`                              |
+| JetStream worker tests      | `src/infrastructure/eventing/jetstream-projection-worker.test.ts`                         |
+| pgvector adapter tests      | `src/infrastructure/pgvector/pgvector-semantic-index-adapter.test.ts`                     |
+| JanusGraph adapter tests    | `src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.test.ts`                |
+| Postgres registry tests     | `src/infrastructure/postgresql/postgres-derived-artifact-registry.test.ts`                |
 | Retrieval integration tests | `src/application/integration/retrieval-replay-idempotency-provenance.integration.test.ts` |
-| Domain model tests | `src/domain/derived-artifacts/derived-artifact-v1.test.ts` |
-| Domain ports tests | `src/domain/derived-artifacts/retrieval-ports.test.ts` |
-| ADR-0079 | `docs/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md` |
-| Campaign how-to | `docs/how-to/derived-artifacts-retrieval-campaign.md` |
-| License gate | `docs/compliance/vector-graph-embedding-license-gate.md` |
-| Release readiness spec | `.specify/specs/retrieval-release-readiness-v1.md` |
+| Domain model tests          | `src/domain/derived-artifacts/derived-artifact-v1.test.ts`                                |
+| Domain ports tests          | `src/domain/derived-artifacts/retrieval-ports.test.ts`                                    |
+| ADR-0079                    | `docs/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md`                           |
+| Campaign how-to             | `docs/how-to/derived-artifacts-retrieval-campaign.md`                                     |
+| License gate                | `docs/compliance/vector-graph-embedding-license-gate.md`                                  |
+| Release readiness spec      | `.specify/specs/retrieval-release-readiness-v1.md`                                        |
