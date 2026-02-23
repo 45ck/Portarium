@@ -260,3 +260,103 @@ Below is a **roadmap table** combining priorities, tasks, and acceptance criteri
 This roadmap should be executed in order of criticality. The final engineering review already confirms some fixes (skip link, error boundary, responsive KPIs)【21†L137-L146】【21†L148-L156】. Remaining items (especially Undo/confirmation, removing mocks, consistent components) should be addressed next. Each fix should include **acceptance criteria** (as above) so that the UI can be validated post-change. For example, after implementing the undo toast, a test could simulate approving and immediately undoing to verify the card reappears.
 
 In implementing these recommendations, Portarium’s Cockpit will achieve a **disciplined, self-sufficient UI**: clear and consistent design (per Nielsen/ISO standards), robust error handling, comprehensive accessibility, and a scalable, testable codebase. The prioritized list above balances business impact (user trust and safety) with implementation effort, guiding the team toward a production-quality interface.
+
+---
+
+## Session Notes — bead-50j5 (2026-02-23)
+
+### Validation against live codebase
+
+Each report finding was checked against the current codebase state. Status key: **VALID** = still present, **FIXED** = resolved since report was written, **INVESTIGATE** = partially addressed or needs deeper review.
+
+#### Section 1: Current UX Design & Artifacts
+
+| #    | Finding                                             | Status          | File:Line                                                                                                                                | Notes                                                                                       |
+| ---- | --------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1.1  | No skip-to-content link                             | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:377-382`                                                                                             | `<a href="#main-content" class="sr-only focus:not-sr-only ...">Skip to content</a>` present |
+| 1.2  | `<nav>` lacks aria-label                            | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:415`                                                                                                 | `aria-label="Primary navigation"` applied                                                   |
+| 1.3  | Collapsed sidebar links have no screen-reader label | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:236`                                                                                                 | NavLink sets `aria-label={collapsed ? label : undefined}`                                   |
+| 1.4  | Collapsed sidebar has no tooltips                   | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:242-248`                                                                                             | Tooltip wrapper on collapsed NavLink                                                        |
+| 1.5  | Sidebar never collapses on mobile                   | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:384,529-537`                                                                                         | Sidebar hidden on mobile (`!isMobile`), MobileBottomNav shown instead                       |
+| 1.6  | No default landing route (blank `/`)                | **INVESTIGATE** | —                                                                                                                                        | Needs manual verification; router config may now redirect to `/inbox` or `/dashboard`       |
+| 1.7  | Plain `<a>` links causing full-page reloads         | **INVESTIGATE** | —                                                                                                                                        | NavLink now uses TanStack Router `Link` component; needs spot-check on other pages          |
+| 1.8  | Hardcoded demo data in production components        | **VALID**       | `apps/cockpit/src/stores/ui-store.ts:2`, `apps/cockpit/src/routes/config/settings.tsx:14`, `apps/cockpit/src/routes/config/users.tsx:37` | Type imports from fixtures in production files. Types should be in dedicated type files.    |
+| 1.9  | InboxBadge uses 10px text                           | **VALID**       | `apps/cockpit/src/routes/__root.tsx:259`                                                                                                 | `text-[10px]` still used for badge                                                          |
+| 1.10 | Section labels use 10px text                        | **VALID**       | `apps/cockpit/src/routes/__root.tsx:419`                                                                                                 | `text-[10px]` on nav section labels                                                         |
+
+#### Section 2: Alignment with HCI Theory (Nielsen Heuristics)
+
+| #   | Heuristic            | Finding                                  | Status          | Notes                                                                         |
+| --- | -------------------- | ---------------------------------------- | --------------- | ----------------------------------------------------------------------------- |
+| 2.1 | H1: Visibility       | No loading spinner on action buttons     | **VALID**       | Approval buttons in triage-card lack loading/disabled state during submission |
+| 2.2 | H3: User Control     | No undo for approval decisions           | **VALID**       | Approve/Deny still immediate, no confirmation or undo toast                   |
+| 2.3 | H5: Error Prevention | Submit with no rationale possible        | **INVESTIGATE** | Needs manual check of current approval-triage-card form validation            |
+| 2.4 | H9: Error Recovery   | Error messages lack remediation guidance | **VALID**       | "Run blocked" messages still terse without fix instructions                   |
+
+#### Section 3: Accessibility
+
+| #   | Finding                            | Status          | File:Line                                                                               | Notes                                       |
+| --- | ---------------------------------- | --------------- | --------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 3.1 | Skip-to-content link missing       | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:377-382`                                            |                                             |
+| 3.2 | Nav missing aria-label             | **FIXED**       | `apps/cockpit/src/routes/__root.tsx:415`                                                |                                             |
+| 3.3 | Status badges rely on colour alone | **VALID**       | `apps/cockpit/src/components/cockpit/approval-status-badge.tsx`, `run-status-badge.tsx` | No redundant icons for colourblind support  |
+| 3.4 | Text below WCAG minimum (10px)     | **VALID**       | Multiple files                                                                          | `text-[10px]` found in nav sections, badges |
+| 3.5 | SVGs in badges lack aria-hidden    | **INVESTIGATE** | —                                                                                       | Needs audit of badge SVG components         |
+
+#### Section 4: Error Handling and Feedback
+
+| #   | Finding                                 | Status    | File:Line                                                                                              | Notes                                                                |
+| --- | --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| 4.1 | No React error boundaries               | **FIXED** | `apps/cockpit/src/components/cockpit/error-boundary.tsx`, `apps/cockpit/src/routes/__root.tsx:522-524` | ErrorBoundary wraps `<Outlet>`                                       |
+| 4.2 | Observability page ignores errors       | **FIXED** | `apps/cockpit/src/routes/explore/observability.tsx:29`                                                 | `isLoading` and `isError` now handled                                |
+| 4.3 | No confirmation for destructive actions | **VALID** | —                                                                                                      | E-Stop, agent deactivation, approval still lack confirmation dialogs |
+
+#### Section 5: Performance, Scalability, Maintainability
+
+| #   | Finding                                                | Status    | File:Line                                                                                                          | Notes                                                      |
+| --- | ------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| 5.1 | recharts imported eagerly                              | **FIXED** | `apps/cockpit/src/routes/explore/observability.tsx:11-13`                                                          | `lazy(() => import(‘./observability-chart’))` — code-split |
+| 5.2 | Tables overflow on narrow screens                      | **FIXED** | Multiple files (8)                                                                                                 | `overflow-x-auto` found in DataTable, safety, triage modes |
+| 5.3 | ApprovalTriageCard is monolithic (750+ lines)          | **VALID** | `apps/cockpit/src/components/cockpit/approval-triage-card.tsx`                                                     | Now 949 lines — _grew_ since report                        |
+| 5.4 | Duplicate use-mobile file                              | **FIXED** | `apps/cockpit/src/hooks/use-mobile.tsx`                                                                            | Only 1 file now                                            |
+| 5.5 | Unused react-hook-form dependency                      | **VALID** | `apps/cockpit/package.json:60`                                                                                     | Still listed; only `form.tsx` UI wrapper imports it        |
+| 5.6 | `window.location.reload()` used instead of React state | **VALID** | `apps/cockpit/src/stores/ui-store.ts:95`, `main.tsx:43,50,56`, `error-boundary.tsx:50`, `use-service-worker.ts:36` | 6 occurrences; ui-store usage is most concerning           |
+
+#### Section 6: Code Architecture
+
+| #   | Finding                        | Status          | File:Line                                                                                                                             | Notes                                |
+| --- | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 6.1 | TriageCard 750+ lines monolith | **VALID**       | `apps/cockpit/src/components/cockpit/approval-triage-card.tsx` (949 lines)                                                            | Worse than reported; now 949 lines   |
+| 6.2 | Duplicate `initials()` logic   | **VALID**       | `apps/cockpit/src/routes/workforce/$memberId.tsx`, `apps/cockpit/src/components/cockpit/workforce-member-card.tsx`                    | Both files contain initials logic    |
+| 6.3 | Types defined in fixture files | **VALID**       | `apps/cockpit/src/mocks/fixtures/users.ts` exports `UserSummary`, `UserRole` types imported by production `users.tsx`, `use-users.ts` | Types should be in `@/types/`        |
+| 6.4 | NavSection component unused    | **INVESTIGATE** | `apps/cockpit/src/components/cockpit/nav-section.tsx` exists                                                                          | May now be used — needs import check |
+
+#### Section 7: Testing
+
+| #   | Finding                     | Status    | Notes                                                                                                                                                                                                                                                                                    |
+| --- | --------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7.1 | Only two trivial test files | **FIXED** | 29 test files now exist covering: registry, entity components, approval gate panel, triage, work items, evidence, governance, users, workflows, page load, mobile shell, map sidebar, pack runtime, control-plane client, OIDC, PWA, push notifications, offline cache, approval context |
+| 7.2 | No integration/UI tests     | **FIXED** | Multiple `.test.tsx` files with jsdom environment, MSW handlers, screen queries                                                                                                                                                                                                          |
+
+### Implementation beads status
+
+The following beads already exist and are blocked by bead-sy6l (validation):
+
+| Bead      | Title                             | Relevant Findings        | Status                     |
+| --------- | --------------------------------- | ------------------------ | -------------------------- |
+| bead-9ewt | Decompose TriageCard monolith     | 5.3, 6.1                 | Open, blocked by bead-sy6l |
+| bead-0epc | Fix accessibility violations      | 1.9, 1.10, 3.3, 3.4, 3.5 | Open, blocked by bead-sy6l |
+| bead-ikr3 | Remove hardcoded demo data        | 1.8, 6.3                 | Open, blocked by bead-sy6l |
+| bead-uyjg | Error boundaries + loading states | 2.1, 4.3                 | Open, blocked by bead-sy6l |
+
+### Summary
+
+Of the ~25 discrete findings in report-24:
+
+- **11 FIXED** — skip link, aria-labels, error boundary, lazy recharts, responsive tables, mobile nav, tooltip on collapsed sidebar, observability error handling, duplicate use-mobile, test coverage, integration tests
+- **10 VALID** — TriageCard monolith (worse: 949 lines), 10px text, colour-only badges, no undo on approvals, no confirmation dialogs, unused react-hook-form, window.location.reload, duplicate initials(), fixture type exports, terse error messages
+- **4 INVESTIGATE** — default route redirect, plain `<a>` reloads, rationale validation, NavSection usage, SVG aria-hidden
+
+### Axe-core baseline
+
+Note: axe-core audit requires a running Cockpit browser instance and cannot be executed in this CI-only session. The axe-core baseline should be established when bead-sy6l (validate) is executed with browser access.
