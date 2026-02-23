@@ -1031,3 +1031,6 @@ ywee
 
 # JWT test fixture fragments (oidc-pkce-auth tests)
 onlyonepart
+
+# Data layer ADR (bead-6i3j)
+savepoints
