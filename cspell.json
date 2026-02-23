@@ -48,7 +48,8 @@
     "JanusGraph",
     "AROA",
     "noapp",
-    "noexec"
+    "noexec",
+    "onlyonepart"
   ],
   "ignorePaths": [
     "dist/**",
