@@ -4,6 +4,7 @@ import type {
   OpenClawManagementBridgePort,
 } from '../../application/ports/openclaw-management-bridge-port.js';
 import type { AgentId, MachineId, TenantId } from '../../domain/primitives/index.js';
+import { describeNetworkError, mapGatewayResponse } from './openclaw-http-error-policy.js';
 
 type FetchImpl = typeof fetch;
 type SleepFn = (ms: number) => Promise<void>;
@@ -79,9 +80,9 @@ export class OpenClawManagementBridge implements OpenClawManagementBridgePort {
         }),
         body: JSON.stringify({ capabilities }),
       });
-      return interpretManagementResponse(response, 'syncAgentRegistration');
+      return mapGatewayResponse(response, 'syncAgentRegistration');
     } catch (error) {
-      return { ok: false, reason: describeError(error) };
+      return { ok: false, reason: describeNetworkError(error) };
     }
   }
 
@@ -103,9 +104,9 @@ export class OpenClawManagementBridge implements OpenClawManagementBridgePort {
       });
       // 404 on DELETE is idempotent success — the agent is already absent.
       if (response.status === 404) return { ok: true };
-      return interpretManagementResponse(response, 'deregisterAgent');
+      return mapGatewayResponse(response, 'deregisterAgent');
     } catch (error) {
-      return { ok: false, reason: describeError(error) };
+      return { ok: false, reason: describeNetworkError(error) };
     }
   }
 
@@ -167,33 +168,6 @@ export class OpenClawManagementBridge implements OpenClawManagementBridgePort {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function interpretManagementResponse(response: Response, operation: string): BridgeOperationResult {
-  if (response.ok) return { ok: true };
-
-  if (response.status === 401 || response.status === 403) {
-    return {
-      ok: false,
-      reason: `Gateway denied ${operation}: authorization failure (HTTP ${response.status}).`,
-    };
-  }
-  if (response.status === 409) {
-    return { ok: false, reason: `Gateway conflict during ${operation} (HTTP 409).` };
-  }
-  if (response.status === 422) {
-    return { ok: false, reason: `Gateway rejected ${operation} payload as invalid (HTTP 422).` };
-  }
-  if (response.status >= 500) {
-    return {
-      ok: false,
-      reason: `Gateway internal error during ${operation} (HTTP ${response.status}).`,
-    };
-  }
-  return {
-    ok: false,
-    reason: `Unexpected gateway response for ${operation} (HTTP ${response.status}).`,
-  };
-}
-
 async function parseAgentStatusResponse(response: Response): Promise<AgentGatewayStatus> {
   if (response.status === 404) return 'unregistered';
   if (!response.ok) return 'unknown';
@@ -211,14 +185,6 @@ async function parseAgentStatusResponse(response: Response): Promise<AgentGatewa
   } catch {
     return 'unknown';
   }
-}
-
-function describeError(error: unknown): string {
-  if (error instanceof Error) {
-    if (error.name === 'AbortError') return 'Management bridge request timed out.';
-    return error.message;
-  }
-  return 'Unknown error contacting management bridge.';
 }
 
 function normalizeBaseUrl(value: string): string {

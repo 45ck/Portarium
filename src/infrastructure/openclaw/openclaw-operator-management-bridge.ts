@@ -17,6 +17,7 @@ import type {
   OpenClawManagementBridgePort,
 } from '../../application/ports/openclaw-management-bridge-port.js';
 import type { AgentId, MachineId, TenantId } from '../../domain/primitives/index.js';
+import { describeNetworkError, mapGatewayResponse } from './openclaw-http-error-policy.js';
 
 export type OpenClawOperatorManagementBridgeConfig = Readonly<{
   /**
@@ -69,16 +70,9 @@ export class OpenClawOperatorManagementBridge implements OpenClawManagementBridg
         },
         body: JSON.stringify({ capabilities }),
       });
-      if (response.ok) return { ok: true };
-      return {
-        ok: false,
-        reason: `OpenClaw operator rejected sync with status ${response.status}.`,
-      };
+      return mapGatewayResponse(response, 'syncAgentRegistration');
     } catch (error) {
-      return {
-        ok: false,
-        reason: error instanceof Error ? error.message : 'Unknown network error.',
-      };
+      return { ok: false, reason: describeNetworkError(error) };
     }
   }
 
@@ -95,15 +89,9 @@ export class OpenClawOperatorManagementBridge implements OpenClawManagementBridg
       });
       // 404 is treated as success — agent already absent, deregistration is idempotent.
       if (response.ok || response.status === 404) return { ok: true };
-      return {
-        ok: false,
-        reason: `OpenClaw operator rejected deregistration with status ${response.status}.`,
-      };
+      return mapGatewayResponse(response, 'deregisterAgent');
     } catch (error) {
-      return {
-        ok: false,
-        reason: error instanceof Error ? error.message : 'Unknown network error.',
-      };
+      return { ok: false, reason: describeNetworkError(error) };
     }
   }
 
