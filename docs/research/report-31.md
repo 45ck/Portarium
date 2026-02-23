@@ -302,15 +302,15 @@ By following these practices and implementing the above changes, Portarium will 
 
 Re-verified all open findings against current main branch.
 
-| Finding               | Status            | Evidence                                                                                                    | Closed By            |
-| --------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- | -------------------- |
-| Regex HTTP routing    | **RESOLVED**      | bead-e1bh closed; routing refactored away from regex pattern dispatch                                       | bead-e1bh (closed)   |
-| In-memory stub defaults | **RESOLVED**    | bead-yz3x closed; `store-bootstrap-gate.ts` added; `DEV_STUB_STORES=true` required for stubs; fail-fast enforced | bead-yz3x (closed)   |
-| Rate-limiting         | **RESOLVED**      | Redis-backed + in-memory fallback with fail-open; bead-dsnp closed                                         | bead-dsnp (closed)   |
-| Distributed caching   | IN PROGRESS       | bead-mvuv claimed by m5; Redis + in-memory cache-aside being implemented                                    | bead-mvuv (open, m5) |
-| Raw Error responses   | CONFIRMED NON-ISSUE | ProblemDetails pattern consistently used throughout handlers                                              | —                    |
-| Magic type strings    | LOW               | Test-only; production uses typed constants                                                                  | —                    |
-| Coverage artifact     | RESOLVED          | CI uploads coverage artifact on every PR                                                                    | —                    |
-| Argo canary smoke     | ACCEPTABLE        | Canary monitoring and pre-promote checks automated in CD pipeline                                          | —                    |
+| Finding                 | Status              | Evidence                                                                                                         | Closed By            |
+| ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Regex HTTP routing      | **RESOLVED**        | bead-e1bh closed; routing refactored away from regex pattern dispatch                                            | bead-e1bh (closed)   |
+| In-memory stub defaults | **RESOLVED**        | bead-yz3x closed; `store-bootstrap-gate.ts` added; `DEV_STUB_STORES=true` required for stubs; fail-fast enforced | bead-yz3x (closed)   |
+| Rate-limiting           | **RESOLVED**        | Redis-backed + in-memory fallback with fail-open; bead-dsnp closed                                               | bead-dsnp (closed)   |
+| Distributed caching     | IN PROGRESS         | bead-mvuv claimed by m5; Redis + in-memory cache-aside being implemented                                         | bead-mvuv (open, m5) |
+| Raw Error responses     | CONFIRMED NON-ISSUE | ProblemDetails pattern consistently used throughout handlers                                                     | —                    |
+| Magic type strings      | LOW                 | Test-only; production uses typed constants                                                                       | —                    |
+| Coverage artifact       | RESOLVED            | CI uploads coverage artifact on every PR                                                                         | —                    |
+| Argo canary smoke       | ACCEPTABLE          | Canary monitoring and pre-promote checks automated in CD pipeline                                                | —                    |
 
 **All critical findings resolved or actively tracked. No new beads seeded.**
