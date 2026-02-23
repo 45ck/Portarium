@@ -9,22 +9,29 @@ You will run the control plane, call a workspace-scoped endpoint, and validate t
 ### 1. Start runtime
 
 ```bash
-npx tsx src/presentation/runtime/control-plane.ts
+npm run dev:all
+npm run dev:seed
 ```
+
+This starts the full stack including Postgres, the control-plane API (port 8080), and the worker. See `docs/getting-started/local-dev.md` for the dev-auth token setup.
 
 ### 2. Call workspace endpoint
 
+With the dev token set (`PORTARIUM_DEV_TOKEN=portarium-dev-token`):
+
 ```bash
-curl -i http://localhost:8080/v1/workspaces/workspace-1
+curl -i -H "Authorization: Bearer portarium-dev-token" \
+  http://localhost:8080/v1/workspaces/ws-local
 ```
 
 ```powershell
-Invoke-WebRequest http://localhost:8080/v1/workspaces/workspace-1 -Method GET
+Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
+  -Headers @{ Authorization = "Bearer portarium-dev-token" }
 ```
 
 ### 3. Observe auth behavior
 
-Without JWT/JWKS configuration, protected routes return `401` with `application/problem+json`.
+Without the dev token or JWT/JWKS configuration, protected routes return `401` with `application/problem+json`.
 
 ### 4. Configure auth (optional)
 

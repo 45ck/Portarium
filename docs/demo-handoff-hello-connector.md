@@ -19,8 +19,8 @@ A custom Portarium connector that:
 
 ## Prerequisites
 
-- Node.js ≥ 20
-- A Portarium workspace running locally (`docker compose up`)
+- Node.js ≥ 22
+- A Portarium workspace running locally (`npm run dev:all && npm run dev:seed`)
 - Access to the repo root: `cd /path/to/portarium`
 
 ---
