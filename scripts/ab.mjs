@@ -625,6 +625,7 @@ function parseArgs(argv) {
       }
       console.log(SESSION);
       process.exit(0);
+      break;
     }
 
     // --- Diff ---
