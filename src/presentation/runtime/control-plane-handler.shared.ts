@@ -40,6 +40,8 @@ import type {
   KnowledgeGraphPort,
   SemanticIndexPort,
 } from '../../domain/derived-artifacts/retrieval-ports.js';
+import type { MachineQueryStore } from '../../application/ports/machine-query-store.js';
+import type { MachineRegistryStore } from '../../application/ports/machine-registry-store.js';
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -79,6 +81,10 @@ export type ControlPlaneDeps = Readonly<{
   eventStream?: EventStreamBroadcast;
   /** Optional structured logger for 401/403/429 security events. */
   authEventLogger?: AuthEventLogger;
+  /** Optional query store for machine/agent registry reads; when absent, registry read routes return 503. */
+  machineQueryStore?: MachineQueryStore;
+  /** Optional write store for machine/agent registry; when absent, registry write routes return 503. */
+  machineRegistryStore?: MachineRegistryStore;
   /** Optional semantic index port; when absent, retrieval/search returns 503. */
   semanticIndexPort?: SemanticIndexPort;
   /** Optional knowledge graph port; when absent, graph/retrieval returns 503. */
