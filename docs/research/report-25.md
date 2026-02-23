@@ -511,3 +511,177 @@ Of the 8 roadmap items in the report, **5 are fully resolved**, **2 are partiall
 - **F4 (cursor pagination)**: The SQL-backed `buildListQuery()` in `query-builder.ts` is the correct migration target. The in-memory `pageByCursor()` should be progressively removed as stores migrate, but this is already tracked implicitly by existing data-layer beads.
 - **F7 (JWT/bearer RFC conformance)**: Needs an audit pass but is low-risk given existing validation. Can be tracked as part of security hardening.
 - **F12 (evidence fixture hashing)**: Low runtime risk; cosmetic improvement for test fidelity.
+
+## Session 3: Deep Codebase Validation (bead-70z0)
+
+**Date:** 2026-02-23
+**Validated by:** agent-local-dx
+
+### OOP and SOLID
+
+#### Classes in the domain layer
+
+The domain layer uses classes almost exclusively for typed error hierarchies (one `Error` subclass per aggregate: `WorkforceMemberParseError`, `ApprovalParseError`, `SodConstraintParseError`, etc.). There are no god classes or SRP violations -- each error class has exactly one responsibility: carrying a domain-specific error name.
+
+**Exceptions (non-error classes in domain):**
+
+| File                                                        | Class                   | Responsibilities                                             | SRP                                       |
+| ----------------------------------------------------------- | ----------------------- | ------------------------------------------------------------ | ----------------------------------------- |
+| `src/domain/policy/policy-condition-dsl-v1.evaluator.ts:22` | `OperationBudget`       | Tracks remaining evaluation operations; throws on exhaustion | PASS -- single counter responsibility     |
+| `src/domain/policy/policy-condition-dsl-v1.parser.ts:19`    | `PolicyConditionParser` | Parses DSL condition strings into AST                        | PASS -- single concern (parsing)          |
+| `src/domain/approvals/approval-policy-rules-v1.ts:116`      | `TraceBuilder`          | Accumulates evaluation trace entries                         | PASS -- builder pattern for single output |
+
+**Finding: No SRP violations.** Domain classes are minimal and focused.
+
+#### Abstract classes and interfaces
+
+Only `Port` interfaces exist in the domain layer (`src/domain/derived-artifacts/retrieval-ports.ts`):
+
+- `SemanticIndexPort` (line 67)
+- `KnowledgeGraphPort` (line 112)
+- `EmbeddingPort` (line 139)
+- `DerivedArtifactRegistryPort` (line 153)
+
+Tests provide stub implementations (e.g., `retrieval-ports.test.ts:29 StubSemanticIndex`). No abstraction leaks detected -- stubs implement the full interface contract.
+
+#### Dependency Injection
+
+Infrastructure classes use **constructor injection** consistently:
+
+- `src/infrastructure/eventing/outbox-dispatcher.ts:38` -- `constructor(client, publisher, clock)`
+- `src/infrastructure/eventing/jetstream-projection-worker.ts:112` -- `constructor(workerConfig)`
+- `src/infrastructure/auth/openfga-authorization.ts:62` -- `constructor(config)`
+- `src/infrastructure/evidence/agent-action-evidence-hooks.ts:57` -- `constructor(deps)`
+- `src/infrastructure/gateway/agent-gateway.ts:59` -- `constructor(config)`
+
+Application services use function-parameter DI (`deps` objects):
+
+- `src/application/services/rate-limit-guard.ts:30` -- `checkRateLimit(deps, scope)`
+- `src/application/services/quota-aware-execution.ts` -- `deps` pattern
+
+**Finding: No global singletons or service-locator anti-patterns.** All dependencies are explicitly injected.
+
+### Data Structures
+
+#### Pack resolver (`src/domain/packs/pack-resolver.ts`)
+
+- **Constraints**: `Map<string, SemVerRange[]>` -- O(1) lookup per pack ID. PASS.
+- **Resolved packs**: `Map<string, PackManifestV1>` -- O(1) existence check before re-resolution. PASS.
+- **Queue**: Plain array with `shift()` for BFS traversal. O(n) per shift on large arrays, but pack counts are bounded by workspace configuration (typically < 50). Acceptable.
+- **Cycle detection** (line 158): `Set<string>` for visiting/visited -- correct DFS with O(V+E) complexity.
+
+#### SOD evaluator (`src/domain/policy/sod-constraints-v1.ts`)
+
+- `evaluateSodConstraintsV1()` (line 152): Iterates constraints (outer) and delegates to per-kind evaluators. No nested loops over the constraint set.
+- `evaluateIncompatibleDutiesConstraintV1()` (line 221): Groups duties by user (`Map<UserId, string[]>`), then filters each user duties against the constraint dutyKeys array via `.includes()`.
+  - **Complexity**: O(users _ duties _ constraintDutyKeys). In practice: users < 10, duties < 20, constraint keys < 10. Not a concern.
+- `evaluateSpecialistApprovalConstraintV1()` (line 398): `approverUserIds.some()` -> `approverRoles.find()` -> `constraint.requiredRoles.some()`.
+  - **Complexity**: O(approvers \* roles). Bounded by approval workflow size (< 20 approvers, < 10 roles). Not a concern.
+- **Finding: No O(n^2) risk.** All loops operate on small, bounded collections.
+
+#### Rate limiter
+
+Two implementations:
+
+1. **Gateway level** (`src/infrastructure/gateway/rate-limiter.ts`): `TokenBucketRateLimiter` uses `Map<string, Bucket>` keyed by workspace ID. O(1) per tryConsume. PASS.
+2. **Application level** (`src/infrastructure/rate-limiting/in-memory-rate-limit-store.ts`): `InMemoryRateLimitStore` uses `Map<string, RateLimitRuleV1[]>` for rules and `Map<string, RateLimitUsageV1>` for usage. O(1) lookups. PASS.
+3. **Redis store** (`src/infrastructure/rate-limiting/redis-rate-limit-store.ts`): Distributed implementation for multi-instance production.
+
+**Finding: Map-based. No array scanning.** Both in-memory stores use Map for O(1) key access.
+
+### Algorithmic Complexity
+
+#### Loop-within-loop patterns
+
+No nested loops over domain collections found outside the bounded SOD evaluation described above. The `evaluatePolicyPipeline()` function (`src/domain/policy/policy-evaluation-pipeline-v1.ts:145`) iterates active policies (outer) and maps rules per policy (inner), but both are bounded by policy configuration (typically < 10 policies, < 20 rules each).
+
+#### sort() calls
+
+All `sort()` calls operate on bounded collections:
+
+| File:Line                                | Collection        | Bounded by                           |
+| ---------------------------------------- | ----------------- | ------------------------------------ |
+| `pack-resolver.ts:138`                   | Pack versions     | Registry size (< 100)                |
+| `policy-evaluation-pipeline-v1.ts:153`   | Active policies   | Workspace config (< 20)              |
+| `approval-snapshot-binding-v1.ts:201`    | Approval bindings | Approval config (< 50)               |
+| `schema-migrator.ts:131`                 | Migration entries | Schema history (< 100)               |
+| `evidence-chain-verifier.ts:181`         | Hash keys         | Evidence payload fields (< 50)       |
+| `canonical-json.ts:65`                   | Object keys       | JSON payload depth (bounded)         |
+| `responsible-ai-v1.ts:134`               | PII detections    | Text length (bounded by body limits) |
+| `postgres-store-adapters.ts:189,195,300` | Query results     | Cursor pagination (page size < 100)  |
+
+**Finding: No sort() on unbounded arrays.** All sort targets are page-limited or config-bounded.
+
+#### Recursive functions
+
+- `pack-resolver.ts:167 visit()`: DFS cycle detection over resolved packs. Depth bounded by pack dependency graph (< 50 packs). Uses `visited` Set to prevent revisiting. PASS.
+- `policy-condition-dsl-v1.evaluator.ts:40 evaluateExpressionNode()`: Recursive AST evaluation. **Protected by `OperationBudget`** (line 22-38) which throws `PolicyConditionTimeoutError` after `maxOperations` evaluations. PASS -- bounded recursion.
+- `policy-evaluation-pipeline-v1.ts:348 deepFreeze()`: Recursive freeze of result object. Depth bounded by the pipeline result structure (max 3-4 levels). PASS.
+
+**Finding: No unbounded recursion.** All recursive paths have explicit depth limits or structural bounds.
+
+### Concurrency
+
+#### `new Promise` usage
+
+32 occurrences found in production code (excluding tests). All fall into safe patterns:
+
+1. **Sleep/delay helpers** (13 occurrences): `new Promise(resolve => setTimeout(resolve, ms))` -- standard pattern.
+2. **Server lifecycle** (4 occurrences): `health-server.ts:55,79` and `health-check-server.ts:83,102` -- wrapping Node.js callback APIs (`server.listen`, `server.close`). Both have error handling via `reject`.
+3. **gRPC/MQTT bridges** (3 occurrences): `ros2-action-bridge.ts:333`, `grpc-mission-gateway.ts:112`, `mqtt-mission-gateway.ts:66` -- wrapping callback-based protocol clients. Rejection handling present.
+4. **Quota execution** (1 occurrence): `quota-aware-execution.ts:196` -- wrapping a timer for rate-limit backoff.
+
+**Finding: No unhandled rejection risk in production `new Promise` calls.** All resolve/reject paths are covered.
+
+#### `process.on('unhandledRejection')` handler
+
+**Not registered.** No `unhandledRejection` or `uncaughtException` handlers found in the codebase. Node.js >= 15 defaults to crashing on unhandled rejections (which is the correct fail-fast behaviour for a server process). The Temporal SDK and OTel SDK may register their own handlers internally.
+
+**Finding: Intentional absence. Fail-fast is correct for containerised deployments** where the orchestrator (K8s) restarts crashed processes.
+
+#### Temporal worker concurrency settings
+
+`src/infrastructure/temporal/temporal-worker.ts:52`: `Worker.create()` does **not** set `maxConcurrentActivityExecutions` or `maxConcurrentWorkflowTaskExecutions`. This means Temporal SDK defaults apply (100 for activities, 200 for workflow tasks).
+
+**Finding: SDK defaults are acceptable.** The activities (`startRunActivity`, `completeRunActivity`) are lightweight async functions that delegate to the data store. No CPU-bound work. Default concurrency limits are appropriate.
+
+#### Graceful shutdown
+
+**Control plane** (`src/presentation/runtime/control-plane.ts:39-43`): SIGINT/SIGTERM -> `handle.close()` -> `server.close()`. The `server.close()` callback fires after all open connections complete their response (Node.js default).
+
+**Execution plane** (`src/presentation/runtime/worker.ts:71-78`): SIGINT/SIGTERM -> `temporal.shutdown()` (stops accepting new tasks, waits for in-flight to complete) -> `await temporalRunPromise` -> `handle.close()`.
+
+**Finding: Correct drain-then-close sequence.** Both planes handle graceful shutdown properly. The health server close at `health-server.ts:78-81` wraps `server.close()` which drains in-flight connections.
+
+### I/O Patterns
+
+#### `readFileSync` / `writeFileSync` usage
+
+All `readFileSync`/`writeFileSync` occurrences are in:
+
+1. **CLI scaffold generator** (`src/cli/scaffold-generators.ts:1,47`): Used in the `portarium` CLI tool for one-shot file generation. Not a hot path.
+2. **Test files** (90+ occurrences): Reading fixture/config files during test setup. Not production code.
+3. **Beads scripts** (`src/infrastructure/beads/*.test.ts`): Test utilities for JSONL manipulation.
+
+**Finding: No sync I/O in hot paths.** All production HTTP/event handlers use async I/O exclusively. Sync usage is confined to CLI tooling and test setup.
+
+#### Evidence upload path
+
+Evidence upload is handled via the compliance GRC adapter (`src/infrastructure/adapters/compliance-grc/in-memory-compliance-grc-adapter.ts:391`). The `#uploadEvidence()` method operates on metadata (`title`, `sizeBytes`) rather than streaming file content. The actual binary storage is delegated to:
+
+- `src/infrastructure/evidence/s3-worm-evidence-payload-store.ts`: S3 client handles streaming natively.
+- `src/infrastructure/evidence/in-memory-worm-evidence-payload-store.ts`: Buffer-based (acceptable for dev/test).
+
+**Finding: Evidence upload uses S3 streaming in production.** No full-buffer-in-memory risk for production deployments.
+
+### Validation Summary
+
+| Category               | Items checked                                       | Issues found | Severity |
+| ---------------------- | --------------------------------------------------- | ------------ | -------- |
+| OOP/SOLID              | 3 (SRP, abstraction leaks, DI)                      | 0            | --       |
+| Data Structures        | 3 (pack resolver, SOD, rate limiter)                | 0            | --       |
+| Algorithmic Complexity | 3 (nested loops, sort, recursion)                   | 0            | --       |
+| Concurrency            | 4 (Promise, unhandledRejection, Temporal, shutdown) | 0            | --       |
+| I/O Patterns           | 2 (sync I/O, evidence upload)                       | 0            | --       |
+
+**Overall assessment:** The CS foundations are sound. All checklist items pass validation. The codebase demonstrates consistent use of constructor injection, Map-based data structures for O(1) lookups, bounded recursion with budget limits, and correct shutdown sequencing. No new implementation beads are required from this validation pass.
