@@ -34,6 +34,17 @@ import {
   respondJson,
   respondProblem,
 } from './control-plane-handler.shared.js';
+import {
+  validateQueryLength,
+  validateTopK,
+  validateMaxDepth,
+  redactHits,
+  redactGraphNodes,
+  redactGraphEdges,
+  filterHitsToWorkspace,
+  filterNodesToWorkspace,
+  filterEdgesToWorkspace,
+} from './control-plane-handler.retrieval-security.js';
 
 // ---------------------------------------------------------------------------
 // Handler arg types
@@ -81,11 +92,17 @@ function parseSemanticParams(raw: unknown): ParseResult<SemanticQueryParams> {
     return { ok: false, message: 'semantic.query must be a non-empty string.' };
   }
 
+  const queryLengthError = validateQueryLength(record['query']);
+  if (queryLengthError !== null) return { ok: false, message: queryLengthError };
+
   const topK =
     record['topK'] !== undefined
       ? parsePositiveInt(record['topK'], 'topK')
       : { ok: true as const, value: 10 };
   if (!topK.ok) return topK;
+
+  const topKLimitError = validateTopK(topK.value);
+  if (topKLimitError !== null) return { ok: false, message: topKLimitError };
 
   return {
     ok: true,
@@ -118,6 +135,9 @@ function parseGraphParams(raw: unknown): ParseResult<GraphQueryParams> {
       ? parsePositiveInt(record['maxDepth'], 'maxDepth')
       : { ok: true as const, value: 3 };
   if (!maxDepthResult.ok) return maxDepthResult;
+
+  const depthLimitError = validateMaxDepth(maxDepthResult.value);
+  if (depthLimitError !== null) return { ok: false, message: depthLimitError };
 
   const relationFilter = record['relationFilter'];
   if (
@@ -288,14 +308,23 @@ export async function handleRetrievalSearch(args: RetrievalHandlerArgs): Promise
       },
     );
 
+    // Apply redaction and workspace isolation (defense in depth)
+    const safeHits = redactHits(filterHitsToWorkspace(response.hits, wsId));
+    const safeGraph = response.graph
+      ? {
+          nodes: redactGraphNodes(filterNodesToWorkspace(response.graph.nodes, wsId)),
+          edges: redactGraphEdges(filterEdgesToWorkspace(response.graph.edges, wsId)),
+        }
+      : undefined;
+
     respondJson(res, {
       statusCode: 200,
       correlationId,
       traceContext,
       body: {
         strategy: response.strategy,
-        hits: response.hits,
-        ...(response.graph ? { graph: response.graph } : {}),
+        hits: safeHits,
+        ...(safeGraph ? { graph: safeGraph } : {}),
       },
     });
   } catch (error) {
@@ -368,11 +397,15 @@ export async function handleGraphQuery(args: RetrievalHandlerArgs): Promise<void
       ...(parsed.graph.relationFilter ? { relationFilter: parsed.graph.relationFilter } : {}),
     });
 
+    // Apply redaction and workspace isolation (defense in depth)
+    const safeNodes = redactGraphNodes(filterNodesToWorkspace(result.nodes, wsId));
+    const safeEdges = redactGraphEdges(filterEdgesToWorkspace(result.edges, wsId));
+
     respondJson(res, {
       statusCode: 200,
       correlationId,
       traceContext,
-      body: { nodes: result.nodes, edges: result.edges },
+      body: { nodes: safeNodes, edges: safeEdges },
     });
   } catch (error) {
     respondProblem(
