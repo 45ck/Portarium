@@ -16,7 +16,7 @@ npm run dev:all
 npm run dev:seed
 ```
 
-This brings up Postgres, Temporal, MinIO, Vault, the control-plane API (port 8080), and the worker, then seeds demo workspace data. Verify the stack is healthy:
+This brings up Postgres, Temporal, MinIO, Vault, Keycloak, OpenFGA, Odoo, the control-plane API (port 8080), and the worker, then seeds demo workspace data. Verify the stack is healthy:
 
 ```bash
 curl -s http://localhost:8080/healthz
@@ -74,6 +74,80 @@ Or set it at runtime in the browser console:
 ```js
 localStorage.setItem('portarium_cockpit_bearer_token', 'portarium-dev-token');
 location.reload();
+```
+
+---
+
+## Local integration stack
+
+`npm run dev:all` starts all infrastructure profiles in one command. The full
+service map is:
+
+| Service      | Profile     | URL / Port                             | Purpose                           |
+| ------------ | ----------- | -------------------------------------- | --------------------------------- |
+| Postgres     | `baseline`  | `localhost:5432`                       | Portarium evidence DB             |
+| Temporal     | `runtime`   | `localhost:7233`                       | Workflow orchestration engine     |
+| MinIO        | `runtime`   | `localhost:9000` / `9001` (console)    | Evidence object store             |
+| Vault        | `auth`      | `localhost:8200`                       | Secret store (dev mode)           |
+| **Keycloak** | **`idp`**   | **`http://localhost:8180`**            | OIDC identity provider            |
+| **OpenFGA**  | **`authz`** | **`http://localhost:8181`** (HTTP API) | Fine-grained authorization engine |
+| **Odoo 17**  | **`erp`**   | **`http://localhost:4000`**            | ERP (account + project modules)   |
+| API server   | `cockpit`   | `http://localhost:8080`                | Portarium control-plane API       |
+| Worker       | `cockpit`   | `http://localhost:8081`                | Temporal workflow worker          |
+
+### Keycloak (profile: `idp`)
+
+- **Admin console**: `http://localhost:8180` → credentials: `admin / admin`
+- **Realm**: `portarium`
+- **OIDC issuer**: `http://localhost:8180/realms/portarium`
+- **Client**: `portarium-cockpit` (public, PKCE)
+
+Pre-seeded demo users:
+
+| Username | Password | Role       |
+| -------- | -------- | ---------- |
+| `alice`  | `alice`  | `approver` |
+| `bob`    | `bob`    | `operator` |
+| `carol`  | `carol`  | `auditor`  |
+
+### OpenFGA (profile: `authz`)
+
+- **HTTP API**: `http://localhost:8181` — used by the Portarium API for policy checks
+- **Playground**: `http://localhost:3000` — visual model explorer
+- **gRPC**: `localhost:8182`
+- Store name: `portarium` (auto-created by `openfga-init` on first start)
+- Authorization model: workspace roles (`approver`, `operator`, `auditor`, `member`)
+
+Seed workspace role tuples for demo users:
+
+```bash
+npm run dev:seed:openfga
+```
+
+### Odoo 17 (profile: `erp`)
+
+- **URL**: `http://localhost:4000` (maps to Odoo port 8069)
+- **Database**: `portarium`
+- **Admin credentials**: `admin / admin`
+- Modules: `account`, `project`
+
+Install required modules (run once after first `dev:all`):
+
+```bash
+npm run dev:seed:odoo
+```
+
+To start only the integration stack (no API/worker build), override `COMPOSE_PROFILES` before `npm run dev:all`:
+
+```bash
+# Bash
+COMPOSE_PROFILES=baseline,runtime,auth,idp,authz,erp npm run dev:all
+```
+
+```powershell
+# PowerShell
+$env:COMPOSE_PROFILES = "baseline,runtime,auth,idp,authz,erp"
+npm run dev:all
 ```
 
 ---

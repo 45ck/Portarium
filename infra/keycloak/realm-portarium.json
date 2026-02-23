@@ -1,0 +1,101 @@
+{
+  "realm": "portarium",
+  "enabled": true,
+  "displayName": "Portarium",
+  "displayNameHtml": "<b>Portarium</b>",
+  "loginTheme": "keycloak",
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "clients": [
+    {
+      "clientId": "portarium-cockpit",
+      "name": "Portarium Cockpit",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:3000/*",
+        "http://localhost:8080/*"
+      ],
+      "webOrigins": ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"],
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "approver",
+        "description": "Can review and approve work items in Portarium"
+      },
+      {
+        "name": "operator",
+        "description": "Can start, cancel, and manage workflow runs"
+      },
+      {
+        "name": "auditor",
+        "description": "Read-only access for compliance and audit review"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "alice",
+      "email": "alice@portarium.dev",
+      "firstName": "Alice",
+      "lastName": "Approver",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "alice",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["approver"]
+    },
+    {
+      "username": "bob",
+      "email": "bob@portarium.dev",
+      "firstName": "Bob",
+      "lastName": "Operator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "bob",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["operator"]
+    },
+    {
+      "username": "carol",
+      "email": "carol@portarium.dev",
+      "firstName": "Carol",
+      "lastName": "Auditor",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "carol",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["auditor"]
+    }
+  ]
+}

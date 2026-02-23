@@ -200,6 +200,152 @@ services:
     networks:
       - portarium-control
 
+  # ---------------------------------------------------------------------------
+  # idp profile — Keycloak OIDC identity provider
+  #   realm: portarium
+  #   users: alice (approver), bob (operator), carol (auditor)
+  #   client: portarium-cockpit (public, PKCE)
+  #   URL: http://localhost:8180
+  # ---------------------------------------------------------------------------
+  keycloak-db:
+    profiles: [idp]
+    image: postgres:16-alpine
+    container_name: portarium-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U keycloak']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - portarium-control
+
+  keycloak:
+    profiles: [idp]
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: portarium-keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KC_HTTP_PORT: '8180'
+      KC_HEALTH_ENABLED: 'true'
+    volumes:
+      - ./infra/keycloak/realm-portarium.json:/opt/keycloak/data/import/realm-portarium.json:ro
+    ports:
+      - '8180:8180'
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8180/health/ready >/dev/null 2>&1']
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    networks:
+      - portarium-control
+
+  # ---------------------------------------------------------------------------
+  # authz profile — OpenFGA fine-grained authorization engine
+  #   HTTP API:   http://localhost:8181
+  #   gRPC:       localhost:8182
+  #   Playground: http://localhost:3000
+  # ---------------------------------------------------------------------------
+  openfga:
+    profiles: [authz]
+    image: openfga/openfga:latest
+    container_name: portarium-openfga
+    command: run
+    environment:
+      OPENFGA_DATASTORE_ENGINE: memory
+      OPENFGA_PLAYGROUND_ENABLED: 'true'
+      OPENFGA_LOG_FORMAT: text
+    ports:
+      - '8181:8080'
+      - '8182:8081'
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O - http://localhost:8080/healthz >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 18
+    networks:
+      - portarium-control
+
+  openfga-init:
+    profiles: [authz]
+    image: node:22-alpine
+    container_name: portarium-openfga-init
+    environment:
+      OPENFGA_BASE_URL: http://openfga:8080
+    command: ['node', '/scripts/init.mjs']
+    volumes:
+      - ./infra/openfga/init.mjs:/scripts/init.mjs:ro
+    depends_on:
+      openfga:
+        condition: service_healthy
+    networks:
+      - portarium-control
+
+  # ---------------------------------------------------------------------------
+  # erp profile — Odoo 17 ERP (account + project modules)
+  #   URL: http://localhost:4000 (→ container port 8069)
+  #   DB:  portarium / admin / admin
+  #   Seed modules: npm run dev:seed:odoo
+  # ---------------------------------------------------------------------------
+  odoo-db:
+    profiles: [erp]
+    image: postgres:16-alpine
+    container_name: portarium-odoo-db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U odoo']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      - portarium-control
+
+  odoo:
+    profiles: [erp]
+    image: odoo:17
+    container_name: portarium-odoo
+    environment:
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: odoo
+    ports:
+      - '4000:8069'
+    depends_on:
+      odoo-db:
+        condition: service_healthy
+    volumes:
+      - odoo-data:/var/lib/odoo
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:8069/web/health >/dev/null 2>&1']
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    networks:
+      - portarium-control
+
   # API and worker services live in docker-compose.local.yml (cockpit profile).
   # They are built from local Dockerfiles and kept separate from infrastructure.
 
@@ -209,6 +355,9 @@ volumes:
   temporal-data:
   tempo-data:
   grafana-data:
+  keycloak-db-data:
+  odoo-db-data:
+  odoo-data:
 
 networks:
   portarium-control:
