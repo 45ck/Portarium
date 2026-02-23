@@ -6,7 +6,8 @@ import { resolve } from 'node:path';
  * Playwright configuration for Portarium Cockpit E2E tests.
  *
  * Tests run against the Vite dev server (MSW mock API — no live backend needed).
- * Start the dev server first: cd apps/cockpit && npx vite
+ * In CI the webServer config auto-starts plain Vite on http://localhost:5173.
+ * Locally: npm run cockpit:dev  (portless proxy at http://cockpit.localhost:1355)
  *
  * Run smoke suite:     npm run test:e2e:smoke
  * Run matrix suite:    npm run test:e2e:matrix
@@ -38,7 +39,7 @@ interface QuarantineEntry {
 }
 
 function loadQuarantinedTests(): QuarantineEntry[] {
-  const quarantinePath = resolve(__dirname, 'e2e/quarantine.json');
+  const quarantinePath = resolve(import.meta.dirname, 'e2e/quarantine.json');
   if (!existsSync(quarantinePath)) return [];
   try {
     const raw = readFileSync(quarantinePath, 'utf8');
@@ -93,11 +94,20 @@ export default defineConfig({
   retries: process.env['CI'] ? 2 : 0,
   workers: process.env['CI'] ? 1 : undefined,
   reporter: reporters,
+  webServer: {
+    command: 'npm run cockpit:dev:e2e',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env['CI'],
+    timeout: 120_000,
+  },
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
+    // Pre-seed localStorage with the 'demo' dataset so E2E tests get
+    // deterministic fixture IDs (run-2002, approval IDs, etc.)
+    storageState: 'e2e/storage-state.json',
   },
 
   projects: [

@@ -8,7 +8,8 @@
  * Bead: bead-0721
  */
 
-import { createFileRoute } from '@tanstack/react-router';
+import { createRoute } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
 import { useAuthStore } from '@/stores/auth-store';
 import { loadOidcConfig, isOidcConfigured } from '@/lib/oidc-client';
 import { Button } from '@/components/ui/button';
@@ -74,4 +75,8 @@ function LoginPage() {
   );
 }
 
-export const Route = createFileRoute('/auth/login')({ component: LoginPage });
+export const Route = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auth/login',
+  component: LoginPage,
+});

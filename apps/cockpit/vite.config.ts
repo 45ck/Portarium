@@ -13,6 +13,9 @@ export default defineConfig({
     // exist alongside .ts/.tsx files in src/.  Default Vite order puts .js
     // before .ts which would cause the old compiled stubs to shadow the source.
     extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
+    // Deduplicate React across junction-linked node_modules in worktrees to
+    // prevent "multiple copies of React" errors (invalid hook call).
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
     alias: {
       '@': resolve(__dirname, 'src'),
       '@portarium/cockpit-types': resolve(__dirname, '../../src/presentation/ops-cockpit/types.ts'),
