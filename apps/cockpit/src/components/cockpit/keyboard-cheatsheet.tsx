@@ -41,7 +41,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
+    <kbd className="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.5 text-[11px] font-mono">
       {children}
     </kbd>
   );

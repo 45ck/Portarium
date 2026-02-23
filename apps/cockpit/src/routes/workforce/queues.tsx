@@ -51,7 +51,7 @@ function WorkforceQueuesPage() {
       render: (row: WorkforceQueueSummary) => (
         <div className="flex flex-wrap gap-1">
           {row.requiredCapabilities.map((cap) => (
-            <Badge key={cap} variant="secondary" className="text-[10px]">
+            <Badge key={cap} variant="secondary" className="text-[11px]">
               {cap.split('.').pop()}
             </Badge>
           ))}

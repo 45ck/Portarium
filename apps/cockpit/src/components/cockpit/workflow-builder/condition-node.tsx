@@ -16,8 +16,8 @@ export function ConditionNode({ data, selected }: NodeProps) {
         <span className="text-xs font-semibold truncate">{nodeData.label}</span>
       </div>
       <div className="flex justify-between px-3 py-1.5">
-        <span className="text-[10px] text-emerald-500">True</span>
-        <span className="text-[10px] text-rose-500">False</span>
+        <span className="text-[11px] text-emerald-500">True</span>
+        <span className="text-[11px] text-rose-500">False</span>
       </div>
       <Handle
         type="source"

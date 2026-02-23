@@ -36,7 +36,7 @@ function AgentCard({ agent }: { agent: AgentV1 }) {
         </Badge>
       </div>
       {agent.modelId && (
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground">
           Model: <span className="font-mono">{agent.modelId}</span>
         </div>
       )}
@@ -46,7 +46,7 @@ function AgentCard({ agent }: { agent: AgentV1 }) {
         ))}
       </div>
       {agent.usedByWorkflowIds && agent.usedByWorkflowIds.length > 0 && (
-        <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+        <div className="text-[11px] text-muted-foreground flex items-center gap-1">
           <Workflow className="h-3 w-3 shrink-0" />
           Linked workflows: {agent.usedByWorkflowIds.length}
         </div>
@@ -92,7 +92,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
     <div className="space-y-4">
       {/* Agents Involved */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
           Agents Involved
         </p>
         <div className="space-y-2">
@@ -105,7 +105,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
       {/* Workflow Pipeline */}
       {workflow && workflow.actions.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
             Workflow Pipeline
           </p>
           <div className="text-[11px] text-muted-foreground mb-2">
@@ -139,7 +139,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
                       : String.fromCodePoint(0x2460 + i)}
                   </span>
                   <span className="font-medium truncate flex-1">{action.operation}</span>
-                  <span className="text-muted-foreground text-[10px] shrink-0">
+                  <span className="text-muted-foreground text-[11px] shrink-0">
                     {action.portFamily}
                   </span>
                   {isCurrent && (
@@ -157,7 +157,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
       {/* Planned Effects */}
       {plannedEffects.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Planned Effects
           </p>
           <div className="space-y-1">
@@ -171,7 +171,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
                 </Badge>
                 <span className="truncate">{e.summary}</span>
                 <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground text-[10px] shrink-0">
+                <span className="text-muted-foreground text-[11px] shrink-0">
                   {e.target.sorName}
                 </span>
               </div>

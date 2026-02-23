@@ -33,7 +33,7 @@ function ChainStatusBadge({ chainStatus }: { chainStatus: 'none' | 'verified' | 
         : 'bg-muted text-muted-foreground border-border';
 
   return (
-    <Badge variant="outline" className={cn('text-[10px] h-5', className)}>
+    <Badge variant="outline" className={cn('text-[11px] h-5', className)}>
       {label}
     </Badge>
   );

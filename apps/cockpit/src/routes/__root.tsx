@@ -256,7 +256,7 @@ function InboxBadge({ wsId }: { wsId: string }) {
   const pendingCount = (data?.items ?? []).filter((a) => a.status === 'Pending').length;
   if (pendingCount === 0) return null;
   return (
-    <span className="ml-auto rounded-full bg-primary/15 text-primary text-[10px] px-1.5 py-0.5 font-medium leading-none">
+    <span className="ml-auto rounded-full bg-primary/15 text-primary text-[11px] px-1.5 py-0.5 font-medium leading-none">
       {pendingCount}
     </span>
   );
@@ -416,12 +416,12 @@ function RootLayout() {
                 {NAV_SECTIONS.map((section) => (
                   <div key={section.label} className="space-y-0.5">
                     {!sidebarCollapsed && (
-                      <p className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                      <p className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                         {section.label}
                       </p>
                     )}
                     {section.comingSoon ? (
-                      <p className="px-2.5 py-1.5 text-[11px] text-muted-foreground italic">
+                      <p className="px-2.5 py-1.5 text-xs text-muted-foreground italic">
                         Coming soon
                       </p>
                     ) : (
@@ -436,7 +436,7 @@ function RootLayout() {
                             {!sidebarCollapsed && (
                               <span className="flex-1 text-left truncate">
                                 {item.label}
-                                <span className="ml-1.5 text-[10px] italic">soon</span>
+                                <span className="ml-1.5 text-[11px] italic">soon</span>
                               </span>
                             )}
                           </span>
@@ -467,12 +467,12 @@ function RootLayout() {
                 {sidebarCollapsed ? (
                   <>
                     <span
-                      className="text-[10px] text-muted-foreground truncate block text-center"
+                      className="text-[11px] text-muted-foreground truncate block text-center"
                       title={activePersona}
                     >
                       {activePersona.slice(0, 2)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground truncate block text-center">
+                    <span className="text-[11px] text-muted-foreground truncate block text-center">
                       {activeWorkspaceId.replace('ws-', '').slice(0, 3)}
                     </span>
                   </>

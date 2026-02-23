@@ -38,7 +38,7 @@ function RobotCard({ robot }: { robot: RobotSummary }) {
           <p className="text-xs text-muted-foreground">{robot.name}</p>
         </div>
         <div className="flex items-center gap-1.5">
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-[11px]">
             {robot.robotClass}
           </Badge>
           <RobotStatusBadge status={robot.status} />

@@ -40,7 +40,7 @@ function BeforeCard({ effect }: { effect: PlanEffect }) {
         <span className="text-[11px] font-mono text-muted-foreground block truncate">
           {effect.target.externalType}
         </span>
-        <span className="text-[10px] text-foreground block truncate">{effect.summary}</span>
+        <span className="text-[11px] text-foreground block truncate">{effect.summary}</span>
       </div>
     </div>
   );
@@ -70,7 +70,7 @@ function AfterCard({ effect }: { effect: PlanEffect }) {
           <span className="text-[11px] font-mono text-red-500 line-through block truncate">
             {effect.target.externalType}
           </span>
-          <span className="text-[10px] text-red-400 line-through block truncate">
+          <span className="text-[11px] text-red-400 line-through block truncate">
             {effect.summary}
           </span>
         </div>
@@ -88,7 +88,7 @@ function AfterCard({ effect }: { effect: PlanEffect }) {
         <span className="text-[11px] font-mono text-muted-foreground block truncate">
           {effect.target.externalType}
         </span>
-        <span className="text-[10px] text-foreground block truncate">{effect.summary}</span>
+        <span className="text-[11px] text-foreground block truncate">{effect.summary}</span>
         {effect.operation === 'Update' && (
           <span className="text-[9px] font-medium text-primary block mt-0.5">
             Fields will be modified
@@ -188,11 +188,11 @@ export function DiffViewMode({ approval, plannedEffects, run, workflow }: Triage
 
       {/* Column headers */}
       <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] gap-2">
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
           Current State
         </div>
         <div className="w-8" />
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground text-center">
           After Approval
         </div>
       </div>
@@ -209,7 +209,7 @@ export function DiffViewMode({ approval, plannedEffects, run, workflow }: Triage
                 </span>
               )}
               <SorBadgeInline name={sorName} />
-              <span className="text-[10px] font-semibold text-muted-foreground truncate min-w-0">
+              <span className="text-[11px] font-semibold text-muted-foreground truncate min-w-0">
                 {sorName}
               </span>
             </div>
@@ -219,7 +219,7 @@ export function DiffViewMode({ approval, plannedEffects, run, workflow }: Triage
                 className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] gap-2 items-center"
               >
                 <BeforeCard effect={effect} />
-                <div className="sm:hidden flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                <div className="sm:hidden flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
                   <svg width="8" height="16" viewBox="0 0 8 16" className="text-muted-foreground">
                     <path
                       d="M4 0 V12 M1 9 L4 12 L7 9"

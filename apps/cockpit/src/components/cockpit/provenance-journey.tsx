@@ -136,7 +136,7 @@ export function ProvenanceJourney({ approval, run, workflow }: ProvenanceJourney
 
   return (
     <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
         How we got here
       </p>
 
@@ -182,7 +182,7 @@ export function ProvenanceJourney({ approval, run, workflow }: ProvenanceJourney
             title={workflow.name}
             detail={
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <span className="font-mono text-[10px]">{workflow.workflowId}</span>
+                <span className="font-mono text-[11px]">{workflow.workflowId}</span>
                 <span>v{workflow.version}</span>
                 {actionCount > 0 && (
                   <span>
@@ -209,7 +209,7 @@ export function ProvenanceJourney({ approval, run, workflow }: ProvenanceJourney
                 {run?.agentIds?.map((id) => (
                   <span
                     key={id}
-                    className="inline-flex items-center gap-1 text-[10px] font-mono bg-background border border-border rounded px-1.5 py-0.5"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono bg-background border border-border rounded px-1.5 py-0.5"
                   >
                     <Bot className="h-2.5 w-2.5 text-violet-500" />
                     {id}
@@ -218,7 +218,7 @@ export function ProvenanceJourney({ approval, run, workflow }: ProvenanceJourney
                 {run?.robotIds?.map((id) => (
                   <span
                     key={id}
-                    className="inline-flex items-center gap-1 text-[10px] font-mono bg-background border border-border rounded px-1.5 py-0.5"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono bg-background border border-border rounded px-1.5 py-0.5"
                   >
                     <Cog className="h-2.5 w-2.5 text-sky-500" />
                     {id}
@@ -236,7 +236,7 @@ export function ProvenanceJourney({ approval, run, workflow }: ProvenanceJourney
             title={`Run: ${runStatus.replace(/([A-Z])/g, ' $1').trim()}`}
             detail={
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <span className="font-mono text-[10px]">{run.runId}</span>
+                <span className="font-mono text-[11px]">{run.runId}</span>
                 {run.startedAtIso && (
                   <span>started {format(new Date(run.startedAtIso), 'MMM d, HH:mm')}</span>
                 )}

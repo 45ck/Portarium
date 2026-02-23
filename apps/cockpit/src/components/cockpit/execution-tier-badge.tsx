@@ -18,7 +18,7 @@ const fallback = { icon: Zap, label: 'Unknown' };
 export function ExecutionTierBadge({ tier }: ExecutionTierBadgeProps) {
   const { icon: Icon, label } = config[tier] ?? fallback;
   return (
-    <Badge variant="secondary" className="text-[10px]">
+    <Badge variant="secondary" className="text-[11px]">
       <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>

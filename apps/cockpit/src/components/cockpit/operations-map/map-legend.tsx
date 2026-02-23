@@ -44,7 +44,7 @@ export function MapLegend() {
           <div className="overflow-hidden">
             <div className="border-t border-border px-2.5 py-2 space-y-2.5">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                   Status
                 </p>
                 <div className="space-y-1">
@@ -60,7 +60,7 @@ export function MapLegend() {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                   Robot class
                 </p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1">
@@ -75,7 +75,7 @@ export function MapLegend() {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                   Layers
                 </p>
                 <div className="space-y-1 text-xs text-muted-foreground">

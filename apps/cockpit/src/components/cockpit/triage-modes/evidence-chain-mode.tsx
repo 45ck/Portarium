@@ -90,7 +90,7 @@ function PayloadAttachments({ refs }: { refs: EvidencePayloadRef[] }) {
           <span
             key={i}
             className={cn(
-              'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium cursor-default',
+              'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-medium cursor-default',
               color,
             )}
             title={`${label}: ${name}\nType: ${ref.contentType ?? 'unknown'}`}
@@ -114,7 +114,7 @@ function EvidenceAdequacy({ entries }: { entries: EvidenceEntry[] }) {
   return (
     <div className="rounded-md border border-border bg-card px-3 py-2 space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Evidence Adequacy
         </span>
         <span className={cn('text-xs font-bold', adeq.color)}>
@@ -127,7 +127,7 @@ function EvidenceAdequacy({ entries }: { entries: EvidenceEntry[] }) {
           style={{ width: `${adeq.score}%` }}
         />
       </div>
-      <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
+      <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
         <span className="inline-flex items-center gap-0.5">
           {adeq.entryCount >= 3 ? (
             <CheckCircle2 className="h-3 w-3 text-emerald-500" />
@@ -220,7 +220,7 @@ function EvidenceBlock({
               This run
             </span>
           )}
-          <span className="text-[10px] text-muted-foreground shrink-0">
+          <span className="text-[11px] text-muted-foreground shrink-0">
             {requestedAtIso
               ? (() => {
                   const occurred = new Date(entry.occurredAtIso);
@@ -244,13 +244,13 @@ function EvidenceBlock({
         <div className="flex items-center gap-2">
           <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
           <code
-            className="text-[10px] font-mono text-muted-foreground truncate cursor-help"
+            className="text-[11px] font-mono text-muted-foreground truncate cursor-help"
             title={entry.hashSha256}
           >
             {entry.hashSha256.slice(0, 16)}...
           </code>
           {hasPayloads && (
-            <span className="text-[10px] text-muted-foreground ml-auto">
+            <span className="text-[11px] text-muted-foreground ml-auto">
               {entry.payloadRefs!.length} attachment{entry.payloadRefs!.length !== 1 ? 's' : ''}
             </span>
           )}

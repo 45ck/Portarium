@@ -13,7 +13,7 @@ import { opColors } from '@/components/cockpit/lib/effect-colors';
 function EffectRow({ effect, confidence }: { effect: PlanEffect; confidence?: number }) {
   return (
     <div className="flex items-center gap-2 py-1 text-xs">
-      <Badge variant="secondary" className={cn('text-[10px] shrink-0', opColors[effect.operation])}>
+      <Badge variant="secondary" className={cn('text-[11px] shrink-0', opColors[effect.operation])}>
         {effect.operation}
       </Badge>
       <span className="font-mono text-muted-foreground">
@@ -21,7 +21,7 @@ function EffectRow({ effect, confidence }: { effect: PlanEffect; confidence?: nu
       </span>
       <span className="flex-1 truncate">{effect.summary}</span>
       {confidence !== undefined && (
-        <span className="text-[10px] text-muted-foreground shrink-0">
+        <span className="text-[11px] text-muted-foreground shrink-0">
           {Math.round(confidence * 100)}%
         </span>
       )}

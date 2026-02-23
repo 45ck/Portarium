@@ -88,7 +88,7 @@ export function StepPalette({ onAddNode }: StepPaletteProps) {
       <h3 className="text-sm font-semibold">Steps</h3>
       {CATEGORIES.map((category) => (
         <div key={category.label} className="space-y-1">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
             {category.label}
           </p>
           <div className="space-y-0.5">

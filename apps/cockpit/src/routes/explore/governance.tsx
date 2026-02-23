@@ -93,7 +93,7 @@ function ExploreGovernancePage() {
       header: 'Policy ID',
       width: '120px',
       render: (row: GovernancePolicy) => (
-        <Badge variant="secondary" className="font-mono text-[10px]">
+        <Badge variant="secondary" className="font-mono text-[11px]">
           {row.policyId}
         </Badge>
       ),
@@ -156,7 +156,7 @@ function ExploreGovernancePage() {
       header: 'Scope',
       width: '140px',
       render: (row: SodConstraint) => (
-        <Badge variant="secondary" className="font-mono text-[10px]">
+        <Badge variant="secondary" className="font-mono text-[11px]">
           {deriveSodScope(row, policies)}
         </Badge>
       ),
@@ -226,7 +226,7 @@ function ExploreGovernancePage() {
                       className="relative border border-border rounded-lg p-3 min-w-[180px]"
                     >
                       <div className="text-xs font-medium mb-1">{constraint.name}</div>
-                      <div className="text-[10px] text-muted-foreground mb-2">
+                      <div className="text-[11px] text-muted-foreground mb-2">
                         {constraint.description}
                       </div>
                       {constraint.relatedPolicyIds.map((polId) => {
@@ -234,7 +234,7 @@ function ExploreGovernancePage() {
                         return (
                           <div
                             key={polId}
-                            className="flex items-center gap-1 text-[10px] text-primary"
+                            className="flex items-center gap-1 text-[11px] text-primary"
                           >
                             <span className="w-2 h-px bg-primary inline-block" />
                             {policy?.name ?? polId}
@@ -287,7 +287,7 @@ function ExploreGovernancePage() {
                   <span className="text-muted-foreground shrink-0 tabular-nums">
                     {format(new Date(entry.occurredAtIso), 'MMM d, HH:mm')}
                   </span>
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-[11px]">
                     {normalizeAuditCategory(entry)}
                   </Badge>
                   <span>{entry.summary}</span>
@@ -365,7 +365,7 @@ function ExploreGovernancePage() {
                     .filter((c) => c.relatedPolicyIds.includes(selectedPolicy.policyId))
                     .map((c) => (
                       <div key={c.constraintId} className="flex items-center gap-2 text-xs py-1">
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-[11px]">
                           {c.constraintId}
                         </Badge>
                         <span>{deriveSodRolePair(c)}</span>
@@ -381,7 +381,7 @@ function ExploreGovernancePage() {
                 ) : (
                   getAffectedWorkflowIds(selectedPolicy).map((workflowId) => (
                     <div key={workflowId} className="flex items-center gap-2 text-xs py-1">
-                      <Badge variant="secondary" className="text-[10px] font-mono">
+                      <Badge variant="secondary" className="text-[11px] font-mono">
                         {workflowId}
                       </Badge>
                       <span>{workflowsById.get(workflowId)?.name ?? workflowId}</span>

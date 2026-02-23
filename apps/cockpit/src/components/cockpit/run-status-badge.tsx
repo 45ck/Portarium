@@ -45,7 +45,7 @@ const fallback = { icon: Clock, label: 'Unknown', variant: 'secondary' as const,
 export function RunStatusBadge({ status }: RunStatusBadgeProps) {
   const { icon: Icon, label, variant, className } = config[status] ?? fallback;
   return (
-    <Badge variant={variant} className={cn('text-[10px]', className)}>
+    <Badge variant={variant} className={cn('text-[11px]', className)}>
       <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>

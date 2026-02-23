@@ -127,10 +127,10 @@ function MissionDetailPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <MissionStatusBadge status={mission.status} />
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[11px]">
           {mission.priority}
         </Badge>
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[11px]">
           {mission.executionTier}
         </Badge>
       </div>

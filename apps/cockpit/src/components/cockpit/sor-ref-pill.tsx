@@ -8,7 +8,7 @@ interface SorRefPillProps {
 
 export function SorRefPill({ externalRef }: SorRefPillProps) {
   const content = (
-    <Badge variant="outline" className="text-[10px] gap-1">
+    <Badge variant="outline" className="text-[11px] gap-1">
       <span className="font-medium">{externalRef.sorName}</span>
       {externalRef.displayLabel && (
         <span className="text-muted-foreground">{externalRef.displayLabel}</span>

@@ -44,7 +44,7 @@ function SectionHeader({
       <span className="text-muted-foreground">{icon}</span>
       <h2 className="text-sm font-semibold">{title}</h2>
       {count !== undefined && (
-        <span className="rounded-full bg-primary/10 text-primary text-[10px] px-2 py-0.5 font-medium">
+        <span className="rounded-full bg-primary/10 text-primary text-[11px] px-2 py-0.5 font-medium">
           {count}
         </span>
       )}

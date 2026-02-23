@@ -29,7 +29,7 @@ export function ModeSwitcher({ context }: ModeSwitcherProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground shrink-0">
+      <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground shrink-0">
         <Eye className="h-3 w-3" />
         View
       </span>
@@ -57,7 +57,7 @@ export function ModeSwitcher({ context }: ModeSwitcherProps) {
                   <TooltipContent side="bottom" className="text-xs">
                     {m.description}
                     {isRecommended && (
-                      <span className="block text-[10px] text-primary mt-0.5">
+                      <span className="block text-[11px] text-primary mt-0.5">
                         Recommended for this approval
                       </span>
                     )}

@@ -41,14 +41,14 @@ export function AlertTriagePanel({ alerts, onJumpToRobot }: AlertTriagePanelProp
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium">{alert.message}</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 {alert.robotId} &middot; {new Date(alert.timestampIso).toLocaleTimeString()}
               </p>
             </div>
             <Badge
               variant="outline"
               className={cn(
-                'shrink-0 text-[10px]',
+                'shrink-0 text-[11px]',
                 alert.severity === 'critical'
                   ? 'border-red-200 bg-red-50 text-red-700'
                   : 'border-yellow-200 bg-yellow-50 text-yellow-700',

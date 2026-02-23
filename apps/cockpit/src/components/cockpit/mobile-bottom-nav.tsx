@@ -165,7 +165,7 @@ export function MobileBottomNav({
                 </motion.div>
                 <span
                   className={cn(
-                    'text-[10px] leading-none',
+                    'text-[11px] leading-none',
                     isActive ? 'text-primary font-medium' : 'text-muted-foreground',
                   )}
                 >
@@ -186,7 +186,7 @@ export function MobileBottomNav({
             <motion.div whileTap={{ scale: 0.85 }} className="text-muted-foreground">
               <Menu className="h-5 w-5" />
             </motion.div>
-            <span className="text-[10px] text-muted-foreground leading-none">More</span>
+            <span className="text-[11px] text-muted-foreground leading-none">More</span>
           </button>
         </div>
       </nav>
@@ -202,7 +202,7 @@ export function MobileBottomNav({
           </DrawerHeader>
           <div className="overflow-y-auto px-4 pb-6 space-y-4">
             <div className="rounded-lg border border-border bg-card p-3 space-y-3">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Context
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -246,7 +246,7 @@ export function MobileBottomNav({
             </div>
             {MORE_SECTIONS.map((section) => (
               <div key={section.label}>
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
                   {section.label}
                 </p>
                 <div className="space-y-0.5">

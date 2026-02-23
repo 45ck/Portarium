@@ -21,7 +21,7 @@ const config: Record<EvidenceCategory, { label: string; className: string }> = {
 export function EvidenceCategoryBadge({ category }: EvidenceCategoryBadgeProps) {
   const { label, className } = config[category];
   return (
-    <Badge variant="secondary" className={cn('text-[10px]', className)}>
+    <Badge variant="secondary" className={cn('text-[11px]', className)}>
       {label}
     </Badge>
   );

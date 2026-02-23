@@ -168,7 +168,7 @@ function RobotDetailPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <RobotStatusBadge status={robot.status} />
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[11px]">
           {robot.robotClass}
         </Badge>
         {!isEstopped && (

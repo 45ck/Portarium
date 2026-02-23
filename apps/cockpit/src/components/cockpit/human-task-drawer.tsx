@@ -98,7 +98,7 @@ export function HumanTaskDrawer({
                   <User className="h-3 w-3 text-muted-foreground" />
                 </div>
                 <span className="text-sm">{assignee.displayName}</span>
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="text-[11px]">
                   {assignee.availabilityStatus}
                 </Badge>
               </div>
@@ -121,7 +121,7 @@ export function HumanTaskDrawer({
               <p className="text-xs font-medium text-muted-foreground">Required Capabilities</p>
               <div className="flex flex-wrap gap-1">
                 {task.requiredCapabilities.map((cap) => (
-                  <Badge key={cap} variant="secondary" className="text-[10px]">
+                  <Badge key={cap} variant="secondary" className="text-[11px]">
                     {cap}
                   </Badge>
                 ))}
