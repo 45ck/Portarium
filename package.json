@@ -23,6 +23,8 @@
     "cockpit:storybook": "npm run -w apps/cockpit storybook",
     "cockpit:build": "npm run -w apps/cockpit build",
     "cockpit:build-storybook": "npm run -w apps/cockpit build-storybook",
+    "cockpit:chromatic": "npx chromatic --project-token=${CHROMATIC_PROJECT_TOKEN} --exit-zero-on-changes --storybook-build-dir=apps/cockpit/storybook-static",
+    "cockpit:chromatic:accept": "npx chromatic --project-token=${CHROMATIC_PROJECT_TOKEN} --auto-accept-changes --storybook-build-dir=apps/cockpit/storybook-static",
     "cockpit:assets:generate": "node scripts/assets/generate-cockpit-assets.mjs",
     "cockpit:assets:app-icons": "node scripts/assets/generate-cockpit-app-icons.mjs",
     "cockpit:assets:icons:transparent": "node scripts/assets/chroma-key-icons.mjs",
