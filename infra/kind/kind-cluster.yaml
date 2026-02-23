@@ -1,0 +1,31 @@
+# kind cluster configuration for local Portarium deployment smoke testing.
+#
+# Usage:
+#   kind create cluster --config infra/kind/kind-cluster.yaml --name portarium
+#
+# This creates a single control-plane + single worker node cluster suitable
+# for verifying Kubernetes manifests, PDBs, and basic deployment health.
+#
+# Bead: bead-qr8v
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: portarium
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      # Map host port 8080 to the control-plane service NodePort
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
+      # Map host port 8081 to the health endpoint
+      - containerPort: 30081
+        hostPort: 8081
+        protocol: TCP
+  - role: worker
