@@ -23,13 +23,36 @@ export default defineConfig({
         'src/infrastructure/observability/otel-setup.ts',
       ],
       thresholds: {
-        // Thresholds temporarily reduced to accommodate untested code brought in
-        // by the bead-0392/0523 merge wave and 0-coverage port/interface files.
-        // Restore once VAOP-coverage bead lands.
+        // Global thresholds (all src/)
         statements: 83,
         branches: 73,
         functions: 88,
         lines: 85,
+        // Per-layer gates enforcing ≥70% on every architectural layer
+        'src/domain/**': {
+          statements: 70,
+          branches: 70,
+          functions: 70,
+          lines: 70,
+        },
+        'src/application/**': {
+          statements: 70,
+          branches: 70,
+          functions: 70,
+          lines: 70,
+        },
+        'src/infrastructure/**': {
+          statements: 70,
+          branches: 65,
+          functions: 70,
+          lines: 70,
+        },
+        'src/presentation/**': {
+          statements: 70,
+          branches: 65,
+          functions: 70,
+          lines: 70,
+        },
       },
     },
   },
