@@ -38,5 +38,15 @@
   "bead-0724": {
     "specPaths": [".specify/specs/cockpit-demo-showcase-campaign-v1.md"],
     "reviewBeads": ["bead-0725", "bead-0726", "bead-0727", "bead-0728", "bead-0729", "bead-0730", "bead-0731", "bead-0732"]
+  },
+  "bead-0740": {
+    "specPaths": [".specify/specs/adoption-gtm-onboarding-v1.md"],
+    "deliverables": [
+      "docs/getting-started/hello-portarium.md",
+      "docs/adoption/adoption-ladder.md",
+      "docs/adoption/adoption-readiness-checklist.md",
+      "docs/adoption/gtm-playbook.md",
+      "docs/sdk/integration-patterns.md"
+    ]
   }
 }
