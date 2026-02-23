@@ -174,8 +174,8 @@
     }
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@eslint/js": "^9.0.0",
+    "@playwright/test": "^1.58.2",
     "@stryker-mutator/core": "^9.4.0",
     "@stryker-mutator/typescript-checker": "^9.4.0",
     "@stryker-mutator/vitest-runner": "^9.4.0",
@@ -211,6 +211,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.893.0",
     "@opentelemetry/api": "^1.9.0",
+    "@storybook/test": "^8.6.15",
     "@temporalio/client": "^1.14.1",
     "@temporalio/worker": "^1.14.1",
     "@temporalio/workflow": "^1.14.1",

@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
-import { toast } from 'sonner';
 import { router } from './router';
 import { hydrateQueryCacheFromStorage, startQueryCachePersistence } from './lib/query-client';
 import {
@@ -9,6 +8,7 @@ import {
   registerCockpitPwa,
   rollbackCockpitPwa,
 } from './lib/pwa-registration';
+import { toast } from 'sonner';
 import './index.css';
 
 async function bootstrap() {
@@ -20,7 +20,10 @@ async function bootstrap() {
     const { worker } = await import('./mocks/browser');
     const { loadActiveDataset } = await import('./mocks/handlers');
     await loadActiveDataset();
-    await worker.start({ onUnhandledRequest: 'bypass' });
+    await Promise.race([
+      worker.start({ onUnhandledRequest: 'bypass' }),
+      new Promise<void>((resolve) => setTimeout(resolve, 8000)),
+    ]);
   }
 
   const root = document.getElementById('root')!;
@@ -69,4 +72,8 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('[bootstrap] FATAL:', err);
+  const root = document.getElementById('root');
+  if (root) root.textContent = 'Bootstrap failed: ' + String(err);
+});

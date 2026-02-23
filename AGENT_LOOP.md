@@ -122,6 +122,12 @@ Work inside `.trees/$ISSUE_ID/`. All paths below are relative to the worktree ro
 3. If the change alters observable behaviour, update `.specify/specs/<relevant>.md`.
 4. If the change introduces a significant design decision, add `docs/adr/NNNN-title.md`.
 5. Do **not** modify `package.json` dependencies unless the issue explicitly requires it.
+6. **Cockpit QA** — if the issue requires UI verification, start a bead-scoped dev server:
+   ```bash
+   cd apps/cockpit
+   portless cockpit-$ISSUE_ID vite   # → http://cockpit-$ISSUE_ID.localhost:1355
+   ```
+   Then use that URL in all `npm run ab -- open <url>` calls. This avoids port collisions when multiple agents are running concurrently.
 
 ### Step F — Quality gate (must pass before finishing)
 
