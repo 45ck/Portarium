@@ -43,13 +43,13 @@ community engagement channels, and conversion triggers.
 
 ## Discovery Touchpoints
 
-| Channel | Audience | Content |
-|---------|----------|---------|
-| GitHub README | All personas | Project overview, architecture diagram, quickstart link |
-| Documentation site | All personas | Full reference docs, how-to guides, SDK reference |
-| Demo video | Orchestration Consumer, Governance Reviewer | 5-minute governance demo (approval gate + evidence review) |
-| GitHub Discussions | Connector Author | Q&A, vertical pack authoring help |
-| Discord (TBD) | All personas | Real-time community support |
+| Channel            | Audience                                    | Content                                                    |
+| ------------------ | ------------------------------------------- | ---------------------------------------------------------- |
+| GitHub README      | All personas                                | Project overview, architecture diagram, quickstart link    |
+| Documentation site | All personas                                | Full reference docs, how-to guides, SDK reference          |
+| Demo video         | Orchestration Consumer, Governance Reviewer | 5-minute governance demo (approval gate + evidence review) |
+| GitHub Discussions | Connector Author                            | Q&A, vertical pack authoring help                          |
+| Discord (TBD)      | All personas                                | Real-time community support                                |
 
 ## L0 → L1 Conversion Triggers
 
@@ -60,6 +60,7 @@ An evaluator advances from L0 (Discovery) to L1 (Integration Spike) when:
 3. They have access to a staging environment.
 
 Recommended outreach after L0 completion:
+
 - Send the [Adoption Ladder](./adoption-ladder.md) document.
 - Offer a 30-minute onboarding call (engineering-led).
 - Share the [Adoption Readiness Checklist](./adoption-readiness-checklist.md) to set L3 expectations.
