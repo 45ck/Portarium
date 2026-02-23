@@ -41,6 +41,7 @@ npm run ab -- close                                 # close browser
 ```
 
 Key rules:
+
 - **Always re-snapshot** after navigation or DOM changes — refs are invalidated by page updates.
 - Use `snapshot -i` for interactive elements only (compact), or `snapshot` for the full accessibility tree.
 - Use `screenshot --annotate` to get annotated screenshots with numbered labels mapped to refs.

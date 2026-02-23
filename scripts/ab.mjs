@@ -25,8 +25,7 @@ import { randomUUID } from 'node:crypto';
 // ---------------------------------------------------------------------------
 
 function getAppDir() {
-  if (process.env.XDG_RUNTIME_DIR)
-    return path.join(process.env.XDG_RUNTIME_DIR, 'agent-browser');
+  if (process.env.XDG_RUNTIME_DIR) return path.join(process.env.XDG_RUNTIME_DIR, 'agent-browser');
   const home = os.homedir();
   if (home) return path.join(home, '.agent-browser');
   return path.join(os.tmpdir(), 'agent-browser');
@@ -73,9 +72,7 @@ function findDaemonJs() {
   if (npmGlobal) candidates.push(npmGlobal);
 
   // Also try relative to this script (in case agent-browser was installed locally)
-  candidates.push(
-    path.resolve('node_modules', 'agent-browser', 'dist', 'daemon.js'),
-  );
+  candidates.push(path.resolve('node_modules', 'agent-browser', 'dist', 'daemon.js'));
 
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;
@@ -129,13 +126,21 @@ function sendCommand(cmd) {
       if (idx !== -1) {
         const json = buf.slice(0, idx);
         sock.destroy();
-        try { resolve(JSON.parse(json)); } catch { resolve({ success: false, error: 'Bad JSON' }); }
+        try {
+          resolve(JSON.parse(json));
+        } catch {
+          resolve({ success: false, error: 'Bad JSON' });
+        }
       }
     });
     sock.on('error', (err) => reject(err));
     sock.on('close', () => {
       if (buf && !buf.includes('\n')) {
-        try { resolve(JSON.parse(buf)); } catch { reject(new Error('Incomplete response')); }
+        try {
+          resolve(JSON.parse(buf));
+        } catch {
+          reject(new Error('Incomplete response'));
+        }
       }
     });
   });
@@ -145,7 +150,9 @@ function sendCommand(cmd) {
 // CLI → JSON command translation
 // ---------------------------------------------------------------------------
 
-function id() { return randomUUID().slice(0, 8); }
+function id() {
+  return randomUUID().slice(0, 8);
+}
 
 function parseArgs(argv) {
   // argv = everything after `node scripts/ab.mjs`
@@ -154,8 +161,14 @@ function parseArgs(argv) {
 
   // Helpers
   const flag = (f) => rest.includes(f);
-  const flagVal = (f) => { const i = rest.indexOf(f); return i >= 0 && i + 1 < rest.length ? rest[i + 1] : null; };
-  const positional = () => rest.filter((a) => !a.startsWith('-') && !rest.some((f, i) => f.startsWith('-') && rest[i + 1] === a));
+  const flagVal = (f) => {
+    const i = rest.indexOf(f);
+    return i >= 0 && i + 1 < rest.length ? rest[i + 1] : null;
+  };
+  const positional = () =>
+    rest.filter(
+      (a) => !a.startsWith('-') && !rest.some((f, i) => f.startsWith('-') && rest[i + 1] === a),
+    );
 
   switch (cmd) {
     // --- Navigation ---
@@ -168,13 +181,21 @@ function parseArgs(argv) {
       // Send launch + navigate
       return [
         { id: id(), action: 'launch', headless, viewport: null },
-        { id: id(), action: 'navigate', url: url.startsWith('http') ? url : `https://${url}`, waitUntil: flag('--wait') ? 'networkidle' : undefined },
+        {
+          id: id(),
+          action: 'navigate',
+          url: url.startsWith('http') ? url : `https://${url}`,
+          waitUntil: flag('--wait') ? 'networkidle' : undefined,
+        },
       ];
     }
 
-    case 'back': return { id: id(), action: 'back' };
-    case 'forward': return { id: id(), action: 'forward' };
-    case 'reload': return { id: id(), action: 'reload' };
+    case 'back':
+      return { id: id(), action: 'back' };
+    case 'forward':
+      return { id: id(), action: 'forward' };
+    case 'reload':
+      return { id: id(), action: 'reload' };
 
     // --- Snapshot ---
     case 'snapshot': {
@@ -220,7 +241,13 @@ function parseArgs(argv) {
     case 'type': {
       const p = positional();
       if (p.length < 2) return usage('type <selector> <text>');
-      return { id: id(), action: 'type', selector: p[0], text: p[1], clear: flag('--clear') || undefined };
+      return {
+        id: id(),
+        action: 'type',
+        selector: p[0],
+        text: p[1],
+        clear: flag('--clear') || undefined,
+      };
     }
     case 'press':
     case 'key': {
@@ -234,15 +261,20 @@ function parseArgs(argv) {
       const sub = positional()[0]; // 'type' | 'inserttext'
       const text = positional()[1];
       if (sub === 'type') return { id: id(), action: 'keyboard', subaction: 'type', text };
-      if (sub === 'inserttext') return { id: id(), action: 'keyboard', subaction: 'insertText', text };
+      if (sub === 'inserttext')
+        return { id: id(), action: 'keyboard', subaction: 'insertText', text };
       return { id: id(), action: 'keyboard', subaction: 'press', keys: sub };
     }
 
     // --- Hover / focus / check ---
-    case 'hover': return { id: id(), action: 'hover', selector: positional()[0] };
-    case 'focus': return { id: id(), action: 'focus', selector: positional()[0] };
-    case 'check': return { id: id(), action: 'check', selector: positional()[0] };
-    case 'uncheck': return { id: id(), action: 'uncheck', selector: positional()[0] };
+    case 'hover':
+      return { id: id(), action: 'hover', selector: positional()[0] };
+    case 'focus':
+      return { id: id(), action: 'focus', selector: positional()[0] };
+    case 'check':
+      return { id: id(), action: 'check', selector: positional()[0] };
+    case 'uncheck':
+      return { id: id(), action: 'uncheck', selector: positional()[0] };
 
     // --- Select ---
     case 'select': {
@@ -257,7 +289,8 @@ function parseArgs(argv) {
       const amt = p[1] ? parseInt(p[1], 10) : undefined;
       return { id: id(), action: 'scroll', direction: dir, amount: amt };
     }
-    case 'scrollintoview': return { id: id(), action: 'scrollintoview', selector: positional()[0] };
+    case 'scrollintoview':
+      return { id: id(), action: 'scrollintoview', selector: positional()[0] };
 
     // --- Wait ---
     case 'wait': {
@@ -279,16 +312,26 @@ function parseArgs(argv) {
       const sub = positional()[0];
       const sel = positional()[1];
       switch (sub) {
-        case 'text': return { id: id(), action: 'gettext', selector: sel };
-        case 'html': return { id: id(), action: 'innerhtml', selector: sel };
-        case 'value': return { id: id(), action: 'inputvalue', selector: sel };
-        case 'attr': return { id: id(), action: 'getattribute', selector: sel, attribute: positional()[2] };
-        case 'title': return { id: id(), action: 'title' };
-        case 'url': return { id: id(), action: 'url' };
-        case 'count': return { id: id(), action: 'count', selector: sel };
-        case 'box': return { id: id(), action: 'boundingbox', selector: sel };
-        case 'styles': return { id: id(), action: 'styles', selector: sel };
-        default: return usage('get text|html|value|attr|title|url|count|box|styles <sel>');
+        case 'text':
+          return { id: id(), action: 'gettext', selector: sel };
+        case 'html':
+          return { id: id(), action: 'innerhtml', selector: sel };
+        case 'value':
+          return { id: id(), action: 'inputvalue', selector: sel };
+        case 'attr':
+          return { id: id(), action: 'getattribute', selector: sel, attribute: positional()[2] };
+        case 'title':
+          return { id: id(), action: 'title' };
+        case 'url':
+          return { id: id(), action: 'url' };
+        case 'count':
+          return { id: id(), action: 'count', selector: sel };
+        case 'box':
+          return { id: id(), action: 'boundingbox', selector: sel };
+        case 'styles':
+          return { id: id(), action: 'styles', selector: sel };
+        default:
+          return usage('get text|html|value|attr|title|url|count|box|styles <sel>');
       }
     }
 
@@ -297,10 +340,14 @@ function parseArgs(argv) {
       const sub = positional()[0];
       const sel = positional()[1];
       switch (sub) {
-        case 'visible': return { id: id(), action: 'isvisible', selector: sel };
-        case 'enabled': return { id: id(), action: 'isenabled', selector: sel };
-        case 'checked': return { id: id(), action: 'ischecked', selector: sel };
-        default: return usage('is visible|enabled|checked <sel>');
+        case 'visible':
+          return { id: id(), action: 'isvisible', selector: sel };
+        case 'enabled':
+          return { id: id(), action: 'isenabled', selector: sel };
+        case 'checked':
+          return { id: id(), action: 'ischecked', selector: sel };
+        default:
+          return usage('is visible|enabled|checked <sel>');
       }
     }
 
@@ -311,26 +358,83 @@ function parseArgs(argv) {
       const name = flagVal('--name');
       const exact = flag('--exact') || undefined;
       switch (kind) {
-        case 'role': return { id: id(), action: 'getbyrole', role: p[1], subaction: p[2], name, exact, value: p[3] };
-        case 'text': return { id: id(), action: 'getbytext', text: p[1], subaction: p[2], exact };
-        case 'label': return { id: id(), action: 'getbylabel', label: p[1], subaction: p[2], exact, value: p[3] };
-        case 'placeholder': return { id: id(), action: 'getbyplaceholder', placeholder: p[1], subaction: p[2], exact, value: p[3] };
-        case 'alt': return { id: id(), action: 'getbyalttext', text: p[1], subaction: p[2], exact };
-        case 'title': return { id: id(), action: 'getbytitle', text: p[1], subaction: p[2], exact };
-        case 'testid': return { id: id(), action: 'getbytestid', testId: p[1], subaction: p[2], value: p[3] };
-        case 'first': return { id: id(), action: 'nth', selector: p[1], index: 0, subaction: p[2], value: p[3] };
-        case 'last': return { id: id(), action: 'nth', selector: p[1], index: -1, subaction: p[2], value: p[3] };
-        case 'nth': return { id: id(), action: 'nth', selector: p[2], index: parseInt(p[1], 10), subaction: p[3], value: p[4] };
-        default: return usage('find role|text|label|placeholder|alt|title|testid <val> <action>');
+        case 'role':
+          return {
+            id: id(),
+            action: 'getbyrole',
+            role: p[1],
+            subaction: p[2],
+            name,
+            exact,
+            value: p[3],
+          };
+        case 'text':
+          return { id: id(), action: 'getbytext', text: p[1], subaction: p[2], exact };
+        case 'label':
+          return {
+            id: id(),
+            action: 'getbylabel',
+            label: p[1],
+            subaction: p[2],
+            exact,
+            value: p[3],
+          };
+        case 'placeholder':
+          return {
+            id: id(),
+            action: 'getbyplaceholder',
+            placeholder: p[1],
+            subaction: p[2],
+            exact,
+            value: p[3],
+          };
+        case 'alt':
+          return { id: id(), action: 'getbyalttext', text: p[1], subaction: p[2], exact };
+        case 'title':
+          return { id: id(), action: 'getbytitle', text: p[1], subaction: p[2], exact };
+        case 'testid':
+          return { id: id(), action: 'getbytestid', testId: p[1], subaction: p[2], value: p[3] };
+        case 'first':
+          return {
+            id: id(),
+            action: 'nth',
+            selector: p[1],
+            index: 0,
+            subaction: p[2],
+            value: p[3],
+          };
+        case 'last':
+          return {
+            id: id(),
+            action: 'nth',
+            selector: p[1],
+            index: -1,
+            subaction: p[2],
+            value: p[3],
+          };
+        case 'nth':
+          return {
+            id: id(),
+            action: 'nth',
+            selector: p[2],
+            index: parseInt(p[1], 10),
+            subaction: p[3],
+            value: p[4],
+          };
+        default:
+          return usage('find role|text|label|placeholder|alt|title|testid <val> <action>');
       }
     }
 
     // --- Eval ---
-    case 'eval': return { id: id(), action: 'evaluate', script: rest.join(' ') };
+    case 'eval':
+      return { id: id(), action: 'evaluate', script: rest.join(' ') };
 
     // --- Console / errors ---
-    case 'console': return { id: id(), action: 'console', clear: flag('--clear') || undefined };
-    case 'errors': return { id: id(), action: 'errors', clear: flag('--clear') || undefined };
+    case 'console':
+      return { id: id(), action: 'console', clear: flag('--clear') || undefined };
+    case 'errors':
+      return { id: id(), action: 'errors', clear: flag('--clear') || undefined };
 
     // --- Upload ---
     case 'upload': {
@@ -345,21 +449,40 @@ function parseArgs(argv) {
     }
 
     // --- Highlight ---
-    case 'highlight': return { id: id(), action: 'highlight', selector: positional()[0] };
+    case 'highlight':
+      return { id: id(), action: 'highlight', selector: positional()[0] };
 
     // --- Set ---
     case 'set': {
       const sub = positional()[0];
       const p = positional();
       switch (sub) {
-        case 'viewport': return { id: id(), action: 'viewport', width: parseInt(p[1], 10), height: parseInt(p[2], 10) };
-        case 'device': return { id: id(), action: 'device', device: p[1] };
-        case 'geo': return { id: id(), action: 'geolocation', latitude: parseFloat(p[1]), longitude: parseFloat(p[2]) };
-        case 'offline': return { id: id(), action: 'offline', offline: p[1] !== 'off' };
-        case 'headers': return { id: id(), action: 'headers', headers: JSON.parse(p[1]) };
-        case 'credentials': return { id: id(), action: 'credentials', username: p[1], password: p[2] };
-        case 'media': return { id: id(), action: 'emulatemedia', colorScheme: p[1] };
-        default: return usage('set viewport|device|geo|offline|headers|credentials|media');
+        case 'viewport':
+          return {
+            id: id(),
+            action: 'viewport',
+            width: parseInt(p[1], 10),
+            height: parseInt(p[2], 10),
+          };
+        case 'device':
+          return { id: id(), action: 'device', device: p[1] };
+        case 'geo':
+          return {
+            id: id(),
+            action: 'geolocation',
+            latitude: parseFloat(p[1]),
+            longitude: parseFloat(p[2]),
+          };
+        case 'offline':
+          return { id: id(), action: 'offline', offline: p[1] !== 'off' };
+        case 'headers':
+          return { id: id(), action: 'headers', headers: JSON.parse(p[1]) };
+        case 'credentials':
+          return { id: id(), action: 'credentials', username: p[1], password: p[2] };
+        case 'media':
+          return { id: id(), action: 'emulatemedia', colorScheme: p[1] };
+        default:
+          return usage('set viewport|device|geo|offline|headers|credentials|media');
       }
     }
 
@@ -368,7 +491,8 @@ function parseArgs(argv) {
       const p = positional();
       if (p.length === 0) return { id: id(), action: 'tab_list' };
       if (p[0] === 'new') return { id: id(), action: 'tab_new', url: p[1] };
-      if (p[0] === 'close') return { id: id(), action: 'tab_close', index: p[1] ? parseInt(p[1], 10) : undefined };
+      if (p[0] === 'close')
+        return { id: id(), action: 'tab_close', index: p[1] ? parseInt(p[1], 10) : undefined };
       return { id: id(), action: 'tab_switch', index: parseInt(p[0], 10) };
     }
     case 'window': {
@@ -386,7 +510,8 @@ function parseArgs(argv) {
     // --- Cookies ---
     case 'cookies': {
       const p = positional();
-      if (p[0] === 'set') return { id: id(), action: 'cookies_set', cookies: [{ name: p[1], value: p[2] }] };
+      if (p[0] === 'set')
+        return { id: id(), action: 'cookies_set', cookies: [{ name: p[1], value: p[2] }] };
       if (p[0] === 'clear') return { id: id(), action: 'cookies_clear' };
       return { id: id(), action: 'cookies_get' };
     }
@@ -421,7 +546,8 @@ function parseArgs(argv) {
     // --- Dialog ---
     case 'dialog': {
       const p = positional();
-      if (p[0] === 'accept') return { id: id(), action: 'dialog', response: 'accept', promptText: p[1] };
+      if (p[0] === 'accept')
+        return { id: id(), action: 'dialog', response: 'accept', promptText: p[1] };
       if (p[0] === 'dismiss') return { id: id(), action: 'dialog', response: 'dismiss' };
       return usage('dialog accept|dismiss');
     }
@@ -452,20 +578,33 @@ function parseArgs(argv) {
     }
 
     // --- PDF ---
-    case 'pdf': return { id: id(), action: 'pdf', path: positional()[0] };
+    case 'pdf':
+      return { id: id(), action: 'pdf', path: positional()[0] };
 
     // --- State ---
     case 'state': {
       const p = positional();
       switch (p[0]) {
-        case 'save': return { id: id(), action: 'state_save', path: p[1] };
-        case 'load': return { id: id(), action: 'state_load', path: p[1] };
-        case 'list': return { id: id(), action: 'state_list' };
-        case 'show': return { id: id(), action: 'state_show', filename: p[1] };
-        case 'rename': return { id: id(), action: 'state_rename', oldName: p[1], newName: p[2] };
-        case 'clear': return { id: id(), action: 'state_clear', all: flag('--all') || undefined };
-        case 'clean': return { id: id(), action: 'state_clean', days: parseInt(flagVal('--older-than') || '30', 10) };
-        default: return usage('state save|load|list|show|rename|clear|clean');
+        case 'save':
+          return { id: id(), action: 'state_save', path: p[1] };
+        case 'load':
+          return { id: id(), action: 'state_load', path: p[1] };
+        case 'list':
+          return { id: id(), action: 'state_list' };
+        case 'show':
+          return { id: id(), action: 'state_show', filename: p[1] };
+        case 'rename':
+          return { id: id(), action: 'state_rename', oldName: p[1], newName: p[2] };
+        case 'clear':
+          return { id: id(), action: 'state_clear', all: flag('--all') || undefined };
+        case 'clean':
+          return {
+            id: id(),
+            action: 'state_clean',
+            days: parseInt(flagVal('--older-than') || '30', 10),
+          };
+        default:
+          return usage('state save|load|list|show|rename|clear|clean');
       }
     }
 
@@ -476,7 +615,7 @@ function parseArgs(argv) {
         // List sessions by scanning socketDir for .pid files
         const dir = getSocketDir();
         if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir).filter(f => f.endsWith('.pid'));
+          const files = fs.readdirSync(dir).filter((f) => f.endsWith('.pid'));
           for (const f of files) {
             const name = f.replace('.pid', '');
             console.log(`  ${name === SESSION ? '* ' : '  '}${name}`);
@@ -486,13 +625,16 @@ function parseArgs(argv) {
       }
       console.log(SESSION);
       process.exit(0);
+      break;
     }
 
     // --- Diff ---
     case 'diff': {
       const p = positional();
-      if (p[0] === 'snapshot') return { id: id(), action: 'diff_snapshot', baseline: flagVal('--baseline') };
-      if (p[0] === 'screenshot') return { id: id(), action: 'diff_screenshot', baseline: p[1], output: p[2] };
+      if (p[0] === 'snapshot')
+        return { id: id(), action: 'diff_snapshot', baseline: flagVal('--baseline') };
+      if (p[0] === 'screenshot')
+        return { id: id(), action: 'diff_screenshot', baseline: p[1], output: p[2] };
       if (p[0] === 'url') return { id: id(), action: 'diff_url', url1: p[1], url2: p[2] };
       return usage('diff snapshot|screenshot|url');
     }
@@ -500,10 +642,17 @@ function parseArgs(argv) {
     // --- Mouse ---
     case 'mouse': {
       const p = positional();
-      if (p[0] === 'move') return { id: id(), action: 'mousemove', x: parseFloat(p[1]), y: parseFloat(p[2]) };
+      if (p[0] === 'move')
+        return { id: id(), action: 'mousemove', x: parseFloat(p[1]), y: parseFloat(p[2]) };
       if (p[0] === 'down') return { id: id(), action: 'mousedown', button: p[1] };
       if (p[0] === 'up') return { id: id(), action: 'mouseup', button: p[1] };
-      if (p[0] === 'wheel') return { id: id(), action: 'wheel', deltaY: parseFloat(p[1]), deltaX: p[2] ? parseFloat(p[2]) : undefined };
+      if (p[0] === 'wheel')
+        return {
+          id: id(),
+          action: 'wheel',
+          deltaY: parseFloat(p[1]),
+          deltaX: p[2] ? parseFloat(p[2]) : undefined,
+        };
       return usage('mouse move|down|up|wheel');
     }
 
@@ -522,7 +671,9 @@ function parseArgs(argv) {
     default:
       console.error(`Unknown command: ${cmd}`);
       console.error('Usage: node scripts/ab.mjs <command> [args...]');
-      console.error('Commands: open, snapshot, click, fill, type, press, screenshot, get, wait, close, ...');
+      console.error(
+        'Commands: open, snapshot, click, fill, type, press, screenshot, get, wait, close, ...',
+      );
       process.exit(1);
   }
 }
@@ -562,17 +713,50 @@ function formatOutput(resp) {
   }
 
   // Text content
-  if (typeof d.text === 'string') { console.log(d.text); return; }
-  if (typeof d.html === 'string') { console.log(d.html); return; }
-  if (typeof d.value === 'string') { console.log(d.value); return; }
-  if (typeof d.attribute === 'string') { console.log(d.attribute); return; }
-  if (typeof d.title === 'string') { console.log(d.title); return; }
-  if (typeof d.url === 'string') { console.log(d.url); return; }
-  if (typeof d.count === 'number') { console.log(d.count); return; }
-  if (typeof d.visible === 'boolean') { console.log(d.visible); return; }
-  if (typeof d.enabled === 'boolean') { console.log(d.enabled); return; }
-  if (typeof d.checked === 'boolean') { console.log(d.checked); return; }
-  if (d.result !== undefined) { console.log(typeof d.result === 'string' ? d.result : JSON.stringify(d.result, null, 2)); return; }
+  if (typeof d.text === 'string') {
+    console.log(d.text);
+    return;
+  }
+  if (typeof d.html === 'string') {
+    console.log(d.html);
+    return;
+  }
+  if (typeof d.value === 'string') {
+    console.log(d.value);
+    return;
+  }
+  if (typeof d.attribute === 'string') {
+    console.log(d.attribute);
+    return;
+  }
+  if (typeof d.title === 'string') {
+    console.log(d.title);
+    return;
+  }
+  if (typeof d.url === 'string') {
+    console.log(d.url);
+    return;
+  }
+  if (typeof d.count === 'number') {
+    console.log(d.count);
+    return;
+  }
+  if (typeof d.visible === 'boolean') {
+    console.log(d.visible);
+    return;
+  }
+  if (typeof d.enabled === 'boolean') {
+    console.log(d.enabled);
+    return;
+  }
+  if (typeof d.checked === 'boolean') {
+    console.log(d.checked);
+    return;
+  }
+  if (d.result !== undefined) {
+    console.log(typeof d.result === 'string' ? d.result : JSON.stringify(d.result, null, 2));
+    return;
+  }
 
   // Tabs
   if (Array.isArray(d.tabs)) {
