@@ -16,20 +16,20 @@ identified these as the primary latency bottleneck.
 Implement a **cache-aside** pattern via a `QueryCache` port (see
 `src/application/ports/query-cache.ts`) with two adapters:
 
-| Adapter | Class | Environment |
-|---|---|---|
-| In-process LRU + TTL | `InMemoryQueryCache` | local-dev, test |
-| Redis strings with EX TTL | `RedisQueryCache` | staging, production |
+| Adapter                   | Class                | Environment         |
+| ------------------------- | -------------------- | ------------------- |
+| In-process LRU + TTL      | `InMemoryQueryCache` | local-dev, test     |
+| Redis strings with EX TTL | `RedisQueryCache`    | staging, production |
 
 Selected adapter is controlled by `QUERY_CACHE_STORE=redis|memory` at bootstrap.
 
 ### TTL choices
 
-| Cache key scope | TTL | Rationale |
-|---|---|---|
-| Workspace list (`workspaces:*`) | 30 s | Config changes are low-frequency; 30 s lag is acceptable |
-| Run list per workspace | 10 s | Run status changes more often; shorter lag for fresher data |
-| OpenFGA policy check result | 5 s | Permissions can be revoked; short TTL limits the exposure window |
+| Cache key scope                 | TTL  | Rationale                                                        |
+| ------------------------------- | ---- | ---------------------------------------------------------------- |
+| Workspace list (`workspaces:*`) | 30 s | Config changes are low-frequency; 30 s lag is acceptable         |
+| Run list per workspace          | 10 s | Run status changes more often; shorter lag for fresher data      |
+| OpenFGA policy check result     | 5 s  | Permissions can be revoked; short TTL limits the exposure window |
 
 ### Invalidation
 
@@ -42,6 +42,7 @@ Selected adapter is controlled by `QUERY_CACHE_STORE=redis|memory` at bootstrap.
 ### Fail-open policy
 
 `RedisQueryCache` wraps all calls in `try/catch`. On Redis unavailability:
+
 - `get()` returns `null` (cache miss — falls through to Postgres)
 - `set()` is silently dropped
 - `invalidate()` / `invalidatePrefix()` are silently dropped
@@ -57,12 +58,14 @@ metrics pipeline via the Prometheus registry (implementation deferred to bead-03
 ## Consequences
 
 **Positive**:
+
 - Hot reads served from cache on repeat calls within the TTL window
 - Zero application-layer dependency on Redis availability (fail-open)
 - Dev/test environments use in-process cache with no external services
 - Consistent key schema via `queryCacheKey()` helper
 
 **Negative/Risks**:
+
 - Up to TTL seconds of staleness on reads after a write (acceptable per design)
 - In-memory cache is not shared across multiple workers/pods (fine for stateless
   horizontal scaling since each pod has its own warm cache)
