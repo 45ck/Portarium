@@ -11,25 +11,17 @@ A step-by-step guide to running the Portarium integration showcase locally and d
 ## 1. Start the local stack
 
 ```bash
-docker compose up -d
-npm run migrate:ci
+npm run dev:all
+npm run dev:seed
 ```
 
-## 2. Boot the control plane
+This starts Postgres, Temporal, MinIO, Vault, the API (port 8080), and the worker. The API is
+available immediately at `http://localhost:8080`.
 
-```bash
-PORTARIUM_DEV_TOKEN=demo-secret npx tsx src/presentation/runtime/control-plane.ts
-```
+> **Dev-auth bypass:** `PORTARIUM_DEV_TOKEN=portarium-dev-token` is accepted as a static bearer
+> token when `NODE_ENV=development`. No Keycloak required for demos.
 
-In a second terminal, boot the execution plane:
-
-```bash
-PORTARIUM_ENABLE_TEMPORAL_WORKER=true \
-PORTARIUM_DEV_TOKEN=demo-secret \
-npx tsx src/presentation/runtime/worker.ts
-```
-
-## 3. Start the Cockpit
+## 2. Boot the Cockpit (optional)
 
 ```bash
 cd apps/cockpit && npm run dev
@@ -37,7 +29,7 @@ cd apps/cockpit && npm run dev
 
 Open `http://localhost:5173`.
 
-## 4. Showcase: Approvals governance flow
+## 3. Showcase: Approvals governance flow
 
 The approvals flow exercises the full approval-gate path with evidence chain:
 
@@ -53,7 +45,7 @@ This opens a headed Chromium browser, walks through:
 
 Artefacts are written to `docs/ui/cockpit/demo-machine/showcase/`.
 
-## 5. Showcase: Integration ladder levels
+## 4. Showcase: Integration ladder levels
 
 ### Level 0 — Mock data
 
@@ -93,13 +85,20 @@ The `RunEmulator` exercises the full governance stack without live infrastructur
 npm run test -- src/infrastructure/emulator/run-emulator.test.ts
 ```
 
-To run against the live stack (requires Docker + control plane running):
+To run against the live stack (requires `npm run dev:all` and `npm run dev:seed`):
 
 ```bash
-PORTARIUM_DEV_TOKEN=demo-secret node scripts/qa/smoke-test-local.mjs
+GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 \
+  npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
 ```
 
-## 6. Verify evidence
+Or boot the full pipeline in one command:
+
+```bash
+npm run smoke:stack
+```
+
+## 5. Verify evidence
 
 After any governed run, evidence is visible in the Cockpit under **Evidence** and verifiable via the CLI:
 

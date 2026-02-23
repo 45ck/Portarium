@@ -34,6 +34,13 @@ Use this page to pick the shortest path for what you are trying to do.
 - CI and quality gates: `docs/reference/ci-and-quality.md`
 - Versioned schemas and spec sources: `docs/reference/schemas.md`
 
+## I Want To Build An Integration
+
+1. `docs/integration/integration-ladder.md` — maturity levels (L0–L3) and acceptance gates
+2. `docs/integration/demo-walkthrough.md` — step-by-step local demo against a live stack
+3. `docs/how-to/generate-integration-scaffolds.md` — scaffold a new adapter from CLI
+4. `docs/how-to/first-run-local-integrations.md` — Keycloak, OpenFGA, Odoo, OpenClaw setup
+
 ## I Want Architecture Rationale
 
 - System architecture: `docs/explanation/architecture.md`
