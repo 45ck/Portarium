@@ -1041,3 +1041,5 @@ ollback
 ulnerability
 icense
 ecret
+# Data layer ADR (bead-6i3j)
+savepoints
