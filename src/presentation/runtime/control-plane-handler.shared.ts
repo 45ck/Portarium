@@ -13,6 +13,8 @@ import type {
   AuthenticationPort,
   AuthorizationPort,
   EventStreamBroadcast,
+  MachineQueryStore,
+  MachineRegistryStore,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
@@ -27,6 +29,8 @@ import {
   type TraceContext,
 } from '../../application/common/trace-context.js';
 import type {
+  Conflict,
+  DependencyFailure,
   Forbidden,
   NotFound,
   PreconditionFailed,
@@ -54,7 +58,9 @@ export type QueryError =
   | Forbidden
   | NotFound
   | ValidationFailed
-  | PreconditionFailed;
+  | PreconditionFailed
+  | Conflict
+  | DependencyFailure;
 
 export type ControlPlaneDeps = Readonly<{
   authentication: AuthenticationPort;
@@ -73,6 +79,10 @@ export type ControlPlaneDeps = Readonly<{
   eventStream?: EventStreamBroadcast;
   /** Optional structured logger for 401/403/429 security events. */
   authEventLogger?: AuthEventLogger;
+  /** Optional query store for machine/agent registry reads; when absent, registry read routes return 503. */
+  machineQueryStore?: MachineQueryStore;
+  /** Optional write store for machine/agent registry; when absent, registry write routes return 503. */
+  machineRegistryStore?: MachineRegistryStore;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
@@ -224,6 +234,22 @@ export function problemFromError(error: QueryError, instance: string): ProblemDe
         type: 'https://portarium.dev/problems/precondition-failed',
         title: 'Precondition Failed',
         status: 412,
+        detail: error.message,
+        instance,
+      };
+    case 'Conflict':
+      return {
+        type: 'https://portarium.dev/problems/conflict',
+        title: 'Conflict',
+        status: 409,
+        detail: error.message,
+        instance,
+      };
+    case 'DependencyFailure':
+      return {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Dependency Failure',
+        status: 503,
         detail: error.message,
         instance,
       };

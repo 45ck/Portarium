@@ -39,6 +39,14 @@ import {
   handleMachineHeartbeat,
 } from './control-plane-handler.agents.js';
 import {
+  handleListMachines,
+  handleGetMachine,
+  handleRegisterMachine,
+  handleListAgents,
+  handleGetAgent,
+  handleCreateAgent,
+} from './control-plane-handler.machines.js';
+import {
   handleListLocationEvents,
   handleListMapLayers,
   handleLocationEventsStream,
@@ -588,6 +596,56 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/evidence', async (c) => {
     const ctx = c.get('ctx');
     await handleListEvidence({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/machines
+  app.get('/v1/workspaces/:workspaceId/machines', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListMachines({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/machines/:machineId
+  app.get('/v1/workspaces/:workspaceId/machines/:machineId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetMachine({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      machineId: c.req.param('machineId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/machines
+  app.post('/v1/workspaces/:workspaceId/machines', async (c) => {
+    const ctx = c.get('ctx');
+    await handleRegisterMachine({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/agents
+  app.get('/v1/workspaces/:workspaceId/agents', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListAgents({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/agents/:agentId
+  app.get('/v1/workspaces/:workspaceId/agents/:agentId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetAgent({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/agents
+  app.post('/v1/workspaces/:workspaceId/agents', async (c) => {
+    const ctx = c.get('ctx');
+    await handleCreateAgent({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 
