@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { CorrelationId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
-import { domainEventToCloudEventsType, domainEventToPortariumCloudEvent } from './cloudevent.js';
+import {
+  createPortariumCloudEvent,
+  domainEventToCloudEventsType,
+  domainEventToPortariumCloudEvent,
+} from './cloudevent.js';
 
 const BASE_EVENT: DomainEventV1 = {
   schemaVersion: 1,
@@ -124,5 +128,43 @@ describe('domainEventToPortariumCloudEvent', () => {
     const ce = domainEventToPortariumCloudEvent(wsEvent, 'portarium.control-plane.application');
     expect(ce.subject).toBe('workspaces/ws-1');
     expect(ce.type).toBe('com.portarium.workspace.WorkspaceCreated');
+  });
+
+  it('includes traceparent when provided (ADR-0105)', () => {
+    const tp = '00-abcdef1234567890abcdef1234567890-1234567890abcdef-01';
+    const ce = domainEventToPortariumCloudEvent(BASE_EVENT, 'portarium.control-plane.runs', tp);
+    expect(ce.traceparent).toBe(tp);
+  });
+
+  it('omits traceparent when not provided', () => {
+    const ce = domainEventToPortariumCloudEvent(BASE_EVENT, 'portarium.control-plane.runs');
+    expect(ce.traceparent).toBeUndefined();
+  });
+});
+
+describe('createPortariumCloudEvent traceparent (ADR-0105)', () => {
+  it('includes traceparent extension attribute when provided', () => {
+    const tp = '00-abcdef1234567890abcdef1234567890-1234567890abcdef-01';
+    const ce = createPortariumCloudEvent({
+      source: 'test',
+      eventType: 'test.type',
+      eventId: 'evt-1',
+      tenantId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
+      traceparent: tp,
+    });
+    expect(ce.traceparent).toBe(tp);
+  });
+
+  it('omits traceparent when not provided', () => {
+    const ce = createPortariumCloudEvent({
+      source: 'test',
+      eventType: 'test.type',
+      eventId: 'evt-1',
+      tenantId: WorkspaceId('ws-1'),
+      correlationId: CorrelationId('corr-1'),
+    });
+    expect(ce.traceparent).toBeUndefined();
+    expect('traceparent' in ce).toBe(false);
   });
 });

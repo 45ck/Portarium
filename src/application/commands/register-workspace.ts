@@ -126,12 +126,15 @@ async function persistWorkspace(
   ctx: AppContext,
   { workspace, domainEvent, commandKey }: PersistInput,
 ): Promise<Result<RegisterWorkspaceOutput, DependencyFailure>> {
-  void ctx; // tenantId is now embedded in domainEvent.workspaceId
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.workspaceStore.saveWorkspace(workspace);
       await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(domainEvent, WORKSPACE_CLOUD_EVENT_SOURCE),
+        domainEventToPortariumCloudEvent(
+          domainEvent,
+          WORKSPACE_CLOUD_EVENT_SOURCE,
+          ctx.traceparent,
+        ),
       );
       const output: RegisterWorkspaceOutput = { workspaceId: workspace.workspaceId };
       await deps.idempotency.set(commandKey, output);

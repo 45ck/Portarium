@@ -77,7 +77,11 @@ export class AssignWorkforceMemberUseCase {
       return await this.deps.unitOfWork.execute(async () => {
         await plan.value.save();
         await this.deps.eventPublisher.publish(
-          domainEventToPortariumCloudEvent(plan.value.event, ASSIGN_WORKFORCE_SOURCE),
+          domainEventToPortariumCloudEvent(
+            plan.value.event,
+            ASSIGN_WORKFORCE_SOURCE,
+            ctx.traceparent,
+          ),
         );
         await this.deps.evidenceLog.appendEntry(ctx.tenantId, plan.value.evidence);
         return ok({

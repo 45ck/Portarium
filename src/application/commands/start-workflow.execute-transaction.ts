@@ -48,7 +48,7 @@ export async function executeStartWorkflowTransaction(
         idempotencyKey: plan.commandKey.requestKey,
       });
       await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(domainEvent, START_WORKFLOW_SOURCE),
+        domainEventToPortariumCloudEvent(domainEvent, START_WORKFLOW_SOURCE, ctx.traceparent),
       );
       const output: StartWorkflowOutput = { runId: plan.run.runId };
       await deps.idempotency.set(plan.commandKey, output);

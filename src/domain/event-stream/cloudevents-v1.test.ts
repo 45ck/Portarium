@@ -133,6 +133,32 @@ describe('parsePortariumCloudEventV1: happy path', () => {
     expect(evt.data).toEqual({ runStatus: 'Running' });
   });
 
+  it('parses traceparent distributed tracing extension (ADR-0105)', () => {
+    const tp = '00-abcdef1234567890abcdef1234567890-1234567890abcdef-01';
+    const evt = parsePortariumCloudEventV1({
+      specversion: '1.0',
+      id: 'evt-tp',
+      source: 'portarium://control-plane',
+      type: 'portarium.run.started',
+      tenantid: 'tenant-1',
+      correlationid: 'corr-1',
+      traceparent: tp,
+    });
+    expect(evt.traceparent).toBe(tp);
+  });
+
+  it('omits traceparent when not present in input', () => {
+    const evt = parsePortariumCloudEventV1({
+      specversion: '1.0',
+      id: 'evt-no-tp',
+      source: 'portarium://control-plane',
+      type: 'portarium.run.started',
+      tenantid: 'tenant-1',
+      correlationid: 'corr-1',
+    });
+    expect(evt.traceparent).toBeUndefined();
+  });
+
   it('ignores additive extension fields to preserve consumer forward-compatibility', () => {
     const evt = parsePortariumCloudEventV1({
       specversion: '1.0',

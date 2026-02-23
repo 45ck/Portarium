@@ -225,7 +225,7 @@ async function persistDecision(
     return await deps.unitOfWork.execute(async () => {
       await deps.approvalStore.saveApproval(ctx.tenantId, decided);
       await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(domainEvent, SUBMIT_APPROVAL_SOURCE),
+        domainEventToPortariumCloudEvent(domainEvent, SUBMIT_APPROVAL_SOURCE, ctx.traceparent),
       );
       return ok({ approvalId: ids.approvalId, status: decided.status });
     });

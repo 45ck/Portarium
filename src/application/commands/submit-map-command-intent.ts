@@ -127,7 +127,11 @@ async function persistAuditArtifacts(
     await deps.unitOfWork.execute(async () => {
       await deps.evidenceLog.appendEntry(ctx.tenantId, audit.evidence);
       await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(audit.event, SUBMIT_MAP_COMMAND_INTENT_SOURCE),
+        domainEventToPortariumCloudEvent(
+          audit.event,
+          SUBMIT_MAP_COMMAND_INTENT_SOURCE,
+          ctx.traceparent,
+        ),
       );
     });
     return ok(true);

@@ -20,6 +20,8 @@ export type CloudEventInput = Readonly<{
   occurredAtIso?: string;
   runId?: RunIdType;
   actionId?: ActionIdType;
+  /** W3C traceparent for distributed tracing correlation (ADR-0105). */
+  traceparent?: string;
 }>;
 
 /**
@@ -40,11 +42,13 @@ export function domainEventToCloudEventsType(
  * - subject: `<aggregateKind-plural>/<aggregateId>` (e.g. `runs/run-1`)
  * - tenantid: workspaceId (WorkspaceId is an alias for TenantId)
  * - correlationid: correlationId
+ * - traceparent: W3C trace context (ADR-0105), when provided
  * - data: payload (if present)
  */
 export function domainEventToPortariumCloudEvent(
   event: DomainEventV1,
   source: string,
+  traceparent?: string,
 ): PortariumCloudEventV1 {
   const kind = event.aggregateKind.toLowerCase();
   const subject = `${kind}s/${event.aggregateId}`;
@@ -56,6 +60,7 @@ export function domainEventToPortariumCloudEvent(
     correlationId: event.correlationId,
     subject,
     occurredAtIso: event.occurredAtIso,
+    ...(traceparent ? { traceparent } : {}),
     ...(event.payload !== undefined ? { data: event.payload } : {}),
   });
 }
@@ -71,6 +76,7 @@ export const createPortariumCloudEvent = ({
   occurredAtIso,
   runId,
   actionId,
+  traceparent,
 }: CloudEventInput): PortariumCloudEventV1 => {
   return {
     specversion: '1.0',
@@ -84,6 +90,7 @@ export const createPortariumCloudEvent = ({
     correlationid: correlationId,
     ...(runId ? { runid: runId } : {}),
     ...(actionId ? { actionid: actionId } : {}),
+    ...(traceparent ? { traceparent } : {}),
     ...(data !== undefined ? { data } : {}),
   };
 };

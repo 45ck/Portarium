@@ -279,7 +279,7 @@ export class CompleteHumanTaskUseCase {
       return await this.deps.unitOfWork.execute(async () => {
         await this.deps.humanTaskStore.saveHumanTask(ctx.tenantId, plan.completedTask);
         await this.deps.eventPublisher.publish(
-          domainEventToPortariumCloudEvent(plan.event, COMPLETE_HUMAN_TASK_SOURCE),
+          domainEventToPortariumCloudEvent(plan.event, COMPLETE_HUMAN_TASK_SOURCE, ctx.traceparent),
         );
         await this.deps.evidenceLog.appendEntry(ctx.tenantId, plan.evidence);
         await this.deps.runResumer.resumeRunFromHumanTask({

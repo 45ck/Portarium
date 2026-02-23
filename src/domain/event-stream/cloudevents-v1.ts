@@ -51,6 +51,8 @@ export type PortariumCloudEventV1 = Readonly<
     correlationid: CorrelationIdType;
     runid?: RunIdType;
     actionid?: ActionIdType;
+    /** W3C Distributed Tracing Extension: traceparent header value (ADR-0105). */
+    traceparent?: string;
   }
 >;
 
@@ -120,6 +122,7 @@ export function parsePortariumCloudEventV1(value: unknown): PortariumCloudEventV
   const correlationidRaw = readString(record, 'correlationid', CloudEventParseError);
   const runidRaw = readOptionalString(record, 'runid', CloudEventParseError);
   const actionidRaw = readOptionalString(record, 'actionid', CloudEventParseError);
+  const traceparentRaw = readOptionalString(record, 'traceparent', CloudEventParseError);
 
   return {
     ...base,
@@ -127,6 +130,7 @@ export function parsePortariumCloudEventV1(value: unknown): PortariumCloudEventV
     correlationid: CorrelationId(correlationidRaw),
     ...(runidRaw ? { runid: RunId(runidRaw) } : {}),
     ...(actionidRaw ? { actionid: ActionId(actionidRaw) } : {}),
+    ...(traceparentRaw ? { traceparent: traceparentRaw } : {}),
   };
 }
 
