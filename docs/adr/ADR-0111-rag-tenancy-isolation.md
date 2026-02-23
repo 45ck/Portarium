@@ -1,4 +1,4 @@
-# ADR-0107: RAG Tenancy Isolation
+# ADR-0111: RAG Tenancy Isolation
 
 - **Status**: Accepted
 - **Date**: 2026-02-23
