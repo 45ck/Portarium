@@ -1,6 +1,6 @@
 # Tutorial: Hello Governed Workflow
 
-**Time:** ~15 minutes | **Prerequisites:** Node.js ≥ 18, Docker (optional)
+**Time:** ~15 minutes | **Prerequisites:** Node.js ≥ 22, Docker + Docker Compose
 
 By the end of this tutorial you will have triggered a governed workflow run
 through the Portarium control plane, observed the approval gate, confirmed an
@@ -34,25 +34,25 @@ git clone https://github.com/45ck/Portarium.git
 cd Portarium
 npm ci
 
-# Seed a demo workspace, machine, and agent
-npm run seed:local
+# Start the full stack (Postgres, Temporal, MinIO, Vault, API, worker)
+npm run dev:all
+
+# Seed demo workspace, machine, and agent data
+npm run dev:seed
 ```
 
-Expected output:
+Set the dev-auth token for local API calls:
 
+```bash
+export PORTARIUM_DEV_TOKEN=portarium-dev-token
+export PORTARIUM_DEV_WORKSPACE_ID=ws-local
 ```
-Portarium local dev seed
 
-1. Workspace
-  ✓ workspace created: id=ws-local-demo
-2. Machine runtime
-  ✓ machine registered: id=machine-local-runner
-3. AI agent
-  ✓ agent created: id=agent-local-classifier
-4. Adapter registry (in-memory stubs available)
-  ✓ 20 port families covered
+Verify the stack is healthy:
 
-✅ Seed complete.
+```bash
+curl -s http://localhost:8080/healthz
+# {"status":"ok"}
 ```
 
 ---
@@ -63,7 +63,7 @@ The fastest way to see a governed workflow end-to-end is to run the existing
 smoke test suite:
 
 ```bash
-npx vitest run src/infrastructure/adapters/governed-run-smoke.test.ts --reporter=verbose
+npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
 ```
 
 This exercises the full path: plan creation → approval gate → adapter action →

@@ -30,11 +30,7 @@ Both roles are built from the same image; the env var selects the entry point.
 ### 2. Local Stack Smoke Test (10 min)
 
 ```bash
-# Run the full CI runnable-state suite
-npx vitest run src/infrastructure/adapters/runnable-state-ci.test.ts --reporter=verbose
-
-# Or via npm
-npm run test -- --reporter=verbose src/infrastructure/adapters/runnable-state-ci.test.ts
+npm run test -- src/infrastructure/adapters/runnable-state-ci.test.ts
 ```
 
 All 29 tests should pass. These tests cover:
