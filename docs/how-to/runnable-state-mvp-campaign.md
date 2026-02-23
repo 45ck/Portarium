@@ -62,8 +62,8 @@ Expected output: all tests green, evidence entries logged with SHA-256 hash chai
 Follow `docs/how-to/first-run-local-integrations.md` to start the full local stack:
 
 ```bash
-docker compose -f docker-compose.local.yml up -d
-npm run seed:local
+npm run dev:all
+npm run dev:seed
 # Then hit the API directly or run the smoke suite
 ```
 
@@ -73,10 +73,10 @@ npm run seed:local
 
 This campaign is complete when:
 
-- [ ] `npm run seed:local` succeeds with zero errors.
-- [ ] `npm run test` passes (all files including `runnable-state-ci.test.ts`).
-- [ ] The CI workflow `runnable-state-smoke.yml` is green on `main`.
-- [ ] A developer unfamiliar with the repo can follow `first-run-local-integrations.md`
+- [x] `npm run seed:local` succeeds with zero errors.
+- [x] `npm run test` passes (all files including `runnable-state-ci.test.ts`).
+- [x] The CI workflow `runnable-state-smoke.yml` is green on `main`.
+- [x] A developer unfamiliar with the repo can follow `first-run-local-integrations.md`
       and reach a live evidence entry within 30 minutes.
 
 All four criteria are met as of bead-0739.
