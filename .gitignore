@@ -78,3 +78,6 @@ infra/terraform/**/.terraform.lock.hcl
 tmp/
 test-results/
 playwright-report/
+playwright-results.json
+reports/flake-history.jsonl
+reports/flake-badge.json

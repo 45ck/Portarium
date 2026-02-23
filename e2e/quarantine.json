@@ -1,0 +1,4 @@
+{
+  "_comment": "Quarantined tests — flake rate >5% over 30-day rolling window. See scripts/qa/analyze-flake-rates.mjs",
+  "tests": []
+}
