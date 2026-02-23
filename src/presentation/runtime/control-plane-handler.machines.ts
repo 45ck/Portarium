@@ -17,8 +17,23 @@ import {
   parseAgentConfigV1,
   MachineRegistrationParseError,
   AgentConfigParseError,
+  type MachineRegistrationV1,
 } from '../../domain/machines/machine-registration-v1.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
+
+// ---------------------------------------------------------------------------
+// Credential stripping — security invariant
+//
+// authConfig (secretRef, bearer/apiKey hints) must never reach the browser.
+// All GET and LIST machine responses strip this field before serialization.
+// ---------------------------------------------------------------------------
+
+function toMachineApiView(
+  machine: MachineRegistrationV1,
+): Omit<MachineRegistrationV1, 'authConfig'> {
+  const { authConfig: _authConfig, ...view } = machine;
+  return view;
+}
 import {
   type ControlPlaneDeps,
   authenticate,
@@ -150,7 +165,12 @@ export async function handleListMachines(args: MachineRegistryArgs): Promise<voi
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { ...result.value, items: result.value.items.map(toMachineApiView) },
+  });
 }
 
 export async function handleGetMachine(args: MachineItemArgs): Promise<void> {
@@ -182,7 +202,12 @@ export async function handleGetMachine(args: MachineItemArgs): Promise<void> {
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: toMachineApiView(result.value),
+  });
 }
 
 export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<void> {

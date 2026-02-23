@@ -290,6 +290,13 @@ const machine1: MachineRegistrationV1 = {
   },
 };
 
+/** Machine with gateway credentials configured — authConfig must be stripped before browser exposure. */
+const machineWithAuthConfig: MachineRegistrationV1 = {
+  ...machine1,
+  machineId: MachineId('machine-with-auth'),
+  authConfig: { kind: 'bearer', secretRef: 'grants/cg-secret-ref' },
+};
+
 const agent1: AgentConfigV1 = {
   schemaVersion: 1,
   agentId: AgentId('agent-1'),
@@ -606,6 +613,64 @@ describe('machines/agents registry endpoints', () => {
       },
     );
     expect(res.status).toBe(403);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Security: authConfig browser-exposure prevention (bead-0800)
+  // ---------------------------------------------------------------------------
+
+  it('GET /machines/{id} strips authConfig — credential references must not reach the browser', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machineWithAuthConfig),
+          listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          listAgentConfigs: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines/machine-with-auth`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { machineId: string; authConfig?: unknown };
+    expect(body.machineId).toBe('machine-with-auth');
+    // authConfig must be absent — credential references must not reach the browser
+    expect(body.authConfig).toBeUndefined();
+  });
+
+  it('GET /machines (list) strips authConfig from all items', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          listMachineRegistrations: vi
+            .fn()
+            .mockResolvedValue({ items: [machineWithAuthConfig], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          listAgentConfigs: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: { authConfig?: unknown }[] };
+    expect(body.items).toHaveLength(1);
+    // Each item must not expose authConfig
+    expect(body.items[0]?.authConfig).toBeUndefined();
   });
 
   it('creates an agent returning 201', async () => {
