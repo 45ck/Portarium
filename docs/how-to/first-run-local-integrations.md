@@ -11,13 +11,13 @@ than stub fixtures.
 
 ## Prerequisites
 
-| Requirement                     | Version                | Check                          |
-| ------------------------------- | ---------------------- | ------------------------------ |
-| Docker Desktop or Docker Engine | ≥ 24                   | `docker --version`             |
-| Docker Compose                  | ≥ 2.20                 | `docker compose version`       |
-| Node.js                         | ≥ 18                   | `node --version`               |
-| `npm`                           | ≥ 9                    | `npm --version`                |
-| Free ports                      | 3000, 8080, 8888, 4000 | `lsof -i :3000,8080,8888,4000` |
+| Requirement                     | Version                      | Check                               |
+| ------------------------------- | ---------------------------- | ----------------------------------- |
+| Docker Desktop or Docker Engine | ≥ 24                         | `docker --version`                  |
+| Docker Compose                  | ≥ 2.20                       | `docker compose version`            |
+| Node.js                         | ≥ 22                         | `node --version`                    |
+| `npm`                           | ≥ 9                          | `npm --version`                     |
+| Free ports                      | 5432, 7233, 8080, 8888, 4000 | `lsof -i :5432,7233,8080,8888,4000` |
 
 Clone the repo and install dependencies before continuing:
 
@@ -31,8 +31,9 @@ npm ci
 
 ## 1. Start the local stack
 
-Portarium ships a `docker-compose.local.yml` that wires all four services together
-with shared networking, seed data volumes, and health-check dependencies.
+Portarium uses two compose files — `docker-compose.yml` (core infra: Postgres,
+Temporal, MinIO, Vault, OTel) and `docker-compose.local.yml` (builds API + worker
+from source) — combined with service profiles.
 
 ```bash
 npm run dev:all
@@ -41,31 +42,57 @@ npm run dev:all
 This is equivalent to:
 
 ```bash
-docker compose -f docker-compose.local.yml up --wait
+docker compose \
+  --profile baseline --profile runtime --profile auth --profile cockpit \
+  -f docker-compose.yml -f docker-compose.local.yml up --wait
 ```
 
 Wait for all containers to report **healthy** (usually ~60 s on first run, ~10 s
 subsequently). You can watch progress with:
 
 ```bash
-docker compose -f docker-compose.local.yml ps
+docker compose \
+  --profile baseline --profile runtime --profile auth --profile cockpit \
+  -f docker-compose.yml -f docker-compose.local.yml ps
 ```
 
-Expected output once healthy:
+Expected output once healthy (core infra):
 
 ```
-NAME                    STATUS          PORTS
-portarium-keycloak      running (healthy)  0.0.0.0:8080->8080/tcp
-portarium-openfga       running (healthy)  0.0.0.0:8888->8888/tcp
-portarium-odoo          running (healthy)  0.0.0.0:4000->8069/tcp
-portarium-api           running (healthy)  0.0.0.0:3000->3000/tcp
+NAME                      STATUS              PORTS
+portarium-evidence-db     running (healthy)   0.0.0.0:5432->5432/tcp
+portarium-temporal        running             0.0.0.0:7233->7233/tcp
+portarium-evidence-store  running (healthy)   0.0.0.0:9000->9000/tcp
+portarium-vault           running             0.0.0.0:8200->8200/tcp
+portarium-api             running (healthy)   0.0.0.0:8080->8080/tcp
+portarium-worker          running (healthy)   0.0.0.0:8081->8081/tcp
 ```
+
+> **Dev-auth bypass:** When `NODE_ENV=development`, the API accepts the static token
+> `portarium-dev-token` as a bearer token. You can test the API immediately without
+> Keycloak:
+>
+> ```bash
+> curl -s http://localhost:8080/healthz
+> ```
+
+Seed canonical demo data into the running stack:
+
+```bash
+npm run dev:seed
+```
+
+> **Integration services (Keycloak, OpenFGA, Odoo, OpenClaw):** Sections 2–5 describe
+> these optional services. They are not part of the base `dev:all` command. Bring them
+> up separately when doing real-data integration testing.
 
 ---
 
 ## 2. Keycloak — OIDC / SSO
 
-**URL:** `http://localhost:8080`
+**URL:** `http://localhost:8080` (separate Keycloak container — port conflicts with
+the Portarium API in the default local stack; adjust the Portarium API port or run
+Keycloak on a different port as needed)
 **Admin console:** `http://localhost:8080/admin` (admin / admin)
 
 ### What the seed configures
@@ -98,7 +125,7 @@ A non-null JWT string confirms Keycloak is up and the realm is seeded.
 ### Troubleshooting
 
 - **"Realm not found"** — seed migration has not run yet; wait 10 s and retry.
-- **Container not healthy** — `docker compose -f docker-compose.local.yml logs keycloak`
+- **Container not healthy** — check logs with `docker logs <keycloak-container-name>`
 
 ---
 
@@ -177,7 +204,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/web/health
 
 ## 5. OpenClaw — Execution Plane
 
-**URL:** `http://localhost:3000/claw` (proxied via the Portarium API)
+**URL:** `http://localhost:8080/claw` (proxied via the Portarium API on port 8080)
 
 OpenClaw is the action-runner service that receives `dispatchAction` calls from the
 application layer and executes governed steps (shell, HTTP, Terraform, etc.).
@@ -185,22 +212,28 @@ application layer and executes governed steps (shell, HTTP, Terraform, etc.).
 ### Verify
 
 ```bash
-curl -s http://localhost:3000/health | jq .status
+curl -s http://localhost:8080/healthz | jq .status
 # Expected: "ok"
 ```
 
 ```bash
-curl -s http://localhost:3000/claw/health | jq .status
+curl -s http://localhost:8080/claw/health | jq .status
 # Expected: "ok"
 ```
 
 ### Run the governed-run integration smoke
 
-With the full stack healthy, run the smoke tests in integration mode:
+With the full stack healthy and seeded, run the smoke tests in integration mode:
 
 ```bash
-GOVERNED_RUN_INTEGRATION=true npm run test -- \
-  src/infrastructure/adapters/governed-run-smoke.test.ts
+GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 \
+  npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
+```
+
+Or use the one-command pipeline (boots stack, seeds, then runs integration smoke):
+
+```bash
+npm run smoke:stack
 ```
 
 All integration tests (previously skipped in unit mode) will execute against the live
@@ -216,14 +249,15 @@ Copy `.env.local.example` to `.env.local` and adjust if you changed any default 
 cp .env.local.example .env.local
 ```
 
-| Variable                   | Default                 | Description                      |
-| -------------------------- | ----------------------- | -------------------------------- |
-| `LOCAL_STACK_URL`          | `http://localhost:3000` | Portarium API base URL           |
-| `KEYCLOAK_URL`             | `http://localhost:8080` | Keycloak base URL                |
-| `KEYCLOAK_REALM`           | `portarium`             | Realm name                       |
-| `OPENFGA_URL`              | `http://localhost:8888` | OpenFGA base URL                 |
-| `ODOO_URL`                 | `http://localhost:4000` | Odoo base URL                    |
-| `GOVERNED_RUN_INTEGRATION` | `false`                 | Set `true` for integration smoke |
+| Variable                   | Default                 | Description                            |
+| -------------------------- | ----------------------- | -------------------------------------- |
+| `LOCAL_STACK_URL`          | `http://localhost:8080` | Portarium API base URL                 |
+| `PORTARIUM_DEV_TOKEN`      | `portarium-dev-token`   | Static bearer token (dev only)         |
+| `KEYCLOAK_URL`             | `http://localhost:8080` | Keycloak base URL (separate container) |
+| `KEYCLOAK_REALM`           | `portarium`             | Realm name                             |
+| `OPENFGA_URL`              | `http://localhost:8888` | OpenFGA base URL                       |
+| `ODOO_URL`                 | `http://localhost:4000` | Odoo base URL                          |
+| `GOVERNED_RUN_INTEGRATION` | `false`                 | Set `true` for integration smoke       |
 
 ---
 
@@ -232,13 +266,17 @@ cp .env.local.example .env.local
 **Stop (preserve data):**
 
 ```bash
-docker compose -f docker-compose.local.yml stop
+docker compose \
+  --profile baseline --profile runtime --profile auth --profile cockpit \
+  -f docker-compose.yml -f docker-compose.local.yml stop
 ```
 
 **Stop and remove volumes (clean slate):**
 
 ```bash
-docker compose -f docker-compose.local.yml down -v
+docker compose \
+  --profile baseline --profile runtime --profile auth --profile cockpit \
+  -f docker-compose.yml -f docker-compose.local.yml down -v
 ```
 
 **Re-seed all services:**
@@ -252,6 +290,6 @@ npm run dev:seed
 ## 8. Next steps
 
 - **Run a governed workflow end-to-end:** See [Start-to-Finish Execution Order](./start-to-finish-execution-order.md).
-- **Explore the Cockpit UI:** Open `http://localhost:3000` in a browser and log in as `alice@acme.example.com`.
+- **Explore the Cockpit UI:** Open `http://localhost:8080` in a browser and log in as `alice@acme.example.com`.
 - **Write an integration adapter:** See [Generate Integration Scaffolds](./generate-integration-scaffolds.md).
 - **Run the full CI gate suite:** `npm run ci:pr`

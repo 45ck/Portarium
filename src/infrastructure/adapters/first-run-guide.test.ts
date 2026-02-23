@@ -128,8 +128,8 @@ describe('first-run guide — port references', () => {
     expect(readGuide()).toContain('4000');
   });
 
-  it('references Portarium API on port 3000', () => {
-    expect(readGuide()).toContain('3000');
+  it('references Portarium API on port 8080', () => {
+    expect(readGuide()).toContain('8080');
   });
 });
 
