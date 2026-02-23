@@ -39,6 +39,7 @@ import { Route as workforceMemberRoute } from './routes/workforce/$memberId';
 import { Route as workforceQueuesRoute } from './routes/workforce/queues';
 
 // Config
+import { Route as configMachinesRoute } from './routes/config/machines';
 import { Route as configAgentsRoute } from './routes/config/agents';
 import { Route as configAgentDetailRoute } from './routes/config/agent-detail';
 import { Route as configAdaptersRoute } from './routes/config/adapters';
@@ -85,6 +86,7 @@ export const routeTree = rootRoute.addChildren([
   workforceRoute,
   workforceMemberRoute,
   workforceQueuesRoute,
+  configMachinesRoute,
   configAgentsRoute,
   configAgentDetailRoute,
   configAdaptersRoute,

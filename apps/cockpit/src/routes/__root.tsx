@@ -117,6 +117,11 @@ const NAV_SECTIONS: NavSectionDef[] = [
     label: 'Config',
     items: [
       {
+        label: 'Machines',
+        to: '/config/machines',
+        icon: <EntityIcon entityType="machine" size="sm" decorative />,
+      },
+      {
         label: 'Agents',
         to: '/config/agents',
         icon: <EntityIcon entityType="agent" size="sm" decorative />,
