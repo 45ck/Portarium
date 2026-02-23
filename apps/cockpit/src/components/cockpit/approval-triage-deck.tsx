@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
-import { ApprovalTriageCard, type TriageAction, type DragValidation } from './approval-triage-card';
+import { ApprovalTriageCard, type TriageAction, type DragValidation } from './triage-card';
 import type {
   ApprovalSummary,
   PlanEffect,

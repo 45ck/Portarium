@@ -12,7 +12,7 @@ import { useWorkflow } from '@/hooks/queries/use-workflows';
 import { useApprovalDecisionOutbox } from '@/hooks/queries/use-approval-decision-outbox';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { type TriageAction } from '@/components/cockpit/approval-triage-card';
+import { type TriageAction } from '@/components/cockpit/triage-card';
 import { ApprovalTriageDeck } from '@/components/cockpit/approval-triage-deck';
 import { ApprovalListPanel } from '@/components/cockpit/approval-list-panel';
 import {
