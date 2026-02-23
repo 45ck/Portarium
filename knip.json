@@ -9,7 +9,15 @@
     "vitest.config.ts"
   ],
   "project": ["src/**/*.ts"],
-  "ignore": ["dist/**", "coverage/**", "reports/**", ".specify/**"],
+  "ignore": [
+    "dist/**",
+    "coverage/**",
+    "reports/**",
+    ".specify/**",
+    "e2e/**",
+    "playwright-report/**"
+  ],
+  "playwright": false,
   "ignoreDependencies": [
     "@vitest/coverage-v8",
     "@temporalio/client",
@@ -21,6 +29,7 @@
     "pg",
     "ioredis",
     "hono",
-    "esbuild"
+    "esbuild",
+    "@playwright/test"
   ]
 }

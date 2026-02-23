@@ -36,6 +36,9 @@ export default tseslint.config(
       'scaffolds/**',
       // QA automation scripts — not production code
       'qa/**',
+      // Playwright E2E tests — not production code, typed via tsconfig.e2e.json
+      'e2e/**',
+      'playwright.config.ts',
       // Asset generation scripts use optional native deps (sharp) not in devDependencies
       'scripts/assets/**',
       // UI capture scripts — not production

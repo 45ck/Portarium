@@ -625,11 +625,10 @@ function parseArgs(argv) {
       }
       console.log(SESSION);
       process.exit(0);
-      break;
+      break; // process.exit() above ensures no fallthrough; break satisfies lint
     }
 
     // --- Diff ---
-    // falls through (process.exit above prevents runtime fallthrough)
     case 'diff': {
       const p = positional();
       if (p[0] === 'snapshot')

@@ -77,3 +77,4 @@ infra/terraform/**/.terraform.lock.hcl
 .beads/deletions.jsonl
 tmp/
 test-results/
+playwright-report/

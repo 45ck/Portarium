@@ -1054,3 +1054,7 @@ Analyzed
 # Browser QA tooling
 AppLocker
 agent-browser
+mytest
+# Approval domain terms (approval-context-assembler)
+delegators
+Delegators
