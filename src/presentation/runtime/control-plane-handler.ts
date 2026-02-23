@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 
 import { getRun } from '../../application/queries/get-run.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
@@ -666,18 +666,21 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // POST /v1/workspaces/:workspaceId/machines/:machineId/heartbeat
-  app.post('/v1/workspaces/:workspaceId/machines/:machineId/heartbeat', async (c) => {
-    const ctx = c.get('ctx');
-    await handleMachineHeartbeat({
-      ...ctx,
-      workspaceId: c.req.param('workspaceId'),
-      machineId: c.req.param('machineId'),
-    });
-    return c.body(null);
-  });
+  app.post(
+    '/v1/workspaces/:workspaceId/machines/:machineId/heartbeat',
+    async (c: Context<HonoEnv>) => {
+      const ctx = c.get('ctx');
+      await handleMachineHeartbeat({
+        ...ctx,
+        workspaceId: c.req.param('workspaceId'),
+        machineId: c.req.param('machineId'),
+      });
+      return c.body(null);
+    },
+  );
 
   // POST /v1/workspaces/:workspaceId/agents/:agentId/heartbeat
-  app.post('/v1/workspaces/:workspaceId/agents/:agentId/heartbeat', async (c) => {
+  app.post('/v1/workspaces/:workspaceId/agents/:agentId/heartbeat', async (c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     await handleAgentHeartbeat({
       ...ctx,
@@ -688,32 +691,32 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // POST /v1/workspaces/:workspaceId/retrieval/search
-  app.post('/v1/workspaces/:workspaceId/retrieval/search', async (c) => {
+  app.post('/v1/workspaces/:workspaceId/retrieval/search', async (c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     await handleRetrievalSearch({
       ...ctx,
-      workspaceId: c.req.param('workspaceId'),
+      workspaceId: c.req.param('workspaceId')!,
     });
     return c.body(null);
   });
 
   // POST /v1/workspaces/:workspaceId/graph/query
-  app.post('/v1/workspaces/:workspaceId/graph/query', async (c) => {
+  app.post('/v1/workspaces/:workspaceId/graph/query', async (c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     await handleGraphQuery({
       ...ctx,
-      workspaceId: c.req.param('workspaceId'),
+      workspaceId: c.req.param('workspaceId')!,
     });
     return c.body(null);
   });
 
   // GET /v1/workspaces/:workspaceId/derived-artifacts
-  app.get('/v1/workspaces/:workspaceId/derived-artifacts', async (c) => {
+  app.get('/v1/workspaces/:workspaceId/derived-artifacts', async (c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     const url = new URL(c.req.url, 'http://localhost');
     await handleListDerivedArtifacts({
       ...ctx,
-      workspaceId: c.req.param('workspaceId'),
+      workspaceId: c.req.param('workspaceId')!,
       url,
     });
     return c.body(null);
@@ -722,7 +725,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   // -------------------------------------------------------------------------
   // 404 — no route matched
   // -------------------------------------------------------------------------
-  app.notFound((c) => {
+  app.notFound((c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     if (ctx) {
       respondProblem(
@@ -744,7 +747,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   // -------------------------------------------------------------------------
   // Unhandled error — last resort 500
   // -------------------------------------------------------------------------
-  app.onError((error, c) => {
+  app.onError((error: Error, c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     const correlationId = ctx?.correlationId ?? randomUUID();
     const traceContext = ctx?.traceContext ?? normalizeTraceContext(c.env.incoming);
