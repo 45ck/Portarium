@@ -151,7 +151,8 @@
     "docs:assets:optimize": "npx svgo -rf docs/assets -o docs/assets && npx svgo -rf .github/assets -o .github/assets",
     "ab": "node scripts/ab.mjs",
     "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium",
-    "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13"
+    "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13",
+    "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
