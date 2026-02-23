@@ -234,6 +234,18 @@ describe('machine-agent registration commands', () => {
     expect(evidenceAppends[0]!.summary).toContain('Created agent');
   });
 
+  it('createAgent enforces tenant match', async () => {
+    const { deps } = createDeps();
+    const result = await createAgent(deps, makeCtx('ws-2'), {
+      idempotencyKey: 'idem-agent-tenant-mismatch',
+      agent: VALID_AGENT, // workspaceId: 'ws-1', context tenantId: 'ws-2'
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.kind).toBe('Forbidden');
+  });
+
   it('createAgent rejects capabilities that are not supported by the machine', async () => {
     const { deps, registry } = createDeps();
     await registry.saveMachineRegistration(

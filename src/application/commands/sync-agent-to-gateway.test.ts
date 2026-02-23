@@ -118,6 +118,22 @@ describe('syncAgentToGateway', () => {
     expect(result.error.kind).toBe('Forbidden');
   });
 
+  it('returns Forbidden on tenant mismatch (workspace isolation invariant)', async () => {
+    const result = await syncAgentToGateway(
+      {
+        authorization: { isAllowed: vi.fn().mockResolvedValue(true) },
+        machineRegistryStore: makeStore(),
+        bridge: makeBridge(),
+      },
+      makeCtx(), // tenantId: 'tenant-1'
+      { workspaceId: 'tenant-2', agentId: 'agent-1' }, // different workspace
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('expected err');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toContain('Tenant mismatch');
+  });
+
   it('returns NotFound when agent does not exist', async () => {
     const result = await syncAgentToGateway(
       {
