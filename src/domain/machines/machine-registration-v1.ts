@@ -143,7 +143,9 @@ function parseExecutionPolicy(record: Record<string, unknown>): MachineExecution
 }
 
 function parseMachineAuthConfig(raw: unknown): MachineAuthConfigV1 | undefined {
-  if (raw === undefined) return undefined;
+  // Treat null as absent: JSONB round-trips may serialize missing optional fields as null
+  // (important during rollout when reading records written by mixed-version deployments)
+  if (raw === undefined || raw === null) return undefined;
 
   const record = readRecord(raw, 'authConfig', MachineRegistrationParseError);
   const kind = readString(record, 'kind', MachineRegistrationParseError);

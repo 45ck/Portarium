@@ -20,7 +20,7 @@ describe('OpenAPI operationId golden fixture', () => {
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
     const goldenPath = path.join(repoRoot, GOLDEN_RELATIVE_PATH);
 
-    const specDoc = mustRecord(parseYaml(await readText(specPath)) as unknown, 'OpenAPI');
+    const specDoc = mustRecord(parseYaml(await readText(specPath)), 'OpenAPI');
     const pathsObj = mustRecord(specDoc['paths'], 'OpenAPI.paths');
 
     const parsedOperationIds = listOperationIds(pathsObj);

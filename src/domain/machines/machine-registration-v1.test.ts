@@ -242,6 +242,54 @@ describe('parseMachineRegistrationV1: validation', () => {
 });
 
 // ---------------------------------------------------------------------------
+// MachineRegistrationV1: backward-compat invariants (bead-0802)
+//
+// These tests guard rollout safety: new records written with extra fields must
+// still be parseable by v1 parsers (forward-compat), and JSONB round-trips that
+// produce null for absent optional fields must not break parsing.
+// ---------------------------------------------------------------------------
+
+describe('parseMachineRegistrationV1: backward-compat invariants', () => {
+  it('tolerates extra unknown fields — v2 records remain parseable by v1 parser (forward-compat)', () => {
+    const withFutureFields = {
+      ...VALID_MACHINE_REGISTRATION,
+      // Fields earmarked for v2 in ADR-0098 §4 — must be silently ignored now
+      healthCheckUrl: 'https://health.example.com',
+      labels: { env: 'prod', region: 'us-east-1' },
+    };
+    const reg = parseMachineRegistrationV1(withFutureFields);
+    expect(reg.schemaVersion).toBe(1);
+    expect(reg.machineId).toBe('machine-1');
+    // Extra fields must not appear on the typed output
+    expect((reg as Record<string, unknown>)['healthCheckUrl']).toBeUndefined();
+    expect((reg as Record<string, unknown>)['labels']).toBeUndefined();
+  });
+
+  it('treats authConfig: null as absent — JSONB null-to-undefined round-trip safety', () => {
+    // PostgreSQL JSONB may serialize a missing optional field as null when
+    // records are read by tooling or migration scripts. Parsers must not throw.
+    const withNullAuth = {
+      ...VALID_MACHINE_REGISTRATION,
+      active: false,
+      authConfig: null,
+    };
+    const reg = parseMachineRegistrationV1(withNullAuth);
+    expect(reg.authConfig).toBeUndefined();
+    expect(reg.active).toBe(false);
+  });
+
+  it('inactive machine with no authConfig key round-trips correctly', () => {
+    const { authConfig: _unused, ...noAuth } = {
+      ...VALID_MACHINE_REGISTRATION,
+      active: false,
+    };
+    const reg = parseMachineRegistrationV1(noAuth);
+    expect(reg.active).toBe(false);
+    expect(reg.authConfig).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // AgentConfigV1
 // ---------------------------------------------------------------------------
 
@@ -341,5 +389,26 @@ describe('parseAgentConfigV1: validation', () => {
     expect(() =>
       parseAgentConfigV1({ ...VALID_AGENT_CONFIG, registeredAtIso: 'bad-date' }),
     ).toThrow(/registeredAtIso/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AgentConfigV1: backward-compat invariants (bead-0802)
+// ---------------------------------------------------------------------------
+
+describe('parseAgentConfigV1: backward-compat invariants', () => {
+  it('tolerates extra unknown fields — v2 records remain parseable by v1 parser (forward-compat)', () => {
+    const withFutureFields = {
+      ...VALID_AGENT_CONFIG,
+      // Fields earmarked for v2 in ADR-0098 §4 — must be silently ignored now
+      description: 'Future optional description field',
+      updatedAtIso: '2026-02-23T00:00:00.000Z',
+    };
+    const agent = parseAgentConfigV1(withFutureFields);
+    expect(agent.schemaVersion).toBe(1);
+    expect(agent.agentId).toBe('agent-1');
+    // Extra fields must not appear on the typed output
+    expect((agent as Record<string, unknown>)['description']).toBeUndefined();
+    expect((agent as Record<string, unknown>)['updatedAtIso']).toBeUndefined();
   });
 });

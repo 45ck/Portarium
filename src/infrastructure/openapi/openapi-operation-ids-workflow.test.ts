@@ -41,7 +41,7 @@ describe('OpenAPI operationId CI workflow', () => {
 async function loadWorkflow(): Promise<Record<string, unknown>> {
   const repoRoot = resolveRepoRoot();
   const workflowPath = path.join(repoRoot, WORKFLOW_RELATIVE_PATH);
-  const parsed = parseYaml(await readText(workflowPath)) as unknown;
+  const parsed = parseYaml(await readText(workflowPath));
   return mustRecord(parsed, 'workflow');
 }
 
