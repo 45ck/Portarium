@@ -4,10 +4,13 @@
  * This stub provides the subset used in this codebase (control-plane handler).
  */
 declare module 'hono' {
-  export type Env = { Variables: Record<string, unknown>; Bindings: object };
+  export interface Env {
+    Variables: Record<string, unknown>;
+    Bindings: object;
+  }
   export type Next = () => Promise<void>;
 
-  export type Context<E extends Env = Env> = {
+  export interface Context<E extends Env = Env> {
     req: {
       header(name: string): string | undefined;
       json<T = unknown>(): Promise<T>;
@@ -28,7 +31,7 @@ declare module 'hono' {
     set<K extends keyof E['Variables']>(key: K, value: E['Variables'][K]): void;
     set(key: string, value: unknown): void;
     var: E['Variables'];
-  };
+  }
 
   export type Handler<E extends Env = Env> = (
     c: Context<E>,
@@ -71,5 +74,8 @@ declare module 'hono/pretty-json' {
 
 declare module 'hono/bearer-auth' {
   import { MiddlewareHandler } from 'hono';
-  export function bearerAuth(options: { token: string | string[]; [key: string]: unknown }): MiddlewareHandler;
+  export function bearerAuth(options: {
+    token: string | string[];
+    [key: string]: unknown;
+  }): MiddlewareHandler;
 }

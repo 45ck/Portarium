@@ -212,9 +212,7 @@ describe('Cockpit Capacitor plugin supply-chain controls', () => {
       ...(cockpitPkg.devDependencies ?? {}),
     };
 
-    const capacitorDeps = Object.keys(allDeps).filter((k) =>
-      k.toLowerCase().includes('capacitor'),
-    );
+    const capacitorDeps = Object.keys(allDeps).filter((k) => k.toLowerCase().includes('capacitor'));
     // Any Capacitor-related package must use the official @capacitor/ namespace
     for (const dep of capacitorDeps) {
       expect(dep).toMatch(/^@capacitor\//);

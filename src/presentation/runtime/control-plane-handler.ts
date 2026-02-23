@@ -695,7 +695,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const ctx = c.get('ctx');
     await handleRetrievalSearch({
       ...ctx,
-      workspaceId: c.req.param('workspaceId')!,
+      workspaceId: c.req.param('workspaceId'),
     });
     return c.body(null);
   });
@@ -705,7 +705,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const ctx = c.get('ctx');
     await handleGraphQuery({
       ...ctx,
-      workspaceId: c.req.param('workspaceId')!,
+      workspaceId: c.req.param('workspaceId'),
     });
     return c.body(null);
   });
@@ -716,7 +716,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const url = new URL(c.req.url, 'http://localhost');
     await handleListDerivedArtifacts({
       ...ctx,
-      workspaceId: c.req.param('workspaceId')!,
+      workspaceId: c.req.param('workspaceId'),
       url,
     });
     return c.body(null);

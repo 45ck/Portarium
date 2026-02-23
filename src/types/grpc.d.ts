@@ -9,10 +9,18 @@ declare module '@grpc/grpc-js' {
   }
   export abstract class ChannelCredentials {
     static createInsecure(): ChannelCredentials;
-    static createSsl(rootCerts?: Buffer | null, privateKey?: Buffer | null, certChain?: Buffer | null): ChannelCredentials;
+    static createSsl(
+      rootCerts?: Buffer | null,
+      privateKey?: Buffer | null,
+      certChain?: Buffer | null,
+    ): ChannelCredentials;
   }
   export class Client {
-    constructor(address: string, credentials: ChannelCredentials, options?: Record<string, unknown>);
+    constructor(
+      address: string,
+      credentials: ChannelCredentials,
+      options?: Record<string, unknown>,
+    );
     close(): void;
     getChannel(): Channel;
     waitForReady(deadline: Date | number, callback: (error: Error | undefined) => void): void;
@@ -47,7 +55,7 @@ declare module '@grpc/grpc-js' {
   }
   export class Metadata {
     add(key: string, value: string | Buffer): void;
-    get(key: string): Array<string | Buffer>;
+    get(key: string): (string | Buffer)[];
     set(key: string, value: string | Buffer): void;
     remove(key: string): void;
     toJSON(): Record<string, string[]>;
@@ -76,14 +84,16 @@ declare module '@grpc/grpc-js' {
     methods: Record<string, unknown>,
     serviceName: string,
     classOptions?: Record<string, unknown>,
-  ): new (address: string, credentials: ChannelCredentials, options?: Record<string, unknown>) => Client;
+  ): new (
+    address: string,
+    credentials: ChannelCredentials,
+    options?: Record<string, unknown>,
+  ) => Client;
   export function loadPackageDefinition(packageDef: unknown): Record<string, unknown>;
 }
 
 declare module '@grpc/proto-loader' {
-  export interface PackageDefinition {
-    [key: string]: unknown;
-  }
+  export type PackageDefinition = Record<string, unknown>;
   export interface Options {
     keepCase?: boolean;
     longs?: unknown;

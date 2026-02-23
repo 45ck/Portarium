@@ -1010,3 +1010,13 @@ ywee
 
 # JWT test fixture fragments (oidc-pkce-auth tests)
 onlyonepart
+
+# Regex character-class artifacts in supply-chain-guardrails.test.ts
+# ([Dd]ependency → ependency, [Cc]ockpit → ockpit, etc.)
+ependency
+ockpit
+onnector
+ollback
+ulnerability
+icense
+ecret
