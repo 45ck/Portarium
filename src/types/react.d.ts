@@ -15,7 +15,9 @@ declare module 'react' {
     callback: T,
     deps: readonly unknown[],
   ): T;
-  export function useState<T>(initialState: T | (() => T)): [T, (value: T | ((prev: T) => T)) => void];
+  export function useState<T>(
+    initialState: T | (() => T),
+  ): [T, (value: T | ((prev: T) => T)) => void];
   export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void;
   export function useRef<T>(initialValue: T): { current: T };
   export function useRef<T = undefined>(): { current: T | undefined };
@@ -26,7 +28,11 @@ declare module 'react' {
   export type ReactElement = unknown;
   export type Dispatch<A> = (action: A) => void;
   export type SetStateAction<S> = S | ((prev: S) => S);
-  export type RefObject<T> = { readonly current: T | null };
-  export type MutableRefObject<T> = { current: T };
+  export interface RefObject<T> {
+    readonly current: T | null;
+  }
+  export interface MutableRefObject<T> {
+    current: T;
+  }
   export default unknown;
 }

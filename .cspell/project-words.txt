@@ -290,6 +290,13 @@ dsnp
 EASA
 edium
 effectful
+istribution
+lugin
+MASVS
+mbed
+opyleft
+otice
+enant
 Elasti
 ElastiCube
 elif
