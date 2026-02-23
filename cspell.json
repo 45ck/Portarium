@@ -59,6 +59,7 @@
     "startupz",
     "Svids",
     "Syft",
+    "TOCTOU",
     "traceql",
     "undisposed"
   ],
