@@ -11,7 +11,9 @@ describe('pwa manifest', () => {
     expect(manifest['name']).toBe('Portarium Cockpit');
     expect(manifest['short_name']).toBe('Portarium');
     expect(manifest['display']).toBe('standalone');
-    expect(manifest['start_url']).toBe('/');
+    // start_url includes ?source=pwa for analytics tracking
+    expect(typeof manifest['start_url']).toBe('string');
+    expect((manifest['start_url'] as string).startsWith('/')).toBe(true);
     expect(manifest['scope']).toBe('/');
     expect(manifest['theme_color']).toBe('#0B1220');
     expect(Array.isArray(manifest['icons'])).toBe(true);
