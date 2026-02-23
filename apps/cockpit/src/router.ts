@@ -53,6 +53,9 @@ import { Route as exploreObservabilityRoute } from './routes/explore/observabili
 import { Route as exploreGovernanceRoute } from './routes/explore/governance';
 import { Route as explorePackRuntimeRoute } from './routes/explore/pack-runtime';
 
+// Auth
+import { Route as authLoginRoute } from './routes/auth/login';
+
 // Robotics
 import { Route as roboticsRoute } from './routes/robotics/index';
 import { Route as roboticsMapRoute } from './routes/robotics/map';
@@ -64,6 +67,7 @@ import { Route as roboticsRobotDetailRoute } from './routes/robotics/$robotId';
 import { Route as roboticsMissionDetailRoute } from './routes/robotics/missions/$missionId';
 
 export const routeTree = rootRoute.addChildren([
+  authLoginRoute,
   indexRoute,
   inboxRoute,
   dashboardRoute,

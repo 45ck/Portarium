@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
+import { createRootRoute, Outlet, Link, useNavigate } from '@tanstack/react-router';
+import { useAuthStore, setupDeepLinkAuthHandler } from '@/stores/auth-store';
+import { loadOidcConfig, isOidcConfigured } from '@/lib/oidc-client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { queryClient } from '@/lib/query-client';
@@ -253,6 +255,8 @@ function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
   const isMobile = useIsMobile();
+  const { status: authStatus, initialize: initAuth, getToken } = useAuthStore();
+  const navigate = useNavigate();
   const {
     sidebarCollapsed,
     setSidebarCollapsed,
@@ -264,6 +268,42 @@ function RootLayout() {
     setStartRunOpen,
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
+  const oidcEnabled = isOidcConfigured(loadOidcConfig());
+
+  // ── Auth initialization ────────────────────────────────────────────────────
+
+  // Initialize auth state from secure storage on first mount.
+  useEffect(() => {
+    void initAuth();
+  }, [initAuth]);
+
+  // Register native deep-link handler for OIDC callbacks.
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    void setupDeepLinkAuthHandler().then((fn) => {
+      cleanup = fn;
+    });
+    return () => cleanup?.();
+  }, []);
+
+  // Redirect to login when unauthenticated (OIDC configured, no dev token).
+  useEffect(() => {
+    if (authStatus === 'unauthenticated' && oidcEnabled && !getToken()) {
+      void navigate({ to: '/auth/login' });
+    }
+  }, [authStatus, oidcEnabled, getToken, navigate]);
+
+  // Handle web redirect callback (query params on page load).
+  useEffect(() => {
+    const url = window.location.href;
+    const isCallback =
+      url.includes('/auth/callback') || (url.includes('code=') && url.includes('state='));
+    if (isCallback) {
+      void useAuthStore.getState().handleCallback(url);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Workspace loading ──────────────────────────────────────────────────────
 
   useEffect(() => {
     let cancelled = false;
@@ -305,6 +345,19 @@ function RootLayout() {
       setActiveWorkspaceId(workspaceOptions[0]!.workspaceId);
     }
   }, [workspaceOptions, activeWorkspaceId, setActiveWorkspaceId]);
+
+  // Show loading spinner while auth state is being resolved.
+  if (authStatus === 'initializing') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div
+          className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin"
+          role="status"
+          aria-label="Loading…"
+        />
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
