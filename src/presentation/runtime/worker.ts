@@ -3,6 +3,10 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createTemporalWorker } from '../../infrastructure/temporal/temporal-worker.js';
 import { readRuntimeContainmentConfigFromEnv } from './runtime-containment.js';
+import { createLogger } from '../../infrastructure/observability/logger.js';
+import { initializeOtel } from '../../infrastructure/observability/otel-setup.js';
+
+const log = createLogger('execution-plane');
 
 export type WorkerRuntimeOptions = Readonly<{
   port?: number;
@@ -18,6 +22,7 @@ function readPort(defaultPort: number): number {
 }
 
 export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthServerHandle> {
+  initializeOtel();
   const containment = readRuntimeContainmentConfigFromEnv();
   const role =
     process.env['PORTARIUM_CONTAINER_ROLE'] ?? process.env['PORTARIUM_ROLE'] ?? 'execution-plane';
@@ -26,10 +31,12 @@ export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthSe
 
   const handle = await startHealthServer({ role, host, port });
 
-  console.log(`Portarium ${role} listening on ${handle.host}:${handle.port}`);
-  console.log(
-    `Runtime containment: isolation=${containment.tenantIsolationMode} sandbox=${containment.sandboxAssertions} egress=${containment.egressAllowlist.length}`,
-  );
+  log.info('Portarium server started', { role, host: handle.host, port: handle.port });
+  log.info('Runtime containment', {
+    isolation: containment.tenantIsolationMode,
+    sandbox: containment.sandboxAssertions,
+    egressRules: containment.egressAllowlist.length,
+  });
 
   const enableTemporalWorker = (() => {
     const raw = process.env['PORTARIUM_ENABLE_TEMPORAL_WORKER'];
@@ -44,18 +51,21 @@ export async function main(options: WorkerRuntimeOptions = {}): Promise<HealthSe
       ? temporal
           .run()
           .then(() => {
-            console.log('Temporal worker stopped.');
+            log.info('Temporal worker stopped');
           })
           .catch((error) => {
-            console.error('Temporal worker crashed.', error);
+            log.error('Temporal worker crashed', {
+              error: error instanceof Error ? error.message : String(error),
+            });
             process.exitCode = 1;
           })
       : null;
 
   if (temporal !== null) {
-    console.log(
-      `Temporal worker started (namespace=${temporal.config.namespace}, taskQueue=${temporal.config.taskQueue}).`,
-    );
+    log.info('Temporal worker started', {
+      namespace: temporal.config.namespace,
+      taskQueue: temporal.config.taskQueue,
+    });
   }
 
   const shutdown = async () => {

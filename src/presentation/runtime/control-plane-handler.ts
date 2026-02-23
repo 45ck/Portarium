@@ -20,6 +20,8 @@ import {
   httpRequestsTotal,
   rateLimitHitsTotal,
 } from '../../infrastructure/observability/prometheus-registry.js';
+import { createLogger } from '../../infrastructure/observability/logger.js';
+import { createRequestLogger } from '../../infrastructure/observability/request-logger.js';
 import {
   assertReadAccess,
   authenticate,
@@ -91,6 +93,7 @@ interface RequestContext {
   readonly correlationId: string;
   readonly pathname: string;
   readonly traceContext: TraceContext;
+  readonly log: import('../../infrastructure/observability/logger.js').PortariumLogger;
 }
 
 type WorkspaceHandlerArgs = RequestContext & Readonly<{ workspaceId: string }>;
@@ -327,16 +330,24 @@ async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
  * `respondProblem`, and the `Response` returned by `app.fetch()` is discarded
  * by the outer Node.js `RequestHandler`. See ADR-0097 for rationale.
  */
+const rootLog = createLogger('control-plane');
+
 function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   const app = new Hono<HonoEnv>();
 
   // -------------------------------------------------------------------------
-  // Middleware 1: build RequestContext
+  // Middleware 1: build RequestContext + request-scoped logger
   // -------------------------------------------------------------------------
   app.use('*', async (c, next) => {
     const { incoming, outgoing } = c.env;
     const correlationId = normalizeCorrelationId(incoming);
     const traceContext = normalizeTraceContext(incoming);
+    const reqLog = createRequestLogger(rootLog, {
+      correlationId,
+      traceparent: traceContext.traceparent,
+      method: incoming.method ?? 'GET',
+      path: c.req.path,
+    });
     c.set('ctx', {
       deps,
       req: incoming,
@@ -344,6 +355,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       correlationId,
       traceContext,
       pathname: c.req.path,
+      log: reqLog,
     });
     await next();
   });
@@ -359,7 +371,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // -------------------------------------------------------------------------
-  // Middleware 2: request metrics (duration, count, active connections)
+  // Middleware 2: request metrics + structured request logging
   // -------------------------------------------------------------------------
   app.use('*', async (c, next) => {
     const { outgoing } = c.env;
@@ -373,6 +385,13 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       const status = String(outgoing.statusCode);
       httpRequestsTotal.inc({ method, route, status });
       httpRequestDurationSeconds.observe(durationSeconds, { method, route });
+
+      const ctx = c.get('ctx');
+      ctx.log.info('request completed', {
+        status: outgoing.statusCode,
+        durationMs: Math.round(durationSeconds * 1000),
+        route,
+      });
     });
     await next();
   });

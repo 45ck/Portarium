@@ -8,15 +8,22 @@ All control plane log lines are newline-delimited JSON written to stdout (info/d
 
 **Log entry schema:**
 
-| Field         | Type    | Description                                          |
-| ------------- | ------- | ---------------------------------------------------- |
-| `level`       | string  | `debug`, `info`, `warn`, or `error`                  |
-| `time`        | number  | Unix epoch milliseconds                              |
-| `name`        | string  | Logger name (e.g. `control-plane`)                   |
-| `msg`         | string  | Human-readable message                               |
-| `traceId`     | string? | Active OTel trace ID (present when a span is active) |
-| `workspaceId` | string? | Workspace ID from request context (child loggers)    |
-| `userId`      | string? | User ID from request context (child loggers)         |
+| Field           | Type    | Description                                                         |
+| --------------- | ------- | ------------------------------------------------------------------- |
+| `level`         | string  | `debug`, `info`, `warn`, or `error`                                 |
+| `time`          | number  | Unix epoch milliseconds                                             |
+| `name`          | string  | Logger name (e.g. `control-plane`, `execution-plane`)               |
+| `msg`           | string  | Human-readable message                                              |
+| `traceId`       | string? | Active OTel trace ID (present when a span is active)                |
+| `correlationId` | string? | Request correlation ID (auto-injected by request-scoped logger)     |
+| `traceparent`   | string? | W3C traceparent from inbound request (request-scoped)               |
+| `workspaceId`   | string? | Workspace ID from request context (request-scoped)                  |
+| `userId`        | string? | User ID from request context (request-scoped, after authentication) |
+| `method`        | string? | HTTP method (request-scoped)                                        |
+| `path`          | string? | Request path (request-scoped)                                       |
+| `status`        | number? | Response status code (on request-completion log lines)              |
+| `durationMs`    | number? | Request duration in ms (on request-completion log lines)            |
+| `route`         | string? | Matched route pattern (on request-completion log lines)             |
 
 **Querying logs in Loki (via Grafana):**
 
@@ -26,6 +33,15 @@ All control plane log lines are newline-delimited JSON written to stdout (info/d
 
 # Logs for a specific trace
 {service="portarium-control-plane"} | json | traceId="<traceId>"
+
+# Logs for a specific correlation ID
+{service="portarium-control-plane"} | json | correlationId="<correlationId>"
+
+# Request completion logs for a specific workspace
+{service="portarium-control-plane"} | json | msg="request completed" | workspaceId="<id>"
+
+# Slow requests (> 1 second)
+{service="portarium-control-plane"} | json | msg="request completed" | durationMs > 1000
 
 # Rate-limit rejections (logged at warn level)
 {service="portarium-control-plane"} | json | level="warn" | msg=~"rate.limit"
@@ -71,12 +87,14 @@ Spans are emitted via OTel (OTLP/HTTP to the collector at `OTEL_EXPORTER_OTLP_EN
 
 **Instrumented operations:**
 
-| Span name        | Operation                                                           |
-| ---------------- | ------------------------------------------------------------------- |
-| `db.query`       | Every Postgres query via `NodePostgresSqlClient.query()`            |
-| `db.transaction` | Postgres transactions via `NodePostgresSqlClient.withTransaction()` |
-| `openfga.check`  | Every OpenFGA authorization check                                   |
-| `nats.publish`   | Every NATS JetStream publish                                        |
+| Span name                  | Operation                                                           |
+| -------------------------- | ------------------------------------------------------------------- |
+| `app.command.<name>`       | Every application command execution (via `observeCommandExecution`) |
+| `db.query`                 | Every Postgres query via `NodePostgresSqlClient.query()`            |
+| `db.transaction`           | Postgres transactions via `NodePostgresSqlClient.withTransaction()` |
+| `openfga.check`            | Every OpenFGA authorization check                                   |
+| `nats.publish`             | Every NATS JetStream publish                                        |
+| `temporal.activity.<name>` | Temporal activity spans (via `observeTemporalSpan`)                 |
 
 **Querying traces in Tempo (via Grafana Explore):**
 
@@ -97,7 +115,7 @@ Spans are emitted via OTel (OTLP/HTTP to the collector at `OTEL_EXPORTER_OTLP_EN
 
 **Trace context propagation:**
 
-Inbound W3C `traceparent` / `tracestate` headers are extracted and injected into the active OTel context. All child spans within a request share the same trace ID.
+Inbound W3C `traceparent` / `tracestate` headers are extracted and injected into the active OTel context. All child spans within a request share the same trace ID. Both the control plane and execution plane call `initializeOtel()` at startup to configure the SDK.
 
 ## Alerts
 

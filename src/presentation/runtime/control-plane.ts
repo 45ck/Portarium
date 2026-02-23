@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import { createLogger } from '../../infrastructure/observability/logger.js';
+import { initializeOtel } from '../../infrastructure/observability/otel-setup.js';
 
 const log = createLogger('control-plane');
 
@@ -20,6 +21,7 @@ function readPort(defaultPort: number): number {
 }
 
 export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<HealthServerHandle> {
+  initializeOtel();
   const role =
     process.env['PORTARIUM_CONTAINER_ROLE'] ?? process.env['PORTARIUM_ROLE'] ?? 'control-plane';
   const port = options.port ?? readPort(8080);
