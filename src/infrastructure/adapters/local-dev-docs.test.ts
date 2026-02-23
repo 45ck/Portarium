@@ -136,3 +136,23 @@ describe('tutorials/evidence-trace.md — updated startup', () => {
     expect(doc).toContain('portarium-dev-token');
   });
 });
+
+// ---------------------------------------------------------------------------
+// docs/project-overview.md
+// ---------------------------------------------------------------------------
+
+describe('project-overview.md — deployment model accuracy', () => {
+  it('exists', () => {
+    expect(fs.existsSync(path.join(REPO_ROOT, 'docs/project-overview.md'))).toBe(true);
+  });
+
+  it('specifies npm run dev:all as the local compose command', () => {
+    const doc = readDoc('docs/project-overview.md');
+    expect(doc).toContain('npm run dev:all');
+  });
+
+  it('specifies npm run dev:seed for seeding', () => {
+    const doc = readDoc('docs/project-overview.md');
+    expect(doc).toContain('npm run dev:seed');
+  });
+});
