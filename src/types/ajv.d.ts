@@ -11,7 +11,7 @@ declare module 'ajv' {
   }
   interface ValidateFunction<T = unknown> {
     (data: unknown): data is T;
-    errors?: Array<{ message?: string; instancePath?: string }> | null;
+    errors?: { message?: string; instancePath?: string }[] | null;
   }
   class Ajv {
     constructor(options?: AjvOptions);
@@ -20,7 +20,7 @@ declare module 'ajv' {
     addSchema(schema: object, key?: string): this;
     addFormat(name: string, format: { validate: (data: string) => boolean } | RegExp): this;
     addKeyword(definition: Record<string, unknown>): this;
-    errors?: Array<{ message?: string; instancePath?: string }> | null;
+    errors?: { message?: string; instancePath?: string }[] | null;
   }
   export { ValidateFunction, AjvOptions };
   export = Ajv;

@@ -88,7 +88,7 @@ export class GrpcMissionGateway implements MissionPort {
       defaults: true,
       oneofs: true,
     });
-    const pkg = grpc.loadPackageDefinition(packageDef) as Record<string, unknown>;
+    const pkg = grpc.loadPackageDefinition(packageDef);
     const portarium = pkg['portarium'] as Record<string, unknown>;
     const robotics = portarium['robotics'] as Record<string, unknown>;
     const v1 = robotics['v1'] as Record<string, unknown>;

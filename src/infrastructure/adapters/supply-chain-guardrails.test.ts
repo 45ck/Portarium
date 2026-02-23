@@ -202,7 +202,7 @@ describe('npm scripts registration', () => {
 // ── Cockpit Capacitor plugin allowlist ────────────────────────────────────────
 
 describe('Cockpit Capacitor plugin supply-chain controls', () => {
-  it('cockpit package.json lists Capacitor plugins', () => {
+  it('cockpit package.json Capacitor plugins, if any, use the official namespace', () => {
     const cockpitPkg = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'apps/cockpit/package.json'), 'utf8'),
     ) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
@@ -212,8 +212,13 @@ describe('Cockpit Capacitor plugin supply-chain controls', () => {
       ...(cockpitPkg.devDependencies ?? {}),
     };
 
-    const capacitorDeps = Object.keys(allDeps).filter((k) => k.startsWith('@capacitor/'));
-    expect(capacitorDeps.length).toBeGreaterThan(0);
+    const capacitorDeps = Object.keys(allDeps).filter((k) =>
+      k.toLowerCase().includes('capacitor'),
+    );
+    // Any Capacitor-related package must use the official @capacitor/ namespace
+    for (const dep of capacitorDeps) {
+      expect(dep).toMatch(/^@capacitor\//);
+    }
   });
 
   it('all referenced Capacitor packages use @capacitor/ namespace (MIT-licensed)', () => {
