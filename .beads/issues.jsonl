@@ -909,3 +909,4 @@
 {"id":"bead-0812","title":"Domain: approval policy rules","status":"closed","priority":"P2","createdAt":"2026-02-23T08:48:23.333Z","updatedAt":"2026-02-23T08:52:59.017Z"}
 {"id":"bead-0813","title":"Domain: approval delegation model","status":"closed","priority":"P2","createdAt":"2026-02-23T08:53:55.840Z","updatedAt":"2026-02-23T08:57:16.998Z"}
 {"id":"bead-0814","title":"Domain: approval escalation engine","status":"closed","priority":"P2","createdAt":"2026-02-23T08:58:25.250Z","updatedAt":"2026-02-23T09:02:40.441Z"}
+{"id":"bead-0815","title":"Domain: approval context assembler","status":"open","priority":"P2","createdAt":"2026-02-23T09:04:26.269Z","updatedAt":"2026-02-23T09:04:35.750Z","claimedBy":"agent-approvals","claimedAt":"2026-02-23T09:04:35.750Z"}
