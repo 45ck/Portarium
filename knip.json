@@ -30,6 +30,7 @@
     "ioredis",
     "hono",
     "esbuild",
-    "@playwright/test"
+    "@playwright/test",
+    "@storybook/test"
   ]
 }
