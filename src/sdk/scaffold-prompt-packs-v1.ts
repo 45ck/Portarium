@@ -12,11 +12,7 @@
  * implementations conform to MIS contracts at registration time.
  */
 
-import {
-  MIS_V1,
-  type MisAdapterMetaV1,
-  type MisPortFamily,
-} from './mis-v1.js';
+import { MIS_V1, type MisAdapterMetaV1, type MisPortFamily } from './mis-v1.js';
 
 // ---------------------------------------------------------------------------
 // Prompt pack types
