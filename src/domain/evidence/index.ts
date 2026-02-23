@@ -4,4 +4,5 @@ export * from './evidence-durability-policy-v1.js';
 export * from './evidence-entry-v1.js';
 export * from './evidence-hasher.js';
 export * from './evidence-privacy-v1.js';
+export * from './presentation-blocks-v1.js';
 export * from './retention-schedule-v1.js';
