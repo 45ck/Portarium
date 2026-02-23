@@ -6,7 +6,7 @@
  * of release artifacts that must be verifiable before deployment.
  *
  * Bead: bead-mlwr
- * ADR: ADR-0109 (SBOM Generation + Artifact Signing + Provenance Attestations)
+ * ADR: ADR-0113 (SBOM Generation + Artifact Signing + Provenance Attestations)
  */
 
 // ---------------------------------------------------------------------------

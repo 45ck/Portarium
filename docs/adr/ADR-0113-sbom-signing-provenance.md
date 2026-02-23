@@ -1,4 +1,4 @@
-# ADR-0109: SBOM Generation + Artifact Signing + Provenance Attestations
+# ADR-0113: SBOM Generation + Artifact Signing + Provenance Attestations
 
 - **Status**: Accepted
 - **Date**: 2026-02-23

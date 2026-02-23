@@ -6,7 +6,7 @@
  * prevention rules.
  *
  * Bead: bead-vuz4
- * ADR: ADR-0107 (RAG Tenancy Isolation)
+ * ADR: ADR-0111 (RAG Tenancy Isolation)
  */
 
 import type { WorkspaceId } from '../primitives/index.js';

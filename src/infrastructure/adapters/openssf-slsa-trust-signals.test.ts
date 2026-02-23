@@ -6,7 +6,7 @@
  * conformance for container image release artifacts.
  *
  * Bead: bead-0746
- * ADR: ADR-0105 (Security Trust Signals)
+ * ADR: ADR-0110 (Security Trust Signals)
  */
 
 import * as fs from 'node:fs';

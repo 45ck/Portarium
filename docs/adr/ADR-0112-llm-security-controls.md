@@ -1,4 +1,4 @@
-# ADR-0108: LLM Security Controls
+# ADR-0112: LLM Security Controls
 
 - **Status**: Accepted
 - **Date**: 2026-02-23
@@ -18,7 +18,7 @@ the cockpit UI or the audit log:
    payloads, control characters, or oversized content that breaks downstream
    systems.
 3. **Sensitive information disclosure** -- cross-workspace data can leak into
-   LLM context if retrieval is not properly scoped (covered by ADR-0107).
+   LLM context if retrieval is not properly scoped (covered by ADR-0111).
 4. **Excessive agency** -- autonomous agents should never auto-approve or
    initiate destructive actions without human oversight.
 5. **Overreliance** -- operators may trust AI recommendations without adequate

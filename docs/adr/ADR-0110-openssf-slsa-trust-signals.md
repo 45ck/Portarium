@@ -1,4 +1,4 @@
-# ADR-0105: Security Trust Signals -- OpenSSF Best Practices + SLSA Mapping
+# ADR-0110: Security Trust Signals -- OpenSSF Best Practices + SLSA Mapping
 
 - **Status:** Accepted
 - **Date:** 2026-02-23
