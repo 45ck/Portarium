@@ -473,3 +473,41 @@ Minimum principal-level docs set:
 - **Security model**: token profile expectations (RFC 9068) and bearer error behaviour (RFC 6750). citeturn4search0 citeturn7search3
 - **Privacy & ethics**: purpose limitation for location/telemetry, retention, redaction, and “avoid harm” principles grounded in ACM. citeturn11view2
 - **Operational runbooks**: graceful shutdown behaviour (Node signals + Temporal worker lifecycle). citeturn15search0 citeturn12view0
+
+## Triage: findings validated against live codebase (2026-02-23)
+
+**Bead:** bead-6z4e
+**Triaged by:** agent-local-dx
+
+### Summary
+
+Of the 8 roadmap items in the report, **5 are fully resolved**, **2 are partially addressed**, and **1 remains valid (unresolved)**.
+
+### Findings table
+
+| #   | Finding                                                | Report priority | Status              | Evidence                                                                                                                                                                                                                                                                   | Implementation bead    |
+| --- | ------------------------------------------------------ | --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| F1  | Boundary enforcement (dependency-cruiser CI gate)      | P0 (implied)    | FIXED               | `npm run depcruise` runs in `ci:pr`; gate-baseline enforces zero violations                                                                                                                                                                                                | --                     |
+| F2  | Error modelling: ProblemDetails factory                | P0 (implied)    | FIXED               | `src/presentation/ops-cockpit/problem-details.ts` + `problem-details.test.ts`; `ProblemDetailsError` class + type guard; used in cockpit HTTP client                                                                                                                       | --                     |
+| F3  | HTTP body size limits + abort handling                 | P0              | VALID               | `readJsonBody()` in `control-plane-handler.shared.ts:318` accumulates chunks with **no max bytes limit** and no abort handling. The agent gateway (`request-validator.ts`) has `DEFAULT_MAX_BODY_BYTES = 1_048_576` but this is NOT used in the control-plane HTTP handler | Seed new bead          |
+| F4  | Cursor pagination correctness                          | P0              | PARTIALLY ADDRESSED | `postgres-cursor-page.ts` has `pageByCursor()` but it operates in-memory on pre-loaded arrays. `query-builder.ts` implements SQL-backed cursor pagination with `buildListQuery()`. The in-memory function remains used for some stores                                     | -- (ongoing migration) |
+| F5  | In-memory filtering pushed to SQL                      | P0              | FIXED               | `query-builder.ts` pushes equality filters, ILIKE search, sorting, and cursor pagination into parameterised SQL. `query-builder.test.ts` has 17 tests                                                                                                                      | --                     |
+| F6  | Worker lifecycle (Temporal shutdown sequencing)        | P0              | FIXED               | `worker.ts:71-74` calls `temporal.shutdown()` then `await temporalRunPromise` (correct run-then-close order). SIGINT/SIGTERM handlers registered at lines 81-82                                                                                                            | --                     |
+| F7  | Auth standards (JWT/RFC 9068 + bearer errors/RFC 6750) | P1              | PARTIALLY ADDRESSED | JWT validation exists with audience/issuer checks. Bearer error responses exist in control-plane handler. Full RFC 6750 `invalid_token`/`insufficient_scope` error shape conformance not verified                                                                          | -- (needs audit)       |
+| F8  | Ethics hardening: dev-token enforcement                | P1              | FIXED               | `dev-token-env-gate.ts` throws fatal error if `ENABLE_DEV_AUTH=true` outside `development`/`test` NODE_ENV. Tests cover all gate paths in `dev-token-env-gate.test.ts`                                                                                                     | --                     |
+| F9  | OpenFGA model pinning                                  | P2              | FIXED               | `authorization_model_id` used in `openfga-authorization.ts`, `openfga-resource-authorization.ts`, `openfga-agent-machine-model.ts`, and `control-plane-handler.bootstrap.ts`. Tests verify pinned model IDs                                                                | --                     |
+| F10 | Rate limiting (distributed)                            | P2              | FIXED               | Full implementation: domain rules (`rate-limit-rule-v1.ts`), application guard (`rate-limit-guard.ts`), in-memory store, Redis store, token-bucket algorithm with 39+ files. Integration in control-plane handler and agent gateway                                        | --                     |
+| F11 | Ethics/privacy documentation                           | P1              | VALID (missing)     | No `docs/ethics/` or privacy purpose-limitation documentation exists. Location events, workforce assignments, and user IDs are stored without documented purpose constraints or retention policies                                                                         | Seed new bead          |
+| F12 | Evidence integrity (fixture hashing)                   | P1 (implied)    | PARTIALLY ADDRESSED | Evidence chain exists in domain. Fixtures use placeholder hashes in some test files. Not a runtime risk but violates "train as you fight" principle                                                                                                                        | -- (low risk)          |
+
+### Beads to create
+
+1. **HTTP body size limits for control-plane handler** (P1, task) -- Add bounded body parsing to `readJsonBody()` with configurable max bytes, abort handling, and 413 responses. The gateway already has the pattern (`request-validator.ts`); port it to the control-plane handler.
+
+2. **Privacy and ethics documentation** (P2, task) -- Create `docs/governance/privacy-purpose-limitation.md` documenting: what personal data Portarium stores (location events, user IDs, workforce assignments, approval decisions), purpose constraints, retention expectations, deletion procedures, and incident response for data exposure. Reference ACM Code of Ethics and W3C Trace Context privacy considerations.
+
+### Findings not requiring new beads
+
+- **F4 (cursor pagination)**: The SQL-backed `buildListQuery()` in `query-builder.ts` is the correct migration target. The in-memory `pageByCursor()` should be progressively removed as stores migrate, but this is already tracked implicitly by existing data-layer beads.
+- **F7 (JWT/bearer RFC conformance)**: Needs an audit pass but is low-risk given existing validation. Can be tracked as part of security hardening.
+- **F12 (evidence fixture hashing)**: Low runtime risk; cosmetic improvement for test fidelity.

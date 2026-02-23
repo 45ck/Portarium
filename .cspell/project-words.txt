@@ -1045,3 +1045,8 @@ ecret
 savepoints
 # Bead ID referenced in report-24 session notes
 uyjg
+# Test fixture compound words (content-sanitization, presentation-blocks tests)
+testend
+beforeafter
+# American spelling variant in test fixture (presentation-blocks-extended-v1.test.ts)
+Analyzed
