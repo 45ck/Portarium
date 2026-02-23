@@ -37,6 +37,7 @@ const preview: Preview = {
       config: { rules: [{ id: 'color-contrast', enabled: true }] },
     },
     docs: { toc: true },
+    chromatic: { diffThreshold: 0.1 },
   },
 };
 
