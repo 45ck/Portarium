@@ -13,8 +13,6 @@ import type {
   AuthenticationPort,
   AuthorizationPort,
   EventStreamBroadcast,
-  MachineQueryStore,
-  MachineRegistryStore,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
@@ -29,8 +27,6 @@ import {
   type TraceContext,
 } from '../../application/common/trace-context.js';
 import type {
-  Conflict,
-  DependencyFailure,
   Forbidden,
   NotFound,
   PreconditionFailed,
@@ -38,6 +34,12 @@ import type {
   ValidationFailed,
 } from '../../application/common/errors.js';
 import type { AuthEventLogger } from '../../infrastructure/observability/auth-event-logger.js';
+import type {
+  DerivedArtifactRegistryPort,
+  EmbeddingPort,
+  KnowledgeGraphPort,
+  SemanticIndexPort,
+} from '../../domain/derived-artifacts/retrieval-ports.js';
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -58,9 +60,7 @@ export type QueryError =
   | Forbidden
   | NotFound
   | ValidationFailed
-  | PreconditionFailed
-  | Conflict
-  | DependencyFailure;
+  | PreconditionFailed;
 
 export type ControlPlaneDeps = Readonly<{
   authentication: AuthenticationPort;
@@ -79,10 +79,14 @@ export type ControlPlaneDeps = Readonly<{
   eventStream?: EventStreamBroadcast;
   /** Optional structured logger for 401/403/429 security events. */
   authEventLogger?: AuthEventLogger;
-  /** Optional query store for machine/agent registry reads; when absent, registry read routes return 503. */
-  machineQueryStore?: MachineQueryStore;
-  /** Optional write store for machine/agent registry; when absent, registry write routes return 503. */
-  machineRegistryStore?: MachineRegistryStore;
+  /** Optional semantic index port; when absent, retrieval/search returns 503. */
+  semanticIndexPort?: SemanticIndexPort;
+  /** Optional knowledge graph port; when absent, graph/retrieval returns 503. */
+  knowledgeGraphPort?: KnowledgeGraphPort;
+  /** Optional derived artifact registry port; when absent, derived-artifacts list returns 503. */
+  derivedArtifactRegistryPort?: DerivedArtifactRegistryPort;
+  /** Optional embedding port; when absent, semantic/hybrid search returns 503. */
+  embeddingPort?: EmbeddingPort;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
@@ -234,22 +238,6 @@ export function problemFromError(error: QueryError, instance: string): ProblemDe
         type: 'https://portarium.dev/problems/precondition-failed',
         title: 'Precondition Failed',
         status: 412,
-        detail: error.message,
-        instance,
-      };
-    case 'Conflict':
-      return {
-        type: 'https://portarium.dev/problems/conflict',
-        title: 'Conflict',
-        status: 409,
-        detail: error.message,
-        instance,
-      };
-    case 'DependencyFailure':
-      return {
-        type: 'https://portarium.dev/problems/dependency-failure',
-        title: 'Dependency Failure',
-        status: 503,
         detail: error.message,
         instance,
       };

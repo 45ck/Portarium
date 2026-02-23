@@ -53,6 +53,11 @@ import {
 } from './control-plane-handler.location.js';
 import { handleEventsStream } from './control-plane-handler.events.js';
 import {
+  handleGraphQuery,
+  handleListDerivedArtifacts,
+  handleRetrievalSearch,
+} from './control-plane-handler.retrieval.js';
+import {
   handleAssignHumanTask,
   handleCompleteHumanTask,
   handleEscalateHumanTask,
@@ -678,6 +683,38 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       ...ctx,
       workspaceId: c.req.param('workspaceId'),
       agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/retrieval/search
+  app.post('/v1/workspaces/:workspaceId/retrieval/search', async (c) => {
+    const ctx = c.get('ctx');
+    await handleRetrievalSearch({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/graph/query
+  app.post('/v1/workspaces/:workspaceId/graph/query', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGraphQuery({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/derived-artifacts
+  app.get('/v1/workspaces/:workspaceId/derived-artifacts', async (c) => {
+    const ctx = c.get('ctx');
+    const url = new URL(c.req.url, 'http://localhost');
+    await handleListDerivedArtifacts({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      url,
     });
     return c.body(null);
   });
