@@ -359,4 +359,93 @@ Of the ~25 discrete findings in report-24:
 
 ### Axe-core baseline
 
-Note: axe-core audit requires a running Cockpit browser instance and cannot be executed in this CI-only session. The axe-core baseline should be established when bead-sy6l (validate) is executed with browser access.
+Note: axe-core audit requires a running Cockpit browser instance and cannot be executed in this CI-only session. The axe-core baseline should be established when accessibility fixes (bead-0epc) are implemented.
+
+---
+
+## Validation Session — bead-sy6l (2026-02-23)
+
+### TriageCard monolith
+
+- **File**: `apps/cockpit/src/components/cockpit/approval-triage-card.tsx`
+- **Line count**: 949 (confirmed, grew from 750+ at time of report)
+- **Sub-responsibilities identified**:
+  - Header/metadata display (approval ID, status badge, workflow name): ~lines 50-120
+  - SoD banner rendering: delegates to `sod-banner.tsx` (already extracted)
+  - Policy rule panel: inline within card
+  - Approval action buttons (approve/deny/request changes): ~lines 400-500
+  - Rejection/rationale flow: ~lines 500-600
+  - Evidence chain section: ~lines 600-750
+  - Context panels (effects, related entities): ~lines 750-900
+  - Mode switcher integration: ~lines 900-949
+- **Existing extractions**: `sod-banner.tsx`, `approval-context-panels.tsx`, `triage-modes/` directory
+
+### Hardcoded demo data
+
+- **Fixture type imports in production files** (type-only, no runtime data):
+  - `apps/cockpit/src/stores/ui-store.ts:2` — `import type { DatasetId } from '@/mocks/fixtures/index'`
+  - `apps/cockpit/src/routes/config/settings.tsx:14` — `import type { DatasetId } from '@/mocks/fixtures/index'`
+  - `apps/cockpit/src/routes/config/users.tsx:37` — `import type { UserSummary, UserRole } from '@/mocks/fixtures/users'`
+  - `apps/cockpit/src/hooks/queries/use-users.ts:2` — `import type { UserSummary, UserRole, UserStatus } from '@/mocks/fixtures/users'`
+  - `apps/cockpit/src/hooks/use-virtual-robot-list.ts:25` — `import type { RobotLocation } from '../mocks/fixtures/robot-locations.js'`
+  - `apps/cockpit/src/hooks/queries/use-robot-locations.ts:2` — `import type { RobotLocation, Geofence, SpatialAlert } from '@/mocks/fixtures/robot-locations'`
+  - `apps/cockpit/src/components/cockpit/operations-map/robot-list-panel.tsx:4` — `import type { RobotLocation }`
+  - `apps/cockpit/src/components/cockpit/operations-map/alert-triage-panel.tsx:3` — `import type { SpatialAlert }`
+  - `apps/cockpit/src/components/cockpit/operations-map/map-view.tsx:14` — `import type { RobotLocation, Geofence }`
+  - `apps/cockpit/src/components/cockpit/operations-map/robot-detail-panel.tsx:6` — `import type { RobotLocation }`
+- **Assessment**: These are all `import type` (erased at compile time). No runtime fixture data leaks into production. However, types should be moved to `@/types/` or `@portarium/cockpit-types` for clean separation.
+
+### Accessibility
+
+- **Skip-to-content link**: Present (`__root.tsx:377-382`)
+- **Nav aria-label**: Present (`__root.tsx:415`)
+- **Icon-only buttons with aria-label**: Sidebar collapse button has `aria-label` (`__root.tsx:404`); collapsed nav links have `aria-label` via NavLink
+- **Status badges relying on colour alone**:
+  - `approval-status-badge.tsx:32` — colour-only (Pending=warning, Approved=success, Denied=destructive), no icon
+  - `human-task-status-badge.tsx:31` — colour-only, no icon
+  - `run-status-badge.tsx:49` — has `aria-hidden="true"` on icon SVG (icon present but hidden from screen readers)
+  - `execution-tier-badge.tsx:22` — has `aria-hidden="true"` on icon SVG
+  - `agent-capability-badge.tsx:24` — has `aria-hidden="true"` on icon SVG
+- **SVGs with aria-hidden**: run-status-badge, execution-tier-badge, agent-capability-badge all correctly use `aria-hidden="true"`. approval-status-badge and human-task-status-badge use text labels but differentiate only by colour class.
+- **10px text still present**: `__root.tsx:259` (InboxBadge), `__root.tsx:419` (nav section labels), `__root.tsx:470,475` (collapsed persona/workspace text), `approval-status-badge.tsx:32` (`text-[10px]`), `human-task-status-badge.tsx:31` (`text-[10px]`)
+- **Focus trap in modals**: Radix AlertDialog and Dialog components (used in `alert-dialog.tsx`, `start-run-dialog.tsx`, `register-agent-dialog.tsx`, `register-machine-dialog.tsx`) include built-in focus trapping via Radix primitives.
+- **Keyboard navigation**: Sidebar buttons, nav links all use proper semantic elements (`<button>`, TanStack Router `<Link>`).
+
+### Error Boundaries
+
+- `apps/cockpit/src/components/cockpit/error-boundary.tsx` — React class component ErrorBoundary exists
+- Used in `__root.tsx:522-524` wrapping `<Outlet>`
+- Also used in `runs/$runId.tsx` and `work-items/$workItemId.tsx` for per-route error boundaries
+
+### Loading States
+
+**Pages WITH isError handling**: approvals/index, config/users, config/machines, config/agents, config/adapters, workforce/queues, workforce/index, evidence/index, work-items/index, explore/events, explore/observability, search/index
+
+**Pages WITHOUT isError handling** (only isLoading):
+
+- `routes/inbox.tsx:170-172` — useApprovals, useRuns, useEvidence destructured without isError
+- `routes/dashboard.tsx:23-25` — useRuns, useApprovals, useWorkItems without isError
+- `routes/explore/objects.tsx:23` — useWorkItems without isError
+- `routes/explore/governance.tsx:73,76` — useEvidence, useWorkflows without isError
+- `routes/runs/$runId.tsx:102-104` — useWorkItems, useApprovals, useEvidence without isError
+
+### Code Splitting
+
+- **Vite config**: No manual chunks (`apps/cockpit/vite.config.ts`) — default Vite code splitting only
+- **Lazy routes**: `observability.tsx:11-13` uses `React.lazy()` for ObservabilityChart (recharts)
+- **No other lazy imports found** — all other routes are eagerly imported
+- **Bundle analysis output**: Not found in repository
+
+### NavSection component
+
+- `apps/cockpit/src/components/cockpit/nav-section.tsx` — component exists (38 lines)
+- **Not imported anywhere** in the codebase — confirmed unused. `__root.tsx` defines its own inline nav rendering logic with `NavSectionDef` interface.
+
+### Updated bead file:line references
+
+| Bead                                   | Key Files                                                                                                                                                                                                                             |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bead-9ewt (TriageCard decomposition)   | `apps/cockpit/src/components/cockpit/approval-triage-card.tsx` (949 lines)                                                                                                                                                            |
+| bead-0epc (Accessibility)              | `__root.tsx:259,419,470,475` (10px text), `approval-status-badge.tsx:32`, `human-task-status-badge.tsx:31` (colour-only)                                                                                                              |
+| bead-ikr3 (Demo data removal)          | `ui-store.ts:2`, `settings.tsx:14`, `users.tsx:37`, `use-users.ts:2`, `use-virtual-robot-list.ts:25`, `use-robot-locations.ts:2`, `robot-list-panel.tsx:4`, `alert-triage-panel.tsx:3`, `map-view.tsx:14`, `robot-detail-panel.tsx:6` |
+| bead-uyjg (Error boundaries + loading) | `inbox.tsx:170-172`, `dashboard.tsx:23-25`, `objects.tsx:23`, `governance.tsx:73,76`, `$runId.tsx:102-104` (missing isError)                                                                                                          |
