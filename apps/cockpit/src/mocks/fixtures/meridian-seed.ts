@@ -597,16 +597,30 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
 
   // ---- Agents ------------------------------------------------------------
   const agentSlice = AGENT_DEFS.slice(0, cfg.agentCount);
-  const AGENTS: AgentV1[] = agentSlice.map((a) => ({
-    schemaVersion: 1 as const,
-    agentId: a.id,
-    workspaceId: WS,
-    name: a.name,
-    modelId: a.model,
-    endpoint: `https://agents.meridian-coldchain.io/${a.id.replace('agent-', '')}`,
-    allowedCapabilities: [...a.caps],
-    usedByWorkflowIds: [...a.wfIds],
-  }));
+  const AGENTS: AgentV1[] = [
+    ...agentSlice.map((a) => ({
+      schemaVersion: 1 as const,
+      agentId: a.id,
+      workspaceId: WS,
+      name: a.name,
+      modelId: a.model,
+      endpoint: `https://agents.meridian-coldchain.io/${a.id.replace('agent-', '')}`,
+      allowedCapabilities: [...a.caps],
+      usedByWorkflowIds: [...a.wfIds],
+    })),
+    // OpenClaw edge agent connected to the first registered machine
+    {
+      schemaVersion: 1 as const,
+      agentId: 'agent-meridian-openclaw-01',
+      workspaceId: WS,
+      name: 'Edge Dispatch Controller',
+      endpoint: 'openclaw://edge-gateway-01.meridian-coldchain.io/dispatch',
+      allowedCapabilities: ['machine:invoke', 'read:external', 'notify'],
+      usedByWorkflowIds: ['wf-order-fulfillment'],
+      machineId: 'mach-meridian-01',
+      policyTier: 'HumanApprove' as const,
+    },
+  ];
 
   // ---- Machines ----------------------------------------------------------
   const MACHINES: MachineV1[] = [

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '@/stores/ui-store';
+import { useMachines } from '@/hooks/queries/use-machines';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +14,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { AgentCapability } from '@portarium/cockpit-types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { AgentCapability, PolicyTier } from '@portarium/cockpit-types';
 
 interface RegisterAgentDialogProps {
   open: boolean;
@@ -21,6 +29,7 @@ interface RegisterAgentDialogProps {
 }
 
 const ALL_CAPABILITIES: AgentCapability[] = [
+  'machine:invoke',
   'read:external',
   'write:external',
   'classify',
@@ -30,14 +39,27 @@ const ALL_CAPABILITIES: AgentCapability[] = [
   'notify',
 ];
 
+const POLICY_TIERS: { value: PolicyTier; label: string }[] = [
+  { value: 'Auto', label: 'Auto — fully autonomous' },
+  { value: 'Assisted', label: 'Assisted — human in the loop' },
+  { value: 'HumanApprove', label: 'Human Approve — approval required' },
+  { value: 'ManualOnly', label: 'Manual Only — no automation' },
+];
+
 export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogProps) {
   const { activeWorkspaceId: wsId } = useUIStore();
   const qc = useQueryClient();
+  const { data: machinesData } = useMachines(wsId);
+  const machines = machinesData?.items ?? [];
 
   const [name, setName] = useState('');
   const [endpoint, setEndpoint] = useState('');
   const [modelId, setModelId] = useState('');
   const [capabilities, setCapabilities] = useState<AgentCapability[]>([]);
+  const [machineId, setMachineId] = useState('');
+  const [policyTier, setPolicyTier] = useState<PolicyTier>('HumanApprove');
+
+  const isOpenClaw = capabilities.includes('machine:invoke');
 
   const registerAgent = useMutation({
     mutationFn: async () => {
@@ -49,6 +71,8 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
           endpoint,
           modelId: modelId || undefined,
           allowedCapabilities: capabilities,
+          machineId: isOpenClaw && machineId ? machineId : undefined,
+          policyTier: isOpenClaw ? policyTier : undefined,
         }),
       });
       if (!res.ok) throw new Error('Failed to register agent');
@@ -61,6 +85,8 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
       setEndpoint('');
       setModelId('');
       setCapabilities([]);
+      setMachineId('');
+      setPolicyTier('HumanApprove');
     },
   });
 
@@ -119,6 +145,50 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
               ))}
             </div>
           </div>
+
+          {isOpenClaw && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="agent-machine">Connected Machine</Label>
+                <Select value={machineId} onValueChange={setMachineId}>
+                  <SelectTrigger id="agent-machine" className="w-full">
+                    <SelectValue placeholder="Select a machine (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {machines.map((m) => (
+                      <SelectItem key={m.machineId} value={m.machineId}>
+                        {m.hostname}
+                        <span className="ml-1.5 text-muted-foreground text-[10px]">
+                          ({m.status})
+                        </span>
+                      </SelectItem>
+                    ))}
+                    {machines.length === 0 && (
+                      <SelectItem value="none" disabled>
+                        No machines registered
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agent-policy-tier">Policy Tier</Label>
+                <Select value={policyTier} onValueChange={(v) => setPolicyTier(v as PolicyTier)}>
+                  <SelectTrigger id="agent-policy-tier" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POLICY_TIERS.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

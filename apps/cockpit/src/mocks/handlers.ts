@@ -281,6 +281,8 @@ export const handlers = [
       endpoint: string;
       modelId?: string;
       allowedCapabilities?: string[];
+      machineId?: string;
+      policyTier?: string;
     };
     const wsId = String(params['wsId'] ?? 'ws-demo');
     const newAgent = {
@@ -292,6 +294,13 @@ export const handlers = [
       modelId: body.modelId,
       allowedCapabilities: (body.allowedCapabilities ?? []) as AgentCapability[],
       usedByWorkflowIds: [],
+      machineId: body.machineId,
+      policyTier: body.policyTier as
+        | 'Auto'
+        | 'Assisted'
+        | 'HumanApprove'
+        | 'ManualOnly'
+        | undefined,
     };
     agents = [newAgent, ...agents];
     return HttpResponse.json(newAgent, { status: 201 });

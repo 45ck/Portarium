@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
+import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { RegisterAgentDialog } from '@/components/cockpit/register-agent-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,17 @@ function AgentsPage() {
           ))}
         </div>
       ),
+    },
+    {
+      key: 'policyTier',
+      header: 'Policy Tier',
+      width: '150px',
+      render: (row: AgentV1) =>
+        row.policyTier ? (
+          <ExecutionTierBadge tier={row.policyTier} />
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        ),
     },
     {
       key: 'workflows',

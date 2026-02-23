@@ -1,9 +1,10 @@
 import { createRoute, Link } from '@tanstack/react-router';
-import { Bot, Brain, Code2 } from 'lucide-react';
+import { Bot, Brain, Code2, Server } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useAgents } from '@/hooks/queries/use-agents';
 import { useRuns } from '@/hooks/queries/use-runs';
+import { useMachines } from '@/hooks/queries/use-machines';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { EmptyState } from '@/components/cockpit/empty-state';
@@ -33,6 +34,7 @@ function AgentDetailPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data: agentsData, isLoading: agentsLoading } = useAgents(wsId);
   const { data: runsData } = useRuns(wsId);
+  const { data: machinesData } = useMachines(wsId);
 
   if (agentsLoading) {
     return (
@@ -62,6 +64,9 @@ function AgentDetailPage() {
   }
 
   const recentRuns = (runsData?.items ?? []).filter((r) => r.agentIds?.includes(agentId));
+  const connectedMachine = agent?.machineId
+    ? (machinesData?.items ?? []).find((m) => m.machineId === agent.machineId)
+    : undefined;
 
   const maskedEndpoint =
     agent.endpoint.length > 30 ? `${agent.endpoint.slice(0, 30)}...` : agent.endpoint;
@@ -98,9 +103,35 @@ function AgentDetailPage() {
                 {maskedEndpoint}
               </span>
             </div>
+            {agent.policyTier && (
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Policy Tier</span>
+                <ExecutionTierBadge tier={agent.policyTier} />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {connectedMachine && (
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-1.5">
+              <Server className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+              Connected Machine
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link to={'/config/machines' as string}>
+              <div className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors text-xs">
+                <EntityIcon entityType="machine" size="sm" decorative />
+                <span className="font-mono font-medium">{connectedMachine.hostname}</span>
+                <span className="text-muted-foreground ml-auto">{connectedMachine.status}</span>
+              </div>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">Capabilities</h3>

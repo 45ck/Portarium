@@ -41,6 +41,8 @@ export interface RegisterMachineRequest {
 
 export type ListMachinesRequest = CursorPaginationRequest;
 
+export type PolicyTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+
 export interface AgentV1 {
   schemaVersion: 1;
   agentId: string;
@@ -50,6 +52,10 @@ export interface AgentV1 {
   endpoint: string;
   allowedCapabilities: AgentCapability[];
   usedByWorkflowIds?: string[];
+  /** For OpenClaw agents: the machine this agent runs on */
+  machineId?: string;
+  /** Policy tier controlling human-oversight level for this agent */
+  policyTier?: PolicyTier;
 }
 
 export interface RegisterAgentRequest {
@@ -57,6 +63,10 @@ export interface RegisterAgentRequest {
   modelId?: string;
   endpoint: string;
   allowedCapabilities?: AgentCapability[];
+  /** For OpenClaw agents: the machine to connect to */
+  machineId?: string;
+  /** Policy tier for human-oversight controls */
+  policyTier?: PolicyTier;
 }
 
 export interface UpdateAgentRequest {

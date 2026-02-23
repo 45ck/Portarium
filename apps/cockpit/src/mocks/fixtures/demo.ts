@@ -669,6 +669,8 @@ export const AGENTS: AgentV1[] = [
     endpoint: 'openclaw://gateway.portarium.local/robot-controller',
     allowedCapabilities: ['machine:invoke', 'execute-code', 'notify'],
     usedByWorkflowIds: ['wf-robot-mission'],
+    machineId: 'machine-001',
+    policyTier: 'HumanApprove',
   },
 ];
 
