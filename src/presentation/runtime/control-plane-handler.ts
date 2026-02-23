@@ -23,6 +23,7 @@ import {
 import { createLogger } from '../../infrastructure/observability/logger.js';
 import { createRequestLogger } from '../../infrastructure/observability/request-logger.js';
 import {
+  PayloadTooLargeError,
   assertReadAccess,
   authenticate,
   checkIfMatch,
@@ -818,10 +819,29 @@ export function createControlPlaneHandler(
     // wrap in Promise.resolve() to ensure .catch() is always available.
     void Promise.resolve(app.fetch(honoReq, { incoming: req, outgoing: res })).catch(
       (error: unknown) => {
-        // Catastrophic failure — try to send a 500 if the response is still open.
+        // Try to send an error response if the response is still open.
         if (!res.writableEnded) {
           const correlationId = randomUUID();
           const traceContext = normalizeTraceContext(req);
+
+          // Body size limit exceeded — 413 Payload Too Large.
+          if (error instanceof PayloadTooLargeError) {
+            respondProblem(
+              res,
+              {
+                type: 'https://portarium.dev/problems/payload-too-large',
+                title: 'Payload Too Large',
+                status: 413,
+                detail: error.message,
+                instance: req.url ?? '/',
+              },
+              correlationId,
+              traceContext,
+            );
+            return;
+          }
+
+          // Catastrophic failure — 500 Internal Server Error.
           respondProblem(
             res,
             {

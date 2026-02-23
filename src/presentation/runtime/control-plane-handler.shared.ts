@@ -315,10 +315,41 @@ export function assertWorkspaceScope(
   return { ok: true };
 }
 
-export async function readJsonBody(req: IncomingMessage): Promise<unknown> {
+/**
+ * Maximum request body size in bytes.
+ * 1 MiB is generous for JSON API payloads while defending against
+ * accidental or malicious multi-gigabyte uploads.
+ */
+const DEFAULT_MAX_BODY_BYTES = 1_048_576; // 1 MiB
+
+/**
+ * Thrown when the request body exceeds the configured size limit.
+ * Caught by the top-level error handler in `createControlPlaneHandler` to
+ * produce a 413 Payload Too Large response.
+ */
+export class PayloadTooLargeError extends Error {
+  readonly maxBytes: number;
+  constructor(maxBytes: number) {
+    super(`Request body exceeds the ${maxBytes}-byte limit.`);
+    this.name = 'PayloadTooLargeError';
+    this.maxBytes = maxBytes;
+  }
+}
+
+export async function readJsonBody(
+  req: IncomingMessage,
+  maxBytes: number = DEFAULT_MAX_BODY_BYTES,
+): Promise<unknown> {
   const chunks: Buffer[] = [];
+  let totalBytes = 0;
   for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+    totalBytes += buf.length;
+    if (totalBytes > maxBytes) {
+      req.destroy();
+      throw new PayloadTooLargeError(maxBytes);
+    }
+    chunks.push(buf);
   }
   if (chunks.length === 0) return null;
   const raw = Buffer.concat(chunks).toString('utf8').trim();
