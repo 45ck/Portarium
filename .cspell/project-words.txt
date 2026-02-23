@@ -1043,3 +1043,5 @@ icense
 ecret
 # Data layer ADR (bead-6i3j)
 savepoints
+# Bead ID referenced in report-24 session notes
+uyjg
