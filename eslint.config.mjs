@@ -144,6 +144,19 @@ export default tseslint.config(
     },
   },
 
+  // Minimal type declaration stubs for pnpm-linked packages whose dist-types are missing.
+  // These files follow real SDK signatures and need flexibility on type conventions.
+  {
+    files: ['src/types/*.d.ts'],
+    rules: {
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/consistent-indexed-object-style': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-vars': 'off',
+    },
+  },
+
   // Tests can be longer/more verbose; keep production caps strict.
   // Mock port implementations idiomatically use async without await, unbound method
   // references (expect(obj.method)), and type-unsafe mocks — all standard Vitest patterns.
