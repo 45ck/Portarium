@@ -100,17 +100,27 @@ npm run test -- scaffolds/adapters/demo-crm/src/index.test.ts
 
 ### L3 — Governed run (local stack)
 
-Start the full stack:
+Start the full local stack (Postgres, Temporal, MinIO, Vault, API, worker):
 
 ```bash
-docker compose up -d
-npm run migrate:ci
-PORTARIUM_DEV_TOKEN=demo-secret npx tsx src/presentation/runtime/control-plane.ts &
-PORTARIUM_ENABLE_TEMPORAL_WORKER=true PORTARIUM_DEV_TOKEN=demo-secret \
-  npx tsx src/presentation/runtime/worker.ts &
+npm run dev:all
+npm run dev:seed
 ```
 
-Run the governed-run emulator tests:
+Run the governed-run smoke test against the live stack:
+
+```bash
+GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 \
+  npm run test -- src/infrastructure/adapters/governed-run-smoke.test.ts
+```
+
+Or run the full smoke pipeline (boots stack, seeds, then runs integration smoke):
+
+```bash
+npm run smoke:stack
+```
+
+For the run-emulator unit tests (no live stack required):
 
 ```bash
 npm run test -- src/infrastructure/emulator/run-emulator.test.ts
