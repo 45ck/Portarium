@@ -50,12 +50,28 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - `src/infrastructure/` — DB, external APIs, queues, adapters
 - `src/presentation/` — HTTP handlers, UI, CLI
 
+## Browser-based QA (agent-browser)
+
+- For any manual QA, exploratory testing, or pre-test UI exploration, use `agent-browser` via the Node.js wrapper (the Rust binary is blocked by AppLocker on Windows Enterprise):
+  ```bash
+  npm run ab -- open http://localhost:5173 --headed   # launch browser
+  npm run ab -- snapshot -i                           # get interactive elements with refs
+  npm run ab -- click @e2                             # interact by ref
+  npm run ab -- fill @e3 "test value"                 # fill inputs
+  npm run ab -- screenshot ./evidence.png             # capture evidence
+  npm run ab -- close                                 # close browser
+  ```
+- Always re-snapshot after page navigation or DOM changes to get fresh refs.
+- Start the cockpit dev server first: `cd apps/cockpit && npx vite`
+- The wrapper (`scripts/ab.mjs`) speaks the same TCP protocol as the native CLI.
+
 ## Commands
 
 - Quick check: `npm run ci:pr`
 - Deep check: `npm run ci:nightly`
 - Tests: `npm run test` or `npm run test:watch`
 - Lint fix: `npm run lint:fix && npm run format`
+- Browser QA: `npm run ab -- <command>`
 
 ## Naming conventions
 

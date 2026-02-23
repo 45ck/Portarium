@@ -1050,3 +1050,7 @@ testend
 beforeafter
 # American spelling variant in test fixture (presentation-blocks-extended-v1.test.ts)
 Analyzed
+
+# Browser QA tooling
+AppLocker
+agent-browser

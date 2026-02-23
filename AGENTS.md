@@ -23,6 +23,30 @@ If you are told to "continue working on issues", "work on the next issue", "keep
 - `/qa-agent-browser` — browser-based QA sweep
 - `/bd-sync` — synchronise work with Beads
 
+## Browser-Based QA (agent-browser)
+
+For manual QA, exploratory testing, or UI exploration before writing tests, use `agent-browser` via the Node.js wrapper. The Rust binary is blocked by AppLocker on Windows Enterprise, so all beads requiring UI interaction must use the wrapper:
+
+```bash
+# Start the cockpit dev server first
+cd apps/cockpit && npx vite
+
+# Then in another terminal, use the wrapper:
+npm run ab -- open http://localhost:5173 --headed   # launch browser
+npm run ab -- snapshot -i                           # get interactive elements with refs
+npm run ab -- click @e2                             # interact by ref
+npm run ab -- fill @e3 "test value"                 # fill inputs
+npm run ab -- screenshot ./evidence.png             # capture evidence
+npm run ab -- close                                 # close browser
+```
+
+Key rules:
+- **Always re-snapshot** after navigation or DOM changes — refs are invalidated by page updates.
+- Use `snapshot -i` for interactive elements only (compact), or `snapshot` for the full accessibility tree.
+- Use `screenshot --annotate` to get annotated screenshots with numbered labels mapped to refs.
+- The wrapper (`scripts/ab.mjs`) speaks the same TCP protocol as the native CLI — all commands are supported.
+- Sessions are isolated: use `AGENT_BROWSER_SESSION=mytest npm run ab -- open ...` for parallel sessions.
+
 ---
 
 ## Beads Workflow
