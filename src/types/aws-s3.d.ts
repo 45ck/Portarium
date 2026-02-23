@@ -18,9 +18,9 @@ declare module '@aws-sdk/client-s3' {
 
   export class S3Client {
     constructor(config?: S3ClientConfig);
-    send<Input extends object, _Output extends object>(
-      command: Command<Input, _Output>,
-    ): Promise<_Output>;
+    send<Input extends object, Output extends object>(
+      command: Command<Input, Output>,
+    ): Promise<Output>;
     destroy(): void;
   }
 
