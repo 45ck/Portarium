@@ -45,7 +45,11 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-function parseCallbackUrl(url: string): { code: string | null; state: string | null; error: string | null } {
+function parseCallbackUrl(url: string): {
+  code: string | null;
+  state: string | null;
+  error: string | null;
+} {
   try {
     const u = new URL(url);
     const params = u.searchParams;
@@ -240,7 +244,7 @@ describe('OIDC: decodeJwtPayload', () => {
 
   it('returns null for a malformed token', () => {
     expect(decodeJwtPayload('not.a.valid.jwt.parts')).toBeNull();
-    expect(decodeJwtPayload('onlyonepart')).toBeNull();
+    expect(decodeJwtPayload('only-one-part')).toBeNull();
   });
 
   it('returns null for an empty string', () => {
