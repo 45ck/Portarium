@@ -45,7 +45,11 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-function parseCallbackUrl(url: string): { code: string | null; state: string | null; error: string | null } {
+function parseCallbackUrl(url: string): {
+  code: string | null;
+  state: string | null;
+  error: string | null;
+} {
   try {
     const u = new URL(url);
     const params = u.searchParams;
