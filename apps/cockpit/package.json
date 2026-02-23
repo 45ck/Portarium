@@ -8,6 +8,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage --config vitest.coverage.config.ts",
     "test:watch": "vitest"
   },
   "dependencies": {

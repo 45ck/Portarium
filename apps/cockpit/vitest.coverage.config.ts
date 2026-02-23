@@ -1,3 +1,8 @@
+/**
+ * Vitest config for cockpit component coverage gate (used in ci:pr).
+ * Scoped to components/cockpit/ only — excludes routes (which have
+ * @capacitor/preferences dynamic imports that require Capacitor runtime).
+ */
 import { mergeConfig } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -8,7 +13,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'node',
-      include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+      include: ['src/components/**/*.test.ts', 'src/components/**/*.test.tsx'],
       setupFiles: ['src/test-setup.ts'],
       reporters: ['default'],
       coverage: {
