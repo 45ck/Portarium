@@ -1,3 +1,4 @@
+// cspell:ignore ulnerability icense ecret ependency ockpit onnector ollback
 /**
  * Contract tests for supply-chain guardrails: cockpit and connector dependencies (bead-0755).
  *
