@@ -3,10 +3,16 @@ info:
   title: Portarium Control Plane — Retrieval & Graph Query Extension
   description: |
     Workspace retrieval and graph query endpoints for the Derived Artifacts campaign.
-    These endpoints extend the main control-plane API (`portarium-control-plane.v1.yaml`).
-    They are versioned independently and will be merged into the main spec once
-    the infrastructure adapters (beads 0772–0780) are implemented.
-  version: '0.1.0'
+
+    These three endpoints are defined in the main control-plane spec
+    (`portarium-control-plane.v1.yaml`).  This file provides a focused
+    reference to the retrieval surface area with extended inline descriptions
+    for adapter and integration authors.
+
+    Implemented in bead-0778 (HTTP handlers) and bead-0780 (security: redaction
+    + tenant isolation + input limits).
+
+  version: '0.2.0'
   contact:
     name: Portarium Core Team
 
@@ -18,13 +24,37 @@ paths:
   /workspaces/{workspaceId}/retrieval/search:
     post:
       operationId: searchRetrievalIndex
-      summary: Semantic / hybrid search over workspace evidence and artefacts
+      summary: Semantic, graph, or hybrid search over workspace derived artefacts
       description: |
-        Searches the derived-artefact index for entries semantically similar to the
-        query string. Supports `semantic`, `graph`, and `hybrid` retrieval strategies.
-        Results include provenance (source run, evidence entry) and a relevance score.
+        Searches the derived-artefact index for entries matching the query.
+
+        **Strategy semantics:**
+        - `semantic`: dense vector similarity search — embeds the query with the
+          workspace embedding model, then searches the vector index.
+        - `graph`: graph traversal from `graph.rootNodeId` using the knowledge
+          graph port.  Traversal results are returned as `RetrievalHitV1` items
+          alongside raw `nodes` + `edges`.
+        - `hybrid`: runs a semantic search and optionally enriches results with
+          graph neighbourhood data when `graph` params are provided.
+
+        **Security:**
+        - Bearer token required; workspace claim in token must match `:workspaceId`.
+        - `text` field in each hit has secrets redacted (Bearer tokens, AWS keys,
+          PEM blocks, URL credentials, GitHub PATs, generic `api_key` assignments).
+        - `metadata` field in each hit has values redacted for any key matching
+          `authorization|token|secret|password|api_key|credential|private_key|passphrase`.
+        - Results are workspace-scoped: any hit whose `provenance.workspaceId`
+          does not match the authenticated workspace is silently discarded
+          (defense-in-depth on top of the port-level workspace scoping).
+
+        **Input limits (return 400 if exceeded):**
+        - `semantic.query`: max 2048 characters
+        - `semantic.topK`: max 100
+        - `graph.maxDepth`: max 10
       tags:
         - Retrieval
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/WorkspaceId'
       requestBody:
@@ -32,35 +62,79 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RetrievalQueryV1'
+              $ref: '#/components/schemas/RetrievalSearchRequestV1'
+            examples:
+              semanticSearch:
+                summary: Basic semantic search
+                value:
+                  strategy: semantic
+                  semantic:
+                    query: 'approval granted for deployment to production'
+                    topK: 10
+              graphSearch:
+                summary: Graph traversal from a run node
+                value:
+                  strategy: graph
+                  graph:
+                    rootNodeId: run-abc123
+                    direction: outbound
+                    maxDepth: 3
+                    relationFilter: ['TRIGGERED_BY', 'REQUIRES_APPROVAL']
+              hybridSearch:
+                summary: Hybrid search with graph enrichment
+                value:
+                  strategy: hybrid
+                  semantic:
+                    query: 'deployment rollback'
+                    topK: 5
+                  graph:
+                    rootNodeId: run-xyz789
+                    direction: both
+                    maxDepth: 2
       responses:
         '200':
           description: Search results with provenance
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RetrievalResultsV1'
+                $ref: '#/components/schemas/RetrievalSearchResponseV1'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Validation error — invalid strategy, query too long, topK/maxDepth out of range, etc.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '429':
-          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Retrieval service not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
         '500':
           $ref: '#/components/responses/InternalError'
 
   /workspaces/{workspaceId}/graph/query:
     post:
       operationId: queryWorkflowGraph
-      summary: Graph query over workflow entity relationships
+      summary: Graph traversal query over workspace workflow entities
       description: |
-        Executes a graph traversal query over the workflow entity graph.
-        Supports querying dependencies (what does this approval block?),
-        ancestry (what triggered this run?), and impact analysis.
+        Executes a bounded graph traversal from a root entity node.
+
+        **Security:** same token and workspace-scope requirements as
+        `searchRetrievalIndex`.  Node and edge `properties` are redacted of
+        secrets before being returned.  Nodes and edges whose `workspaceId`
+        does not match the authenticated workspace are silently discarded.
+
+        **Input limits (return 400 if exceeded):**
+        - `maxDepth`: max 10
       tags:
-        - Graph
+        - Retrieval
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/WorkspaceId'
       requestBody:
@@ -68,64 +142,103 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GraphQueryV1'
+              $ref: '#/components/schemas/GraphQueryRequestV1'
+            examples:
+              outboundTraversal:
+                summary: Outbound traversal from a run node
+                value:
+                  rootNodeId: run-abc123
+                  direction: outbound
+                  maxDepth: 4
+                  relationFilter: ['TRIGGERED_BY', 'PRODUCED_EVIDENCE']
       responses:
         '200':
-          description: Graph query results
+          description: Graph traversal results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GraphResultsV1'
+                $ref: '#/components/schemas/GraphTraversalResultV1'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Validation error — missing rootNodeId, invalid direction, maxDepth out of range, etc.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '503':
+          description: Graph service not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
         '500':
           $ref: '#/components/responses/InternalError'
 
   /workspaces/{workspaceId}/derived-artifacts:
     get:
       operationId: listDerivedArtifacts
-      summary: List derived artefacts for a workspace
+      summary: List derived artefact metadata for a workspace run
+      description: |
+        Returns metadata for all non-expired derived artefacts produced from
+        the specified run.  Expired artefacts (where `expiresAtIso < now`)
+        are silently filtered before the response is assembled.
+
+        The `runId` query parameter is **required**.
+        An optional `kind` parameter narrows results to a single artefact kind.
       tags:
         - Retrieval
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/WorkspaceId'
         - name: runId
           in: query
+          required: true
+          description: Filter to artefacts produced from this run
           schema:
             type: string
+            minLength: 1
         - name: kind
           in: query
+          required: false
+          description: Optional kind filter
           schema:
             type: string
             enum: [embedding, graph-node, graph-edge, chunk-index]
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-        - name: cursor
-          in: query
-          schema:
-            type: string
       responses:
         '200':
-          description: Paginated list of derived artefacts
+          description: Paginated list of derived artefact metadata
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DerivedArtifactListV1'
+                $ref: '#/components/schemas/DerivedArtifactListResponseV1'
+        '400':
+          description: Validation error — missing runId, invalid kind, etc.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '503':
+          description: Derived-artifact registry not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   parameters:
     WorkspaceId:
       name: workspaceId
@@ -135,177 +248,233 @@ components:
         type: string
 
   schemas:
-    RetrievalQueryV1:
+    SemanticQueryParamsV1:
       type: object
-      required: [query, topK, strategy]
+      required: [query]
       properties:
         query:
           type: string
           minLength: 1
-          maxLength: 2000
+          maxLength: 2048
           description: Natural language query string
         topK:
           type: integer
           minimum: 1
           maximum: 100
           default: 10
-          description: Number of results to return
-        strategy:
-          type: string
-          enum: [semantic, graph, hybrid]
-          description: |
-            - `semantic`: vector similarity search
-            - `graph`: graph traversal from matched entities
-            - `hybrid`: weighted combination of semantic + graph
-        filters:
-          type: object
-          properties:
-            runId:
-              type: string
-            evidenceKind:
-              type: string
-            dateRange:
-              type: object
-              required: [from, to]
-              properties:
-                from:
-                  type: string
-                  format: date-time
-                to:
-                  type: string
-                  format: date-time
-
-    RetrievalResultsV1:
-      type: object
-      required: [items, query, strategy]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/RetrievalResultItemV1'
-        query:
-          type: string
-        strategy:
-          type: string
-          enum: [semantic, graph, hybrid]
-        total:
-          type: integer
-
-    RetrievalResultItemV1:
-      type: object
-      required: [score, provenance]
-      properties:
-        score:
+          description: Maximum number of nearest-neighbour hits to return
+        minScore:
           type: number
           minimum: 0
           maximum: 1
-          description: Relevance score (1 = most relevant)
-        snippet:
-          type: string
-          description: Extracted snippet from the source artefact
-        provenance:
+          description: Minimum similarity threshold; results below this are discarded
+        filters:
           type: object
-          required: [runId, evidenceId, workspaceId]
-          properties:
-            runId:
-              type: string
-            evidenceId:
-              type: string
-            workspaceId:
-              type: string
-            occurredAtIso:
-              type: string
-              format: date-time
+          additionalProperties: true
+          description: Optional key/value filters forwarded to the vector index
 
-    GraphQueryV1:
+    GraphQueryParamsV1:
       type: object
-      required: [rootEntityId, entityKind, traversal]
+      required: [rootNodeId, direction]
       properties:
-        rootEntityId:
+        rootNodeId:
           type: string
-          description: Starting entity for the traversal (e.g. runId, workItemId)
-        entityKind:
+          minLength: 1
+          description: Starting node ID for the traversal
+        direction:
           type: string
-          enum: [run, work-item, approval, evidence-entry]
-        traversal:
-          type: string
-          enum: [dependencies, ancestry, impact, full]
-          description: |
-            - `dependencies`: what does this entity block?
-            - `ancestry`: what caused this entity?
-            - `impact`: what would be affected if this entity changed?
-            - `full`: all connected entities (bounded by maxDepth)
+          enum: [outbound, inbound, both]
         maxDepth:
           type: integer
           minimum: 1
           maximum: 10
           default: 3
+          description: Maximum traversal depth
+        relationFilter:
+          type: array
+          items:
+            type: string
+          description: Optional whitelist of relation types to follow
 
-    GraphResultsV1:
+    RetrievalSearchRequestV1:
+      type: object
+      required: [strategy]
+      properties:
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+        semantic:
+          $ref: '#/components/schemas/SemanticQueryParamsV1'
+        graph:
+          $ref: '#/components/schemas/GraphQueryParamsV1'
+
+    RetrievalHitV1:
+      type: object
+      required: [artifactId, metadata, provenance]
+      properties:
+        artifactId:
+          type: string
+        score:
+          type: number
+          description: Relevance score (absent for graph-only hits)
+        text:
+          type: string
+          description: Source text — secrets redacted before return
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Artefact metadata — sensitive key values redacted before return
+        provenance:
+          type: object
+          required: [workspaceId, runId]
+          properties:
+            workspaceId:
+              type: string
+            runId:
+              type: string
+            evidenceId:
+              type: string
+
+    RetrievalSearchResponseV1:
+      type: object
+      required: [strategy, hits]
+      properties:
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetrievalHitV1'
+        graph:
+          $ref: '#/components/schemas/GraphTraversalResultV1'
+          description: Graph neighbourhood data — present when strategy includes graph traversal
+
+    GraphQueryRequestV1:
+      type: object
+      required: [rootNodeId, direction]
+      properties:
+        rootNodeId:
+          type: string
+          minLength: 1
+        direction:
+          type: string
+          enum: [outbound, inbound, both]
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+        relationFilter:
+          type: array
+          items:
+            type: string
+
+    GraphNodeV1:
+      type: object
+      required: [nodeId, workspaceId, kind, label, properties]
+      properties:
+        nodeId:
+          type: string
+        workspaceId:
+          type: string
+        kind:
+          type: string
+          enum: [run, work-item, approval, evidence-entry, agent-machine]
+        label:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+          description: Node properties — sensitive key values redacted before return
+
+    GraphEdgeV1:
+      type: object
+      required: [edgeId, fromNodeId, toNodeId, relation, workspaceId]
+      properties:
+        edgeId:
+          type: string
+        fromNodeId:
+          type: string
+        toNodeId:
+          type: string
+        relation:
+          type: string
+          description: e.g. TRIGGERED_BY, REQUIRES_APPROVAL, PRODUCED_EVIDENCE
+        workspaceId:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+          description: Edge properties — sensitive key values redacted before return
+
+    GraphTraversalResultV1:
       type: object
       required: [nodes, edges]
       properties:
         nodes:
           type: array
           items:
-            type: object
-            required: [id, kind, label]
-            properties:
-              id:
-                type: string
-              kind:
-                type: string
-              label:
-                type: string
-              metadata:
-                type: object
-                additionalProperties: true
+            $ref: '#/components/schemas/GraphNodeV1'
         edges:
           type: array
           items:
-            type: object
-            required: [from, to, relation]
-            properties:
-              from:
-                type: string
-              to:
-                type: string
-              relation:
-                type: string
+            $ref: '#/components/schemas/GraphEdgeV1'
 
-    DerivedArtifactListV1:
+    DerivedArtifactProvenanceV1:
       type: object
-      required: [items, meta]
+      required: [workspaceId, runId, projectorVersion]
+      properties:
+        workspaceId:
+          type: string
+        runId:
+          type: string
+        evidenceId:
+          type: string
+        projectorVersion:
+          type: string
+          description: Semver of the projector that produced this artefact
+
+    DerivedArtifactMetaV1:
+      type: object
+      required:
+        [schemaVersion, artifactId, workspaceId, kind, provenance, retentionPolicy, createdAtIso]
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        artifactId:
+          type: string
+        workspaceId:
+          type: string
+        kind:
+          type: string
+          enum: [embedding, graph-node, graph-edge, chunk-index]
+        provenance:
+          $ref: '#/components/schemas/DerivedArtifactProvenanceV1'
+        retentionPolicy:
+          type: string
+          enum: [indefinite, run-lifetime, ttl]
+        createdAtIso:
+          type: string
+          format: date-time
+        expiresAtIso:
+          type: string
+          format: date-time
+          description: Present only when retentionPolicy is "ttl"
+
+    DerivedArtifactListResponseV1:
+      type: object
+      required: [items, total]
       properties:
         items:
           type: array
           items:
-            type: object
-            required: [artifactId, kind, sourceRunId, createdAtIso]
-            properties:
-              artifactId:
-                type: string
-              kind:
-                type: string
-                enum: [embedding, graph-node, graph-edge, chunk-index]
-              sourceRunId:
-                type: string
-              sourceEvidenceId:
-                type: string
-              createdAtIso:
-                type: string
-                format: date-time
-              expiresAtIso:
-                type: string
-                format: date-time
-        meta:
-          type: object
-          required: [total]
-          properties:
-            total:
-              type: integer
-            nextCursor:
-              type: string
+            $ref: '#/components/schemas/DerivedArtifactMetaV1'
+          description: Non-expired artefacts matching the filters
+        total:
+          type: integer
+          minimum: 0
 
     ProblemDetail:
       type: object
@@ -313,30 +482,27 @@ components:
       properties:
         type:
           type: string
+          format: uri
         title:
           type: string
         status:
           type: integer
+          minimum: 100
+          maximum: 599
         detail:
           type: string
-        correlationId:
+        instance:
           type: string
 
   responses:
-    BadRequest:
-      description: Validation error
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ProblemDetail'
     Unauthorized:
-      description: Unauthenticated
+      description: Unauthenticated — missing or invalid Bearer token
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/ProblemDetail'
     Forbidden:
-      description: Unauthorised
+      description: Authorisation failure — token workspace does not match requested workspace, or insufficient role
       content:
         application/problem+json:
           schema:

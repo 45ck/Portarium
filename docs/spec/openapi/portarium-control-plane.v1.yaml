@@ -1325,6 +1325,162 @@ paths:
                 $ref: '#/components/schemas/ConnectionTestResult'
         default:
           $ref: '#/components/responses/Problem'
+
+  # ---------------------------------------------------------------------------
+  # Retrieval & Graph (bead-0766 / bead-0778 / bead-0780)
+  # ---------------------------------------------------------------------------
+
+  /v1/workspaces/{workspaceId}/retrieval/search:
+    post:
+      tags: [Retrieval]
+      summary: Semantic, graph, or hybrid search over workspace derived artefacts
+      description: |
+        Searches the derived-artefact index (vector embeddings + knowledge graph)
+        for entries matching the query. Supports three strategies:
+          - `semantic`: dense vector similarity search
+          - `graph`: graph traversal from a root entity
+          - `hybrid`: semantic search optionally enriched with graph context
+
+        All results are scoped to the authenticated workspace. Text and metadata
+        fields in the response are redacted of known secret patterns
+        (Bearer tokens, AWS keys, PEM blocks, URL credentials, etc.).
+      operationId: searchRetrievalIndex
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrievalSearchRequestV1'
+      responses:
+        '200':
+          description: Search results with provenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrievalSearchResponseV1'
+        '400':
+          description: Validation error (invalid strategy, query too long, topK out of range, etc.)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '503':
+          description: Retrieval service not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /v1/workspaces/{workspaceId}/graph/query:
+    post:
+      tags: [Retrieval]
+      summary: Graph traversal query over workspace workflow entities
+      description: |
+        Executes a bounded graph traversal from a root entity node.
+        Useful for dependency mapping, ancestry tracing, and impact analysis.
+
+        Node properties and edge properties are redacted of known secret patterns
+        before being returned. Results are strictly scoped to the authenticated workspace.
+      operationId: queryWorkflowGraph
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraphQueryRequestV1'
+      responses:
+        '200':
+          description: Graph traversal results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraphTraversalResultV1'
+        '400':
+          description: Validation error (missing rootNodeId, invalid direction, maxDepth out of range, etc.)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '503':
+          description: Graph service not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /v1/workspaces/{workspaceId}/derived-artifacts:
+    get:
+      tags: [Retrieval]
+      summary: List derived artefact metadata for a workspace run
+      description: |
+        Returns metadata for all non-expired derived artefacts produced for
+        a given run. Results are scoped to the authenticated workspace.
+        The `runId` query parameter is required.
+      operationId: listDerivedArtifacts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - name: runId
+          in: query
+          required: true
+          description: Filter to artefacts produced from this run
+          schema:
+            type: string
+            minLength: 1
+        - name: kind
+          in: query
+          required: false
+          description: Optional kind filter
+          schema:
+            type: string
+            enum: [embedding, graph-node, graph-edge, chunk-index]
+      responses:
+        '200':
+          description: Artefact metadata list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DerivedArtifactListResponse'
+        '400':
+          description: Validation error (missing runId, etc.)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '503':
+          description: Derived-artifact registry not configured for this deployment
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        default:
+          $ref: '#/components/responses/Problem'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -3363,3 +3519,256 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentCapability'
+
+    # -------------------------------------------------------------------------
+    # Retrieval & Graph schemas (bead-0766 / bead-0778 / bead-0780)
+    # -------------------------------------------------------------------------
+
+    SemanticQueryParamsV1:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          description: Natural language query string (secrets are never stored or logged)
+        topK:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+          description: Maximum number of nearest-neighbour hits to return
+        minScore:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Minimum similarity score threshold (0–1); results below this are discarded
+        filters:
+          type: object
+          additionalProperties: true
+          description: Optional key/value filters applied by the vector index
+
+    GraphQueryParamsV1:
+      type: object
+      required: [rootNodeId, direction]
+      properties:
+        rootNodeId:
+          type: string
+          minLength: 1
+          description: Starting node ID for the traversal
+        direction:
+          type: string
+          enum: [outbound, inbound, both]
+          description: Edge direction to follow during traversal
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+          description: Maximum number of hops from the root node
+        relationFilter:
+          type: array
+          items:
+            type: string
+          description: Optional whitelist of relation types to follow (e.g. TRIGGERED_BY)
+
+    RetrievalSearchRequestV1:
+      type: object
+      required: [strategy]
+      properties:
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+          description: |
+            - `semantic`: dense vector similarity search using the query string
+            - `graph`: graph traversal from the specified root entity
+            - `hybrid`: semantic search optionally enriched with graph neighbourhood
+        semantic:
+          $ref: '#/components/schemas/SemanticQueryParamsV1'
+          description: Required when strategy is "semantic" or "hybrid"
+        graph:
+          $ref: '#/components/schemas/GraphQueryParamsV1'
+          description: Required when strategy is "graph"; optional enrichment when strategy is "hybrid"
+
+    RetrievalHitV1:
+      type: object
+      required: [artifactId, metadata, provenance]
+      properties:
+        artifactId:
+          type: string
+          description: Unique identifier of the derived artefact
+        score:
+          type: number
+          description: Relevance score from the vector index (absent for graph-only hits)
+        text:
+          type: string
+          description: Source text from the artefact (secrets redacted before return)
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Artefact metadata (sensitive key values redacted before return)
+        provenance:
+          type: object
+          required: [workspaceId, runId]
+          additionalProperties: false
+          properties:
+            workspaceId:
+              type: string
+            runId:
+              type: string
+            evidenceId:
+              type: string
+
+    RetrievalSearchResponseV1:
+      type: object
+      required: [strategy, hits]
+      additionalProperties: false
+      properties:
+        strategy:
+          type: string
+          enum: [semantic, graph, hybrid]
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetrievalHitV1'
+        graph:
+          $ref: '#/components/schemas/GraphTraversalResultV1'
+          description: Graph neighbourhood data (present when strategy includes graph context)
+
+    GraphQueryRequestV1:
+      type: object
+      required: [rootNodeId, direction]
+      properties:
+        rootNodeId:
+          type: string
+          minLength: 1
+          description: ID of the entity node at which the traversal starts
+        direction:
+          type: string
+          enum: [outbound, inbound, both]
+          description: Edge direction(s) to follow from each visited node
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+          description: Maximum traversal depth; requests exceeding 10 are rejected with 400
+        relationFilter:
+          type: array
+          items:
+            type: string
+          description: If provided, only edges with a matching relation type are traversed
+
+    GraphNodeV1:
+      type: object
+      required: [nodeId, workspaceId, kind, label, properties]
+      additionalProperties: false
+      properties:
+        nodeId:
+          type: string
+        workspaceId:
+          type: string
+        kind:
+          type: string
+          enum: [run, work-item, approval, evidence-entry, agent-machine]
+        label:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+          description: Node properties (sensitive key values redacted before return)
+
+    GraphEdgeV1:
+      type: object
+      required: [edgeId, fromNodeId, toNodeId, relation, workspaceId]
+      additionalProperties: false
+      properties:
+        edgeId:
+          type: string
+        fromNodeId:
+          type: string
+        toNodeId:
+          type: string
+        relation:
+          type: string
+          description: Relationship type (e.g. TRIGGERED_BY, REQUIRES_APPROVAL, PRODUCED_EVIDENCE)
+        workspaceId:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+          description: Edge properties (sensitive key values redacted before return)
+
+    GraphTraversalResultV1:
+      type: object
+      required: [nodes, edges]
+      additionalProperties: false
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphNodeV1'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdgeV1'
+
+    DerivedArtifactProvenanceV1:
+      type: object
+      required: [workspaceId, runId, projectorVersion]
+      additionalProperties: false
+      properties:
+        workspaceId:
+          type: string
+        runId:
+          type: string
+        evidenceId:
+          type: string
+        projectorVersion:
+          type: string
+          description: Semver of the projector that produced this artefact
+
+    DerivedArtifactMetaV1:
+      type: object
+      required:
+        [schemaVersion, artifactId, workspaceId, kind, provenance, retentionPolicy, createdAtIso]
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        artifactId:
+          type: string
+        workspaceId:
+          type: string
+        kind:
+          type: string
+          enum: [embedding, graph-node, graph-edge, chunk-index]
+        provenance:
+          $ref: '#/components/schemas/DerivedArtifactProvenanceV1'
+        retentionPolicy:
+          type: string
+          enum: [indefinite, run-lifetime, ttl]
+        createdAtIso:
+          type: string
+          format: date-time
+        expiresAtIso:
+          type: string
+          format: date-time
+          description: Present only when retentionPolicy is "ttl"
+
+    DerivedArtifactListResponse:
+      type: object
+      required: [items, total]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DerivedArtifactMetaV1'
+          description: Non-expired artefacts matching the filters
+        total:
+          type: integer
+          minimum: 0
+          description: Number of items returned (after expiry and kind filtering)
