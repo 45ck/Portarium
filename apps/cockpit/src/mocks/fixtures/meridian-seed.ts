@@ -11,6 +11,7 @@ import type {
   WorkforceMemberSummary,
   WorkforceQueueSummary,
   AgentV1,
+  MachineV1,
   EvidenceCategory,
   EvidenceActor,
   EvidencePayloadRef,
@@ -561,6 +562,7 @@ export interface MeridianDataset {
   WORKFORCE_MEMBERS: WorkforceMemberSummary[];
   WORKFORCE_QUEUES: WorkforceQueueSummary[];
   AGENTS: AgentV1[];
+  MACHINES: MachineV1[];
   ADAPTERS: AdapterSummary[];
   ROBOTS: RobotSummary[];
   MISSIONS: MissionSummary[];
@@ -605,6 +607,46 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     allowedCapabilities: [...a.caps],
     usedByWorkflowIds: [...a.wfIds],
   }));
+
+  // ---- Machines ----------------------------------------------------------
+  const MACHINES: MachineV1[] = [
+    {
+      schemaVersion: 1,
+      machineId: 'mach-meridian-01',
+      workspaceId: WS,
+      hostname: 'edge-gateway-01.meridian-coldchain.io',
+      osImage: 'ubuntu-22.04-lts',
+      registeredAtIso: cfg.startIso,
+      lastHeartbeatAtIso: cfg.endIso,
+      status: 'Online',
+      activeRunCount: 3,
+      allowedCapabilities: ['machine:invoke', 'read:external'],
+    },
+    {
+      schemaVersion: 1,
+      machineId: 'mach-meridian-02',
+      workspaceId: WS,
+      hostname: 'edge-gateway-02.meridian-coldchain.io',
+      osImage: 'ubuntu-22.04-lts',
+      registeredAtIso: cfg.startIso,
+      lastHeartbeatAtIso: cfg.endIso,
+      status: 'Online',
+      activeRunCount: 1,
+      allowedCapabilities: ['machine:invoke'],
+    },
+    {
+      schemaVersion: 1,
+      machineId: 'mach-meridian-03',
+      workspaceId: WS,
+      hostname: 'cold-room-sensor-ctrl-01.meridian-coldchain.io',
+      osImage: 'debian-12',
+      registeredAtIso: cfg.startIso,
+      lastHeartbeatAtIso: cfg.endIso,
+      status: 'Degraded',
+      activeRunCount: 0,
+      allowedCapabilities: ['machine:invoke', 'read:external', 'write:external'],
+    },
+  ];
 
   // ---- Workforce Members -------------------------------------------------
   const memberSlice = MEMBER_DEFS.slice(0, cfg.memberCount);
@@ -1461,6 +1503,7 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
     WORKFORCE_MEMBERS,
     WORKFORCE_QUEUES,
     AGENTS,
+    MACHINES,
     ADAPTERS,
     ROBOTS,
     MISSIONS,

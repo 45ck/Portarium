@@ -11,6 +11,8 @@ import type {
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
   WorkflowSummary,
+  MachineV1,
+  AgentCapability,
 } from '@portarium/cockpit-types';
 import { buildMockWorkflows } from './fixtures/workflows';
 import { buildMockHumanTasks } from './fixtures/human-tasks';
@@ -33,6 +35,7 @@ let humanTasks: HumanTaskSummary[] = [];
 let workItems: MeridianDataset['WORK_ITEMS'] = [];
 let users: UserSummary[] = [...MOCK_USERS];
 let agents: MeridianDataset['AGENTS'] = [];
+let machines: MeridianDataset['MACHINES'] = [];
 let runs: MeridianDataset['RUNS'] = [];
 let missions: MeridianDataset['MISSIONS'] = [];
 let globalEstopActive = false;
@@ -49,6 +52,7 @@ export async function loadActiveDataset(): Promise<void> {
   credentialGrants = [...data.CREDENTIAL_GRANTS];
   humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS);
   agents = [...data.AGENTS];
+  machines = [...(data.MACHINES ?? [])];
   runs = [...data.RUNS];
   missions = [...(data.MISSIONS ?? [])];
   workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
@@ -265,6 +269,12 @@ export const handlers = [
 
   // Agents
   http.get('/v1/workspaces/:wsId/agents', () => HttpResponse.json({ items: agents })),
+  http.get('/v1/workspaces/:wsId/agents/:agentId', ({ params }) => {
+    const agentId = String(params['agentId'] ?? '');
+    const agent = agents.find((a) => a.agentId === agentId);
+    if (!agent) return HttpResponse.json({ title: 'Not Found' }, { status: 404 });
+    return HttpResponse.json(agent);
+  }),
   http.post('/v1/workspaces/:wsId/agents', async ({ request, params }) => {
     const body = (await request.json()) as {
       name: string;
@@ -280,12 +290,41 @@ export const handlers = [
       name: body.name,
       endpoint: body.endpoint,
       modelId: body.modelId,
-      allowedCapabilities: (body.allowedCapabilities ??
-        []) as import('@portarium/cockpit-types').AgentCapability[],
+      allowedCapabilities: (body.allowedCapabilities ?? []) as AgentCapability[],
       usedByWorkflowIds: [],
     };
     agents = [newAgent, ...agents];
     return HttpResponse.json(newAgent, { status: 201 });
+  }),
+
+  // Machines
+  http.get('/v1/workspaces/:wsId/machines', () => HttpResponse.json({ items: machines })),
+  http.get('/v1/workspaces/:wsId/machines/:machineId', ({ params }) => {
+    const machineId = String(params['machineId'] ?? '');
+    const machine = machines.find((m) => m.machineId === machineId);
+    if (!machine) return HttpResponse.json({ title: 'Not Found' }, { status: 404 });
+    return HttpResponse.json(machine);
+  }),
+  http.post('/v1/workspaces/:wsId/machines', async ({ request, params }) => {
+    const body = (await request.json()) as {
+      hostname: string;
+      osImage?: string;
+      allowedCapabilities?: AgentCapability[];
+    };
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    const newMachine: MachineV1 = {
+      schemaVersion: 1,
+      machineId: `machine-${Date.now()}`,
+      workspaceId: wsId,
+      hostname: body.hostname,
+      osImage: body.osImage,
+      registeredAtIso: new Date().toISOString(),
+      status: 'Online',
+      activeRunCount: 0,
+      allowedCapabilities: body.allowedCapabilities ?? [],
+    };
+    machines = [newMachine, ...machines];
+    return HttpResponse.json(newMachine, { status: 201 });
   }),
 
   // Adapters

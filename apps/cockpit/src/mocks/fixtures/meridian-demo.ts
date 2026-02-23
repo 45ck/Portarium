@@ -28,6 +28,7 @@ export const EVIDENCE = dataset.EVIDENCE;
 export const WORKFORCE_MEMBERS = dataset.WORKFORCE_MEMBERS;
 export const WORKFORCE_QUEUES = dataset.WORKFORCE_QUEUES;
 export const AGENTS = dataset.AGENTS;
+export const MACHINES = dataset.MACHINES;
 export const ADAPTERS = dataset.ADAPTERS;
 export const ROBOTS = dataset.ROBOTS;
 export const MISSIONS = dataset.MISSIONS;
