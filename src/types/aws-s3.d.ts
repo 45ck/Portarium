@@ -18,11 +18,13 @@ declare module '@aws-sdk/client-s3' {
 
   export class S3Client {
     constructor(config?: S3ClientConfig);
-    send<Input extends object, Output extends object>(command: Command<Input, Output>): Promise<Output>;
+    send<Input extends object, Output extends object>(
+      command: Command<Input, Output>,
+    ): Promise<Output>;
     destroy(): void;
   }
 
-  export abstract class Command<Input extends object, Output extends object> {
+  export abstract class Command<Input extends object, _Output extends object> {
     readonly input: Input;
     constructor(input: Input);
   }
@@ -95,7 +97,10 @@ declare module '@aws-sdk/client-s3' {
     $metadata: { httpStatusCode?: number };
   }
 
-  export class DeleteObjectCommand extends Command<DeleteObjectCommandInput, DeleteObjectCommandOutput> {
+  export class DeleteObjectCommand extends Command<
+    DeleteObjectCommandInput,
+    DeleteObjectCommandOutput
+  > {
     constructor(input: DeleteObjectCommandInput);
   }
 
@@ -109,7 +114,10 @@ declare module '@aws-sdk/client-s3' {
   export interface PutObjectLegalHoldCommandOutput {
     $metadata: { httpStatusCode?: number };
   }
-  export class PutObjectLegalHoldCommand extends Command<PutObjectLegalHoldCommandInput, PutObjectLegalHoldCommandOutput> {
+  export class PutObjectLegalHoldCommand extends Command<
+    PutObjectLegalHoldCommandInput,
+    PutObjectLegalHoldCommandOutput
+  > {
     constructor(input: PutObjectLegalHoldCommandInput);
   }
 
@@ -124,7 +132,10 @@ declare module '@aws-sdk/client-s3' {
   export interface PutObjectRetentionCommandOutput {
     $metadata: { httpStatusCode?: number };
   }
-  export class PutObjectRetentionCommand extends Command<PutObjectRetentionCommandInput, PutObjectRetentionCommandOutput> {
+  export class PutObjectRetentionCommand extends Command<
+    PutObjectRetentionCommandInput,
+    PutObjectRetentionCommandOutput
+  > {
     constructor(input: PutObjectRetentionCommandInput);
   }
 
