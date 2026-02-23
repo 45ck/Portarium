@@ -32,7 +32,7 @@ describe('OpenAPI contract', () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
-    const doc = parseYaml(await readText(specPath)) as unknown;
+    const doc = parseYaml(await readText(specPath));
     const docObj = mustRecord(doc, 'OpenAPI');
 
     expect(docObj['openapi']).toBe('3.1.0');
@@ -79,7 +79,7 @@ describe('OpenAPI contract', () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
-    const doc = mustRecord(parseYaml(await readText(specPath)) as unknown, 'OpenAPI');
+    const doc = mustRecord(parseYaml(await readText(specPath)), 'OpenAPI');
     const components = mustRecord(doc['components'], 'OpenAPI.components');
     const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
     const portFamily = mustRecord(schemas['PortFamily'], 'components.schemas.PortFamily');
@@ -96,7 +96,7 @@ describe('OpenAPI contract', () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
-    const doc = mustRecord(parseYaml(await readText(specPath)) as unknown, 'OpenAPI');
+    const doc = mustRecord(parseYaml(await readText(specPath)), 'OpenAPI');
     const components = mustRecord(doc['components'], 'OpenAPI.components');
     const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
 

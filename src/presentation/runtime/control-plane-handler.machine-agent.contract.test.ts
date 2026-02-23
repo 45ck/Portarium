@@ -718,3 +718,346 @@ describe('machines/agents registry endpoints', () => {
     expect(saveAgentConfig).toHaveBeenCalledOnce();
   });
 });
+
+// ---------------------------------------------------------------------------
+// OpenClaw integration: full create-connect-display-run lifecycle (bead-0801)
+// ---------------------------------------------------------------------------
+
+describe('OpenClaw integration: create → connect → display → run lifecycle', () => {
+  it('GET /agents/{id} preserves machineId and policyTier in response body', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          listAgentConfigs: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents/agent-1`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      agentId: string;
+      machineId?: string;
+      policyTier?: string;
+    };
+    expect(body.agentId).toBe('agent-1');
+    expect(body.machineId).toBe('machine-1');
+    expect(body.policyTier).toBe('HumanApprove');
+  });
+
+  it('GET /agents list with ?machineId= passes filter to the store', async () => {
+    const listAgentConfigs = vi.fn().mockResolvedValue({ items: [agent1], nextCursor: undefined });
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          listAgentConfigs,
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents?machineId=machine-1`,
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: unknown[] };
+    expect(body.items).toHaveLength(1);
+    // Verify the machineId filter was forwarded to the store
+    // listAgentConfigs is called as (tenantId, query)
+    expect(listAgentConfigs).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ machineId: expect.anything() }),
+    );
+  });
+
+  it('GET /agents list without ?machineId= omits machineId from store query', async () => {
+    const listAgentConfigs = vi.fn().mockResolvedValue({ items: [agent1], nextCursor: undefined });
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          listAgentConfigs,
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents`,
+    );
+    expect(res.status).toBe(200);
+    // machineId must NOT appear in the store query when not specified
+    // listAgentConfigs is called as (tenantId, query)
+    expect(listAgentConfigs).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.not.objectContaining({ machineId: expect.anything() }),
+    );
+  });
+
+  it('auditor role cannot register a machine (403 Forbidden)', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ roles: ['auditor'] }),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const body: Record<string, unknown> = {
+      schemaVersion: 1,
+      machineId: 'machine-auditor',
+      workspaceId: 'workspace-1',
+      endpointUrl: 'https://machine.example.com',
+      active: false,
+      displayName: 'Auditor Machine',
+      capabilities: [],
+      registeredAtIso: '2026-01-01T00:00:00.000Z',
+      executionPolicy: {
+        isolationMode: 'PerTenantWorker',
+        egressAllowlist: [],
+        workloadIdentity: 'Required',
+      },
+    };
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
+    expect(res.status).toBe(403);
+    expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/i);
+  });
+
+  it('auditor role cannot create an agent (403 Forbidden)', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ roles: ['auditor'] }),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const body: Record<string, unknown> = {
+      schemaVersion: 1,
+      agentId: 'agent-auditor',
+      workspaceId: 'workspace-1',
+      displayName: 'Auditor Agent',
+      capabilities: [],
+      allowedTools: [],
+      registeredAtIso: '2026-01-01T00:00:00.000Z',
+    };
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
+    expect(res.status).toBe(403);
+    expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/i);
+  });
+
+  it('rejects agent creation when body workspaceId mismatches URL workspace (403)', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ workspaceId: 'workspace-1' }),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    // Body says workspace-2 but URL says workspace-1 — must be rejected
+    // Include all required fields so parse succeeds and workspace check fires
+    const body: Record<string, unknown> = {
+      schemaVersion: 1,
+      agentId: 'agent-ws2',
+      workspaceId: 'workspace-2',
+      machineId: 'machine-1',
+      displayName: 'WS2 Agent',
+      capabilities: [{ capability: 'robotics:move' }],
+      policyTier: 'Auto',
+      allowedTools: [],
+      registeredAtIso: '2026-01-01T00:00:00.000Z',
+    };
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('OpenClaw full lifecycle: register machine → register agent → display agent with machineId+policyTier → heartbeat liveness', async () => {
+    // Phase 1: register machine
+    const saveMachineRegistration = vi.fn().mockResolvedValue(undefined);
+    const saveAgentConfig = vi.fn().mockResolvedValue(undefined);
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration,
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig,
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machine1),
+          listMachineRegistrations: vi
+            .fn()
+            .mockResolvedValue({ items: [machine1], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          listAgentConfigs: vi.fn().mockResolvedValue({ items: [agent1], nextCursor: undefined }),
+        },
+      }),
+    });
+
+    // Step 1: register the machine
+    const machineBody: Record<string, unknown> = {
+      schemaVersion: 1,
+      machineId: 'machine-1',
+      workspaceId: 'workspace-1',
+      endpointUrl: 'https://edge-gateway.example.com',
+      active: false, // active=true requires authConfig; use false for registration
+      displayName: 'OpenClaw Edge Gateway',
+      capabilities: [{ capability: 'machine:invoke' }],
+      registeredAtIso: '2026-01-01T00:00:00.000Z',
+      executionPolicy: {
+        isolationMode: 'PerTenantWorker',
+        egressAllowlist: ['https://edge-gateway.example.com'],
+        workloadIdentity: 'Required',
+      },
+    };
+    const machineRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(machineBody),
+      },
+    );
+    expect(machineRes.status).toBe(201);
+    const machineCreated = (await machineRes.json()) as { machineId: string };
+    expect(machineCreated.machineId).toBe('machine-1');
+    expect(saveMachineRegistration).toHaveBeenCalledOnce();
+
+    // Step 2: register OpenClaw agent connected to the machine with HumanApprove policy
+    const agentBody: Record<string, unknown> = {
+      schemaVersion: 1,
+      agentId: 'agent-1',
+      workspaceId: 'workspace-1',
+      machineId: 'machine-1',
+      displayName: 'Test Agent',
+      capabilities: [{ capability: 'robotics:move' }],
+      policyTier: 'HumanApprove',
+      allowedTools: [],
+      registeredAtIso: '2026-01-01T00:00:00.000Z',
+    };
+    const agentRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(agentBody),
+      },
+    );
+    expect(agentRes.status).toBe(201);
+    const agentCreated = (await agentRes.json()) as { agentId: string };
+    expect(agentCreated.agentId).toBe('agent-1');
+    expect(saveAgentConfig).toHaveBeenCalledOnce();
+
+    // Step 3: GET the agent — verify machineId + policyTier are preserved (display phase)
+    const getAgentRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents/agent-1`,
+    );
+    expect(getAgentRes.status).toBe(200);
+    const agentView = (await getAgentRes.json()) as {
+      agentId: string;
+      machineId?: string;
+      policyTier?: string;
+    };
+    expect(agentView.agentId).toBe('agent-1');
+    expect(agentView.machineId).toBe('machine-1');
+    expect(agentView.policyTier).toBe('HumanApprove');
+
+    // Step 4: agent heartbeat — liveness check (run phase)
+    const heartbeatRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents/agent-1/heartbeat`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'ok', metrics: { tasksQueued: 3 } }),
+      },
+    );
+    expect(heartbeatRes.status).toBe(200);
+    const hb = (await heartbeatRes.json()) as {
+      agentId: string;
+      status: string;
+      lastHeartbeatAtIso: string;
+    };
+    expect(hb.agentId).toBe('agent-1');
+    expect(hb.status).toBe('ok');
+    expect(typeof hb.lastHeartbeatAtIso).toBe('string');
+  });
+});
