@@ -10,6 +10,9 @@ import type {
   CredentialGrantV1,
   Plan,
   AdapterSummary,
+  RetrievalSearchResponse,
+  GraphTraversalResult,
+  DerivedArtifactListResponse,
 } from '@portarium/cockpit-types';
 import type {
   RobotSummary,
@@ -950,6 +953,142 @@ export const OBSERVABILITY_DATA = {
   ],
   successRate: 87,
   avgSlaDays: 1.4,
+};
+
+// ---------------------------------------------------------------------------
+// Retrieval & graph fixtures
+// ---------------------------------------------------------------------------
+
+export const RETRIEVAL_SEARCH_RESULT: RetrievalSearchResponse = {
+  strategy: 'semantic',
+  hits: [
+    {
+      artifactId: 'art-r001',
+      score: 0.93,
+      text: 'Approval apr-3003 decided: Approved by user-approver-dana — Stripe payout reconciliation batch 2026-02-17 cleared.',
+      metadata: { category: 'Approval', runId: 'run-2003' },
+      provenance: { workspaceId: 'ws-demo', runId: 'run-2003', evidenceId: 'evd-4002' },
+    },
+    {
+      artifactId: 'art-r002',
+      score: 0.87,
+      text: 'Approval apr-3001 pending: Remediation of invoice INV-4271 awaiting sign-off.',
+      metadata: { category: 'Approval', runId: 'run-2001' },
+      provenance: { workspaceId: 'ws-demo', runId: 'run-2001', evidenceId: 'evd-4004' },
+    },
+    {
+      artifactId: 'art-r003',
+      score: 0.74,
+      text: 'Policy violation detected: write:external denied by SOC 2 CC6.1 during run-2001.',
+      metadata: { category: 'PolicyViolation', runId: 'run-2001' },
+      provenance: { workspaceId: 'ws-demo', runId: 'run-2001', evidenceId: 'evd-4005' },
+    },
+  ],
+};
+
+export const GRAPH_TRAVERSAL_RESULT: GraphTraversalResult = {
+  nodes: [
+    {
+      nodeId: 'run-2001',
+      workspaceId: 'ws-demo',
+      kind: 'run',
+      label: 'Invoice Remediation Run',
+      properties: { status: 'WaitingForApproval', workflowId: 'wf-invoice-remediation' },
+    },
+    {
+      nodeId: 'apr-3001',
+      workspaceId: 'ws-demo',
+      kind: 'approval',
+      label: 'Invoice INV-4271 Remediation Approval',
+      properties: { status: 'Pending', assigneeUserId: 'user-approver-dana' },
+    },
+    {
+      nodeId: 'evd-4004',
+      workspaceId: 'ws-demo',
+      kind: 'evidence-entry',
+      label: 'Plan Generated',
+      properties: { category: 'Plan', planId: 'plan-5001' },
+    },
+    {
+      nodeId: 'evd-4005',
+      workspaceId: 'ws-demo',
+      kind: 'evidence-entry',
+      label: 'Policy Violation',
+      properties: { category: 'PolicyViolation' },
+    },
+  ],
+  edges: [
+    {
+      edgeId: 'edge-001',
+      fromNodeId: 'run-2001',
+      toNodeId: 'apr-3001',
+      relation: 'REQUIRES_APPROVAL',
+      workspaceId: 'ws-demo',
+    },
+    {
+      edgeId: 'edge-002',
+      fromNodeId: 'run-2001',
+      toNodeId: 'evd-4004',
+      relation: 'PRODUCED_EVIDENCE',
+      workspaceId: 'ws-demo',
+    },
+    {
+      edgeId: 'edge-003',
+      fromNodeId: 'run-2001',
+      toNodeId: 'evd-4005',
+      relation: 'PRODUCED_EVIDENCE',
+      workspaceId: 'ws-demo',
+    },
+  ],
+};
+
+export const DERIVED_ARTIFACTS: DerivedArtifactListResponse = {
+  total: 3,
+  items: [
+    {
+      schemaVersion: 1,
+      artifactId: 'art-r001',
+      workspaceId: 'ws-demo',
+      kind: 'embedding',
+      provenance: {
+        workspaceId: 'ws-demo',
+        runId: 'run-2003',
+        evidenceId: 'evd-4002',
+        projectorVersion: '1.0.0',
+      },
+      retentionPolicy: 'run-lifetime',
+      createdAtIso: '2026-02-18T09:16:00Z',
+    },
+    {
+      schemaVersion: 1,
+      artifactId: 'art-r002',
+      workspaceId: 'ws-demo',
+      kind: 'embedding',
+      provenance: {
+        workspaceId: 'ws-demo',
+        runId: 'run-2001',
+        evidenceId: 'evd-4004',
+        projectorVersion: '1.0.0',
+      },
+      retentionPolicy: 'run-lifetime',
+      createdAtIso: '2026-02-20T00:13:00Z',
+    },
+    {
+      schemaVersion: 1,
+      artifactId: 'art-r003',
+      workspaceId: 'ws-demo',
+      kind: 'chunk-index',
+      provenance: {
+        workspaceId: 'ws-demo',
+        runId: 'run-2001',
+        evidenceId: 'evd-4005',
+        projectorVersion: '1.0.0',
+      },
+      retentionPolicy: 'ttl',
+      createdAtIso: '2026-02-20T00:15:00Z',
+      expiresAtIso: '2026-03-20T00:15:00Z',
+    },
+  ],
 };
 
 export const MACHINES: MachineV1[] = [

@@ -535,4 +535,33 @@ export const handlers = [
   http.get('/v1/workspaces/:wsId/robotics/gateways', () =>
     HttpResponse.json({ items: MOCK_GATEWAYS }),
   ),
+
+  // Retrieval & Graph
+  http.post('/v1/workspaces/:wsId/retrieval/search', async ({ request }) => {
+    const body = (await request.json()) as { strategy?: string };
+    const { RETRIEVAL_SEARCH_RESULT, GRAPH_TRAVERSAL_RESULT } = await import('./fixtures/demo');
+    if (body.strategy === 'graph') {
+      return HttpResponse.json({
+        strategy: 'graph',
+        hits: [],
+        graph: GRAPH_TRAVERSAL_RESULT,
+      });
+    }
+    if (body.strategy === 'hybrid') {
+      return HttpResponse.json({
+        strategy: 'hybrid',
+        hits: RETRIEVAL_SEARCH_RESULT.hits,
+        graph: GRAPH_TRAVERSAL_RESULT,
+      });
+    }
+    return HttpResponse.json(RETRIEVAL_SEARCH_RESULT);
+  }),
+  http.post('/v1/workspaces/:wsId/graph/query', async () => {
+    const { GRAPH_TRAVERSAL_RESULT } = await import('./fixtures/demo');
+    return HttpResponse.json(GRAPH_TRAVERSAL_RESULT);
+  }),
+  http.get('/v1/workspaces/:wsId/derived-artifacts', async () => {
+    const { DERIVED_ARTIFACTS } = await import('./fixtures/demo');
+    return HttpResponse.json(DERIVED_ARTIFACTS);
+  }),
 ];

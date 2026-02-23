@@ -2,6 +2,11 @@ import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
   CursorPage,
+  DerivedArtifactListResponse,
+  GraphTraversalResult,
+  GraphQueryRequest,
+  RetrievalSearchRequest,
+  RetrievalSearchResponse,
   RunSummary,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
@@ -173,6 +178,33 @@ export class ControlPlaneClient {
       method: 'PATCH',
       body: JSON.stringify(body),
     });
+  }
+
+  public searchRetrieval(
+    workspaceId: string,
+    body: RetrievalSearchRequest,
+  ): Promise<RetrievalSearchResponse> {
+    return this.request(`/v1/workspaces/${workspaceId}/retrieval/search`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  public queryGraph(workspaceId: string, body: GraphQueryRequest): Promise<GraphTraversalResult> {
+    return this.request(`/v1/workspaces/${workspaceId}/graph/query`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  public listDerivedArtifacts(
+    workspaceId: string,
+    runId: string,
+    kind?: string,
+  ): Promise<DerivedArtifactListResponse> {
+    const params = new URLSearchParams({ runId });
+    if (kind) params.set('kind', kind);
+    return this.request(`/v1/workspaces/${workspaceId}/derived-artifacts?${params.toString()}`);
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

@@ -374,5 +374,106 @@ export interface ListHumanTasksRequest extends CursorPaginationRequest {
   runId?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Retrieval & Graph Query
+// ---------------------------------------------------------------------------
+
+export type RetrievalStrategy = 'semantic' | 'graph' | 'hybrid';
+
+export interface SemanticQueryParams {
+  query: string;
+  topK?: number;
+  minScore?: number;
+  filters?: Record<string, unknown>;
+}
+
+export interface GraphQueryParams {
+  rootNodeId: string;
+  direction: 'outbound' | 'inbound' | 'both';
+  maxDepth?: number;
+  relationFilter?: string[];
+}
+
+export interface RetrievalSearchRequest {
+  strategy: RetrievalStrategy;
+  semantic?: SemanticQueryParams;
+  graph?: GraphQueryParams;
+}
+
+export interface RetrievalHitProvenance {
+  workspaceId: string;
+  runId: string;
+  evidenceId?: string;
+}
+
+export interface RetrievalHitSummary {
+  artifactId: string;
+  score?: number;
+  text?: string;
+  metadata: Record<string, unknown>;
+  provenance: RetrievalHitProvenance;
+}
+
+export interface GraphNodeSummary {
+  nodeId: string;
+  workspaceId: string;
+  kind: 'run' | 'work-item' | 'approval' | 'evidence-entry' | 'agent-machine';
+  label: string;
+  properties: Record<string, unknown>;
+}
+
+export interface GraphEdgeSummary {
+  edgeId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  relation: string;
+  workspaceId: string;
+  properties?: Record<string, unknown>;
+}
+
+export interface GraphTraversalResult {
+  nodes: GraphNodeSummary[];
+  edges: GraphEdgeSummary[];
+}
+
+export interface RetrievalSearchResponse {
+  strategy: RetrievalStrategy;
+  hits: RetrievalHitSummary[];
+  graph?: GraphTraversalResult;
+}
+
+export interface GraphQueryRequest {
+  rootNodeId: string;
+  direction: 'outbound' | 'inbound' | 'both';
+  maxDepth?: number;
+  relationFilter?: string[];
+}
+
+export type DerivedArtifactKind = 'embedding' | 'graph-node' | 'graph-edge' | 'chunk-index';
+export type DerivedArtifactRetentionPolicy = 'indefinite' | 'run-lifetime' | 'ttl';
+
+export interface DerivedArtifactProvenance {
+  workspaceId: string;
+  runId: string;
+  evidenceId?: string;
+  projectorVersion: string;
+}
+
+export interface DerivedArtifactMeta {
+  schemaVersion: 1;
+  artifactId: string;
+  workspaceId: string;
+  kind: DerivedArtifactKind;
+  provenance: DerivedArtifactProvenance;
+  retentionPolicy: DerivedArtifactRetentionPolicy;
+  createdAtIso: string;
+  expiresAtIso?: string;
+}
+
+export interface DerivedArtifactListResponse {
+  items: DerivedArtifactMeta[];
+  total: number;
+}
+
 export * from './types.commands.js';
 export * from './types.machines.js';

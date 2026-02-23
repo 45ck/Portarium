@@ -33,6 +33,9 @@ import { Route as approvalDetailRoute } from './routes/approvals/$approvalId';
 // Evidence
 import { Route as evidenceRoute } from './routes/evidence/index';
 
+// Search (retrieval)
+import { Route as searchRoute } from './routes/search/index';
+
 // Workforce
 import { Route as workforceRoute } from './routes/workforce/index';
 import { Route as workforceMemberRoute } from './routes/workforce/$memberId';
@@ -83,6 +86,7 @@ export const routeTree = rootRoute.addChildren([
   approvalsRoute,
   approvalDetailRoute,
   evidenceRoute,
+  searchRoute,
   workforceRoute,
   workforceMemberRoute,
   workforceQueuesRoute,
