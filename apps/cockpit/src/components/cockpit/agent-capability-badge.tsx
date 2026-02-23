@@ -20,7 +20,7 @@ const config: Record<AgentCapability, { icon: React.ElementType; label: string }
 export function AgentCapabilityBadge({ capability }: AgentCapabilityBadgeProps) {
   const { icon: Icon, label } = config[capability];
   return (
-    <Badge variant="secondary" className="text-[10px]">
+    <Badge variant="secondary" className="text-[11px]">
       <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>

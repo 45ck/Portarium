@@ -60,7 +60,7 @@ export function ApprovalListPanel({
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Approvals</h2>
           {pendingCount > 0 && (
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[11px]">
               {pendingCount} pending
             </Badge>
           )}
@@ -125,13 +125,13 @@ export function ApprovalListPanel({
                             Overdue
                           </Badge>
                         )}
-                        <span className="ml-auto text-[10px] text-muted-foreground shrink-0">
+                        <span className="ml-auto text-[11px] text-muted-foreground shrink-0">
                           {formatDistanceToNow(new Date(a.requestedAtIso), {
                             addSuffix: true,
                           })}
                         </span>
                       </div>
-                      <p className="text-[10px] font-mono text-muted-foreground/50 mt-0.5 truncate">
+                      <p className="text-[11px] font-mono text-muted-foreground/50 mt-0.5 truncate">
                         {a.runId.slice(0, 18)}
                       </p>
                     </button>

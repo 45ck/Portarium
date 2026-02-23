@@ -1,6 +1,7 @@
 import type { HumanTaskStatus } from '@portarium/cockpit-types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Clock, UserCheck, Play, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface HumanTaskStatusBadgeProps {
   status: HumanTaskStatus;
@@ -8,27 +9,50 @@ interface HumanTaskStatusBadgeProps {
 
 const config: Record<
   HumanTaskStatus,
-  { label: string; variant: 'default' | 'destructive' | 'outline' | 'secondary'; className: string }
+  {
+    icon: React.ElementType;
+    label: string;
+    variant: 'default' | 'destructive' | 'outline' | 'secondary';
+    className: string;
+  }
 > = {
-  pending: { label: 'Pending', variant: 'outline', className: 'border-warning text-warning' },
-  assigned: { label: 'Assigned', variant: 'outline', className: 'border-info text-info' },
+  pending: {
+    icon: Clock,
+    label: 'Pending',
+    variant: 'outline',
+    className: 'border-warning text-warning',
+  },
+  assigned: {
+    icon: UserCheck,
+    label: 'Assigned',
+    variant: 'outline',
+    className: 'border-info text-info',
+  },
   'in-progress': {
+    icon: Play,
     label: 'In Progress',
     variant: 'default',
     className: 'bg-info text-info-foreground',
   },
   completed: {
+    icon: CheckCircle2,
     label: 'Completed',
     variant: 'default',
     className: 'bg-success text-success-foreground',
   },
-  escalated: { label: 'Escalated', variant: 'destructive', className: '' },
+  escalated: {
+    icon: AlertTriangle,
+    label: 'Escalated',
+    variant: 'destructive',
+    className: '',
+  },
 };
 
 export function HumanTaskStatusBadge({ status }: HumanTaskStatusBadgeProps) {
-  const { label, variant, className } = config[status];
+  const { icon: Icon, label, variant, className } = config[status];
   return (
-    <Badge variant={variant} className={cn('text-[10px]', className)}>
+    <Badge variant={variant} className={cn('text-[11px]', className)}>
+      <Icon className="h-3 w-3" aria-hidden="true" />
       {label}
     </Badge>
   );

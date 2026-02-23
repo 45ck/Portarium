@@ -87,7 +87,7 @@ export function RobotListPanel({ locations, selectedRobotId, onSelectRobot }: Ro
                   key={f.value}
                   onClick={() => setStatusFilter(f.value)}
                   className={cn(
-                    'rounded-full px-2 py-px text-[10px] font-medium border transition-colors',
+                    'rounded-full px-2 py-px text-[11px] font-medium border transition-colors',
                     statusFilter === f.value
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-card text-muted-foreground border-border hover:border-primary/40',
@@ -98,13 +98,13 @@ export function RobotListPanel({ locations, selectedRobotId, onSelectRobot }: Ro
               );
             })}
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
             {(['name', 'status', 'battery'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
                 className={cn(
-                  'px-1 py-px rounded text-[10px] capitalize transition-colors',
+                  'px-1 py-px rounded text-[11px] capitalize transition-colors',
                   sortBy === s ? 'bg-primary/10 text-primary font-medium' : 'hover:text-foreground',
                 )}
               >
@@ -136,7 +136,7 @@ export function RobotListPanel({ locations, selectedRobotId, onSelectRobot }: Ro
               <Badge
                 variant="outline"
                 className={cn(
-                  'flex shrink-0 items-center gap-1 text-[10px]',
+                  'flex shrink-0 items-center gap-1 text-[11px]',
                   STATUS_BADGE_CLASS[loc.status],
                 )}
               >

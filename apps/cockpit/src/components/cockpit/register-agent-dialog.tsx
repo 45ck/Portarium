@@ -158,7 +158,7 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
                     {machines.map((m) => (
                       <SelectItem key={m.machineId} value={m.machineId}>
                         {m.hostname}
-                        <span className="ml-1.5 text-muted-foreground text-[10px]">
+                        <span className="ml-1.5 text-muted-foreground text-[11px]">
                           ({m.status})
                         </span>
                       </SelectItem>

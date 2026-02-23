@@ -44,7 +44,7 @@ export function ComplianceChecklistMode({
       {/* Policy Gate */}
       {policyRule && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Policy Gate
           </p>
           <div className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-1.5 text-xs">
@@ -55,7 +55,7 @@ export function ComplianceChecklistMode({
             <span className="font-mono text-[11px]">{policyRule.trigger}</span>
 
             <span className="text-muted-foreground">Required tier</span>
-            <Badge variant="secondary" className="text-[10px] h-4 px-1.5 w-fit">
+            <Badge variant="secondary" className="text-[11px] h-4 px-1.5 w-fit">
               {policyRule.tier}
             </Badge>
 
@@ -83,7 +83,7 @@ export function ComplianceChecklistMode({
       {/* Separation of Duties */}
       {sodEval && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Separation of Duties
           </p>
           <div className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-1.5 text-xs">
@@ -110,7 +110,7 @@ export function ComplianceChecklistMode({
                 <span className="text-muted-foreground">Required roles</span>
                 <div className="flex flex-wrap gap-1">
                   {sodEval.rolesRequired.map((role) => (
-                    <Badge key={role} variant="outline" className="text-[10px] h-4 px-1.5">
+                    <Badge key={role} variant="outline" className="text-[11px] h-4 px-1.5">
                       {role}
                     </Badge>
                   ))}
@@ -127,7 +127,7 @@ export function ComplianceChecklistMode({
       {/* Regulatory Effects */}
       {complianceEffects.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Regulatory Effects
           </p>
           <div className="space-y-1.5">
@@ -152,7 +152,7 @@ export function ComplianceChecklistMode({
       {/* Evidence Coverage */}
       {adequacy && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Evidence Coverage
           </p>
           <div className="flex flex-wrap items-center gap-3 text-[11px]">

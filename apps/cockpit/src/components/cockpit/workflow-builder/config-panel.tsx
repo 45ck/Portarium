@@ -28,10 +28,10 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       </div>
 
       <div className="space-y-1">
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
           Type
         </label>
-        <Badge variant="secondary" className="text-[10px]">
+        <Badge variant="secondary" className="text-[11px]">
           {data.nodeType}
         </Badge>
       </div>
@@ -39,7 +39,7 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       <div className="space-y-1">
         <label
           htmlFor="node-label"
-          className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+          className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
         >
           Name
         </label>
@@ -55,7 +55,7 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
       <div className="space-y-1">
         <label
           htmlFor="node-description"
-          className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+          className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
         >
           Description
         </label>
@@ -73,7 +73,7 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
           <div className="space-y-1">
             <label
               htmlFor="node-timeout"
-              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+              className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
             >
               Timeout (ms)
             </label>
@@ -91,7 +91,7 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
           <div className="space-y-1">
             <label
               htmlFor="node-retry"
-              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+              className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
             >
               Max Retry Attempts
             </label>
@@ -109,7 +109,7 @@ export function ConfigPanel({ node, onUpdate, onClose, onDelete }: ConfigPanelPr
           <div className="space-y-1">
             <label
               htmlFor="node-tier"
-              className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
+              className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
             >
               Execution Tier
             </label>

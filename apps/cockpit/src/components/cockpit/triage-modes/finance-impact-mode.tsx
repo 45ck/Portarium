@@ -40,7 +40,7 @@ function SorBadge({ name }: { name: string }) {
     <span
       title={name}
       className={cn(
-        'inline-flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold shrink-0',
+        'inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold shrink-0',
         palette.bg,
         palette.text,
       )}
@@ -81,7 +81,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
       {/* Affected Systems */}
       {effectsBySor.size > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Affected Systems
           </p>
           <div className="space-y-3">
@@ -90,7 +90,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
                 <div className="flex items-center gap-2 mb-1">
                   <SorBadge name={sor} />
                   <span className="text-xs font-medium">{sor}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground">
                     ({effects[0]?.target.portFamily})
                   </span>
                 </div>
@@ -117,7 +117,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
       {/* Risk Assessment */}
       {policyRule && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Risk Assessment
           </p>
           <div className="space-y-2">
@@ -127,7 +127,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
               <span className="text-muted-foreground">Blast radius</span>
               <div className="flex flex-wrap gap-1">
                 {policyRule.blastRadius.map((b) => (
-                  <Badge key={b} variant="outline" className="text-[10px] h-5 px-1.5">
+                  <Badge key={b} variant="outline" className="text-[11px] h-5 px-1.5">
                     {b}
                   </Badge>
                 ))}
@@ -162,7 +162,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
       {/* Multi-System Flow */}
       {workflow && workflow.actions.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Multi-System Flow
           </p>
           <div className="flex items-center gap-1 overflow-x-auto pb-1">
@@ -170,7 +170,7 @@ export function FinanceImpactMode({ approval, plannedEffects, workflow }: Triage
               <div key={action.actionId} className="flex items-center gap-1 shrink-0">
                 {i > 0 && <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />}
                 <div className="rounded border border-border bg-card px-2 py-1.5 text-center min-w-[80px]">
-                  <div className="text-[10px] font-medium truncate">{action.operation}</div>
+                  <div className="text-[11px] font-medium truncate">{action.operation}</div>
                   <div className="text-[9px] text-muted-foreground truncate">
                     {action.portFamily}
                   </div>

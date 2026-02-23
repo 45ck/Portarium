@@ -38,7 +38,7 @@ export function StepList({ steps, currentStep }: StepListProps) {
           >
             <Icon className={cn('h-4 w-4 shrink-0', className)} />
             <span className={cn('flex-1', isCurrent && 'font-medium')}>{step.name}</span>
-            <span className="text-[10px] text-muted-foreground capitalize">{step.status}</span>
+            <span className="text-[11px] text-muted-foreground capitalize">{step.status}</span>
           </div>
         );
       })}

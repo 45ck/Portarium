@@ -114,7 +114,7 @@ function WorkItemDetailPage() {
               <div className="flex items-center gap-2">
                 <Badge
                   variant={item.status === 'Open' ? 'default' : 'secondary'}
-                  className="text-[10px]"
+                  className="text-[11px]"
                 >
                   {item.status}
                 </Badge>

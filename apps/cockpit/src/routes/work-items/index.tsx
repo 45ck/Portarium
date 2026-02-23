@@ -76,7 +76,7 @@ function WorkItemsPage() {
       header: 'Status',
       width: '100px',
       render: (row: WorkItemSummary) => (
-        <Badge variant={row.status === 'Open' ? 'default' : 'secondary'} className="text-[10px]">
+        <Badge variant={row.status === 'Open' ? 'default' : 'secondary'} className="text-[11px]">
           {row.status}
         </Badge>
       ),

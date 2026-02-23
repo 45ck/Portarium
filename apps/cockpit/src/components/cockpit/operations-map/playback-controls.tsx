@@ -61,7 +61,7 @@ export function PlaybackControls() {
             onClick={() => setSpeed(s)}
             disabled={mode === 'live'}
             className={cn(
-              'rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors',
+              'rounded px-1.5 py-0.5 text-[11px] font-medium transition-colors',
               speed === s && mode === 'replay'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground',

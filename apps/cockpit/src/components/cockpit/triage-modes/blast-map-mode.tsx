@@ -414,7 +414,7 @@ function DetailPopover({
       </div>
       <div className="space-y-1">
         {Object.entries(node.detail).map(([key, value]) => (
-          <div key={key} className="text-[10px]">
+          <div key={key} className="text-[11px]">
             <span className="text-muted-foreground">{key}: </span>
             <span className="text-foreground font-mono break-all">{value}</span>
           </div>

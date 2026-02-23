@@ -17,7 +17,7 @@ export function ActionNode({ data, selected }: NodeProps) {
       </div>
       {nodeData.operation && (
         <div className="px-3 py-1.5">
-          <span className="text-[10px] text-muted-foreground font-mono">{nodeData.operation}</span>
+          <span className="text-[11px] text-muted-foreground font-mono">{nodeData.operation}</span>
         </div>
       )}
       <Handle type="source" position={Position.Bottom} className="!bg-blue-500 !w-2.5 !h-2.5" />

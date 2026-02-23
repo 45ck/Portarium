@@ -26,7 +26,7 @@ function BriefingSectionCard({ section }: { section: BriefingSection }) {
         <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', section.dotColor)} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
           {section.label}
         </p>
         <p
@@ -73,7 +73,7 @@ export function BriefingMode({
   return (
     <div className="rounded-lg border-l-4 border-l-primary border border-border bg-muted/10 px-4 py-4 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Approval Briefing
         </p>
         <Button variant="ghost" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleCopy}>

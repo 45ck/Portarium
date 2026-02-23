@@ -16,7 +16,7 @@ export function NotificationNode({ data, selected }: NodeProps) {
         <span className="text-xs font-semibold truncate">{nodeData.label}</span>
       </div>
       <div className="px-3 py-1.5">
-        <span className="text-[10px] text-muted-foreground">Send notification</span>
+        <span className="text-[11px] text-muted-foreground">Send notification</span>
       </div>
       <Handle type="source" position={Position.Bottom} className="!bg-sky-500 !w-2.5 !h-2.5" />
     </div>

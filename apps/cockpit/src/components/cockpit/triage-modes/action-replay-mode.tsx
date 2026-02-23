@@ -103,7 +103,7 @@ export function ActionReplayMode({ approval, plannedEffects, run, workflow }: Tr
 
         <div className="rounded-lg border border-border bg-card p-5 space-y-3">
           {stepNumber !== null && (
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded bg-primary/10 text-primary text-[9px] font-bold">
                 {stepNumber}
               </span>
@@ -183,7 +183,7 @@ export function ActionReplayMode({ approval, plannedEffects, run, workflow }: Tr
       >
         {/* Workflow step badge */}
         {stepNumber !== null && (
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded bg-primary/10 text-primary text-[9px] font-bold">
               {stepNumber}
             </span>
@@ -192,7 +192,7 @@ export function ActionReplayMode({ approval, plannedEffects, run, workflow }: Tr
         )}
         {/* Dependency hint */}
         {sameSorAsPrev && (
-          <div className="text-[10px] text-muted-foreground italic">
+          <div className="text-[11px] text-muted-foreground italic">
             Sequential operation on {effect.target.sorName} (follows previous step)
           </div>
         )}

@@ -535,7 +535,7 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
           <div className="lg:col-span-2">
             <label
               htmlFor="workflow-name-input"
-              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+              className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground"
             >
               Name
             </label>
@@ -549,7 +549,7 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
           <div className="lg:col-span-2">
             <label
               htmlFor="workflow-description-input"
-              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+              className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground"
             >
               Description
             </label>
@@ -565,7 +565,7 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
           <div>
             <label
               htmlFor="workflow-tier-select"
-              className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+              className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground"
             >
               Tier
             </label>
@@ -591,7 +591,7 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
             <div>
               <label
                 htmlFor="workflow-trigger-select"
-                className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground"
+                className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground"
               >
                 Trigger
               </label>
@@ -614,7 +614,7 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground">
                 Active
               </label>
               <button

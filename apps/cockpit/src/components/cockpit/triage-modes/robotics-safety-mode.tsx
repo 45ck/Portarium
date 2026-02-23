@@ -49,7 +49,7 @@ function BatteryBar({ pct }: { pct: number }) {
           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
         />
       </div>
-      <span className="text-[10px] text-muted-foreground tabular-nums">{pct}%</span>
+      <span className="text-[11px] text-muted-foreground tabular-nums">{pct}%</span>
     </div>
   );
 }
@@ -62,7 +62,7 @@ function RobotCard({ robot, missionGoal }: { robot: RobotSummary; missionGoal?: 
         <span className="font-medium text-xs">{robot.name}</span>
         <span
           className={cn(
-            'inline-flex items-center gap-1 text-[10px] font-medium ml-auto',
+            'inline-flex items-center gap-1 text-[11px] font-medium ml-auto',
             STATUS_TEXT_COLORS[robot.status],
           )}
         >
@@ -93,11 +93,11 @@ function ConstraintRow({ constraint }: { constraint: SafetyConstraint }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium">{constraint.constraint}</span>
-          <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
+          <span className="text-[11px] text-muted-foreground ml-auto shrink-0">
             {constraint.site}
           </span>
         </div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground">
           Enforcement: {constraint.enforcement} · {constraint.robotCount} robot
           {constraint.robotCount !== 1 ? 's' : ''} affected
         </div>
@@ -148,7 +148,7 @@ export function RoboticsSafetyMode({ approval, run }: TriageModeProps) {
     <div className="space-y-4">
       {/* Involved Robots */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
           Involved Robots
         </p>
         <div className="space-y-2">
@@ -165,7 +165,7 @@ export function RoboticsSafetyMode({ approval, run }: TriageModeProps) {
       {/* Active Safety Constraints */}
       {constraints.length > 0 && (
         <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
             Active Safety Constraints
           </p>
           <div className="divide-y divide-border/40">
@@ -178,13 +178,13 @@ export function RoboticsSafetyMode({ approval, run }: TriageModeProps) {
 
       {/* Approval Tier Context */}
       <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
           Approval Tier Context
         </p>
         <div className="grid grid-cols-[72px_1fr] gap-x-3 gap-y-1 text-xs">
           <span className="text-muted-foreground">Tier</span>
           <span className="font-medium">
-            <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+            <Badge variant="secondary" className="text-[11px] h-4 px-1.5">
               {run?.executionTier ?? 'Unknown'}
             </Badge>
           </span>

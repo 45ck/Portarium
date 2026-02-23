@@ -106,7 +106,7 @@ import { opColors } from '@/components/cockpit/lib/effect-colors';
 function TriageEffectRow({ effect }: { effect: PlanEffect }) {
   return (
     <div className="flex items-center gap-2 py-1 text-xs">
-      <Badge variant="secondary" className={cn('text-[10px] shrink-0', opColors[effect.operation])}>
+      <Badge variant="secondary" className={cn('text-[11px] shrink-0', opColors[effect.operation])}>
         {effect.operation}
       </Badge>
       <SorBadge name={effect.target.sorName} />
@@ -136,11 +136,11 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Policy Rule
         </span>
         <span className="font-mono text-[11px] text-foreground">{rule.ruleId}</span>
-        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+        <Badge variant="secondary" className="text-[11px] h-4 px-1.5">
           {rule.tier}
         </Badge>
       </div>
@@ -151,7 +151,7 @@ function PolicyRulePanel({ rule }: { rule: PolicyRule }) {
         <div className="flex flex-wrap items-center gap-1.5">
           {rule.blastRadius.map((b) =>
             b.includes('record') ? (
-              <Badge key={b} variant="outline" className="text-[10px] h-5 px-1.5">
+              <Badge key={b} variant="outline" className="text-[11px] h-5 px-1.5">
                 {b}
               </Badge>
             ) : (
@@ -184,7 +184,7 @@ function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] })
 
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
         Decision History
       </p>
       <ol className="relative border-l border-border ml-3 space-y-3 pl-4">
@@ -204,7 +204,7 @@ function RequestChangesHistory({ history }: { history: DecisionHistoryEntry[] })
                 >
                   {format(new Date(entry.timestamp), 'MMM d, HH:mm')}
                 </time>
-                <span className="text-muted-foreground font-mono text-[10px]">{entry.actor}</span>
+                <span className="text-muted-foreground font-mono text-[11px]">{entry.actor}</span>
               </div>
               <p className="mt-0.5 text-foreground">{entry.message}</p>
             </div>
@@ -537,10 +537,10 @@ export function ApprovalTriageCard({
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                     Approval Gate
                   </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-[11px] text-muted-foreground">
                     {approval.approvalId}
                   </span>
                   {policyRule && (
@@ -627,7 +627,7 @@ export function ApprovalTriageCard({
                     {run && (
                       <span className="inline-flex items-center gap-1.5 bg-background border border-border rounded-full px-2 py-0.5">
                         <EntityIcon entityType="run" size="xs" decorative />
-                        <span className="font-mono text-[10px]">{run.runId.slice(0, 10)}</span>
+                        <span className="font-mono text-[11px]">{run.runId.slice(0, 10)}</span>
                         <RunStatusBadge status={run.status} />
                       </span>
                     )}
@@ -714,7 +714,7 @@ export function ApprovalTriageCard({
                         {/* Planned effects panel */}
                         {plannedEffects.length > 0 && (
                           <div className="rounded-lg border border-border bg-muted/10 px-4 py-3">
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                               What will happen if approved
                             </p>
                             <div className="divide-y divide-border/40">
@@ -887,7 +887,7 @@ export function ApprovalTriageCard({
                     aria-keyshortcuts="s"
                   >
                     <SkipForward className="h-4 w-4" />
-                    <span className="text-[10px]">Skip</span>
+                    <span className="text-[11px]">Skip</span>
                   </Button>
                 </div>
               </div>
@@ -909,7 +909,7 @@ export function ApprovalTriageCard({
           <span className="hidden sm:inline">Keyboard:</span>
           {rationaleHasFocus ? (
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
+              <kbd className="px-1.5 py-0.5 bg-muted rounded text-[11px] font-mono border border-border">
                 Esc
               </kbd>
               exit
@@ -926,7 +926,7 @@ export function ApprovalTriageCard({
                 ] as const
               ).map(({ key, label }) => (
                 <span key={key} className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[11px] font-mono border border-border">
                     {key}
                   </kbd>
                   {label}
@@ -934,7 +934,7 @@ export function ApprovalTriageCard({
               ))}
               {undoAvailable && (
                 <span className="flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono border border-border">
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[11px] font-mono border border-border">
                     Z
                   </kbd>
                   undo

@@ -333,7 +333,7 @@ function RunDetailPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-xs truncate">{a.prompt}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{a.approvalId}</p>
+                    <p className="text-[11px] text-muted-foreground font-mono">{a.approvalId}</p>
                   </div>
                   <ApprovalStatusBadge status={a.status} />
                 </Link>

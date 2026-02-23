@@ -224,7 +224,7 @@ function TimelineCard({ event, above }: { event: TimelineEvent; above: boolean }
         )}
         <p
           className={cn(
-            'text-[10px] font-semibold',
+            'text-[11px] font-semibold',
             event.pulsing && 'text-primary',
             isFuture && 'text-muted-foreground',
           )}
@@ -263,7 +263,7 @@ function SimpleTimeline({ events }: { events: TimelineEvent[] }) {
               <p className={cn('text-[11px] font-semibold', event.pulsing && 'text-primary')}>
                 {event.label}
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 {format(event.timestamp, 'EEE, MMM d · HH:mm')}
               </p>
               {event.detail && (

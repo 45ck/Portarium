@@ -47,7 +47,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
       </div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-4 py-3">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Status
           </p>
           <Badge
@@ -62,7 +62,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </Badge>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Battery
           </p>
           <div className="mt-1 space-y-1">
@@ -76,7 +76,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Class
           </p>
           <Badge variant="secondary" className="mt-1 text-[11px]">
@@ -84,7 +84,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </Badge>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Speed
           </p>
           <div className="mt-1 flex items-center gap-1.5 text-sm">
@@ -93,7 +93,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Position
           </p>
           <div className="mt-1 flex items-center gap-1.5 text-sm font-mono text-xs">
@@ -102,7 +102,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Mission
           </p>
           <p className="mt-1 text-sm">
@@ -120,7 +120,7 @@ export function RobotDetailPanel({ robot, onClose }: RobotDetailPanelProps) {
           </p>
         </div>
         <div className="col-span-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Last Updated
           </p>
           <p className="mt-1 text-xs text-muted-foreground">

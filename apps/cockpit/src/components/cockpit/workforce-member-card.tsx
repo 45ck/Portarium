@@ -46,7 +46,7 @@ export function WorkforceMemberCard({ member, onClick }: WorkforceMemberCardProp
       <CardContent className="flex items-center gap-3 py-3">
         <div className="relative">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-[10px]">{initials(member.displayName)}</AvatarFallback>
+            <AvatarFallback className="text-[11px]">{initials(member.displayName)}</AvatarFallback>
           </Avatar>
           <div
             className={cn(
