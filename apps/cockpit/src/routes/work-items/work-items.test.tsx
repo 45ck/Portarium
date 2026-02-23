@@ -7,82 +7,106 @@ import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
 import { WORK_ITEMS, RUNS, APPROVALS, EVIDENCE } from '@/mocks/fixtures/demo';
+import type { WorkItemSummary } from '@portarium/cockpit-types';
 
-function createMemoryStorage(): Storage {
-  const store = new Map<string, string>();
-  return {
-    get length() {
-      return store.size;
-    },
-    clear() {
-      store.clear();
-    },
-    getItem(key: string) {
-      return store.get(key) ?? null;
-    },
-    key(index: number) {
-      return Array.from(store.keys())[index] ?? null;
-    },
-    removeItem(key: string) {
-      store.delete(key);
-    },
-    setItem(key: string, value: string) {
-      store.set(key, value);
-    },
-  };
-}
+const OFFLINE_META = {
+  isOffline: false,
+  isStaleData: false,
+  dataSource: 'network' as const,
+  lastSyncAtIso: undefined,
+};
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  });
-}
+// Mutable state — reset in beforeEach
+let _mockWorkItems: WorkItemSummary[] = [...WORK_ITEMS];
+let _mockWorkItemId: string | null = null; // null = return undefined (loading/not-found)
+let _mockWorkItemIsError = false;
+const _mockRefetch = vi.fn();
 
-function createFetchMock() {
-  return vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-    const rawUrl =
-      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-    const url = new URL(rawUrl, 'http://localhost');
-    const pathname = url.pathname;
-
-    if (pathname === '/v1/workspaces') {
-      return Promise.resolve(json({ items: [{ workspaceId: 'ws-test', name: 'Test Workspace' }] }));
+vi.mock('@/hooks/queries/use-work-items', () => ({
+  useWorkItems: vi.fn(() => ({
+    data: { items: _mockWorkItems },
+    isLoading: false,
+    isError: false,
+    refetch: _mockRefetch,
+    offlineMeta: OFFLINE_META,
+  })),
+  useWorkItem: vi.fn((_wsId: string, wiId: string) => {
+    if (_mockWorkItemIsError) {
+      return { data: undefined, isLoading: false, isError: true, offlineMeta: OFFLINE_META };
     }
+    const item = _mockWorkItems.find((w) => w.workItemId === wiId);
+    return {
+      data: item,
+      isLoading: false,
+      isError: !item,
+      offlineMeta: OFFLINE_META,
+    };
+  }),
+  useUpdateWorkItem: vi.fn(() => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+  })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/work-items$/.test(pathname)) {
-      return Promise.resolve(json({ items: WORK_ITEMS }));
-    }
+vi.mock('@/hooks/queries/use-users', () => ({
+  useUsers: vi.fn(() => ({ data: { items: [] }, isLoading: false })),
+  useInviteUser: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  usePatchUser: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+}));
 
-    const workItemMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/work-items\/([^/]+)$/);
-    if (workItemMatch) {
-      const workItem = WORK_ITEMS.find((w) => w.workItemId === workItemMatch[1]);
-      return Promise.resolve(workItem ? json(workItem) : json({ error: 'not-found' }, 404));
-    }
+vi.mock('@/hooks/queries/use-runs', () => ({
+  useRuns: vi.fn(() => ({
+    data: { items: RUNS },
+    isLoading: false,
+    offlineMeta: OFFLINE_META,
+  })),
+  useRun: vi.fn(() => ({ data: undefined, isLoading: false, offlineMeta: OFFLINE_META })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/runs$/.test(pathname)) {
-      return Promise.resolve(json({ items: RUNS }));
-    }
+vi.mock('@/hooks/queries/use-approvals', () => ({
+  useApprovals: vi.fn(() => ({
+    data: { items: APPROVALS },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+    offlineMeta: OFFLINE_META,
+  })),
+  useApproval: vi.fn(() => ({ data: undefined, isLoading: false, offlineMeta: OFFLINE_META })),
+  useApprovalDecision: vi.fn(() => ({ data: undefined, isLoading: false })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/approvals$/.test(pathname)) {
-      return Promise.resolve(json({ items: APPROVALS }));
-    }
+vi.mock('@/hooks/queries/use-evidence', () => ({
+  useEvidence: vi.fn(() => ({
+    data: { items: EVIDENCE },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/evidence$/.test(pathname)) {
-      return Promise.resolve(json({ items: EVIDENCE }));
-    }
+vi.mock('@/hooks/queries/use-workforce', () => ({
+  useWorkforceMembers: vi.fn(() => ({ data: { items: [] }, isLoading: false })),
+  useWorkforceQueues: vi.fn(() => ({ data: undefined, isLoading: false })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/workforce\/members$/.test(pathname)) {
-      return Promise.resolve(json({ items: [] }));
-    }
+vi.mock('@/hooks/queries/use-workflows', () => ({
+  useWorkflows: vi.fn(() => ({ data: undefined, isLoading: false, offlineMeta: OFFLINE_META })),
+  useWorkflow: vi.fn(() => ({ data: undefined, isLoading: false, offlineMeta: OFFLINE_META })),
+}));
 
-    if (/^\/v1\/workspaces\/[^/]+\/users$/.test(pathname) && init?.method !== 'POST') {
-      return Promise.resolve(json({ items: [] }));
-    }
+vi.mock('@/hooks/queries/use-plan', () => ({
+  usePlan: vi.fn(() => ({ data: undefined, isLoading: false })),
+}));
 
-    return Promise.resolve(json({ items: [] }));
-  });
-}
+vi.mock('@/hooks/queries/use-approval-decision-outbox', () => ({
+  useApprovalDecisionOutbox: vi.fn(() => ({
+    submitDecision: vi.fn().mockResolvedValue({ queued: false }),
+    pendingCount: 0,
+    isFlushing: false,
+    flushNow: vi.fn(),
+  })),
+}));
 
 async function renderWorkItemsRoute(path = '/work-items') {
   const router = createCockpitRouter({
@@ -107,7 +131,6 @@ beforeAll(() => {
       dispatchEvent: () => false,
     }));
   }
-  vi.stubGlobal('localStorage', createMemoryStorage());
   if (typeof ResizeObserver === 'undefined') {
     class ResizeObserverMock {
       observe() {}
@@ -121,7 +144,9 @@ beforeAll(() => {
 beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
-  vi.stubGlobal('fetch', createFetchMock());
+  _mockWorkItems = [...WORK_ITEMS];
+  _mockWorkItemId = null;
+  _mockWorkItemIsError = false;
 });
 
 afterEach(() => {
@@ -144,22 +169,24 @@ describe('Work Items hub', () => {
 
     const first = WORK_ITEMS[0]!;
     expect(await screen.findByText(first.title)).toBeTruthy();
-    expect(await screen.findByText(first.status)).toBeTruthy();
+    // Status rendered as badge — find at least one badge with status text
+    const badges = await screen.findAllByText(first.status);
+    expect(badges.length).toBeGreaterThan(0);
   });
 
   it('shows the status filter bar', async () => {
     await renderWorkItemsRoute();
 
     await screen.findByRole('heading', { name: 'Work Items' });
-    const statusFilters = screen.queryAllByText('Status');
-    expect(statusFilters.length).toBeGreaterThan(0);
+    // 'Status' appears in the DataTable column header
+    const statusElements = screen.queryAllByText('Status');
+    expect(statusElements.length).toBeGreaterThan(0);
   });
 
   it('shows the links count for items that have linked entities', async () => {
     await renderWorkItemsRoute();
 
     await screen.findByText(WORK_ITEMS[0]!.title);
-    // wi-1001 has run + approval links = count > 0
     const wi1001 = WORK_ITEMS.find((w) => w.workItemId === 'wi-1001')!;
     const expectedCount =
       (wi1001.links?.runIds?.length ?? 0) +
@@ -218,6 +245,7 @@ describe('Work Item detail (hub view)', () => {
   });
 
   it('shows not-found message for a missing work item ID', async () => {
+    _mockWorkItemIsError = true;
     await renderWorkItemsRoute('/work-items/wi-does-not-exist');
 
     expect(await screen.findByText(/does not exist or could not be loaded/i)).toBeTruthy();

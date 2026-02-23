@@ -116,9 +116,10 @@ describe('Evidence page', () => {
   it('shows the chain integrity banner', async () => {
     await renderEvidenceRoute();
 
+    // Multiple elements may contain "chain" (page description + banner); check at least one exists
     await waitFor(() => {
-      const banner = screen.queryByText(/chain/i);
-      expect(banner).not.toBeNull();
+      const banners = screen.queryAllByText(/chain/i);
+      expect(banners.length).toBeGreaterThan(0);
     });
   });
 
@@ -133,7 +134,8 @@ describe('Evidence page', () => {
     await renderEvidenceRoute();
 
     await screen.findByRole('heading', { name: 'Evidence' });
-    const categoryFilter = screen.queryAllByText('Category');
+    // FilterBar renders SelectValue showing "All Category" (selected item text), not "Category" alone
+    const categoryFilter = screen.queryAllByText(/category/i);
     expect(categoryFilter.length).toBeGreaterThan(0);
   });
 
