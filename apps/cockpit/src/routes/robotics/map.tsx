@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createRoute, useSearch } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useRobotLocations } from '@/hooks/queries/use-robot-locations';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { MapView } from '@/components/cockpit/operations-map/map-view';
@@ -10,6 +11,7 @@ import { RobotDetailPanel } from '@/components/cockpit/operations-map/robot-deta
 import { AlertTriagePanel } from '@/components/cockpit/operations-map/alert-triage-panel';
 import { PlaybackControls } from '@/components/cockpit/operations-map/playback-controls';
 import { MapLegend } from '@/components/cockpit/operations-map/map-legend';
+import { MobileMapLayout } from '@/components/cockpit/operations-map/mobile-map-layout';
 import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-toggles';
 import {
   Breadcrumb,
@@ -22,9 +24,23 @@ import {
 import { Link } from '@tanstack/react-router';
 import { MapPin, Loader2 } from 'lucide-react';
 
+/** Mobile defaults: fewer layers for performance */
+const MOBILE_DEFAULT_LAYERS: LayerVisibility = {
+  geofences: true,
+  trails: false,
+  halos: false,
+};
+
+const DESKTOP_DEFAULT_LAYERS: LayerVisibility = {
+  geofences: true,
+  trails: false,
+  halos: true,
+};
+
 function OperationsMapPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading } = useRobotLocations(wsId);
+  const isMobile = useIsMobile();
   const searchParams = useSearch({ from: '/robotics/map' });
   const initialRobotId = (searchParams as { robotId?: string }).robotId ?? null;
 
@@ -34,11 +50,9 @@ function OperationsMapPage() {
   useEffect(() => {
     if (initialRobotId) setSelectedRobotId(initialRobotId);
   }, [initialRobotId]);
-  const [layers, setLayers] = useState<LayerVisibility>({
-    geofences: true,
-    trails: false,
-    halos: true,
-  });
+  const [layers, setLayers] = useState<LayerVisibility>(
+    isMobile ? MOBILE_DEFAULT_LAYERS : DESKTOP_DEFAULT_LAYERS,
+  );
 
   const locations = data?.items ?? [];
   const geofences = data?.geofences ?? [];
@@ -59,6 +73,24 @@ function OperationsMapPage() {
     );
   }
 
+  /* Mobile layout: full-screen map + bottom sheet, no header/breadcrumbs */
+  if (isMobile) {
+    return (
+      <div className="relative h-full w-full">
+        <MobileMapLayout
+          locations={locations}
+          geofences={geofences}
+          alerts={alerts}
+          selectedRobotId={selectedRobotId}
+          onSelectRobot={setSelectedRobotId}
+          layers={layers}
+          onLayersChange={setLayers}
+        />
+      </div>
+    );
+  }
+
+  /* Desktop layout: header + resizable panels */
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
