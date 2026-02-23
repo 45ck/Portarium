@@ -45,7 +45,10 @@
     "HNSW",
     "pgvector",
     "janusgraph",
-    "JanusGraph"
+    "JanusGraph",
+    "AROA",
+    "noapp",
+    "noexec"
   ],
   "ignorePaths": [
     "dist/**",
