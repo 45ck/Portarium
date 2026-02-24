@@ -1,6 +1,6 @@
 # Portarium
 
-Open-source control plane for governable operations across existing systems.
+Open-source policy control plane for autonomous agents (OpenClaw and beyond) across software and robots.
 
 [![CI (PR)](https://github.com/45ck/Portarium/actions/workflows/ci.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/45ck/Portarium/branch/main/graph/badge.svg)](https://codecov.io/gh/45ck/Portarium)
@@ -17,6 +17,8 @@ Portarium sits between people and execution systems:
 - Top: agents, automations, OpenClaw, physical robots
 - Middle: Portarium control plane (policy, approvals, orchestration, evidence)
 - Bottom: services, software, APIs, and tools
+
+Core promise: agents can think and propose actions, but policy and approvals decide what executes.
 
 ## Feature Showcase
 
@@ -56,6 +58,21 @@ Portarium acts as the control-plane for autonomous agents: OpenClaw can propose 
 - Explicit approvals and workspace-scoped operations
 - Evidence-first operation history for audit and review
 - Ports/Adapters model for integrating existing systems of record
+
+## Discoverability Topics
+
+Use these repository topics/tags for GitHub discoverability:
+
+- `control-plane`
+- `ai-governance`
+- `agent-safety`
+- `human-in-the-loop`
+- `policy-engine`
+- `approval-workflows`
+- `openclaw`
+- `robotics-governance`
+- `enterprise-security`
+- `risk-controls`
 
 ## Agent Traffic Controller
 

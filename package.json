@@ -3,8 +3,20 @@
   "private": false,
   "type": "module",
   "version": "0.1.0",
-  "description": "Portarium -- open-source multi-tenant control plane for governable business operations",
+  "description": "Portarium -- policy control plane for safe autonomous agents with approval workflows across software and robots",
   "license": "MIT",
+  "keywords": [
+    "control-plane",
+    "ai-governance",
+    "agent-safety",
+    "policy-engine",
+    "approval-workflows",
+    "human-in-the-loop",
+    "openclaw",
+    "robotics-governance",
+    "enterprise-security",
+    "risk-controls"
+  ],
   "workspaces": [
     "apps/*"
   ],
