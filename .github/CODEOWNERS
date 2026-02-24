@@ -1,6 +1,6 @@
 # Core domain requires senior review
 /src/domain/                @core-maintainers
-/docs/adr/                  @core-maintainers
+/docs/internal/adr/         @core-maintainers
 /.github/workflows/         @core-maintainers
 /.dependency-cruiser.cjs    @core-maintainers
 /eslint.config.mjs          @core-maintainers

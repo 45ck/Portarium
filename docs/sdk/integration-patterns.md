@@ -36,7 +36,7 @@ console.log('Pack registered:', pack.packId, '@', pack.version);
 ### Pack manifest structure
 
 Vertical packs live in `vertical-packs/<pack-id>/manifest.json`. See
-`docs/vertical-packs/authoring-guide.md` for the full schema.
+`docs/internal/vertical-packs/authoring-guide.md` for the full schema.
 
 ---
 

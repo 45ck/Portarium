@@ -49,7 +49,13 @@ type BeadIssue = Readonly<{
 
 const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(THIS_DIR, '../../..');
-const MATRIX_PATH = path.join(REPO_ROOT, 'docs', 'governance', 'domain-coverage-matrix.json');
+const MATRIX_PATH = path.join(
+  REPO_ROOT,
+  'docs',
+  'internal',
+  'governance',
+  'domain-coverage-matrix.json',
+);
 const ISSUES_PATH = path.join(REPO_ROOT, '.beads', 'issues.jsonl');
 
 const OPERATIONAL_DOMAIN_IDS = new Set<OperationalDomainId>([

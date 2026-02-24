@@ -224,9 +224,9 @@ export const COCKPIT_ENDPOINTS = [
 
 ## 7. Related documents
 
-| Document                         | Purpose                       |
-| -------------------------------- | ----------------------------- |
-| `docs/ui/cockpit/ia-baseline.md` | Cockpit view/data inventory   |
-| `docs/spec/`                     | OpenAPI specification         |
-| `docs/adr/`                      | Architecture decision records |
-| `docs/onboarding/dev-track.md`   | Developer onboarding          |
+| Document                                  | Purpose                       |
+| ----------------------------------------- | ----------------------------- |
+| `docs/internal/ui/cockpit/ia-baseline.md` | Cockpit view/data inventory   |
+| `docs/spec/`                              | OpenAPI specification         |
+| `docs/internal/adr/`                      | Architecture decision records |
+| `docs/onboarding/dev-track.md`            | Developer onboarding          |

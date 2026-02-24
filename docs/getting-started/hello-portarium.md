@@ -1,77 +1,72 @@
 # Hello Portarium — Quickstart Guide
 
-Get a running Portarium instance locally in under 30 minutes.
+Run Portarium locally in under 30 minutes and validate a governed flow path.
 
 ## Prerequisites
 
-- **Node.js** ≥ 20 (`node --version`)
+- **Node.js** ≥ 22 (`node --version`)
 - **Docker Compose** ≥ 2.x (`docker compose version`)
 - **Git** ≥ 2.x
 
 ## Step 1 — Clone and install
 
 ```bash
-git clone https://github.com/your-org/portarium.git
-cd portarium
-npm install
+git clone https://github.com/45ck/Portarium.git
+cd Portarium
+npm ci
 ```
 
 ## Step 2 — Start the local stack
 
 ```bash
-docker compose up -d          # starts Postgres, OpenFGA, NATS, MinIO
-npm run dev                   # starts the execution-plane control-plane HTTP server
+npm run dev:all
+npm run dev:seed
 ```
 
-The server starts on `http://localhost:3000`. Verify with:
+Verify the control plane health endpoint:
 
 ```bash
-curl http://localhost:3000/health
-# → {"status":"ok"}
+curl -s http://localhost:8080/healthz
+# {"status":"ok"}
 ```
 
-## Step 3 — Run your first workflow
+## Step 3 — Run one governed flow
 
-The seed script provisions a demo workspace and a sample workflow definition:
+Run the built-in smoke scenario that exercises workspace setup, approval gating,
+adapter action dispatch, and evidence chain checks:
 
 ```bash
-npm run db:seed
+npm run smoke:governed-run
 ```
 
-Trigger a workflow run via the SDK:
-
-```typescript
-import { PortariumClient } from './src/sdk/portarium-client.ts';
-
-const client = new PortariumClient({ baseUrl: 'http://localhost:3000', apiKey: 'dev-key' });
-const run = await client.runs.start({
-  workflowId: 'hello-workflow',
-  workspaceId: 'workspace-default',
-});
-console.log('Run started:', run.runId);
-```
-
-Watch the run progress in the Cockpit UI at `http://localhost:5173` (start with `npm run cockpit:dev`).
+For a guided API tutorial path, continue with
+`docs/tutorials/hello-governed-workflow.md`.
 
 ## Step 4 — Inspect the evidence chain
 
-Every governed run produces a hash-chained evidence log. Verify yours:
+Review the smoke output for:
 
-```bash
-npm run sdk:verify -- --runId <run-id> --workspaceId workspace-default
-```
+- workspace creation
+- approval decision
+- adapter action dispatch
+- evidence chain validation
 
 ## What's next?
 
-You've completed **L0 (Discovery)** on the [Adoption Ladder](../adoption/adoption-ladder.md).
+You have completed **L0 (Discovery)** on the
+[Adoption Ladder](../adoption/adoption-ladder.md).
 
-To advance to **L1 (Integration Spike)**, connect a vertical pack in your own staging environment:
-see [Adoption Readiness Checklist](../adoption/adoption-readiness-checklist.md).
+Next:
+
+1. `docs/getting-started/local-dev.md`
+2. `docs/tutorials/hello-governed-workflow.md`
+3. `docs/explanation/architecture.md`
+4. `docs/spec/openapi/portarium-control-plane.v1.yaml`
 
 ## Troubleshooting
 
-| Error                                   | Fix                                                      |
-| --------------------------------------- | -------------------------------------------------------- |
-| `docker compose up` fails — port in use | Change `POSTGRES_PORT` in `.env.local`                   |
-| `npm install` fails with peer deps      | Use `npm install --legacy-peer-deps`                     |
-| `health` returns 503                    | Wait for Postgres migrations: `npm run migrate:apply:ci` |
+| Error                              | Fix                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| `npm run dev:all` fails            | Check Docker services with `docker compose ps` and fix port clashes |
+| `healthz` returns non-200          | Wait for stack startup to complete, then re-run `npm run dev:seed`  |
+| `npm run smoke:governed-run` fails | Re-run `npm run test` to confirm local test/runtime prerequisites   |

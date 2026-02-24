@@ -3,10 +3,10 @@ name: Cockpit Demo CI
 on:
   pull_request:
     paths:
-      - 'docs/ui/cockpit/demo-machine/**'
-      - 'docs/ui/cockpit/index.html'
-      - 'docs/ui/cockpit/mock-api.js'
-      - 'docs/ui/cockpit/demo-bindings.js'
+      - 'docs/internal/ui/cockpit/demo-machine/**'
+      - 'docs/internal/ui/cockpit/index.html'
+      - 'docs/internal/ui/cockpit/mock-api.js'
+      - 'docs/internal/ui/cockpit/demo-bindings.js'
       - 'scripts/qa/render-demo-gallery.mjs'
       - 'scripts/qa/render-approvals-v2-showcase.mjs'
       - 'src/infrastructure/adapters/demo-gallery-pipeline.test.ts'
@@ -57,14 +57,14 @@ jobs:
 
       - name: Verify gallery-index schema file was written
         run: |
-          if [ ! -f tmp/demo-gallery-test/gallery-index.json ] && [ ! -f docs/ui/cockpit/demo-machine/gallery/gallery-index.json ]; then
+          if [ ! -f tmp/demo-gallery-test/gallery-index.json ] && [ ! -f docs/internal/ui/cockpit/demo-machine/gallery/gallery-index.json ]; then
             # dry-run writes to tmp/ by default in tests; verify script works via exit code only
             echo "[ok] dry-run completed without error"
           fi
 
       - name: Validate clip YAML files exist and are non-empty
         run: |
-          clip_count=$(find docs/ui/cockpit/demo-machine/clips -name '*.demo.yaml' | wc -l)
+          clip_count=$(find docs/internal/ui/cockpit/demo-machine/clips -name '*.demo.yaml' | wc -l)
           echo "Found ${clip_count} clip specs"
           if [ "${clip_count}" -lt 6 ]; then
             echo "::error::Expected at least 6 clip specs, found ${clip_count}"
@@ -73,7 +73,7 @@ jobs:
 
       - name: Check all clip specs have required sections
         run: |
-          for f in docs/ui/cockpit/demo-machine/clips/*.demo.yaml; do
+          for f in docs/internal/ui/cockpit/demo-machine/clips/*.demo.yaml; do
             for section in meta runner chapters pacing; do
               if ! grep -q "^${section}:" "${f}"; then
                 echo "::error::${f} missing required section: ${section}"
@@ -126,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: demo-gallery
-          path: docs/ui/cockpit/demo-machine/gallery/
+          path: docs/internal/ui/cockpit/demo-machine/gallery/
           retention-days: 30
           if-no-files-found: warn
 
@@ -138,7 +138,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: approvals-v2-showcase
-          path: docs/ui/cockpit/demo-machine/showcase/
+          path: docs/internal/ui/cockpit/demo-machine/showcase/
           retention-days: 30
           if-no-files-found: warn
 

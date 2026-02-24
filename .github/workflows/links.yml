@@ -33,6 +33,6 @@ jobs:
             "docs/tutorials/**/*.md"
             "docs/reference/**/*.md"
             "docs/explanation/**/*.md"
-            "docs/_meta/**/*.md"
+            "docs/internal/_meta/**/*.md"
             "docs/assets/**/*.md"
           fail: true

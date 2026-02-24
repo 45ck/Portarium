@@ -49,7 +49,7 @@ L0 (Mock) → L1 (Live Read) → L2 (Bidirectional) → L3 (Governed)
 - [ ] Concrete adapter passes CI in `--run` mode (no live network calls required, recorded fixtures accepted).
 - [ ] Mapping covers the required canonical fields for the port family.
 - [ ] `npm run depcruise` passes (no layer violations).
-- [ ] Adapter is listed in `docs/governance/domain-coverage-matrix.json` under `coverageBeads`.
+- [ ] Adapter is listed in `docs/internal/governance/domain-coverage-matrix.json` under `coverageBeads`.
 
 ---
 
@@ -88,8 +88,8 @@ L0 (Mock) → L1 (Live Read) → L2 (Bidirectional) → L3 (Governed)
 
 - [ ] `RunEmulator` scenario or live smoke test passes end-to-end.
 - [ ] Evidence `integrity` check passes.
-- [ ] `docs/governance/domain-coverage-matrix.json` entry has `coverageStatus: "covered"` and no open `gapBeads`.
-- [ ] ADR or closeout review exists under `docs/review/`.
+- [ ] `docs/internal/governance/domain-coverage-matrix.json` entry has `coverageStatus: "covered"` and no open `gapBeads`.
+- [ ] ADR or closeout review exists under `docs/internal/review/`.
 
 ---
 
@@ -139,6 +139,6 @@ L0 (Mock) → L1 (Live Read) → L2 (Bidirectional) → L3 (Governed)
 ## Related resources
 
 - [How-To: Generate Integration Scaffolds](../how-to/generate-integration-scaffolds.md)
-- [Domain Coverage Matrix](../governance/domain-coverage-matrix.json)
+- [Domain Coverage Matrix](../internal/governance/domain-coverage-matrix.json)
 - [Local Development Guide](../getting-started/local-dev.md)
 - [Evidence Trace How-To](../how-to/evidence-trace.md)

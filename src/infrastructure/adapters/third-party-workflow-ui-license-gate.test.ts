@@ -17,14 +17,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '../../../');
-const CHECKLIST_PATH = path.join(ROOT, 'docs/governance/third-party-workflow-ui-license-gate.md');
+const CHECKLIST_PATH = path.join(
+  ROOT,
+  'docs/internal/governance/third-party-workflow-ui-license-gate.md',
+);
 const PLATFORM_AUDIT_PATH = path.join(
   ROOT,
-  'docs/governance/external-execution-platform-license-audit.md',
+  'docs/internal/governance/external-execution-platform-license-audit.md',
 );
 const ADR_0078_PATH = path.join(
   ROOT,
-  'docs/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md',
+  'docs/internal/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md',
 );
 
 function readChecklist(): string {
@@ -38,7 +41,7 @@ function readPlatformAudit(): string {
 // ── Checklist document structure ──────────────────────────────────────────────
 
 describe('third-party-workflow-ui-license-gate.md', () => {
-  it('document exists at docs/governance/third-party-workflow-ui-license-gate.md', () => {
+  it('document exists at docs/internal/governance/third-party-workflow-ui-license-gate.md', () => {
     expect(fs.existsSync(CHECKLIST_PATH)).toBe(true);
   });
 
@@ -135,7 +138,7 @@ describe('third-party-workflow-ui-license-gate.md', () => {
 // ── Platform audit document ────────────────────────────────────────────────────
 
 describe('external-execution-platform-license-audit.md', () => {
-  it('document exists at docs/governance/external-execution-platform-license-audit.md', () => {
+  it('document exists at docs/internal/governance/external-execution-platform-license-audit.md', () => {
     expect(fs.existsSync(PLATFORM_AUDIT_PATH)).toBe(true);
   });
 

@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const root = process.cwd();
-const htmlPath = path.resolve(root, 'docs/ui/cockpit/index.html');
+const htmlPath = path.resolve(root, 'docs/internal/ui/cockpit/index.html');
 const baseUrl = pathToFileURL(htmlPath).href;
 
 const screens = [

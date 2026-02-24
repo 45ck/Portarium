@@ -96,7 +96,7 @@ describe('outreach templates', () => {
   });
 
   it('30-second demo command is in templates', () => {
-    expect(readKit()).toContain('npx --yes http-server docs/ui/cockpit -p 4174');
+    expect(readKit()).toContain('npx --yes http-server docs/internal/ui/cockpit -p 4174');
   });
 });
 

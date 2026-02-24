@@ -43,7 +43,7 @@ This opens a headed Chromium browser, walks through:
 2. Submit the approval.
 3. View the resulting evidence chain.
 
-Artefacts are written to `docs/ui/cockpit/demo-machine/showcase/`.
+Artefacts are written to `docs/internal/ui/cockpit/demo-machine/showcase/`.
 
 ## 4. Showcase: Integration ladder levels
 

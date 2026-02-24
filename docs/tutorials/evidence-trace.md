@@ -61,4 +61,4 @@ Invoke-WebRequest `
 ## Source of truth
 
 - `src/presentation/runtime/control-plane-handler.ts`
-- `docs/adr/0029-evidence-integrity-tamper-evident.md`
+- `docs/internal/adr/0029-evidence-integrity-tamper-evident.md`

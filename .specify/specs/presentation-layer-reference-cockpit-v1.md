@@ -153,6 +153,6 @@ For each primary screen, show dedicated state components for:
 
 ## Traceability links
 
-- `docs/ui/presentation-layer-comprehensive-plan.md`
-- `docs/ui/presentation-layer-work-backlog.md`
+- `docs/internal/ui/presentation-layer-comprehensive-plan.md`
+- `docs/internal/ui/presentation-layer-work-backlog.md`
 - `.github` and CI quality gates already define final repository completion criteria.

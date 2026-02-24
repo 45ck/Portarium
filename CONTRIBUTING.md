@@ -21,11 +21,11 @@ Use Beads for all work.
 ```bash
 npm run bd -- issue next --priority P1
 npm run bd -- issue view bead-XXXX
-npm run bd -- issue claim bead-XXXX --by "<owner>"
+npm run bd -- issue start bead-XXXX --by "<owner>"
 # when paused/handed off
 npm run bd -- issue unclaim bead-XXXX --by "<owner>"
 # when completed
-npm run bd -- issue close bead-XXXX
+npm run bd -- issue finish bead-XXXX
 ```
 
 Commit `.beads/issues.jsonl` with related code changes.
@@ -44,7 +44,7 @@ Do not mark work complete unless this passes.
 
 - Keep domain layer free of infrastructure/presentation dependencies.
 - Add or update specs in `.specify/specs/` when behavior changes.
-- Add or update ADRs in `docs/adr/` for architectural decisions.
+- Add or update ADRs in `docs/internal/adr/` for architectural decisions.
 
 ## Review Evidence
 

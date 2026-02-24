@@ -1,0 +1,56 @@
+meta:
+  title: 'Cockpit Demo: Degraded Realtime Safety UX'
+  tags:
+    - cockpit
+    - safety
+    - degraded-realtime
+    - bead-0726
+
+runner:
+  command: 'npx --yes http-server docs/internal/ui/cockpit -p 4174'
+  url: 'http://localhost:4174'
+  timeout: 20000
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4174/#safety'
+      - action: wait
+        timeout: 1200
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 600
+
+  - title: 'Set Degraded State'
+    steps:
+      - action: click
+        selector: '#systemState'
+      - action: press
+        key: 'd'
+      - action: wait
+        timeout: 700
+
+  - title: 'Review Safety Signals'
+    steps:
+      - action: assert
+        selector: '#screen-safety'
+      - action: assert
+        selector: '.js-realtime-degraded'
+      - action: assert
+        selector: '.js-staleness-timer'
+      - action: screenshot
+        name: 'degraded-realtime-safety'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: click
+        selector: '#demoResetButton'
+      - action: wait
+        timeout: 500

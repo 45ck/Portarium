@@ -47,7 +47,7 @@ function fileExists(relPath: string): boolean {
 // ── ADR-0101 ─────────────────────────────────────────────────────────────────
 
 describe('ADR-0101: data layer transaction boundary and pool config', () => {
-  const ADR_PATH = 'docs/adr/ADR-0101-data-layer-transaction-boundary-and-pool-config.md';
+  const ADR_PATH = 'docs/internal/adr/ADR-0101-data-layer-transaction-boundary-and-pool-config.md';
 
   it('ADR-0101 file exists', () => {
     expect(fileExists(ADR_PATH)).toBe(true);
@@ -87,7 +87,7 @@ describe('ADR-0101: data layer transaction boundary and pool config', () => {
 // ── report-21.md triage table ─────────────────────────────────────────────────
 
 describe('report-21.md triage table (bead-6i3j update)', () => {
-  const REPORT_PATH = 'docs/research/report-21.md';
+  const REPORT_PATH = 'docs/internal/research/report-21.md';
 
   it('report-21.md exists', () => {
     expect(fileExists(REPORT_PATH)).toBe(true);
@@ -204,7 +204,7 @@ describe('postgres-workforce-store-adapters.ts N+1 fix', () => {
 });
 
 describe('ADR-0096 CI migration apply exists', () => {
-  const ADR_096_PATH = 'docs/adr/ADR-0096-ci-real-postgres-migration-apply.md';
+  const ADR_096_PATH = 'docs/internal/adr/ADR-0096-ci-real-postgres-migration-apply.md';
 
   it('ADR-0096 exists', () => {
     expect(fileExists(ADR_096_PATH)).toBe(true);

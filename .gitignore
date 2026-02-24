@@ -29,7 +29,9 @@ Thumbs.db
 *.swo
 
 # QA artifacts (large; keep reports but not raw artifacts)
-qa-artifacts/
+qa-artifacts/*
+!qa-artifacts/.gitkeep
+!qa-artifacts/README.md
 
 # Stryker temp
 .stryker-tmp/
@@ -51,6 +53,14 @@ knip_debug.txt
 lint_out.txt
 vitest_*.txt
 nul
+tmp_*.txt
+tmp_*.out
+tmp_*.json
+tmp_*.ts
+tmp-*.txt
+tmp-*.out
+tmp-*.json
+tmp-*.ts
 
 # Git worktrees (managed by bd issue start/finish)
 .trees/
@@ -76,6 +86,7 @@ infra/terraform/**/.terraform.lock.hcl
 .beads/bd.sock.lock
 .beads/deletions.jsonl
 tmp/
+.tmp/
 test-results/
 playwright-report/
 playwright-results.json

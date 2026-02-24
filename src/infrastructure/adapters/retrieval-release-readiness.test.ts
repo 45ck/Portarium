@@ -12,7 +12,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '../../../');
-const READINESS_DOC = path.join(ROOT, 'docs/governance/retrieval-release-readiness.md');
+const READINESS_DOC = path.join(ROOT, 'docs/internal/governance/retrieval-release-readiness.md');
 const READINESS_SPEC = path.join(ROOT, '.specify/specs/retrieval-release-readiness-v1.md');
 
 function readDoc(filePath: string): string {
@@ -193,10 +193,10 @@ describe('test artifacts', () => {
 
 describe('governance and docs artifacts', () => {
   const GOV_FILES = [
-    'docs/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md',
+    'docs/internal/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md',
     'docs/how-to/derived-artifacts-retrieval-campaign.md',
     'docs/compliance/vector-graph-embedding-license-gate.md',
-    'docs/governance/retrieval-release-readiness.md',
+    'docs/internal/governance/retrieval-release-readiness.md',
     '.specify/specs/retrieval-release-readiness-v1.md',
   ];
 

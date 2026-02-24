@@ -42,7 +42,7 @@ export default tseslint.config(
       // Asset generation scripts use optional native deps (sharp) not in devDependencies
       'scripts/assets/**',
       // UI capture scripts — not production
-      'docs/ui/cockpit/screenshots/**',
+      'docs/internal/ui/cockpit/screenshots/**',
       // Scratch/generator scripts left from interactive sessions
       'tmp_*.{js,cjs,mjs,py,ts}',
       'tmp-*.{js,cjs,mjs,py,ts}',
@@ -260,7 +260,7 @@ export default tseslint.config(
   // UI wireframes/prototypes live in docs and legitimately use browser globals.
   // Relax complexity/size caps — these are standalone lo-fi prototypes, not production code.
   {
-    files: ['docs/ui/**/*.js'],
+    files: ['docs/internal/ui/**/*.js'],
     languageOptions: {
       globals: {
         ...globals.browser,

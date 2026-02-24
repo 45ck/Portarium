@@ -35,13 +35,13 @@ const strict = process.argv.includes('--strict');
 
 /** Paths to scan for sensitive-data patterns */
 const SCAN_ROOTS = [
-  path.join(rootDir, 'docs/ui/cockpit/demo-machine/clips'),
-  path.join(rootDir, 'docs/ui/cockpit/fixtures'),
+  path.join(rootDir, 'docs/internal/ui/cockpit/demo-machine/clips'),
+  path.join(rootDir, 'docs/internal/ui/cockpit/fixtures'),
 ];
 
 /** Files at cockpit root to scan */
 const COCKPIT_ROOT_FILES = ['index.html', 'mock-api.js', 'demo-bindings.js'].map((f) =>
-  path.join(rootDir, 'docs/ui/cockpit', f),
+  path.join(rootDir, 'docs/internal/ui/cockpit', f),
 );
 
 /** Extensions to include in scans */

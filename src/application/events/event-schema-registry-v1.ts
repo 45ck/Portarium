@@ -18,7 +18,7 @@
  * - Duplicate registrations for the same (aggregate, eventName, version) are
  *   rejected (prevents accidental handler replacement).
  *
- * See: docs/adr/ADR-0082.md
+ * See: docs/internal/adr/ADR-0082.md
  * Bead: bead-0383
  */
 

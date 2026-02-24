@@ -28,9 +28,9 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 // ---------------------------------------------------------------------------
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const clipsDir = path.join(rootDir, 'docs/ui/cockpit/demo-machine/clips');
-const defaultOutputDir = path.join(rootDir, 'docs/ui/cockpit/demo-machine/gallery');
-const cockpitHtmlPath = path.join(rootDir, 'docs/ui/cockpit/index.html');
+const clipsDir = path.join(rootDir, 'docs/internal/ui/cockpit/demo-machine/clips');
+const defaultOutputDir = path.join(rootDir, 'docs/internal/ui/cockpit/demo-machine/gallery');
+const cockpitHtmlPath = path.join(rootDir, 'docs/internal/ui/cockpit/index.html');
 const baseUrl = pathToFileURL(cockpitHtmlPath).href;
 
 const VIEWPORT = { width: 1280, height: 720 };
@@ -516,7 +516,9 @@ async function main() {
   const mp4Count = allMeta.filter((m) => m.outputs.mp4).length;
 
   console.log(`\n[done] ${allMeta.length} clips, ${gifCount} GIFs, ${mp4Count} MP4s`);
-  console.log(`       gallery-index: docs/ui/cockpit/demo-machine/gallery/gallery-index.json`);
+  console.log(
+    `       gallery-index: docs/internal/ui/cockpit/demo-machine/gallery/gallery-index.json`,
+  );
 }
 
 await main();

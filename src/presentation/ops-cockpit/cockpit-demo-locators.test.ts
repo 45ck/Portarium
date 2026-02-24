@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-const COCKPIT_HTML_PATH = path.join(process.cwd(), 'docs/ui/cockpit/index.html');
+const COCKPIT_HTML_PATH = path.join(process.cwd(), 'docs/internal/ui/cockpit/index.html');
 
 const DEMO_NAV_LOCATORS = [
   { testId: 'demo-nav-inbox', href: '#inbox' },

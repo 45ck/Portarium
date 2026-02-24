@@ -1,0 +1,41 @@
+name: Feature Request
+description: Propose a new capability or product improvement.
+title: 'feat: '
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the user problem first, then propose a solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What user or operator problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the preferred solution and acceptance criteria.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe other options and why they were rejected.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Expected impact on operators, security, compliance, or delivery speed.
+    validations:
+      required: true
+  - type: input
+    id: references
+    attributes:
+      label: Related Specs / ADRs / Issues (optional)
+      placeholder: 'bead-XXXX, docs/internal/adr/ADR-XXXX..., .specify/specs/...'

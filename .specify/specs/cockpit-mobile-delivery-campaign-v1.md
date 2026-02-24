@@ -1,7 +1,7 @@
 # Spec: Cockpit Mobile Delivery Campaign — PWA-First + Capacitor iOS/Android (v1)
 
 **Bead:** bead-0714 (campaign parent)
-**ADR:** [ADR-0094](../../docs/adr/ADR-0094.md)
+**ADR:** [ADR-0094](../../docs/internal/adr/ADR-0094.md)
 **Child beads:** bead-0719 (PWA), bead-0720 (Capacitor), bead-0721 (OIDC auth), bead-0722 (push), bead-0723 (release hardening)
 
 ## Context

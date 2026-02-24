@@ -127,7 +127,7 @@ If a visual workflow editor is integrated (e.g. ReactFlow, n8n embed, or Retool 
 | Retool                       | Proprietary                   | ❌ — not suitable for OSS core                            |
 | BPMN.io (bpmnjs)             | MIT                           | ✅                                                        |
 
-> See `docs/adr/` for the decision record on which workflow editor was selected
+> See `docs/internal/adr/` for the decision record on which workflow editor was selected
 > (bead-0749 / bead-0753).
 
 ---
@@ -154,4 +154,4 @@ Before tagging any public release:
 | `docs/compliance/`                       | Compliance artefacts directory |
 | `docs/how-to/security-baseline-gates.md` | Security pre-release gates     |
 | `docs/how-to/technical-adopter-gtm.md`   | GTM readiness                  |
-| `docs/adr/`                              | Architecture decision records  |
+| `docs/internal/adr/`                     | Architecture decision records  |

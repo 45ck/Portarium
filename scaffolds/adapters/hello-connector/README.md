@@ -26,7 +26,7 @@ npm run test -- scaffolds/adapters/hello-connector/src/index.test.ts
 
 1. Replace the stub `FakeProviderClient` with a real HTTP client for your provider.
 2. Update `adapter.manifest.json` with your provider slug and real egress allowlist.
-3. Add your adapter to `docs/governance/domain-coverage-matrix.json` under `coverageBeads`.
+3. Add your adapter to `docs/internal/governance/domain-coverage-matrix.json` under `coverageBeads`.
 4. Graduate to L3 by wiring a governed workflow in `.specify/specs/`.
 
 ## Integration ladder status

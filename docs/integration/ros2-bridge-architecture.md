@@ -39,7 +39,7 @@ rosbridge, and a production mode using DDS-Security (SROS 2).
    battery) and forward as Portarium `LocationEvent` / `RobotTelemetry` payloads.
 3. **Health reporting** -- Publish agent heartbeats to the control plane.
 4. **Policy enforcement** -- Reject commands that violate blast-radius policy
-   (see `docs/governance/openclaw-tool-blast-radius-policy.md`).
+   (see `docs/internal/governance/openclaw-tool-blast-radius-policy.md`).
 
 ## SROS 2 PKI provisioning
 
@@ -164,4 +164,4 @@ portarium:
 - [SROS 2 Design](https://design.ros2.org/articles/ros2_dds_security.html)
 - [rosbridge protocol](https://github.com/RobotWebTools/rosbridge_suite)
 - ADR-0070: Hybrid orchestration-choreography architecture
-- `docs/governance/openclaw-tool-blast-radius-policy.md`
+- `docs/internal/governance/openclaw-tool-blast-radius-policy.md`

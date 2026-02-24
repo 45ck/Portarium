@@ -19,14 +19,14 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 
 ## Related Resources
 
-| Resource            | Location                                                                                                          |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Integration Catalog | [`docs/integration-catalog/`](../integration-catalog/README.md) -- Provider-level detail for all 18 port families |
-| Glossary            | [`docs/glossary.md`](../glossary.md) -- Canonical term definitions                                                |
-| Ubiquitous Language | [`docs/ubiquitous-language.md`](../ubiquitous-language.md) -- Condensed term list                                 |
-| ADRs                | [`docs/ADRs-v0.md`](../ADRs-v0.md) -- Architecture decision records                                               |
-| ADR Amendments      | [`docs/ADR-amendments-and-new-ADRs.md`](../ADR-amendments-and-new-ADRs.md) -- Proposed amendments and new ADRs    |
-| Project Overview    | [`docs/project-overview.md`](../project-overview.md) -- Vision and scope                                          |
+| Resource            | Location                                                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Integration Catalog | [`docs/integration-catalog/`](../integration-catalog/README.md) -- Provider-level detail for all 18 port families                |
+| Glossary            | [`docs/glossary.md`](../glossary.md) -- Canonical term definitions                                                               |
+| Ubiquitous Language | [`docs/ubiquitous-language.md`](../ubiquitous-language.md) -- Condensed term list                                                |
+| ADRs                | [`docs/internal/ADRs-v0.md`](../internal/ADRs-v0.md) -- Architecture decision records                                            |
+| ADR Amendments      | [`docs/internal/ADR-amendments-and-new-ADRs.md`](../internal/ADR-amendments-and-new-ADRs.md) -- Proposed amendments and new ADRs |
+| Project Overview    | [`docs/project-overview.md`](../project-overview.md) -- Vision and scope                                                         |
 
 ## Key Design Principles
 

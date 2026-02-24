@@ -36,6 +36,6 @@ flowchart LR
 
 ## References
 
-- `docs/adr/0056-infrastructure-reference-architecture.md`
-- `docs/adr/0065-external-execution-plane-strategy.md`
+- `docs/internal/adr/0056-infrastructure-reference-architecture.md`
+- `docs/internal/adr/0065-external-execution-plane-strategy.md`
 - `src/presentation/runtime/control-plane-handler.ts`

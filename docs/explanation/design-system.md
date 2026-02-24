@@ -1,12 +1,12 @@
 # Explanation: Design System
 
-Cockpit design artifacts currently live under `docs/ui/`.
+Cockpit design artifacts currently live under `docs/internal/ui/`.
 
 ## Current source documents
 
-- `docs/ui/project-ui-v1.md`
-- `docs/ui/cockpit/README.md`
-- `docs/ui/cockpit/`
+- `docs/internal/ui/project-ui-v1.md`
+- `docs/internal/ui/cockpit/README.md`
+- `docs/internal/ui/cockpit/`
 
 ## Direction
 

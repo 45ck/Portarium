@@ -13,24 +13,24 @@ a CI-validated media pipeline, integration readiness documentation, and a demo l
 
 ### Track A — Demo machine scripts
 
-1. Six clip scripts must exist under `docs/ui/cockpit/demo-machine/clips/`:
+1. Six clip scripts must exist under `docs/internal/ui/cockpit/demo-machine/clips/`:
    - `01-approval-gate-unblocks-run.demo.yaml` — approval gate governance story
    - `02-evidence-chain-update-on-decision.demo.yaml` — evidence chain update on approval decision
    - `03-correlation-context-traversal.demo.yaml` — correlation context traversal
    - `04-capability-matrix-connector-posture.demo.yaml` — capability matrix and connector posture
    - `05-degraded-realtime-safety-ux.demo.yaml` — degraded real-time safety UX
    - `06-agent-integration-quickstart.demo.yaml` — agent integration quickstart
-2. Each script must use stable `data-testid` locators defined in `docs/ui/cockpit/demo-bindings.js`.
+2. Each script must use stable `data-testid` locators defined in `docs/internal/ui/cockpit/demo-bindings.js`.
 3. All scripts must be YAML files parseable by the demo-machine runner.
 
 ### Track B — Demo locator hardening (bead-0725)
 
-4. All Cockpit components used in demo scripts must expose `data-testid` attributes matching the bindings in `docs/ui/cockpit/demo-bindings.js`.
+4. All Cockpit components used in demo scripts must expose `data-testid` attributes matching the bindings in `docs/internal/ui/cockpit/demo-bindings.js`.
 5. No script may rely on positional CSS selectors that change across viewport sizes.
 
 ### Track C — Media pipeline (bead-0727 / bead-0728)
 
-6. Showcase media artifacts (MP4 + GIF) must be produced under `docs/ui/cockpit/demo-machine/showcase/`.
+6. Showcase media artifacts (MP4 + GIF) must be produced under `docs/internal/ui/cockpit/demo-machine/showcase/`.
 7. CI automation must validate all six clip scripts parse correctly (`npm run demo:validate` or equivalent).
 8. Redaction checks must be enforced on all demo captures (no real credentials, PII, or internal URLs).
 
@@ -60,13 +60,13 @@ Campaign reviewed against Cockpit demo architecture. All eight child beads (bead
 - `docs/how-to/demo-launch-kit.md` — outreach and publish checklist
 - `docs/integration/demo-walkthrough.md` — integration ladder walkthrough
 - `docs/demo-handoff-hello-connector.md` — hello-connector L2 demo scaffold
-- `docs/ui/cockpit/demo-machine/clips/` — the six canonical demo clip scripts
-- `docs/ui/cockpit/demo-machine/showcase/` — rendered media artifacts
+- `docs/internal/ui/cockpit/demo-machine/clips/` — the six canonical demo clip scripts
+- `docs/internal/ui/cockpit/demo-machine/showcase/` — rendered media artifacts
 
 ## Acceptance
 
 - All child beads (bead-0725 through bead-0732) are closed.
 - Six demo-machine clip YAML files are present and valid.
-- Demo showcase media exists in `docs/ui/cockpit/demo-machine/showcase/`.
+- Demo showcase media exists in `docs/internal/ui/cockpit/demo-machine/showcase/`.
 - `npm run ci:pr` passes with no demo-related failures.
 - `docs/how-to/run-cockpit-demos-locally.md` and `docs/how-to/demo-launch-kit.md` are present.

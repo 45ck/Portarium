@@ -143,5 +143,5 @@ Infrastructure V&V is **complete** when:
 | ------------------------------------ | -------------------------------------- |
 | `docs/how-to/vv-campaign.md`         | V&V campaign overview                  |
 | `src/sdk/evidence-chain-verifier.ts` | Chain verification utility             |
-| `docs/runbooks/`                     | Operational runbooks                   |
+| `docs/internal/runbooks/`            | Operational runbooks                   |
 | `docs/onboarding/sre-track.md`       | SRE onboarding including health probes |

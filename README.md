@@ -23,7 +23,7 @@ Portarium sits between people and execution systems:
 ### Approvals UX v2 (Cockpit)
 
 <p align="center">
-  <img src="docs/ui/cockpit/media/approvals-v2-showcase.gif" alt="Approvals UX v2 showcase: pending queue, triage panel, and approval detail" />
+  <img src="docs/internal/ui/cockpit/media/approvals-v2-showcase.gif" alt="Approvals UX v2 showcase: pending queue, triage panel, and approval detail" />
 </p>
 
 The approvals v2 flow in Cockpit demonstrates fast triage with policy context, decision rationale capture, and evidence-linked run governance.
@@ -73,19 +73,26 @@ curl -s http://localhost:8081/healthz
 
 ## Docs
 
-- Start here: `docs/index.md`
-- Architecture: `docs/explanation/architecture.md`
-- Local development: `docs/getting-started/local-dev.md`
+- If you only read one page next: `docs/index.md`
+- Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
+- Run the local stack: `docs/getting-started/local-dev.md`
+- Understand the architecture: `docs/explanation/architecture.md`
+- API contract (OpenAPI): `docs/spec/openapi/portarium-control-plane.v1.yaml`
 - HTTP API reference: `docs/reference/http-api.md`
-- OpenAPI contract: `docs/spec/openapi/portarium-control-plane.v1.yaml`
 - Integration model: `docs/explanation/ports-and-adapters.md`
 - Contribution flow: `CONTRIBUTING.md`
 
+## Community
+
+- Questions and usage help: [GitHub Discussions](https://github.com/45ck/Portarium/discussions)
+- Bug reports and feature proposals: [GitHub Issues](https://github.com/45ck/Portarium/issues/new/choose)
+- Security reports: [GitHub Security Advisories](https://github.com/45ck/Portarium/security/advisories/new)
+
 ## Cockpit Showcase
 
-![Approvals v2 demo showcase](docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif)
+![Approvals v2 demo showcase](docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif)
 
-See scripted demo specs and capture docs at `docs/ui/cockpit/demo-machine/README.md`.
+See scripted demo specs and capture docs at `docs/internal/ui/cockpit/demo-machine/README.md`.
 
 ## Status
 

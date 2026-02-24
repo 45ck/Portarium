@@ -196,9 +196,9 @@ Configure Renovate (or Dependabot) in `.github/renovate.json`:
 
 ## 8. Related documents
 
-| Document                                         | Purpose                          |
-| ------------------------------------------------ | -------------------------------- |
-| `docs/how-to/licensing-gate.md`                  | License compliance checklist     |
-| `docs/how-to/security-baseline-gates.md`         | Security pre-release gates       |
-| `docs/adr/ADR-0080-credential-boundary-model.md` | Credential isolation             |
-| `scripts/ci/audit-high.mjs`                      | Existing vulnerability CI script |
+| Document                                                  | Purpose                          |
+| --------------------------------------------------------- | -------------------------------- |
+| `docs/how-to/licensing-gate.md`                           | License compliance checklist     |
+| `docs/how-to/security-baseline-gates.md`                  | Security pre-release gates       |
+| `docs/internal/adr/ADR-0080-credential-boundary-model.md` | Credential isolation             |
+| `scripts/ci/audit-high.mjs`                               | Existing vulnerability CI script |

@@ -51,22 +51,22 @@ npm run bd -- issue next --priority P1
 npm run bd -- issue view bead-XXXX --json
 ```
 
-Claim before implementation:
+Start before implementation (claims bead + creates worktree):
 
 ```bash
-npm run bd -- issue claim bead-XXXX --by "<owner>"
+npm run bd -- issue start bead-XXXX --by "<owner>"
 ```
 
-If pausing or handing off:
+If pausing or handing off (manual fallback):
 
 ```bash
 npm run bd -- issue unclaim bead-XXXX --by "<owner>"
 ```
 
-Close when complete:
+Finish when complete:
 
 ```bash
-npm run bd -- issue close bead-XXXX
+npm run bd -- issue finish bead-XXXX
 ```
 
 ## 4) Review And Closure Requirements
@@ -77,7 +77,7 @@ Before calling a bead done:
    `Spec -> Tasks -> Implement -> Tests -> Quality gates -> Review -> QA -> Merge`.
 2. Tests are added/updated for behavior changes.
 3. Relevant spec/ADR docs are updated when behavior or architecture changes.
-4. Required review evidence is documented under `docs/review/` when applicable.
+4. Required review evidence is documented under `docs/internal/review/` when applicable.
 5. Full gate is attempted:
 
 ```bash
@@ -95,9 +95,9 @@ node scripts/beads/check-bead-prerequisites.mjs --next --json
 
 ## 5) Definition Of Done (Contributor Level)
 
-- Bead is claimed during active work.
+- Bead is started during active work.
 - Implementation and tests are complete for the bead scope.
 - Documentation/spec updates are included.
 - Review evidence is recorded where required.
 - Quality gates are run (or failure reason is documented).
-- Bead is closed (or unclaimed if not finished).
+- Bead is finished (or unclaimed if not finished).

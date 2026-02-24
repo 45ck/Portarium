@@ -4,9 +4,12 @@ import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const ROOT = process.cwd();
-const HTML_PATH = path.resolve(ROOT, 'docs/ui/cockpit/index.html');
+const HTML_PATH = path.resolve(ROOT, 'docs/internal/ui/cockpit/index.html');
 const BASE_URL = pathToFileURL(HTML_PATH).href;
-const OUTPUT_DIR = path.resolve(ROOT, 'docs/review/artifacts/bead-0716/mobile-breakpoints');
+const OUTPUT_DIR = path.resolve(
+  ROOT,
+  'docs/internal/review/artifacts/bead-0716/mobile-breakpoints',
+);
 
 const SCREENS = [
   { id: 'approvals', target: 'Approvals' },
@@ -62,7 +65,7 @@ try {
         viewport: viewport.id,
         width: viewport.width,
         height: viewport.height,
-        file: `docs/review/artifacts/bead-0716/mobile-breakpoints/${fileName}`,
+        file: `docs/internal/review/artifacts/bead-0716/mobile-breakpoints/${fileName}`,
       });
     }
   }

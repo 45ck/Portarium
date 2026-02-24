@@ -50,31 +50,33 @@ function fileExists(relPath: string): boolean {
 
 describe('ADR-0100 — JWT short-expiry and revocation policy', () => {
   it('ADR-0100 file exists', () => {
-    expect(fileExists('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md')).toBe(true);
+    expect(fileExists('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md')).toBe(
+      true,
+    );
   });
 
   it('ADR-0100 status is Accepted', () => {
-    const adr = readFile('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
+    const adr = readFile('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
     expect(adr).toContain('**Status:** Accepted');
   });
 
   it('ADR-0100 specifies 15-minute maximum token expiry', () => {
-    const adr = readFile('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
+    const adr = readFile('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
     expect(adr).toContain('15 minutes');
   });
 
   it('ADR-0100 references bead-rv3k as resolved', () => {
-    const adr = readFile('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
+    const adr = readFile('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
     expect(adr).toContain('bead-rv3k');
   });
 
   it('ADR-0100 explicitly declines denylist in this release with rationale', () => {
-    const adr = readFile('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
+    const adr = readFile('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
     expect(adr).toContain('denylist');
   });
 
   it('ADR-0100 references PKCE for mobile clients', () => {
-    const adr = readFile('docs/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
+    const adr = readFile('docs/internal/adr/ADR-0100-jwt-short-expiry-revocation-policy.md');
     expect(adr).toContain('PKCE');
   });
 });
@@ -85,43 +87,43 @@ describe('ADR-0100 — JWT short-expiry and revocation policy', () => {
 
 describe('report-29.md — security triage status', () => {
   it('report-29.md exists', () => {
-    expect(fileExists('docs/research/report-29.md')).toBe(true);
+    expect(fileExists('docs/internal/research/report-29.md')).toBe(true);
   });
 
   it('triage table header updated to include bead-y0ac', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     expect(report).toContain('bead-y0ac');
   });
 
   it('bead-pj5a is marked as closed in triage table', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     // Finding #3 JWT iss/aud should reference Fixed (bead-pj5a)
     expect(report).toContain('Fixed (bead-pj5a)');
   });
 
   it('bead-8qmt is marked as closed in triage table', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     expect(report).toContain('Fixed (bead-8qmt)');
   });
 
   it('bead-7zzq is marked as closed in triage table', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     expect(report).toContain('Fixed (bead-7zzq)');
   });
 
   it('bead-rv3k is marked as resolved via ADR-0100', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     expect(report).toContain('ADR-0100');
   });
 
   it('all High findings show as fixed or non-issue', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     // High findings: #2, #7, #8, #9, #10
     expect(report).toContain('5 fixed / non-issue');
   });
 
   it('summary shows Critical fully resolved', () => {
-    const report = readFile('docs/research/report-29.md');
+    const report = readFile('docs/internal/research/report-29.md');
     expect(report).toContain('1 finding → 1 fixed');
   });
 });

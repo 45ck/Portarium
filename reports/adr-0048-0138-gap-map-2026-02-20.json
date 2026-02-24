@@ -19,7 +19,7 @@
     {
       "adrId": "ADR-0048",
       "number": 48,
-      "adrFile": "docs/adr/0048-vertical-pack-ui-templating.md",
+      "adrFile": "docs/internal/adr/0048-vertical-pack-ui-templating.md",
       "implBeads": [
         "bead-0596"
       ],
@@ -31,7 +31,7 @@
     {
       "adrId": "ADR-0049",
       "number": 49,
-      "adrFile": "docs/adr/0049-vertical-pack-data-storage-tenancy.md",
+      "adrFile": "docs/internal/adr/0049-vertical-pack-data-storage-tenancy.md",
       "implBeads": [
         "bead-0597"
       ],
@@ -43,7 +43,7 @@
     {
       "adrId": "ADR-0050",
       "number": 50,
-      "adrFile": "docs/adr/0050-vertical-pack-connector-mapping.md",
+      "adrFile": "docs/internal/adr/0050-vertical-pack-connector-mapping.md",
       "implBeads": [
         "bead-0599"
       ],
@@ -55,7 +55,7 @@
     {
       "adrId": "ADR-0051",
       "number": 51,
-      "adrFile": "docs/adr/0051-vertical-pack-testing-cicd.md",
+      "adrFile": "docs/internal/adr/0051-vertical-pack-testing-cicd.md",
       "implBeads": [
         "bead-0601"
       ],
@@ -67,7 +67,7 @@
     {
       "adrId": "ADR-0052",
       "number": 52,
-      "adrFile": "docs/adr/0052-vertical-pack-lifecycle-policy.md",
+      "adrFile": "docs/internal/adr/0052-vertical-pack-lifecycle-policy.md",
       "implBeads": [
         "bead-0603"
       ],
@@ -79,7 +79,7 @@
     {
       "adrId": "ADR-0053",
       "number": 53,
-      "adrFile": "docs/adr/0053-vertical-pack-security-privacy.md",
+      "adrFile": "docs/internal/adr/0053-vertical-pack-security-privacy.md",
       "implBeads": [
         "bead-0605"
       ],
@@ -91,7 +91,7 @@
     {
       "adrId": "ADR-0054",
       "number": 54,
-      "adrFile": "docs/adr/0054-vertical-pack-observability.md",
+      "adrFile": "docs/internal/adr/0054-vertical-pack-observability.md",
       "implBeads": [
         "bead-0607"
       ],
@@ -103,7 +103,7 @@
     {
       "adrId": "ADR-0055",
       "number": 55,
-      "adrFile": "docs/adr/0055-vertical-pack-rollout-migration.md",
+      "adrFile": "docs/internal/adr/0055-vertical-pack-rollout-migration.md",
       "implBeads": [
         "bead-0609"
       ],
@@ -115,7 +115,7 @@
     {
       "adrId": "ADR-0056",
       "number": 56,
-      "adrFile": "docs/adr/0056-infrastructure-reference-architecture.md",
+      "adrFile": "docs/internal/adr/0056-infrastructure-reference-architecture.md",
       "implBeads": [
         "bead-0294",
         "bead-0297"
@@ -128,7 +128,7 @@
     {
       "adrId": "ADR-0057",
       "number": 57,
-      "adrFile": "docs/adr/0057-reference-cockpit-presentation-layer.md",
+      "adrFile": "docs/internal/adr/0057-reference-cockpit-presentation-layer.md",
       "implBeads": [
         "bead-0612"
       ],
@@ -140,7 +140,7 @@
     {
       "adrId": "ADR-0058",
       "number": 58,
-      "adrFile": "docs/adr/0058-presentation-api-client-strategy.md",
+      "adrFile": "docs/internal/adr/0058-presentation-api-client-strategy.md",
       "implBeads": [
         "bead-0342",
         "bead-0382"
@@ -153,7 +153,7 @@
     {
       "adrId": "ADR-0059",
       "number": 59,
-      "adrFile": "docs/adr/0059-presentation-rendering-strategy.md",
+      "adrFile": "docs/internal/adr/0059-presentation-rendering-strategy.md",
       "implBeads": [
         "bead-0326",
         "bead-0354",
@@ -167,7 +167,7 @@
     {
       "adrId": "ADR-0060",
       "number": 60,
-      "adrFile": "docs/adr/0060-presentation-state-management.md",
+      "adrFile": "docs/internal/adr/0060-presentation-state-management.md",
       "implBeads": [
         "bead-0363"
       ],
@@ -179,7 +179,7 @@
     {
       "adrId": "ADR-0061",
       "number": 61,
-      "adrFile": "docs/adr/0061-presentation-security-controls.md",
+      "adrFile": "docs/internal/adr/0061-presentation-security-controls.md",
       "implBeads": [
         "bead-0356",
         "bead-0357",
@@ -196,7 +196,7 @@
     {
       "adrId": "ADR-0062",
       "number": 62,
-      "adrFile": "docs/adr/0062-presentation-testing-strategy.md",
+      "adrFile": "docs/internal/adr/0062-presentation-testing-strategy.md",
       "implBeads": [
         "bead-0359",
         "bead-0360",
@@ -213,7 +213,7 @@
     {
       "adrId": "ADR-0063",
       "number": 63,
-      "adrFile": "docs/adr/0063-presentation-observability-deployment.md",
+      "adrFile": "docs/internal/adr/0063-presentation-observability-deployment.md",
       "implBeads": [
         "bead-0362",
         "bead-0365",
@@ -229,7 +229,7 @@
     {
       "adrId": "ADR-0064",
       "number": 64,
-      "adrFile": "docs/adr/0064-domain-api-compatibility-migration.md",
+      "adrFile": "docs/internal/adr/0064-domain-api-compatibility-migration.md",
       "implBeads": [
         "bead-0618"
       ],
@@ -241,7 +241,7 @@
     {
       "adrId": "ADR-0065",
       "number": 65,
-      "adrFile": "docs/adr/0065-external-execution-plane-strategy.md",
+      "adrFile": "docs/internal/adr/0065-external-execution-plane-strategy.md",
       "implBeads": [
         "bead-0620"
       ],
@@ -253,7 +253,7 @@
     {
       "adrId": "ADR-0066",
       "number": 66,
-      "adrFile": "docs/adr/0066-robotics-integration-architecture.md",
+      "adrFile": "docs/internal/adr/0066-robotics-integration-architecture.md",
       "implBeads": [
         "bead-0622"
       ],
@@ -265,7 +265,7 @@
     {
       "adrId": "ADR-0067",
       "number": 67,
-      "adrFile": "docs/adr/0067-robotics-safety-boundary.md",
+      "adrFile": "docs/internal/adr/0067-robotics-safety-boundary.md",
       "implBeads": [
         "bead-0624"
       ],
@@ -277,7 +277,7 @@
     {
       "adrId": "ADR-0068",
       "number": 68,
-      "adrFile": "docs/adr/0068-database-schema-migration-framework.md",
+      "adrFile": "docs/internal/adr/0068-database-schema-migration-framework.md",
       "implBeads": [
         "bead-0626"
       ],
@@ -289,7 +289,7 @@
     {
       "adrId": "ADR-0069",
       "number": 69,
-      "adrFile": "docs/adr/0069-postgresql-store-adapter-contract.md",
+      "adrFile": "docs/internal/adr/0069-postgresql-store-adapter-contract.md",
       "implBeads": [
         "bead-0628"
       ],
@@ -301,7 +301,7 @@
     {
       "adrId": "ADR-0070",
       "number": 70,
-      "adrFile": "docs/adr/0070-hybrid-orchestration-choreography-architecture.md",
+      "adrFile": "docs/internal/adr/0070-hybrid-orchestration-choreography-architecture.md",
       "implBeads": [
         "bead-0630"
       ],
@@ -313,7 +313,7 @@
     {
       "adrId": "ADR-0071",
       "number": 71,
-      "adrFile": "docs/adr/0071-policy-inline-rule-language.md",
+      "adrFile": "docs/internal/adr/0071-policy-inline-rule-language.md",
       "implBeads": [
         "bead-0632"
       ],
@@ -325,7 +325,7 @@
     {
       "adrId": "ADR-0072",
       "number": 72,
-      "adrFile": "docs/adr/0072-openclaw-gateway-multi-tenant-isolation.md",
+      "adrFile": "docs/internal/adr/0072-openclaw-gateway-multi-tenant-isolation.md",
       "implBeads": [
         "bead-0634"
       ],
@@ -337,7 +337,7 @@
     {
       "adrId": "ADR-0073",
       "number": 73,
-      "adrFile": "docs/adr/0073-all-roads-through-control-plane-enforcement.md",
+      "adrFile": "docs/internal/adr/0073-all-roads-through-control-plane-enforcement.md",
       "implBeads": [
         "bead-0647"
       ],

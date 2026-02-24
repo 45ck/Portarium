@@ -4,7 +4,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
-const CLIPS_DIR = path.join(process.cwd(), 'docs/ui/cockpit/demo-machine/clips');
+const CLIPS_DIR = path.join(process.cwd(), 'docs/internal/ui/cockpit/demo-machine/clips');
 
 const EXPECTED_CLIPS = [
   '01-approval-gate-unblocks-run.demo.yaml',
@@ -27,7 +27,7 @@ describe('cockpit demo-machine showcase scripts', () => {
       const raw = await readFile(clipPath, 'utf8');
       const doc = parse(raw) as DemoMachineSpec;
 
-      expect(doc.runner.command).toBe('npx --yes http-server docs/ui/cockpit -p 4174');
+      expect(doc.runner.command).toBe('npx --yes http-server docs/internal/ui/cockpit -p 4174');
       expect(doc.runner.url).toBe('http://localhost:4174');
 
       expect(doc.chapters.length).toBeGreaterThan(0);

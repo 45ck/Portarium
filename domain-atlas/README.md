@@ -10,7 +10,7 @@ It exists to make adapter development deterministic and governable:
 - **Contract fixtures**: record/replay data to test adapters without live SaaS flakiness.
 - **License intake**: classification to prevent licence contamination in critical paths.
 
-This is an internal control-plane toolchain, not a product surface. See `docs/adr/0035-domain-atlas-research-pipeline.md`.
+This is an internal control-plane toolchain, not a product surface. See `docs/internal/adr/0035-domain-atlas-research-pipeline.md`.
 
 ## Structure
 
@@ -59,7 +59,7 @@ Pinned commit behaviour:
 
 ## Research Index (generated)
 
-To regenerate `docs/research/index.md` from `domain-atlas/sources/*/source.json`:
+To regenerate `docs/internal/research/index.md` from `domain-atlas/sources/*/source.json`:
 
 - `npm run domain-atlas:index`
 

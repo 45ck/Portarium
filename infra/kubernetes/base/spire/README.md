@@ -1,7 +1,7 @@
 # SPIRE Kubernetes Manifests
 
 **Status:** Design-only (not production-deployable yet)
-**ADR:** [ADR-0076](../../../../docs/adr/0076-spire-workload-identity-mtls.md)
+**ADR:** [ADR-0076](../../../../docs/internal/adr/0076-spire-workload-identity-mtls.md)
 **Bead:** bead-0671
 
 ## Overview

@@ -83,7 +83,7 @@
     "dist/**",
     "coverage/**",
     ".beads/**",
-    "docs/governance/**",
+    "docs/internal/governance/**",
     "research/sources/**",
     "domain-atlas/upstreams/**",
     "vendor/**",

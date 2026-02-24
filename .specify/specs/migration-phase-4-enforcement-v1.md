@@ -58,7 +58,7 @@ spiffe://portarium.io/ns/{namespace}/sa/{service-account}
 
 ## Acceptance Criteria
 
-1. Runbook published at `docs/governance/migration-phase-4-enforcement.md`
+1. Runbook published at `docs/internal/governance/migration-phase-4-enforcement.md`
 2. Egress network policy template documented
 3. SPIRE identity convention defined
 4. Tool allowlist schema defined with deny-by-default

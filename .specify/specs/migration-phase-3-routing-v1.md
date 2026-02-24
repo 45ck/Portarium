@@ -49,7 +49,7 @@ integrations so >90% of SoR interactions flow through the Portarium control plan
 
 ## Acceptance Criteria
 
-1. Runbook published at `docs/governance/migration-phase-3-routing-default.md`
+1. Runbook published at `docs/internal/governance/migration-phase-3-routing-default.md`
 2. Integration matrix documents SDK choice per agent type
 3. Routing ratio monitoring dashboard defined
 4. Evidence chain requirements specified

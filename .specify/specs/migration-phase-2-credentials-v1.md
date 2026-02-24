@@ -49,7 +49,7 @@ portarium/credentials/data/{workspaceId}/{provider}
 
 ## Acceptance Criteria
 
-1. Runbook published at `docs/governance/migration-phase-2-credential-relocation.md`
+1. Runbook published at `docs/internal/governance/migration-phase-2-credential-relocation.md`
 2. Vault path convention and policy documented
 3. JWT claim schema defined
 4. Credential rotation TTLs specified

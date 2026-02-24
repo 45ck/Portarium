@@ -76,4 +76,4 @@ Define the v2 approval experience in Cockpit as a card-first triage flow with sw
 - `apps/cockpit/src/components/cockpit/approval-triage-deck.tsx`
 - `apps/cockpit/src/components/cockpit/triage-complete-state.tsx`
 - `apps/cockpit/src/index.css`
-- `docs/adr/0077-framer-motion-gesture-animation-layer.md`
+- `docs/internal/adr/0077-framer-motion-gesture-animation-layer.md`

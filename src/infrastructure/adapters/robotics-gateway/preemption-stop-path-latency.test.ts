@@ -14,7 +14,7 @@
  *   - Stop-path       ≤ 5 ms (dispatch + cancel + terminal poll)
  *   - Concurrent (N=20) ≤ 20 ms total
  *
- * Live gateway budgets are defined in docs/adr/ADR-0095.md.
+ * Live gateway budgets are defined in docs/internal/adr/ADR-0095.md.
  *
  * Bead: bead-0529
  */
@@ -375,5 +375,5 @@ describe('Pre-emption with artificial gateway delay', () => {
 
 // ── ADR reference comment ─────────────────────────────────────────────────────
 // Live gateway latency budgets (ROS 2, OPC UA, MQTT) are specified in
-// docs/adr/ADR-0095.md. The benchmarks above test the in-process code path.
+// docs/internal/adr/ADR-0095.md. The benchmarks above test the in-process code path.
 // Integration tests against real gateways are tracked under bead-0519.

@@ -144,9 +144,9 @@ type RetrievalQueryV1 = Readonly<{
 
 ## 7. Related documents
 
-| Document                                         | Purpose                                 |
-| ------------------------------------------------ | --------------------------------------- |
-| `src/sdk/mis-v1.ts`                              | MIS adapter interface                   |
-| `docs/how-to/vv-campaign.md`                     | V&V campaign overview                   |
-| `docs/how-to/licensing-gate.md`                  | License compliance                      |
-| `docs/adr/ADR-0080-credential-boundary-model.md` | Credential isolation for embedding APIs |
+| Document                                                  | Purpose                                 |
+| --------------------------------------------------------- | --------------------------------------- |
+| `src/sdk/mis-v1.ts`                                       | MIS adapter interface                   |
+| `docs/how-to/vv-campaign.md`                              | V&V campaign overview                   |
+| `docs/how-to/licensing-gate.md`                           | License compliance                      |
+| `docs/internal/adr/ADR-0080-credential-boundary-model.md` | Credential isolation for embedding APIs |

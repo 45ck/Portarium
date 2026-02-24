@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Q&A and Usage Questions
+    url: https://github.com/45ck/Portarium/discussions
+    about: Use GitHub Discussions for setup questions, architecture Q&A, and usage help.
+  - name: Security Vulnerability Reports
+    url: https://github.com/45ck/Portarium/security/advisories/new
+    about: Please report security issues privately through GitHub Security Advisories.
+  - name: Docs Start Here
+    url: https://github.com/45ck/Portarium/blob/main/docs/index.md
+    about: Follow the shortest documentation path by goal.

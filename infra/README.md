@@ -16,7 +16,7 @@ This folder stores the infrastructure baseline for Portarium and follows ADR-005
 - `docker-compose.local.yml` adds placeholder Control Plane and Execution Plane services built from
   `infra/docker/*` for infrastructure parity during local development.
 - `.specify/specs/infrastructure-layer-v1.md` defines the infra contract for v1.
-- `docs/adr/0056-infrastructure-reference-architecture.md` stores the architectural decision.
+- `docs/internal/adr/0056-infrastructure-reference-architecture.md` stores the architectural decision.
 - `infra/kubernetes` provides a reference base and `dev|staging|prod` overlays.
 - `infra/terraform` contains provider entry points with a concrete AWS baseline.
 

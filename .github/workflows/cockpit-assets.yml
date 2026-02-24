@@ -8,7 +8,7 @@ on:
       - 'apps/cockpit/src/components/domain/**'
       - 'docs/assets/prompts/cockpit-entity-assets.yml'
       - 'docs/assets/manifests/cockpit-assets-log.md'
-      - 'docs/ui/cockpit/assets-guidelines.md'
+      - 'docs/internal/ui/cockpit/assets-guidelines.md'
       - 'scripts/assets/**'
       - 'package.json'
       - 'package-lock.json'

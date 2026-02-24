@@ -19,8 +19,8 @@ import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '../../../');
 
-const RELEASE_GATE_DOC = path.join(ROOT, 'docs/governance/openclaw-release-gate.md');
-const ROLLBACK_RUNBOOK = path.join(ROOT, 'docs/governance/openclaw-rollback-runbook.md');
+const RELEASE_GATE_DOC = path.join(ROOT, 'docs/internal/governance/openclaw-release-gate.md');
+const ROLLBACK_RUNBOOK = path.join(ROOT, 'docs/internal/governance/openclaw-rollback-runbook.md');
 const RELEASE_GATE_SPEC = path.join(ROOT, '.specify/specs/openclaw-release-gate-v1.md');
 
 function readGate(): string {
@@ -34,7 +34,7 @@ function readRollback(): string {
 // ── Gate document existence and tagging ───────────────────────────────────────
 
 describe('openclaw-release-gate.md', () => {
-  it('document exists at docs/governance/openclaw-release-gate.md', () => {
+  it('document exists at docs/internal/governance/openclaw-release-gate.md', () => {
     expect(fs.existsSync(RELEASE_GATE_DOC)).toBe(true);
   });
 
@@ -152,7 +152,7 @@ describe('openclaw-release-gate.md', () => {
 // ── Rollback runbook ──────────────────────────────────────────────────────────
 
 describe('openclaw-rollback-runbook.md', () => {
-  it('document exists at docs/governance/openclaw-rollback-runbook.md', () => {
+  it('document exists at docs/internal/governance/openclaw-rollback-runbook.md', () => {
     expect(fs.existsSync(ROLLBACK_RUNBOOK)).toBe(true);
   });
 
@@ -316,14 +316,19 @@ describe('OpenClaw test artifact existence', () => {
 describe('OpenClaw governance artifact existence', () => {
   it('ADR-0072 exists', () => {
     expect(
-      fs.existsSync(path.join(ROOT, 'docs/adr/0072-openclaw-gateway-multi-tenant-isolation.md')),
+      fs.existsSync(
+        path.join(ROOT, 'docs/internal/adr/0072-openclaw-gateway-multi-tenant-isolation.md'),
+      ),
     ).toBe(true);
   });
 
   it('ADR-0099 exists', () => {
     expect(
       fs.existsSync(
-        path.join(ROOT, 'docs/adr/ADR-0099-openclaw-gateway-token-browser-exposure-prevention.md'),
+        path.join(
+          ROOT,
+          'docs/internal/adr/ADR-0099-openclaw-gateway-token-browser-exposure-prevention.md',
+        ),
       ),
     ).toBe(true);
   });
@@ -331,14 +336,19 @@ describe('OpenClaw governance artifact existence', () => {
   it('openclaw-workspace-gateway-provisioning-runbook.md exists', () => {
     expect(
       fs.existsSync(
-        path.join(ROOT, 'docs/governance/openclaw-workspace-gateway-provisioning-runbook.md'),
+        path.join(
+          ROOT,
+          'docs/internal/governance/openclaw-workspace-gateway-provisioning-runbook.md',
+        ),
       ),
     ).toBe(true);
   });
 
   it('openclaw-tool-blast-radius-policy.md exists', () => {
     expect(
-      fs.existsSync(path.join(ROOT, 'docs/governance/openclaw-tool-blast-radius-policy.md')),
+      fs.existsSync(
+        path.join(ROOT, 'docs/internal/governance/openclaw-tool-blast-radius-policy.md'),
+      ),
     ).toBe(true);
   });
 

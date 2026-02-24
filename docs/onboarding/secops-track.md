@@ -102,7 +102,7 @@ These are enforced on every PR; no high-severity CVEs are permitted.
 
 ## References
 
-- [ADR-0070: Hybrid orchestration + CloudEvents](../adr/)
+- [ADR-0070: Hybrid orchestration + CloudEvents](../internal/adr/)
 - [Evidence privacy minimization](../../src/domain/evidence/evidence-privacy-v1.ts)
 - [OpenFGA authorization](../../src/infrastructure/auth/)
 - [Security baseline gates](../how-to/security-baseline-gates.md)

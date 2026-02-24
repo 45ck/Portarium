@@ -43,13 +43,13 @@ A requirement is **traceable** when:
 
 ### 2.2 Evidence chain requirements
 
-| Req ID     | Requirement statement                                                      | Test coverage                                     | Gate                 |
-| ---------- | -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------- |
-| REQ-EV-001 | Every state transition emits a corresponding evidence entry                | `src/sdk/evidence-chain-verifier.test.ts`         | `npm run test`       |
-| REQ-EV-002 | Evidence entries are hash-chained; each entry references the previous hash | `src/sdk/evidence-chain-verifier.test.ts`         | `npm run test`       |
-| REQ-EV-003 | Evidence chain verification detects any tampered entry                     | `src/sdk/evidence-chain-verifier.test.ts`         | `npm run test`       |
-| REQ-EV-004 | Evidence entries are never deleted (append-only)                           | `docs/how-to/infrastructure-vv.md` (pending impl) | `npm run ci:nightly` |
-| REQ-EV-005 | Evidence payload must not contain credential values                        | `docs/adr/ADR-0080-credential-boundary-model.md`  | Code review gate     |
+| Req ID     | Requirement statement                                                      | Test coverage                                             | Gate                 |
+| ---------- | -------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------- |
+| REQ-EV-001 | Every state transition emits a corresponding evidence entry                | `src/sdk/evidence-chain-verifier.test.ts`                 | `npm run test`       |
+| REQ-EV-002 | Evidence entries are hash-chained; each entry references the previous hash | `src/sdk/evidence-chain-verifier.test.ts`                 | `npm run test`       |
+| REQ-EV-003 | Evidence chain verification detects any tampered entry                     | `src/sdk/evidence-chain-verifier.test.ts`                 | `npm run test`       |
+| REQ-EV-004 | Evidence entries are never deleted (append-only)                           | `docs/how-to/infrastructure-vv.md` (pending impl)         | `npm run ci:nightly` |
+| REQ-EV-005 | Evidence payload must not contain credential values                        | `docs/internal/adr/ADR-0080-credential-boundary-model.md` | Code review gate     |
 
 ### 2.3 Approval requirements
 

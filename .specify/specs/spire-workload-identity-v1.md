@@ -43,7 +43,7 @@ Certificate-bound access tokens per RFC 8705 will be implemented by:
 
 ## ADR
 
-See [ADR-0076](../../docs/adr/0076-spire-workload-identity-mtls.md).
+See [ADR-0076](../../docs/internal/adr/0076-spire-workload-identity-mtls.md).
 
 ## Consequences
 

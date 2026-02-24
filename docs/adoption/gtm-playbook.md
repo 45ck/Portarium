@@ -11,7 +11,7 @@ community engagement channels, and conversion triggers.
 
 **Primary concern:** How do I package and publish a vertical pack?
 
-**Entry point:** Vertical pack scaffold (`docs/vertical-packs/authoring-guide.md`).
+**Entry point:** Vertical pack scaffold (`docs/internal/vertical-packs/authoring-guide.md`).
 
 **SDK entry point:** `PortariumClient.packs.register()` — see [SDK Integration Patterns](../sdk/integration-patterns.md#connector-author).
 

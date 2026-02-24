@@ -160,21 +160,14 @@ Each gate has a corresponding closeout review bead (bead-0260 through bead-0264)
 
 ```bash
 # What can I start right now?
-node scripts/beads/bd.mjs issue next --priority P0
+node scripts/beads/bd.mjs issue list --status open
 
-# What's ready in a specific phase?
-node scripts/beads/bd.mjs issue next --phase devenv
-node scripts/beads/bd.mjs issue next --phase domain
+# Start work (claims bead + creates worktree)
+node scripts/beads/bd.mjs issue start bead-XXXX --by "<owner>"
 
 # See full AC for a bead
 node scripts/beads/bd.mjs issue view bead-0302
 
-# Mark in progress (claim ownership)
-node scripts/beads/bd.mjs issue claim bead-XXXX --by "<owner>"
-
-# Release claim without closing (handoff / pause)
-node scripts/beads/bd.mjs issue unclaim bead-XXXX --by "<owner>"
-
 # Mark done
-node scripts/beads/bd.mjs issue close bead-XXXX
+node scripts/beads/bd.mjs issue finish bead-XXXX
 ```

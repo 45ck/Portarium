@@ -184,14 +184,14 @@ at each level.
 
 Before putting a Portarium integration on a production traffic path, verify:
 
-| Area          | Check                                                                               |
-| ------------- | ----------------------------------------------------------------------------------- |
-| Auth          | JWT issuer and audience configured; `PORTARIUM_DEV_TOKEN` disabled in env           |
-| Evidence log  | Retention policy set; evidence entries are forwarded to long-term storage           |
-| Approval gate | SoD policy tuned for the production role model (OpenFGA tuples reviewed)            |
-| Observability | Span metrics and service graph enabled (see `docs/adr/` for CloudEvents governance) |
-| Upgrade path  | Pinned dependency versions; `npm audit` clean; Portarium changelog reviewed         |
-| Load testing  | Governed-run throughput tested at expected peak concurrency                         |
+| Area          | Check                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| Auth          | JWT issuer and audience configured; `PORTARIUM_DEV_TOKEN` disabled in env                    |
+| Evidence log  | Retention policy set; evidence entries are forwarded to long-term storage                    |
+| Approval gate | SoD policy tuned for the production role model (OpenFGA tuples reviewed)                     |
+| Observability | Span metrics and service graph enabled (see `docs/internal/adr/` for CloudEvents governance) |
+| Upgrade path  | Pinned dependency versions; `npm audit` clean; Portarium changelog reviewed                  |
+| Load testing  | Governed-run throughput tested at expected peak concurrency                                  |
 
 ---
 

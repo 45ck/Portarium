@@ -41,7 +41,7 @@ Portarium is an open-source governed automation platform that:
 **Try it in 30 seconds:**
 
 \`\`\`bash
-npx --yes http-server docs/ui/cockpit -p 4174
+npx --yes http-server docs/internal/ui/cockpit -p 4174
 
 # open http://localhost:4174
 
@@ -75,12 +75,12 @@ Try it now → [repo link]
 I built Portarium to solve a recurring problem: teams need human checkpoints before high-stakes automation runs, and they need a permanent, auditable record of every decision.
 
 Key things I'd love feedback on:
-- The approval gate + evidence chain model (docs/ui/cockpit demo shows this end-to-end)
+- The approval gate + evidence chain model (docs/internal/ui/cockpit demo shows this end-to-end)
 - The connector SDK design (examples/hello-connector walks you through wiring up any external system)
 - The robotics/fleet integration story (VDA 5050 v2.0, MassRobotics, Open-RMF adapters are in src/infrastructure/)
 
 30-second demo (no install required):
-  npx --yes http-server docs/ui/cockpit -p 4174
+  npx --yes http-server docs/internal/ui/cockpit -p 4174
 
 Full integration walkthrough: docs/integration/integration-ladder.md
 
@@ -102,7 +102,7 @@ Portarium is an open-source platform that routes automation runs through structu
 - VDA 5050 v2.0 / MassRobotics / Open-RMF adapters for robotics fleets
 - A governed Cockpit UI with real-time evidence audit trail
 
-30-second demo: npx --yes http-server docs/ui/cockpit -p 4174
+30-second demo: npx --yes http-server docs/internal/ui/cockpit -p 4174
 
 Happy to do a 15-min walkthrough if that's useful.
 
@@ -124,7 +124,7 @@ Run this checklist before the public announcement. Check off each item as comple
 
 ### 2.2 Demo UX
 
-- [ ] `npx --yes http-server docs/ui/cockpit -p 4174` starts without error
+- [ ] `npx --yes http-server docs/internal/ui/cockpit -p 4174` starts without error
 - [ ] Approval gate demo (clip 01) flows end-to-end: approve → run unblocked
 - [ ] Evidence chain demo (clip 02) shows hash-chained entries
 - [ ] Correlation traversal (clip 03) opens context drawer correctly
@@ -150,8 +150,8 @@ Run this checklist before the public announcement. Check off each item as comple
 ### 2.5 Media
 
 - [ ] Hero GIF or MP4 embedded in README (from demo clip 01 or 02)
-- [ ] Gallery artifacts published at `docs/ui/cockpit/demo-machine/gallery/`
-- [ ] Screenshots at `docs/ui/cockpit/screenshots/` up-to-date
+- [ ] Gallery artifacts published at `docs/internal/ui/cockpit/demo-machine/gallery/`
+- [ ] Screenshots at `docs/internal/ui/cockpit/screenshots/` up-to-date
 
 ### 2.6 Announcement prep
 
@@ -203,7 +203,7 @@ Track these metrics for the first 30 days after launch.
 
 ### 3.5 Metrics log template
 
-Copy this template to `docs/sprints/launch-metrics-YYYY-MM-DD.md` for each review:
+Copy this template to `docs/internal/sprints/launch-metrics-YYYY-MM-DD.md` for each review:
 
 ```markdown
 # Launch Metrics — YYYY-MM-DD

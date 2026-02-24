@@ -6,7 +6,7 @@ on:
       - '.github/workflows/ci-infra.yml'
       - 'docker-compose.yml'
       - 'infra/**'
-      - 'docs/adr/0056-infrastructure-reference-architecture.md'
+      - 'docs/internal/adr/0056-infrastructure-reference-architecture.md'
       - '.specify/specs/infrastructure-layer-v1.md'
 
 jobs:

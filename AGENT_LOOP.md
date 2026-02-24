@@ -103,7 +103,7 @@ link(p.join(root,'apps/cockpit/node_modules'),'apps/cockpit/node_modules');
 2. Read `CLAUDE.md` (project rules) and `AGENTS.md` (workflow) in the **repo root**.
 3. Search for related specs: `ls ../../.specify/specs/` and read relevant ones.
 4. Check `docs/glossary.md` for any domain terms you're unsure about.
-5. Check if there's an existing ADR in `docs/adr/` relevant to this issue.
+5. Check if there's an existing ADR in `docs/internal/adr/` relevant to this issue.
 
 **Architecture rules (never violate):**
 
@@ -120,7 +120,7 @@ Work inside `.trees/$ISSUE_ID/`. All paths below are relative to the worktree ro
 1. **Write tests first** (or alongside) — coverage gates are enforced.
 2. Implement the feature/fix following existing patterns in the codebase.
 3. If the change alters observable behaviour, update `.specify/specs/<relevant>.md`.
-4. If the change introduces a significant design decision, add `docs/adr/NNNN-title.md`.
+4. If the change introduces a significant design decision, add `docs/internal/adr/NNNN-title.md`.
 5. Do **not** modify `package.json` dependencies unless the issue explicitly requires it.
 6. **Cockpit QA** — if the issue requires UI verification, start a bead-scoped dev server:
    ```bash

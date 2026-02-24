@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '../../../');
-const GUARDRAILS_DOC = path.join(ROOT, 'docs/governance/supply-chain-guardrails.md');
+const GUARDRAILS_DOC = path.join(ROOT, 'docs/internal/governance/supply-chain-guardrails.md');
 const AUDIT_HIGH_SCRIPT = path.join(ROOT, 'scripts/ci/audit-high.mjs');
 const AUDIT_LICENSES_SCRIPT = path.join(ROOT, 'scripts/ci/audit-licenses.mjs');
 const SCAN_SECRETS_SCRIPT = path.join(ROOT, 'scripts/ci/scan-secrets.mjs');
@@ -40,7 +40,7 @@ function readPkg(): { scripts: Record<string, string> } {
 // ── Guardrails document ───────────────────────────────────────────────────────
 
 describe('supply-chain-guardrails.md', () => {
-  it('document exists at docs/governance/supply-chain-guardrails.md', () => {
+  it('document exists at docs/internal/governance/supply-chain-guardrails.md', () => {
     expect(fs.existsSync(GUARDRAILS_DOC)).toBe(true);
   });
 

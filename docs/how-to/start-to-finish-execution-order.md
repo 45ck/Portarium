@@ -36,7 +36,7 @@ This runbook defines execution order and ownership from Domain Atlas through ada
 1. Claim bead before implementation.
 2. Complete one bead at a time.
 3. Add/update tests and docs with behavior changes.
-4. Record review evidence in `docs/review/`.
+4. Record review evidence in `docs/internal/review/`.
 5. Close bead only after acceptance evidence is present.
 
 ## Evidence Pipeline Touchpoints

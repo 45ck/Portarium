@@ -12,7 +12,7 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 
 - Run `npm run ci:pr` before claiming any work is done.
 - No new public API without a contract (types + boundary test).
-- Update `.specify/specs/` for behaviour changes; add ADR under `docs/adr/` for design changes.
+- Update `.specify/specs/` for behaviour changes; add ADR under `docs/internal/adr/` for design changes.
 - Use `bd` (Beads) for all work tracking; commit `.beads/issues.jsonl` with code changes.
   - Before picking/claiming any bead: `git fetch origin --prune && git pull --rebase origin main`, then check remote bead state (`bd sync --status` when available).
   - Start a bead before implementation: `npm run bd -- issue start <id> --by "<owner>"`

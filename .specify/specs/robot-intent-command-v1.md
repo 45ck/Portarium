@@ -79,4 +79,4 @@ An `ExecutionEvidenceV1` records the outcome of an intent command execution on t
 
 ## Governance Boundary
 
-See `docs/governance/robot-governance-boundary.md` for the full governance boundary between Portarium and local robot systems. Key principle: Portarium dispatches intent commands; local systems execute them and report evidence.
+See `docs/internal/governance/robot-governance-boundary.md` for the full governance boundary between Portarium and local robot systems. Key principle: Portarium dispatches intent commands; local systems execute them and report evidence.

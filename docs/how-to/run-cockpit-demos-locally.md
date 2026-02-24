@@ -24,12 +24,12 @@ Open `http://localhost:5173`. The Cockpit loads with in-memory mock handlers —
 
 ## 2. Run the demo-machine clips (L0 — mock data)
 
-The `docs/ui/cockpit/demo-machine/clips/` folder contains six deterministic storylines. Each clip is self-contained and uses the Cockpit mock handlers.
+The `docs/internal/ui/cockpit/demo-machine/clips/` folder contains six deterministic storylines. Each clip is self-contained and uses the Cockpit mock handlers.
 
 **Run a single clip:**
 
 ```bash
-demo-machine run docs/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml \
+demo-machine run docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml \
   --output ./output/cockpit-demo
 ```
 
@@ -56,8 +56,8 @@ npm run cockpit:demo:approvals-v2:showcase
 
 Outputs:
 
-- `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif`
-- `docs/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.json`
+- `docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif`
+- `docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.json`
 
 ---
 

@@ -9,7 +9,7 @@
 # - DNS
 # - External SoR endpoints (HTTPS/443 + HTTP/80, allowlist enforced at application
 #   layer via MachineExecutionPolicy.egressAllowlist; FQDN-level filtering requires
-#   Cilium NetworkPolicy or Istio ServiceEntry — see docs/adr/ADR-0080.md)
+#   Cilium NetworkPolicy or Istio ServiceEntry — see docs/internal/adr/ADR-0080.md)
 #
 # Bead: bead-0673 (original), bead-0327 (SoR egress + ingress isolation hardening)
 # See: .specify/specs/egress-network-policy-v1.md
@@ -167,7 +167,7 @@ spec:
 # outbound connection. This policy gates the transport layer only.
 #
 # For FQDN-level enforcement deploy Cilium and use CiliumNetworkPolicy
-# with toFQDNs selectors (see docs/adr/ADR-0080.md).
+# with toFQDNs selectors (see docs/internal/adr/ADR-0080.md).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

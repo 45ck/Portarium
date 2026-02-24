@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-02-21T08:41:14.987Z",
+  "source": "docs/internal/ui/cockpit/index.html",
+  "outputs": {
+    "gif": "docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif"
+  },
+  "frames": ["frame-01.png", "frame-02.png", "frame-03.png", "frame-04.png"]
+}

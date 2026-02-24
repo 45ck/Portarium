@@ -56,7 +56,7 @@ describe('workflow triggers', () => {
   });
 
   it('PR trigger covers demo clip specs path', () => {
-    expect(wf()).toContain('docs/ui/cockpit/demo-machine/**');
+    expect(wf()).toContain('docs/internal/ui/cockpit/demo-machine/**');
   });
 
   it('PR trigger covers render-demo-gallery.mjs', () => {
@@ -64,7 +64,7 @@ describe('workflow triggers', () => {
   });
 
   it('PR trigger covers cockpit index.html', () => {
-    expect(wf()).toContain('docs/ui/cockpit/index.html');
+    expect(wf()).toContain('docs/internal/ui/cockpit/index.html');
   });
 
   it('PR trigger covers demo-gallery-pipeline test file', () => {

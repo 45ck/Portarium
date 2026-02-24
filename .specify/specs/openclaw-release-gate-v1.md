@@ -11,7 +11,7 @@ production-ready.
 
 ## Gate Document Requirements
 
-A release gate document MUST exist at `docs/governance/openclaw-release-gate.md` and:
+A release gate document MUST exist at `docs/internal/governance/openclaw-release-gate.md` and:
 
 - Be tagged with `bead-0803`
 - Document exactly six mandatory controls (see below)
@@ -49,7 +49,7 @@ controls MUST exist and pass. The gate document must list the canonical test fil
 
 ### Control 5 — Rollback Procedure
 
-A rollback runbook MUST exist at `docs/governance/openclaw-rollback-runbook.md`.
+A rollback runbook MUST exist at `docs/internal/governance/openclaw-rollback-runbook.md`.
 The gate document must reference it and name rollback triggers.
 
 ### Control 6 — Monitoring and Observability
@@ -72,15 +72,15 @@ The rollback runbook MUST:
 
 All of the following MUST exist at the paths listed:
 
-| Artifact                     | Path                                                                 |
-| ---------------------------- | -------------------------------------------------------------------- |
-| Gateway machine invoker      | `src/infrastructure/openclaw/openclaw-gateway-machine-invoker.ts`    |
-| Management bridge            | `src/infrastructure/openclaw/openclaw-management-bridge.ts`          |
-| Tool blast-radius classifier | `src/domain/machines/openclaw-tool-blast-radius-v1.ts`               |
-| Agent binding validator      | `src/domain/machines/openclaw-agent-binding-v1.ts`                   |
-| Drift sync pipeline          | `src/infrastructure/openclaw/openclaw-drift-sync-pipeline.ts`        |
-| Workspace isolation spec     | `.specify/specs/openclaw-gateway-workspace-isolation-v1.md`          |
-| Blast-radius policy doc      | `docs/governance/openclaw-tool-blast-radius-policy.md`               |
-| Provisioning runbook         | `docs/governance/openclaw-workspace-gateway-provisioning-runbook.md` |
-| Rollback runbook             | `docs/governance/openclaw-rollback-runbook.md`                       |
-| ADR-0072                     | `docs/adr/0072-openclaw-gateway-multi-tenant-isolation.md`           |
+| Artifact                     | Path                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| Gateway machine invoker      | `src/infrastructure/openclaw/openclaw-gateway-machine-invoker.ts`             |
+| Management bridge            | `src/infrastructure/openclaw/openclaw-management-bridge.ts`                   |
+| Tool blast-radius classifier | `src/domain/machines/openclaw-tool-blast-radius-v1.ts`                        |
+| Agent binding validator      | `src/domain/machines/openclaw-agent-binding-v1.ts`                            |
+| Drift sync pipeline          | `src/infrastructure/openclaw/openclaw-drift-sync-pipeline.ts`                 |
+| Workspace isolation spec     | `.specify/specs/openclaw-gateway-workspace-isolation-v1.md`                   |
+| Blast-radius policy doc      | `docs/internal/governance/openclaw-tool-blast-radius-policy.md`               |
+| Provisioning runbook         | `docs/internal/governance/openclaw-workspace-gateway-provisioning-runbook.md` |
+| Rollback runbook             | `docs/internal/governance/openclaw-rollback-runbook.md`                       |
+| ADR-0072                     | `docs/internal/adr/0072-openclaw-gateway-multi-tenant-isolation.md`           |

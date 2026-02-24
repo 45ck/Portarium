@@ -38,4 +38,4 @@ The research programme produces artefacts that become Portarium primitives:
 
 ## Further Reading
 
-- `docs/research/vaop-mvp-domain-atlas-research-programme.md`
+- `docs/internal/research/vaop-mvp-domain-atlas-research-programme.md`

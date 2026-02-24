@@ -20,4 +20,4 @@ These definitions align with `docs/glossary.md`.
 
 - `docs/domain/port-taxonomy.md`
 - `docs/integration-catalog/README.md`
-- `docs/adr/0026-port-taxonomy-aligned-to-business-coverage.md`
+- `docs/internal/adr/0026-port-taxonomy-aligned-to-business-coverage.md`

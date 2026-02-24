@@ -32,7 +32,7 @@
     "reviewBeads": ["bead-0263"]
   },
   "bead-0714": {
-    "specPaths": [".specify/specs/cockpit-mobile-delivery-campaign-v1.md", "docs/adr/ADR-0094.md"],
+    "specPaths": [".specify/specs/cockpit-mobile-delivery-campaign-v1.md", "docs/internal/adr/ADR-0094.md"],
     "reviewBeads": ["bead-0719", "bead-0720", "bead-0721", "bead-0722", "bead-0723"]
   },
   "bead-0724": {

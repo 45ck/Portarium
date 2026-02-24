@@ -3049,7 +3049,7 @@
     "updatedAt": "2026-02-18T05:58:16.453Z",
     "priority": "P1",
     "phase": "infrastructure",
-    "body": "ADR: formal decision adopting Activepieces (MIT) as primary connector runtime, Langflow (MIT) as agentic/machine runtime, and optionally Kestra or StackStorm for ops pipeline workloads. AC: ADR in docs/adr/; licensing documented; multi-tenancy isolation requirements stated; build-vs-buy trade-offs covered."
+    "body": "ADR: formal decision adopting Activepieces (MIT) as primary connector runtime, Langflow (MIT) as agentic/machine runtime, and optionally Kestra or StackStorm for ops pipeline workloads. AC: ADR in docs/internal/adr/; licensing documented; multi-tenancy isolation requirements stated; build-vs-buy trade-offs covered."
   },
   {
     "id": "bead-0402",
@@ -3612,7 +3612,7 @@
     "updatedAt": "2026-02-17T22:41:54.219Z",
     "priority": "P1",
     "phase": "governance",
-    "body": "ADR: record formal decision that Portarium uses Temporal for run-lifecycle orchestration (correctness and governance) and CloudEvents stream for projection/integration choreography. Distinguishes internal durable execution from external event choreography. AC: ADR published in docs/adr/; architectural pattern documented; referenced from CLAUDE.md or domain docs.",
+    "body": "ADR: record formal decision that Portarium uses Temporal for run-lifecycle orchestration (correctness and governance) and CloudEvents stream for projection/integration choreography. Distinguishes internal durable execution from external event choreography. AC: ADR published in docs/internal/adr/; architectural pattern documented; referenced from CLAUDE.md or domain docs.",
     "blockedBy": [
       "bead-0041",
       "bead-0314"
@@ -3720,7 +3720,7 @@
     "createdAt": "2026-02-17T22:41:57.665Z",
     "updatedAt": "2026-02-18T01:53:38.038Z",
     "closedAt": "2026-02-18T01:53:38.038Z",
-    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+    "resolution": "Implemented in cockpit prototype (docs/internal/ui/cockpit/index.html)"
   },
   {
     "id": "bead-0466",
@@ -3737,7 +3737,7 @@
     "createdAt": "2026-02-17T22:41:58.755Z",
     "updatedAt": "2026-02-18T01:53:38.038Z",
     "closedAt": "2026-02-18T01:53:38.038Z",
-    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+    "resolution": "Implemented in cockpit prototype (docs/internal/ui/cockpit/index.html)"
   },
   {
     "id": "bead-0468",
@@ -3754,7 +3754,7 @@
     "createdAt": "2026-02-17T22:41:59.637Z",
     "updatedAt": "2026-02-18T01:53:38.038Z",
     "closedAt": "2026-02-18T01:53:38.038Z",
-    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+    "resolution": "Implemented in cockpit prototype (docs/internal/ui/cockpit/index.html)"
   },
   {
     "id": "bead-0470",
@@ -3771,7 +3771,7 @@
     "createdAt": "2026-02-17T22:42:00.458Z",
     "updatedAt": "2026-02-18T01:53:38.038Z",
     "closedAt": "2026-02-18T01:53:38.038Z",
-    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+    "resolution": "Implemented in cockpit prototype (docs/internal/ui/cockpit/index.html)"
   },
   {
     "id": "bead-0472",
@@ -3788,7 +3788,7 @@
     "createdAt": "2026-02-17T22:42:01.386Z",
     "updatedAt": "2026-02-18T01:53:38.038Z",
     "closedAt": "2026-02-18T01:53:38.038Z",
-    "resolution": "Implemented in cockpit prototype (docs/ui/cockpit/index.html)"
+    "resolution": "Implemented in cockpit prototype (docs/internal/ui/cockpit/index.html)"
   },
   {
     "id": "bead-0474",
@@ -4059,7 +4059,7 @@
     "status": "closed",
     "priority": "P1",
     "phase": "domain",
-    "body": "Build the Domain Atlas for robotics/actuation integration. Produce: (1) robot class taxonomy (mobile/AMR, manipulator, aerial/UAV, fixed PLC-automation, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric (control-plane fit 15%, security 15%, safety affordances 10%, interoperability 10%, real-time suitability 10%, community health 10%, licence clarity 10%, docs 8%, edge readiness 8%, observability 4%); (5) open-source project inventory with star counts, licence, activity, and relevance scores. Store in docs/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces a ranked table; ADR cross-reference added.",
+    "body": "Build the Domain Atlas for robotics/actuation integration. Produce: (1) robot class taxonomy (mobile/AMR, manipulator, aerial/UAV, fixed PLC-automation, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric (control-plane fit 15%, security 15%, safety affordances 10%, interoperability 10%, real-time suitability 10%, community health 10%, licence clarity 10%, docs 8%, edge readiness 8%, observability 4%); (5) open-source project inventory with star counts, licence, activity, and relevance scores. Store in docs/internal/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces a ranked table; ADR cross-reference added.",
     "createdAt": "2026-02-18T03:32:11.177Z",
     "updatedAt": "2026-02-18T03:34:21.655Z"
   },
@@ -4069,7 +4069,7 @@
     "status": "closed",
     "priority": "P1",
     "phase": "domain",
-    "body": "Build Domain Atlas for robotics. Produce: (1) robot class taxonomy (AMR/AGV, manipulator, aerial/UAV, fixed PLC, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric per report; (5) open-source project inventory with licence, activity, and relevance scores. Store in docs/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces ranked table; ADR cross-reference added.",
+    "body": "Build Domain Atlas for robotics. Produce: (1) robot class taxonomy (AMR/AGV, manipulator, aerial/UAV, fixed PLC, humanoid-future); (2) integration pattern catalogue (cloud control vs edge data plane, mission-level vs servo-level boundary); (3) protocol inventory (ROS 2/DDS, MQTT, gRPC, OPC UA, WebSockets, Zenoh) with QoS and security posture notes; (4) scoring rubric per report; (5) open-source project inventory with licence, activity, and relevance scores. Store in docs/internal/domain-atlas/robotics/. AC: atlas markdown files committed; rubric produces ranked table; ADR cross-reference added.",
     "createdAt": "2026-02-18T03:32:16.344Z",
     "updatedAt": "2026-02-18T03:50:52.341Z"
   },
@@ -4082,7 +4082,7 @@
     "blockedBy": [
       "bead-0497"
     ],
-    "body": "Score and document the robotics OSS project inventory using the domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Webots, AirSim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal, Argo Workflows. For each: licence gate, rubric score, activity signals, relevance note. Output: docs/domain-atlas/robotics/project-inventory.md with ranked table. AC: at least 20 projects scored; shortlist of 5 priority starters identified; all licences verified.",
+    "body": "Score and document the robotics OSS project inventory using the domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Webots, AirSim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal, Argo Workflows. For each: licence gate, rubric score, activity signals, relevance note. Output: docs/internal/domain-atlas/robotics/project-inventory.md with ranked table. AC: at least 20 projects scored; shortlist of 5 priority starters identified; all licences verified.",
     "createdAt": "2026-02-18T03:32:42.829Z",
     "updatedAt": "2026-02-18T03:50:53.266Z"
   },
@@ -4095,7 +4095,7 @@
     "blockedBy": [
       "bead-0497"
     ],
-    "body": "Score robotics OSS project inventory using domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal. Criteria: control-plane fit 15%, security 15%, safety 10%, interop 10%, RT suitability 10%, community 10%, licence 10%, docs 8%, edge readiness 8%, observability 4%. AC: docs/domain-atlas/robotics/project-inventory.md; min 15 projects scored; priority shortlist identified; licences verified.",
+    "body": "Score robotics OSS project inventory using domain atlas rubric. Projects: ROS 2, Nav2, MoveIt 2, ros2_control, rosbridge_suite, Gazebo Sim, Open-RMF, Fast DDS, Cyclone DDS, Zenoh, Mosquitto, open62541, node-opcua, KubeEdge, SROS2, SPIRE, OPA, Keycloak, Envoy, OTel Collector, Temporal. Criteria: control-plane fit 15%, security 15%, safety 10%, interop 10%, RT suitability 10%, community 10%, licence 10%, docs 8%, edge readiness 8%, observability 4%. AC: docs/internal/domain-atlas/robotics/project-inventory.md; min 15 projects scored; priority shortlist identified; licences verified.",
     "createdAt": "2026-02-18T03:32:48.771Z",
     "updatedAt": "2026-02-18T03:34:21.724Z"
   },
@@ -4146,7 +4146,7 @@
     "blockedBy": [
       "bead-0497"
     ],
-    "body": "Define cockpit UX taxonomy: data models (Robot, Fleet, Mission, ActionExecution, TelemetryStream, SafetyConstraints, Approval, EvidenceBundle); key screens (Robots, Missions, Telemetry, Safety, Approvals, Agents); RBAC per screen. Output: docs/domain-atlas/robotics/cockpit-ux-taxonomy.md with Mermaid flowchart. AC: data models documented; screen inventory written; RBAC defined.",
+    "body": "Define cockpit UX taxonomy: data models (Robot, Fleet, Mission, ActionExecution, TelemetryStream, SafetyConstraints, Approval, EvidenceBundle); key screens (Robots, Missions, Telemetry, Safety, Approvals, Agents); RBAC per screen. Output: docs/internal/domain-atlas/robotics/cockpit-ux-taxonomy.md with Mermaid flowchart. AC: data models documented; screen inventory written; RBAC defined.",
     "createdAt": "2026-02-18T03:36:28.523Z",
     "updatedAt": "2026-02-18T03:51:07.952Z"
   },
@@ -4159,7 +4159,7 @@
     "blockedBy": [
       "bead-0497"
     ],
-    "body": "Document three-layer architecture decision: (1) Portarium control/decision plane (policy, approvals, audit); (2) Portarium execution plane (workers/adapters, containment); (3) Edge robot gateway (robotics middleware or PLC interface, local safety interlocks, real-time constraints). Decision: Portarium issues high-level goals only; servo loops and safety stops remain at edge. Include Mermaid architecture diagram. Protocol selection per class: gRPC edge gateway (general), ROS 2 Action bridge (robot-native), MQTT (IoT/PLC), OPC UA (industrial). AC: ADR in docs/adr/; references bead-0497 atlas; unblocks domain port family and adapter beads.",
+    "body": "Document three-layer architecture decision: (1) Portarium control/decision plane (policy, approvals, audit); (2) Portarium execution plane (workers/adapters, containment); (3) Edge robot gateway (robotics middleware or PLC interface, local safety interlocks, real-time constraints). Decision: Portarium issues high-level goals only; servo loops and safety stops remain at edge. Include Mermaid architecture diagram. Protocol selection per class: gRPC edge gateway (general), ROS 2 Action bridge (robot-native), MQTT (IoT/PLC), OPC UA (industrial). AC: ADR in docs/internal/adr/; references bead-0497 atlas; unblocks domain port family and adapter beads.",
     "createdAt": "2026-02-18T03:38:10.373Z",
     "updatedAt": "2026-02-18T03:39:29.576Z"
   },
@@ -4169,7 +4169,7 @@
     "status": "open",
     "priority": "P1",
     "phase": "governance",
-    "body": "Define and document the safety boundary between Portarium and edge safety functions. Portarium governs: policy tier gating, approvals, audit evidence, idempotency/retry control, mission scheduling. Edge safety controller owns: E-stop, interlocks, collision avoidance, speed limits, geofence enforcement, real-time closed-loop control. Reference: ISO 12100, ISO 10218, ISO/TS 15066, ISO 13849-1. AC: ADR in docs/adr/ with RACI table; safety functions listed per owner; security and safety interaction noted; machinery compliance timeline (EU 2027, UK, US/OSHA) referenced.",
+    "body": "Define and document the safety boundary between Portarium and edge safety functions. Portarium governs: policy tier gating, approvals, audit evidence, idempotency/retry control, mission scheduling. Edge safety controller owns: E-stop, interlocks, collision avoidance, speed limits, geofence enforcement, real-time closed-loop control. Reference: ISO 12100, ISO 10218, ISO/TS 15066, ISO 13849-1. AC: ADR in docs/internal/adr/ with RACI table; safety functions listed per owner; security and safety interaction noted; machinery compliance timeline (EU 2027, UK, US/OSHA) referenced.",
     "createdAt": "2026-02-18T03:38:10.445Z",
     "updatedAt": "2026-02-18T03:39:29.640Z",
     "blockedBy": [

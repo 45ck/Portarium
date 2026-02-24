@@ -1,0 +1,41 @@
+name: Docs Improvement
+description: Report unclear docs, stale commands, or navigation gaps.
+title: 'docs: '
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for documentation discoverability and correctness issues.
+  - type: input
+    id: page
+    attributes:
+      label: Affected Page
+      description: Which page needs improvement?
+      placeholder: 'README.md or docs/...'
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What Is Confusing or Stale?
+      description: Describe the exact gap (for example stale commands, broken flow, unclear wording).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Suggested Improvement
+      description: Provide your proposed wording, links, or navigation changes.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Validation
+      options:
+        - label: I verified this against current scripts/commands in package.json
+          required: false
+        - label: I checked docs/index.md and README.md entry paths
+          required: false

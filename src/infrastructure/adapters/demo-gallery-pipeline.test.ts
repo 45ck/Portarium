@@ -15,7 +15,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const rootDir = path.resolve(__dirname, '../../../');
-const clipsDir = path.join(rootDir, 'docs/ui/cockpit/demo-machine/clips');
+const clipsDir = path.join(rootDir, 'docs/internal/ui/cockpit/demo-machine/clips');
 const galleryScript = path.join(rootDir, 'scripts/qa/render-demo-gallery.mjs');
 const dryRunOutputDir = path.join(rootDir, 'tmp/demo-gallery-test');
 

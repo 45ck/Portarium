@@ -5,12 +5,12 @@ import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const rootDir = process.cwd();
-const outputDir = path.resolve(rootDir, 'docs/ui/cockpit/demo-machine/showcase');
+const outputDir = path.resolve(rootDir, 'docs/internal/ui/cockpit/demo-machine/showcase');
 const framesDir = path.join(outputDir, 'frames');
 const gifPath = path.join(outputDir, 'approvals-v2-approval-gate.gif');
 const metadataPath = path.join(outputDir, 'approvals-v2-approval-gate.json');
 
-const htmlPath = path.resolve(rootDir, 'docs/ui/cockpit/index.html');
+const htmlPath = path.resolve(rootDir, 'docs/internal/ui/cockpit/index.html');
 const baseUrl = pathToFileURL(htmlPath).href;
 
 const FRAME_STEPS = [

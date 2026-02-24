@@ -18,7 +18,7 @@
  * - Consumers MUST emit a warning when they encounter an unknown version and
  *   fall back to the highest registered version ≤ the received version.
  *
- * See: docs/adr/ADR-0082.md
+ * See: docs/internal/adr/ADR-0082.md
  * Bead: bead-0383
  */
 

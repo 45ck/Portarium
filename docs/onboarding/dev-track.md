@@ -81,7 +81,7 @@ it('adapter produces a valid evidence chain', async () => {
 
 ### 5. Architecture Deep Dive (5 min read)
 
-- [ADR-0070: Hybrid orchestration + CloudEvents](../adr/)
+- [ADR-0070: Hybrid orchestration + CloudEvents](../internal/adr/)
 - [Port taxonomy](../domain/port-taxonomy.md)
 - [Dependency layers](../reference/architecture-layers.md)
 

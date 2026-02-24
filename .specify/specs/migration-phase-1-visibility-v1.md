@@ -35,7 +35,7 @@ without making any enforcement changes.
 
 ## Acceptance Criteria
 
-1. Runbook published at `docs/governance/migration-phase-1-visibility.md`
+1. Runbook published at `docs/internal/governance/migration-phase-1-visibility.md`
 2. W3C Trace Context injection documented for Python and Node.js runtimes
 3. Structured log schema defined with required fields
 4. Baseline metrics defined with Prometheus naming conventions

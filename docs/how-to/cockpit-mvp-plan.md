@@ -167,7 +167,7 @@ M4 (Hardening + Launch)
 
 | Document                                             | Purpose                               |
 | ---------------------------------------------------- | ------------------------------------- |
-| `docs/ui/cockpit/ia-baseline.md`                     | View inventory and data relationships |
+| `docs/internal/ui/cockpit/ia-baseline.md`            | View inventory and data relationships |
 | `docs/integration/cockpit-api-contract-alignment.md` | API contract                          |
 | `docs/onboarding/dev-track.md`                       | Developer onboarding                  |
 | `docs/tutorials/hello-governed-workflow.md`          | MVP tutorial                          |

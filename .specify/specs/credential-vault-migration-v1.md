@@ -46,7 +46,7 @@ implements the port using Vault KV v2:
 
 ## Migration plan
 
-See `docs/governance/credential-vault-migration-runbook.md` for the step-by-step
+See `docs/internal/governance/credential-vault-migration-runbook.md` for the step-by-step
 migration process from environment variables to Vault.
 
 ## Consequences

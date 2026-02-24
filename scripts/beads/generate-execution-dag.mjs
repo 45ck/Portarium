@@ -260,7 +260,7 @@ function buildMarkdown({
     `- Open beads: ${openIssues.length}`,
     `- Open dependency edges: ${totalOpenDependencies}`,
     `- Open beads currently blocked by open prerequisites: ${openBlockedCount}`,
-    `- Open beads with at least one review artifact in \`docs/review/\`: ${withEvidence}`,
+    `- Open beads with at least one review artifact in \`docs/internal/review/\`: ${withEvidence}`,
     `- Graph acyclic: ${criticalPath.isDag ? 'yes' : 'no (dependency cycle detected)'}`,
     '',
     '## Phase Summary',
@@ -315,7 +315,7 @@ function buildMarkdown({
   lines.push(
     '- This artifact includes only open beads and only unresolved dependencies where both sides are still open.',
   );
-  lines.push('- Review artifacts are detected by file prefix convention: `docs/review/bead-####*`.');
+  lines.push('- Review artifacts are detected by file prefix convention: `docs/internal/review/bead-####*`.');
   lines.push('');
   return lines.join('\n');
 }
