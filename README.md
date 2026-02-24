@@ -35,6 +35,12 @@ The approvals v2 flow in Cockpit demonstrates fast triage with policy context, d
 - Evidence-first operation history for audit and review
 - Ports/Adapters model for integrating existing systems of record
 
+## Agent Traffic Controller
+
+Portarium acts as the agent traffic controller: agents submit intended actions
+to the control plane, Portarium evaluates policy and approvals, executes via
+connectors, and returns evidence-backed results.
+
 ## Quickstart
 
 Prerequisites: Node.js `>=22`, Docker + Docker Compose, npm
@@ -77,6 +83,7 @@ curl -s http://localhost:8081/healthz
 - Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
 - Run the local stack: `docs/getting-started/local-dev.md`
 - Understand the architecture: `docs/explanation/architecture.md`
+- Agent traffic controller model: `docs/explanation/agent-traffic-controller.md`
 - API contract (OpenAPI): `docs/spec/openapi/portarium-control-plane.v1.yaml`
 - HTTP API reference: `docs/reference/http-api.md`
 - Integration model: `docs/explanation/ports-and-adapters.md`

@@ -59,6 +59,7 @@ Use this page to pick the shortest path for what you are trying to do.
 ## I Want Architecture Rationale
 
 - System architecture: `docs/explanation/architecture.md`
+- Agent traffic controller model: `docs/explanation/agent-traffic-controller.md`
 - Ports and Adapters model: `docs/explanation/ports-and-adapters.md`
 - ADR navigation: `docs/explanation/adr-index.md`
 - UI/design direction: `docs/explanation/design-system.md`

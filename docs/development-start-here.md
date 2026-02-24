@@ -8,10 +8,9 @@ A developer entry point for the Portarium (VAOP) codebase.
 1. Read the **Critical path** below — this is the minimum dependency chain to get from zero to a working system.
 2. Use `bd` to find what is ready to pick up right now:
    ```
-   node scripts/beads/bd.mjs issue next --priority P0
-   node scripts/beads/bd.mjs issue next --priority P0 --phase devenv
+   node scripts/beads/bd.mjs issue list --status open
    node scripts/beads/bd.mjs issue view <id>     # full AC + blockedBy
-   node scripts/beads/bd.mjs issue claim <id> --by "<owner>"
+   node scripts/beads/bd.mjs issue start <id> --by "<owner>"
    ```
 3. Work in **phase order** within each priority tier (devenv → domain → application → infrastructure → presentation).
 4. Every bead you implement needs a corresponding **review bead** to close — see the governance phase for review bead IDs.
@@ -126,7 +125,7 @@ Every P0 implementation bead has a corresponding review bead. After implementati
 
 ---
 
-## P1 beads ready after P0 (sample — run `bd issue next --priority P1`)
+## P1 beads ready after P0 (sample — run `bd issue list --status open`)
 
 Key P1 clusters to plan for after P0 stabilises:
 
