@@ -26,4 +26,4 @@ Use this index for maintainer-facing docs, architecture records, operational run
 - Governance backlog: `docs/internal/governance-work-backlog.md`
 - ADR archives: `docs/internal/ADRs-v0.md`
 - ADR amendments: `docs/internal/ADR-amendments-and-new-ADRs.md`
--
+- Developer portal plan: `docs/internal/developer-portal-plan.md`
