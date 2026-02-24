@@ -33,7 +33,9 @@ The approvals v2 flow in Cockpit demonstrates fast triage with policy context, d
 ### Tinder-Style AI Approvals (OpenClaw, iPhone)
 
 <p align="center">
-  <img src="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif" alt="iPhone-style Tinder approval flow for AI agents: briefing first, policy-aware review, approve/deny decisions" width="320" />
+  <a href="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4">
+    <img src="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif" alt="iPhone-style Tinder approval flow for AI agents: briefing first, policy-aware review, approve/deny decisions" width="320" />
+  </a>
 </p>
 
 Portarium acts as the control-plane for autonomous agents: OpenClaw can propose actions, but execution is gated by policy and manual approvals. The mobile triage flow is Tinder-style card review: policy determines what is auto-approved, what needs a swipe decision, and what is blocked.

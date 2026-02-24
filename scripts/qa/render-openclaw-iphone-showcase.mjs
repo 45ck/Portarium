@@ -19,6 +19,9 @@ const baseUrl = `http://${host}:${port}`;
 
 const VIEWPORT = { width: 720, height: 1560 };
 const CAPTURE_FPS = 30;
+const GIF_FPS = 12;
+const GIF_WIDTH = 420;
+const GIF_MAX_COLORS = 160;
 const CURSOR_DURATION_MS = 520;
 const TYPE_DELAY_MS = 40;
 const STEP_SETTLE_MS = 360;
@@ -99,18 +102,17 @@ function encodeArtifacts(ffmpegBin) {
     'iPhone MP4 encode',
   );
 
-  const palettePath = path.join(framesDir, 'palette.png');
   runFfmpeg(
     ffmpegBin,
     [
       '-y',
       '-framerate',
-      '12',
+      String(CAPTURE_FPS),
       '-i',
       pattern,
       '-vf',
-      `fps=12,scale=${VIEWPORT.width}:-1:flags=lanczos,palettegen`,
-      palettePath,
+      `fps=${GIF_FPS},scale=${GIF_WIDTH}:-1:flags=lanczos,palettegen=max_colors=${GIF_MAX_COLORS}:stats_mode=full`,
+      path.join(framesDir, 'palette.png'),
     ],
     'GIF palette generation',
   );
@@ -120,13 +122,15 @@ function encodeArtifacts(ffmpegBin) {
     [
       '-y',
       '-framerate',
-      '12',
+      String(CAPTURE_FPS),
       '-i',
       pattern,
       '-i',
-      palettePath,
+      path.join(framesDir, 'palette.png'),
       '-lavfi',
-      `fps=12,scale=${VIEWPORT.width}:-1:flags=lanczos[x];[x][1:v]paletteuse`,
+      `fps=${GIF_FPS},scale=${GIF_WIDTH}:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=sierra2_4a:diff_mode=rectangle`,
+      '-loop',
+      '0',
       gifPath,
     ],
     'iPhone GIF encode',
@@ -486,6 +490,13 @@ async function main() {
     baseUrl,
     viewport: VIEWPORT,
     captureFps: CAPTURE_FPS,
+    gif: {
+      fps: GIF_FPS,
+      width: GIF_WIDTH,
+      maxColors: GIF_MAX_COLORS,
+      dither: 'sierra2_4a',
+      paletteMode: 'full',
+    },
     frameCount,
     outputs: {
       mp4: path.relative(rootDir, mp4Path).replaceAll('\\', '/'),
