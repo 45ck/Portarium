@@ -1,0 +1,40 @@
+# Codecov configuration
+# https://docs.codecov.com/docs/codecovyml-reference
+#
+# Bead: bead-0825
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto # compare against base commit
+        threshold: 1% # allow 1% drop without failing
+        informational: true # don't block PRs on coverage changes (advisory only)
+    patch:
+      default:
+        target: 70% # new code in PRs must be ≥70% covered
+        informational: true
+
+comment:
+  layout: 'reach,diff,flags,tree'
+  behavior: default
+  require_changes: false
+
+flags:
+  backend:
+    paths:
+      - src/
+    carryforward: true
+  cockpit:
+    paths:
+      - apps/cockpit/src/
+    carryforward: true
+
+ignore:
+  - 'src/**/*.test.ts'
+  - 'src/**/index.ts'
+  - 'src/infrastructure/migrations/cli.ts'
+  - 'src/infrastructure/observability/otel-setup.ts'
+  - 'apps/cockpit/src/**/*.test.tsx'
+  - 'apps/cockpit/src/**/*.stories.tsx'
+  - 'apps/cockpit/src/mocks/**'
