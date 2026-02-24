@@ -80,9 +80,38 @@ jobs:
       - name: Run PR gates
         env:
           DATABASE_URL: postgresql://portarium:portarium@localhost:5432/portarium
+          PLAYWRIGHT_JSON_OUTPUT: playwright-results.json
         run: npm run ci:pr
 
-      - name: Upload coverage
+      - name: Record Playwright flake rates
+        if: always()
+        run: |
+          if [ -f playwright-results.json ]; then
+            node scripts/qa/analyze-flake-rates.mjs --record playwright-results.json
+          fi
+
+      - name: Check test durations (flag tests >30s)
+        if: always()
+        run: node scripts/qa/check-test-durations.mjs
+
+      - name: Track CI pass rate
+        if: always()
+        run: |
+          STATUS=$([[ "${{ job.status }}" == "success" ]] && echo "passed" || echo "failed")
+          node scripts/qa/track-ci-pass-rate.mjs --record --status "$STATUS" --run-id "${{ github.run_id }}" --branch "${{ github.ref_name }}"
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info,./apps/cockpit/coverage/lcov.info
+          flags: backend,cockpit
+          name: portarium-coverage
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
