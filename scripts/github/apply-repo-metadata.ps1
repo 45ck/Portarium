@@ -30,11 +30,35 @@ $topics = @(
 
 Write-Host "Applying description/homepage for $Repo..."
 gh repo edit $Repo --description $description --homepage $homepage
+if ($LASTEXITCODE -ne 0) {
+  throw "Failed to update repository description/homepage."
+}
 
-Write-Host "Replacing repository topics for $Repo..."
-gh repo edit $Repo --clear-topics
+Write-Host "Synchronizing repository topics for $Repo..."
+$topicJson = gh api "repos/$Repo/topics" -H "Accept: application/vnd.github+json"
+if ($LASTEXITCODE -ne 0) {
+  throw "Failed to read existing repository topics."
+}
+
+$topicData = $topicJson | ConvertFrom-Json
+$existingTopics = @($topicData.names)
+
+foreach ($topic in $existingTopics) {
+  if ($topics -notcontains $topic) {
+    gh repo edit $Repo --remove-topic $topic
+    if ($LASTEXITCODE -ne 0) {
+      throw "Failed to remove topic: $topic"
+    }
+  }
+}
+
 foreach ($topic in $topics) {
-  gh repo edit $Repo --add-topic $topic
+  if ($existingTopics -notcontains $topic) {
+    gh repo edit $Repo --add-topic $topic
+    if ($LASTEXITCODE -ne 0) {
+      throw "Failed to add topic: $topic"
+    }
+  }
 }
 
 Write-Host ""
