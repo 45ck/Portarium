@@ -6,6 +6,7 @@ const TRIAGE_VIEW_STORAGE_KEY = 'portarium-triage-view';
 
 const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
   demo: 'ws-demo',
+  'openclaw-demo': 'ws-demo',
   'meridian-demo': 'ws-meridian',
   'meridian-full': 'ws-meridian',
 };
@@ -67,12 +68,27 @@ function readStoredTriageView(): TriageViewMode {
   if (stored && VALID_TRIAGE_MODES.includes(stored as TriageViewMode)) {
     return stored as TriageViewMode;
   }
-  return 'default';
+  return 'briefing';
 }
 
 function readStoredDataset(): DatasetId {
+  const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
+  if (
+    envPreferred === 'demo' ||
+    envPreferred === 'openclaw-demo' ||
+    envPreferred === 'meridian-demo' ||
+    envPreferred === 'meridian-full'
+  ) {
+    return envPreferred;
+  }
+
   const stored = localStorage.getItem(DATASET_STORAGE_KEY);
-  if (stored === 'demo' || stored === 'meridian-demo' || stored === 'meridian-full') {
+  if (
+    stored === 'demo' ||
+    stored === 'openclaw-demo' ||
+    stored === 'meridian-demo' ||
+    stored === 'meridian-full'
+  ) {
     return stored;
   }
   return 'meridian-demo';

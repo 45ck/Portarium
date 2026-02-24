@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-02-24T22:18:12.107Z",
+  "source": "scripts/qa/render-openclaw-iphone-showcase.mjs",
+  "baseUrl": "http://127.0.0.1:5192",
+  "viewport": {
+    "width": 720,
+    "height": 1560
+  },
+  "captureFps": 30,
+  "frameCount": 1336,
+  "outputs": {
+    "mp4": "docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4",
+    "gif": "docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif"
+  }
+}

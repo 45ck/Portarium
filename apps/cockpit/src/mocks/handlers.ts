@@ -43,7 +43,8 @@ let workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index');
-  const stored = localStorage.getItem('portarium-dataset') ?? 'meridian-demo';
+  const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
+  const stored = envPreferred || localStorage.getItem('portarium-dataset') || 'meridian-demo';
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const entry = (DATASETS.find((d) => d.id === stored) ?? DATASETS[0])!;
   data = await entry.load();

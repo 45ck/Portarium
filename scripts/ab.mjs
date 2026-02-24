@@ -62,6 +62,48 @@ function isDaemonRunning() {
   }
 }
 
+async function probeDaemon(timeoutMs = 1200) {
+  return new Promise((resolve) => {
+    const port = portForSession(SESSION);
+    const socket = net.createConnection({ port, host: '127.0.0.1' });
+    let settled = false;
+    let buffer = '';
+
+    const finish = (ok) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(ok);
+    };
+
+    socket.setTimeout(timeoutMs);
+
+    socket.on('connect', () => {
+      // Deliberately send invalid command shape; daemon responds with JSON error
+      // and no browser side effects (no auto-launch path).
+      socket.write('{}\n');
+    });
+
+    socket.on('data', (chunk) => {
+      buffer += chunk.toString();
+      const newline = buffer.indexOf('\n');
+      if (newline === -1) return;
+      const firstLine = buffer.slice(0, newline).trim();
+      if (!firstLine) return finish(false);
+      try {
+        const parsed = JSON.parse(firstLine);
+        finish(Boolean(parsed && typeof parsed === 'object' && 'success' in parsed));
+      } catch {
+        finish(false);
+      }
+    });
+
+    socket.on('timeout', () => finish(false));
+    socket.on('error', () => finish(false));
+    socket.on('close', () => finish(false));
+  });
+}
+
 /** Resolve daemon.js from the globally-installed agent-browser package. */
 function findDaemonJs() {
   // Try the global npm prefix first
@@ -82,6 +124,7 @@ function findDaemonJs() {
 
 async function ensureDaemon() {
   if (isDaemonRunning()) return;
+  if (await probeDaemon()) return;
 
   const daemonJs = findDaemonJs();
   if (!daemonJs) {
@@ -104,6 +147,7 @@ async function ensureDaemon() {
   for (let i = 0; i < 80; i++) {
     await new Promise((r) => setTimeout(r, 100));
     if (isDaemonRunning()) return;
+    if (await probeDaemon(200)) return;
   }
   console.error('Error: daemon did not start in time');
   process.exit(1);

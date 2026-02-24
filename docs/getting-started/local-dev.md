@@ -61,12 +61,28 @@ Cockpit reads `VITE_PORTARIUM_API_BEARER_TOKEN` at build time and falls back to
 `localStorage`. Set this to the same value as `PORTARIUM_DEV_TOKEN`:
 
 ```bash
-VITE_PORTARIUM_API_BEARER_TOKEN=portarium-dev-token npm run dev
+VITE_PORTARIUM_API_BEARER_TOKEN=portarium-dev-token VITE_PORTARIUM_ENABLE_MSW=false npm run dev
 ```
 
 ```powershell
 $env:VITE_PORTARIUM_API_BEARER_TOKEN = "portarium-dev-token"
+$env:VITE_PORTARIUM_ENABLE_MSW = "false"
 npm run dev
+```
+
+By default, Cockpit enables MSW in Vite dev mode. Set
+`VITE_PORTARIUM_ENABLE_MSW=false` for live API manual QA.
+
+For OpenClaw approval-triage demo capture (mock dataset):
+
+```powershell
+npm run cockpit:dev:openclaw-demo
+```
+
+For automated OpenClaw demo videos (MP4 + WEBM artifacts):
+
+```powershell
+npm run cockpit:demo:openclaw:clips
 ```
 
 Or set it at runtime in the browser console:

@@ -45,6 +45,8 @@ export function ModeSwitcher({ context }: ModeSwitcherProps) {
                   <TooltipTrigger asChild>
                     <TabsTrigger
                       value={m.id}
+                      data-triage-mode={m.id}
+                      aria-label={`View mode ${m.label}`}
                       className={cn('h-7 text-[11px] gap-1 relative', isActive ? 'px-2' : 'px-1.5')}
                     >
                       <Icon className="h-3 w-3 shrink-0" />

@@ -28,6 +28,28 @@ Portarium sits between people and execution systems:
 
 The approvals v2 flow in Cockpit demonstrates fast triage with policy context, decision rationale capture, and evidence-linked run governance.
 
+### Tinder-Style AI Approvals (OpenClaw, iPhone)
+
+<p align="center">
+  <img src="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif" alt="iPhone-style Tinder approval flow for AI agents: briefing first, policy-aware review, approve/deny decisions" width="320" />
+</p>
+
+Portarium acts as the control-plane for autonomous agents: OpenClaw can propose actions, but execution is gated by policy and manual approvals. The mobile triage flow is Tinder-style card review: policy determines what is auto-approved, what needs a swipe decision, and what is blocked.
+
+- MP4 showcase: [openclaw-tinder-approvals-iphone.mp4](docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4)
+- Generation command: `npm run cockpit:demo:openclaw:iphone`
+- Desktop OpenClaw clips: `npm run cockpit:demo:openclaw:clips`
+
+### OpenClaw Governance Clips (Desktop)
+
+<p align="center">
+  <img src="docs/internal/ui/cockpit/media/openclaw-destructive-blocked-desktop.gif" alt="Desktop OpenClaw governance clip: destructive delete-all-emails action is denied by policy" />
+</p>
+
+- Heartbeat Watchtower: [openclaw-heartbeat-watchtower-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-heartbeat-watchtower-desktop.mp4)
+- Destructive action blocked: [openclaw-destructive-blocked-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-destructive-blocked-desktop.mp4)
+- Cron and sub-agent governance: [openclaw-cron-subagent-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-cron-subagent-desktop.mp4)
+
 ## Why Portarium
 
 - Governed execution tiers: `Auto`, `Assisted`, `Human-approve`, `Manual-only`

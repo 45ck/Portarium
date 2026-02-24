@@ -20,6 +20,11 @@ const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] =
     description: 'Small generic dataset (6 work items, 7 runs)',
   },
   {
+    id: 'openclaw-demo',
+    label: 'OpenClaw Approval Demo',
+    description: 'OpenClaw machine approvals with triage-ready pending queue',
+  },
+  {
     id: 'meridian-demo',
     label: 'Meridian Cold Chain \u2014 Demo',
     description: '3 months pharma cold-chain (20 work items, 50 runs, 15 robots)',
@@ -78,7 +83,13 @@ function SettingsPage() {
             <span className="text-muted-foreground">Workspace ID</span>
             <span className="font-mono">{wsId}</span>
             <span className="text-muted-foreground">Workspace Name</span>
-            <span>{wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Demo Workspace'}</span>
+            <span>
+              {wsId === 'ws-meridian'
+                ? 'Meridian Workspace'
+                : activeDataset === 'openclaw-demo'
+                  ? 'OpenClaw Demo Workspace'
+                  : 'Demo Workspace'}
+            </span>
           </div>
         </CardContent>
       </Card>
