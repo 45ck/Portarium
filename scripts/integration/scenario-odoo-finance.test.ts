@@ -21,7 +21,7 @@
 import { once } from 'node:events';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   OdooFinanceAccountingAdapter,
@@ -31,16 +31,16 @@ import type {
   FinanceAccountingExecuteInputV1,
   FinanceAccountingExecuteOutputV1,
 } from '../../src/application/ports/finance-accounting-adapter.js';
-import type { EvidenceLogPort } from '../../src/application/ports/evidence-log.js';
 import type {
   AdapterId,
   CorrelationId,
   EvidenceId,
-  HashSha256,
   RunId,
   TenantId,
   WorkspaceId,
 } from '../../src/domain/primitives/index.js';
+import type { EvidenceLogPort } from '../../src/application/ports/evidence-log.js';
+import { makeStubEvidenceLog } from './scenario-helpers.js';
 
 // ---------------------------------------------------------------------------
 // Seeded data fixtures (simulating a pre-provisioned Odoo instance)
@@ -227,29 +227,7 @@ async function startStubOdoo(): Promise<{
   };
 }
 
-// ---------------------------------------------------------------------------
-// Stub evidence log
-// ---------------------------------------------------------------------------
-
-function makeStubEvidenceLog(): EvidenceLogPort & { entries: Record<string, unknown>[] } {
-  const entries: Record<string, unknown>[] = [];
-  let counter = 0;
-  return {
-    entries,
-    appendEntry: vi.fn(async (_tenantId, entry) => {
-      counter += 1;
-      const stored = {
-        ...entry,
-        schemaVersion: 1 as const,
-        evidenceId: `ev-odoo-${counter}` as EvidenceId,
-        previousHash: counter > 1 ? (`hash-odoo-${counter - 1}` as HashSha256) : undefined,
-        hashSha256: `hash-odoo-${counter}` as HashSha256,
-      };
-      entries.push(stored as unknown as Record<string, unknown>);
-      return stored;
-    }),
-  };
-}
+// Evidence log stub imported from ./scenario-helpers.js
 
 // ---------------------------------------------------------------------------
 // Run-step abstraction: executes adapter operation via a run step with evidence
@@ -308,7 +286,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -342,7 +320,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -376,7 +354,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -413,7 +391,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -468,7 +446,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -519,7 +497,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -570,7 +548,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         await executeFinanceRunStep(
           adapter,
@@ -608,7 +586,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
         const runCtx = {
           runId: RUN_ID,
           correlationId: CORRELATION_ID,
@@ -648,7 +626,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         // getAccount without required accountId → validation_error
         const result = await executeFinanceRunStep(
@@ -683,7 +661,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
         apiKey: 'test-api-key',
       };
       const adapter = new OdooFinanceAccountingAdapter(config);
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
       const result = await executeFinanceRunStep(
         adapter,
@@ -750,7 +728,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'bad-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -801,7 +779,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,
@@ -839,7 +817,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         await executeFinanceRunStep(
           adapter,
@@ -874,7 +852,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
         const runCtx = {
           runId: RUN_ID,
           correlationId: CORRELATION_ID,
@@ -915,7 +893,7 @@ describe('Scenario: Odoo FinanceAccounting run-path verification', () => {
           apiKey: 'test-api-key',
         };
         const adapter = new OdooFinanceAccountingAdapter(config);
-        const evidenceLog = makeStubEvidenceLog();
+        const evidenceLog = makeStubEvidenceLog('ev-odoo');
 
         const result = await executeFinanceRunStep(
           adapter,

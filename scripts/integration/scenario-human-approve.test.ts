@@ -21,11 +21,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type {
-  EvidenceId,
-  HashSha256,
-  UserId as UserIdType,
-} from '../../src/domain/primitives/index.js';
+import type { EvidenceId, UserId as UserIdType } from '../../src/domain/primitives/index.js';
 import {
   ApprovalId,
   CorrelationId as CorrelationIdCtor,
@@ -36,7 +32,6 @@ import {
   WorkspaceId,
 } from '../../src/domain/primitives/index.js';
 import type { ApprovalStore } from '../../src/application/ports/approval-store.js';
-import type { EvidenceLogPort } from '../../src/application/ports/evidence-log.js';
 import type {
   AuthorizationPort,
   Clock,
@@ -47,6 +42,7 @@ import type {
 import { submitApproval } from '../../src/application/commands/submit-approval.js';
 import { toAppContext } from '../../src/application/common/context.js';
 import type { SodConstraintV1 } from '../../src/domain/policy/sod-constraints-v1.js';
+import { makeStubEvidenceLog } from './scenario-helpers.js';
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -140,25 +136,7 @@ function makeDeps(overrides?: { principalId?: UserIdType }) {
   return { deps, ctx, approvalStore, publishedEvents };
 }
 
-function makeStubEvidenceLog(): EvidenceLogPort & { entries: Record<string, unknown>[] } {
-  const entries: Record<string, unknown>[] = [];
-  let counter = 0;
-  return {
-    entries,
-    appendEntry: vi.fn(async (_tenantId, entry) => {
-      counter += 1;
-      const stored = {
-        ...entry,
-        schemaVersion: 1 as const,
-        evidenceId: `ev-ha-${counter}` as EvidenceId,
-        previousHash: counter > 1 ? (`hash-ha-${counter - 1}` as HashSha256) : undefined,
-        hashSha256: `hash-ha-${counter}` as HashSha256,
-      };
-      entries.push(stored as unknown as Record<string, unknown>);
-      return stored;
-    }),
-  };
-}
+// Evidence log stub imported from ./scenario-helpers.js
 
 // ---------------------------------------------------------------------------
 // Scenario
@@ -288,7 +266,7 @@ describe('Scenario: HumanApprove pause/resume with maker-checker', () => {
   // Step 4: Evidence chain records full audit trail
   describe('Step 4 — Evidence records approval-requested → resolved → completed chain', () => {
     it('evidence chain contains three entries with correct categories and links', async () => {
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-ha');
 
       // Entry 1: Approval requested (run paused)
       const requestedEntry = await evidenceLog.appendEntry(TENANT_ID, {
@@ -349,7 +327,7 @@ describe('Scenario: HumanApprove pause/resume with maker-checker', () => {
     });
 
     it('evidence entries carry approval and run links for audit correlation', async () => {
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-ha');
 
       const entry = await evidenceLog.appendEntry(TENANT_ID, {
         schemaVersion: 1,
