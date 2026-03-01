@@ -21,6 +21,7 @@ describe('APP_ACTIONS contract', () => {
       'machine-agent:register',
       'machine-agent:read',
       'machine-agent:bridge-sync',
+      'tool:invoke',
     ]);
   });
 

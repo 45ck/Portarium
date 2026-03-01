@@ -17,6 +17,8 @@ export const APP_ACTIONS = {
   machineAgentRead: 'machine-agent:read',
   /** Sync agent lifecycle state with an OpenClaw gateway (bridge operations). */
   machineAgentBridgeSync: 'machine-agent:bridge-sync',
+  /** Invoke a tool through the Portarium Action API (propose/execute flow). */
+  toolInvoke: 'tool:invoke',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
