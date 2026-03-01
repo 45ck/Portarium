@@ -1,5 +1,9 @@
 # Portarium
 
+<p align="center">
+  <img src="banner.svg" alt="Portarium banner" width="100%" />
+</p>
+
 Open-source policy control plane for autonomous agents (OpenClaw and beyond) across software and robots.
 
 [![CI (PR)](https://github.com/45ck/Portarium/actions/workflows/ci.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci.yml)
