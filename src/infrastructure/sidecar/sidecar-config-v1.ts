@@ -1,4 +1,11 @@
 /**
+ * Enforcement mode for the sidecar proxy (ADR-0115 migration phases).
+ * - 'enforce': deny non-allowlisted egress (default-deny, fail-closed)
+ * - 'monitor': log violations but allow all traffic (Phase 1 instrumentation)
+ */
+export type SidecarEnforcementMode = 'enforce' | 'monitor';
+
+/**
  * Configuration for the Portarium sidecar proxy.
  *
  * The sidecar sits between the agent/execution workload and the network,
@@ -16,6 +23,8 @@ export type SidecarConfigV1 = Readonly<{
   mtlsCertPath?: string;
   /** Port the sidecar listens on. Default: 15001. */
   listenPort: number;
+  /** Enforcement mode: 'enforce' (default-deny) or 'monitor' (log-only). */
+  enforcementMode: SidecarEnforcementMode;
 }>;
 
 export const DEFAULT_SIDECAR_CONFIG: SidecarConfigV1 = {
@@ -23,6 +32,7 @@ export const DEFAULT_SIDECAR_CONFIG: SidecarConfigV1 = {
   egressAllowlist: [],
   tokenRefreshIntervalMs: 300_000,
   listenPort: 15001,
+  enforcementMode: 'enforce',
 };
 
 export class SidecarConfigParseError extends Error {
@@ -44,14 +54,25 @@ export function parseSidecarConfigV1(value: unknown): SidecarConfigV1 {
   );
   const listenPort = requirePositiveNumber(record, 'listenPort', DEFAULT_SIDECAR_CONFIG.listenPort);
   const mtlsCertPath = optionalString(record, 'mtlsCertPath');
+  const enforcementMode = parseEnforcementMode(record);
 
   return {
     upstreamUrl,
     egressAllowlist,
     tokenRefreshIntervalMs,
     listenPort,
+    enforcementMode,
     ...(mtlsCertPath !== undefined ? { mtlsCertPath } : {}),
   };
+}
+
+function parseEnforcementMode(record: Record<string, unknown>): SidecarEnforcementMode {
+  const value = record['enforcementMode'];
+  if (value === undefined || value === null) return DEFAULT_SIDECAR_CONFIG.enforcementMode;
+  if (value !== 'enforce' && value !== 'monitor') {
+    throw new SidecarConfigParseError('enforcementMode must be "enforce" or "monitor".');
+  }
+  return value;
 }
 
 function requireNonEmptyString(record: Record<string, unknown>, key: string): string {

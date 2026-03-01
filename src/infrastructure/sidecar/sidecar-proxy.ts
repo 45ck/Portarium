@@ -1,4 +1,5 @@
 import type { SidecarConfigV1 } from './sidecar-config-v1.js';
+import type { EgressAuditRecord, EgressAuditSink } from './egress-audit-log.js';
 
 /**
  * Egress validation result.
@@ -7,6 +8,16 @@ export type EgressCheckResult = Readonly<{
   allowed: boolean;
   host: string;
   reason?: string;
+}>;
+
+/**
+ * Identity context carried through the sidecar for audit and header injection.
+ * Populated from SPIFFE SVID and JWT claims per ADR-0115.
+ */
+export type SidecarIdentityContext = Readonly<{
+  tenantId?: string;
+  workflowRunId?: string;
+  agentSpiffeId?: string;
 }>;
 
 /**
@@ -29,36 +40,44 @@ export type ProxiedResponse = Readonly<{
 }>;
 
 /**
- * Portarium sidecar proxy logic.
+ * Portarium sidecar proxy — default-deny egress enforcement (ADR-0115 Pattern B).
  *
  * Responsibilities:
- * 1. Validate egress destinations against the allowlist
- * 2. Inject authentication headers (Bearer token)
- * 3. Inject W3C trace context headers (traceparent, tracestate)
+ * 1. Intercept all outbound HTTP/HTTPS from agent workloads
+ * 2. Enforce egress allowlist with default-deny behavior
+ * 3. Inject identity headers (Bearer token, tenant, SPIFFE ID)
+ * 4. Inject W3C trace context headers (traceparent, tracestate)
+ * 5. Emit structured audit records for every egress decision
  *
- * This module implements the proxy logic; the HTTP server binding is
- * handled by the sidecar entrypoint (sidecar main).
+ * Enforcement modes:
+ * - 'enforce': blocked requests return 403 (default-deny, fail-closed)
+ * - 'monitor': violations are logged but traffic is forwarded (Phase 1)
  */
 export class SidecarProxy {
   readonly #config: SidecarConfigV1;
   readonly #fetchImpl: typeof fetch;
+  readonly #auditSink: EgressAuditSink | undefined;
   #currentToken: string | undefined;
+  #identity: SidecarIdentityContext = {};
 
-  public constructor(config: SidecarConfigV1, fetchImpl?: typeof fetch) {
+  public constructor(
+    config: SidecarConfigV1,
+    fetchImpl?: typeof fetch,
+    auditSink?: EgressAuditSink,
+  ) {
     this.#config = config;
     this.#fetchImpl = fetchImpl ?? fetch;
+    this.#auditSink = auditSink;
   }
 
-  /**
-   * Set the current bearer token for auth header injection.
-   */
   public setToken(token: string): void {
     this.#currentToken = token;
   }
 
-  /**
-   * Validate that a target URL is permitted by the egress allowlist.
-   */
+  public setIdentity(identity: SidecarIdentityContext): void {
+    this.#identity = identity;
+  }
+
   public checkEgress(targetUrl: string): EgressCheckResult {
     let parsedUrl: URL;
     try {
@@ -70,7 +89,7 @@ export class SidecarProxy {
     const host = parsedUrl.hostname;
 
     if (this.#config.egressAllowlist.length === 0) {
-      return { allowed: false, host, reason: 'Egress allowlist is empty' };
+      return { allowed: false, host, reason: 'Egress allowlist is empty (default-deny)' };
     }
 
     for (const pattern of this.#config.egressAllowlist) {
@@ -83,16 +102,28 @@ export class SidecarProxy {
   }
 
   /**
-   * Proxy a request to the target URL with egress validation,
-   * auth header injection, and trace context propagation.
+   * Proxy a request through the sidecar with full egress enforcement.
+   *
+   * In 'enforce' mode: denied requests are blocked (403).
+   * In 'monitor' mode: denied requests are logged but forwarded.
+   * All decisions are emitted as audit records.
    */
   public async proxy(
     request: ProxiedRequest,
     traceContext?: Readonly<{ traceparent?: string; tracestate?: string }>,
   ): Promise<ProxiedResponse> {
+    const start = Date.now();
     const egressCheck = this.checkEgress(request.url);
-    if (!egressCheck.allowed) {
-      return this.#buildEgressDeniedResponse(egressCheck);
+    const parsedUrl = safeParseUrl(request.url);
+
+    if (!egressCheck.allowed && this.#config.enforcementMode === 'enforce') {
+      const response = buildEgressDeniedResponse(egressCheck);
+      this.#emitAudit(request, parsedUrl, egressCheck, response.status, start);
+      return response;
+    }
+
+    if (!egressCheck.allowed && this.#config.enforcementMode === 'monitor') {
+      this.#emitAudit(request, parsedUrl, egressCheck, undefined, start);
     }
 
     const headers = this.#buildProxyHeaders(request.headers, traceContext);
@@ -104,26 +135,50 @@ export class SidecarProxy {
         ...(request.body !== undefined ? { body: request.body } : {}),
       });
 
-      return {
+      const result: ProxiedResponse = {
         status: response.status,
         headers: toHeaderRecord(response.headers),
         body: await response.text(),
       };
+
+      if (egressCheck.allowed) {
+        this.#emitAudit(request, parsedUrl, egressCheck, result.status, start);
+      }
+
+      return result;
     } catch (error) {
-      return this.#buildUpstreamFailureResponse(error);
+      const result = buildUpstreamFailureResponse(error);
+      this.#emitAudit(request, parsedUrl, egressCheck, result.status, start);
+      return result;
     }
   }
 
-  #buildEgressDeniedResponse(egressCheck: EgressCheckResult): ProxiedResponse {
-    return {
-      status: 403,
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        error: 'EgressDenied',
-        message: egressCheck.reason,
-        host: egressCheck.host,
-      }),
+  #emitAudit(
+    request: ProxiedRequest,
+    parsedUrl: URL | undefined,
+    egressCheck: EgressCheckResult,
+    responseStatus: number | undefined,
+    startMs: number,
+  ): void {
+    if (!this.#auditSink) return;
+
+    const record: EgressAuditRecord = {
+      timestamp: Date.now(),
+      enforcementMode: this.#config.enforcementMode,
+      policyDecision: egressCheck.allowed ? 'allow' : 'deny',
+      destinationHost: egressCheck.host,
+      destinationPort: parsedUrl ? parsePort(parsedUrl) : undefined,
+      httpMethod: request.method,
+      httpPath: parsedUrl?.pathname ?? request.url,
+      responseStatus,
+      policyReason: egressCheck.reason,
+      latencyMs: Date.now() - startMs,
+      tenantId: this.#identity.tenantId,
+      workflowRunId: this.#identity.workflowRunId,
+      agentSpiffeId: this.#identity.agentSpiffeId,
     };
+
+    this.#auditSink.emit(record);
   }
 
   #buildProxyHeaders(
@@ -131,9 +186,21 @@ export class SidecarProxy {
     traceContext?: Readonly<{ traceparent?: string; tracestate?: string }>,
   ): Record<string, string> {
     const headers: Record<string, string> = { ...requestHeaders };
+
     if (this.#currentToken && !headers['authorization']) {
       headers['authorization'] = `Bearer ${this.#currentToken}`;
     }
+
+    if (this.#identity.tenantId && !headers['x-portarium-tenant-id']) {
+      headers['x-portarium-tenant-id'] = this.#identity.tenantId;
+    }
+    if (this.#identity.workflowRunId && !headers['x-portarium-workflow-run-id']) {
+      headers['x-portarium-workflow-run-id'] = this.#identity.workflowRunId;
+    }
+    if (this.#identity.agentSpiffeId && !headers['x-portarium-agent-spiffe-id']) {
+      headers['x-portarium-agent-spiffe-id'] = this.#identity.agentSpiffeId;
+    }
+
     if (traceContext?.traceparent && !headers['traceparent']) {
       headers['traceparent'] = traceContext.traceparent;
     }
@@ -142,28 +209,13 @@ export class SidecarProxy {
     }
     return headers;
   }
-
-  #buildUpstreamFailureResponse(error: unknown): ProxiedResponse {
-    return {
-      status: 502,
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        error: 'UpstreamFailure',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      }),
-    };
-  }
 }
 
-/**
- * Match a hostname against a pattern.
- * Supports exact match and wildcard prefix (e.g., *.example.com).
- */
 function matchesHost(host: string, pattern: string): boolean {
   if (pattern === host) return true;
 
   if (pattern.startsWith('*.')) {
-    const suffix = pattern.slice(1); // e.g., ".example.com"
+    const suffix = pattern.slice(1);
     return host.endsWith(suffix) && host.length > suffix.length;
   }
 
@@ -176,4 +228,42 @@ function toHeaderRecord(headers: Headers): Record<string, string> {
     responseHeaders[key] = value;
   });
   return responseHeaders;
+}
+
+function safeParseUrl(url: string): URL | undefined {
+  try {
+    return new URL(url);
+  } catch {
+    return undefined;
+  }
+}
+
+function parsePort(url: URL): number | undefined {
+  if (url.port) return Number(url.port);
+  if (url.protocol === 'https:') return 443;
+  if (url.protocol === 'http:') return 80;
+  return undefined;
+}
+
+function buildEgressDeniedResponse(egressCheck: EgressCheckResult): ProxiedResponse {
+  return {
+    status: 403,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      error: 'EgressDenied',
+      message: egressCheck.reason,
+      host: egressCheck.host,
+    }),
+  };
+}
+
+function buildUpstreamFailureResponse(error: unknown): ProxiedResponse {
+  return {
+    status: 502,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      error: 'UpstreamFailure',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }),
+  };
 }
