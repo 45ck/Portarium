@@ -17,27 +17,23 @@
  * Bead: bead-0848
  */
 
-import { once } from 'node:events';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type {
   ActionId,
   CorrelationId,
   EvidenceId,
-  HashSha256,
   MachineId,
   RunId,
   TenantId,
   WorkspaceId,
 } from '../../src/domain/primitives/index.js';
-import type { EvidenceLogPort } from '../../src/application/ports/evidence-log.js';
 import { OpenClawGatewayMachineInvoker } from '../../src/infrastructure/openclaw/openclaw-gateway-machine-invoker.js';
 import {
   evaluateOpenClawToolPolicyV1,
   classifyOpenClawToolBlastRadiusV1,
 } from '../../src/domain/machines/openclaw-tool-blast-radius-v1.js';
+import { makeStubEvidenceLog, startStubGateway } from './scenario-helpers.js';
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -51,89 +47,7 @@ const CORRELATION_ID = 'corr-bypass-001' as CorrelationId;
 const MACHINE_ID = 'machine-bypass-001' as MachineId;
 const FIXED_NOW = '2026-03-02T12:00:00.000Z';
 
-// ---------------------------------------------------------------------------
-// Stub infrastructure
-// ---------------------------------------------------------------------------
-
-type CapturedRequest = Readonly<{
-  method: string;
-  path: string;
-  headers: Readonly<Record<string, string | string[] | undefined>>;
-  body: Record<string, unknown>;
-}>;
-
-async function startStubGateway(
-  responses: Record<string, { status: number; body: unknown }[]>,
-): Promise<{
-  baseUrl: string;
-  requests: CapturedRequest[];
-  close: () => Promise<void>;
-}> {
-  const requestLog: CapturedRequest[] = [];
-  const queues = new Map(Object.entries(responses).map(([path, resps]) => [path, [...resps]]));
-
-  const server = createServer((req: IncomingMessage, res: ServerResponse) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer | string) => {
-      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-    });
-    req.on('end', () => {
-      const path = req.url ?? '/';
-      const bodyText = Buffer.concat(chunks).toString('utf8');
-      let body: Record<string, unknown> = {};
-      try {
-        body = JSON.parse(bodyText) as Record<string, unknown>;
-      } catch {
-        /* empty body is ok */
-      }
-      requestLog.push({ method: req.method ?? '', path, headers: req.headers, body });
-
-      const queue = queues.get(path) ?? [];
-      const next = queue.shift();
-      if (!next) {
-        res.writeHead(404, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ error: 'no_stub' }));
-        return;
-      }
-      res.writeHead(next.status, { 'content-type': 'application/json' });
-      res.end(JSON.stringify(next.body));
-    });
-  });
-
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  const addr = server.address();
-  if (!addr || typeof addr === 'string') throw new Error('Could not bind stub gateway.');
-
-  return {
-    baseUrl: `http://127.0.0.1:${addr.port}`,
-    requests: requestLog,
-    close: () =>
-      new Promise<void>((resolve, reject) =>
-        server.close((err) => (err ? reject(err) : resolve())),
-      ),
-  };
-}
-
-function makeStubEvidenceLog(): EvidenceLogPort & { entries: Record<string, unknown>[] } {
-  const entries: Record<string, unknown>[] = [];
-  let counter = 0;
-  return {
-    entries,
-    appendEntry: vi.fn(async (_tenantId, entry) => {
-      counter += 1;
-      const stored = {
-        ...entry,
-        schemaVersion: 1 as const,
-        evidenceId: `ev-bypass-${counter}` as EvidenceId,
-        previousHash: counter > 1 ? (`hash-bypass-${counter - 1}` as HashSha256) : undefined,
-        hashSha256: `hash-bypass-${counter}` as HashSha256,
-      };
-      entries.push(stored as unknown as Record<string, unknown>);
-      return stored;
-    }),
-  };
-}
+// Stub infrastructure imported from ./scenario-helpers.js
 
 // ---------------------------------------------------------------------------
 // Scenario: Policy enforcement for control-plane bypass attempts
@@ -318,7 +232,7 @@ describe('Scenario: Policy enforcement — control-plane bypass attempts (409)',
   describe('Test B — Direct call path denied with audit marker', () => {
     it('AC-B1: policy denial emits evidence entry with denial reason and correlationId', async () => {
       const gateway = await startStubGateway({});
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-bypass');
 
       try {
         const invoker = new OpenClawGatewayMachineInvoker({
@@ -378,7 +292,7 @@ describe('Scenario: Policy enforcement — control-plane bypass attempts (409)',
       const gateway = await startStubGateway({
         '/tools/invoke': [{ status: 409, body: policyError }],
       });
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-bypass');
 
       try {
         const invoker = new OpenClawGatewayMachineInvoker({
@@ -424,7 +338,7 @@ describe('Scenario: Policy enforcement — control-plane bypass attempts (409)',
 
     it('AC-B3: multiple denied tools produce separate evidence entries per denial', async () => {
       const gateway = await startStubGateway({});
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-bypass');
 
       try {
         const invoker = new OpenClawGatewayMachineInvoker({

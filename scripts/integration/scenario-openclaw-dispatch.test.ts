@@ -19,24 +19,20 @@
  * Bead: bead-0844
  */
 
-import { once } from 'node:events';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type {
   ActionId,
   AgentId,
   CorrelationId,
   EvidenceId,
-  HashSha256,
   MachineId,
   RunId,
   TenantId,
   WorkspaceId,
 } from '../../src/domain/primitives/index.js';
-import type { EvidenceLogPort } from '../../src/application/ports/evidence-log.js';
 import { OpenClawGatewayMachineInvoker } from '../../src/infrastructure/openclaw/openclaw-gateway-machine-invoker.js';
+import { makeStubEvidenceLog, startStubGateway } from './scenario-helpers.js';
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -65,89 +61,7 @@ const GATEWAY_RESPONSE = {
   usage: { input_tokens: 50, output_tokens: 20 },
 };
 
-// ---------------------------------------------------------------------------
-// Stub infrastructure
-// ---------------------------------------------------------------------------
-
-type CapturedRequest = Readonly<{
-  method: string;
-  path: string;
-  headers: Readonly<Record<string, string | string[] | undefined>>;
-  body: Record<string, unknown>;
-}>;
-
-async function startStubGateway(
-  responses: Record<string, { status: number; body: unknown }[]>,
-): Promise<{
-  baseUrl: string;
-  requests: CapturedRequest[];
-  close: () => Promise<void>;
-}> {
-  const requestLog: CapturedRequest[] = [];
-  const queues = new Map(Object.entries(responses).map(([path, resps]) => [path, [...resps]]));
-
-  const server = createServer((req: IncomingMessage, res: ServerResponse) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer | string) => {
-      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-    });
-    req.on('end', () => {
-      const path = req.url ?? '/';
-      const bodyText = Buffer.concat(chunks).toString('utf8');
-      let body: Record<string, unknown> = {};
-      try {
-        body = JSON.parse(bodyText) as Record<string, unknown>;
-      } catch {
-        /* empty body is ok */
-      }
-      requestLog.push({ method: req.method ?? '', path, headers: req.headers, body });
-
-      const queue = queues.get(path) ?? [];
-      const next = queue.shift();
-      if (!next) {
-        res.writeHead(404, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ error: 'no_stub' }));
-        return;
-      }
-      res.writeHead(next.status, { 'content-type': 'application/json' });
-      res.end(JSON.stringify(next.body));
-    });
-  });
-
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  const addr = server.address();
-  if (!addr || typeof addr === 'string') throw new Error('Could not bind stub gateway.');
-
-  return {
-    baseUrl: `http://127.0.0.1:${addr.port}`,
-    requests: requestLog,
-    close: () =>
-      new Promise<void>((resolve, reject) =>
-        server.close((err) => (err ? reject(err) : resolve())),
-      ),
-  };
-}
-
-function makeStubEvidenceLog(): EvidenceLogPort & { entries: Record<string, unknown>[] } {
-  const entries: Record<string, unknown>[] = [];
-  let counter = 0;
-  return {
-    entries,
-    appendEntry: vi.fn(async (_tenantId, entry) => {
-      counter += 1;
-      const stored = {
-        ...entry,
-        schemaVersion: 1 as const,
-        evidenceId: `ev-oc-${counter}` as EvidenceId,
-        previousHash: counter > 1 ? (`hash-oc-${counter - 1}` as HashSha256) : undefined,
-        hashSha256: `hash-oc-${counter}` as HashSha256,
-      };
-      entries.push(stored as unknown as Record<string, unknown>);
-      return stored;
-    }),
-  };
-}
+// Stub infrastructure imported from ./scenario-helpers.js
 
 // ---------------------------------------------------------------------------
 // Scenario: full dispatch through /runs → machine invoker → evidence
@@ -342,7 +256,7 @@ describe('Scenario: OpenClaw machine dispatch via /runs', () => {
       const gateway = await startStubGateway({
         '/v1/responses': [{ status: 200, body: GATEWAY_RESPONSE }],
       });
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-oc');
 
       try {
         const invoker = new OpenClawGatewayMachineInvoker({
@@ -407,7 +321,7 @@ describe('Scenario: OpenClaw machine dispatch via /runs', () => {
     });
 
     it('evidence entries contain run and action links for audit correlation', async () => {
-      const evidenceLog = makeStubEvidenceLog();
+      const evidenceLog = makeStubEvidenceLog('ev-oc');
 
       const entry = await evidenceLog.appendEntry(TENANT_ID, {
         schemaVersion: 1,
