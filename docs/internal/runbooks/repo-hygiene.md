@@ -49,4 +49,3 @@ npm run domain-atlas:upstreams:audit -- --max-total-mb 200 --max-provider-mb 100
 - Manual QA evidence belongs under `qa-artifacts/manual-evidence/`.
 - Local scratch output belongs under `tmp/local-scratch/` or `.tmp/`.
 - Do not commit generated runtime artifacts unless they are deliberate, documented fixtures.
-
