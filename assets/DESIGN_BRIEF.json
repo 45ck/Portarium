@@ -1,0 +1,24 @@
+{
+  "repo_name": "Portarium",
+  "tagline": "Policy control plane for autonomous agents",
+  "one_sentence_purpose": "An open-source control plane that sits between AI agents (and robots) and execution systems, enforcing policy, approval workflows, and evidence-first governance.",
+  "target_users": "Enterprise teams deploying autonomous AI agents or robots who need governance, approval gates, and audit trails",
+  "keywords": ["control-plane", "ai-governance", "agent-safety", "policy-engine", "approval-workflows", "human-in-the-loop"],
+  "visual_metaphors": ["a gatehouse or checkpoint portal between agents and actions", "layered shield protecting execution pathways", "a traffic control tower overseeing autonomous agent flight paths"],
+  "avoid": ["no mascots", "no photorealism", "no clip art", "no overly militaristic imagery"],
+  "style_adjectives": ["authoritative", "trustworthy", "structured", "modern", "clean"],
+  "palette_hint": {
+    "bg_light": "#ffffff",
+    "bg_dark": "#0d1117",
+    "primary": "#1E6B52",
+    "accent": "#E8A838",
+    "ink": "#c9d1d9"
+  },
+  "assets_needed": [
+    {"path": "assets/banner.light.png", "type": "readme_banner", "desc": "Wide banner on white background with abstract portal gateway and policy shield motif, project name in deep green"},
+    {"path": "assets/banner.dark.png", "type": "readme_banner", "desc": "Wide banner on dark background with abstract glowing portal gateway and policy shield motif, project name in deep green"},
+    {"path": "assets/logo.light.png", "type": "square_logo", "desc": "Square logo on white background with abstract gateway arch and shield icon in green and gold"},
+    {"path": "assets/logo.dark.png", "type": "square_logo", "desc": "Square logo on dark background with abstract gateway arch and shield icon in green and gold"},
+    {"path": "assets/social-preview.png", "type": "github_social_preview", "desc": "GitHub social preview card with tagline, abstract portal and policy layers, green and gold palette"}
+  ]
+}

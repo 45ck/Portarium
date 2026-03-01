@@ -1,7 +1,11 @@
 # Portarium
 
 <p align="center">
-  <img src="banner.svg" alt="Portarium banner" width="100%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner.dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="assets/banner.light.png" />
+    <img src="assets/banner.light.png" alt="Portarium banner" width="100%" />
+  </picture>
 </p>
 
 Open-source policy control plane for autonomous agents (OpenClaw and beyond) across software and robots.
