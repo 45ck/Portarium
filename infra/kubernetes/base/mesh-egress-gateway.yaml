@@ -142,6 +142,13 @@ metadata:
     portarium.io/adr: '0115'
 spec:
   replicas: 2
+  # Rolling update strategy: one pod at a time to maintain availability.
+  # maxUnavailable=0 ensures at least 2 pods are always ready during rollouts.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: egress-gateway
@@ -156,6 +163,7 @@ spec:
         portarium.io/adr: '0115'
     spec:
       serviceAccountName: egress-gateway
+      terminationGracePeriodSeconds: 30
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -175,18 +183,24 @@ spec:
             - name: admin
               containerPort: 9901
               protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /ready
+              port: 9901
+            failureThreshold: 10
+            periodSeconds: 3
           readinessProbe:
             httpGet:
               path: /ready
               port: 9901
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            periodSeconds: 5
+            failureThreshold: 2
           livenessProbe:
             httpGet:
               path: /ready
               port: 9901
-            initialDelaySeconds: 10
-            periodSeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
           resources:
             requests:
               cpu: 100m
@@ -234,6 +248,27 @@ spec:
       port: 15443
       targetPort: 15443
       protocol: TCP
+
+---
+# PodDisruptionBudget: ensure at least 1 egress gateway pod is always
+# available during voluntary disruptions (node drain, upgrades).
+# Combined with replicas=2 and maxUnavailable=0 rolling update,
+# this guarantees continuous egress gateway availability.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: egress-gateway-pdb
+  namespace: portarium-egress
+  labels:
+    app.kubernetes.io/name: egress-gateway
+    app.kubernetes.io/part-of: portarium
+    app.kubernetes.io/component: egress-gateway
+    portarium.io/adr: '0115'
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: egress-gateway
 
 ---
 # NetworkPolicy: deny all ingress to egress gateway except from agent
