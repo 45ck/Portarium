@@ -568,7 +568,7 @@ describe('AC4: Gateway full-stack overhead measurement', () => {
           setHeader() {
             return res;
           },
-        } as unknown as ServerResponse & { _status: number };
+        } as unknown as ServerResponse & { _status: number; _body: string };
         return res;
       }
 
@@ -636,7 +636,7 @@ describe('AC4: Gateway full-stack overhead measurement', () => {
         setHeader() {
           return res;
         },
-      } as unknown as ServerResponse & { _status: number };
+      } as unknown as ServerResponse & { _status: number; _body: string };
       return res;
     }
 
@@ -698,7 +698,7 @@ describe('AC4: Gateway full-stack overhead measurement', () => {
         setHeader() {
           return res;
         },
-      } as unknown as ServerResponse & { _status: number };
+      } as unknown as ServerResponse & { _status: number; _body: string };
       return res;
     }
 
