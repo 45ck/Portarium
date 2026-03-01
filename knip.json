@@ -15,7 +15,10 @@
     "reports/**",
     ".specify/**",
     "e2e/**",
-    "playwright-report/**"
+    "playwright-report/**",
+    "tmp/**",
+    ".tmp/**",
+    "scratch/**"
   ],
   "playwright": false,
   "ignoreDependencies": [

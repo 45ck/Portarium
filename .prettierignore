@@ -32,3 +32,9 @@ bd_issues_tmp.json
 infra/helm/**/templates/*.yaml
 docs/ui/cockpit/index.html
 tmp/
+.tmp/
+scratch/
+*.local.ts
+*.local.js
+*.local.mjs
+*.local.cjs

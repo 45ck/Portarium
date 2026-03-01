@@ -49,6 +49,11 @@ export default tseslint.config(
       'gen*.{js,cjs,mjs,py}',
       'gb*.{js,cjs,mjs}',
       'build_gen*.{js,cjs,mjs}',
+      // Transient local-scratch directories and files
+      'tmp/**',
+      '.tmp/**',
+      'scratch/**',
+      '*.local.{ts,js,mjs,cjs}',
     ],
   },
 

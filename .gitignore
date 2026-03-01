@@ -87,6 +87,11 @@ infra/terraform/**/.terraform.lock.hcl
 .beads/deletions.jsonl
 tmp/
 .tmp/
+scratch/
+*.local.ts
+*.local.js
+*.local.mjs
+*.local.cjs
 test-results/
 playwright-report/
 playwright-results.json

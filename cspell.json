@@ -90,6 +90,13 @@
     "reports/**",
     "docs/compliance/*.csv",
     "package-lock.json",
-    "node_modules/**"
+    "node_modules/**",
+    "tmp/**",
+    ".tmp/**",
+    "scratch/**",
+    "*.local.ts",
+    "*.local.js",
+    "*.local.mjs",
+    "*.local.cjs"
   ]
 }

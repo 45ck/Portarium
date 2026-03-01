@@ -55,6 +55,25 @@ In your PR description include:
 - test and gate evidence
 - notable risks or follow-up tasks
 
+## Repo Hygiene: Temporary and Scratch Paths
+
+The following paths are excluded from git, lint, format, spell-check, and CI gates.
+Do not commit files to these locations; they exist only for local ad-hoc work.
+
+| Path pattern                                             | Purpose                                  |
+| -------------------------------------------------------- | ---------------------------------------- |
+| `tmp/`, `.tmp/`                                          | Transient tool output, build scratch     |
+| `scratch/`                                               | Manual experimentation / throwaway code  |
+| `tmp_*`, `tmp-*`                                         | One-off generator scripts (root level)   |
+| `*.local.ts`, `*.local.js`, `*.local.mjs`, `*.local.cjs` | Local-only overrides and scratch modules |
+| `gen*.js`, `gb*.js`, `build_gen*.js`                     | Code-generation scratch scripts          |
+
+To clean all local scratch artifacts before running CI:
+
+```bash
+rm -rf tmp/ .tmp/ scratch/ && rm -f tmp_* tmp-* gen*.js gen*.cjs gen*.mjs gb*.js gb*.cjs gb*.mjs build_gen*.js build_gen*.cjs build_gen*.mjs *.local.ts *.local.js *.local.mjs *.local.cjs
+```
+
 ## License
 
 By contributing, you agree that your contributions are licensed under the MIT License in `LICENSE`.
