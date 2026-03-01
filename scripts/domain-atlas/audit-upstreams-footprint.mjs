@@ -121,7 +121,8 @@ if (jsonOutput) {
 }
 
 const failures = [];
-if (totalOverLimit) failures.push(`total upstream footprint ${totals.mb.toFixed(2)} MB exceeds ${maxTotalMb} MB`);
+if (totalOverLimit)
+  failures.push(`total upstream footprint ${totals.mb.toFixed(2)} MB exceeds ${maxTotalMb} MB`);
 if (overProviderLimit.length > 0) {
   failures.push(
     `providers exceed ${maxProviderMb} MB: ${overProviderLimit.map((r) => `${r.providerId} (${r.mb.toFixed(2)} MB)`).join(', ')}`,
@@ -137,4 +138,3 @@ if (failures.length > 0) {
   }
   process.exit(1);
 }
-

@@ -112,4 +112,3 @@ for (const action of actions) {
   console.log(action);
 }
 console.log(`\n${dryRun ? 'Dry run complete.' : 'Cleanup complete.'} Actions: ${actions.length}`);
-

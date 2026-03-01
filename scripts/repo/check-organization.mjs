@@ -56,7 +56,9 @@ if (qaEvidenceFiles.length > 0) {
 
 const dotTmpFiles = collectFiles(path.join(repoRoot, '.tmp'));
 if (dotTmpFiles.length > 0) {
-  errors.push(`.tmp contains ${dotTmpFiles.length} files. Move scratch files to tmp/local-scratch/.`);
+  errors.push(
+    `.tmp contains ${dotTmpFiles.length} files. Move scratch files to tmp/local-scratch/.`,
+  );
 }
 
 const rootScratch = collectRootScratch();
@@ -75,4 +77,3 @@ if (errors.length > 0) {
 }
 
 console.log('Repository organization check passed.');
-

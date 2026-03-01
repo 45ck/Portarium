@@ -9,4 +9,3 @@ Use this folder for:
 - temporary media generated during QA runs
 
 Use `qa-artifacts/manual-evidence/` for manually captured evidence and keep long-lived documentation assets in `docs/` only when they are intentionally curated.
-
