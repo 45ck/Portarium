@@ -20,6 +20,7 @@ resources:
   - rbac.yaml
   - agent-network-policy.yaml
   - execution-plane-network-policy.yaml
+  - mesh-egress-gateway.yaml
   - network-policies/agent-egress-deny.yaml
   - network-policies/execution-plane-egress.yaml
   - network-policies/execution-plane-ingress.yaml

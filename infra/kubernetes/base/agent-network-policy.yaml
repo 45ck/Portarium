@@ -1,53 +1,133 @@
+# Agent egress NetworkPolicy — ADR-0115 aligned.
+#
+# Implements the no-direct-egress invariant from ADR-0115. Agent pods
+# operate under deny-all egress by default. The only permitted egress
+# destinations are:
+#
+#   1. Portarium control-plane endpoints (Action API, event bus).
+#   2. Localhost sidecar proxy (Pattern B, port 15001).
+#   3. SPIRE agent socket (identity attestation).
+#   4. Kubernetes DNS (service discovery of approved endpoints).
+#
+# All other outbound connections are dropped at the network policy level.
+#
+# Bead: bead-0835
+# See: docs/internal/adr/ADR-0115-agent-egress-enforcement-model.md
+
 ---
-# Deny-all egress for agent workloads by default.
-# Only the Portarium control-plane service is reachable from agent pods.
+# 1. Deny-all egress baseline for agent workloads.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: agent-deny-all-egress
-  namespace: portarium
+  namespace: portarium-agents
   labels:
     app.kubernetes.io/part-of: portarium
     portarium.io/policy: agent-egress
+    portarium.io/adr: '0115'
 spec:
-  podSelector:
-    matchLabels:
-      portarium.io/workload: agent
+  podSelector: {}
   policyTypes:
     - Egress
   egress: []
 
 ---
-# Allow agent pods to reach the control-plane service only.
+# 2. Allow egress to control-plane namespace (Action API + event bus).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: agent-allow-control-plane-egress
-  namespace: portarium
+  namespace: portarium-agents
   labels:
     app.kubernetes.io/part-of: portarium
     portarium.io/policy: agent-egress
+    portarium.io/adr: '0115'
 spec:
-  podSelector:
-    matchLabels:
-      portarium.io/workload: agent
+  podSelector: {}
   policyTypes:
     - Egress
   egress:
-    # Allow egress to control-plane pods.
     - to:
-        - podSelector:
+        - namespaceSelector:
             matchLabels:
-              portarium.io/component: control-plane
+              portarium.io/plane: control
       ports:
         - protocol: TCP
-          port: 3000
-    # Allow DNS resolution (kube-dns / CoreDNS).
+          port: 443
+
+---
+# 3. Allow egress to localhost sidecar proxy (Pattern B).
+#    The sidecar proxy runs as a sidecar container in the same pod,
+#    listening on 127.0.0.1:15001. Traffic to external SoR endpoints
+#    is proxied through this sidecar only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-allow-sidecar-proxy-egress
+  namespace: portarium-agents
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: agent-egress
+    portarium.io/adr: '0115'
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
     - to:
-        - namespaceSelector: {}
-          podSelector:
+        - ipBlock:
+            cidr: 127.0.0.1/32
+      ports:
+        - protocol: TCP
+          port: 15001
+
+---
+# 4. Allow egress to SPIRE agent socket for workload identity attestation.
+#    The SPIRE agent runs as a DaemonSet; the agent pod connects via
+#    the Workload API (Unix domain socket mounted at /run/spire/sockets/).
+#    Network egress to the SPIRE agent is allowed for SVID rotation.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-allow-spire-egress
+  namespace: portarium-agents
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: agent-egress
+    portarium.io/adr: '0115'
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
             matchLabels:
-              k8s-app: kube-dns
+              kubernetes.io/metadata.name: spire
+      ports:
+        - protocol: TCP
+          port: 8081
+
+---
+# 5. Allow DNS resolution (CoreDNS in kube-system).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-allow-dns-egress
+  namespace: portarium-agents
+  labels:
+    app.kubernetes.io/part-of: portarium
+    portarium.io/policy: agent-egress
+    portarium.io/adr: '0115'
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
       ports:
         - protocol: UDP
           port: 53
