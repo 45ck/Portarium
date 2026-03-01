@@ -29,14 +29,14 @@ We need an enforcement model that makes direct egress technically impossible
 
 ### Related decisions
 
-| ADR | Relationship |
-|-----|-------------|
+| ADR      | Relationship                                                                  |
+| -------- | ----------------------------------------------------------------------------- |
 | ADR-0065 | Execution plane strategy — defines the runtime boundary agents operate within |
-| ADR-0070 | Hybrid orchestration/choreography — defines event flow topology |
-| ADR-0073 | All-roads-through-control-plane — the invariant this ADR enforces |
-| ADR-0074 | Untrusted tool sandbox — containment boundary for tool execution |
-| ADR-0076 | SPIRE workload identity — the identity substrate this ADR leverages |
-| ADR-0100 | JWT short-expiry revocation — token lifetime constraints |
+| ADR-0070 | Hybrid orchestration/choreography — defines event flow topology               |
+| ADR-0073 | All-roads-through-control-plane — the invariant this ADR enforces             |
+| ADR-0074 | Untrusted tool sandbox — containment boundary for tool execution              |
+| ADR-0076 | SPIRE workload identity — the identity substrate this ADR leverages           |
+| ADR-0100 | JWT short-expiry revocation — token lifetime constraints                      |
 
 ---
 
@@ -128,7 +128,7 @@ spec:
         - ipBlock:
             cidr: 127.0.0.1/32
       ports:
-        - port: 15001  # sidecar proxy
+        - port: 15001 # sidecar proxy
           protocol: TCP
     - to:
         - namespaceSelector:
@@ -146,13 +146,13 @@ spec:
 If any enforcement component is unavailable, agent egress MUST fail rather
 than degrade to allow-all:
 
-| Failure mode | Behavior |
-|-------------|----------|
-| Sidecar proxy crashes | Agent connections to localhost:15001 fail; no fallback path exists |
-| NetworkPolicy controller unavailable | Kubernetes default-deny remains in effect |
-| SPIRE agent unavailable | No SVID issued; mTLS handshake fails; proxy rejects |
-| Action API unavailable | Agent receives 503; retry with backoff; no direct bypass |
-| Allowlist config missing | Proxy defaults to empty allowlist (deny all destinations) |
+| Failure mode                         | Behavior                                                           |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| Sidecar proxy crashes                | Agent connections to localhost:15001 fail; no fallback path exists |
+| NetworkPolicy controller unavailable | Kubernetes default-deny remains in effect                          |
+| SPIRE agent unavailable              | No SVID issued; mTLS handshake fails; proxy rejects                |
+| Action API unavailable               | Agent receives 503; retry with backoff; no direct bypass           |
+| Allowlist config missing             | Proxy defaults to empty allowlist (deny all destinations)          |
 
 ### Identity Model
 
@@ -161,6 +161,7 @@ Agent identity combines two layers:
 1. **Workload identity (mTLS/SPIFFE):** Each agent pod receives a short-lived
    X.509 SVID from SPIRE (ADR-0076). The SPIFFE ID encodes the agent type
    and tenant:
+
    ```
    spiffe://portarium.io/ns/portarium-agents/sa/agent-<type>/tenant/<tenant-id>
    ```
@@ -175,6 +176,7 @@ Agent identity combines two layers:
    - `exp`: short expiry (max 5 minutes)
 
 The sidecar proxy (Pattern B) validates both layers:
+
 - mTLS handshake verifies the SVID against SPIRE trust bundle.
 - JWT signature and claims are verified before proxying the request.
 - Requests without valid identity on both layers are rejected (HTTP 401).
@@ -184,19 +186,19 @@ The sidecar proxy (Pattern B) validates both layers:
 All egress — whether via Pattern A or Pattern B — MUST produce structured
 audit records:
 
-| Field | Source | Required |
-|-------|--------|----------|
-| `timestamp` | Proxy/API server clock | Yes |
-| `agent_spiffe_id` | mTLS peer certificate | Yes |
-| `tenant_id` | JWT claim | Yes |
-| `workflow_run_id` | JWT claim | Yes |
-| `destination_host` | Outbound request | Yes |
-| `destination_port` | Outbound request | Yes |
-| `http_method` | Outbound request | Yes |
-| `http_path` | Outbound request | Yes |
-| `response_status` | Outbound response | Yes |
-| `policy_decision` | Policy engine result | Yes |
-| `latency_ms` | Proxy/API measurement | Yes |
+| Field               | Source                  | Required       |
+| ------------------- | ----------------------- | -------------- |
+| `timestamp`         | Proxy/API server clock  | Yes            |
+| `agent_spiffe_id`   | mTLS peer certificate   | Yes            |
+| `tenant_id`         | JWT claim               | Yes            |
+| `workflow_run_id`   | JWT claim               | Yes            |
+| `destination_host`  | Outbound request        | Yes            |
+| `destination_port`  | Outbound request        | Yes            |
+| `http_method`       | Outbound request        | Yes            |
+| `http_path`         | Outbound request        | Yes            |
+| `response_status`   | Outbound response       | Yes            |
+| `policy_decision`   | Policy engine result    | Yes            |
+| `latency_ms`        | Proxy/API measurement   | Yes            |
 | `request_body_hash` | SHA-256 of request body | Pattern A only |
 
 Audit records are emitted as CloudEvents (ADR-0032) to the platform event bus.
@@ -206,15 +208,15 @@ Retention follows evidence lifecycle policy (ADR-0028).
 
 This enforcement model assumes the following threat model:
 
-| Threat | Mitigation |
-|--------|-----------|
-| **Compromised agent code** attempts direct egress | NetworkPolicy denies all non-allowlisted egress at kernel level |
-| **Credential theft** from agent memory | Agents never hold SoR credentials; credentials are in Vault, retrieved by control plane or sidecar at call time |
-| **JWT replay** to escalate scope | Short expiry (5 min), single-use nonce, audience binding |
-| **Sidecar bypass** via raw socket | NetworkPolicy restricts egress to localhost:15001 only; raw sockets to external IPs are dropped |
-| **DNS exfiltration** | DNS egress limited to kube-system CoreDNS; external DNS resolvers blocked |
-| **SPIRE compromise** | SPIRE server is in a hardened namespace with separate RBAC; node attestation prevents rogue agents |
-| **Tenant isolation breach** | SPIFFE ID includes tenant; sidecar validates tenant claim matches allowlist scope |
+| Threat                                            | Mitigation                                                                                                      |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Compromised agent code** attempts direct egress | NetworkPolicy denies all non-allowlisted egress at kernel level                                                 |
+| **Credential theft** from agent memory            | Agents never hold SoR credentials; credentials are in Vault, retrieved by control plane or sidecar at call time |
+| **JWT replay** to escalate scope                  | Short expiry (5 min), single-use nonce, audience binding                                                        |
+| **Sidecar bypass** via raw socket                 | NetworkPolicy restricts egress to localhost:15001 only; raw sockets to external IPs are dropped                 |
+| **DNS exfiltration**                              | DNS egress limited to kube-system CoreDNS; external DNS resolvers blocked                                       |
+| **SPIRE compromise**                              | SPIRE server is in a hardened namespace with separate RBAC; node attestation prevents rogue agents              |
+| **Tenant isolation breach**                       | SPIFFE ID includes tenant; sidecar validates tenant claim matches allowlist scope                               |
 
 ---
 
@@ -254,14 +256,15 @@ This enforcement model assumes the following threat model:
 
 Each phase is independently reversible:
 
-| Phase | Rollback action | Impact |
-|-------|----------------|--------|
-| Phase 1 | Remove sidecar DaemonSet | No impact; monitor-only |
-| Phase 2 | Revert agent SDK to direct calls | Agents bypass Action API; audit gaps |
-| Phase 3 | Switch NetworkPolicy back to audit mode | Violations logged but not blocked |
+| Phase   | Rollback action                           | Impact                                |
+| ------- | ----------------------------------------- | ------------------------------------- |
+| Phase 1 | Remove sidecar DaemonSet                  | No impact; monitor-only               |
+| Phase 2 | Revert agent SDK to direct calls          | Agents bypass Action API; audit gaps  |
+| Phase 3 | Switch NetworkPolicy back to audit mode   | Violations logged but not blocked     |
 | Phase 4 | Roll back to Phase 3 (canary enforcement) | Partial enforcement; known-good state |
 
 Full rollback to pre-ADR state requires:
+
 1. Delete `agent-deny-all-egress` NetworkPolicy.
 2. Remove sidecar proxy from agent pod templates.
 3. Revert agent SDK to pre-enforcement version.
