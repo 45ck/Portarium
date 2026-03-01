@@ -36,7 +36,7 @@ Add a **scenario gate** (`npm run ci:scenario-gate`) that:
 
 | Suite           | Test count | Wall-clock (local, 2026-03-02) | Target  |
 | --------------- | ---------- | ------------------------------ | ------- |
-| Scenario (PR)   | ~65        | ~8 s                           | < 30 s  |
+| Scenario (PR)   | 142        | < 1 s                          | < 30 s  |
 | Full unit suite | ~5 600     | ~45 s                          | < 120 s |
 
 The scenario gate adds negligible overhead because:
