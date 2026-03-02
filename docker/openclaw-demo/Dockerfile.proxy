@@ -1,0 +1,26 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Create non-root user before installing deps
+RUN addgroup -S portarium && adduser -S portarium -G portarium
+
+# Copy manifests first for layer caching
+COPY package.json package-lock.json ./
+
+# Keep devDependencies: tsx is a devDep but required at runtime to load TypeScript source.
+RUN npm ci --ignore-scripts
+
+# Copy TypeScript sources and tsconfig (tsx needs tsconfig to resolve paths)
+COPY tsconfig.json ./
+COPY src/ ./src/
+COPY scripts/demo/portarium-tool-proxy.mjs ./scripts/demo/
+
+# Drop privileges
+USER portarium
+
+ENV PORT=9999
+
+EXPOSE 9999
+
+CMD ["node", "--import", "tsx/esm", "scripts/demo/portarium-tool-proxy.mjs"]

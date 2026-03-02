@@ -1,0 +1,30 @@
+services:
+  portarium-policy-proxy:
+    build:
+      context: ../..
+      dockerfile: docker/openclaw-demo/Dockerfile.proxy
+    ports:
+      - '9999:9999'
+    environment:
+      PORT: '9999'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:9999/health').then(r=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  openclaw-agent:
+    build:
+      context: .
+    environment:
+      PROXY_URL: http://portarium-policy-proxy:9999
+    depends_on:
+      portarium-policy-proxy:
+        condition: service_healthy

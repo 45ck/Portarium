@@ -197,6 +197,19 @@ export default tseslint.config(
     },
   },
 
+  // Demo scripts use optional SDK packages (openai, @anthropic-ai/sdk) that are
+  // not installed by default. Dynamic import() is used so the scripts fail
+  // gracefully at runtime with a helpful message rather than at load time.
+  // import/no-unresolved cannot distinguish optional dynamic imports, so we
+  // suppress it for demo files only.
+  {
+    files: ['scripts/demo/**/*.mjs'],
+    rules: {
+      'import/no-unresolved': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+
   // In-memory adapter implementations are test doubles for external services.
   // They route many operations through a single switch and legitimately need
   // higher complexity/size budgets. require-await is off because they fulfil

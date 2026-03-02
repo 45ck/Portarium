@@ -185,7 +185,12 @@
     "ab": "node scripts/ab.mjs",
     "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium --workers=1",
     "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13",
-    "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium"
+    "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium",
+    "demo:policy": "tsx scripts/demo/policy-demo.mjs",
+    "demo:proxy": "tsx scripts/demo/portarium-tool-proxy.mjs",
+    "demo:agent:openai": "tsx scripts/demo/openai-agent-demo.mjs",
+    "demo:agent:claude": "tsx scripts/demo/claude-agent-demo.mjs",
+    "demo:agent:docker": "docker compose -f docker/openclaw-demo/docker-compose.demo.yml up --build --abort-on-container-exit"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
@@ -236,6 +241,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18",
+    "openai": "^4.104.0",
     "yaml": "^2.8.2"
   },
   "dependencies": {
