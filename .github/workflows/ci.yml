@@ -125,6 +125,15 @@ jobs:
           name: reports
           path: reports/
 
+      - name: Upload scenario gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-gate
+          path: |
+            reports/scenarios/
+            test-results/scenario-junit.xml
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
