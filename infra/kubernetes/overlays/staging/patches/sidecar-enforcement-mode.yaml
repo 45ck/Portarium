@@ -1,0 +1,11 @@
+# Sidecar enforcement mode patch for staging environment.
+# Staging uses enforce mode — block non-allowlisted egress (ADR-0115 Phase 3).
+# Bead: bead-0841
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portarium-sidecar-config
+  namespace: portarium-agents
+data:
+  enforcement-mode: |
+    enforcementMode: enforce

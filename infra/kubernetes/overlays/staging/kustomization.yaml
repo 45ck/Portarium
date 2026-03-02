@@ -12,3 +12,4 @@ images:
 
 patchesStrategicMerge:
   - patches/replicas.yaml
+  - patches/sidecar-enforcement-mode.yaml
