@@ -1,0 +1,11 @@
+# Sidecar enforcement mode patch for production environment.
+# Prod uses enforce mode — deny-all egress, fail-closed (ADR-0115 Phase 4).
+# Bead: bead-0841
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portarium-sidecar-config
+  namespace: portarium-agents
+data:
+  enforcement-mode: |
+    enforcementMode: enforce
