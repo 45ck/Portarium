@@ -149,7 +149,6 @@ NetworkPolicy from audit to enforce for new deployments.
    the canary percentage via pod anti-affinity or rollout strategy.
 
 2. **Monitor canary for 7 days:**
-
    - Check `portarium_egress_denied_total` metric for unexpected blocks.
    - Review sidecar logs for false positives.
    - Validate latency stays within budget (P99 < 5ms per hop).
@@ -228,12 +227,12 @@ Each level of rollback is independently reversible (see Rollback Strategy below)
 
 ## Rollback Strategy
 
-| Level | Action | Effect | Time to effect |
-|-------|--------|--------|----------------|
-| L1 | Patch sidecar to `monitor` mode | Egress logged but not blocked | < 2 minutes |
-| L2 | Delete agent egress NetworkPolicy | All egress allowed from agents | < 1 minute |
-| L3 | Remove sidecar container from pods | No proxy layer; direct egress | < 5 minutes |
-| L4 | Full rollback to pre-ADR-0115 state | Complete removal of enforcement | < 15 minutes |
+| Level | Action                              | Effect                          | Time to effect |
+| ----- | ----------------------------------- | ------------------------------- | -------------- |
+| L1    | Patch sidecar to `monitor` mode     | Egress logged but not blocked   | < 2 minutes    |
+| L2    | Delete agent egress NetworkPolicy   | All egress allowed from agents  | < 1 minute     |
+| L3    | Remove sidecar container from pods  | No proxy layer; direct egress   | < 5 minutes    |
+| L4    | Full rollback to pre-ADR-0115 state | Complete removal of enforcement | < 15 minutes   |
 
 **L4 full rollback steps:**
 
@@ -275,10 +274,10 @@ See `scripts/ci/validate-k8s-policies.mjs` and
 
 ## Incident Response Hooks
 
-| Trigger | Response |
-|---------|----------|
+| Trigger                               | Response                                                        |
+| ------------------------------------- | --------------------------------------------------------------- |
 | `portarium_egress_denied_total` spike | Check sidecar allowlist; may need to add legitimate destination |
-| Sidecar crash loop | L1 rollback to monitor mode; investigate proxy crash logs |
-| SPIRE agent unavailable | Agents fail to get SVID; mTLS breaks; escalate to platform team |
-| Agent latency > 10ms (P99) | Check sidecar performance; consider resource limit increase |
-| Direct egress detected in prod | Critical security alert; investigate bypassed enforcement path |
+| Sidecar crash loop                    | L1 rollback to monitor mode; investigate proxy crash logs       |
+| SPIRE agent unavailable               | Agents fail to get SVID; mTLS breaks; escalate to platform team |
+| Agent latency > 10ms (P99)            | Check sidecar performance; consider resource limit increase     |
+| Direct egress detected in prod        | Critical security alert; investigate bypassed enforcement path  |
