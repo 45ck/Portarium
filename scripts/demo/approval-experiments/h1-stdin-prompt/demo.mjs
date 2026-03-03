@@ -18,7 +18,6 @@
 import { createServer } from 'http';
 import http from 'http';
 import { createInterface } from 'readline';
-import { fileURLToPath } from 'url';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -28,7 +27,6 @@ const AUTO_APPROVE =
   process.argv.includes('--auto') || process.env['DEMO_AUTO_APPROVE'] === '1';
 
 const PROXY_PORT = 19998;
-const BASE_PROXY_PORT = PROXY_PORT + 1;
 
 // ---------------------------------------------------------------------------
 // Inline mini-proxy (avoids needing tsx for the base proxy import)
