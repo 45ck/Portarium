@@ -272,31 +272,37 @@ export async function* connectApprovalChannel(proxyUrl) {
  * @param {{ timeoutMs?: number }} [opts]
  * @returns {Promise<{ approved: boolean; status: 'approved' | 'denied' | 'timeout' }>}
  */
-export async function waitForApproval(approvalId, proxyUrl, opts = {}) {
+export function waitForApproval(approvalId, proxyUrl, opts = {}) {
   const timeoutMs = opts.timeoutMs ?? 30_000;
 
-  return new Promise(async (resolve) => {
-    const timer = setTimeout(() => {
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let timer;
+
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(() => {
       resolve({ approved: false, status: /** @type {const} */ ('timeout') });
     }, timeoutMs);
+  });
 
+  const channelPromise = (async () => {
     try {
       for await (const event of connectApprovalChannel(proxyUrl)) {
         if (event.type === 'approval_decision' && event.approvalId === approvalId) {
           clearTimeout(timer);
-          resolve({
+          return {
             approved: event.decision === 'approved',
             status: /** @type {'approved' | 'denied'} */ (event.decision),
-          });
-          return;
+          };
         }
       }
       // Channel closed without decision
       clearTimeout(timer);
-      resolve({ approved: false, status: /** @type {const} */ ('timeout') });
+      return { approved: false, status: /** @type {const} */ ('timeout') };
     } catch {
       clearTimeout(timer);
-      resolve({ approved: false, status: /** @type {const} */ ('timeout') });
+      return { approved: false, status: /** @type {const} */ ('timeout') };
     }
-  });
+  })();
+
+  return Promise.race([channelPromise, timeoutPromise]);
 }
