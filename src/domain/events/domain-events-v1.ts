@@ -110,6 +110,11 @@ export type DomainEventType =
   | 'WorkItemTransitioned'
   // Agent actions
   | 'AgentActionProposed'
+  | 'AgentActionApprovalRequested'
+  | 'AgentActionApproved'
+  | 'AgentActionDenied'
+  | 'AgentActionExecuted'
+  | 'AgentActionExecutionFailed'
   // Catch-all
   | 'Unknown';
 
@@ -231,6 +236,11 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'WorkItemTransitioned',
   // Agent actions
   'AgentActionProposed',
+  'AgentActionApprovalRequested',
+  'AgentActionApproved',
+  'AgentActionDenied',
+  'AgentActionExecuted',
+  'AgentActionExecutionFailed',
   // Catch-all
   'Unknown',
 ]);
