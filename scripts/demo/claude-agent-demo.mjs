@@ -9,6 +9,7 @@
  */
 
 import { startPolicyProxy } from './portarium-tool-proxy.mjs';
+import { handleApprovalRequired } from './portarium-approval-plugin.mjs';
 
 // ---------------------------------------------------------------------------
 // SDK import (graceful failure if not installed)
@@ -176,10 +177,35 @@ async function main() {
           }),
         });
 
-        const policyResult = /** @type {any} */ (await policyResp.json());
+        let policyResult = /** @type {any} */ (await policyResp.json());
+
+        // Approval-wait loop: agent pauses until human approves or denies
+        if (policyResult.status === 'awaiting_approval') {
+          const decision = await handleApprovalRequired(policyResult, proxyUrl);
+          if (decision.approved) {
+            const retryResp = await fetch(`${proxyUrl}/tools/invoke`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                toolName: portariumToolName,
+                parameters: params,
+                policyTier: POLICY_TIER,
+                approvalId: decision.approvalId,
+              }),
+            });
+            policyResult = /** @type {any} */ (await retryResp.json());
+          } else {
+            policyResult = {
+              allowed: false,
+              message: 'Denied by human operator',
+              minimumTier: policyResult.minimumTier,
+            };
+          }
+        }
 
         if (policyResult.allowed) {
-          console.log(`  ✅ ALLOWED — ${portariumToolName} (tier: ${POLICY_TIER})`);
+          const humanFlag = policyResult.approvedByHuman ? ' (human-approved)' : '';
+          console.log(`  ✅ ALLOWED — ${portariumToolName} (tier: ${POLICY_TIER})${humanFlag}`);
           toolResults.push({
             type: 'tool_result',
             tool_use_id: block.id,
@@ -192,7 +218,7 @@ async function main() {
             tool_use_id: block.id,
             content:
               `BLOCKED by Portarium policy: ${policyResult.message}. ` +
-              `Tool "${portariumToolName}" requires tier "${policyResult.minimumTier}" ` +
+              `Tool "${portariumToolName}" requires tier "${policyResult.minimumTier ?? 'higher'}" ` +
               `but current tier is "${POLICY_TIER}".`,
           });
         }

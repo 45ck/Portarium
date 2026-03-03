@@ -75,12 +75,21 @@ async function main() {
     });
 
     const result = /** @type {any} */ (await res.json());
+    // awaiting_approval counts as "blocked" for this scripted test — the agent is not
+    // interactive and cannot wait for a human decision. In a real agent loop, the agent
+    // would call waitForApproval() here. See portarium-approval-plugin.mjs.
     const gotAllow = result.allowed === true;
     const matched = gotAllow === tc.expectAllow;
 
     const icon = matched ? (gotAllow ? '✅' : '❌') : '⚠️ MISMATCH';
 
-    const actual = gotAllow ? 'ALLOWED' : 'BLOCKED';
+    const actualRaw =
+      result.status === 'awaiting_approval'
+        ? `AWAITING_APPROVAL (${result.approvalId?.slice(0, 8) ?? '?'}…)`
+        : gotAllow
+          ? 'ALLOWED'
+          : 'BLOCKED';
+    const actual = gotAllow ? 'ALLOWED' : actualRaw;
     const expected = tc.expectAllow ? 'ALLOWED' : 'BLOCKED';
 
     console.log(

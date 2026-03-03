@@ -190,7 +190,8 @@
     "demo:proxy": "tsx scripts/demo/portarium-tool-proxy.mjs",
     "demo:agent:openai": "tsx scripts/demo/openai-agent-demo.mjs",
     "demo:agent:claude": "tsx scripts/demo/claude-agent-demo.mjs",
-    "demo:agent:docker": "docker compose -f docker/openclaw-demo/docker-compose.demo.yml up --build --abort-on-container-exit"
+    "demo:agent:docker": "docker compose -f docker/openclaw-demo/docker-compose.demo.yml up --build --abort-on-container-exit",
+    "demo:approve": "node scripts/demo/portarium-approval-cli.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

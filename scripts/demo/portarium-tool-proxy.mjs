@@ -10,6 +10,48 @@
 
 import { createServer } from 'http';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
+
+// ---------------------------------------------------------------------------
+// Approval store (file-backed — survives proxy restarts)
+// ---------------------------------------------------------------------------
+
+const APPROVALS_DIR = join(tmpdir(), '.portarium-approvals');
+try {
+  mkdirSync(APPROVALS_DIR, { recursive: true });
+} catch {
+  /* already exists */
+}
+const APPROVALS_FILE = join(APPROVALS_DIR, 'pending.json');
+
+/** @typedef {{ toolName: string; parameters: unknown; status: 'pending'|'approved'|'denied'; createdAt: string; decidedAt?: string }} ApprovalRecord */
+/** @type {Map<string, ApprovalRecord>} */
+const approvals = new Map();
+
+function loadApprovals() {
+  try {
+    const raw = readFileSync(APPROVALS_FILE, 'utf8');
+    const entries = /** @type {[string, ApprovalRecord][]} */ (JSON.parse(raw));
+    for (const [id, record] of entries) {
+      approvals.set(id, record);
+    }
+  } catch {
+    /* file not yet written */
+  }
+}
+
+function saveApprovals() {
+  try {
+    writeFileSync(APPROVALS_FILE, JSON.stringify([...approvals.entries()], null, 2), 'utf8');
+  } catch {
+    /* non-fatal */
+  }
+}
+
+loadApprovals();
 
 // tsx resolves .js → .ts at runtime
 import { classifyOpenClawToolBlastRadiusV1 } from '../../src/domain/machines/openclaw-tool-blast-radius-v1.js';
@@ -133,7 +175,99 @@ async function handleRequest(req, res, port) {
 
   // GET /health
   if (req.method === 'GET' && url.pathname === '/health') {
-    jsonResponse(res, 200, { status: 'ok', service: 'portarium-policy-proxy', port });
+    jsonResponse(res, 200, {
+      status: 'ok',
+      service: 'portarium-policy-proxy',
+      port,
+      pendingApprovals: [...approvals.values()].filter((a) => a.status === 'pending').length,
+    });
+    return;
+  }
+
+  // GET /approvals — list approvals (optionally filtered by ?status=pending)
+  if (req.method === 'GET' && url.pathname === '/approvals') {
+    const statusFilter = url.searchParams.get('status');
+    const items = [];
+    for (const [id, record] of approvals) {
+      if (statusFilter && record.status !== statusFilter) continue;
+      items.push({ approvalId: id, ...record });
+    }
+    jsonResponse(res, 200, { approvals: items, total: items.length });
+    return;
+  }
+
+  // GET /approvals/ui — human-facing HTML page
+  if (req.method === 'GET' && url.pathname === '/approvals/ui') {
+    const pending = [];
+    for (const [id, r] of approvals) {
+      if (r.status === 'pending')
+        pending.push({ id, toolName: r.toolName, createdAt: r.createdAt });
+    }
+    const rows = pending.length
+      ? pending
+          .map(
+            (p) =>
+              `<tr><td>${p.toolName}</td><td style="font-size:0.8em;color:#666">${p.id.slice(0, 8)}…</td><td>${p.createdAt}</td>` +
+              `<td><button onclick="decide('${p.id}','approved')" style="background:#22c55e;color:#fff;border:none;padding:4px 10px;cursor:pointer;border-radius:4px">Approve</button> ` +
+              `<button onclick="decide('${p.id}','denied')" style="background:#ef4444;color:#fff;border:none;padding:4px 10px;cursor:pointer;border-radius:4px;margin-left:4px">Deny</button></td></tr>`,
+          )
+          .join('')
+      : '<tr><td colspan="4" style="color:#888;text-align:center">No pending approvals</td></tr>';
+    const html = `<!doctype html><html><head><title>Portarium Approvals</title>
+<meta http-equiv="refresh" content="3"><style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd;text-align:left}th{background:#f5f5f5}</style></head>
+<body><h2>⏳ Pending Approvals</h2><p style="color:#666">Auto-refreshes every 3 seconds.</p>
+<table><thead><tr><th>Tool</th><th>Approval ID</th><th>Requested</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>
+<script>async function decide(id,decision){await fetch('/approvals/'+id+'/decide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision})});location.reload();}</script>
+</body></html>`;
+    res.writeHead(200, { 'Content-Type': 'text/html', 'Content-Length': Buffer.byteLength(html) });
+    res.end(html);
+    return;
+  }
+
+  // GET /approvals/:id — poll single approval status
+  const pollMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})$/);
+  if (req.method === 'GET' && pollMatch) {
+    const id = /** @type {string} */ (pollMatch[1]);
+    const record = approvals.get(id);
+    if (!record) {
+      jsonResponse(res, 404, { error: `Approval ${id} not found` });
+      return;
+    }
+    jsonResponse(res, 200, { approvalId: id, ...record });
+    return;
+  }
+
+  // POST /approvals/:id/decide — submit human decision
+  const decideMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})\/decide$/);
+  if (req.method === 'POST' && decideMatch) {
+    const id = /** @type {string} */ (decideMatch[1]);
+    const record = approvals.get(id);
+    if (!record) {
+      jsonResponse(res, 404, { error: `Approval ${id} not found` });
+      return;
+    }
+    if (record.status !== 'pending') {
+      jsonResponse(res, 409, { error: `Approval ${id} already decided: ${record.status}` });
+      return;
+    }
+    let body;
+    try {
+      body = /** @type {any} */ (await readJsonBody(req));
+    } catch {
+      jsonResponse(res, 400, { error: 'Invalid JSON body' });
+      return;
+    }
+    const { decision } = body;
+    if (decision !== 'approved' && decision !== 'denied') {
+      jsonResponse(res, 400, { error: 'decision must be "approved" or "denied"' });
+      return;
+    }
+    record.status = decision;
+    record.decidedAt = new Date().toISOString();
+    saveApprovals();
+    console.log(`[portarium-proxy] Approval ${id.slice(0, 8)}… → ${decision} (${record.toolName})`);
+    jsonResponse(res, 200, { approvalId: id, status: record.status, decidedAt: record.decidedAt });
     return;
   }
 
@@ -163,7 +297,7 @@ async function handleRequest(req, res, port) {
       return;
     }
 
-    const { toolName, parameters = {}, policyTier = 'Auto' } = body;
+    const { toolName, parameters = {}, policyTier = 'Auto', approvalId: preApprovalId } = body;
 
     if (!toolName || typeof toolName !== 'string') {
       jsonResponse(res, 400, { error: 'toolName (string) is required' });
@@ -199,16 +333,50 @@ async function handleRequest(req, res, port) {
 
     const policy = classifyOpenClawToolBlastRadiusV1(toolName);
 
+    // Pre-approved re-invoke: agent is re-invoking after human approved
+    if (preApprovalId) {
+      const approval = approvals.get(preApprovalId);
+      if (approval && approval.status === 'approved' && approval.toolName === toolName) {
+        const mockResult = await mockMachineInvoker.invokeTool({
+          toolName,
+          parameters,
+          machineId: /** @type {any} */ ('machine-demo-proxy'),
+          runId: /** @type {any} */ (`run-${Date.now()}`),
+        });
+        jsonResponse(res, 200, {
+          allowed: true,
+          decision: 'Allow',
+          approvedByHuman: true,
+          approvalId: preApprovalId,
+          tool: toolName,
+          category: policy.category,
+          output: mockResult.ok ? mockResult.output : null,
+        });
+        return;
+      }
+    }
+
     if (!result.proposed) {
-      jsonResponse(res, 200, {
-        allowed: false,
-        decision: 'Deny',
-        reason: result.reason,
-        message: result.message,
-        tool: toolName,
+      // Tool is blocked — create an approval request instead of denying immediately
+      const approvalId = randomUUID();
+      approvals.set(approvalId, {
+        toolName,
+        parameters,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      });
+      saveApprovals();
+      console.log(
+        `[portarium-proxy] BLOCKED: "${toolName}" (min-tier: ${policy.minimumTier}) → approval ${approvalId.slice(0, 8)}…`,
+      );
+      jsonResponse(res, 202, {
+        status: 'awaiting_approval',
+        approvalId,
+        toolName,
         tier: policyTier,
         category: policy.category,
         minimumTier: policy.minimumTier,
+        message: `Tool "${toolName}" requires human approval (min-tier: ${policy.minimumTier}). Poll GET /approvals/${approvalId} for status, or visit /approvals/ui.`,
       });
       return;
     }
@@ -257,7 +425,9 @@ export function startPolicyProxy(port = 9999) {
     server.listen(port, '127.0.0.1', () => {
       const url = `http://localhost:${port}`;
       console.log(`[portarium-proxy] Listening on ${url}`);
-      console.log(`[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke`);
+      console.log(
+        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  GET /approvals/ui`,
+      );
       resolve({
         url,
         close: () => server.close(),
