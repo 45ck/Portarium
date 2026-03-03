@@ -26,12 +26,7 @@ import { fileURLToPath } from 'node:url';
 const approvals = new Map();
 
 /** Tools classified as CRITICAL that require human approval. */
-const CRITICAL_TOOLS = new Set([
-  'delete:record',
-  'shell.exec',
-  'terminal.run',
-  'write:file',
-]);
+const CRITICAL_TOOLS = new Set(['delete:record', 'shell.exec', 'terminal.run', 'write:file']);
 
 // ---------------------------------------------------------------------------
 // HTTP utilities
@@ -250,7 +245,9 @@ export function startApprovalProxy(port = 9998) {
     server.listen(port, '127.0.0.1', () => {
       const url = `http://localhost:${port}`;
       console.log(`[h2-proxy] Listening on ${url}`);
-      console.log(`[h2-proxy] Routes: POST /tools/invoke  GET /approvals/:id  POST /approvals/:id/decide`);
+      console.log(
+        `[h2-proxy] Routes: POST /tools/invoke  GET /approvals/:id  POST /approvals/:id/decide`,
+      );
       resolve({ url, close: () => server.close() });
     });
   });
