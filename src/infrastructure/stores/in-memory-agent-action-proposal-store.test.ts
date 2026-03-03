@@ -98,4 +98,53 @@ describe('InMemoryAgentActionProposalStore', () => {
     expect(r1?.decision).toBe('Allow');
     expect(r2?.decision).toBe('Denied');
   });
+
+  it('returns null for unknown idempotencyKey', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const result = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'nonexistent-key',
+    );
+    expect(result).toBeNull();
+  });
+
+  it('finds proposal by idempotencyKey', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const proposal = makeProposal({ idempotencyKey: 'idem-key-1' });
+    await store.saveProposal(tenantId, proposal);
+
+    const result = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'idem-key-1',
+    );
+    expect(result).toEqual(proposal);
+  });
+
+  it('does not match idempotencyKey across workspaces', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const proposal = makeProposal({ idempotencyKey: 'idem-key-2' });
+    await store.saveProposal(tenantId, proposal);
+
+    const result = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-other'),
+      'idem-key-2',
+    );
+    expect(result).toBeNull();
+  });
+
+  it('does not match proposals without idempotencyKey', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const proposal = makeProposal(); // no idempotencyKey
+    await store.saveProposal(tenantId, proposal);
+
+    const result = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'any-key',
+    );
+    expect(result).toBeNull();
+  });
 });

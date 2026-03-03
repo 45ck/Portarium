@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parsePolicyV1, type PolicyV1 } from '../../domain/policy/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
+  AgentActionProposalStore,
   ApprovalStore,
   AuthorizationPort,
   Clock,
@@ -12,6 +13,7 @@ import type {
   PolicyStore,
   UnitOfWork,
 } from '../ports/index.js';
+import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
 import { proposeAgentAction } from './propose-agent-action.js';
 
 function makePolicy(overrides: Partial<PolicyV1> = {}): PolicyV1 {
@@ -270,5 +272,127 @@ describe('proposeAgentAction', () => {
     expect(result.value.decision).toBe('NeedsApproval');
     expect(result.value.approvalId).toBeDefined();
     expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // Idempotency deduplication
+  // -------------------------------------------------------------------------
+
+  it('returns existing proposal for duplicate idempotencyKey (Allow)', async () => {
+    const proposalStore = new InMemoryAgentActionProposalStore();
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Agent needs to read recent emails.',
+      idempotencyKey: 'idem-allow-1',
+    };
+
+    // First call: should evaluate policy and persist
+    const first = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error('Expected success.');
+    expect(first.value.decision).toBe('Allow');
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+
+    // Second call with same idempotencyKey: should return cached result
+    const second = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected success.');
+    expect(second.value.decision).toBe('Allow');
+    expect(second.value.proposalId).toBe(first.value.proposalId);
+    // Evidence should NOT be appended again
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns existing proposal for duplicate idempotencyKey (NeedsApproval)', async () => {
+    const proposalStore = new InMemoryAgentActionProposalStore();
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-sender',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Agent wants to send an email.',
+      idempotencyKey: 'idem-approval-1',
+    };
+
+    const first = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error('Expected success.');
+    expect(first.value.decision).toBe('NeedsApproval');
+    expect(first.value.approvalId).toBeDefined();
+
+    const second = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected success.');
+    expect(second.value.decision).toBe('NeedsApproval');
+    expect(second.value.proposalId).toBe(first.value.proposalId);
+    expect(second.value.approvalId).toBe(first.value.approvalId);
+    // Evidence and approval should NOT be written again
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats different idempotencyKeys as distinct proposals', async () => {
+    const proposalStore = new InMemoryAgentActionProposalStore();
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    const baseInput = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Read emails.',
+    };
+
+    const first = await proposeAgentAction(depsWithStore(), ctx(), {
+      ...baseInput,
+      idempotencyKey: 'key-a',
+    });
+    const second = await proposeAgentAction(depsWithStore(), ctx(), {
+      ...baseInput,
+      idempotencyKey: 'key-b',
+    });
+
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) throw new Error('Expected success.');
+    expect(first.value.proposalId).not.toBe(second.value.proposalId);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips idempotency check when proposalStore is not provided', async () => {
+    // Without proposalStore, idempotencyKey is ignored
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Read emails.',
+      idempotencyKey: 'idem-no-store',
+    };
+
+    const first = await proposeAgentAction(deps(), ctx(), input);
+    const second = await proposeAgentAction(deps(), ctx(), input);
+
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) throw new Error('Expected success.');
+    // Without store, both calls evaluate fresh — different proposalIds
+    expect(first.value.proposalId).not.toBe(second.value.proposalId);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
   });
 });
