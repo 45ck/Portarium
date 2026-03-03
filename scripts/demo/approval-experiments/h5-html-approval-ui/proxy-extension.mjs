@@ -26,12 +26,7 @@ import { fileURLToPath } from 'node:url';
 const approvals = new Map();
 
 /** Tools classified as CRITICAL that require human approval. */
-const CRITICAL_TOOLS = new Set([
-  'delete:record',
-  'shell.exec',
-  'terminal.run',
-  'write:file',
-]);
+const CRITICAL_TOOLS = new Set(['delete:record', 'shell.exec', 'terminal.run', 'write:file']);
 
 // ---------------------------------------------------------------------------
 // HTTP utilities
@@ -116,7 +111,10 @@ function renderApprovalPage(port) {
       </tr>`);
   }
 
-  const tableBody = rows.length > 0 ? rows.join('\n') : '<tr><td colspan="6" class="empty">No approvals yet.</td></tr>';
+  const tableBody =
+    rows.length > 0
+      ? rows.join('\n')
+      : '<tr><td colspan="6" class="empty">No approvals yet.</td></tr>';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -166,7 +164,7 @@ function renderApprovalPage(port) {
       ${tableBody}
     </tbody>
   </table>
-  <p class="footer">Proxy: http://localhost:${port} | Approvals: ${approvals.size} total, ${[...approvals.values()].filter(a => a.status === 'pending').length} pending</p>
+  <p class="footer">Proxy: http://localhost:${port} | Approvals: ${approvals.size} total, ${[...approvals.values()].filter((a) => a.status === 'pending').length} pending</p>
   <script>
     async function decide(id, decision) {
       try {
@@ -371,7 +369,9 @@ export function startApprovalProxy(port = 9998) {
     server.listen(port, '127.0.0.1', () => {
       const url = `http://localhost:${port}`;
       console.log(`[h5-proxy] Listening on ${url}`);
-      console.log(`[h5-proxy] Routes: POST /tools/invoke  GET /approvals/ui  GET /approvals/:id  POST /approvals/:id/decide`);
+      console.log(
+        `[h5-proxy] Routes: POST /tools/invoke  GET /approvals/ui  GET /approvals/:id  POST /approvals/:id/decide`,
+      );
       resolve({ url, close: () => server.close() });
     });
   });
