@@ -112,6 +112,87 @@ describe('parseDomainEventV1: happy path', () => {
     expect(evt.eventType).toBe('WorkforceQueueCreated');
     expect(evt.aggregateKind).toBe('WorkforceQueue');
   });
+  it('parses AgentActionProposed event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-proposed-1',
+      eventType: 'AgentActionProposed',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      payload: { toolName: 'email:send', decision: 'NeedsApproval' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionProposed');
+    expect(evt.aggregateKind).toBe('AgentActionProposal');
+  });
+
+  it('parses AgentActionApprovalRequested event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-approval-req-1',
+      eventType: 'AgentActionApprovalRequested',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      payload: { approvalId: 'apr-1', toolName: 'email:send' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionApprovalRequested');
+  });
+
+  it('parses AgentActionApproved event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-approved-1',
+      eventType: 'AgentActionApproved',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      actorUserId: 'approver-1',
+      payload: { approvalId: 'apr-1' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionApproved');
+    expect(evt.actorUserId).toBe('approver-1');
+  });
+
+  it('parses AgentActionDenied event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-denied-1',
+      eventType: 'AgentActionDenied',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      actorUserId: 'approver-1',
+      payload: { approvalId: 'apr-1', reason: 'Too risky' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionDenied');
+  });
+
+  it('parses AgentActionExecuted event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-executed-1',
+      eventType: 'AgentActionExecuted',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      payload: { toolName: 'email:send', result: 'success' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionExecuted');
+  });
+
+  it('parses AgentActionExecutionFailed event type', () => {
+    const evt = parseDomainEventV1({
+      ...BASE,
+      eventId: 'evt-agent-exec-failed-1',
+      eventType: 'AgentActionExecutionFailed',
+      aggregateKind: 'AgentActionProposal',
+      aggregateId: 'proposal-1',
+      payload: { toolName: 'email:send', error: 'Connection refused' },
+    });
+
+    expect(evt.eventType).toBe('AgentActionExecutionFailed');
+  });
 });
 
 describe('parseDomainEventV1: validation', () => {
