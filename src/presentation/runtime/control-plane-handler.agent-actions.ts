@@ -7,8 +7,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import {
   proposeAgentAction,
+  type ProposeAgentActionDeps,
   type ProposeAgentActionError,
+  type ProposeAgentActionInput,
 } from '../../application/commands/propose-agent-action.js';
+import { HashSha256 } from '../../domain/primitives/index.js';
 import {
   type ControlPlaneDeps,
   type QueryError,
@@ -84,13 +87,13 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
 
   // Build command deps from the real ControlPlaneDeps, falling back to
   // minimal in-memory stubs only for deps not yet wired in bootstrap.
-  const commandDeps = {
+  const commandDeps: ProposeAgentActionDeps = {
     authorization: deps.authorization,
     clock: { nowIso: () => new Date().toISOString() },
     idGenerator: { generateId: () => crypto.randomUUID() },
-    unitOfWork: deps.unitOfWork ?? { execute: async (fn: () => Promise<void>) => fn() },
+    unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
     policyStore: deps.policyStore ?? {
-      getPolicyById: async () => null as never,
+      getPolicyById: async () => null,
     },
     approvalStore: deps.approvalStore ?? {
       getApprovalById: async () => null,
@@ -98,25 +101,29 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     },
     eventPublisher: deps.eventPublisher ?? { publish: async () => {} },
     evidenceLog: deps.evidenceLog ?? {
-      appendEntry: async (_tenantId: unknown, entry: unknown) => entry,
+      appendEntry: async (_tenantId, entry) => ({
+        ...entry,
+        previousHash: HashSha256(''),
+        hashSha256: HashSha256(''),
+      }),
     },
   };
 
-  const input: Record<string, unknown> = {
+  const input: ProposeAgentActionInput = {
     workspaceId,
     agentId: String(record['agentId'] ?? ''),
     actionKind: String(record['actionKind'] ?? ''),
     toolName: String(record['toolName'] ?? ''),
-    executionTier: String(record['executionTier'] ?? ''),
+    executionTier: String(record['executionTier'] ?? '') as ProposeAgentActionInput['executionTier'],
     policyIds: (record['policyIds'] as string[]) ?? [],
     rationale: String(record['rationale'] ?? ''),
     correlationId,
+    ...(record['machineId'] ? { machineId: String(record['machineId']) } : {}),
+    ...(record['parameters'] ? { parameters: record['parameters'] as Record<string, unknown> } : {}),
+    ...(record['idempotencyKey'] ? { idempotencyKey: String(record['idempotencyKey']) } : {}),
   };
-  if (record['machineId']) input['machineId'] = String(record['machineId']);
-  if (record['parameters']) input['parameters'] = record['parameters'];
-  if (record['idempotencyKey']) input['idempotencyKey'] = String(record['idempotencyKey']);
 
-  const result = await proposeAgentAction(commandDeps as never, auth.ctx, input as never);
+  const result = await proposeAgentAction(commandDeps, auth.ctx, input);
 
   if (!result.ok) {
     respondProblem(
