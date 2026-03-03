@@ -1,13 +1,13 @@
 # H10: Temporal signal integration — Scorecard
 
-| Criterion                | Score (1-5) | Notes |
-|--------------------------|-------------|-------|
-| Developer experience     | 2           | Requires Temporal SDK knowledge; workflow concepts |
-| Human UX                 | 4           | Temporal UI shows pending approvals as workflow state |
-| Implementation simplicity| 1           | Requires Temporal server, worker, workflow definitions |
-| Production suitability   | 5           | Durable, survives crashes, built-in audit log |
-| Works without extra infra| 1           | Requires Temporal server (or Temporal Cloud) |
-| TOTAL                    | 13/25       |       |
+| Criterion                 | Score (1-5) | Notes                                                  |
+| ------------------------- | ----------- | ------------------------------------------------------ |
+| Developer experience      | 2           | Requires Temporal SDK knowledge; workflow concepts     |
+| Human UX                  | 4           | Temporal UI shows pending approvals as workflow state  |
+| Implementation simplicity | 1           | Requires Temporal server, worker, workflow definitions |
+| Production suitability    | 5           | Durable, survives crashes, built-in audit log          |
+| Works without extra infra | 1           | Requires Temporal server (or Temporal Cloud)           |
+| TOTAL                     | 13/25       |                                                        |
 
 Verdict: NOT RECOMMENDED (for plugin; consider for core workflow engine)
 Reason: Exceptional durability but massive infrastructure requirement. The approval-wait plugin must work standalone. Temporal is the right choice if approvals are embedded in longer-running Portarium workflows already using Temporal.
