@@ -176,8 +176,7 @@ describe('Scenario: HumanApprove pause/resume with maker-checker', () => {
       expect(result.ok).toBe(false);
       if (result.ok) throw new Error('Expected SoD violation');
       expect(result.error.kind).toBe('Forbidden');
-      expect(result.error.message).toContain('SoD violation');
-      expect(result.error.message).toContain('MakerChecker');
+      expect(result.error.message).toMatch(/maker-checker/i);
     });
 
     it('submitApproval also rejects maker Denied decision with MakerChecker', async () => {

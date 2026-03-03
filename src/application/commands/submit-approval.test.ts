@@ -9,9 +9,12 @@ import {
   type AuthorizationPort,
   type Clock,
   type EventPublisher,
+  type EvidenceLogPort,
   type IdGenerator,
   type UnitOfWork,
 } from '../ports/index.js';
+import type { HashSha256 as HashSha256Type } from '../../domain/primitives/index.js';
+import { HashSha256 } from '../../domain/primitives/index.js';
 import { submitApproval } from './submit-approval.js';
 
 const PENDING_APPROVAL = parseApprovalV1({
@@ -33,6 +36,7 @@ describe('submitApproval', () => {
   let approvalStore: ApprovalStore;
   let unitOfWork: UnitOfWork;
   let eventPublisher: EventPublisher;
+  let evidenceLog: EvidenceLogPort;
 
   beforeEach(() => {
     authorization = { isAllowed: vi.fn(async () => true) };
@@ -44,6 +48,13 @@ describe('submitApproval', () => {
     };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
     eventPublisher = { publish: vi.fn(async () => undefined) };
+    evidenceLog = {
+      appendEntry: vi.fn(async (_tenantId, entry) => ({
+        ...entry,
+        previousHash: HashSha256('') as HashSha256Type,
+        hashSha256: HashSha256('abc') as HashSha256Type,
+      })),
+    };
   });
 
   afterEach(() => {
@@ -225,7 +236,7 @@ describe('submitApproval', () => {
     expect(result.error.kind).toBe('Forbidden');
   });
 
-  it('blocks maker-checker self-approval before any state transition', async () => {
+  it('blocks maker-checker self-approval unconditionally (no SoD constraints needed)', async () => {
     const result = await submitApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
       toAppContext({
@@ -239,7 +250,7 @@ describe('submitApproval', () => {
         approvalId: 'approval-1',
         decision: 'Approved',
         rationale: 'Self-approve attempt.',
-        sodConstraints: [{ kind: 'MakerChecker' }],
+        // No sodConstraints — unconditional maker-checker should still block
       },
     );
 
@@ -248,7 +259,7 @@ describe('submitApproval', () => {
       throw new Error('Expected forbidden response.');
     }
     expect(result.error.kind).toBe('Forbidden');
-    expect(result.error.message).toMatch(/SoD violation/i);
+    expect(result.error.message).toMatch(/maker-checker/i);
     expect(approvalStore.saveApproval).not.toHaveBeenCalled();
     expect(eventPublisher.publish).not.toHaveBeenCalled();
   });
@@ -258,7 +269,7 @@ describe('submitApproval', () => {
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
       toAppContext({
         tenantId: 'tenant-1',
-        principalId: 'user-2',
+        principalId: 'approver-hz', // different from requestedByUserId to pass maker-checker
         correlationId: 'corr-1',
         roles: ['approver'],
       }),
@@ -270,7 +281,7 @@ describe('submitApproval', () => {
         sodConstraints: [{ kind: 'HazardousZoneNoSelfApproval' }],
         robotContext: {
           hazardousZone: true,
-          missionProposerUserId: UserId('user-2'),
+          missionProposerUserId: UserId('approver-hz'),
         },
       },
     );
@@ -339,5 +350,143 @@ describe('submitApproval', () => {
     expect(result.error.message).toMatch(/DistinctApproversViolation/i);
     expect(approvalStore.saveApproval).not.toHaveBeenCalled();
     expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('returns NotFound when approval does not exist', async () => {
+    approvalStore.getApprovalById = vi.fn(async () => null);
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-missing',
+        decision: 'Approved',
+        rationale: 'Looks good.',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected not-found response.');
+    expect(result.error.kind).toBe('NotFound');
+    expect(result.error.message).toMatch(/not found/i);
+  });
+
+  it('returns Conflict when approval is already decided', async () => {
+    const decidedApproval = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve run.',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-2',
+      status: 'Approved',
+      decidedAtIso: '2026-02-17T00:01:00.000Z',
+      decidedByUserId: 'user-3',
+      rationale: 'Already approved.',
+    });
+    approvalStore.getApprovalById = vi.fn(async () => decidedApproval);
+
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Denied',
+        rationale: 'Too late.',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toMatch(/already decided/i);
+  });
+
+  it('happy path: Denied decision emits ApprovalDenied event', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Denied',
+        rationale: 'Risk too high.',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected success response.');
+    expect(result.value.status).toBe('Denied');
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+
+    const published = (eventPublisher.publish as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0] as Record<string, unknown>;
+    expect(published['type']).toBe('com.portarium.approval.ApprovalDenied');
+  });
+
+  it('records evidence when evidenceLog is provided', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher, evidenceLog },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Approved with evidence.',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+    const call = (evidenceLog.appendEntry as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(String(call[0])).toBe('tenant-1'); // tenantId
+    const entry = call[1] as Record<string, unknown>;
+    expect(entry['category']).toBe('Approval');
+    expect((entry['summary'] as string)).toMatch(/Approved/);
+  });
+
+  it('succeeds without evidence when evidenceLog is not provided', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'No evidence log.',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    // No crash — evidenceLog was not provided and that's fine.
   });
 });
