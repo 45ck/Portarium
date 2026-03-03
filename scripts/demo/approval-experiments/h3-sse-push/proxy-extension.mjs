@@ -93,7 +93,9 @@ const server = createServer(async (req, res) => {
     res.write(': connected\n\n');
 
     record.listeners.add(res);
-    console.log(`[proxy] SSE client connected for id=${streamParams.id} (${record.listeners.size} listener(s))`);
+    console.log(
+      `[proxy] SSE client connected for id=${streamParams.id} (${record.listeners.size} listener(s))`,
+    );
 
     req.on('close', () => {
       record.listeners.delete(res);
@@ -151,7 +153,9 @@ export function stopProxy() {
 }
 
 // Run standalone
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` ||
-    process.argv[1]?.endsWith('proxy-extension.mjs')) {
+if (
+  import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` ||
+  process.argv[1]?.endsWith('proxy-extension.mjs')
+) {
   startProxy();
 }

@@ -74,7 +74,9 @@ async function main() {
       });
     }, 150);
   } else {
-    console.log(`[operator] POST to approve:\n  curl -X POST ${proxyBase}/approvals/${pendingApprovalId}/decide -H 'Content-Type: application/json' -d '{"decision":"approved"}'`);
+    console.log(
+      `[operator] POST to approve:\n  curl -X POST ${proxyBase}/approvals/${pendingApprovalId}/decide -H 'Content-Type: application/json' -d '{"decision":"approved"}'`,
+    );
   }
 
   const result = await waitForApproval(pendingApprovalId, proxyBase);
