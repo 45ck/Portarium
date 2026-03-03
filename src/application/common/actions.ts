@@ -19,6 +19,8 @@ export const APP_ACTIONS = {
   machineAgentBridgeSync: 'machine-agent:bridge-sync',
   /** Invoke a tool through the Portarium Action API (propose/execute flow). */
   toolInvoke: 'tool:invoke',
+  /** Propose an agent action for policy evaluation and approval routing. */
+  agentActionPropose: 'agent-action:propose',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];

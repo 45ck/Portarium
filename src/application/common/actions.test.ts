@@ -22,6 +22,7 @@ describe('APP_ACTIONS contract', () => {
       'machine-agent:read',
       'machine-agent:bridge-sync',
       'tool:invoke',
+      'agent-action:propose',
     ]);
   });
 

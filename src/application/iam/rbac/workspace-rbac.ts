@@ -35,6 +35,8 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'machine-agent:bridge-sync': ['admin'],
   /** Tool invocation through the Action API — operators can invoke; admins always. */
   'tool:invoke': ['admin', 'operator'],
+  /** Propose agent action: operators can propose, admins always can. */
+  'agent-action:propose': ['admin', 'operator'],
 };
 
 export function isAllowedWorkspaceAction(

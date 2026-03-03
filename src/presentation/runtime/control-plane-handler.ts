@@ -72,6 +72,7 @@ import {
   handleListWorkforceQueues,
   handlePatchWorkforceAvailability,
 } from './control-plane-handler.workforce.js';
+import { handleProposeAgentAction } from './control-plane-handler.agent-actions.js';
 
 // ---------------------------------------------------------------------------
 // Hono environment types
@@ -739,6 +740,13 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       workspaceId: c.req.param('workspaceId'),
       url,
     });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/agent-actions:propose
+  app.post('/v1/workspaces/:workspaceId/agent-actions:propose', async (c: Context<HonoEnv>) => {
+    const ctx = c.get('ctx');
+    await handleProposeAgentAction({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

@@ -108,6 +108,8 @@ export type DomainEventType =
   | 'TriggerFired'
   // Work item extended
   | 'WorkItemTransitioned'
+  // Agent actions
+  | 'AgentActionProposed'
   // Catch-all
   | 'Unknown';
 
@@ -227,6 +229,8 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'TriggerFired',
   // Work item extended
   'WorkItemTransitioned',
+  // Agent actions
+  'AgentActionProposed',
   // Catch-all
   'Unknown',
 ]);
