@@ -44,23 +44,13 @@ function printTable(approvalsList) {
   console.log('');
   console.log('  Pending Approvals:');
   console.log('  ' + '-'.repeat(90));
-  console.log(
-    '  ' +
-      'ID'.padEnd(38) +
-      'Tool'.padEnd(20) +
-      'Parameters'.padEnd(30) +
-      'Created',
-  );
+  console.log('  ' + 'ID'.padEnd(38) + 'Tool'.padEnd(20) + 'Parameters'.padEnd(30) + 'Created');
   console.log('  ' + '-'.repeat(90));
   for (const a of approvalsList) {
     const params = JSON.stringify(a.parameters ?? {}).slice(0, 28);
     const created = new Date(a.createdAt).toLocaleTimeString();
     console.log(
-      '  ' +
-        a.approvalId.padEnd(38) +
-        a.toolName.padEnd(20) +
-        params.padEnd(30) +
-        created,
+      '  ' + a.approvalId.padEnd(38) + a.toolName.padEnd(20) + params.padEnd(30) + created,
     );
   }
   console.log('  ' + '-'.repeat(90));
