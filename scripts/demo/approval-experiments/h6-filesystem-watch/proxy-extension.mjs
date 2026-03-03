@@ -63,14 +63,22 @@ export function requestApproval({ toolName, parameters, timeoutMs = 30_000 }) {
       watcher.close();
       clearTimeout(timer);
       // Clean up pending file
-      try { fs.unlinkSync(pendingFile); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(pendingFile);
+      } catch {
+        /* ignore */
+      }
     };
 
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
       watcher.close();
-      try { fs.unlinkSync(pendingFile); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(pendingFile);
+      } catch {
+        /* ignore */
+      }
       reject(new Error(`Approval timed out after ${timeoutMs}ms for ${id}`));
     }, timeoutMs);
 
@@ -79,11 +87,19 @@ export function requestApproval({ toolName, parameters, timeoutMs = 30_000 }) {
 
       if (filename === `${id}.approved`) {
         cleanup(watcher, timer);
-        try { fs.unlinkSync(approvedFile); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(approvedFile);
+        } catch {
+          /* ignore */
+        }
         resolve({ approved: true, approvalId: id, watchDir: WATCH_DIR, method: 'fs.watch' });
       } else if (filename === `${id}.denied`) {
         cleanup(watcher, timer);
-        try { fs.unlinkSync(deniedFile); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(deniedFile);
+        } catch {
+          /* ignore */
+        }
         resolve({ approved: false, approvalId: id, watchDir: WATCH_DIR, method: 'fs.watch' });
       }
     });
@@ -93,11 +109,19 @@ export function requestApproval({ toolName, parameters, timeoutMs = 30_000 }) {
       if (settled) return;
       if (fs.existsSync(approvedFile)) {
         cleanup(watcher, timer);
-        try { fs.unlinkSync(approvedFile); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(approvedFile);
+        } catch {
+          /* ignore */
+        }
         resolve({ approved: true, approvalId: id, watchDir: WATCH_DIR, method: 'fs.watch' });
       } else if (fs.existsSync(deniedFile)) {
         cleanup(watcher, timer);
-        try { fs.unlinkSync(deniedFile); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(deniedFile);
+        } catch {
+          /* ignore */
+        }
         resolve({ approved: false, approvalId: id, watchDir: WATCH_DIR, method: 'fs.watch' });
       }
     }, 50);
@@ -126,7 +150,9 @@ export function startApprovalServer(port = 9877) {
       if (req.method === 'POST' && match) {
         const id = match[1];
         let body = '';
-        req.on('data', (chunk) => { body += chunk; });
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
         req.on('end', () => {
           try {
             const { decision } = JSON.parse(body || '{}');

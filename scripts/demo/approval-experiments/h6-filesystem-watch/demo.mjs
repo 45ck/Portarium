@@ -93,7 +93,9 @@ async function runDemo() {
     for (const f of leftovers) {
       fs.unlinkSync(path.join(WATCH_DIR, f));
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   console.log('\n=== Demo complete ===');
 }
