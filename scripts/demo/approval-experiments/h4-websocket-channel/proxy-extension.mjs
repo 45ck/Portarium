@@ -31,12 +31,7 @@ import { fileURLToPath } from 'node:url';
 const approvals = new Map();
 
 /** Tools classified as CRITICAL that require human approval. */
-const CRITICAL_TOOLS = new Set([
-  'delete:record',
-  'shell.exec',
-  'terminal.run',
-  'write:file',
-]);
+const CRITICAL_TOOLS = new Set(['delete:record', 'shell.exec', 'terminal.run', 'write:file']);
 
 // ---------------------------------------------------------------------------
 // WebSocket constants (RFC 6455)
@@ -453,7 +448,9 @@ export function startApprovalProxy(port = 9998) {
     server.listen(port, '127.0.0.1', () => {
       const url = `http://localhost:${port}`;
       console.log(`[h4-proxy] Listening on ${url}`);
-      console.log(`[h4-proxy] Routes: POST /tools/invoke  WS /approvals/ws  POST /approvals/:id/decide`);
+      console.log(
+        `[h4-proxy] Routes: POST /tools/invoke  WS /approvals/ws  POST /approvals/:id/decide`,
+      );
       resolve({ url, close: () => server.close() });
     });
   });
