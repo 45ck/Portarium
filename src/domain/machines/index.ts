@@ -1,3 +1,4 @@
+export * from './agent-action-proposal-v1.js';
 export * from './capability-drift-quarantine-policy-v1.js';
 export * from './capability-handshake-v1.js';
 export * from './machine-registration-v1.js';
