@@ -10,13 +10,18 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
+  ApprovalStore,
   AuthenticationPort,
   AuthorizationPort,
+  EventPublisher,
   EventStreamBroadcast,
+  EvidenceLogPort,
+  PolicyStore,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
   RunStore,
+  UnitOfWork,
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -93,6 +98,16 @@ export type ControlPlaneDeps = Readonly<{
   derivedArtifactRegistryPort?: DerivedArtifactRegistryPort;
   /** Optional embedding port; when absent, semantic/hybrid search returns 503. */
   embeddingPort?: EmbeddingPort;
+  /** Optional approval store for agent-governance proposal flow. */
+  approvalStore?: ApprovalStore;
+  /** Optional policy store for agent-governance policy evaluation. */
+  policyStore?: PolicyStore;
+  /** Optional event publisher for domain events. */
+  eventPublisher?: EventPublisher;
+  /** Optional evidence log for audit trail. */
+  evidenceLog?: EvidenceLogPort;
+  /** Optional unit of work for transactional persistence. */
+  unitOfWork?: UnitOfWork;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';

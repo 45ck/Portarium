@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 import { err } from '../../application/common/result.js';
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import type {
+  ApprovalStore,
   AuthenticationPort,
   AuthorizationPort,
   QueryCache,
@@ -216,6 +217,17 @@ function buildQueryCache(): QueryCache {
   return new InMemoryQueryCache();
 }
 
+function buildInMemoryApprovalStore(): ApprovalStore {
+  const store = new Map<string, import('../../domain/approvals/index.js').ApprovalV1>();
+  return {
+    getApprovalById: async (_tenantId, _workspaceId, approvalId) =>
+      store.get(String(approvalId)) ?? null,
+    saveApproval: async (_tenantId, approval) => {
+      store.set(String(approval.approvalId), approval);
+    },
+  };
+}
+
 export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
@@ -225,6 +237,9 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
+
+  // In-memory approval store used until PostgresApprovalStore (bead-0877) is available.
+  const approvalStore = buildInMemoryApprovalStore();
 
   if (usePostgresStores && connectionString) {
     const sqlClient = new NodePostgresSqlClient({ connectionString });
@@ -240,6 +255,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       rateLimitStore,
       queryCache,
       eventStream,
+      approvalStore,
     };
   }
 
@@ -278,5 +294,6 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     rateLimitStore,
     queryCache,
     eventStream,
+    approvalStore,
   };
 }

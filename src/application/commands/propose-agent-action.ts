@@ -1,4 +1,11 @@
+import type { ApprovalPendingV1 } from '../../domain/approvals/index.js';
 import type { PolicyV1 } from '../../domain/policy/index.js';
+import {
+  ApprovalId,
+  PlanId,
+  RunId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type {
   AppContext,
   DependencyFailure,
@@ -197,12 +204,42 @@ export async function proposeAgentAction(
   });
   if (gateError) return err(gateError);
 
-  // For NeedsApproval: create an approval record (if approval store is available)
+  // For NeedsApproval: create and persist a real approval record
   if (evaluation.decision === 'NeedsApproval') {
+    const approvalIdResult = nextId(deps.idGenerator, 'approval');
+    if (!approvalIdResult.ok) return approvalIdResult;
+    const requestedAtResult = nowIso(deps.clock);
+    if (!requestedAtResult.ok) return requestedAtResult;
+
+    const approval: ApprovalPendingV1 = {
+      schemaVersion: 1,
+      approvalId: ApprovalId(approvalIdResult.value),
+      workspaceId: WorkspaceId(String(parsedInput.value.workspaceId)),
+      runId: RunId(auditResult.value.proposalId),
+      planId: PlanId(auditResult.value.proposalId),
+      prompt: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}. Rationale: ${parsedInput.value.rationale}`,
+      requestedAtIso: requestedAtResult.value,
+      requestedByUserId: parsedInput.value.requestedByUserId,
+      status: 'Pending',
+    };
+
+    try {
+      await deps.approvalStore.saveApproval(ctx.tenantId, approval);
+    } catch (error) {
+      return err({
+        kind: 'DependencyFailure',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to persist approval record.',
+      });
+    }
+
     return ok({
       proposalId: auditResult.value.proposalId,
       evidenceId: auditResult.value.evidenceId,
       decision: 'NeedsApproval',
+      approvalId: approvalIdResult.value,
       message: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
     });
   }

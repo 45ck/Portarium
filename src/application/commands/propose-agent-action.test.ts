@@ -113,7 +113,10 @@ describe('proposeAgentAction', () => {
     if (!result.ok) throw new Error('Expected success.');
     expect(result.value.decision).toBe('NeedsApproval');
     expect(result.value.message).toMatch(/send/i);
+    expect(result.value.approvalId).toBeDefined();
+    expect(typeof result.value.approvalId).toBe('string');
     expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
   });
 
   it('denies Dangerous tool (shell.exec)', async () => {
@@ -205,6 +208,52 @@ describe('proposeAgentAction', () => {
     expect(result.error.message).toMatch(/agentId/);
   });
 
+  it('creates a Pending approval record for NeedsApproval decisions', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-sender',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-1'],
+      rationale: 'Agent wants to send an email.',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected success.');
+    expect(result.value.decision).toBe('NeedsApproval');
+    expect(result.value.approvalId).toBeDefined();
+
+    // Verify the approval was persisted with correct shape
+    const saveCall = vi.mocked(approvalStore.saveApproval).mock.calls[0]!;
+    const savedApproval = saveCall[1];
+    expect(savedApproval.status).toBe('Pending');
+    expect(savedApproval.schemaVersion).toBe(1);
+    expect(String(savedApproval.approvalId)).toBe(result.value.approvalId);
+    expect(String(savedApproval.workspaceId)).toBe('ws-1');
+    expect(savedApproval.prompt).toMatch(/email:send/);
+    expect(savedApproval.prompt).toMatch(/Mutation/);
+    expect(String(savedApproval.requestedByUserId)).toBe('operator-1');
+  });
+
+  it('does not call saveApproval for Allow decisions', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto',
+      policyIds: ['pol-1'],
+      rationale: 'Agent needs to read recent emails.',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected success.');
+    expect(result.value.decision).toBe('Allow');
+    expect(result.value.approvalId).toBeUndefined();
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
   it('returns NeedsApproval for Unknown tool category', async () => {
     const result = await proposeAgentAction(deps(), ctx(), {
       workspaceId: 'ws-1',
@@ -219,5 +268,7 @@ describe('proposeAgentAction', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error('Expected success.');
     expect(result.value.decision).toBe('NeedsApproval');
+    expect(result.value.approvalId).toBeDefined();
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
   });
 });
