@@ -21,6 +21,8 @@ export const APP_ACTIONS = {
   toolInvoke: 'tool:invoke',
   /** Propose an agent action for policy evaluation and approval routing. */
   agentActionPropose: 'agent-action:propose',
+  /** Execute an approved agent action through the action-gated tool invoker. */
+  agentActionExecute: 'agent-action:execute',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
