@@ -49,7 +49,7 @@ function makeDeps(
       saveRun: async () => undefined,
     },
     runQueryStore: {
-      listRuns: async () => ({ items: [], nextCursor: undefined }),
+      listRuns: async () => ({ items: [] }),
     },
   };
 }

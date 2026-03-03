@@ -74,6 +74,11 @@ import {
   handlePatchWorkforceAvailability,
 } from './control-plane-handler.workforce.js';
 import { handleProposeAgentAction } from './control-plane-handler.agent-actions.js';
+import {
+  handleDecideApproval,
+  handleGetApproval,
+  handleListApprovals,
+} from './control-plane-handler.approvals.js';
 
 // ---------------------------------------------------------------------------
 // Hono environment types
@@ -766,6 +771,35 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       workspaceId: c.req.param('workspaceId'),
       url,
     });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/approvals/:approvalId/decide  (before /:approvalId)
+  app.post('/v1/workspaces/:workspaceId/approvals/:approvalId/decide', async (c) => {
+    const ctx = c.get('ctx');
+    await handleDecideApproval({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      approvalId: c.req.param('approvalId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/approvals/:approvalId
+  app.get('/v1/workspaces/:workspaceId/approvals/:approvalId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetApproval({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      approvalId: c.req.param('approvalId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/approvals
+  app.get('/v1/workspaces/:workspaceId/approvals', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListApprovals({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 
