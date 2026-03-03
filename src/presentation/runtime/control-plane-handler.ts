@@ -10,6 +10,7 @@ import { listWorkspaces } from '../../application/queries/list-workspaces.js';
 import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
+import type { RunStatus } from '../../domain/runs/index.js';
 import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
@@ -294,6 +295,31 @@ async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
   }
 
   const rawStatus = url.searchParams.get('status') ?? undefined;
+  const VALID_RUN_STATUSES: readonly RunStatus[] = [
+    'Pending',
+    'Running',
+    'WaitingForApproval',
+    'Paused',
+    'Succeeded',
+    'Failed',
+    'Cancelled',
+  ];
+  if (rawStatus !== undefined && !VALID_RUN_STATUSES.includes(rawStatus as RunStatus)) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: `status must be one of: ${VALID_RUN_STATUSES.join(', ')}.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const validatedStatus: RunStatus | undefined = rawStatus as RunStatus | undefined;
   const result = await listRuns(
     {
       authorization: deps.authorization,
@@ -309,7 +335,7 @@ async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
       ...(params.value.sort
         ? { sortField: params.value.sort.field, sortDirection: params.value.sort.direction }
         : {}),
-      ...(rawStatus ? { status: rawStatus as never } : {}),
+      ...(validatedStatus ? { status: validatedStatus } : {}),
     },
   );
   if (!result.ok) {
