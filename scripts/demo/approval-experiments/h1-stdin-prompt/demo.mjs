@@ -23,8 +23,7 @@ import { createInterface } from 'readline';
 // Config
 // ---------------------------------------------------------------------------
 
-const AUTO_APPROVE =
-  process.argv.includes('--auto') || process.env['DEMO_AUTO_APPROVE'] === '1';
+const AUTO_APPROVE = process.argv.includes('--auto') || process.env['DEMO_AUTO_APPROVE'] === '1';
 
 const PROXY_PORT = 19998;
 
@@ -35,7 +34,10 @@ const PROXY_PORT = 19998;
 /** @param {import('http').ServerResponse} res */
 function json(res, status, body) {
   const payload = JSON.stringify(body, null, 2);
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) });
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(payload),
+  });
   res.end(payload);
 }
 
@@ -43,8 +45,16 @@ function json(res, status, body) {
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let raw = '';
-    req.on('data', (c) => { raw += c; });
-    req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); } });
+    req.on('data', (c) => {
+      raw += c;
+    });
+    req.on('end', () => {
+      try {
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        reject(e);
+      }
+    });
     req.on('error', reject);
   });
 }
@@ -104,7 +114,9 @@ function startDemoProxy() {
 
       if (req.method === 'POST' && url.pathname === '/tools/invoke') {
         let body;
-        try { body = /** @type {any} */ (await readBody(req)); } catch {
+        try {
+          body = /** @type {any} */ (await readBody(req));
+        } catch {
           json(res, 400, { error: 'Invalid JSON' });
           return;
         }
@@ -165,14 +177,26 @@ function startDemoProxy() {
 function invokeToolViaProxy(proxyUrl, toolName, parameters) {
   const body = JSON.stringify({ toolName, parameters, policyTier: 'Auto' });
   return new Promise((resolve, reject) => {
-    const req = http.request(`${proxyUrl}/tools/invoke`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    }, (res) => {
-      let data = '';
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
-    });
+    const req = http.request(
+      `${proxyUrl}/tools/invoke`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      },
+    );
     req.on('error', reject);
     req.write(body);
     req.end();
@@ -213,4 +237,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch((err) => { console.error('Demo failed:', err); process.exit(1); });
+main().catch((err) => {
+  console.error('Demo failed:', err);
+  process.exit(1);
+});

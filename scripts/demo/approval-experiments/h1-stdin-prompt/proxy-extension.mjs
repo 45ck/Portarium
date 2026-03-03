@@ -72,10 +72,20 @@ function readJsonBody(req) {
     let size = 0;
     req.on('data', (chunk) => {
       size += chunk.length;
-      if (size > 100 * 1024) { reject(new Error('Body too large')); req.destroy(); return; }
+      if (size > 100 * 1024) {
+        reject(new Error('Body too large'));
+        req.destroy();
+        return;
+      }
       raw += chunk;
     });
-    req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(e); } });
+    req.on('end', () => {
+      try {
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        reject(e);
+      }
+    });
     req.on('error', reject);
   });
 }
@@ -87,14 +97,15 @@ function readJsonBody(req) {
  */
 function json(res, status, body) {
   const payload = JSON.stringify(body, null, 2);
-  res.writeHead(status, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) });
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(payload),
+  });
   res.end(payload);
 }
 
 /** Tools that require operator approval (blast-radius CRITICAL). */
-const CRITICAL_TOOLS = new Set([
-  'delete:record', 'shell.exec', 'terminal.run', 'browser.navigate',
-]);
+const CRITICAL_TOOLS = new Set(['delete:record', 'shell.exec', 'terminal.run', 'browser.navigate']);
 
 import http from 'http';
 
@@ -109,11 +120,22 @@ function callBaseProxy(toolName, parameters, policyTier) {
   return new Promise((resolve, reject) => {
     const req = http.request(
       `http://localhost:${PROXY_PORT}/tools/invoke`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      },
       (res) => {
         let data = '';
-        res.on('data', (c) => { data += c; });
-        res.on('end', () => { try { resolve(JSON.parse(data)); } catch (e) { reject(e); } });
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        });
       },
     );
     req.on('error', reject);
@@ -163,7 +185,9 @@ async function main() {
     // POST /tools/invoke — gate CRITICAL tools through stdin
     if (req.method === 'POST' && url.pathname === '/tools/invoke') {
       let body;
-      try { body = /** @type {any} */ (await readJsonBody(req)); } catch {
+      try {
+        body = /** @type {any} */ (await readJsonBody(req));
+      } catch {
         json(res, 400, { error: 'Invalid JSON body' });
         return;
       }
@@ -205,7 +229,9 @@ async function main() {
 
   server.listen(BASE_PORT, '127.0.0.1', () => {
     console.log(`[h1-stdin] Approval proxy listening on http://localhost:${BASE_PORT}`);
-    console.log(`[h1-stdin] Routes: GET /health  GET /approvals  POST /approvals/:id/decide  POST /tools/invoke`);
+    console.log(
+      `[h1-stdin] Routes: GET /health  GET /approvals  POST /approvals/:id/decide  POST /tools/invoke`,
+    );
     console.log(`[h1-stdin] CRITICAL tools will block until operator types y/n in this terminal`);
   });
 }
@@ -214,7 +240,10 @@ const isMain =
   process.argv[1] != null &&
   fileURLToPath(import.meta.url).replace(/\\/g, '/') === process.argv[1].replace(/\\/g, '/');
 if (isMain) {
-  main().catch((err) => { console.error('[h1-stdin] Fatal:', err); process.exit(1); });
+  main().catch((err) => {
+    console.error('[h1-stdin] Fatal:', err);
+    process.exit(1);
+  });
 }
 
 export { promptOperator, CRITICAL_TOOLS, pendingApprovals };

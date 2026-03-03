@@ -22,16 +22,26 @@ export function submitDecision(approvalId, decision, proxyUrl = 'http://localhos
   const body = JSON.stringify({ decision });
   return new Promise((resolve, reject) => {
     const url = new URL(`/approvals/${approvalId}/decide`, proxyUrl);
-    const req = http.request(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    }, (res) => {
-      let data = '';
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
-      });
-    });
+    const req = http.request(
+      url,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (c) => {
+          data += c;
+        });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      },
+    );
     req.on('error', reject);
     req.write(body);
     req.end();
@@ -62,25 +72,29 @@ export function waitForApproval(approvalId, proxyUrl = 'http://localhost:9998', 
       }
 
       const url = new URL('/approvals', proxyUrl);
-      http.get(url, (res) => {
-        let data = '';
-        res.on('data', (c) => { data += c; });
-        res.on('end', () => {
-          try {
-            const { pending } = JSON.parse(data);
-            if (!pending.includes(approvalId)) {
-              // No longer pending — it was decided
-              resolve('approved'); // stdin decides inline, so if it's gone it was handled
-            } else {
+      http
+        .get(url, (res) => {
+          let data = '';
+          res.on('data', (c) => {
+            data += c;
+          });
+          res.on('end', () => {
+            try {
+              const { pending } = JSON.parse(data);
+              if (!pending.includes(approvalId)) {
+                // No longer pending — it was decided
+                resolve('approved'); // stdin decides inline, so if it's gone it was handled
+              } else {
+                setTimeout(poll, pollIntervalMs);
+              }
+            } catch {
               setTimeout(poll, pollIntervalMs);
             }
-          } catch {
-            setTimeout(poll, pollIntervalMs);
-          }
+          });
+        })
+        .on('error', () => {
+          setTimeout(poll, pollIntervalMs);
         });
-      }).on('error', () => {
-        setTimeout(poll, pollIntervalMs);
-      });
     };
 
     poll();
