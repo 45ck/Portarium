@@ -1,5 +1,6 @@
 import {
   ApprovalId,
+  EvidenceId,
   UserId,
   WorkspaceId,
   type ApprovalDecision,
@@ -35,6 +36,7 @@ import type {
   AuthorizationPort,
   Clock,
   EventPublisher,
+  EvidenceLogPort,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
@@ -72,6 +74,7 @@ export interface SubmitApprovalDeps {
   approvalStore: ApprovalStore;
   unitOfWork: UnitOfWork;
   eventPublisher: EventPublisher;
+  evidenceLog?: EvidenceLogPort;
 }
 
 type ParsedIds = Readonly<{
@@ -227,6 +230,27 @@ async function persistDecision(
       await deps.eventPublisher.publish(
         domainEventToPortariumCloudEvent(domainEvent, SUBMIT_APPROVAL_SOURCE, ctx.traceparent),
       );
+
+      // Record the decision in the tamper-evident evidence log when available.
+      if (deps.evidenceLog) {
+        const evidenceIdRaw = deps.idGenerator.generateId();
+        await deps.evidenceLog.appendEntry(ctx.tenantId, {
+          schemaVersion: 1,
+          evidenceId: EvidenceId(evidenceIdRaw),
+          workspaceId: ids.workspaceId,
+          correlationId: ctx.correlationId,
+          occurredAtIso: decided.decidedAtIso,
+          category: 'Approval',
+          summary: `Approval ${String(ids.approvalId)} decided: ${decided.status} by ${String(ctx.principalId)}`,
+          actor: { kind: 'User', userId: ctx.principalId },
+          links: {
+            approvalId: ids.approvalId,
+            runId: decided.runId,
+            planId: decided.planId,
+          },
+        });
+      }
+
       return ok({ approvalId: ids.approvalId, status: decided.status });
     });
   } catch (error) {
@@ -277,6 +301,16 @@ export async function submitApproval(
 
   const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
   if (stateError) return stateError;
+
+  // Unconditional maker-checker: the deciding user must never be the requesting user.
+  if (ctx.principalId.toString() === current.requestedByUserId.toString()) {
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.approvalSubmit,
+      message:
+        'Maker-checker violation: the deciding user cannot be the same as the requesting user.',
+    });
+  }
 
   // current.status === 'Pending' is guaranteed after guardPendingState
   const sodError = guardSodConstraints(
