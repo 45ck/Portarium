@@ -1,3 +1,4 @@
+export * from './agent-action-proposal-store.js';
 export * from './authorization.js';
 export * from './authentication.js';
 export * from './clock.js';
