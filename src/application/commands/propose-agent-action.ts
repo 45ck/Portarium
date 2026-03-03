@@ -1,8 +1,14 @@
 import type { ApprovalPendingV1 } from '../../domain/approvals/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import type { PolicyV1 } from '../../domain/policy/index.js';
 import {
+  AgentId,
   ApprovalId,
+  CorrelationId,
+  EvidenceId,
+  MachineId,
   PlanId,
+  ProposalId as ProposalIdCtor,
   RunId,
   WorkspaceId,
 } from '../../domain/primitives/index.js';
@@ -16,6 +22,7 @@ import type {
 import { APP_ACTIONS, err, ok } from '../common/index.js';
 import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
 import type {
+  AgentActionProposalStore,
   ApprovalStore,
   AuthorizationPort,
   Clock,
@@ -55,6 +62,7 @@ export interface ProposeAgentActionDeps {
   unitOfWork: UnitOfWork;
   policyStore: PolicyStore;
   approvalStore: ApprovalStore;
+  proposalStore?: AgentActionProposalStore;
   eventPublisher: EventPublisher;
   evidenceLog: EvidenceLogPort;
 }
@@ -156,6 +164,57 @@ async function persistAuditArtifacts(
   }
 }
 
+async function saveProposalRecord(
+  deps: ProposeAgentActionDeps,
+  ctx: AppContext,
+  parsedInput: ParsedProposeAgentActionInput,
+  evaluation: AgentActionGovernanceEvaluation,
+  audit: AgentActionAuditArtifacts,
+  approvalId?: string,
+): Promise<void> {
+  if (!deps.proposalStore) return;
+  const proposal: AgentActionProposalV1 = {
+    schemaVersion: 1,
+    proposalId: ProposalIdCtor(audit.proposalId),
+    workspaceId: parsedInput.workspaceId,
+    agentId: AgentId(parsedInput.agentId),
+    actionKind: parsedInput.actionKind,
+    toolName: parsedInput.toolName,
+    ...(parsedInput.parameters ? { parameters: parsedInput.parameters } : {}),
+    ...(parsedInput.machineId ? { machineId: MachineId(parsedInput.machineId) } : {}),
+    executionTier: parsedInput.executionTier,
+    toolClassification: {
+      toolName: evaluation.toolClassification.toolName,
+      category: evaluation.toolClassification.category,
+      minimumTier: evaluation.toolClassification.minimumTier,
+      rationale: evaluation.toolClassification.rationale,
+    },
+    policyDecision: evaluation.policyEvaluation.decision,
+    policyIds: parsedInput.policyIds,
+    decision: evaluation.decision,
+    ...(approvalId ? { approvalId: ApprovalId(approvalId) } : {}),
+    rationale: parsedInput.rationale,
+    requestedByUserId: parsedInput.requestedByUserId,
+    correlationId: CorrelationId(String(ctx.correlationId)),
+    proposedAtIso: deps.clock.nowIso(),
+    ...(parsedInput.idempotencyKey ? { idempotencyKey: parsedInput.idempotencyKey } : {}),
+  };
+  try {
+    await deps.proposalStore.saveProposal(ctx.tenantId, proposal);
+  } catch {
+    // Non-fatal: proposal persistence failure should not block the response.
+  }
+}
+
+function proposalToOutput(proposal: AgentActionProposalV1): ProposeAgentActionOutput {
+  return {
+    proposalId: String(proposal.proposalId),
+    evidenceId: EvidenceId(`idempotent-replay:${String(proposal.proposalId)}`),
+    decision: proposal.decision,
+    ...(proposal.approvalId ? { approvalId: String(proposal.approvalId) } : {}),
+  };
+}
+
 export async function proposeAgentAction(
   deps: ProposeAgentActionDeps,
   ctx: AppContext,
@@ -182,6 +241,19 @@ export async function proposeAgentAction(
       action: APP_ACTIONS.agentActionPropose,
       message: 'Workspace mismatch for agent action proposal request.',
     });
+  }
+
+  // Idempotency: if idempotencyKey is provided and a matching proposal exists,
+  // return the existing result without re-evaluating policy or writing evidence.
+  if (parsedInput.value.idempotencyKey && deps.proposalStore) {
+    const existing = await deps.proposalStore.getProposalByIdempotencyKey(
+      ctx.tenantId,
+      parsedInput.value.workspaceId,
+      parsedInput.value.idempotencyKey,
+    );
+    if (existing) {
+      return ok(proposalToOutput(existing));
+    }
   }
 
   const policies = await loadPolicies(deps, ctx, parsedInput.value);
@@ -235,20 +307,26 @@ export async function proposeAgentAction(
       });
     }
 
-    return ok({
+    const needsApprovalOutput: ProposeAgentActionOutput = {
       proposalId: auditResult.value.proposalId,
       evidenceId: auditResult.value.evidenceId,
       decision: 'NeedsApproval',
       approvalId: approvalIdResult.value,
       message: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
-    });
+    };
+
+    await saveProposalRecord(deps, ctx, parsedInput.value, evaluation, auditResult.value, approvalIdResult.value);
+    return ok(needsApprovalOutput);
   }
 
-  return ok({
+  const allowOutput: ProposeAgentActionOutput = {
     proposalId: auditResult.value.proposalId,
     evidenceId: auditResult.value.evidenceId,
     decision: 'Allow',
-  });
+  };
+
+  await saveProposalRecord(deps, ctx, parsedInput.value, evaluation, auditResult.value);
+  return ok(allowOutput);
 }
 
 // Canonical type alias declarations required by the contract test AST scanner.
