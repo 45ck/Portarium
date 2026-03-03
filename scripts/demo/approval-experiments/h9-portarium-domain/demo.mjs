@@ -63,7 +63,13 @@ function readBody(req) {
   return new Promise((resolve) => {
     let d = '';
     req.on('data', (c) => (d += c));
-    req.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(d));
+      } catch {
+        resolve({});
+      }
+    });
   });
 }
 
@@ -80,7 +86,10 @@ const server = createServer(async (req, res) => {
   const gm = url.pathname.match(/^\/approvals\/([^/]+)$/);
   if (req.method === 'GET' && gm) {
     const a = store.get(gm[1]);
-    if (!a) { res.writeHead(404).end('{"error":"not found"}'); return; }
+    if (!a) {
+      res.writeHead(404).end('{"error":"not found"}');
+      return;
+    }
     res.writeHead(200).end(JSON.stringify(a));
     return;
   }
@@ -88,7 +97,10 @@ const server = createServer(async (req, res) => {
   if (req.method === 'POST' && dm) {
     const b = await readBody(req);
     const r = decide(dm[1], b.decision ?? 'Approved', b.rationale ?? '');
-    if (!r) { res.writeHead(404).end('{"error":"not found"}'); return; }
+    if (!r) {
+      res.writeHead(404).end('{"error":"not found"}');
+      return;
+    }
     res.writeHead(200).end(JSON.stringify(r));
     return;
   }

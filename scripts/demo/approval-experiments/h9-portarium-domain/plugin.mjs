@@ -130,9 +130,13 @@ export async function submitDecision(approvalId, portariumApiBase, decision) {
 function sleep(ms, signal) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
-    signal?.addEventListener('abort', () => {
-      clearTimeout(timer);
-      reject(new Error('Aborted'));
-    }, { once: true });
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        reject(new Error('Aborted'));
+      },
+      { once: true },
+    );
   });
 }
