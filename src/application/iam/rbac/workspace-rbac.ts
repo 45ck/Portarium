@@ -37,6 +37,8 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'tool:invoke': ['admin', 'operator'],
   /** Propose agent action: operators can propose, admins always can. */
   'agent-action:propose': ['admin', 'operator'],
+  /** Execute an approved agent action — operators can execute, admins always can. */
+  'agent-action:execute': ['admin', 'operator'],
 };
 
 export function isAllowedWorkspaceAction(
