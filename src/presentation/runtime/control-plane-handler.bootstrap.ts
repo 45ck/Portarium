@@ -3,6 +3,7 @@ import { Redis } from 'ioredis';
 import { err } from '../../application/common/result.js';
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import type {
+  ApprovalQueryStore,
   ApprovalStore,
   AuthenticationPort,
   AuthorizationPort,
@@ -217,13 +218,21 @@ function buildQueryCache(): QueryCache {
   return new InMemoryQueryCache();
 }
 
-function buildInMemoryApprovalStore(): ApprovalStore {
+function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore {
   const store = new Map<string, import('../../domain/approvals/index.js').ApprovalV1>();
   return {
     getApprovalById: async (_tenantId, _workspaceId, approvalId) =>
       store.get(String(approvalId)) ?? null,
     saveApproval: async (_tenantId, approval) => {
       store.set(String(approval.approvalId), approval);
+    },
+    listApprovals: async (_tenantId, _workspaceId, filter) => {
+      let items = [...store.values()];
+      if (filter.status) items = items.filter((a) => a.status === filter.status);
+      if (filter.runId) items = items.filter((a) => String(a.runId) === String(filter.runId));
+      if (filter.planId) items = items.filter((a) => String(a.planId) === String(filter.planId));
+      if (filter.limit) items = items.slice(0, filter.limit);
+      return { items };
     },
   };
 }
@@ -256,6 +265,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       queryCache,
       eventStream,
       approvalStore,
+      approvalQueryStore: approvalStore,
     };
   }
 
@@ -295,5 +305,6 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     queryCache,
     eventStream,
     approvalStore,
+    approvalQueryStore: approvalStore,
   };
 }
