@@ -83,7 +83,7 @@ console.log();
 
 // Also demonstrate the plugin's waitForApproval path
 console.log('[demo] Testing plugin.waitForApproval() path...');
-const { approvalId: id2, promise: p2 } = createApproval({ toolName: 'delete:database' });
+const { approvalId: id2 } = createApproval({ toolName: 'delete:database' });
 
 // Auto-approve immediately for the plugin test
 setTimeout(() => deliverDecision(id2, 'Denied'), 500);
