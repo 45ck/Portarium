@@ -4,16 +4,85 @@
  * Thin HTTP server that routes tool calls through ActionGatedToolInvoker.
  * Shared by OpenAI, Anthropic, and Docker agent demos.
  *
+ * When CONTROL_PLANE_URL, WORKSPACE_ID, and BEARER_TOKEN environment variables
+ * are set, the proxy delegates tool proposals to the real control plane
+ * POST /v1/workspaces/:wsId/agent-actions:propose endpoint. Otherwise it uses
+ * the local in-process ActionGatedToolInvoker + file-backed approval store.
+ *
  * Run standalone:  npm run demo:proxy  (or: tsx scripts/demo/portarium-tool-proxy.mjs)
  * Imported API:    const { url, close } = await startPolicyProxy(9999);
  */
 
-import { createServer } from 'http';
+import { createServer, request as httpRequest } from 'http';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+
+// ---------------------------------------------------------------------------
+// Control plane delegation (optional)
+// ---------------------------------------------------------------------------
+
+/** @type {{ url: string; workspaceId: string; bearerToken: string } | null} */
+const controlPlane =
+  process.env['CONTROL_PLANE_URL'] && process.env['WORKSPACE_ID'] && process.env['BEARER_TOKEN']
+    ? {
+        url: process.env['CONTROL_PLANE_URL'],
+        workspaceId: process.env['WORKSPACE_ID'],
+        bearerToken: process.env['BEARER_TOKEN'],
+      }
+    : null;
+
+/**
+ * Forward tool proposal to the real control plane.
+ *
+ * @param {{ toolName: string; parameters: unknown; policyTier: string }} input
+ * @returns {Promise<{ statusCode: number; body: any }>}
+ */
+function proposeViaControlPlane(input) {
+  if (!controlPlane) throw new Error('controlPlane not configured');
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      agentId: 'agent-demo-proxy',
+      actionKind: 'tool:invoke',
+      toolName: input.toolName,
+      parameters: input.parameters,
+      executionTier: input.policyTier,
+      policyIds: ['default'],
+      rationale: `Demo proxy invocation of ${input.toolName}`,
+    });
+    const url = new URL(
+      `/v1/workspaces/${controlPlane.workspaceId}/agent-actions:propose`,
+      controlPlane.url,
+    );
+    const opts = {
+      hostname: url.hostname,
+      port: url.port || 80,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${controlPlane.bearerToken}`,
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+    const req = httpRequest(opts, (res) => {
+      let raw = '';
+      res.on('data', (c) => (raw += c));
+      res.on('end', () => {
+        try {
+          resolve({ statusCode: res.statusCode ?? 500, body: JSON.parse(raw) });
+        } catch (e) {
+          reject(new Error(`Failed to parse control plane response: ${String(e)}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Approval store (file-backed — survives proxy restarts)
@@ -312,6 +381,71 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
       return;
     }
 
+    // --- Control plane delegation path ---
+    if (controlPlane) {
+      try {
+        const cpResult = await proposeViaControlPlane({ toolName, parameters, policyTier });
+        const cpBody = cpResult.body;
+        const decision = cpBody.decision;
+
+        if (decision === 'Allow') {
+          // Execute locally after control plane says Allow
+          const mockResult = await mockMachineInvoker.invokeTool({
+            toolName,
+            parameters,
+            machineId: /** @type {any} */ ('machine-demo-proxy'),
+            runId: /** @type {any} */ (`run-${Date.now()}`),
+          });
+          jsonResponse(res, 200, {
+            allowed: true,
+            decision: 'Allow',
+            tool: toolName,
+            proposalId: cpBody.proposalId,
+            output: mockResult.ok ? mockResult.output : null,
+          });
+          return;
+        }
+
+        if (decision === 'NeedsApproval') {
+          // Mirror the approval into the local store so the proxy's poll endpoint works
+          const cpApprovalId = cpBody.approvalId;
+          approvals.set(cpApprovalId, {
+            toolName,
+            parameters,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          });
+          saveApprovals();
+          console.log(
+            `[portarium-proxy] CONTROL-PLANE: "${toolName}" needs approval → ${cpApprovalId.slice(0, 8)}...`,
+          );
+          jsonResponse(res, 202, {
+            status: 'awaiting_approval',
+            approvalId: cpApprovalId,
+            proposalId: cpBody.proposalId,
+            toolName,
+            message: cpBody.message ?? `Tool "${toolName}" requires human approval.`,
+          });
+          return;
+        }
+
+        // Denied
+        jsonResponse(res, 403, {
+          allowed: false,
+          decision: 'Denied',
+          tool: toolName,
+          proposalId: cpBody.proposalId,
+          detail: cpBody.detail ?? `Tool "${toolName}" denied by control plane.`,
+        });
+        return;
+      } catch (err) {
+        console.error('[portarium-proxy] control plane delegation error:', err);
+        jsonResponse(res, 502, { error: `Control plane error: ${String(err)}` });
+        return;
+      }
+    }
+
+    // --- Local evaluation path (no control plane) ---
     let result;
     try {
       result = await gatedInvoker.invoke({
@@ -367,7 +501,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
       });
       saveApprovals();
       console.log(
-        `[portarium-proxy] BLOCKED: "${toolName}" (min-tier: ${policy.minimumTier}) → approval ${approvalId.slice(0, 8)}…`,
+        `[portarium-proxy] BLOCKED: "${toolName}" (min-tier: ${policy.minimumTier}) → approval ${approvalId.slice(0, 8)}...`,
       );
       jsonResponse(res, 202, {
         status: 'awaiting_approval',
@@ -425,6 +559,11 @@ export function startPolicyProxy(port = 9999) {
     server.listen(port, '127.0.0.1', () => {
       const url = `http://localhost:${port}`;
       console.log(`[portarium-proxy] Listening on ${url}`);
+      if (controlPlane) {
+        console.log(
+          `[portarium-proxy] Control plane delegation: ${controlPlane.url} (workspace: ${controlPlane.workspaceId})`,
+        );
+      }
       console.log(
         `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  GET /approvals/ui`,
       );
