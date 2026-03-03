@@ -190,6 +190,9 @@ export type TriggerDefinitionId = Branded<string, 'TriggerDefinitionId'>;
 /** Unique identifier for a provider catalog entry. */
 export type CatalogEntryId = Branded<string, 'CatalogEntryId'>;
 
+/** Unique identifier for an agent action proposal. */
+export type ProposalId = Branded<string, 'ProposalId'>;
+
 /** Unique identifier for an AI agent configuration. */
 export type AgentId = Branded<string, 'AgentId'>;
 
@@ -305,6 +308,7 @@ export const TriggerDefinitionId = (value: string): TriggerDefinitionId =>
   brand<string, 'TriggerDefinitionId'>(value);
 export const CatalogEntryId = (value: string): CatalogEntryId =>
   brand<string, 'CatalogEntryId'>(value);
+export const ProposalId = (value: string): ProposalId => brand<string, 'ProposalId'>(value);
 export const AgentId = (value: string): AgentId => brand<string, 'AgentId'>(value);
 export const LocationEventId = (value: string): LocationEventId =>
   brand<string, 'LocationEventId'>(value);
