@@ -82,21 +82,22 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
 
   const record = body as Record<string, unknown>;
 
-  // Build minimal in-memory deps for the command
+  // Build command deps from the real ControlPlaneDeps, falling back to
+  // minimal in-memory stubs only for deps not yet wired in bootstrap.
   const commandDeps = {
     authorization: deps.authorization,
     clock: { nowIso: () => new Date().toISOString() },
     idGenerator: { generateId: () => crypto.randomUUID() },
-    unitOfWork: { execute: async (fn: () => Promise<void>) => fn() },
-    policyStore: {
+    unitOfWork: deps.unitOfWork ?? { execute: async (fn: () => Promise<void>) => fn() },
+    policyStore: deps.policyStore ?? {
       getPolicyById: async () => null as never,
     },
-    approvalStore: {
+    approvalStore: deps.approvalStore ?? {
       getApprovalById: async () => null,
       saveApproval: async () => {},
     },
-    eventPublisher: { publish: async () => {} },
-    evidenceLog: {
+    eventPublisher: deps.eventPublisher ?? { publish: async () => {} },
+    evidenceLog: deps.evidenceLog ?? {
       appendEntry: async (_tenantId: unknown, entry: unknown) => entry,
     },
   };
