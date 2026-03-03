@@ -106,20 +106,16 @@ export class GrpcMissionGateway implements MissionPort {
   #call<TReq, TRes>(
     method: (
       client: MissionServiceClient,
-    ) => (req: TReq, opts: { deadline: Date }, cb: GrpcCallback<TRes>) => void,
+    ) => (req: unknown, opts: { deadline: Date }, cb: GrpcCallback<unknown>) => void,
     request: TReq,
   ): Promise<TRes> {
     return new Promise((resolve, reject) => {
       const client = this.#getClient();
       const deadline = new Date(Date.now() + (this.#config.deadlineMs ?? 10_000));
-      (method(client) as (req: unknown, opts: { deadline: Date }, cb: GrpcCallback<TRes>) => void)(
-        request,
-        { deadline },
-        (err, res) => {
-          if (err) reject(err);
-          else resolve(res);
-        },
-      );
+      method(client)(request, { deadline }, (err, res) => {
+        if (err) reject(err);
+        else resolve(res as TRes);
+      });
     });
   }
 
@@ -146,7 +142,7 @@ export class GrpcMissionGateway implements MissionPort {
     let res: Record<string, unknown>;
     try {
       res = await this.#call<typeof grpcReq, Record<string, unknown>>(
-        (c) => c.DispatchMission.bind(c) as never,
+        (c) => c.DispatchMission.bind(c),
         grpcReq,
       );
     } catch (err) {
@@ -208,7 +204,7 @@ export class GrpcMissionGateway implements MissionPort {
 
     try {
       const res = await this.#call<typeof grpcReq, Record<string, unknown>>(
-        (c) => c.CancelMission.bind(c) as never,
+        (c) => c.CancelMission.bind(c),
         grpcReq,
       );
       return {
@@ -231,7 +227,7 @@ export class GrpcMissionGateway implements MissionPort {
     const grpcReq = { mission_id: missionId, correlation_id: correlationId };
 
     const res = await this.#call<typeof grpcReq, Record<string, unknown>>(
-      (c) => c.GetMissionStatus.bind(c) as never,
+      (c) => c.GetMissionStatus.bind(c),
       grpcReq,
     );
 
