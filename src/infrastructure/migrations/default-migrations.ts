@@ -337,4 +337,30 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       'DROP TABLE IF EXISTS agent_configs;',
     ],
   },
+  {
+    version: 15,
+    id: '0015_expand_agent_action_proposals_table',
+    description:
+      'Creates agent_action_proposals table for agent governance proposal persistence (bead-0877).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS agent_action_proposals (
+  tenant_id       TEXT        NOT NULL,
+  proposal_id     TEXT        NOT NULL,
+  workspace_id    TEXT        NOT NULL,
+  payload         JSONB       NOT NULL,
+  idempotency_key TEXT        NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tenant_id, proposal_id)
+);`,
+      'CREATE INDEX IF NOT EXISTS idx_agent_action_proposals_idempotency ON agent_action_proposals (tenant_id, workspace_id, idempotency_key) WHERE idempotency_key IS NOT NULL;',
+    ],
+    downSql: [
+      'DROP INDEX IF EXISTS idx_agent_action_proposals_idempotency;',
+      'DROP TABLE IF EXISTS agent_action_proposals;',
+    ],
+  },
 ];
