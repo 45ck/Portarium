@@ -5,6 +5,7 @@ import type {
   WorkflowSummary,
 } from '@portarium/cockpit-types';
 import { ProvenanceJourney } from '../provenance-journey';
+import { AgentActionProposalDetail } from './agent-action-proposal-detail';
 import { PolicyRulePanel } from './policy-rule-panel';
 import { TriageEffectRow } from './triage-effect-row';
 
@@ -25,6 +26,9 @@ export function TriageDefaultContent({
   return (
     <>
       <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
+      {approval.agentActionProposal && (
+        <AgentActionProposalDetail proposal={approval.agentActionProposal} />
+      )}
       {policyRule && (
         <div className="rounded-lg bg-muted/30 border border-border px-4 py-3">
           <PolicyRulePanel rule={policyRule} />

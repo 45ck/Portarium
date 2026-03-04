@@ -10,6 +10,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
+  AgentActionProposalStore,
   ApprovalQueryStore,
   ApprovalStore,
   AuthenticationPort,
@@ -101,6 +102,8 @@ export type ControlPlaneDeps = Readonly<{
   embeddingPort?: EmbeddingPort;
   /** Optional approval store for agent-governance proposal flow. */
   approvalStore?: ApprovalStore;
+  /** Optional agent action proposal store; when present, approval responses are enriched with proposal metadata. */
+  agentActionProposalStore?: AgentActionProposalStore;
   /** Optional approval query store for listing approvals; enables the GET /v1/workspaces/:id/approvals route. */
   approvalQueryStore?: ApprovalQueryStore;
   /** Optional policy store for agent-governance policy evaluation. */

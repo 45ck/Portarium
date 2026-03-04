@@ -225,6 +225,17 @@ export interface DecisionHistoryEntry {
   message: string;
 }
 
+/** Agent action proposal metadata (present when approval originated from proposeAgentAction) */
+export interface AgentActionProposalMeta {
+  proposalId: string;
+  agentId: string;
+  machineId?: string;
+  toolName: string;
+  toolCategory: 'ReadOnly' | 'Mutation' | 'Dangerous' | 'Unknown';
+  blastRadiusTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+  rationale: string;
+}
+
 export interface ApprovalSummary {
   schemaVersion: number;
   approvalId: string;
@@ -244,6 +255,7 @@ export interface ApprovalSummary {
   sodEvaluation?: SodEvaluation;
   policyRule?: PolicyRule;
   decisionHistory?: DecisionHistoryEntry[];
+  agentActionProposal?: AgentActionProposalMeta;
 }
 
 export interface CredentialGrantV1 {

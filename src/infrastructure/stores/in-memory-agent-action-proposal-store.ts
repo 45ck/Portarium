@@ -1,4 +1,4 @@
-import type { ProposalId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import type { ApprovalId, ProposalId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import type { AgentActionProposalStore } from '../../application/ports/agent-action-proposal-store.js';
 
@@ -10,6 +10,18 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
     proposalId: ProposalId,
   ): Promise<AgentActionProposalV1 | null> {
     return this.#store.get(this.#key(tenantId, proposalId)) ?? null;
+  }
+
+  public async getProposalByApprovalId(
+    _tenantId: TenantId,
+    approvalId: ApprovalId,
+  ): Promise<AgentActionProposalV1 | null> {
+    for (const proposal of this.#store.values()) {
+      if (proposal.approvalId && String(proposal.approvalId) === String(approvalId)) {
+        return proposal;
+      }
+    }
+    return null;
   }
 
   public async getProposalByIdempotencyKey(

@@ -10,8 +10,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type { TraceContext } from '../../application/common/trace-context.js';
-import type { ApprovalDecision } from '../../domain/primitives/index.js';
-import type { ApprovalStatus } from '../../domain/approvals/index.js';
+import { ApprovalId, type ApprovalDecision, type TenantId } from '../../domain/primitives/index.js';
+import type { ApprovalStatus, ApprovalV1 } from '../../domain/approvals/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
+import type { AgentActionProposalStore } from '../../application/ports/index.js';
 import { listApprovals } from '../../application/queries/list-approvals.js';
 import { getApproval } from '../../application/queries/get-approval.js';
 import {
@@ -75,6 +77,63 @@ function submitErrorToProblem(
         instance,
       };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Agent action proposal enrichment
+// ---------------------------------------------------------------------------
+
+interface AgentActionProposalMeta {
+  proposalId: string;
+  agentId: string;
+  machineId?: string;
+  toolName: string;
+  toolCategory: string;
+  blastRadiusTier: string;
+  rationale: string;
+}
+
+function proposalToMeta(proposal: AgentActionProposalV1): AgentActionProposalMeta {
+  return {
+    proposalId: String(proposal.proposalId),
+    agentId: String(proposal.agentId),
+    ...(proposal.machineId ? { machineId: String(proposal.machineId) } : {}),
+    toolName: proposal.toolName,
+    toolCategory: proposal.toolClassification.category,
+    blastRadiusTier: proposal.toolClassification.minimumTier,
+    rationale: proposal.rationale,
+  };
+}
+
+async function enrichApprovalWithProposal(
+  store: AgentActionProposalStore,
+  tenantId: TenantId,
+  approval: ApprovalV1,
+): Promise<Record<string, unknown>> {
+  const plain = { ...approval } as Record<string, unknown>;
+  try {
+    const proposal = await store.getProposalByApprovalId(
+      tenantId,
+      ApprovalId(String(approval.approvalId)),
+    );
+    if (proposal) {
+      plain['agentActionProposal'] = proposalToMeta(proposal);
+    }
+  } catch {
+    // Non-fatal: if enrichment fails, return the approval without proposal metadata.
+  }
+  return plain;
+}
+
+async function enrichApprovalsWithProposals(
+  store: AgentActionProposalStore | undefined,
+  tenantId: TenantId,
+  approvals: readonly ApprovalV1[],
+): Promise<readonly Record<string, unknown>[]> {
+  if (!store) return approvals as unknown as Record<string, unknown>[];
+  return Promise.all(
+    approvals.map((a) => enrichApprovalWithProposal(store, tenantId, a)),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -143,7 +202,14 @@ export async function handleListApprovals(args: ApprovalHandlerArgs): Promise<vo
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  const enrichedItems = await enrichApprovalsWithProposals(
+    deps.agentActionProposalStore,
+    auth.ctx.tenantId,
+    result.value.items,
+  );
+  const body = { ...result.value, items: enrichedItems };
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body });
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +257,16 @@ export async function handleGetApproval(args: ApprovalItemArgs): Promise<void> {
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  let body: Record<string, unknown> = result.value as unknown as Record<string, unknown>;
+  if (deps.agentActionProposalStore) {
+    body = await enrichApprovalWithProposal(
+      deps.agentActionProposalStore,
+      auth.ctx.tenantId,
+      result.value,
+    );
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body });
 }
 
 // ---------------------------------------------------------------------------
