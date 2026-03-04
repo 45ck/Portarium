@@ -145,11 +145,7 @@ async function persistAuditArtifacts(
     await deps.unitOfWork.execute(async () => {
       await deps.evidenceLog.appendEntry(ctx.tenantId, audit.evidence);
       await deps.eventPublisher.publish(
-        domainEventToPortariumCloudEvent(
-          audit.event,
-          PROPOSE_AGENT_ACTION_SOURCE,
-          ctx.traceparent,
-        ),
+        domainEventToPortariumCloudEvent(audit.event, PROPOSE_AGENT_ACTION_SOURCE, ctx.traceparent),
       );
     });
     return ok(true);
@@ -300,10 +296,7 @@ export async function proposeAgentAction(
     } catch (error) {
       return err({
         kind: 'DependencyFailure',
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Failed to persist approval record.',
+        message: error instanceof Error ? error.message : 'Failed to persist approval record.',
       });
     }
 
@@ -315,7 +308,14 @@ export async function proposeAgentAction(
       message: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
     };
 
-    await saveProposalRecord(deps, ctx, parsedInput.value, evaluation, auditResult.value, approvalIdResult.value);
+    await saveProposalRecord(
+      deps,
+      ctx,
+      parsedInput.value,
+      evaluation,
+      auditResult.value,
+      approvalIdResult.value,
+    );
     return ok(needsApprovalOutput);
   }
 

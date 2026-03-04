@@ -18,9 +18,7 @@ afterEach(async () => {
   handle = undefined;
 });
 
-function makeCtx(
-  roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator'],
-) {
+function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator']) {
   return toAppContext({
     tenantId: 'ws-runs-1',
     principalId: 'user-1',

@@ -142,9 +142,7 @@ async function startServer(
     role: 'control-plane',
     host: '127.0.0.1',
     port: 0,
-    handler: createControlPlaneHandler(
-      makeDeps(principalId, roles, sharedApprovalStore),
-    ),
+    handler: createControlPlaneHandler(makeDeps(principalId, roles, sharedApprovalStore)),
   });
 }
 
@@ -565,24 +563,21 @@ describe('Proxy delegates to control plane', () => {
     await startServer(OPERATOR_ID, ['operator']);
     const cpUrl = baseUrl();
 
-    const proposeRes = await fetch(
-      `${cpUrl}/v1/workspaces/${WORKSPACE_ID}/agent-actions:propose`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${TOKEN}`,
-        },
-        body: JSON.stringify({
-          agentId: 'agent-demo-proxy',
-          actionKind: 'query:listFiles',
-          toolName: 'file:list',
-          executionTier: 'Auto',
-          policyIds: ['pol-cli-1'],
-          rationale: 'Demo proxy read-only invocation',
-        }),
+    const proposeRes = await fetch(`${cpUrl}/v1/workspaces/${WORKSPACE_ID}/agent-actions:propose`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
       },
-    );
+      body: JSON.stringify({
+        agentId: 'agent-demo-proxy',
+        actionKind: 'query:listFiles',
+        toolName: 'file:list',
+        executionTier: 'Auto',
+        policyIds: ['pol-cli-1'],
+        rationale: 'Demo proxy read-only invocation',
+      }),
+    });
 
     expect(proposeRes.status).toBe(200);
     const body = (await proposeRes.json()) as Record<string, unknown>;
@@ -597,24 +592,21 @@ describe('Proxy delegates to control plane', () => {
     const cpUrl = baseUrl();
 
     // Step 1: Propose (creates pending approval)
-    const proposeRes = await fetch(
-      `${cpUrl}/v1/workspaces/${WORKSPACE_ID}/agent-actions:propose`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${TOKEN}`,
-        },
-        body: JSON.stringify({
-          agentId: 'agent-demo-proxy',
-          actionKind: 'tool:invoke',
-          toolName: 'db:migrate',
-          executionTier: 'HumanApprove',
-          policyIds: ['pol-cli-1'],
-          rationale: 'Testing full cycle',
-        }),
+    const proposeRes = await fetch(`${cpUrl}/v1/workspaces/${WORKSPACE_ID}/agent-actions:propose`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TOKEN}`,
       },
-    );
+      body: JSON.stringify({
+        agentId: 'agent-demo-proxy',
+        actionKind: 'tool:invoke',
+        toolName: 'db:migrate',
+        executionTier: 'HumanApprove',
+        policyIds: ['pol-cli-1'],
+        rationale: 'Testing full cycle',
+      }),
+    });
     expect(proposeRes.status).toBe(202);
     const proposeBody = (await proposeRes.json()) as Record<string, unknown>;
     const approvalId = proposeBody['approvalId'] as string;
@@ -642,10 +634,9 @@ describe('Proxy delegates to control plane', () => {
     expect(decideRes.status).toBe(200);
 
     // Step 3: Poll shows Approved
-    const pollRes = await fetch(
-      `${cpUrl2}/v1/workspaces/${WORKSPACE_ID}/approvals/${approvalId}`,
-      { headers: { Authorization: `Bearer ${TOKEN}` } },
-    );
+    const pollRes = await fetch(`${cpUrl2}/v1/workspaces/${WORKSPACE_ID}/approvals/${approvalId}`, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
     expect(pollRes.status).toBe(200);
     const pollBody = (await pollRes.json()) as Record<string, unknown>;
     expect(pollBody['status']).toBe('Approved');

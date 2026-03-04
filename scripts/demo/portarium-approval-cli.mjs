@@ -118,10 +118,7 @@ function postDecisionToProxy(approvalId, decision) {
  */
 function listPendingFromControlPlane(cp) {
   return new Promise((resolve, reject) => {
-    const url = new URL(
-      `/v1/workspaces/${cp.workspaceId}/approvals?status=Pending`,
-      cp.url,
-    );
+    const url = new URL(`/v1/workspaces/${cp.workspaceId}/approvals?status=Pending`, cp.url);
     const opts = {
       hostname: url.hostname,
       port: url.port || 80,
@@ -160,10 +157,7 @@ function listPendingFromControlPlane(cp) {
 function postDecisionToControlPlane(cp, approvalId, decision, rationale) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ decision, rationale });
-    const url = new URL(
-      `/v1/workspaces/${cp.workspaceId}/approvals/${approvalId}/decide`,
-      cp.url,
-    );
+    const url = new URL(`/v1/workspaces/${cp.workspaceId}/approvals/${approvalId}/decide`, cp.url);
     const opts = {
       hostname: url.hostname,
       port: url.port || 80,

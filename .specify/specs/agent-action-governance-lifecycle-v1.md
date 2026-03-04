@@ -80,12 +80,12 @@ Dispatch delegates to `ActionRunnerPort.dispatchAction()`, which may be backed b
 
 ## Tool Blast-Radius Classification Matrix
 
-| Category   | Minimum Tier    | Pattern Examples                                | Rationale                                         |
-|------------|-----------------|------------------------------------------------|---------------------------------------------------|
-| ReadOnly   | Auto            | read, get, list, search, query, fetch, inspect | No side effects; safe for autonomous execution.   |
-| Mutation   | HumanApprove    | write, create, update, delete, send, deploy    | Changes external state; requires human sign-off.  |
-| Dangerous  | ManualOnly      | shell, terminal, browser, package-install      | Host-level access; always denied in auto tier.    |
-| Unknown    | HumanApprove    | (no pattern match)                             | Defaults to HumanApprove to reduce blast radius.  |
+| Category  | Minimum Tier | Pattern Examples                               | Rationale                                        |
+| --------- | ------------ | ---------------------------------------------- | ------------------------------------------------ |
+| ReadOnly  | Auto         | read, get, list, search, query, fetch, inspect | No side effects; safe for autonomous execution.  |
+| Mutation  | HumanApprove | write, create, update, delete, send, deploy    | Changes external state; requires human sign-off. |
+| Dangerous | ManualOnly   | shell, terminal, browser, package-install      | Host-level access; always denied in auto tier.   |
+| Unknown   | HumanApprove | (no pattern match)                             | Defaults to HumanApprove to reduce blast radius. |
 
 Classification is performed by `classifyOpenClawToolBlastRadiusV1()` using regex pattern matching against the tool name.
 
@@ -101,14 +101,14 @@ Classification is performed by `classifyOpenClawToolBlastRadiusV1()` using regex
 
 ### Decision Matrix
 
-| Tool Category | Policy Decision   | Final Decision    |
-|---------------|-------------------|-------------------|
-| Dangerous     | *any*             | Denied            |
-| *any*         | Deny              | Denied            |
-| Mutation      | Allow             | NeedsApproval     |
-| Unknown       | Allow             | NeedsApproval     |
-| *any*         | RequireApproval   | NeedsApproval     |
-| ReadOnly      | Allow             | Allow             |
+| Tool Category | Policy Decision | Final Decision |
+| ------------- | --------------- | -------------- |
+| Dangerous     | _any_           | Denied         |
+| _any_         | Deny            | Denied         |
+| Mutation      | Allow           | NeedsApproval  |
+| Unknown       | Allow           | NeedsApproval  |
+| _any_         | RequireApproval | NeedsApproval  |
+| ReadOnly      | Allow           | Allow          |
 
 ## Approval Routing Rules
 

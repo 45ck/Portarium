@@ -6,14 +6,20 @@ import { Bot, Cpu, Shield, Wrench } from 'lucide-react';
 // Category / Tier visual mapping
 // ---------------------------------------------------------------------------
 
-const CATEGORY_STYLE: Record<string, { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string }> = {
+const CATEGORY_STYLE: Record<
+  string,
+  { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string }
+> = {
   ReadOnly: { variant: 'secondary', label: 'Read-only' },
   Mutation: { variant: 'warning', label: 'Mutation' },
   Dangerous: { variant: 'destructive', label: 'Dangerous' },
   Unknown: { variant: 'outline', label: 'Unknown' },
 };
 
-const TIER_STYLE: Record<string, { variant: 'secondary' | 'outline' | 'warning' | 'destructive'; label: string }> = {
+const TIER_STYLE: Record<
+  string,
+  { variant: 'secondary' | 'outline' | 'warning' | 'destructive'; label: string }
+> = {
   Auto: { variant: 'secondary', label: 'Auto' },
   Assisted: { variant: 'outline', label: 'Assisted' },
   HumanApprove: { variant: 'warning', label: 'Human Approve' },
@@ -86,7 +92,9 @@ export function AgentActionProposalDetail({ proposal }: AgentActionProposalDetai
               <Cpu className="h-3 w-3 shrink-0" />
               Machine
             </span>
-            <span className="font-mono text-[11px] text-muted-foreground">{proposal.machineId}</span>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              {proposal.machineId}
+            </span>
           </>
         )}
       </div>

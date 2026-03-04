@@ -1,12 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  ApprovalId,
-  PlanId,
-  RunId,
-  UserId,
-  WorkspaceId,
-} from '../../domain/primitives/index.js';
+import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { ApprovalDecidedV1 } from '../../domain/approvals/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
@@ -106,9 +100,7 @@ describe('executeApprovedAgentAction', () => {
 
     const published = (eventPublisher.publish as ReturnType<typeof vi.fn>).mock
       .calls[0]?.[0] as Record<string, unknown>;
-    expect(published['type']).toBe(
-      'com.portarium.agentactionproposal.AgentActionExecuted',
-    );
+    expect(published['type']).toBe('com.portarium.agentactionproposal.AgentActionExecuted');
   });
 
   it('returns Failed status on dispatch failure and emits AgentActionExecutionFailed', async () => {
@@ -128,9 +120,7 @@ describe('executeApprovedAgentAction', () => {
 
     const published = (eventPublisher.publish as ReturnType<typeof vi.fn>).mock
       .calls[0]?.[0] as Record<string, unknown>;
-    expect(published['type']).toBe(
-      'com.portarium.agentactionproposal.AgentActionExecutionFailed',
-    );
+    expect(published['type']).toBe('com.portarium.agentactionproposal.AgentActionExecutionFailed');
   });
 
   it('returns Forbidden when authorization is denied', async () => {
@@ -233,6 +223,6 @@ describe('executeApprovedAgentAction', () => {
     const call = appendEntry.mock.calls[0]!;
     const entry = call[1] as Record<string, unknown>;
     expect(entry['category']).toBe('Action');
-    expect((entry['summary'] as string)).toMatch(/executed/i);
+    expect(entry['summary'] as string).toMatch(/executed/i);
   });
 });

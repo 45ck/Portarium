@@ -2,11 +2,11 @@
 
 Three scripts implement the demo approval flow for agent tool invocations:
 
-| Script | npm alias | Role |
-|---|---|---|
-| `portarium-tool-proxy.mjs` | `npm run demo:proxy` | HTTP gateway that evaluates policies and gates tool calls |
-| `portarium-approval-cli.mjs` | `npm run demo:approve` | Interactive CLI for human operators to approve/deny requests |
-| `portarium-approval-plugin.mjs` | _(library import)_ | Reusable polling helper that agents import to await decisions |
+| Script                          | npm alias              | Role                                                          |
+| ------------------------------- | ---------------------- | ------------------------------------------------------------- |
+| `portarium-tool-proxy.mjs`      | `npm run demo:proxy`   | HTTP gateway that evaluates policies and gates tool calls     |
+| `portarium-approval-cli.mjs`    | `npm run demo:approve` | Interactive CLI for human operators to approve/deny requests  |
+| `portarium-approval-plugin.mjs` | _(library import)_     | Reusable polling helper that agents import to await decisions |
 
 ## Quick start (local demo proxy)
 
@@ -99,11 +99,11 @@ const proposal = await proposeAgentAction(
 
 ## Protocol summary
 
-| Operation | Demo Proxy | Real Control Plane |
-|---|---|---|
-| Propose tool | `POST /tools/invoke` | `POST /v1/workspaces/:wsId/agent-actions:propose` |
-| List pending | `GET /approvals?status=pending` | `GET /v1/workspaces/:wsId/approvals?status=Pending` |
-| Poll one | `GET /approvals/:id` | `GET /v1/workspaces/:wsId/approvals/:id` |
-| Decide | `POST /approvals/:id/decide` | `POST /v1/workspaces/:wsId/approvals/:id/decide` |
-| Status casing | lowercase (`pending`, `approved`, `denied`) | PascalCase (`Pending`, `Approved`, `Denied`) |
-| Auth | none | `Authorization: Bearer <token>` |
+| Operation     | Demo Proxy                                  | Real Control Plane                                  |
+| ------------- | ------------------------------------------- | --------------------------------------------------- |
+| Propose tool  | `POST /tools/invoke`                        | `POST /v1/workspaces/:wsId/agent-actions:propose`   |
+| List pending  | `GET /approvals?status=pending`             | `GET /v1/workspaces/:wsId/approvals?status=Pending` |
+| Poll one      | `GET /approvals/:id`                        | `GET /v1/workspaces/:wsId/approvals/:id`            |
+| Decide        | `POST /approvals/:id/decide`                | `POST /v1/workspaces/:wsId/approvals/:id/decide`    |
+| Status casing | lowercase (`pending`, `approved`, `denied`) | PascalCase (`Pending`, `Approved`, `Denied`)        |
+| Auth          | none                                        | `Authorization: Bearer <token>`                     |

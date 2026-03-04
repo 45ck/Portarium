@@ -8,7 +8,12 @@
 
 import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { parseAgentActionProposalV1 } from '../../domain/machines/agent-action-proposal-v1.js';
-import type { ProposalId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import type {
+  ApprovalId,
+  ProposalId,
+  TenantId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type { AgentActionProposalStore } from '../../application/ports/agent-action-proposal-store.js';
 import type { SqlClient } from './sql-client.js';
 
@@ -55,6 +60,26 @@ export class PostgresAgentActionProposalStore implements AgentActionProposalStor
   }
 
   // -------------------------------------------------------------------------
+  // getProposalByApprovalId
+  // -------------------------------------------------------------------------
+
+  public async getProposalByApprovalId(
+    tenantId: TenantId,
+    approvalId: ApprovalId,
+  ): Promise<AgentActionProposalV1 | null> {
+    const result = await this.#client.query<AgentActionProposalRow>(
+      `SELECT tenant_id, proposal_id, workspace_id, payload
+         FROM agent_action_proposals
+        WHERE tenant_id = $1 AND payload->>'approvalId' = $2
+        LIMIT 1`,
+      [String(tenantId), String(approvalId)],
+    );
+    const row = result.rows[0];
+    if (row === undefined) return null;
+    return parseAgentActionProposalV1(row.payload);
+  }
+
+  // -------------------------------------------------------------------------
   // getProposalByIdempotencyKey
   // -------------------------------------------------------------------------
 
@@ -79,10 +104,7 @@ export class PostgresAgentActionProposalStore implements AgentActionProposalStor
   // saveProposal
   // -------------------------------------------------------------------------
 
-  public async saveProposal(
-    tenantId: TenantId,
-    proposal: AgentActionProposalV1,
-  ): Promise<void> {
+  public async saveProposal(tenantId: TenantId, proposal: AgentActionProposalV1): Promise<void> {
     await this.#client.query(
       `INSERT INTO agent_action_proposals
          (tenant_id, proposal_id, workspace_id, payload, idempotency_key, updated_at)

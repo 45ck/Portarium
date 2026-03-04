@@ -131,9 +131,7 @@ async function enrichApprovalsWithProposals(
   approvals: readonly ApprovalV1[],
 ): Promise<readonly Record<string, unknown>[]> {
   if (!store) return approvals as unknown as Record<string, unknown>[];
-  return Promise.all(
-    approvals.map((a) => enrichApprovalWithProposal(store, tenantId, a)),
-  );
+  return Promise.all(approvals.map((a) => enrichApprovalWithProposal(store, tenantId, a)));
 }
 
 // ---------------------------------------------------------------------------
@@ -344,7 +342,11 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
     idGenerator: { generateId: () => crypto.randomUUID() },
     approvalStore: deps.approvalStore,
     unitOfWork: deps.unitOfWork ?? { execute: async <T>(fn: () => Promise<T>) => fn() },
-    eventPublisher: deps.eventPublisher ?? { publish: async () => {} },
+    eventPublisher: deps.eventPublisher ?? {
+      publish: async () => {
+        /* noop stub */
+      },
+    },
   };
 
   const input: Parameters<typeof submitApproval>[2] = {
@@ -363,12 +365,7 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
   const result = await submitApproval(commandDeps, auth.ctx, input);
 
   if (!result.ok) {
-    respondProblem(
-      res,
-      submitErrorToProblem(result.error, pathname),
-      correlationId,
-      traceContext,
-    );
+    respondProblem(res, submitErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }
 
