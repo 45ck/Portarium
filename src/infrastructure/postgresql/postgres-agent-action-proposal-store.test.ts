@@ -158,7 +158,10 @@ describe('PostgresAgentActionProposalStore', () => {
       expect((calls[1] as [string])[0]).toContain('ON CONFLICT');
 
       // Second call should contain the updated payload
-      const secondPayload = JSON.parse((calls[1] as [string, unknown[]])[1][3] as string) as Record<string, unknown>;
+      const secondPayload = JSON.parse((calls[1] as [string, unknown[]])[1][3] as string) as Record<
+        string,
+        unknown
+      >;
       expect(secondPayload).toMatchObject({ decision: 'NeedsApproval' });
     });
   });
@@ -169,11 +172,7 @@ describe('PostgresAgentActionProposalStore', () => {
 
   describe('getProposalByIdempotencyKey', () => {
     it('returns null for unknown idempotencyKey', async () => {
-      const result = await store.getProposalByIdempotencyKey(
-        TENANT,
-        WORKSPACE,
-        'nonexistent-key',
-      );
+      const result = await store.getProposalByIdempotencyKey(TENANT, WORKSPACE, 'nonexistent-key');
       expect(result).toBeNull();
     });
 
@@ -190,11 +189,7 @@ describe('PostgresAgentActionProposalStore', () => {
         ],
         rowCount: 1,
       });
-      const result = await store.getProposalByIdempotencyKey(
-        TENANT,
-        WORKSPACE,
-        'idem-key-1',
-      );
+      const result = await store.getProposalByIdempotencyKey(TENANT, WORKSPACE, 'idem-key-1');
       expect(result).not.toBeNull();
       expect(result?.proposalId).toEqual(ProposalId('prop-1'));
     });

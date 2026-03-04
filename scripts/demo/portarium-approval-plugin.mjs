@@ -124,7 +124,9 @@ export async function handleApprovalRequired(proxyResponse, proxyUrl, opts = {})
     const decideUrl = `${cp.url}/v1/workspaces/${cp.workspaceId}/approvals/${approvalId}/decide`;
     console.log(`[approval] Control plane: ${cp.url}`);
     console.log(`[approval] To approve/deny, run in another terminal:`);
-    console.log(`[approval]   npm run demo:approve -- --control-plane ${cp.url} --workspace-id ${cp.workspaceId} --bearer-token <token>`);
+    console.log(
+      `[approval]   npm run demo:approve -- --control-plane ${cp.url} --workspace-id ${cp.workspaceId} --bearer-token <token>`,
+    );
     console.log(`[approval] Or use curl:`);
     console.log(
       `[approval]   curl -X POST ${decideUrl} -H 'Content-Type: application/json' -H 'Authorization: Bearer ${cp.bearerToken}' -d '{"decision":"Approved","rationale":"operator approved"}'`,

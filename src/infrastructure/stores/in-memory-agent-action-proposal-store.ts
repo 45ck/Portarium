@@ -1,4 +1,9 @@
-import type { ApprovalId, ProposalId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import type {
+  ApprovalId,
+  ProposalId,
+  TenantId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import type { AgentActionProposalStore } from '../../application/ports/agent-action-proposal-store.js';
 
@@ -40,10 +45,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
     return null;
   }
 
-  public async saveProposal(
-    tenantId: TenantId,
-    proposal: AgentActionProposalV1,
-  ): Promise<void> {
+  public async saveProposal(tenantId: TenantId, proposal: AgentActionProposalV1): Promise<void> {
     this.#store.set(this.#key(tenantId, proposal.proposalId), proposal);
   }
 

@@ -21,7 +21,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "dev:all": "docker compose --profile baseline --profile runtime --profile auth --profile idp --profile authz --profile erp --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",

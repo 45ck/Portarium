@@ -48,16 +48,19 @@ const { values: cliArgs } = parseArgs({
  * or the corresponding env vars supply the actual values.
  */
 function resolveControlPlane() {
-  const cpUrl = /** @type {string | undefined} */ (cliArgs['cp-url']) ?? process.env['CONTROL_PLANE_URL'];
-  const wsId = /** @type {string | undefined} */ (cliArgs['workspace-id']) ?? process.env['WORKSPACE_ID'];
-  const token = /** @type {string | undefined} */ (cliArgs['bearer-token']) ?? process.env['BEARER_TOKEN'];
+  const cpUrl =
+    /** @type {string | undefined} */ (cliArgs['cp-url']) ?? process.env['CONTROL_PLANE_URL'];
+  const wsId =
+    /** @type {string | undefined} */ (cliArgs['workspace-id']) ?? process.env['WORKSPACE_ID'];
+  const token =
+    /** @type {string | undefined} */ (cliArgs['bearer-token']) ?? process.env['BEARER_TOKEN'];
 
   // If --use-control-plane is passed, require the three values
   if (cliArgs['use-control-plane']) {
     if (!cpUrl || !wsId || !token) {
       console.error(
         '[portarium-proxy] --use-control-plane requires --cp-url, --workspace-id, and --bearer-token ' +
-        '(or equivalent CONTROL_PLANE_URL, WORKSPACE_ID, BEARER_TOKEN env vars).',
+          '(or equivalent CONTROL_PLANE_URL, WORKSPACE_ID, BEARER_TOKEN env vars).',
       );
       process.exit(1);
     }

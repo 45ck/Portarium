@@ -56,9 +56,7 @@ export class MachineInvokerActionRunner implements ActionRunnerPort {
   }
 }
 
-function mapMachineInvokerErrorKind(
-  kind: MachineInvokerErrorKind,
-): ActionDispatchErrorKind {
+function mapMachineInvokerErrorKind(kind: MachineInvokerErrorKind): ActionDispatchErrorKind {
   switch (kind) {
     case 'Unauthorized':
       return 'Unauthorized';

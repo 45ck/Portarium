@@ -11,7 +11,10 @@ import { ok } from '../../src/application/common/result.js';
 import type { ApprovalV1 } from '../../src/domain/approvals/index.js';
 import { parsePolicyV1 } from '../../src/domain/policy/index.js';
 import { HashSha256 } from '../../src/domain/primitives/index.js';
-import type { EvidenceEntryAppendInput, EvidenceLogPort } from '../../src/application/ports/index.js';
+import type {
+  EvidenceEntryAppendInput,
+  EvidenceLogPort,
+} from '../../src/application/ports/index.js';
 import type { TenantId } from '../../src/domain/primitives/index.js';
 import { createControlPlaneHandler } from '../../src/presentation/runtime/control-plane-handler.js';
 import type { ControlPlaneDeps } from '../../src/presentation/runtime/control-plane-handler.shared.js';
@@ -259,7 +262,11 @@ describe('NeedsApproval flow (Mutation tool, HumanApprove tier)', () => {
         approvalQueryStore: {
           listApprovals: async () => ({ items: [...sharedStore.values()] }),
         },
-        eventPublisher: { publish: async (event) => { sharedEvents.push(event); } },
+        eventPublisher: {
+          publish: async (event) => {
+            sharedEvents.push(event);
+          },
+        },
         evidenceLog: {
           appendEntry: async (_tenantId: TenantId, entry: EvidenceEntryAppendInput) => ({
             ...entry,

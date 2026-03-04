@@ -25,9 +25,7 @@ afterEach(async () => {
 
 const WORKSPACE_ID = 'ws-contract-1';
 
-function makeCtx(
-  roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator'],
-) {
+function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator']) {
   return toAppContext({
     tenantId: WORKSPACE_ID,
     principalId: 'operator-1',

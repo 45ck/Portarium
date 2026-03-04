@@ -41,9 +41,7 @@ describe('AgentActionProposalDetail', () => {
 
   it('renders rationale text', () => {
     render(<AgentActionProposalDetail proposal={BASE_PROPOSAL} />);
-    expect(
-      screen.getByText('Writing to production config requires human oversight.'),
-    ).toBeTruthy();
+    expect(screen.getByText('Writing to production config requires human oversight.')).toBeTruthy();
   });
 
   it('renders agent ID', () => {

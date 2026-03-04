@@ -32,6 +32,7 @@ npm run bd -- issue list 2>&1 | grep "\[open\]" | head -20
 ### 2. Select beads to work on
 
 Pick N beads based on:
+
 - Priority (P0 first, then P1, etc.)
 - Not claimed by another agent
 - Not blocked by dependencies
@@ -61,11 +62,13 @@ Task(
 ### 5. Merge completed work
 
 For each successful worktree:
+
 ```bash
 git merge <worktree-branch> --no-ff -m "merge: <bead-id>"
 ```
 
 Then update bead state:
+
 ```bash
 npm run bd -- issue finish <bead-id>
 git add .beads/issues.jsonl
@@ -74,12 +77,12 @@ git commit -m "chore: close <bead-id>"
 
 ## Parallel safety rules
 
-| Rule | Why |
-|------|-----|
-| Each agent works in its own worktree | No file conflicts |
-| Check for conflicting beads before spawning | Avoid merge hell |
-| Merge one at a time with conflict checks | Clean history |
-| Push after all merges complete | Single sync point |
+| Rule                                        | Why               |
+| ------------------------------------------- | ----------------- |
+| Each agent works in its own worktree        | No file conflicts |
+| Check for conflicting beads before spawning | Avoid merge hell  |
+| Merge one at a time with conflict checks    | Clean history     |
+| Push after all merges complete              | Single sync point |
 
 ## How many agents to spawn
 

@@ -38,9 +38,7 @@ const PENDING_APPROVAL: ApprovalPendingV1 = {
   status: 'Pending',
 };
 
-function makeCtx(
-  roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator'],
-) {
+function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator']) {
   return toAppContext({
     tenantId: WORKSPACE_ID,
     principalId: 'approver-1',
@@ -85,9 +83,7 @@ function makeDeps(
   };
 }
 
-async function startWith(
-  overrides: Parameters<typeof makeDeps>[0] = {},
-): Promise<void> {
+async function startWith(overrides: Parameters<typeof makeDeps>[0] = {}): Promise<void> {
   handle = await startHealthServer({
     role: 'control-plane',
     host: '127.0.0.1',

@@ -78,7 +78,9 @@
     "testend",
     "TOCTOU",
     "traceql",
-    "undisposed"
+    "undisposed",
+    "agentactionproposal",
+    "tunneling"
   ],
   "ignorePaths": [
     "dist/**",

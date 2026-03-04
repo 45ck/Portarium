@@ -97,9 +97,15 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     },
     approvalStore: deps.approvalStore ?? {
       getApprovalById: async () => null,
-      saveApproval: async () => {},
+      saveApproval: async () => {
+        /* noop stub */
+      },
     },
-    eventPublisher: deps.eventPublisher ?? { publish: async () => {} },
+    eventPublisher: deps.eventPublisher ?? {
+      publish: async () => {
+        /* noop stub */
+      },
+    },
     evidenceLog: deps.evidenceLog ?? {
       appendEntry: async (_tenantId, entry) => ({
         ...entry,
@@ -114,12 +120,16 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     agentId: String(record['agentId'] ?? ''),
     actionKind: String(record['actionKind'] ?? ''),
     toolName: String(record['toolName'] ?? ''),
-    executionTier: String(record['executionTier'] ?? '') as ProposeAgentActionInput['executionTier'],
+    executionTier: String(
+      record['executionTier'] ?? '',
+    ) as ProposeAgentActionInput['executionTier'],
     policyIds: (record['policyIds'] as string[]) ?? [],
     rationale: String(record['rationale'] ?? ''),
     correlationId,
     ...(record['machineId'] ? { machineId: String(record['machineId']) } : {}),
-    ...(record['parameters'] ? { parameters: record['parameters'] as Record<string, unknown> } : {}),
+    ...(record['parameters']
+      ? { parameters: record['parameters'] as Record<string, unknown> }
+      : {}),
     ...(record['idempotencyKey'] ? { idempotencyKey: String(record['idempotencyKey']) } : {}),
   };
 

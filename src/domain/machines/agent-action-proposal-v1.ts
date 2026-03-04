@@ -155,9 +155,7 @@ export function parseAgentActionProposalV1(value: unknown): AgentActionProposalV
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function parseToolClassification(
-  record: Record<string, unknown>,
-): AgentActionToolClassificationV1 {
+function parseToolClassification(record: Record<string, unknown>): AgentActionToolClassificationV1 {
   const raw = record['toolClassification'];
   const tc = readRecord(raw, 'toolClassification', E);
 

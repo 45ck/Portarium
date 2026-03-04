@@ -13,7 +13,6 @@ import {
   type IdGenerator,
   type UnitOfWork,
 } from '../ports/index.js';
-import type { HashSha256 as HashSha256Type } from '../../domain/primitives/index.js';
 import { HashSha256 } from '../../domain/primitives/index.js';
 import { submitApproval } from './submit-approval.js';
 
@@ -51,8 +50,8 @@ describe('submitApproval', () => {
     evidenceLog = {
       appendEntry: vi.fn(async (_tenantId, entry) => ({
         ...entry,
-        previousHash: HashSha256('') as HashSha256Type,
-        hashSha256: HashSha256('abc') as HashSha256Type,
+        previousHash: HashSha256(''),
+        hashSha256: HashSha256('abc'),
       })),
     };
   });
@@ -466,7 +465,7 @@ describe('submitApproval', () => {
     expect(String(call[0])).toBe('tenant-1'); // tenantId
     const entry = call[1] as Record<string, unknown>;
     expect(entry['category']).toBe('Approval');
-    expect((entry['summary'] as string)).toMatch(/Approved/);
+    expect(entry['summary'] as string).toMatch(/Approved/);
   });
 
   it('succeeds without evidence when evidenceLog is not provided', async () => {

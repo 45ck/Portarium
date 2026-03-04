@@ -94,27 +94,27 @@ Agent/Operator → ExecuteApprovedAgentAction command
 
 ### Component Map
 
-| Component                           | Layer         | Responsibility                               |
-|-------------------------------------|---------------|----------------------------------------------|
-| `AgentActionProposalV1`             | Domain        | Typed proposal aggregate with parser          |
-| `ProposalId`                        | Domain        | Branded primitive for proposal identity       |
-| `classifyOpenClawToolBlastRadiusV1` | Domain        | Tool risk classification by name patterns     |
-| `proposeAgentAction`                | Application   | Proposal evaluation command                   |
-| `submitApproval`                    | Application   | Approval decision with maker-checker          |
-| `executeApprovedAgentAction`        | Application   | Post-approval dispatch command                |
-| `AgentActionProposalStore`          | Application   | Port for durable proposal persistence         |
-| `MachineInvokerActionRunner`        | Infrastructure| ActionRunnerPort adapter via MachineInvokerPort|
-| `InMemoryAgentActionProposalStore`  | Infrastructure| Test adapter for proposal store               |
-| Approval CRUD endpoints             | Presentation  | HTTP routes for listing/viewing/deciding      |
+| Component                           | Layer          | Responsibility                                  |
+| ----------------------------------- | -------------- | ----------------------------------------------- |
+| `AgentActionProposalV1`             | Domain         | Typed proposal aggregate with parser            |
+| `ProposalId`                        | Domain         | Branded primitive for proposal identity         |
+| `classifyOpenClawToolBlastRadiusV1` | Domain         | Tool risk classification by name patterns       |
+| `proposeAgentAction`                | Application    | Proposal evaluation command                     |
+| `submitApproval`                    | Application    | Approval decision with maker-checker            |
+| `executeApprovedAgentAction`        | Application    | Post-approval dispatch command                  |
+| `AgentActionProposalStore`          | Application    | Port for durable proposal persistence           |
+| `MachineInvokerActionRunner`        | Infrastructure | ActionRunnerPort adapter via MachineInvokerPort |
+| `InMemoryAgentActionProposalStore`  | Infrastructure | Test adapter for proposal store                 |
+| Approval CRUD endpoints             | Presentation   | HTTP routes for listing/viewing/deciding        |
 
 ### RBAC Matrix
 
-| Action                  | Admin | Operator | Approver | Auditor |
-|-------------------------|-------|----------|----------|---------|
-| `agent-action:propose`  | Yes   | Yes      | No       | No      |
-| `approval:submit`       | Yes   | No       | Yes      | No      |
-| `agent-action:execute`  | Yes   | Yes      | No       | No      |
-| `approval:read`         | Yes   | Yes      | Yes      | Yes     |
+| Action                 | Admin | Operator | Approver | Auditor |
+| ---------------------- | ----- | -------- | -------- | ------- |
+| `agent-action:propose` | Yes   | Yes      | No       | No      |
+| `approval:submit`      | Yes   | No       | Yes      | No      |
+| `agent-action:execute` | Yes   | Yes      | No       | No      |
+| `approval:read`        | Yes   | Yes      | Yes      | Yes     |
 
 ---
 

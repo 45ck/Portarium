@@ -62,6 +62,7 @@ describe('SchemaMigrator', () => {
       '0012_expand_projection_checkpoints_table:global',
       '0013_expand_machine_registrations_table:global',
       '0014_expand_agent_configs_table:global',
+      '0015_expand_agent_action_proposals_table:global',
     ]);
   });
 

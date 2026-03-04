@@ -163,9 +163,9 @@ describe('parseAgentActionProposalV1', () => {
   });
 
   it('throws on empty workspaceId', () => {
-    expect(() =>
-      parseAgentActionProposalV1({ ...validProposal(), workspaceId: '' }),
-    ).toThrow(AgentActionProposalParseError);
+    expect(() => parseAgentActionProposalV1({ ...validProposal(), workspaceId: '' })).toThrow(
+      AgentActionProposalParseError,
+    );
   });
 
   it('throws on invalid executionTier', () => {
@@ -175,9 +175,9 @@ describe('parseAgentActionProposalV1', () => {
   });
 
   it('throws on invalid decision', () => {
-    expect(() =>
-      parseAgentActionProposalV1({ ...validProposal(), decision: 'Maybe' }),
-    ).toThrow(/decision/);
+    expect(() => parseAgentActionProposalV1({ ...validProposal(), decision: 'Maybe' })).toThrow(
+      /decision/,
+    );
   });
 
   it('throws on invalid policyDecision', () => {
@@ -187,9 +187,9 @@ describe('parseAgentActionProposalV1', () => {
   });
 
   it('throws on empty policyIds array', () => {
-    expect(() =>
-      parseAgentActionProposalV1({ ...validProposal(), policyIds: [] }),
-    ).toThrow(/policyIds/);
+    expect(() => parseAgentActionProposalV1({ ...validProposal(), policyIds: [] })).toThrow(
+      /policyIds/,
+    );
   });
 
   it('throws on non-array policyIds', () => {
