@@ -4,8 +4,11 @@
  * Thin HTTP server that routes tool calls through ActionGatedToolInvoker.
  * Shared by OpenAI, Anthropic, and Docker agent demos.
  *
- * When CONTROL_PLANE_URL, WORKSPACE_ID, and BEARER_TOKEN environment variables
- * are set, the proxy delegates tool proposals to the real control plane
+ * Control plane delegation (ADR-0117 H9):
+ *   CLI flag:    --use-control-plane --cp-url URL --workspace-id ID --bearer-token TOK
+ *   Env vars:    CONTROL_PLANE_URL, WORKSPACE_ID, BEARER_TOKEN
+ *
+ * When configured, the proxy delegates tool proposals to the real control plane
  * POST /v1/workspaces/:wsId/agent-actions:propose endpoint. Otherwise it uses
  * the local in-process ActionGatedToolInvoker + file-backed approval store.
  *
@@ -19,20 +22,58 @@ import { randomUUID } from 'crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { parseArgs } from 'node:util';
+
+// ---------------------------------------------------------------------------
+// CLI argument parsing (--use-control-plane flag support)
+// ---------------------------------------------------------------------------
+
+const { values: cliArgs } = parseArgs({
+  options: {
+    'use-control-plane': { type: 'boolean', default: false },
+    'cp-url': { type: 'string' },
+    'workspace-id': { type: 'string' },
+    'bearer-token': { type: 'string' },
+  },
+  strict: false,
+});
 
 // ---------------------------------------------------------------------------
 // Control plane delegation (optional)
 // ---------------------------------------------------------------------------
 
+/**
+ * Resolve control plane config from CLI flags (preferred) or env vars (fallback).
+ * The --use-control-plane flag signals intent; --cp-url/--workspace-id/--bearer-token
+ * or the corresponding env vars supply the actual values.
+ */
+function resolveControlPlane() {
+  const cpUrl = /** @type {string | undefined} */ (cliArgs['cp-url']) ?? process.env['CONTROL_PLANE_URL'];
+  const wsId = /** @type {string | undefined} */ (cliArgs['workspace-id']) ?? process.env['WORKSPACE_ID'];
+  const token = /** @type {string | undefined} */ (cliArgs['bearer-token']) ?? process.env['BEARER_TOKEN'];
+
+  // If --use-control-plane is passed, require the three values
+  if (cliArgs['use-control-plane']) {
+    if (!cpUrl || !wsId || !token) {
+      console.error(
+        '[portarium-proxy] --use-control-plane requires --cp-url, --workspace-id, and --bearer-token ' +
+        '(or equivalent CONTROL_PLANE_URL, WORKSPACE_ID, BEARER_TOKEN env vars).',
+      );
+      process.exit(1);
+    }
+    return { url: cpUrl, workspaceId: wsId, bearerToken: token };
+  }
+
+  // Legacy env-var only path
+  if (cpUrl && wsId && token) {
+    return { url: cpUrl, workspaceId: wsId, bearerToken: token };
+  }
+
+  return null;
+}
+
 /** @type {{ url: string; workspaceId: string; bearerToken: string } | null} */
-const controlPlane =
-  process.env['CONTROL_PLANE_URL'] && process.env['WORKSPACE_ID'] && process.env['BEARER_TOKEN']
-    ? {
-        url: process.env['CONTROL_PLANE_URL'],
-        workspaceId: process.env['WORKSPACE_ID'],
-        bearerToken: process.env['BEARER_TOKEN'],
-      }
-    : null;
+const controlPlane = resolveControlPlane();
 
 /**
  * Forward tool proposal to the real control plane.
