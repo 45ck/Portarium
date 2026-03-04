@@ -13,7 +13,7 @@ import {
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
+import { Bot, Search } from 'lucide-react';
 
 interface ApprovalListPanelProps {
   items: ApprovalSummary[];
@@ -47,7 +47,10 @@ export function ApprovalListPanel({
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (a) => a.prompt.toLowerCase().includes(q) || a.approvalId.toLowerCase().includes(q),
+        (a) =>
+          a.prompt.toLowerCase().includes(q) ||
+          a.approvalId.toLowerCase().includes(q) ||
+          (a.agentActionProposal?.toolName.toLowerCase().includes(q) ?? false),
       );
     }
     return result;
@@ -118,6 +121,14 @@ export function ApprovalListPanel({
                       onClick={() => onSelect(a.approvalId)}
                     >
                       <p className="text-xs font-medium truncate leading-tight">{a.prompt}</p>
+                      {a.agentActionProposal && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Bot className="h-3 w-3 text-primary shrink-0" />
+                          <span className="text-[11px] font-mono text-primary truncate">
+                            {a.agentActionProposal.toolName}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <ApprovalStatusBadge status={a.status} />
                         {isOverdue && a.status === 'Pending' && (

@@ -7,7 +7,7 @@ import type {
 } from '@portarium/cockpit-types';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ArrowRight, Clock, Paperclip, User } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Bot, Clock, Paperclip, User } from 'lucide-react';
 import { ActorBadge } from './actor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
 
@@ -59,6 +59,12 @@ export function TriageCardHeader({
               {policyRule && (
                 <Badge variant="outline" className="text-[9px] h-4 px-1.5 shrink-0">
                   {policyRule.tier}
+                </Badge>
+              )}
+              {approval.agentActionProposal && (
+                <Badge variant="secondary" className="text-[9px] h-4 px-1.5 shrink-0 gap-0.5">
+                  <Bot className="h-2.5 w-2.5" />
+                  Agent Action
                 </Badge>
               )}
             </div>

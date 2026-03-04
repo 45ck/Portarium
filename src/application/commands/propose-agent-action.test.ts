@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parsePolicyV1, type PolicyV1 } from '../../domain/policy/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
-  AgentActionProposalStore,
   ApprovalStore,
   AuthorizationPort,
   Clock,
