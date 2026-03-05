@@ -76,6 +76,16 @@ function moveQaEvidence() {
   removeEmptyDirs(sourceDir);
 }
 
+function moveRootQaEvidence() {
+  const sourceDir = path.join(repoRoot, 'qa-evidence');
+  const targetDir = path.join(repoRoot, 'qa-artifacts', 'manual-evidence');
+  const files = collectFiles(sourceDir);
+  for (const filePath of files) {
+    moveFile(filePath, targetDir, 'qa-root');
+  }
+  removeEmptyDirs(sourceDir);
+}
+
 function moveRootScratchFiles() {
   const rootEntries = fs.readdirSync(repoRoot, { withFileTypes: true });
   const targetDir = path.join(repoRoot, 'tmp', 'local-scratch');
@@ -100,6 +110,7 @@ function moveDotTmpFiles() {
 }
 
 moveQaEvidence();
+moveRootQaEvidence();
 moveRootScratchFiles();
 moveDotTmpFiles();
 
