@@ -77,3 +77,18 @@ The following stash entries were classified as disposable backups or superseded 
 - landed approval-submission parity for robot-context SoD by carrying `previousApproverIds` through `submitApproval`
 - exposed `sodConstraints`, `previousApproverIds`, and `robotContext` on `DecideApprovalRequest` in the control-plane OpenAPI contract
 - retained the existing `robotContext` name on `main` and explicitly discarded the stale `robotSodContext` alias from the original stash
+
+## bead-0891 Disposition
+
+`bead-0891` audited original `stash@{11}` (current `stash@{2}` at audit time, stash object `82661b9d`) and found that its still-relevant observability work was already preserved on `main`:
+
+- retry-chain evidence hardening already exists in `src/infrastructure/evidence/robot-action-evidence-retry-chain.integration.test.ts`
+- NATS publish span/error wrapping already exists in `src/infrastructure/eventing/nats-event-publisher.ts`
+- logger and Prometheus registry hardening already exists in `src/infrastructure/observability/logger.ts` and `src/infrastructure/observability/prometheus-registry.ts`
+- the observability runbook content lives on `main` at `docs/internal/runbooks/observability.md` rather than the older `docs/runbooks/observability.md` path from the stash
+
+The remaining stash-only residue was obsolete and explicitly discarded:
+
+- stale `package.json` / `package-lock.json` dependency churn
+- stale `.ci/gate-baseline.json` content
+- the pre-move `docs/runbooks/observability.md` path
