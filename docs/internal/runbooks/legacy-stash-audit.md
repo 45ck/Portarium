@@ -8,21 +8,24 @@ Because `git stash drop` renumbers later entries, use this document as the sourc
 
 ## Preservation Path Created
 
+The first landing of `bead-0884` dropped the newly created follow-up beads during close.
+`bead-0887` exists to repair that tracker regression and restore the preservation paths below on `main`.
+
 The following stash entries were kept because they still appeared to contain meaningful unfinished work or required an explicit audit before disposal:
 
 | Original stash                                                     | Preservation path | Notes                                                                  |
 | ------------------------------------------------------------------ | ----------------- | ---------------------------------------------------------------------- |
-| `stash@{1}`                                                        | `bead-0888`       | Retrieval release-readiness and GTM onboarding carryover               |
-| `stash@{3}`                                                        | `bead-0889`       | Ambient type stub hardening for AWS S3, gRPC, and Hono                 |
-| `stash@{11}`                                                       | `bead-0890`       | Retry-chain, logger, and observability carryover                       |
-| `stash@{16}`, `stash@{18}`-`stash@{20}`, `stash@{22}`-`stash@{27}` | `bead-0896`       | Historical Cockpit carryover from the bead-0195 pass series            |
-| `stash@{28}`                                                       | `bead-0887`       | Robot-context SoD contract parity carryover                            |
-| `stash@{30}`                                                       | `bead-0891`       | Large historical canonical parity and reverse-loop bundle              |
-| `stash@{31}`                                                       | `bead-0897`       | Large historical domain scaffold and reverse-loop bundle               |
-| `stash@{32}`                                                       | `bead-0892`       | Adapter registration, evidence governance, and runtime-truth carryover |
-| `stash@{33}`                                                       | `bead-0893`       | OpenFGA and control-plane contract carryover                           |
-| `stash@{40}`                                                       | `bead-0894`       | Zammad Domain Atlas plus approval/workflow domain carryover            |
-| `stash@{42}`                                                       | `bead-0895`       | Low-fidelity Cockpit IA and run-model wireframes                       |
+| `stash@{1}`                                                        | `bead-0889`       | Retrieval release-readiness and GTM onboarding carryover               |
+| `stash@{3}`                                                        | `bead-0890`       | Ambient type stub hardening for AWS S3, gRPC, and Hono                 |
+| `stash@{11}`                                                       | `bead-0891`       | Retry-chain, logger, and observability carryover                       |
+| `stash@{16}`, `stash@{18}`-`stash@{20}`, `stash@{22}`-`stash@{27}` | `bead-0897`       | Historical Cockpit carryover from the bead-0195 pass series            |
+| `stash@{28}`                                                       | `bead-0888`       | Robot-context SoD contract parity carryover                            |
+| `stash@{30}`                                                       | `bead-0892`       | Large historical canonical parity and reverse-loop bundle              |
+| `stash@{31}`                                                       | `bead-0898`       | Large historical domain scaffold and reverse-loop bundle               |
+| `stash@{32}`                                                       | `bead-0893`       | Adapter registration, evidence governance, and runtime-truth carryover |
+| `stash@{33}`                                                       | `bead-0894`       | OpenFGA and control-plane contract carryover                           |
+| `stash@{40}`                                                       | `bead-0895`       | Zammad Domain Atlas plus approval/workflow domain carryover            |
+| `stash@{42}`                                                       | `bead-0896`       | Low-fidelity Cockpit IA and run-model wireframes                       |
 
 ## Dropped As Disposable
 
