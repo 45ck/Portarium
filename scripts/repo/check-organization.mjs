@@ -58,9 +58,7 @@ const rootQaEvidenceDir = path.join(repoRoot, 'qa-evidence');
 const rootQaEvidenceFiles = collectFiles(rootQaEvidenceDir);
 if (fs.existsSync(rootQaEvidenceDir)) {
   const details =
-    rootQaEvidenceFiles.length > 0
-      ? `${rootQaEvidenceFiles.length} files`
-      : 'an empty directory';
+    rootQaEvidenceFiles.length > 0 ? `${rootQaEvidenceFiles.length} files` : 'an empty directory';
   errors.push(
     `Root qa-evidence/ contains ${details}. Move it to qa-artifacts/manual-evidence/ or run npm run repo:cleanup:local.`,
   );
