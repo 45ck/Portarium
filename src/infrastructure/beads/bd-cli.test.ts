@@ -41,6 +41,22 @@ function parseStdoutJson(result: { stdout: string }) {
   return JSON.parse(result.stdout.trim()) as unknown;
 }
 
+function runGit(repo: string, args: string[]) {
+  return spawnSync('git', args, {
+    cwd: repo,
+    encoding: 'utf8',
+  });
+}
+
+function readIssueIds(repo: string) {
+  const raw = fs.readFileSync(path.join(repo, '.beads', 'issues.jsonl'), 'utf8');
+  return raw
+    .trim()
+    .split('\n')
+    .filter((line) => line.length > 0)
+    .map((line) => JSON.parse(line) as { id: string; status: string; claimedBy?: string });
+}
+
 afterEach(() => {
   for (const repo of tempRepos.splice(0)) {
     fs.rmSync(repo, { recursive: true, force: true });
@@ -204,5 +220,53 @@ describe('bd claim workflow', () => {
     expect(closedIssue.status).toBe('closed');
     expect(closedIssue.claimedBy).toBeUndefined();
     expect(closedIssue.claimedAt).toBeUndefined();
+  });
+
+  it('preserves new tracker entries introduced on the worktree branch when finishing a bead', () => {
+    const repo = createTempRepo([
+      {
+        id: 'bead-0001',
+        title: 'Finish target',
+        status: 'open',
+        createdAt: BASE_TIMESTAMP,
+        updatedAt: BASE_TIMESTAMP,
+      },
+    ]);
+    const remote = `${repo}-remote.git`;
+    tempRepos.push(remote);
+
+    expect(runGit(repo, ['init', '--initial-branch=main']).status).toBe(0);
+    expect(runGit(repo, ['config', 'user.name', 'Portarium Tests']).status).toBe(0);
+    expect(runGit(repo, ['config', 'user.email', 'tests@portarium.local']).status).toBe(0);
+    expect(runGit(repo, ['add', '.']).status).toBe(0);
+    expect(runGit(repo, ['commit', '-m', 'chore: seed tracker']).status).toBe(0);
+    expect(runGit(repo, ['init', '--bare', remote]).status).toBe(0);
+    expect(runGit(repo, ['remote', 'add', 'origin', remote]).status).toBe(0);
+    expect(runGit(repo, ['push', '-u', 'origin', 'main']).status).toBe(0);
+
+    const start = runBd(repo, ['start', 'bead-0001', '--by', 'agent-a']);
+    expect(start.status).toBe(0);
+    expect(runGit(repo, ['add', '.beads/issues.jsonl']).status).toBe(0);
+    expect(runGit(repo, ['commit', '-m', 'chore: start bead-0001']).status).toBe(0);
+
+    const worktreePath = path.join(repo, '.trees', 'bead-0001');
+    expect(runGit(worktreePath, ['merge', 'main', '--no-edit']).status).toBe(0);
+
+    const worktreeIssuesPath = path.join(worktreePath, '.beads', 'issues.jsonl');
+    const appendedIssue =
+      '{"id":"bead-0002","title":"Preserved follow-up","status":"open","createdAt":"2026-02-20T00:01:00.000Z","updatedAt":"2026-02-20T00:01:00.000Z"}\n';
+    fs.appendFileSync(worktreeIssuesPath, appendedIssue, 'utf8');
+    expect(runGit(worktreePath, ['add', '.beads/issues.jsonl']).status).toBe(0);
+    expect(runGit(worktreePath, ['commit', '-m', 'feat: add follow-up bead']).status).toBe(0);
+
+    const finish = runBd(repo, ['finish', 'bead-0001', '--json']);
+    expect(finish.status).toBe(0);
+    const finishedIssue = parseStdoutJson(finish) as { status: string; claimedBy?: string };
+    expect(finishedIssue.status).toBe('closed');
+    expect(finishedIssue.claimedBy).toBeUndefined();
+
+    const issues = readIssueIds(repo);
+    expect(issues.find((issue) => issue.id === 'bead-0001')?.status).toBe('closed');
+    expect(issues.some((issue) => issue.id === 'bead-0002')).toBe(true);
   });
 });

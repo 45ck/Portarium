@@ -556,8 +556,13 @@ function main() {
 
     spawnGit(['branch', '-d', id], root);
 
-    applyUpdate(issues, id, { status: 'closed', claimedBy: undefined, claimedAt: undefined });
-    writeIssues(root, issues);
+    const mergedIssues = readIssues(root);
+    const updated = applyUpdate(mergedIssues, id, {
+      status: 'closed',
+      claimedBy: undefined,
+      claimedAt: undefined,
+    });
+    writeIssues(root, mergedIssues);
 
     // Auto-commit .beads/issues.jsonl and push so no agent can forget this step.
     spawnGit(['add', path.join('.beads', 'issues.jsonl')], root);
@@ -583,7 +588,7 @@ function main() {
         `Finished ${id}: worktree removed, bead closed, pushed to origin/main.\n`,
       );
     } else {
-      print(issues[idx], true);
+      print(updated, true);
     }
     return;
   }
