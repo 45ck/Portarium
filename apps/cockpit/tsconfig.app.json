@@ -11,7 +11,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@portarium/cockpit-types": ["../../src/presentation/ops-cockpit/types.ts"]
+      "@portarium/cockpit-types": ["../../src/presentation/ops-cockpit/types.ts"],
+      "@capacitor/app": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/browser": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/clipboard": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/haptics": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/preferences": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/push-notifications": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/share": ["./src/lib/capacitor-stubs.ts"],
+      "@capacitor/status-bar": ["./src/lib/capacitor-stubs.ts"]
     },
     "skipLibCheck": true
   },
