@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
 
 export default defineConfig({
   test: {
@@ -15,6 +16,14 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
       '@portarium/cockpit-types': resolve(__dirname, '../../src/presentation/ops-cockpit/types.ts'),
+      '@capacitor/app': capacitorStub,
+      '@capacitor/browser': capacitorStub,
+      '@capacitor/clipboard': capacitorStub,
+      '@capacitor/haptics': capacitorStub,
+      '@capacitor/preferences': capacitorStub,
+      '@capacitor/push-notifications': capacitorStub,
+      '@capacitor/share': capacitorStub,
+      '@capacitor/status-bar': capacitorStub,
     },
   },
 });

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import { ApprovalGatePanel } from './approval-gate-panel';
 import type { ApprovalSummary } from '@portarium/cockpit-types';
 
