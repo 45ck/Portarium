@@ -54,9 +54,14 @@ independent of transport/framework concerns.
   - `approvalId` (required branded `ApprovalId`)
   - `decision` (`Approved` or `Denied`)
   - `rationale` (required non-empty string)
+  - `sodConstraints?` (optional `SodConstraintV1[]` carried with the approval decision)
+  - `previousApproverIds?` (optional branded `UserId[]` for prior approvers on the same gate)
+  - `robotContext?` (optional robot SoD context with hazardous/safety/e-stop qualifiers)
 - **Core rules**
   - Caller must be authorized for `approval:submit`.
   - Submission updates pending approval to decided state.
+  - SoD checks evaluate both the current deciding user and any `previousApproverIds`.
+  - Robot-specific SoD variants use `robotContext` when provided.
   - Existing `ApprovalDenied`/`ApprovalGranted` events are emitted.
   - Approved/denied state is persisted in the approval record.
 

@@ -93,6 +93,12 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     await client.decideApproval('workspace-1', 'approval-1', {
       decision: 'Approved',
       rationale: 'Looks good',
+      sodConstraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+      previousApproverIds: ['approver-2'],
+      robotContext: {
+        safetyClassifiedZone: true,
+        missionProposerUserId: 'operator-1',
+      },
       idempotencyKey: 'idem-1',
     });
 
@@ -106,6 +112,12 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect(JSON.parse(call.init.body as string)).toEqual({
       decision: 'Approved',
       rationale: 'Looks good',
+      sodConstraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+      previousApproverIds: ['approver-2'],
+      robotContext: {
+        safetyClassifiedZone: true,
+        missionProposerUserId: 'operator-1',
+      },
     });
   });
 

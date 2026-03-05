@@ -16,9 +16,20 @@ export interface EscalateHumanTaskRequest {
 
 export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';
 
+export interface ApprovalDecisionRobotContext {
+  hazardousZone?: boolean;
+  safetyClassifiedZone?: boolean;
+  remoteEstopRequest?: boolean;
+  missionProposerUserId?: string;
+  estopRequesterUserId?: string;
+}
+
 export interface ApprovalDecisionRequest {
   decision: ApprovalDecision;
   rationale: string;
+  sodConstraints?: Record<string, unknown>[];
+  previousApproverIds?: string[];
+  robotContext?: ApprovalDecisionRobotContext;
 }
 
 export interface CreateWorkItemCommand {

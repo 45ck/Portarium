@@ -51,7 +51,7 @@
       "types": {
         "input": {
           "name": "SubmitApprovalInput",
-          "sha256": "974c6276c665c9d837c73fd6ea902d2f7a2c9c45bafbbfe64c26d71755b789ab"
+          "sha256": "c662cb24f02f0c8df3b80b6a330b6bc2fe2236c2a579873b9df27a2fe5c328f4"
         },
         "output": {
           "name": "SubmitApprovalOutput",

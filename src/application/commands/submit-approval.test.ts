@@ -323,6 +323,59 @@ describe('submitApproval', () => {
     expect(eventPublisher.publish).not.toHaveBeenCalled();
   });
 
+  it('allows safety-classified zone approval after a distinct prior approver is provided', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'approver-2',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Second approver for safety zone.',
+        sodConstraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+        previousApproverIds: ['approver-1'],
+        robotContext: {
+          safetyClassifiedZone: true,
+        },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected success response.');
+    expect(result.value.status).toBe('Approved');
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects invalid previousApproverIds payloads', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'approver-2',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Bad payload.',
+        previousApproverIds: [''],
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected validation error.');
+    expect(result.error.kind).toBe('ValidationFailed');
+    expect(result.error.message).toMatch(/previousApproverIds/i);
+  });
+
   it('blocks decision when distinct-approver threshold is unmet', async () => {
     const result = await submitApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
@@ -487,5 +540,32 @@ describe('submitApproval', () => {
 
     expect(result.ok).toBe(true);
     // No crash — evidenceLog was not provided and that's fine.
+  });
+
+  it('rejects invalid robotContext payloads', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Bad robot context.',
+        robotContext: {
+          hazardousZone: true,
+          missionProposerUserId: '',
+        },
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected validation error.');
+    expect(result.error.kind).toBe('ValidationFailed');
+    expect(result.error.message).toMatch(/robotContext\.missionProposerUserId/i);
   });
 });
