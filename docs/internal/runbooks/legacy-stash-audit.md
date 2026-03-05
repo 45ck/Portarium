@@ -107,3 +107,17 @@ The remaining stash-only residue was obsolete and explicitly discarded:
 
 - stale `package.json` / `package-lock.json` dependency churn
 - stale `.ci/gate-baseline.json`, `.gitignore`, `.beads/bead-linkage-map.json`, and `eslint.config.mjs` carryover
+
+## bead-0890 Disposition
+
+`bead-0890` audited original `stash@{3}` (current `stash@{0}` at audit time, stash object `6c9e740b`) and found that its ambient type-stub carryover was already superseded on `main`:
+
+- the `src/types/aws-s3.d.ts` delta only renamed the intentionally unused `Command` output type parameter from `_Output` to `Output` and did not add any missing S3 surface area
+- the `src/types/grpc.d.ts` delta only rewrote equivalent signatures such as `(string | Buffer)[]` to `Array<string | Buffer>` and `Record<string, unknown>` to an index-signature interface without expanding the supported gRPC API
+- the `src/types/hono.d.ts` delta only converted `Env` and `Context` from interfaces to type aliases without adding missing request, response, or middleware members
+- the bundled `.cspell/project-words.txt` carryover was older than `main` and would have discarded newer approved vocabulary and clarified comment groupings already present in the active wordlist
+
+The remaining stash-only residue was obsolete and explicitly discarded:
+
+- syntax-only ambient declaration churn in `src/types/aws-s3.d.ts`, `src/types/grpc.d.ts`, and `src/types/hono.d.ts`
+- the older `.cspell/project-words.txt` snapshot
