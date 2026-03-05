@@ -47,5 +47,6 @@ npm run domain-atlas:upstreams:audit -- --max-total-mb 200 --max-provider-mb 100
 
 - Internal governance/review artifacts belong under `docs/internal/`.
 - Manual QA evidence belongs under `qa-artifacts/manual-evidence/`.
+- Root `qa-evidence/` folders are stray local artifacts and should be moved into `qa-artifacts/manual-evidence/` via `npm run repo:cleanup:local`.
 - Local scratch output belongs under `tmp/local-scratch/` or `.tmp/`.
 - Do not commit generated runtime artifacts unless they are deliberate, documented fixtures.

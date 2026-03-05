@@ -54,6 +54,18 @@ if (qaEvidenceFiles.length > 0) {
   );
 }
 
+const rootQaEvidenceDir = path.join(repoRoot, 'qa-evidence');
+const rootQaEvidenceFiles = collectFiles(rootQaEvidenceDir);
+if (fs.existsSync(rootQaEvidenceDir)) {
+  const details =
+    rootQaEvidenceFiles.length > 0
+      ? `${rootQaEvidenceFiles.length} files`
+      : 'an empty directory';
+  errors.push(
+    `Root qa-evidence/ contains ${details}. Move it to qa-artifacts/manual-evidence/ or run npm run repo:cleanup:local.`,
+  );
+}
+
 const dotTmpFiles = collectFiles(path.join(repoRoot, '.tmp'));
 if (dotTmpFiles.length > 0) {
   errors.push(

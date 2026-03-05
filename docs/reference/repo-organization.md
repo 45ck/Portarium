@@ -26,6 +26,7 @@ This reference defines where files belong so docs, scripts, and generated artifa
 ## Artifacts and temporary outputs
 
 - Runtime/manual evidence output belongs in `qa-artifacts/`.
+- Stray root `qa-evidence/` captures should be moved into `qa-artifacts/manual-evidence/` with `npm run repo:cleanup:local`.
 - One-off local scratch files belong in `tmp/` or `.tmp/` (both ignored).
 - Do not add screenshots/videos/log dumps to `docs/` unless they are intentional long-lived documentation assets.
 
