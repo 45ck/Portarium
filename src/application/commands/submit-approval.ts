@@ -43,6 +43,14 @@ import type {
 
 const SUBMIT_APPROVAL_SOURCE = 'portarium.control-plane.approvals';
 
+export type SubmitApprovalRobotContextInput = Readonly<{
+  hazardousZone?: boolean;
+  safetyClassifiedZone?: boolean;
+  remoteEstopRequest?: boolean;
+  missionProposerUserId?: string;
+  estopRequesterUserId?: string;
+}>;
+
 export type SubmitApprovalInput = Readonly<{
   workspaceId: string;
   approvalId: string;
@@ -51,8 +59,10 @@ export type SubmitApprovalInput = Readonly<{
   /** SoD constraints to enforce before accepting the decision.  Sourced from the policy
    *  attached to the run.  When absent, no SoD check is performed. */
   sodConstraints?: readonly SodConstraintV1[];
+  /** Approvers that already decided the same approval gate before this submission. */
+  previousApproverIds?: readonly string[];
   /** Optional robot context for robot-specific SoD constraints. */
-  robotContext?: RobotSodContextV1;
+  robotContext?: SubmitApprovalRobotContextInput;
 }>;
 
 export type SubmitApprovalOutput = Readonly<{
@@ -93,6 +103,75 @@ function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | n
   }
   if (typeof input.approvalId !== 'string' || input.approvalId.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'approvalId must be a non-empty string.' });
+  }
+  if (input.previousApproverIds !== undefined) {
+    if (!Array.isArray(input.previousApproverIds)) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'previousApproverIds must be an array of non-empty strings.',
+      });
+    }
+    const hasInvalidId = input.previousApproverIds.some(
+      (id) => typeof id !== 'string' || id.trim() === '',
+    );
+    if (hasInvalidId) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'previousApproverIds must only contain non-empty strings.',
+      });
+    }
+  }
+  if (input.robotContext !== undefined) {
+    if (
+      typeof input.robotContext !== 'object' ||
+      input.robotContext === null ||
+      Array.isArray(input.robotContext)
+    ) {
+      return err({ kind: 'ValidationFailed', message: 'robotContext must be an object.' });
+    }
+    const {
+      hazardousZone,
+      safetyClassifiedZone,
+      remoteEstopRequest,
+      missionProposerUserId,
+      estopRequesterUserId,
+    } = input.robotContext;
+    if (hazardousZone !== undefined && typeof hazardousZone !== 'boolean') {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext.hazardousZone must be a boolean.',
+      });
+    }
+    if (safetyClassifiedZone !== undefined && typeof safetyClassifiedZone !== 'boolean') {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext.safetyClassifiedZone must be a boolean.',
+      });
+    }
+    if (remoteEstopRequest !== undefined && typeof remoteEstopRequest !== 'boolean') {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext.remoteEstopRequest must be a boolean.',
+      });
+    }
+    if (
+      missionProposerUserId !== undefined &&
+      (typeof missionProposerUserId !== 'string' || missionProposerUserId.trim() === '')
+    ) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext.missionProposerUserId must be a non-empty string.',
+      });
+    }
+    if (
+      estopRequesterUserId !== undefined &&
+      (typeof estopRequesterUserId !== 'string' || estopRequesterUserId.trim() === '')
+    ) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext.estopRequesterUserId must be a non-empty string.',
+      });
+    }
   }
   return null;
 }
@@ -143,14 +222,58 @@ function guardSodConstraints(
   approval: ApprovalPendingV1,
   proposedApproverId: string,
   sodConstraints: readonly SodConstraintV1[] | undefined,
-  robotContext: RobotSodContextV1 | undefined,
+  previousApproverIds: readonly string[] | undefined,
+  robotContextInput: SubmitApprovalRobotContextInput | undefined,
 ): Err<SubmitApprovalError> | null {
   if (!sodConstraints || sodConstraints.length === 0) return null;
+
+  let normalizedPreviousApproverIds: readonly ReturnType<typeof UserId>[] | undefined;
+  if (previousApproverIds && previousApproverIds.length > 0) {
+    try {
+      normalizedPreviousApproverIds = previousApproverIds.map((id) => UserId(id));
+    } catch {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'previousApproverIds contains an invalid user identifier.',
+      });
+    }
+  }
+
+  let robotContext: RobotSodContextV1 | undefined;
+  if (robotContextInput) {
+    try {
+      robotContext = {
+        ...(robotContextInput.hazardousZone !== undefined
+          ? { hazardousZone: robotContextInput.hazardousZone }
+          : {}),
+        ...(robotContextInput.safetyClassifiedZone !== undefined
+          ? { safetyClassifiedZone: robotContextInput.safetyClassifiedZone }
+          : {}),
+        ...(robotContextInput.remoteEstopRequest !== undefined
+          ? { remoteEstopRequest: robotContextInput.remoteEstopRequest }
+          : {}),
+        ...(robotContextInput.missionProposerUserId
+          ? { missionProposerUserId: UserId(robotContextInput.missionProposerUserId) }
+          : {}),
+        ...(robotContextInput.estopRequesterUserId
+          ? { estopRequesterUserId: UserId(robotContextInput.estopRequesterUserId) }
+          : {}),
+      };
+    } catch {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'robotContext contains an invalid user identifier.',
+      });
+    }
+  }
 
   const violations = evaluateApprovalRoutingSodV1({
     approval,
     proposedApproverId: UserId(proposedApproverId),
     constraints: sodConstraints,
+    ...(normalizedPreviousApproverIds
+      ? { previousApproverIds: normalizedPreviousApproverIds }
+      : {}),
     ...(robotContext ? { robotContext } : {}),
   });
 
@@ -317,6 +440,7 @@ export async function submitApproval(
     current as ApprovalPendingV1,
     ctx.principalId.toString(),
     input.sodConstraints,
+    input.previousApproverIds,
     input.robotContext,
   );
   if (sodError) return sodError;

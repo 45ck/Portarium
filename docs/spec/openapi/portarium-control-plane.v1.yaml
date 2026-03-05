@@ -2777,7 +2777,31 @@ components:
         rationale:
           type: string
           minLength: 1
+        sodConstraints:
+          type: array
+          items:
+            $ref: '#/components/schemas/SodConstraintV1'
+        previousApproverIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+        robotContext:
+          $ref: '#/components/schemas/RobotSodContextV1'
       required: [decision, rationale]
+    RobotSodContextV1:
+      type: object
+      additionalProperties: false
+      properties:
+        hazardousZone:
+          type: boolean
+        safetyClassifiedZone:
+          type: boolean
+        remoteEstopRequest:
+          type: boolean
+        missionProposerUserId:
+          $ref: '#/components/schemas/UserId'
+        estopRequesterUserId:
+          $ref: '#/components/schemas/UserId'
     # ---- Policy schemas ----
     PolicyRuleEffect:
       type: string
@@ -2828,11 +2852,38 @@ components:
             type: string
             minLength: 1
       required: [kind, dutyKeys]
+    SodConstraintHazardousZoneNoSelfApprovalV1:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: HazardousZoneNoSelfApproval
+      required: [kind]
+    SodConstraintSafetyClassifiedZoneDualApprovalV1:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: SafetyClassifiedZoneDualApproval
+      required: [kind]
+    SodConstraintRemoteEstopRequesterSeparationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          const: RemoteEstopRequesterSeparation
+      required: [kind]
     SodConstraintV1:
       oneOf:
         - $ref: '#/components/schemas/SodConstraintMakerCheckerV1'
         - $ref: '#/components/schemas/SodConstraintDistinctApproversV1'
         - $ref: '#/components/schemas/SodConstraintIncompatibleDutiesV1'
+        - $ref: '#/components/schemas/SodConstraintHazardousZoneNoSelfApprovalV1'
+        - $ref: '#/components/schemas/SodConstraintSafetyClassifiedZoneDualApprovalV1'
+        - $ref: '#/components/schemas/SodConstraintRemoteEstopRequesterSeparationV1'
     PolicyV1:
       type: object
       additionalProperties: false

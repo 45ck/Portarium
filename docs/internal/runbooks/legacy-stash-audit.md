@@ -69,3 +69,11 @@ The following stash entries were classified as disposable backups or superseded 
 - the preservation beads above exist in `.beads/issues.jsonl`
 - the disposable stash entries above are dropped
 - the remaining stash list is rechecked to confirm only explicitly preserved items are left
+
+## bead-0888 Disposition
+
+`bead-0888` recovers the still-relevant part of original `stash@{28}`:
+
+- landed approval-submission parity for robot-context SoD by carrying `previousApproverIds` through `submitApproval`
+- exposed `sodConstraints`, `previousApproverIds`, and `robotContext` on `DecideApprovalRequest` in the control-plane OpenAPI contract
+- retained the existing `robotContext` name on `main` and explicitly discarded the stale `robotSodContext` alias from the original stash

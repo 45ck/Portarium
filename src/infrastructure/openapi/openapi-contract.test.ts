@@ -92,7 +92,7 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
-  it('PlanV1, EvidenceEntryV1, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, and PolicyV1 schemas validate representative payloads', async () => {
+  it('PlanV1, EvidenceEntryV1, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
@@ -260,11 +260,29 @@ describe('OpenAPI contract', () => {
       componentsSchemas: schemas,
     });
     const validatePolicy = ajv.compile(policySchema);
+    const decideApprovalRequestSchema = buildJsonSchemaFromComponents({
+      rootName: 'DecideApprovalRequest',
+      componentsSchemas: schemas,
+    });
+    const validateDecideApprovalRequest = ajv.compile(decideApprovalRequestSchema);
 
     const policy = seeds.policy;
 
     expect(() => parsePolicyV1(policy)).not.toThrow();
     expect(() => validateOrThrow(validatePolicy, policy)).not.toThrow();
+
+    const decideApprovalRequest = {
+      decision: 'Approved',
+      rationale: 'Second approver sign-off.',
+      sodConstraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+      previousApproverIds: ['approver-1'],
+      robotContext: {
+        safetyClassifiedZone: true,
+        missionProposerUserId: 'operator-1',
+      },
+    };
+
+    expect(validateDecideApprovalRequest(decideApprovalRequest)).toBe(true);
 
     const invalidPolicy = {
       ...policy,
@@ -272,5 +290,11 @@ describe('OpenAPI contract', () => {
     };
     expect(() => parsePolicyV1(invalidPolicy)).toThrow(/effect/i);
     expect(validatePolicy(invalidPolicy)).toBe(false);
+
+    const invalidDecideApprovalRequest = {
+      ...decideApprovalRequest,
+      previousApproverIds: [''],
+    };
+    expect(validateDecideApprovalRequest(invalidDecideApprovalRequest)).toBe(false);
   });
 });

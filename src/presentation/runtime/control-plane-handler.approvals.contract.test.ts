@@ -190,6 +190,45 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(body.status).toBe('Approved');
   });
 
+  it('returns 200 when safety-classified dual approval includes prior approvers', async () => {
+    await startWith({ approvals: [PENDING_APPROVAL] });
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        decision: 'Approved',
+        rationale: 'Second approver sign-off.',
+        sodConstraints: [{ kind: 'SafetyClassifiedZoneDualApproval' }],
+        previousApproverIds: ['approver-2'],
+        robotContext: { safetyClassifiedZone: true },
+      }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { approvalId: string; status: string };
+    expect(body.approvalId).toBe(APPROVAL_ID);
+    expect(body.status).toBe('Approved');
+  });
+
+  it('returns 403 when hazardous-zone mission proposer tries to approve', async () => {
+    await startWith({ approvals: [PENDING_APPROVAL] });
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        decision: 'Approved',
+        rationale: 'Unsafe self-approval.',
+        sodConstraints: [{ kind: 'HazardousZoneNoSelfApproval' }],
+        robotContext: {
+          hazardousZone: true,
+          missionProposerUserId: 'approver-1',
+        },
+      }),
+    });
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/HazardousZoneNoSelfApprovalViolation/);
+  });
+
   it('returns 200 on successful Denied decision', async () => {
     await startWith({ approvals: [PENDING_APPROVAL] });
     const res = await fetch(decideUrl(), {
@@ -233,5 +272,21 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(second.status).toBe(409);
     const body = (await second.json()) as { type: string };
     expect(body.type).toMatch(/conflict/);
+  });
+
+  it('returns 422 when previousApproverIds is malformed', async () => {
+    await startWith({ approvals: [PENDING_APPROVAL] });
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        decision: 'Approved',
+        rationale: 'Bad payload.',
+        previousApproverIds: [''],
+      }),
+    });
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/previousApproverIds/);
   });
 });

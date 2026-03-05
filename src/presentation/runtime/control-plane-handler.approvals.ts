@@ -358,6 +358,10 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
   if (Array.isArray(record['sodConstraints'])) {
     (input as { sodConstraints?: unknown }).sodConstraints = record['sodConstraints'];
   }
+  if (Array.isArray(record['previousApproverIds'])) {
+    (input as { previousApproverIds?: unknown }).previousApproverIds =
+      record['previousApproverIds'];
+  }
   if (record['robotContext'] && typeof record['robotContext'] === 'object') {
     (input as { robotContext?: unknown }).robotContext = record['robotContext'];
   }
