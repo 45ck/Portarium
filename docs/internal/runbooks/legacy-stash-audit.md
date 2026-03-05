@@ -92,3 +92,18 @@ The remaining stash-only residue was obsolete and explicitly discarded:
 - stale `package.json` / `package-lock.json` dependency churn
 - stale `.ci/gate-baseline.json` content
 - the pre-move `docs/runbooks/observability.md` path
+
+## bead-0889 Disposition
+
+`bead-0889` audited original `stash@{1}` (current `stash@{0}` at audit time, stash object `646e941a`) and found that its still-relevant adoption and retrieval release-readiness work was already preserved on `main`:
+
+- the adoption GTM and retrieval release-readiness specs already exist on `main` at `.specify/specs/adoption-gtm-onboarding-v1.md` and `.specify/specs/retrieval-release-readiness-v1.md`
+- the adoption docs already exist on `main` at `docs/adoption/adoption-ladder.md`, `docs/adoption/adoption-readiness-checklist.md`, and `docs/adoption/gtm-playbook.md`
+- the retrieval release-readiness operator doc and regression test already exist on `main` at `docs/internal/governance/retrieval-release-readiness.md` and `src/infrastructure/adapters/retrieval-release-readiness.test.ts`
+- the remaining stash diffs against those files were formatting-only or pointed at older pre-move paths such as `docs/governance/retrieval-release-readiness.md` and `docs/vertical-packs/authoring-guide.md`
+- the stash copy of `docs/getting-started/hello-portarium.md` was explicitly discarded because it reflected older local setup commands, toolchain expectations, and port/healthcheck paths than the current repo workflow
+
+The remaining stash-only residue was obsolete and explicitly discarded:
+
+- stale `package.json` / `package-lock.json` dependency churn
+- stale `.ci/gate-baseline.json`, `.gitignore`, `.beads/bead-linkage-map.json`, and `eslint.config.mjs` carryover
