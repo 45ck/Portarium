@@ -203,7 +203,7 @@ export default tseslint.config(
   // import/no-unresolved cannot distinguish optional dynamic imports, so we
   // suppress it for demo files only.
   {
-    files: ['scripts/demo/**/*.mjs'],
+    files: ['scripts/demo/**/*.mjs', 'scripts/lab/**/*.mjs', 'scripts/integration/lab-*.ts'],
     rules: {
       'import/no-unresolved': 'off',
       'no-unused-vars': 'off',

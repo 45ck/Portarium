@@ -192,7 +192,13 @@
     "demo:agent:openai": "tsx scripts/demo/openai-agent-demo.mjs",
     "demo:agent:claude": "tsx scripts/demo/claude-agent-demo.mjs",
     "demo:agent:docker": "docker compose -f docker/openclaw-demo/docker-compose.demo.yml up --build --abort-on-container-exit",
-    "demo:approve": "node scripts/demo/portarium-approval-cli.mjs"
+    "demo:agent:gemini": "tsx scripts/demo/google-gemini-agent-demo.mjs",
+    "demo:agent:multi": "tsx scripts/demo/multi-agent-routing-demo.mjs",
+    "demo:approve": "node scripts/demo/portarium-approval-cli.mjs",
+    "lab:approval": "tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "lab:approval:claude": "PORTARIUM_LAB_PROVIDER=claude tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "lab:approval:openai": "PORTARIUM_LAB_PROVIDER=openai tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "lab:approval:gemini": "PORTARIUM_LAB_PROVIDER=gemini tsx scripts/lab/approval-lifecycle-lab.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
@@ -212,6 +218,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@playwright/test": "^1.58.2",
     "@stryker-mutator/core": "^9.4.0",
     "@stryker-mutator/typescript-checker": "^9.4.0",
@@ -236,6 +243,7 @@
     "husky": "^9.1.7",
     "knip": "^5.83.1",
     "lint-staged": "^16.2.7",
+    "openai": "^4.104.0",
     "prettier": "^3.8.1",
     "puppeteer": "^24.37.3",
     "shadcn": "^3.8.5",
@@ -243,7 +251,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18",
-    "openai": "^4.104.0",
     "yaml": "^2.8.2"
   },
   "dependencies": {
