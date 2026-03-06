@@ -14,6 +14,11 @@ import {
   parseExecuteEvidenceDispositionRequestV1,
   parseLegalHoldV1,
 } from '../../domain/evidence/evidence-governance-v1.js';
+import {
+  parseMachineInvocationProgressEventV1,
+  parseMachineInvocationRequestV1,
+  parseMachineInvocationResponseV1,
+} from '../../domain/machine-invocations/index.js';
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parseRunV1 } from '../../domain/runs/run-v1.js';
@@ -78,6 +83,9 @@ describe('OpenAPI contract', () => {
       '/v1/workspaces/{workspaceId}/evidence/{evidenceId}/disposition',
       '/v1/workspaces/{workspaceId}/legal-holds',
       '/v1/workspaces/{workspaceId}/legal-holds/{holdId}',
+      '/v1/workspaces/{workspaceId}/machines/{machineId}/invocations',
+      '/v1/workspaces/{workspaceId}/machines/{machineId}/invocations/{invocationId}',
+      '/v1/workspaces/{workspaceId}/machines/{machineId}/invocations/{invocationId}/stream',
     ];
     for (const p of expectedPaths) {
       expect(Object.prototype.hasOwnProperty.call(pathsObj, p)).toBe(true);
@@ -105,7 +113,7 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
-  it('PlanV1, EvidenceEntryV1, evidence governance schemas, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
+  it('PlanV1, EvidenceEntryV1, evidence governance schemas, machine invocation schemas, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
@@ -197,6 +205,21 @@ describe('OpenAPI contract', () => {
       componentsSchemas: schemas,
     });
     const validateDispositionJob = ajv.compile(dispositionJobSchema);
+    const machineInvocationRequestSchema = buildJsonSchemaFromComponents({
+      rootName: 'MachineInvocationRequestV1',
+      componentsSchemas: schemas,
+    });
+    const validateMachineInvocationRequest = ajv.compile(machineInvocationRequestSchema);
+    const machineInvocationResponseSchema = buildJsonSchemaFromComponents({
+      rootName: 'MachineInvocationResponseV1',
+      componentsSchemas: schemas,
+    });
+    const validateMachineInvocationResponse = ajv.compile(machineInvocationResponseSchema);
+    const machineInvocationProgressSchema = buildJsonSchemaFromComponents({
+      rootName: 'MachineInvocationProgressEventV1',
+      componentsSchemas: schemas,
+    });
+    const validateMachineInvocationProgress = ajv.compile(machineInvocationProgressSchema);
 
     const retentionSchedule = {
       schemaVersion: 1,
@@ -269,6 +292,50 @@ describe('OpenAPI contract', () => {
     expect(() => parseEvidenceDispositionJobV1(dispositionJob)).not.toThrow();
     expect(() => validateOrThrow(validateDispositionJob, dispositionJob)).not.toThrow();
 
+    const machineInvocationRequest = {
+      schemaVersion: 1,
+      invocationId: 'invocation-1',
+      machineId: 'machine-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      action: 'poster.generate',
+      input: {
+        prompt: 'Create a concise changelog summary',
+      },
+      callbackUrl: 'https://control-plane.local/hooks/machine-events',
+      idempotencyKey: 'idempotency-1',
+    };
+    expect(() => parseMachineInvocationRequestV1(machineInvocationRequest)).not.toThrow();
+    expect(() =>
+      validateOrThrow(validateMachineInvocationRequest, machineInvocationRequest),
+    ).not.toThrow();
+
+    const machineInvocationResponse = {
+      schemaVersion: 1,
+      invocationId: 'invocation-1',
+      status: 'completed',
+      statusUrl:
+        'https://control-plane.local/v1/workspaces/ws-1/machines/machine-poster-1/invocations/invocation-1',
+      artifactUris: ['s3://artifacts/ws-1/runs/run-9001/poster/summary.md'],
+    };
+    expect(() => parseMachineInvocationResponseV1(machineInvocationResponse)).not.toThrow();
+    expect(() =>
+      validateOrThrow(validateMachineInvocationResponse, machineInvocationResponse),
+    ).not.toThrow();
+
+    const machineInvocationProgress = {
+      schemaVersion: 1,
+      invocationId: 'invocation-1',
+      status: 'running',
+      progressRatio: 0.62,
+      step: 'rendering',
+      diagnostics: 'page 3/5 complete',
+    };
+    expect(() => parseMachineInvocationProgressEventV1(machineInvocationProgress)).not.toThrow();
+    expect(() =>
+      validateOrThrow(validateMachineInvocationProgress, machineInvocationProgress),
+    ).not.toThrow();
+
     const runSchema = buildJsonSchemaFromComponents({
       rootName: 'RunV1',
       componentsSchemas: schemas,
@@ -290,6 +357,24 @@ describe('OpenAPI contract', () => {
 
     const invalidDispositionJob = { ...dispositionJob, status: 'Unknown' };
     expect(validateDispositionJob(invalidDispositionJob)).toBe(false);
+
+    const invalidMachineInvocationRequest = {
+      ...machineInvocationRequest,
+      callbackUrl: 'ftp://bad.example',
+    };
+    expect(validateMachineInvocationRequest(invalidMachineInvocationRequest)).toBe(false);
+
+    const invalidMachineInvocationResponse = {
+      ...machineInvocationResponse,
+      status: 'bogus',
+    };
+    expect(validateMachineInvocationResponse(invalidMachineInvocationResponse)).toBe(false);
+
+    const invalidMachineInvocationProgress = {
+      ...machineInvocationProgress,
+      progressRatio: 2,
+    };
+    expect(validateMachineInvocationProgress(invalidMachineInvocationProgress)).toBe(false);
 
     const workItemSchema = buildJsonSchemaFromComponents({
       rootName: 'WorkItemV1',
