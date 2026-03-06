@@ -141,3 +141,24 @@ The remaining stash-only residue was explicitly discarded as obsolete historical
 - bulk historical review-doc, backlog, and planning-note churn
 - stale repo-tooling and dependency baseline edits bundled alongside the audit scripts
 - duplicate canonical/domain scaffolding that is already superseded by the current parser-focused canonical surface on `main`
+
+## bead-0893 Disposition
+
+`bead-0893` audited original `stash@{32}` (current `stash@{12}` at audit time, stash object `9afbb5b6`) and found that the bundle mixed already-landed work, superseded historical variants, and two still-distinct follow-up areas:
+
+- adapter registration, credential grants, and project parsing are already present on `main` under the current paths `src/domain/adapters/adapter-registration-v1.ts`, `src/domain/credentials/credential-grant-v1.ts`, and `src/domain/workspaces/project-v1.ts`
+- the stash versions of those surfaces used older folder names and earlier contract shapes (`src/domain/adapter-registrations/`, `src/domain/credential-grants/`) and should not replace the current tree wholesale
+- the stash `runtime-truth-v1` model is superseded by the ADR-0037 implementation already on `main` in `src/domain/deployment/definition-truth-v1.ts`
+- the stash `port-contract.ts` surface is superseded by the current split between `src/domain/ports/port-family-capabilities-v1.ts` and the capability matrix already embedded in `src/domain/adapters/adapter-registration-v1.ts`
+- two still-distinct gaps remain outside the current tree: evidence-governance parsers plus evidence retention/legal-hold/disposition control-plane contracts, and machine-invocation parser plus invocation status/stream control-plane contracts
+
+The still-actionable survivors were split into focused follow-up beads instead of landing the historical bundle:
+
+- `bead-0903` for evidence retention, legal-hold, and disposition domain/control-plane carryover
+- `bead-0904` for machine invocation parser and invocation status/stream contract carryover
+
+The remaining stash-only residue was explicitly discarded as superseded historical carryover:
+
+- older OpenAPI/spec rewrites for adapter registration, credential grants, and projects that are already represented on `main`
+- legacy folder-layout churn in `src/domain/index.ts` and related barrels
+- duplicate runtime-truth and port-contract concepts that would conflict with the current deployment-truth and port-capability surfaces
