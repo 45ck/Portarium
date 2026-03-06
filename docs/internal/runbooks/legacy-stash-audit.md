@@ -162,3 +162,21 @@ The remaining stash-only residue was explicitly discarded as superseded historic
 - older OpenAPI/spec rewrites for adapter registration, credential grants, and projects that are already represented on `main`
 - legacy folder-layout churn in `src/domain/index.ts` and related barrels
 - duplicate runtime-truth and port-contract concepts that would conflict with the current deployment-truth and port-capability surfaces
+
+## bead-0894 Disposition
+
+`bead-0894` audited original `stash@{33}` (current `stash@{12}` at audit time, stash object `4d0bf39f`) and found that the bundle is fully superseded on `main`:
+
+- the stash points the OpenFGA upstream submodule at `https://github.com/openfga/openfga`, but the current repo intentionally vendors `https://github.com/openfga/api` in `.gitmodules` and the current Domain Atlas extraction/docs already reference that API/protobuf source of truth
+- the stash OpenAPI bundle is an older control-plane snapshot whose approval path, route set, and contract coverage have been superseded by the current `docs/spec/openapi/portarium-control-plane.v1.yaml`
+- the stash primitive and primitive-test deltas are also historical snapshots and would remove or rename newer branded IDs, alias guards, and port-family coverage already present on `main`
+- the stash `src/domain/canonical/index.ts` delta only reflects an older canonical export surface that is already exceeded by the current barrel
+- the stash `src/infrastructure/openapi/openapi-contract.test.ts` content is an older contract test shape that has been superseded by the current split helper-based test suite and broader schema coverage
+
+No still-distinct implementation or contract work remained after the audit, so no follow-up bead was created from this bundle.
+
+The remaining stash-only residue was explicitly discarded as obsolete carryover:
+
+- the old OpenFGA submodule target
+- the stale control-plane OpenAPI snapshot and approval-path naming
+- historical primitive/test snapshots that predate the current domain and OpenAPI contract surface
