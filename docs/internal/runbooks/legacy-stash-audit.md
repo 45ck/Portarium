@@ -215,3 +215,25 @@ The remaining stash-only residue was explicitly discarded as obsolete carryover:
 - the pre-move `docs/ui/lofi/` path
 - historical `run-v1` parser and test snapshots that would regress current run validation behavior
 - bundled `research.json`, tracker churn, and older Domain Atlas source metadata
+
+## bead-0897 Disposition
+
+`bead-0897` audited the preserved bead-0195 pass-series bundle from original `stash@{16}`, `stash@{18}`-`stash@{20}`, and `stash@{22}`-`stash@{27}`. By the time of audit, the surviving local copies were the current `stash@{8}` through `stash@{0}` entries (`d9d12c30`, `025a3278`, `62cc3bc1`, `c11c758d`, `84a22703`, `1b1c14d6`, `3f248430`, `b8f676d8`, and `00d258d6`), while the original `stash@{21}` slot had already been dropped during `bead-0884` because it had no remaining payload.
+
+The bundle is fully superseded on `main`:
+
+- the `PageHeader` icon carryover from the route-focused pass stashes is already preserved on `main`, and the active Cockpit routes now apply it more broadly than the historical snapshots across runs, work items, workforce, approvals, evidence, agents, dashboard, and other route surfaces
+- the root-nav carryover from the pass-series bundle is already preserved on `main` in `apps/cockpit/src/routes/__root.tsx`, including entity-icon navigation treatment and favicon/app-icon wiring
+- the robotics fixtures, handlers, and `robots` page carried in the historical passes are already represented on `main`, but under a more evolved surface that uses the current robotics query/types stack and route structure instead of the older mock-only detail sheet snapshot
+- the historical asset-manifest, asset-registry, asset-type, and icon-prompt carryover is already preserved on `main`; the stash versions are earlier snapshots of the same entity-asset expansion and icon-generation work
+- the robot-context SoD policy-evaluation carryover in the pass bundle is already preserved on `main` and was closed independently by the later approval/SoD parity recovery work
+- the `submit-map-command-intent` action/RBAC carryover bundled with one of the passes is already present on `main`
+
+No still-distinct UI, asset, or policy gap remained after the audit, so no follow-up bead was created from this bundle.
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- older Cockpit route snapshots that predate the current broader `PageHeader` icon rollout
+- older robotics mock/demo snapshots that are narrower than the current robotics route and data surfaces on `main`
+- earlier copies of the asset prompt/registry/type expansion that are already landed in the active Cockpit asset system
+- bundled tracker churn in `.beads/issues.jsonl`
