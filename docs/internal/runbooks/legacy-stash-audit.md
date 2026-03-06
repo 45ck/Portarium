@@ -237,3 +237,20 @@ The remaining stash-only residue was explicitly discarded as obsolete historical
 - older robotics mock/demo snapshots that are narrower than the current robotics route and data surfaces on `main`
 - earlier copies of the asset prompt/registry/type expansion that are already landed in the active Cockpit asset system
 - bundled tracker churn in `.beads/issues.jsonl`
+
+## bead-0898 Disposition
+
+`bead-0898` audited original `stash@{31}` (current `stash@{0}` at audit time, stash object `dd6e1acc`) and found that the surviving payload is a historical canonical-seed closeout snapshot rather than a not-yet-landed domain scaffold or reverse-loop implementation branch:
+
+- the stash contains canonical-seed adoption churn in `src/domain/testing/canonical-seeds-v1.test.ts`, query tests, and `src/infrastructure/openapi/openapi-contract.test.ts`, but those changes are already preserved on `main` and the active files now exceed the stash snapshot
+- the stash review note `docs/review/bead-0193-canonical-e2e-seeds.md` points at a historical review-doc path that is no longer part of the active repo layout, so it is obsolete closeout residue rather than a missing adopted document
+- the `.beads/issues.jsonl` delta is only a historical tracker snapshot showing older claim/close state for beads such as `bead-0523`, `bead-0558`, and `bead-0587`; it does not represent work that should be replayed onto the current tracker
+- despite the bead title, the actual stash payload did not include still-distinct reverse-loop utilities or canonical scaffold files; those concerns had already been separated elsewhere in the stash audit trail and are not carried by this surviving bundle
+
+No still-distinct canonical model, reverse-loop utility, or documentation gap remained after the audit, so no follow-up bead was created from this bundle.
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- historical review-doc closeout text for `bead-0193`
+- already-landed canonical-seed test/query/OpenAPI churn
+- stale tracker claim-state snapshots in `.beads/issues.jsonl`
