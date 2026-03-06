@@ -1431,6 +1431,71 @@ paths:
                 $ref: '#/components/schemas/ConnectionTestResult'
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines/{machineId}/invocations:
+    post:
+      tags: [Machines]
+      summary: Submit an invocation to a machine
+      operationId: createMachineInvocation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MachineInvocationRequestV1'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineInvocationResponseV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines/{machineId}/invocations/{invocationId}:
+    get:
+      tags: [Machines]
+      summary: Get machine invocation status
+      operationId: getMachineInvocation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+        - $ref: '#/components/parameters/InvocationIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MachineInvocationResponseV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/machines/{machineId}/invocations/{invocationId}/stream:
+    get:
+      tags: [Machines]
+      summary: Stream machine invocation progress
+      operationId: streamMachineInvocation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/MachineIdPath'
+        - $ref: '#/components/parameters/InvocationIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/MachineInvocationProgressEventV1'
+        default:
+          $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/agents:
     get:
       tags: [Agents]
@@ -1759,6 +1824,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/MachineId'
+    InvocationIdPath:
+      name: invocationId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
     AgentIdPath:
       name: agentId
       in: path
@@ -3939,6 +4011,94 @@ components:
             $ref: '#/components/schemas/MachineV1'
         nextCursor:
           type: string
+    MachineInvocationStatus:
+      type: string
+      enum: [accepted, running, completed, failed]
+    MachineInvocationRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        invocationId:
+          type: string
+          minLength: 1
+        machineId:
+          $ref: '#/components/schemas/MachineId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        runId:
+          $ref: '#/components/schemas/RunId'
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        action:
+          type: string
+          minLength: 1
+        input:
+          type: object
+          additionalProperties: true
+        callbackUrl:
+          type: string
+          format: uri
+          pattern: '^https?://'
+        idempotencyKey:
+          type: string
+          minLength: 1
+      required: [schemaVersion, invocationId, machineId, workspaceId, action]
+    MachineInvocationResponseV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        invocationId:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/MachineInvocationStatus'
+        statusUrl:
+          type: string
+          format: uri
+          pattern: '^https?://'
+        artifactUris:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        outputArtifactUris:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        error:
+          type: string
+          minLength: 1
+      required: [schemaVersion, invocationId, status]
+    MachineInvocationProgressEventV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        invocationId:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/MachineInvocationStatus'
+        progressRatio:
+          type: number
+          minimum: 0
+          maximum: 1
+        step:
+          type: string
+          minLength: 1
+        diagnostics:
+          type: string
+          minLength: 1
+      required: [schemaVersion, invocationId, status]
     RegisterMachineRequest:
       type: object
       additionalProperties: false

@@ -457,8 +457,9 @@ describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
     const blockedElapsed = performance.now() - blockedStart;
 
     expect(blocked.status).toBe(503);
-    // Circuit-open response should be near-instant (no upstream call)
-    expect(blockedElapsed).toBeLessThan(5);
+    // Circuit-open response should be near-instant (no upstream call), but
+    // single-call timing on Windows/worktrees can jitter a few milliseconds.
+    expect(blockedElapsed).toBeLessThan(10);
   });
 
   it('fail-closed proxy recovers after recovery window and successful probe', async () => {

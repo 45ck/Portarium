@@ -300,3 +300,17 @@ The remaining stash-only residue was explicitly discarded as obsolete historical
 
 - any implication that the governance parser should replace the current `RetentionScheduleV1` payload-store contract
 - the broader historical stash bundle outside the recovered evidence governance parser and control-plane contract surfaces
+
+## bead-0904 Disposition
+
+`bead-0904` recovered the still-relevant machine invocation contract carryover from original `stash@{32}` (stash object `9afbb5b6`) and aligned it to the current machine interface and invocation runtime model on `main`:
+
+- restored `src/domain/machine-invocations/machine-invocation-v1.ts` plus regression coverage for invocation request, response, and progress-event parsing
+- re-exported the recovered machine invocation module through the current domain barrels so the invocation contracts are available from `src/domain/index.ts`
+- restored the control-plane OpenAPI surfaces for machine invocation creation, invocation status retrieval, and invocation event streaming, together with schema coverage in the OpenAPI contract test suite and operation-id golden fixture
+- updated `.specify/specs/machine-interface-v1.md` to align the spec wording with the recovered contract names and to document `artifactUris` as canonical while still accepting the historical `outputArtifactUris` alias during parsing
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- any broader historical stash content outside the recovered machine invocation parser and control-plane contract surfaces
+- transport or naming assumptions that would conflict with the current `MachineInvokerPort` behavior on `main`

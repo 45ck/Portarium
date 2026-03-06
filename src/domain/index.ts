@@ -15,6 +15,7 @@ export * from './rate-limiting/index.js';
 export * from './event-stream/index.js';
 export * from './events/index.js';
 export * from './work-items/index.js';
+export * from './machine-invocations/index.js';
 export * from './ports/index.js';
 export * from './credentials/index.js';
 export * from './adapters/index.js';
