@@ -254,3 +254,20 @@ The remaining stash-only residue was explicitly discarded as obsolete historical
 - historical review-doc closeout text for `bead-0193`
 - already-landed canonical-seed test/query/OpenAPI churn
 - stale tracker claim-state snapshots in `.beads/issues.jsonl`
+
+## bead-0901 Disposition
+
+`bead-0901` audited the reverse-loop governance utilities from original `stash@{30}` (stash object `0d9dfbd9`) and found that they should not be adopted on `main` as written:
+
+- `scripts/ci/check-open-beads.mjs` hard-fails whenever any bead is open, which conflicts with the current Beads workflow in `AGENT_LOOP.md` and `AGENTS.md`; the active repo expects open beads to exist during normal autonomous work, and the standard operator view is already covered by `npm run bd -- issue next --json` and `npm run bd -- issue list --json`
+- `scripts/ci/check-reverse-loop-health.mjs` couples tracker state to canonical docs/spec parity checks via `canonical-parity-utils.mjs`; that parity work was already split into `bead-0902`, so reviving this combined health gate here would re-entangle scopes that were intentionally separated
+- `scripts/ci/check-reverse-loop-dashboard.mjs` inherits both problems above and additionally depends on `scripts/ci/check-port-capability-parity.mjs`, which is absent on `main`; adopting the dashboard would therefore broaden this bead from a governance audit into a larger multi-script recovery bundle
+- none of the reverse-loop commands are referenced by the current runbooks or CI entrypoints on `main`, so landing them now would introduce a second governance workflow alongside the current Beads-driven claim/finish loop
+
+No reverse-loop utility from this bundle fit the current Beads workflow closely enough to justify recovery, so no script was restored and no further follow-up bead was created from this audit.
+
+The remaining stash-only residue was explicitly discarded as obsolete governance carryover:
+
+- the historical reverse-loop "no open beads" preflight gate
+- the combined reverse-loop dashboard wrapper and its missing script dependencies
+- the older combined canonical-parity-plus-closeout health check
