@@ -180,3 +180,21 @@ The remaining stash-only residue was explicitly discarded as obsolete carryover:
 - the old OpenFGA submodule target
 - the stale control-plane OpenAPI snapshot and approval-path naming
 - historical primitive/test snapshots that predate the current domain and OpenAPI contract surface
+
+## bead-0895 Disposition
+
+`bead-0895` audited original `stash@{40}` (current `stash@{12}` at audit time, stash object `7ec899b1`) and found that the bundle is fully superseded on `main`:
+
+- the Zammad Domain Atlas assets from the stash are already present on `main`, including `domain-atlas/capabilities/zammad/CustomerSupport.capability-matrix.json`, `domain-atlas/decisions/providers/zammad.md`, `domain-atlas/extracted/zammad/cif.json`, `domain-atlas/mappings/zammad/CustomerSupport.mapping.json`, and `scripts/domain-atlas/extract-zammad-cif.mjs`
+- the only material Zammad source delta left in the stash is an older `domain-atlas/sources/zammad/source.json` snapshot that still referenced `app/assets/javascripts/app/views/api.jst.eco` in `modelSources` and lacked the current tracking metadata already recorded on `main`
+- the stash `src/domain/approvals/approval-v1.ts` and `src/domain/workflows/workflow-v1.ts` parsers are older snapshots that predate the current parse-utils integration, approval escalation-chain support, capability-aware workflow parsing, schema-version `2` workflow support, and stricter date/operation validation already implemented on `main`
+- the stash approval/workflow tests are likewise older than the current domain regression coverage and would remove newer validation cases already exercised on `main`
+- the stash specs `.specify/specs/approval-v1.md` and `.specify/specs/workflow-v1.md` are already preserved on `main`
+
+No still-distinct integration, domain, or contract work remained after the audit, so no follow-up bead was created from this bundle.
+
+The remaining stash-only residue was explicitly discarded as obsolete carryover:
+
+- the older Zammad source metadata snapshot
+- historical approval/workflow parser and test snapshots that would regress current domain validation coverage
+- bundled historical `.ci/gate-baseline.json`, `package.json`, `research.json`, and tracker churn
