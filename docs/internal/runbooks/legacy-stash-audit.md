@@ -198,3 +198,20 @@ The remaining stash-only residue was explicitly discarded as obsolete carryover:
 - the older Zammad source metadata snapshot
 - historical approval/workflow parser and test snapshots that would regress current domain validation coverage
 - bundled historical `.ci/gate-baseline.json`, `package.json`, `research.json`, and tracker churn
+
+## bead-0896 Disposition
+
+`bead-0896` audited original `stash@{42}` (current `stash@{12}` at audit time, stash object `3c0bf1a6`) and found that the bundle is fully superseded on `main`:
+
+- the low-fidelity Cockpit artifact from the stash is already preserved on `main` under `docs/internal/ui/lofi/`, including `index.html`, `README.md`, `wireframe.css`, and `wireframe.js`; the stash path `docs/ui/lofi/index.html` reflects an older pre-move location
+- the stash `src/domain/runs/run-v1.ts` and `src/domain/runs/run-v1.test.ts` snapshots are older than the current run parser on `main` and would remove the parse-utils integration plus the newer timestamp ordering and ISO validation already covered in the active test suite
+- the stash `src/domain/index.ts` and `src/domain/runs/index.ts` deltas are historical barrel snapshots already exceeded by the current export surface on `main`
+- the bundled `domain-atlas/sources/mautic/source.json` and `domain-atlas/sources/vault/source.json` edits are older source-metadata snapshots that predate the current tracking metadata and current Vault source status on `main`
+
+No still-distinct UI, domain, or documentation work remained after the audit, so no follow-up bead was created from this bundle.
+
+The remaining stash-only residue was explicitly discarded as obsolete carryover:
+
+- the pre-move `docs/ui/lofi/` path
+- historical `run-v1` parser and test snapshots that would regress current run validation behavior
+- bundled `research.json`, tracker churn, and older Domain Atlas source metadata
