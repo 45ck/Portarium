@@ -57,3 +57,15 @@ When destruction is not permitted by policy, entries move to **de-identify** wor
 - Every disposition or de-identification action emits an evidence entry.
 - All legal-hold transitions are immutable and include actor + rationale.
 - Retention policy evaluation must be reproducible from stored policy versioning.
+
+## Control-plane contract surfaces
+
+The control plane exposes governance-focused evidence operations separately from the low-level artifact `retentionPolicy` metadata:
+
+- `GET` / `POST` `/v1/workspaces/{workspaceId}/evidence/retention`
+- `GET` / `PATCH` `/v1/workspaces/{workspaceId}/evidence/retention/{scheduleId}`
+- `POST` `/v1/workspaces/{workspaceId}/evidence/{evidenceId}/disposition`
+- `GET` / `POST` `/v1/workspaces/{workspaceId}/legal-holds`
+- `GET` / `PATCH` / `DELETE` `/v1/workspaces/{workspaceId}/legal-holds/{holdId}`
+
+These contracts are governance and operator surfaces only. They complement, and do not replace, the existing evidence durability and WORM enforcement semantics.

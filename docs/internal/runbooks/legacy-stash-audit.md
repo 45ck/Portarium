@@ -286,3 +286,17 @@ The remaining stash-only residue was explicitly discarded as obsolete historical
 
 - the older reverse-loop and dashboard utilities already rejected by `bead-0901`
 - stale historical review-doc residue that did not affect the live canonical parser, spec, or docs surface
+
+## bead-0903 Disposition
+
+`bead-0903` recovered the still-relevant evidence-governance contract carryover from original `stash@{32}` (stash object `9afbb5b6`) and aligned it to the current evidence durability model on `main`:
+
+- restored `src/domain/evidence/evidence-governance-v1.ts` plus regression coverage for retention-schedule, legal-hold, and disposition parsing without replacing the lower-level `retention-schedule-v1.ts` artifact-retention surface already used by runs and payload stores
+- re-exported the recovered parser module from `src/domain/evidence/index.ts` so the evidence governance contracts are part of the current domain barrel again
+- restored the control-plane OpenAPI surfaces for evidence retention schedules, evidence disposition execution, and legal-hold lifecycle operations, together with schema coverage in the OpenAPI contract test suite and operation-id golden fixture
+- updated `.specify/specs/evidence-retention-policy-v1.md` to record these governance endpoints explicitly as control-plane surfaces that complement, rather than replace, the existing WORM/legal-hold durability semantics
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- any implication that the governance parser should replace the current `RetentionScheduleV1` payload-store contract
+- the broader historical stash bundle outside the recovered evidence governance parser and control-plane contract surfaces

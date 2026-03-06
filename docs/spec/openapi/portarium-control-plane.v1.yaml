@@ -621,6 +621,217 @@ paths:
                 $ref: '#/components/schemas/EvidenceEntryListResponse'
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/evidence/retention:
+    get:
+      tags: [Evidence]
+      summary: List evidence retention schedules
+      operationId: listEvidenceRetentionSchedules
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceRetentionScheduleListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Evidence]
+      summary: Create an evidence retention schedule
+      operationId: createEvidenceRetentionSchedule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvidenceRetentionScheduleRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceRetentionScheduleV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/evidence/retention/{scheduleId}:
+    get:
+      tags: [Evidence]
+      summary: Get an evidence retention schedule
+      operationId: getEvidenceRetentionSchedule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/EvidenceRetentionScheduleIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceRetentionScheduleV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Evidence]
+      summary: Update an evidence retention schedule
+      operationId: updateEvidenceRetentionSchedule
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/EvidenceRetentionScheduleIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvidenceRetentionScheduleRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceRetentionScheduleV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/evidence/{evidenceId}/disposition:
+    post:
+      tags: [Evidence]
+      summary: Execute evidence retention/disposition action
+      operationId: executeEvidenceDisposition
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/EvidenceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteEvidenceDispositionRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceDispositionJobV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/legal-holds:
+    get:
+      tags: [Evidence]
+      summary: List legal holds
+      operationId: listLegalHolds
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalHoldListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Evidence]
+      summary: Create a legal hold
+      operationId: createLegalHold
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLegalHoldRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalHoldV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/legal-holds/{holdId}:
+    get:
+      tags: [Evidence]
+      summary: Get a legal hold
+      operationId: getLegalHold
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LegalHoldIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalHoldV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Evidence]
+      summary: Update a legal hold
+      operationId: updateLegalHold
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LegalHoldIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLegalHoldRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalHoldV1'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Evidence]
+      summary: Release a legal hold
+      operationId: releaseLegalHold
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LegalHoldIdPath'
+      responses:
+        '204':
+          description: No Content
+        default:
+          $ref: '#/components/responses/Problem'
   # ---- Approvals ----
   /v1/workspaces/{workspaceId}/approvals:
     get:
@@ -1566,6 +1777,24 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/HumanTaskId'
+    EvidenceIdPath:
+      name: evidenceId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/EvidenceId'
+    EvidenceRetentionScheduleIdPath:
+      name: scheduleId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/EvidenceRetentionScheduleId'
+    LegalHoldIdPath:
+      name: holdId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/LegalHoldId'
     LimitQuery:
       name: limit
       in: query
@@ -2686,6 +2915,231 @@ components:
           type: string
           minLength: 1
       required: [items]
+    DispositionAction:
+      type: string
+      enum: [Destroy, DeIdentify, Quarantine]
+    EvidenceRetentionScheduleId:
+      type: string
+      minLength: 1
+      description: Opaque retention schedule identifier
+    LegalHoldId:
+      type: string
+      minLength: 1
+      description: Opaque legal-hold identifier
+    EvidenceRetentionScheduleV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        scheduleId:
+          $ref: '#/components/schemas/EvidenceRetentionScheduleId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceCategory'
+          minItems: 1
+        defaultDisposition:
+          $ref: '#/components/schemas/DispositionAction'
+        retentionDays:
+          type: integer
+          minimum: 1
+        legalHoldOverrides:
+          type: boolean
+          description: If true, legal-hold-protected evidence is excluded from disposition.
+        createdByUserId:
+          $ref: '#/components/schemas/UserId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        updatedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        description:
+          type: string
+          minLength: 1
+      required:
+        - schemaVersion
+        - scheduleId
+        - workspaceId
+        - categories
+        - defaultDisposition
+        - retentionDays
+        - legalHoldOverrides
+        - createdByUserId
+        - createdAtIso
+    EvidenceRetentionScheduleListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceRetentionScheduleV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateEvidenceRetentionScheduleRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceCategory'
+          minItems: 1
+        defaultDisposition:
+          $ref: '#/components/schemas/DispositionAction'
+        retentionDays:
+          type: integer
+          minimum: 1
+        legalHoldOverrides:
+          type: boolean
+        description:
+          type: string
+          minLength: 1
+      required: [schemaVersion, categories, defaultDisposition, retentionDays]
+    UpdateEvidenceRetentionScheduleRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceCategory'
+          minItems: 1
+        defaultDisposition:
+          $ref: '#/components/schemas/DispositionAction'
+        retentionDays:
+          type: integer
+          minimum: 1
+        legalHoldOverrides:
+          type: boolean
+        description:
+          type: string
+          minLength: 1
+    EvidenceDispositionJobV1:
+      type: object
+      additionalProperties: false
+      properties:
+        jobId:
+          type: string
+          minLength: 1
+        evidenceId:
+          $ref: '#/components/schemas/EvidenceId'
+        action:
+          $ref: '#/components/schemas/DispositionAction'
+        status:
+          type: string
+          enum: [Queued, InProgress, Completed, Failed, Blocked]
+        reason:
+          type: string
+          minLength: 1
+        startedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [jobId, evidenceId, action, status]
+    ExecuteEvidenceDispositionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        action:
+          $ref: '#/components/schemas/DispositionAction'
+        reason:
+          type: string
+          minLength: 1
+        actorUserId:
+          $ref: '#/components/schemas/UserId'
+      required: [action]
+    LegalHoldV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        holdId:
+          $ref: '#/components/schemas/LegalHoldId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        evidenceCategory:
+          $ref: '#/components/schemas/EvidenceCategory'
+        description:
+          type: string
+          minLength: 1
+        active:
+          type: boolean
+        reason:
+          type: string
+          minLength: 1
+        createdByUserId:
+          $ref: '#/components/schemas/UserId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - holdId
+        - workspaceId
+        - evidenceCategory
+        - description
+        - active
+        - reason
+        - createdByUserId
+        - createdAtIso
+    LegalHoldListResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalHoldV1'
+        nextCursor:
+          type: string
+          minLength: 1
+      required: [items]
+    CreateLegalHoldRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        evidenceCategory:
+          $ref: '#/components/schemas/EvidenceCategory'
+        description:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+        active:
+          type: boolean
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [schemaVersion, evidenceCategory, description, reason, active]
+    UpdateLegalHoldRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        description:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+        active:
+          type: boolean
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
     # ---- Approval schemas ----
     ApprovalStatus:
       type: string

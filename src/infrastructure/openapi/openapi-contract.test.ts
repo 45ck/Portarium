@@ -6,6 +6,14 @@ import { parse as parseYaml } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 import { appendEvidenceEntryV1 } from '../../domain/evidence/evidence-chain-v1.js';
+import {
+  parseCreateEvidenceRetentionScheduleRequestV1,
+  parseCreateLegalHoldRequestV1,
+  parseEvidenceDispositionJobV1,
+  parseEvidenceRetentionScheduleV1,
+  parseExecuteEvidenceDispositionRequestV1,
+  parseLegalHoldV1,
+} from '../../domain/evidence/evidence-governance-v1.js';
 import { parsePlanV1 } from '../../domain/plan/plan-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parseRunV1 } from '../../domain/runs/run-v1.js';
@@ -65,6 +73,11 @@ describe('OpenAPI contract', () => {
       '/v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/escalate',
       '/v1/workspaces/{workspaceId}/plans/{planId}',
       '/v1/workspaces/{workspaceId}/evidence',
+      '/v1/workspaces/{workspaceId}/evidence/retention',
+      '/v1/workspaces/{workspaceId}/evidence/retention/{scheduleId}',
+      '/v1/workspaces/{workspaceId}/evidence/{evidenceId}/disposition',
+      '/v1/workspaces/{workspaceId}/legal-holds',
+      '/v1/workspaces/{workspaceId}/legal-holds/{holdId}',
     ];
     for (const p of expectedPaths) {
       expect(Object.prototype.hasOwnProperty.call(pathsObj, p)).toBe(true);
@@ -92,7 +105,7 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
-  it('PlanV1, EvidenceEntryV1, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
+  it('PlanV1, EvidenceEntryV1, evidence governance schemas, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
 
@@ -154,6 +167,108 @@ describe('OpenAPI contract', () => {
     const invalidEvidence = { ...evidence, hashSha256: HashSha256('not-a-sha') };
     expect(validateEvidence(invalidEvidence)).toBe(false);
 
+    const retentionScheduleSchema = buildJsonSchemaFromComponents({
+      rootName: 'EvidenceRetentionScheduleV1',
+      componentsSchemas: schemas,
+    });
+    const validateRetentionSchedule = ajv.compile(retentionScheduleSchema);
+    const createRetentionScheduleSchema = buildJsonSchemaFromComponents({
+      rootName: 'CreateEvidenceRetentionScheduleRequest',
+      componentsSchemas: schemas,
+    });
+    const validateCreateRetentionSchedule = ajv.compile(createRetentionScheduleSchema);
+    const legalHoldSchema = buildJsonSchemaFromComponents({
+      rootName: 'LegalHoldV1',
+      componentsSchemas: schemas,
+    });
+    const validateLegalHold = ajv.compile(legalHoldSchema);
+    const createLegalHoldSchema = buildJsonSchemaFromComponents({
+      rootName: 'CreateLegalHoldRequest',
+      componentsSchemas: schemas,
+    });
+    const validateCreateLegalHold = ajv.compile(createLegalHoldSchema);
+    const executeDispositionSchema = buildJsonSchemaFromComponents({
+      rootName: 'ExecuteEvidenceDispositionRequest',
+      componentsSchemas: schemas,
+    });
+    const validateExecuteDisposition = ajv.compile(executeDispositionSchema);
+    const dispositionJobSchema = buildJsonSchemaFromComponents({
+      rootName: 'EvidenceDispositionJobV1',
+      componentsSchemas: schemas,
+    });
+    const validateDispositionJob = ajv.compile(dispositionJobSchema);
+
+    const retentionSchedule = {
+      schemaVersion: 1,
+      scheduleId: 'schedule-1',
+      workspaceId: 'ws-1',
+      categories: ['Plan', 'Action'],
+      defaultDisposition: 'Quarantine',
+      retentionDays: 90,
+      legalHoldOverrides: true,
+      createdByUserId: 'user-1',
+      createdAtIso: '2026-02-16T00:00:00.000Z',
+      description: 'Evidence retention schedule',
+    };
+    expect(() => parseEvidenceRetentionScheduleV1(retentionSchedule)).not.toThrow();
+    expect(() => validateOrThrow(validateRetentionSchedule, retentionSchedule)).not.toThrow();
+
+    const createRetentionSchedule = {
+      schemaVersion: 1,
+      categories: ['Approval'],
+      defaultDisposition: 'Destroy',
+      retentionDays: 30,
+      legalHoldOverrides: false,
+    };
+    expect(() =>
+      parseCreateEvidenceRetentionScheduleRequestV1(createRetentionSchedule),
+    ).not.toThrow();
+    expect(() =>
+      validateOrThrow(validateCreateRetentionSchedule, createRetentionSchedule),
+    ).not.toThrow();
+
+    const legalHold = {
+      schemaVersion: 1,
+      holdId: 'hold-1',
+      workspaceId: 'ws-1',
+      evidenceCategory: 'System',
+      description: 'Audit freeze',
+      active: true,
+      reason: 'Litigation',
+      createdByUserId: 'user-1',
+      createdAtIso: '2026-02-16T00:00:00.000Z',
+    };
+    expect(() => parseLegalHoldV1(legalHold)).not.toThrow();
+    expect(() => validateOrThrow(validateLegalHold, legalHold)).not.toThrow();
+
+    const createLegalHold = {
+      schemaVersion: 1,
+      evidenceCategory: 'Policy',
+      description: 'Preserve policy evidence',
+      reason: 'Compliance review',
+      active: true,
+    };
+    expect(() => parseCreateLegalHoldRequestV1(createLegalHold)).not.toThrow();
+    expect(() => validateOrThrow(validateCreateLegalHold, createLegalHold)).not.toThrow();
+
+    const executeDisposition = {
+      action: 'Destroy',
+      reason: 'right-to-erasure',
+      actorUserId: 'user-2',
+    };
+    expect(() => parseExecuteEvidenceDispositionRequestV1(executeDisposition)).not.toThrow();
+    expect(() => validateOrThrow(validateExecuteDisposition, executeDisposition)).not.toThrow();
+
+    const dispositionJob = {
+      jobId: 'job-1',
+      evidenceId: 'evi-1',
+      action: 'DeIdentify',
+      status: 'Queued',
+      reason: 'GDPR request',
+    };
+    expect(() => parseEvidenceDispositionJobV1(dispositionJob)).not.toThrow();
+    expect(() => validateOrThrow(validateDispositionJob, dispositionJob)).not.toThrow();
+
     const runSchema = buildJsonSchemaFromComponents({
       rootName: 'RunV1',
       componentsSchemas: schemas,
@@ -166,6 +281,15 @@ describe('OpenAPI contract', () => {
     const invalidRun = { ...seeds.run, status: 'Done' };
     expect(() => parseRunV1(invalidRun)).toThrow(/status/i);
     expect(validateRun(invalidRun)).toBe(false);
+
+    const invalidRetentionSchedule = { ...retentionSchedule, categories: [] };
+    expect(validateRetentionSchedule(invalidRetentionSchedule)).toBe(false);
+
+    const invalidLegalHold = { ...legalHold, active: 'yes' };
+    expect(validateLegalHold(invalidLegalHold)).toBe(false);
+
+    const invalidDispositionJob = { ...dispositionJob, status: 'Unknown' };
+    expect(validateDispositionJob(invalidDispositionJob)).toBe(false);
 
     const workItemSchema = buildJsonSchemaFromComponents({
       rootName: 'WorkItemV1',
