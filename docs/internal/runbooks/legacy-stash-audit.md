@@ -121,3 +121,23 @@ The remaining stash-only residue was obsolete and explicitly discarded:
 
 - syntax-only ambient declaration churn in `src/types/aws-s3.d.ts`, `src/types/grpc.d.ts`, and `src/types/hono.d.ts`
 - the older `.cspell/project-words.txt` snapshot
+
+## bead-0892 Disposition
+
+`bead-0892` audited original `stash@{30}` (current `stash@{11}` at audit time, stash object `0d9dfbd9`) and found that the bundle should not land wholesale on `main`:
+
+- the low-fidelity Cockpit artifacts under `docs/ui/cockpit/` were preserved as a still-relevant direction, but they overlap with the already-open low-fi wireframe audit in `bead-0896` and should be handled there rather than duplicated here
+- the current canonical parser surface is already implemented on `main`, but the bundle exposed a real follow-up gap: `.specify/specs/canonical-objects-v1.md` and `docs/domain/README.md` both still claim that `src/domain/canonical/objects-v1.ts` exists even though that compatibility module is absent on disk
+- the bundle also contains still-distinct canonical parity utilities (`scripts/ci/check-canonical-parity.mjs`, `check-canonical-spec-parity.mjs`, `check-canonical-docs-parity.mjs`, and `canonical-parity-utils.mjs`) that may still be worth adapting to the current repo layout
+- the reverse-loop governance utilities (`scripts/ci/check-reverse-loop-health.mjs`, `check-reverse-loop-dashboard.mjs`, and `check-open-beads.mjs`) remain distinct from `main`, but they need a focused audit against the current Beads workflow before adoption
+
+The still-actionable survivors were split into focused follow-up beads instead of landing the historical bundle:
+
+- `bead-0901` for reverse-loop health/dashboard and open-beads governance utilities
+- `bead-0902` for `objects-v1.ts` compatibility drift and canonical parity checks
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- bulk historical review-doc, backlog, and planning-note churn
+- stale repo-tooling and dependency baseline edits bundled alongside the audit scripts
+- duplicate canonical/domain scaffolding that is already superseded by the current parser-focused canonical surface on `main`
