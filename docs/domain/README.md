@@ -13,7 +13,7 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 | Document                                    | Purpose                                                                                                         |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | [ERD](./erd.md)                             | Full entity-relationship diagram in Mermaid covering all aggregates, canonical objects, and their relationships |
-| [Canonical Objects](./canonical-objects.md) | The 14-object canonical set with rationale for each, mapping SoR entities to a shared vocabulary                |
+| [Canonical Objects](./canonical-objects.md) | The 16-member canonical set with rationale for each, mapping SoR entities to a shared vocabulary                |
 | [Port Taxonomy](./port-taxonomy.md)         | 18 port families with their standard operations, aligned to the APQC-style capability catalog                   |
 | [Aggregates](./aggregates.md)               | Aggregate boundaries, invariants, and consistency rules for each aggregate root                                 |
 
@@ -34,7 +34,7 @@ The domain layer has **zero external dependencies** -- it consists entirely of T
 
 2. **Branded primitives everywhere** -- Every ID is a branded type (`TenantId`, `WorkflowId`, etc.) preventing accidental mixing. `WorkspaceId` is a v1 alias of `TenantId` with a compile-time guard (`WORKSPACE_ID_ALIAS_GUARD`) to prevent drift. See `src/domain/primitives/`.
 
-3. **Canonical objects as cross-system bridges** -- Fourteen canonical entity types (Party, Ticket, Invoice, Payment, Task, Campaign, Asset, Document, Subscription, Opportunity, Product, Order, Account, ExternalObjectRef) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
+3. **Canonical objects as cross-system bridges** -- Fifteen canonical entity parsers plus `ExternalObjectRef` (Party, Ticket, Invoice, Payment, Task, Campaign, Consent, Asset, Document, Subscription, Opportunity, Product, Order, Account, PrivacyPolicy, and `ExternalObjectRef`) provide a minimal shared vocabulary across all SoRs. They carry only the intersection of fields that every SoR in a domain exposes. SoR-specific fields live behind `ExternalObjectRef`.
 
 4. **ExternalObjectRef for everything else** -- Rather than bloating canonical objects with vendor-specific fields, we use typed deep links (`{ sorName, portFamily, externalId, externalType, deepLinkUrl?, displayLabel? }`) to reference any SoR entity. This keeps the canonical model minimal and avoids N x M field mapping.
 
@@ -74,8 +74,8 @@ src/domain/
 │   ├── asset-v1.test.ts                      # Asset parser tests
 │   ├── campaign-v1.ts                        # Marketing/advertising campaign
 │   ├── campaign-v1.test.ts                   # Campaign parser tests
-│   ├── canonical-namespace-alignment.test.ts  # Canonical ID/namespace parity tests
-│   ├── canonical-v1.test.ts                  # Canonical parser surface tests
+│   ├── consent-v1.ts                         # Consent record and audit trail
+│   ├── consent-v1.test.ts                    # Consent parser tests
 │   ├── document-v1.ts                        # Document, file, or attachment
 │   ├── document-v1.test.ts                   # Document parser tests
 │   ├── external-object-ref.ts                 # Deep link to any SoR entity
@@ -85,6 +85,7 @@ src/domain/
 │   ├── invoice-v1.ts                         # Sales invoice or purchase bill
 │   ├── invoice-v1.test.ts                    # Invoice parser tests
 │   ├── objects-v1.ts                         # Legacy compatibility barrel (deprecated in canonical index)
+│   ├── objects-v1.test.ts                    # Compatibility barrel tests
 │   ├── opportunity-v1.ts                     # Sales opportunity or deal
 │   ├── opportunity-v1.test.ts                # Opportunity parser tests
 │   ├── order-v1.ts                           # Sales or purchase order
@@ -93,6 +94,8 @@ src/domain/
 │   ├── party-v1.test.ts                      # Party parser tests
 │   ├── payment-v1.ts                         # Payment record
 │   ├── payment-v1.test.ts                    # Payment parser tests
+│   ├── privacy-policy-v1.ts                  # Privacy policy and retention defaults
+│   ├── privacy-policy-v1.test.ts             # Privacy policy parser tests
 │   ├── product-v1.ts                         # Product, service, or SKU
 │   ├── product-v1.test.ts                    # Product parser tests
 │   ├── subscription-v1.ts                    # Subscription, contract, or agreement

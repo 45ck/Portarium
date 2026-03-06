@@ -271,3 +271,18 @@ The remaining stash-only residue was explicitly discarded as obsolete governance
 - the historical reverse-loop "no open beads" preflight gate
 - the combined reverse-loop dashboard wrapper and its missing script dependencies
 - the older combined canonical-parity-plus-closeout health check
+
+## bead-0902 Disposition
+
+`bead-0902` recovered the still-relevant canonical compatibility and parity work from original `stash@{30}` (stash object `0d9dfbd9`) and aligned it to the current parser surface on `main`:
+
+- restored `src/domain/canonical/objects-v1.ts` as a compatibility-only barrel for canonical ID aliases, including the newer consent and privacy-policy IDs plus the current `FinancialAccountId` and `CanonicalTaskId` primitive names
+- updated `src/domain/canonical/index.ts` to re-export the full current parser surface, including `consent-v1.ts` and `privacy-policy-v1.ts`, while keeping `objects-v1.ts` out of the main canonical barrel
+- landed `scripts/ci/check-canonical-parity.mjs`, `check-canonical-spec-parity.mjs`, `check-canonical-docs-parity.mjs`, and `canonical-parity-utils.mjs`, then wired the umbrella check into `npm run ci:gates`
+- added regression coverage for the compatibility barrel, canonical parser barrel, and parity scripts
+- reconciled `.specify/specs/canonical-objects-v1.md`, `docs/domain/canonical-objects.md`, and the canonical subsection of `docs/domain/README.md` to the current 16-member canonical set (15 canonical entity parsers plus `ExternalObjectRef`)
+
+The remaining stash-only residue was explicitly discarded as obsolete historical carryover:
+
+- the older reverse-loop and dashboard utilities already rejected by `bead-0901`
+- stale historical review-doc residue that did not affect the live canonical parser, spec, or docs surface

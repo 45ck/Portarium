@@ -10,7 +10,7 @@ Every object uses:
 - tenant scoping via `tenantId`
 - optional `externalRefs: ExternalObjectRef[]` where available for SoR-specific data
 
-## Current v1 parser surface (12 canonical objects)
+## Current v1 parser surface (15 canonical objects)
 
 Canonical parser modules now implemented:
 
@@ -20,6 +20,7 @@ Canonical parser modules now implemented:
 - `src/domain/canonical/payment-v1.ts`
 - `src/domain/canonical/task-v1.ts`
 - `src/domain/canonical/campaign-v1.ts`
+- `src/domain/canonical/consent-v1.ts`
 - `src/domain/canonical/asset-v1.ts`
 - `src/domain/canonical/document-v1.ts`
 - `src/domain/canonical/subscription-v1.ts`
@@ -27,6 +28,7 @@ Canonical parser modules now implemented:
 - `src/domain/canonical/product-v1.ts`
 - `src/domain/canonical/order-v1.ts`
 - `src/domain/canonical/account-v1.ts`
+- `src/domain/canonical/privacy-policy-v1.ts`
 
 Cross-cutting parser utility:
 
@@ -48,18 +50,19 @@ Each module exports:
 
 The canonical object barrel:
 
-- `src/domain/canonical/index.ts` exports parser-focused modules directly and does **not** re-export legacy `objects-v1.ts`.
+- `src/domain/canonical/index.ts` exports every parser-focused module directly, including consent and privacy-policy parsers, and does **not** re-export legacy `objects-v1.ts`.
 - The legacy `objects-v1.ts` remains available for direct imports only.
 
 ## Invariants and gating
 
 - `src/domain/canonical/index.test.ts` asserts the canonical barrel contract.
-- `src/domain/canonical/canonical-v1.test.ts` covers parser success/failure semantics for the v1 objects.
-- `scripts/ci/check-canonical-exports.mjs` enforces:
-  - no duplicate named declarations across canonical modules
-  - no duplicate module re-exports in `src/domain/canonical/index.ts`
-  - no `./objects-v1.js` re-export
-  - no name collision with exported `src/domain/primitives/index.ts` symbols
+- `src/domain/canonical/objects-v1.test.ts` asserts that the compatibility barrel exposes ID aliases only.
+- Per-object parser tests in `src/domain/canonical/*-v1.test.ts` cover success/failure semantics for each v1 object.
+- `scripts/ci/check-canonical-parity.mjs` enforces:
+  - canonical parser inventory parity with `.specify/specs/canonical-objects-v1.md`
+  - canonical parser inventory parity with `docs/domain/canonical-objects.md`
+  - canonical barrel coverage parity in `src/domain/canonical/index.ts`
+  - no `./objects-v1.js` re-export from the canonical barrel
 
 ## Delivery criteria
 
