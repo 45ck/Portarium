@@ -583,9 +583,10 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
  * @returns {Promise<{ url: string; close: () => void }>}
  */
 export function startPolicyProxy(port = 9999) {
+  let actualPort = port;
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
-      handleRequest(req, res, port).catch((err) => {
+      handleRequest(req, res, actualPort).catch((err) => {
         console.error('[portarium-proxy] Unhandled error:', err);
         if (!res.headersSent) {
           jsonResponse(res, 500, { error: 'Internal server error' });
@@ -601,7 +602,8 @@ export function startPolicyProxy(port = 9999) {
 
     // Bind to loopback only — this is a local demo server, not a public endpoint.
     server.listen(port, '127.0.0.1', () => {
-      const url = `http://localhost:${port}`;
+      actualPort = /** @type {any} */ (server.address()).port;
+      const url = `http://localhost:${actualPort}`;
       console.log(`[portarium-proxy] Listening on ${url}`);
       if (controlPlane) {
         console.log(
