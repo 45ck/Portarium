@@ -1,4 +1,4 @@
-# ADR-0073: Knip Monorepo Scope Adjustment
+# ADR-0121: Knip Monorepo Scope Adjustment
 
 **Status:** Accepted
 **Date:** 2026-02-21

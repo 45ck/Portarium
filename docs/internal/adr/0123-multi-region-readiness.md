@@ -1,4 +1,4 @@
-# ADR-0075: Multi-Region Readiness Strategy
+# ADR-0123: Multi-Region Readiness Strategy
 
 **Beads:** bead-0645 (bead-0682 original reference)
 **Status:** Proposed

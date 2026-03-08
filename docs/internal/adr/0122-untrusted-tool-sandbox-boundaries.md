@@ -1,4 +1,4 @@
-# ADR-0074: Untrusted Tool Sandbox Boundaries
+# ADR-0122: Untrusted Tool Sandbox Boundaries
 
 | Field    | Value                          |
 | -------- | ------------------------------ |

@@ -1,4 +1,4 @@
-# ADR-0080: Credential Boundary Model for Agentic Workflows
+# ADR-0124: Credential Boundary Model for Agentic Workflows
 
 **Status**: Proposed
 **Date**: 2026-02-22
