@@ -1002,7 +1002,7 @@
 {"id":"bead-0905","title":"CreateApproval command — domain wiring for approval creation","status":"closed","priority":"P1","createdAt":"2026-03-08T22:39:51.819Z","updatedAt":"2026-03-09T00:51:43.835Z"}
 {"id":"bead-0906","title":"In-memory ApprovalStore adapter for testing","status":"closed","priority":"P1","createdAt":"2026-03-08T22:39:59.108Z","updatedAt":"2026-03-08T23:08:42.475Z"}
 {"id":"bead-0907","title":"Proxy-to-domain bridge — H9 migration (ADR-0117)","status":"closed","priority":"P1","createdAt":"2026-03-08T22:40:03.394Z","updatedAt":"2026-03-09T02:39:53.867Z"}
-{"id":"bead-0908","title":"SSE approval event stream for Cockpit real-time push","status":"open","priority":"P2","createdAt":"2026-03-08T22:40:10.296Z","updatedAt":"2026-03-08T22:40:10.296Z"}
+{"id":"bead-0908","title":"SSE approval event stream for Cockpit real-time push","status":"open","priority":"P2","createdAt":"2026-03-08T22:40:10.296Z","updatedAt":"2026-03-09T21:15:19.840Z","claimedBy":"agent-claude","claimedAt":"2026-03-09T21:15:19.840Z"}
 {"id":"bead-0909","title":"Proposal idempotency deduplication (ADR-0118 gap)","status":"open","priority":"P2","createdAt":"2026-03-08T22:40:13.975Z","updatedAt":"2026-03-08T22:40:13.975Z"}
 {"id":"bead-0910","title":"Approval expiry and escalation scheduler","status":"open","priority":"P2","createdAt":"2026-03-08T22:40:18.156Z","updatedAt":"2026-03-08T22:40:18.156Z"}
 {"id":"bead-0911","title":"Approval pipeline load characterization and SLOs","status":"open","priority":"P2","createdAt":"2026-03-08T22:40:22.002Z","updatedAt":"2026-03-08T22:40:22.002Z"}
