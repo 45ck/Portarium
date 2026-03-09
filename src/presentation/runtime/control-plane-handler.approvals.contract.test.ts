@@ -11,6 +11,8 @@ import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
 import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { ApprovalPendingV1, ApprovalV1 } from '../../domain/approvals/index.js';
+import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
+import type { WorkspaceStreamEvent } from '../../application/ports/event-stream.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import type { HealthServerHandle } from './health-server.js';
@@ -51,6 +53,7 @@ function makeDeps(
   overrides: {
     approvals?: ApprovalV1[];
     roles?: readonly ('admin' | 'operator' | 'approver' | 'auditor')[];
+    eventStream?: InMemoryEventStreamBroadcast;
   } = {},
 ): ControlPlaneDeps {
   const store = new Map<string, ApprovalV1>();
@@ -80,6 +83,7 @@ function makeDeps(
     approvalQueryStore: {
       listApprovals: async () => ({ items: [...store.values()] }),
     },
+    ...(overrides.eventStream ? { eventStream: overrides.eventStream } : {}),
   };
 }
 
@@ -288,5 +292,103 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(res.status).toBe(422);
     const body = (await res.json()) as { detail: string };
     expect(body.detail).toMatch(/previousApproverIds/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SSE event broadcast on approval decision
+// ---------------------------------------------------------------------------
+
+describe('POST /approvals/:approvalId/decide — SSE broadcast', () => {
+  it('broadcasts ApprovalGranted event to eventStream on Approved decision', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(
+        makeDeps({ approvals: [PENDING_APPROVAL], eventStream: broadcast }),
+      ),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'LGTM.' }),
+    });
+    expect(res.status).toBe(200);
+
+    expect(events).toHaveLength(1);
+    expect(events[0]!.type).toBe('com.portarium.approval.ApprovalGranted');
+    expect(events[0]!.workspaceId).toBe(WORKSPACE_ID);
+    const data = events[0]!.data as Record<string, unknown>;
+    expect(data['approvalId']).toBe(APPROVAL_ID);
+    expect(data['decision']).toBe('Approved');
+  });
+
+  it('broadcasts ApprovalDenied event to eventStream on Denied decision', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(
+        makeDeps({ approvals: [PENDING_APPROVAL], eventStream: broadcast }),
+      ),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Denied', rationale: 'Too risky.' }),
+    });
+    expect(res.status).toBe(200);
+
+    expect(events).toHaveLength(1);
+    expect(events[0]!.type).toBe('com.portarium.approval.ApprovalDenied');
+    const data = events[0]!.data as Record<string, unknown>;
+    expect(data['decision']).toBe('Denied');
+  });
+
+  it('broadcasts ApprovalChangesRequested event on RequestChanges decision', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(
+        makeDeps({ approvals: [PENDING_APPROVAL], eventStream: broadcast }),
+      ),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'RequestChanges', rationale: 'Needs work.' }),
+    });
+    expect(res.status).toBe(200);
+
+    expect(events).toHaveLength(1);
+    expect(events[0]!.type).toBe('com.portarium.approval.ApprovalChangesRequested');
+  });
+
+  it('does not broadcast when eventStream is not provided', async () => {
+    // No eventStream in deps — should still return 200 without error
+    await startWith({ approvals: [PENDING_APPROVAL] });
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'No SSE.' }),
+    });
+    expect(res.status).toBe(200);
   });
 });

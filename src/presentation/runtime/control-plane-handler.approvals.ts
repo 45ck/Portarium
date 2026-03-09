@@ -373,5 +373,22 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
     return;
   }
 
+  // Broadcast approval decision to SSE event stream for real-time push
+  if (deps.eventStream) {
+    const eventType =
+      decision === 'Approved'
+        ? 'com.portarium.approval.ApprovalGranted'
+        : decision === 'Denied'
+          ? 'com.portarium.approval.ApprovalDenied'
+          : 'com.portarium.approval.ApprovalChangesRequested';
+    deps.eventStream.publish({
+      type: eventType,
+      id: crypto.randomUUID(),
+      workspaceId,
+      time: new Date().toISOString(),
+      data: { ...result.value, approvalId, decision },
+    });
+  }
+
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
