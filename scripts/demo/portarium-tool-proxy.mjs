@@ -10,7 +10,8 @@
  *
  * When configured, the proxy delegates tool proposals to the real control plane
  * POST /v1/workspaces/:wsId/agent-actions:propose endpoint. Otherwise it uses
- * the local in-process ActionGatedToolInvoker + file-backed approval store.
+ * the local in-process ActionGatedToolInvoker + domain-layer approval commands
+ * (createApproval / submitApproval via InMemoryApprovalStore — ADR-0117 H9).
  *
  * Run standalone:  npm run demo:proxy  (or: tsx scripts/demo/portarium-tool-proxy.mjs)
  * Imported API:    const { url, close } = await startPolicyProxy(9999);
@@ -19,9 +20,6 @@
 import { createServer, request as httpRequest } from 'http';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
 import { parseArgs } from 'node:util';
 
 // ---------------------------------------------------------------------------
@@ -129,44 +127,81 @@ function proposeViaControlPlane(input) {
 }
 
 // ---------------------------------------------------------------------------
-// Approval store (file-backed — survives proxy restarts)
+// Domain-layer approval store (ADR-0117 H9 bridge)
 // ---------------------------------------------------------------------------
 
-const APPROVALS_DIR = join(tmpdir(), '.portarium-approvals');
-try {
-  mkdirSync(APPROVALS_DIR, { recursive: true });
-} catch {
-  /* already exists */
-}
-const APPROVALS_FILE = join(APPROVALS_DIR, 'pending.json');
-
-/** @typedef {{ toolName: string; parameters: unknown; status: 'pending'|'approved'|'denied'; createdAt: string; decidedAt?: string }} ApprovalRecord */
-/** @type {Map<string, ApprovalRecord>} */
-const approvals = new Map();
-
-function loadApprovals() {
-  try {
-    const raw = readFileSync(APPROVALS_FILE, 'utf8');
-    const entries = /** @type {[string, ApprovalRecord][]} */ (JSON.parse(raw));
-    for (const [id, record] of entries) {
-      approvals.set(id, record);
-    }
-  } catch {
-    /* file not yet written */
-  }
-}
-
-function saveApprovals() {
-  try {
-    writeFileSync(APPROVALS_FILE, JSON.stringify([...approvals.entries()], null, 2), 'utf8');
-  } catch {
-    /* non-fatal */
-  }
-}
-
-loadApprovals();
-
 // tsx resolves .js → .ts at runtime
+import { InMemoryApprovalStore } from '../../src/infrastructure/stores/in-memory-approval-store.js';
+import { createApproval } from '../../src/application/commands/create-approval.js';
+import { submitApproval } from '../../src/application/commands/submit-approval.js';
+import { toAppContext } from '../../src/application/common/context.js';
+import { TenantId, WorkspaceId, ApprovalId } from '../../src/domain/primitives/index.js';
+
+const approvalStore = new InMemoryApprovalStore();
+
+/** Side table: maps approvalId (string) → { toolName, parameters } for HTTP API compat. */
+/** @type {Map<string, { toolName: string; parameters: unknown }>} */
+const toolContextByApprovalId = new Map();
+
+const DEMO_TENANT_ID = 'ws-proxy-demo';
+const DEMO_WORKSPACE_ID = 'ws-proxy-demo';
+const AGENT_PRINCIPAL = 'user-proxy-agent';
+const HUMAN_PRINCIPAL = 'user-proxy-human';
+
+/** Build an AppContext for the agent (creates approvals). */
+function agentContext(correlationId = randomUUID()) {
+  return toAppContext({
+    tenantId: DEMO_TENANT_ID,
+    principalId: AGENT_PRINCIPAL,
+    correlationId,
+    roles: ['operator'],
+  });
+}
+
+/** Build an AppContext for the human operator (decides approvals). */
+function humanContext(correlationId = randomUUID()) {
+  return toAppContext({
+    tenantId: DEMO_TENANT_ID,
+    principalId: HUMAN_PRINCIPAL,
+    correlationId,
+    roles: ['approver'],
+  });
+}
+
+/** Lightweight deps shared by both createApproval and submitApproval. */
+function makeDomainDeps() {
+  return {
+    authorization: { isAllowed: async () => true },
+    clock: { nowIso: () => new Date().toISOString() },
+    idGenerator: { generateId: () => randomUUID() },
+    approvalStore,
+    unitOfWork: { execute: async (fn) => fn() },
+    eventPublisher: {
+      publish: async (event) => {
+        console.log(`[portarium-proxy] Domain event: ${event.type}`);
+      },
+    },
+  };
+}
+
+const domainDeps = makeDomainDeps();
+
+/** Map domain PascalCase status to the proxy's lowercase HTTP API. */
+function toLowerStatus(status) {
+  if (status === 'Pending') return 'pending';
+  if (status === 'Approved') return 'approved';
+  if (status === 'Denied') return 'denied';
+  if (status === 'RequestChanges') return 'denied';
+  return status.toLowerCase();
+}
+
+/** Map lowercase HTTP decision to domain PascalCase. */
+function toDomainDecision(decision) {
+  if (decision === 'approved') return 'Approved';
+  if (decision === 'denied') return 'Denied';
+  return decision;
+}
+
 import { classifyOpenClawToolBlastRadiusV1 } from '../../src/domain/machines/openclaw-tool-blast-radius-v1.js';
 import { ActionGatedToolInvoker } from '../../src/application/services/action-gated-tool-invoker.js';
 
@@ -288,11 +323,16 @@ async function handleRequest(req, res, port) {
 
   // GET /health
   if (req.method === 'GET' && url.pathname === '/health') {
+    const pendingPage = await approvalStore.listApprovals(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      { status: 'Pending' },
+    );
     jsonResponse(res, 200, {
       status: 'ok',
       service: 'portarium-policy-proxy',
       port,
-      pendingApprovals: [...approvals.values()].filter((a) => a.status === 'pending').length,
+      pendingApprovals: pendingPage.items.length,
     });
     return;
   }
@@ -300,22 +340,49 @@ async function handleRequest(req, res, port) {
   // GET /approvals — list approvals (optionally filtered by ?status=pending)
   if (req.method === 'GET' && url.pathname === '/approvals') {
     const statusFilter = url.searchParams.get('status');
-    const items = [];
-    for (const [id, record] of approvals) {
-      if (statusFilter && record.status !== statusFilter) continue;
-      items.push({ approvalId: id, ...record });
-    }
+    const domainStatus =
+      statusFilter === 'pending'
+        ? 'Pending'
+        : statusFilter === 'approved'
+          ? 'Approved'
+          : statusFilter === 'denied'
+            ? 'Denied'
+            : undefined;
+    const page = await approvalStore.listApprovals(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      { status: domainStatus },
+    );
+    const items = page.items.map((a) => {
+      const toolCtx = toolContextByApprovalId.get(String(a.approvalId)) ?? {};
+      return {
+        approvalId: String(a.approvalId),
+        toolName: toolCtx.toolName,
+        parameters: toolCtx.parameters,
+        status: toLowerStatus(a.status),
+        createdAt: a.requestedAtIso,
+        ...(a.status !== 'Pending' ? { decidedAt: a.decidedAtIso } : {}),
+      };
+    });
     jsonResponse(res, 200, { approvals: items, total: items.length });
     return;
   }
 
   // GET /approvals/ui — human-facing HTML page
   if (req.method === 'GET' && url.pathname === '/approvals/ui') {
-    const pending = [];
-    for (const [id, r] of approvals) {
-      if (r.status === 'pending')
-        pending.push({ id, toolName: r.toolName, createdAt: r.createdAt });
-    }
+    const pendingPage = await approvalStore.listApprovals(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      { status: 'Pending' },
+    );
+    const pending = pendingPage.items.map((a) => {
+      const toolCtx = toolContextByApprovalId.get(String(a.approvalId)) ?? {};
+      return {
+        id: String(a.approvalId),
+        toolName: toolCtx.toolName ?? '(unknown)',
+        createdAt: a.requestedAtIso,
+      };
+    });
     const rows = pending.length
       ? pending
           .map(
@@ -342,28 +409,31 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
   const pollMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})$/);
   if (req.method === 'GET' && pollMatch) {
     const id = /** @type {string} */ (pollMatch[1]);
-    const record = approvals.get(id);
-    if (!record) {
+    const approval = await approvalStore.getApprovalById(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      ApprovalId(id),
+    );
+    if (!approval) {
       jsonResponse(res, 404, { error: `Approval ${id} not found` });
       return;
     }
-    jsonResponse(res, 200, { approvalId: id, ...record });
+    const toolCtx = toolContextByApprovalId.get(id) ?? {};
+    jsonResponse(res, 200, {
+      approvalId: id,
+      toolName: toolCtx.toolName,
+      parameters: toolCtx.parameters,
+      status: toLowerStatus(approval.status),
+      createdAt: approval.requestedAtIso,
+      ...(approval.status !== 'Pending' ? { decidedAt: approval.decidedAtIso } : {}),
+    });
     return;
   }
 
-  // POST /approvals/:id/decide — submit human decision
+  // POST /approvals/:id/decide — submit human decision (via domain submitApproval command)
   const decideMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})\/decide$/);
   if (req.method === 'POST' && decideMatch) {
     const id = /** @type {string} */ (decideMatch[1]);
-    const record = approvals.get(id);
-    if (!record) {
-      jsonResponse(res, 404, { error: `Approval ${id} not found` });
-      return;
-    }
-    if (record.status !== 'pending') {
-      jsonResponse(res, 409, { error: `Approval ${id} already decided: ${record.status}` });
-      return;
-    }
     let body;
     try {
       body = /** @type {any} */ (await readJsonBody(req));
@@ -376,11 +446,25 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
       jsonResponse(res, 400, { error: 'decision must be "approved" or "denied"' });
       return;
     }
-    record.status = decision;
-    record.decidedAt = new Date().toISOString();
-    saveApprovals();
-    console.log(`[portarium-proxy] Approval ${id.slice(0, 8)}… → ${decision} (${record.toolName})`);
-    jsonResponse(res, 200, { approvalId: id, status: record.status, decidedAt: record.decidedAt });
+    const ctx = humanContext();
+    const result = await submitApproval(domainDeps, ctx, {
+      workspaceId: DEMO_WORKSPACE_ID,
+      approvalId: id,
+      decision: toDomainDecision(decision),
+      rationale: `Human decision via proxy: ${decision}`,
+    });
+    if (!result.ok) {
+      const errorKind = result.error.kind;
+      const statusCode = errorKind === 'NotFound' ? 404 : errorKind === 'Conflict' ? 409 : 400;
+      jsonResponse(res, statusCode, { error: result.error.message });
+      return;
+    }
+    const toolCtx = toolContextByApprovalId.get(id);
+    const decidedAt = new Date().toISOString();
+    console.log(
+      `[portarium-proxy] Approval ${id.slice(0, 8)}… → ${decision} (${toolCtx?.toolName ?? 'unknown'})`,
+    );
+    jsonResponse(res, 200, { approvalId: id, status: decision, decidedAt });
     return;
   }
 
@@ -451,15 +535,16 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
         }
 
         if (decision === 'NeedsApproval') {
-          // Mirror the approval into the local store so the proxy's poll endpoint works
+          // Mirror the approval into the local domain store so the proxy's poll endpoint works
           const cpApprovalId = cpBody.approvalId;
-          approvals.set(cpApprovalId, {
-            toolName,
-            parameters,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
+          const mirrorCtx = agentContext();
+          await createApproval(domainDeps, mirrorCtx, {
+            workspaceId: DEMO_WORKSPACE_ID,
+            runId: `run-cp-${Date.now()}`,
+            planId: `plan-cp-${Date.now()}`,
+            prompt: `[control-plane] Tool "${toolName}" requires approval.`,
           });
-          saveApprovals();
+          toolContextByApprovalId.set(cpApprovalId, { toolName, parameters });
           console.log(
             `[portarium-proxy] CONTROL-PLANE: "${toolName}" needs approval → ${cpApprovalId.slice(0, 8)}...`,
           );
@@ -513,8 +598,17 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
 
     // Pre-approved re-invoke: agent is re-invoking after human approved
     if (preApprovalId) {
-      const approval = approvals.get(preApprovalId);
-      if (approval && approval.status === 'approved' && approval.toolName === toolName) {
+      const existingApproval = await approvalStore.getApprovalById(
+        TenantId(DEMO_TENANT_ID),
+        WorkspaceId(DEMO_WORKSPACE_ID),
+        ApprovalId(preApprovalId),
+      );
+      const toolCtx = toolContextByApprovalId.get(preApprovalId);
+      if (
+        existingApproval &&
+        existingApproval.status === 'Approved' &&
+        toolCtx?.toolName === toolName
+      ) {
         const mockResult = await mockMachineInvoker.invokeTool({
           toolName,
           parameters,
@@ -535,15 +629,21 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
     }
 
     if (!result.proposed) {
-      // Tool is blocked — create an approval request instead of denying immediately
-      const approvalId = randomUUID();
-      approvals.set(approvalId, {
-        toolName,
-        parameters,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
+      // Tool is blocked — create a domain approval via createApproval command
+      const ctx = agentContext();
+      const createResult = await createApproval(domainDeps, ctx, {
+        workspaceId: DEMO_WORKSPACE_ID,
+        runId: `run-${Date.now()}`,
+        planId: `plan-${Date.now()}`,
+        prompt: `Tool "${toolName}" invocation requires approval (min-tier: ${policy.minimumTier}).`,
       });
-      saveApprovals();
+      if (!createResult.ok) {
+        console.error('[portarium-proxy] createApproval failed:', createResult.error);
+        jsonResponse(res, 500, { error: 'Failed to create approval request' });
+        return;
+      }
+      const approvalId = String(createResult.value.approvalId);
+      toolContextByApprovalId.set(approvalId, { toolName, parameters });
       console.log(
         `[portarium-proxy] BLOCKED: "${toolName}" (min-tier: ${policy.minimumTier}) → approval ${approvalId.slice(0, 8)}...`,
       );
