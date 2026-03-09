@@ -100,6 +100,9 @@ function validateInput(input: CreateApprovalInput): Err<CreateApprovalError> | n
     if (typeof input.dueAtIso !== 'string' || input.dueAtIso.trim() === '') {
       return err({ kind: 'ValidationFailed', message: 'dueAtIso must be a non-empty string.' });
     }
+    if (Number.isNaN(Date.parse(input.dueAtIso))) {
+      return err({ kind: 'ValidationFailed', message: 'dueAtIso must be a valid ISO 8601 date.' });
+    }
   }
   if (input.escalationChain !== undefined) {
     if (!Array.isArray(input.escalationChain)) {

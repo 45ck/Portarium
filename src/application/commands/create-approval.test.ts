@@ -215,6 +215,24 @@ describe('createApproval', () => {
     expect(result.error.message).toMatch(/assigneeUserId/i);
   });
 
+  it('rejects invalid dueAtIso date format', async () => {
+    const result = await createApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      { ...VALID_INPUT, dueAtIso: 'not-a-date' },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected validation error.');
+    expect(result.error.kind).toBe('ValidationFailed');
+    expect(result.error.message).toMatch(/dueAtIso/i);
+  });
+
   it('rejects invalid escalationChain step', async () => {
     const result = await createApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
