@@ -198,7 +198,11 @@
     "lab:approval": "tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:claude": "PORTARIUM_LAB_PROVIDER=claude tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:openai": "PORTARIUM_LAB_PROVIDER=openai tsx scripts/lab/approval-lifecycle-lab.mjs",
-    "lab:approval:gemini": "PORTARIUM_LAB_PROVIDER=gemini tsx scripts/lab/approval-lifecycle-lab.mjs"
+    "lab:approval:gemini": "PORTARIUM_LAB_PROVIDER=gemini tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "release:collect-changelog": "node scripts/release/collect-changelog.mjs",
+    "release:collect-changelog:json": "node scripts/release/collect-changelog.mjs --json",
+    "release:prepare": "node scripts/release/prepare-release.mjs",
+    "release:prepare:dry-run": "node scripts/release/prepare-release.mjs --dry-run"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
