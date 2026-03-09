@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 23,
+  "operationCount": 24,
   "operations": [
     {
       "kind": "command",
@@ -40,6 +40,26 @@
         "error": {
           "name": "StartWorkflowError",
           "sha256": "481b33f0a8f2266663c9dba5c38869a6d1ae68e0595c85efba0c370fb93775da"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "createApproval",
+      "sourcePath": "src/application/commands/create-approval.ts",
+      "action": "approval:create",
+      "types": {
+        "input": {
+          "name": "CreateApprovalInput",
+          "sha256": "0432814f1389e009bb633f21cbdaf01ae8957afda952d610bc8fbe8c45f28788"
+        },
+        "output": {
+          "name": "CreateApprovalOutput",
+          "sha256": "f6dab778e8c2f0cb124e5e7a60d57c71baa81825a1a8601a6d01455981601940"
+        },
+        "error": {
+          "name": "CreateApprovalError",
+          "sha256": "399c1033add25884a727328339b857536d290e7e4f451423d2d0c0659e6b4f72"
         }
       }
     },

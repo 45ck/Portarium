@@ -7,6 +7,7 @@ describe('APP_ACTIONS contract', () => {
     const values = Object.values(APP_ACTIONS);
 
     expect(values).toEqual([
+      'approval:create',
       'approval:read',
       'approval:submit',
       'run:read',

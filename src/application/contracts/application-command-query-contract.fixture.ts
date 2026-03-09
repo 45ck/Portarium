@@ -1,6 +1,7 @@
 export type OperationKind = 'command' | 'query';
 
 export type ActionKey =
+  | 'approvalCreate'
   | 'approvalRead'
   | 'approvalSubmit'
   | 'runRead'
@@ -54,6 +55,17 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'StartWorkflowInput',
       output: 'StartWorkflowOutput',
       error: 'StartWorkflowError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'createApproval',
+    sourcePath: 'src/application/commands/create-approval.ts',
+    actionKey: 'approvalCreate',
+    types: {
+      input: 'CreateApprovalInput',
+      output: 'CreateApprovalOutput',
+      error: 'CreateApprovalError',
     },
   },
   {

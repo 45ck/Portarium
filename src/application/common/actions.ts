@@ -1,4 +1,5 @@
 export const APP_ACTIONS = {
+  approvalCreate: 'approval:create',
   approvalRead: 'approval:read',
   approvalSubmit: 'approval:submit',
   runRead: 'run:read',
