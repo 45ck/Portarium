@@ -234,6 +234,25 @@ describe('readiness computation', () => {
     expect(ctx.readiness.blockingReasons).toContainEqual(expect.stringContaining('drifted'));
   });
 
+  it('canDecide is false when snapshot has drifted (bead-0917)', () => {
+    const ctx = assembleApprovalContext({
+      ...baseInput,
+      lifecycleStatus: 'UnderReview',
+      snapshotVerification: driftedSnapshot,
+    });
+    expect(ctx.readiness.canDecide).toBe(false);
+    expect(ctx.readiness.blockingReasons).toContainEqual(expect.stringContaining('drifted'));
+  });
+
+  it('canDecide remains true when snapshot is verified (no drift regression)', () => {
+    const ctx = assembleApprovalContext({
+      ...baseInput,
+      lifecycleStatus: 'UnderReview',
+      snapshotVerification: verifiedSnapshot,
+    });
+    expect(ctx.readiness.canDecide).toBe(true);
+  });
+
   it('snapshotVerified is false when no snapshot provided', () => {
     const ctx = assembleApprovalContext(baseInput);
     expect(ctx.readiness.snapshotVerified).toBe(false);
