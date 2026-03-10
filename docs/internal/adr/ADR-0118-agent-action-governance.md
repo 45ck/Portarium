@@ -137,7 +137,7 @@ Agent/Operator → ExecuteApprovedAgentAction command
 ### Risks
 
 - Pattern-based classification may not capture all dangerous tools; teams should review Unknown classifications and add patterns as needed.
-- Idempotency deduplication (bead-0879) is not yet implemented; duplicate proposals may create duplicate approvals.
+- Idempotency deduplication is implemented (bead-0909): a partial UNIQUE index on `(tenant_id, workspace_id, idempotency_key)` prevents concurrent duplicate proposals at the database level, and the in-memory store enforces first-writer-wins semantics. The application layer re-checks the store after save to handle race losers gracefully.
 
 ---
 

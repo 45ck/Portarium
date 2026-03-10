@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parsePolicyV1, type PolicyV1 } from '../../domain/policy/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
+  AgentActionProposalStore,
   ApprovalStore,
   AuthorizationPort,
   Clock,
@@ -12,6 +13,8 @@ import type {
   PolicyStore,
   UnitOfWork,
 } from '../ports/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
+import type { TenantId } from '../../domain/primitives/index.js';
 import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
 import { proposeAgentAction } from './propose-agent-action.js';
 
@@ -391,6 +394,175 @@ describe('proposeAgentAction', () => {
     expect(second.ok).toBe(true);
     if (!first.ok || !second.ok) throw new Error('Expected success.');
     // Without store, both calls evaluate fresh — different proposalIds
+    expect(first.value.proposalId).not.toBe(second.value.proposalId);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Auto-generated idempotency key (bead-0909)
+  // -------------------------------------------------------------------------
+
+  it('auto-generates idempotency key and deduplicates identical proposals', async () => {
+    const proposalStore = new InMemoryAgentActionProposalStore();
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    // No idempotencyKey provided — auto-generation kicks in
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Agent needs to read recent emails.',
+    };
+
+    const first = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error('Expected success.');
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+
+    // Second call with identical input — should be deduplicated via auto-key
+    const second = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected success.');
+    expect(second.value.proposalId).toBe(first.value.proposalId);
+    // Evidence should NOT be appended again
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('auto-generated key differs when parameters differ', async () => {
+    const proposalStore = new InMemoryAgentActionProposalStore();
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    const baseInput = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Read emails.',
+    };
+
+    const first = await proposeAgentAction(depsWithStore(), ctx(), {
+      ...baseInput,
+      parameters: { folder: 'inbox' },
+    });
+    const second = await proposeAgentAction(depsWithStore(), ctx(), {
+      ...baseInput,
+      parameters: { folder: 'sent' },
+    });
+
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) throw new Error('Expected success.');
+    expect(first.value.proposalId).not.toBe(second.value.proposalId);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
+  });
+
+  it('expired idempotency key allows re-proposal', async () => {
+    let nowMs = 1000000;
+    const proposalStore = new InMemoryAgentActionProposalStore({
+      idempotencyTtlMs: 60_000, // 1 minute TTL for testing
+      now: () => nowMs,
+    });
+    const depsWithStore = () => ({ ...deps(), proposalStore });
+
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Read emails.',
+      idempotencyKey: 'ttl-test-key',
+    };
+
+    const first = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error('Expected success.');
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+
+    // Advance time past TTL
+    nowMs += 120_000; // 2 minutes later
+
+    // Same idempotencyKey but expired — should create a new proposal
+    const second = await proposeAgentAction(depsWithStore(), ctx(), input);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected success.');
+    expect(second.value.proposalId).not.toBe(first.value.proposalId);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
+  });
+
+  it('concurrent proposals with same idempotencyKey produce same result', async () => {
+    // Simulate a slow store where saveProposal takes time, creating a race window.
+    // Both calls pass the initial getProposalByIdempotencyKey check (returns null),
+    // but only one should win the write. The loser should fall back to the winner's output.
+    let saveCount = 0;
+    const innerStore = new InMemoryAgentActionProposalStore();
+
+    const slowStore: AgentActionProposalStore = {
+      getProposalById: (...args) => innerStore.getProposalById(...args),
+      getProposalByApprovalId: (...args) => innerStore.getProposalByApprovalId(...args),
+      getProposalByIdempotencyKey: (...args) => innerStore.getProposalByIdempotencyKey(...args),
+      saveProposal: async (tenantId: TenantId, proposal: AgentActionProposalV1) => {
+        saveCount++;
+        // Simulate delay on the first save to widen the race window
+        if (saveCount === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+        await innerStore.saveProposal(tenantId, proposal);
+      },
+    };
+
+    const depsWithSlowStore = () => ({ ...deps(), proposalStore: slowStore });
+
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'Concurrent race test.',
+      idempotencyKey: 'race-key-1',
+    };
+
+    // Fire two concurrent proposals with the same idempotencyKey
+    const [r1, r2] = await Promise.all([
+      proposeAgentAction(depsWithSlowStore(), ctx(), input),
+      proposeAgentAction(depsWithSlowStore(), ctx(), input),
+    ]);
+
+    expect(r1.ok).toBe(true);
+    expect(r2.ok).toBe(true);
+    if (!r1.ok || !r2.ok) throw new Error('Expected success.');
+
+    // Both results must agree on the same proposalId (the winner's)
+    expect(r1.value.proposalId).toBe(r2.value.proposalId);
+    expect(r1.value.decision).toBe(r2.value.decision);
+  });
+
+  it('proposals without idempotencyKey are not deduplicated when no store is provided', async () => {
+    const input = {
+      workspaceId: 'ws-1',
+      agentId: 'agent-email-reader',
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto' as const,
+      policyIds: ['pol-1'],
+      rationale: 'No dedup without store.',
+    };
+
+    // No proposalStore in deps — each call creates a fresh proposal
+    const first = await proposeAgentAction(deps(), ctx(), input);
+    const second = await proposeAgentAction(deps(), ctx(), input);
+
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) throw new Error('Expected success.');
     expect(first.value.proposalId).not.toBe(second.value.proposalId);
     expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(2);
   });

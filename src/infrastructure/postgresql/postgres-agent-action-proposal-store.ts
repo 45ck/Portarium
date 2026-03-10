@@ -32,6 +32,16 @@ interface AgentActionProposalRow extends Record<string, unknown> {
 // PostgresAgentActionProposalStore
 // ---------------------------------------------------------------------------
 
+// PostgreSQL unique_violation error code (Class 23 — Integrity Constraint Violation).
+const PG_UNIQUE_VIOLATION = '23505';
+
+function isUniqueViolation(error: unknown): boolean {
+  if (error !== null && typeof error === 'object' && 'code' in error) {
+    return (error as { code: unknown }).code === PG_UNIQUE_VIOLATION;
+  }
+  return false;
+}
+
 export class PostgresAgentActionProposalStore implements AgentActionProposalStore {
   readonly #client: SqlClient;
 
@@ -105,23 +115,31 @@ export class PostgresAgentActionProposalStore implements AgentActionProposalStor
   // -------------------------------------------------------------------------
 
   public async saveProposal(tenantId: TenantId, proposal: AgentActionProposalV1): Promise<void> {
-    await this.#client.query(
-      `INSERT INTO agent_action_proposals
-         (tenant_id, proposal_id, workspace_id, payload, idempotency_key, updated_at)
-       VALUES ($1, $2, $3, $4::jsonb, $5, NOW())
-       ON CONFLICT (tenant_id, proposal_id)
-       DO UPDATE SET
-         workspace_id    = EXCLUDED.workspace_id,
-         payload         = EXCLUDED.payload,
-         idempotency_key = EXCLUDED.idempotency_key,
-         updated_at      = NOW()`,
-      [
-        String(tenantId),
-        String(proposal.proposalId),
-        String(proposal.workspaceId),
-        JSON.stringify(proposal),
-        proposal.idempotencyKey ?? null,
-      ],
-    );
+    try {
+      await this.#client.query(
+        `INSERT INTO agent_action_proposals
+           (tenant_id, proposal_id, workspace_id, payload, idempotency_key, updated_at)
+         VALUES ($1, $2, $3, $4::jsonb, $5, NOW())
+         ON CONFLICT (tenant_id, proposal_id)
+         DO UPDATE SET
+           workspace_id    = EXCLUDED.workspace_id,
+           payload         = EXCLUDED.payload,
+           idempotency_key = EXCLUDED.idempotency_key,
+           updated_at      = NOW()`,
+        [
+          String(tenantId),
+          String(proposal.proposalId),
+          String(proposal.workspaceId),
+          JSON.stringify(proposal),
+          proposal.idempotencyKey ?? null,
+        ],
+      );
+    } catch (error: unknown) {
+      // If the unique constraint on (tenant_id, workspace_id, idempotency_key)
+      // fires, another concurrent request already persisted a proposal with the
+      // same idempotency key. Silently ignore — the first writer wins.
+      if (isUniqueViolation(error)) return;
+      throw error;
+    }
   }
 }

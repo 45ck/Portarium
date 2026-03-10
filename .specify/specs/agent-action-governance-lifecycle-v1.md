@@ -194,3 +194,27 @@ Aggregate in `src/domain/machines/`:
 
 - `getProposalById(tenantId, proposalId)`: returns `AgentActionProposalV1 | null`
 - `saveProposal(tenantId, proposal)`: persists or upserts the proposal
+
+## Idempotency Semantics
+
+Proposal deduplication prevents duplicate approvals and evidence entries when the same agent action is proposed multiple times (e.g., retries, network duplicates, concurrent requests).
+
+### Deduplication Key
+
+Each proposal may carry an optional `idempotencyKey`. When provided, the key is scoped to `(tenantId, workspaceId)` -- the same key in different workspaces creates independent proposals.
+
+When the caller does not supply an `idempotencyKey`, the system auto-generates one from a SHA-256 hash of `workspaceId + agentId + actionKind + toolName + canonicalParameters`. This ensures that structurally identical proposals are automatically deduplicated.
+
+### Uniqueness Enforcement
+
+- **Database layer**: A partial UNIQUE index `uk_agent_action_proposals_idempotency` on `(tenant_id, workspace_id, idempotency_key) WHERE idempotency_key IS NOT NULL` prevents concurrent inserts from creating duplicate rows.
+- **In-memory store**: First-writer-wins semantics -- if a proposal with the same idempotency key already exists for the workspace, the duplicate is silently discarded.
+- **Application layer**: After persisting a proposal, the command re-reads the store to detect race losers. If a different proposal won the write, the loser returns the winner's output, ensuring both concurrent callers receive the same `proposalId` and `approvalId`.
+
+### Behaviour Guarantees
+
+1. **At-most-once evaluation**: For a given idempotency key within a workspace, policy evaluation and evidence recording happen exactly once (the first call). Subsequent calls return the cached result.
+2. **Consistent output**: All callers with the same idempotency key receive the same `proposalId`, `decision`, and `approvalId` (if applicable).
+3. **TTL expiry**: In-memory idempotency entries expire after 24 hours (configurable). After expiry, the same key creates a new proposal.
+4. **No cross-workspace leakage**: The same idempotency key in different workspaces creates independent proposals.
+5. **Null keys are not deduplicated**: Proposals without an `idempotencyKey` (and without a `proposalStore`) are always treated as distinct.
