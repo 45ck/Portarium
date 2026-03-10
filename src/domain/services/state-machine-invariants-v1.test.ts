@@ -225,9 +225,9 @@ describe('assertValidRunStatusTransition — error semantics', () => {
 // ---------------------------------------------------------------------------
 
 /**
- * The approval state machine has Pending and RequestChanges as non-terminal states;
- * Approved, Denied, and Expired are terminal.  RequestChanges can transition back
- * to Pending (re-open path), matching the extended lifecycle model.
+ * The approval state machine has Pending, Approved, and RequestChanges as non-terminal states;
+ * Denied, Executed, and Expired are terminal. Approved transitions to Executed after
+ * successful dispatch (re-execution guard). RequestChanges can transition back to Pending.
  *
  * Uses the canonical implementation from approval-status-transitions.ts.
  */
@@ -242,9 +242,10 @@ const ALL_APPROVAL_PAIRS: readonly (readonly [ApprovalStatus, ApprovalStatus])[]
   APPROVAL_STATUSES.flatMap((from) => APPROVAL_STATUSES.map((to) => [from, to] as const));
 
 describe('Approval state machine — structural invariants', () => {
-  it('Pending and RequestChanges have outgoing transitions; terminal states do not', () => {
+  it('Pending, Approved, and RequestChanges have outgoing transitions; terminal states do not', () => {
     for (const status of APPROVAL_STATUSES) {
-      if (status === 'Pending' || status === 'RequestChanges') {
+      if (status === 'Pending' || status === 'RequestChanges' || status === 'Approved') {
+        // Pending → {Approved,Denied,Expired,RequestChanges}; Approved → {Executed}; RequestChanges → {Pending}
         expect(APPROVAL_STATUS_TRANSITIONS[status].length).toBeGreaterThan(0);
       } else {
         expect(APPROVAL_STATUS_TRANSITIONS[status]).toHaveLength(0);

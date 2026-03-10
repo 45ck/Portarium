@@ -32,12 +32,13 @@ const ALL_STATUSES: readonly ApprovalStatus[] = [
   'Pending',
   'Approved',
   'Denied',
+  'Executed',
   'Expired',
   'RequestChanges',
 ];
 
-const TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Approved', 'Denied', 'Expired'];
-const NON_TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Pending', 'RequestChanges'];
+const TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Denied', 'Executed', 'Expired'];
+const NON_TERMINAL_STATUSES: readonly ApprovalStatus[] = ['Pending', 'Approved', 'RequestChanges'];
 
 // ---------------------------------------------------------------------------
 // Valid transitions (exhaustive matrix)
@@ -145,12 +146,13 @@ describe('terminalApprovalStatuses()', () => {
     expect(terminalApprovalStatuses()).toEqual(TERMINAL_APPROVAL_STATUSES);
   });
 
-  it('contains exactly Approved, Denied, Expired', () => {
+  it('contains exactly Denied, Executed, Expired (Approved is non-terminal: Approved→Executed)', () => {
     const terminals = terminalApprovalStatuses();
     expect(terminals).toHaveLength(3);
-    expect(terminals).toContain('Approved');
     expect(terminals).toContain('Denied');
+    expect(terminals).toContain('Executed');
     expect(terminals).toContain('Expired');
+    expect(terminals).not.toContain('Approved');
     expect(terminals).not.toContain('RequestChanges');
   });
 });
@@ -178,13 +180,18 @@ describe('APPROVAL_STATUS_TRANSITIONS table', () => {
     expect(APPROVAL_STATUS_TRANSITIONS[status]).toHaveLength(0);
   });
 
+  it('Approved has exactly one successor (Executed) — post-execution terminal', () => {
+    expect(APPROVAL_STATUS_TRANSITIONS.Approved).toHaveLength(1);
+    expect(APPROVAL_STATUS_TRANSITIONS.Approved).toContain('Executed');
+  });
+
   it('RequestChanges has exactly one successor (Pending) — re-open path', () => {
     expect(APPROVAL_STATUS_TRANSITIONS.RequestChanges).toHaveLength(1);
     expect(APPROVAL_STATUS_TRANSITIONS.RequestChanges).toContain('Pending');
   });
 
   it('all listed successors are valid ApprovalStatus values', () => {
-    for (const [, successors] of Object.entries(APPROVAL_STATUS_TRANSITIONS)) {
+    for (const [, successors] of Object.entries(APPROVAL_STATUS_TRANSITIONS) as [string, readonly string[]][]) {
       for (const successor of successors) {
         expect(ALL_STATUSES).toContain(successor);
       }
@@ -225,14 +232,14 @@ describe('structural invariants', () => {
     expect(isValidApprovalStatusTransition('RequestChanges', 'Pending')).toBe(true);
   });
 
-  it('total valid transitions == 5 (Pending→{Approved,Denied,Expired,RequestChanges} + RequestChanges→Pending)', () => {
+  it('total valid transitions == 6 (Pending→{Approved,Denied,Expired,RequestChanges} + Approved→Executed + RequestChanges→Pending)', () => {
     let count = 0;
     for (const from of ALL_STATUSES) {
       for (const to of ALL_STATUSES) {
         if (isValidApprovalStatusTransition(from, to)) count++;
       }
     }
-    expect(count).toBe(5);
+    expect(count).toBe(6);
   });
 });
 

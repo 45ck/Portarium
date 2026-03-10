@@ -1,4 +1,3 @@
-import type { ApprovalDecision } from '../primitives/index.js';
 import type { ApprovalStatus } from '../approvals/approval-v1.js';
 
 // ---------------------------------------------------------------------------
@@ -13,8 +12,8 @@ import type { ApprovalStatus } from '../approvals/approval-v1.js';
  * terminal decision state.  Decision states are final; there is no re-opening.
  */
 export interface ApprovalStatusTransitionMap {
-  Pending: ApprovalDecision;
-  Approved: never;
+  Pending: 'Approved' | 'Denied' | 'Expired' | 'RequestChanges';
+  Approved: 'Executed';
   Denied: never;
   Executed: never;
   Expired: never;
@@ -39,7 +38,7 @@ export type ValidApprovalStatusTransition<From extends ApprovalStatus = Approval
 export const APPROVAL_STATUS_TRANSITIONS: Readonly<
   Record<ApprovalStatus, readonly ApprovalStatus[]>
 > = {
-  Pending: ['Approved', 'Denied', 'Executed', 'Expired', 'RequestChanges'],
+  Pending: ['Approved', 'Denied', 'Expired', 'RequestChanges'],
   Approved: ['Executed'],
   Denied: [],
   Executed: [],
@@ -48,7 +47,6 @@ export const APPROVAL_STATUS_TRANSITIONS: Readonly<
 } as const;
 
 export const TERMINAL_APPROVAL_STATUSES: readonly ApprovalStatus[] = [
-  'Approved',
   'Denied',
   'Executed',
   'Expired',
