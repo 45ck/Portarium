@@ -205,17 +205,12 @@ describe('createApprovalExpiryScheduler', () => {
     // Capture the correlationId passed to sweepExpiredApprovals via
     // the idGenerator — a simpler proxy: verify that two consecutive
     // sweeps each produce a unique, non-numeric correlation suffix.
-    const seenCorrelationIds = new Set<string>();
     const deps = makeDeps([]);
-    const originalListApprovals = deps.approvalQueryStore.listApprovals as ReturnType<
-      typeof vi.fn
-    >;
-    originalListApprovals.mockImplementation(async (_tenantId, _workspaceId) => {
-      // We intercept at the listApprovals level which is called once per sweep.
-      // The correlationId is threaded through but not accessible here.
-      // Instead, verify via idGenerator that we get unique IDs.
-      return { items: [] };
-    });
+    const originalListApprovals = deps.approvalQueryStore.listApprovals as ReturnType<typeof vi.fn>;
+    // We intercept at the listApprovals level which is called once per sweep.
+    // The correlationId is threaded through but not accessible here.
+    // Instead, verify via idGenerator that we get unique IDs.
+    originalListApprovals.mockResolvedValue({ items: [] });
 
     const idGenerator = {
       generateId: vi.fn(() => {
@@ -244,8 +239,7 @@ describe('createApprovalExpiryScheduler', () => {
   it('correlation ID suffix matches UUID v4 format', () => {
     // Verify that Node.js crypto.randomUUID produces RFC 4122 v4 UUIDs.
     const id = randomUUID();
-    const UUID_RE =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     expect(UUID_RE.test(id)).toBe(true);
   });
 

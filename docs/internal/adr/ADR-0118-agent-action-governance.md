@@ -114,20 +114,20 @@ Pending → RequestChanges → Pending  (re-opens for revision)
 
 ### Component Map
 
-| Component                            | Layer          | Responsibility                                          |
-| ------------------------------------ | -------------- | ------------------------------------------------------- |
-| `AgentActionProposalV1`              | Domain         | Typed proposal aggregate with parser                    |
-| `ProposalId`                         | Domain         | Branded primitive for proposal identity                 |
-| `classifyOpenClawToolBlastRadiusV1`  | Domain         | Tool risk classification by name patterns               |
-| `ApprovalStatusTransitionMap`        | Domain         | Compile-time state machine (Pending/Approved/Executed/…)|
-| `APPROVAL_STATUS_TRANSITIONS`        | Domain         | Runtime transition table with re-execution guard        |
-| `proposeAgentAction`                 | Application    | Proposal evaluation command                             |
-| `submitApproval`                     | Application    | Approval decision with maker-checker                    |
-| `executeApprovedAgentAction`         | Application    | Post-approval dispatch + Executed transition            |
-| `AgentActionProposalStore`           | Application    | Port for durable proposal persistence                   |
-| `MachineInvokerActionRunner`         | Infrastructure | ActionRunnerPort adapter via MachineInvokerPort         |
-| `InMemoryAgentActionProposalStore`   | Infrastructure | Test adapter for proposal store                         |
-| Approval CRUD endpoints              | Presentation   | HTTP routes for listing/viewing/deciding                |
+| Component                           | Layer          | Responsibility                                           |
+| ----------------------------------- | -------------- | -------------------------------------------------------- |
+| `AgentActionProposalV1`             | Domain         | Typed proposal aggregate with parser                     |
+| `ProposalId`                        | Domain         | Branded primitive for proposal identity                  |
+| `classifyOpenClawToolBlastRadiusV1` | Domain         | Tool risk classification by name patterns                |
+| `ApprovalStatusTransitionMap`       | Domain         | Compile-time state machine (Pending/Approved/Executed/…) |
+| `APPROVAL_STATUS_TRANSITIONS`       | Domain         | Runtime transition table with re-execution guard         |
+| `proposeAgentAction`                | Application    | Proposal evaluation command                              |
+| `submitApproval`                    | Application    | Approval decision with maker-checker                     |
+| `executeApprovedAgentAction`        | Application    | Post-approval dispatch + Executed transition             |
+| `AgentActionProposalStore`          | Application    | Port for durable proposal persistence                    |
+| `MachineInvokerActionRunner`        | Infrastructure | ActionRunnerPort adapter via MachineInvokerPort          |
+| `InMemoryAgentActionProposalStore`  | Infrastructure | Test adapter for proposal store                          |
+| Approval CRUD endpoints             | Presentation   | HTTP routes for listing/viewing/deciding                 |
 
 ### RBAC Matrix
 
