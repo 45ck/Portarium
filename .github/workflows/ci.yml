@@ -81,6 +81,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://portarium:portarium@localhost:5432/portarium
           PLAYWRIGHT_JSON_OUTPUT: playwright-results.json
+          CI_PERF_SKIP: true
         run: npm run ci:pr
 
       - name: Record Playwright flake rates

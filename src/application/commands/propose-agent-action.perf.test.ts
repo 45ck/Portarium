@@ -57,7 +57,7 @@ const CONCURRENCY = 50;
 function percentile(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0;
   const idx = Math.ceil((p / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, idx)]!;
+  return sorted[Math.max(0, Math.min(idx, sorted.length - 1))]!;
 }
 
 function measurePercentiles(durations: number[]): { p50: number; p95: number; p99: number } {

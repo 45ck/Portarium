@@ -13,7 +13,7 @@
  * can be excluded from standard CI runners where timing is unreliable.
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import type {
   ApprovalStore,
@@ -62,6 +62,13 @@ function computePercentiles(samples: number[]): {
 // ---------------------------------------------------------------------------
 
 let _counter = 0;
+const _store = new Map<string, object>();
+
+// Reset shared state before each test to prevent cross-test pollution.
+beforeEach(() => {
+  _counter = 0;
+  _store.clear();
+});
 
 function makeIdGenerator(): IdGenerator {
   return {
@@ -78,8 +85,6 @@ function makeClock(): Clock {
     },
   };
 }
-
-const _store = new Map<string, object>();
 
 function makeApprovalStore(): ApprovalStore {
   return {
