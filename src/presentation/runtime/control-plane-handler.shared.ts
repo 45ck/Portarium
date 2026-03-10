@@ -10,6 +10,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
+  ActionRunnerPort,
   AgentActionProposalStore,
   ApprovalQueryStore,
   ApprovalStore,
@@ -114,6 +115,8 @@ export type ControlPlaneDeps = Readonly<{
   evidenceLog?: EvidenceLogPort;
   /** Optional unit of work for transactional persistence. */
   unitOfWork?: UnitOfWork;
+  /** Optional action runner for executing approved agent actions. */
+  actionRunner?: ActionRunnerPort;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';
