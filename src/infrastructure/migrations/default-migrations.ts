@@ -363,4 +363,20 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
       'DROP TABLE IF EXISTS agent_action_proposals;',
     ],
   },
+  {
+    version: 16,
+    id: '0016_expand_agent_action_proposals_idempotency_unique',
+    description:
+      'Adds partial UNIQUE constraint on (tenant_id, workspace_id, idempotency_key) to prevent ' +
+      'duplicate proposals from concurrent requests with the same idempotency key (bead-0909).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE UNIQUE INDEX IF NOT EXISTS uk_agent_action_proposals_idempotency
+  ON agent_action_proposals (tenant_id, workspace_id, idempotency_key)
+  WHERE idempotency_key IS NOT NULL;`,
+    ],
+    downSql: ['DROP INDEX IF EXISTS uk_agent_action_proposals_idempotency;'],
+  },
 ];

@@ -39,6 +39,7 @@ import {
   type ProposeAgentActionOutput as ProposeAgentActionOutputFromHelpers,
   type ProposeAgentActionPolicyError,
   evaluateAgentActionGovernance,
+  generateIdempotencyKey,
   parseProposeAgentActionInput,
   toProposeAgentActionPolicyGateError,
 } from './propose-agent-action.helpers.js';
@@ -211,6 +212,31 @@ function proposalToOutput(proposal: AgentActionProposalV1): ProposeAgentActionOu
   };
 }
 
+/**
+ * After saveProposalRecord completes, if an idempotencyKey was in play, re-read
+ * the store to check whether a different proposal won the write (race loser
+ * scenario). If so, return the winning proposal's output so the caller always
+ * gets a consistent response.
+ */
+async function checkIdempotencyRaceWinner(
+  deps: ProposeAgentActionDeps,
+  ctx: AppContext,
+  parsedInput: ParsedProposeAgentActionInput,
+  ourProposalId: string,
+): Promise<ProposeAgentActionOutput | null> {
+  if (!parsedInput.idempotencyKey || !deps.proposalStore) return null;
+
+  const winner = await deps.proposalStore.getProposalByIdempotencyKey(
+    ctx.tenantId,
+    parsedInput.workspaceId,
+    parsedInput.idempotencyKey,
+  );
+  if (winner && String(winner.proposalId) !== ourProposalId) {
+    return proposalToOutput(winner);
+  }
+  return null;
+}
+
 export async function proposeAgentAction(
   deps: ProposeAgentActionDeps,
   ctx: AppContext,
@@ -239,28 +265,37 @@ export async function proposeAgentAction(
     });
   }
 
-  // Idempotency: if idempotencyKey is provided and a matching proposal exists,
+  // Auto-generate idempotency key when not provided by the caller.
+  // Uses hash(workspaceId + agentId + toolName + parameters) for deterministic dedup.
+  const effectiveIdempotencyKey =
+    parsedInput.value.idempotencyKey ??
+    (deps.proposalStore ? generateIdempotencyKey(parsedInput.value) : undefined);
+  const parsedWithKey: ParsedProposeAgentActionInput = effectiveIdempotencyKey
+    ? { ...parsedInput.value, idempotencyKey: effectiveIdempotencyKey }
+    : parsedInput.value;
+
+  // Idempotency: if idempotencyKey is available and a matching proposal exists,
   // return the existing result without re-evaluating policy or writing evidence.
-  if (parsedInput.value.idempotencyKey && deps.proposalStore) {
+  if (effectiveIdempotencyKey && deps.proposalStore) {
     const existing = await deps.proposalStore.getProposalByIdempotencyKey(
       ctx.tenantId,
-      parsedInput.value.workspaceId,
-      parsedInput.value.idempotencyKey,
+      parsedWithKey.workspaceId,
+      effectiveIdempotencyKey,
     );
     if (existing) {
       return ok(proposalToOutput(existing));
     }
   }
 
-  const policies = await loadPolicies(deps, ctx, parsedInput.value);
+  const policies = await loadPolicies(deps, ctx, parsedWithKey);
   if (!policies.ok) return policies;
 
   const evaluation = evaluateAgentActionGovernance({
     policies: policies.value,
-    input: parsedInput.value,
+    input: parsedWithKey,
   });
 
-  const auditResult = buildAuditArtifacts(deps, ctx, parsedInput.value, evaluation);
+  const auditResult = buildAuditArtifacts(deps, ctx, parsedWithKey, evaluation);
   if (!auditResult.ok) return auditResult;
   const persistResult = await persistAuditArtifacts(deps, ctx, auditResult.value);
   if (!persistResult.ok) return persistResult;
@@ -282,12 +317,12 @@ export async function proposeAgentAction(
     const approval: ApprovalPendingV1 = {
       schemaVersion: 1,
       approvalId: ApprovalId(approvalIdResult.value),
-      workspaceId: WorkspaceId(String(parsedInput.value.workspaceId)),
+      workspaceId: WorkspaceId(String(parsedWithKey.workspaceId)),
       runId: RunId(auditResult.value.proposalId),
       planId: PlanId(auditResult.value.proposalId),
-      prompt: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}. Rationale: ${parsedInput.value.rationale}`,
+      prompt: `Tool '${parsedWithKey.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}. Rationale: ${parsedWithKey.rationale}`,
       requestedAtIso: requestedAtResult.value,
-      requestedByUserId: parsedInput.value.requestedByUserId,
+      requestedByUserId: parsedWithKey.requestedByUserId,
       status: 'Pending',
     };
 
@@ -305,17 +340,28 @@ export async function proposeAgentAction(
       evidenceId: auditResult.value.evidenceId,
       decision: 'NeedsApproval',
       approvalId: approvalIdResult.value,
-      message: `Tool '${parsedInput.value.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
+      message: `Tool '${parsedWithKey.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
     };
 
     await saveProposalRecord(
       deps,
       ctx,
-      parsedInput.value,
+      parsedWithKey,
       evaluation,
       auditResult.value,
       approvalIdResult.value,
     );
+
+    // Race-condition guard: if another concurrent request with the same
+    // idempotencyKey won the write, return the winning proposal's output.
+    const raceWinnerApproval = await checkIdempotencyRaceWinner(
+      deps,
+      ctx,
+      parsedWithKey,
+      auditResult.value.proposalId,
+    );
+    if (raceWinnerApproval) return ok(raceWinnerApproval);
+
     return ok(needsApprovalOutput);
   }
 
@@ -325,7 +371,18 @@ export async function proposeAgentAction(
     decision: 'Allow',
   };
 
-  await saveProposalRecord(deps, ctx, parsedInput.value, evaluation, auditResult.value);
+  await saveProposalRecord(deps, ctx, parsedWithKey, evaluation, auditResult.value);
+
+  // Race-condition guard: if another concurrent request with the same
+  // idempotencyKey won the write, return the winning proposal's output.
+  const raceWinnerAllow = await checkIdempotencyRaceWinner(
+    deps,
+    ctx,
+    parsedWithKey,
+    auditResult.value.proposalId,
+  );
+  if (raceWinnerAllow) return ok(raceWinnerAllow);
+
   return ok(allowOutput);
 }
 

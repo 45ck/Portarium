@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import {
   PolicyId,
   UserId,
@@ -224,4 +226,43 @@ export function toProposeAgentActionPolicyGateError(params: {
   // NeedsApproval is not an error — it's a valid outcome that returns a proposal with an approval ID.
   // Allow is also not an error.
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Idempotency key generation
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives a deterministic idempotency key from the proposal's identity fields:
+ * workspaceId + agentId + toolName + canonical parameters JSON.
+ *
+ * This allows automatic deduplication even when callers do not provide an
+ * explicit idempotencyKey.
+ */
+export function generateIdempotencyKey(input: ParsedProposeAgentActionInput): string {
+  const parts = [
+    String(input.workspaceId),
+    input.agentId,
+    input.toolName,
+    input.parameters ? stableJsonStringify(input.parameters) : '',
+  ];
+  return `auto:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
+}
+
+/**
+ * Produces a deterministic JSON string by sorting object keys recursively.
+ * Ensures identical parameters always hash to the same key regardless of
+ * property insertion order.
+ */
+function stableJsonStringify(value: unknown): string {
+  if (value === null || value === undefined) return 'null';
+  if (typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return '[' + value.map(stableJsonStringify).join(',') + ']';
+  }
+  const keys = Object.keys(value as Record<string, unknown>).sort();
+  const entries = keys.map(
+    (k) => `${JSON.stringify(k)}:${stableJsonStringify((value as Record<string, unknown>)[k])}`,
+  );
+  return '{' + entries.join(',') + '}';
 }
