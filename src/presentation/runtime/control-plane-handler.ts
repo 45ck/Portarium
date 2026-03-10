@@ -74,6 +74,7 @@ import {
   handlePatchWorkforceAvailability,
 } from './control-plane-handler.workforce.js';
 import { handleProposeAgentAction } from './control-plane-handler.agent-actions.js';
+import { handleExecuteApprovedAgentAction } from './control-plane-handler.agent-action-execute.js';
 import {
   handleDecideApproval,
   handleGetApproval,
@@ -809,6 +810,20 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     await handleProposeAgentAction({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
+
+  // POST /v1/workspaces/:workspaceId/agent-actions/:approvalId/execute
+  app.post(
+    '/v1/workspaces/:workspaceId/agent-actions/:approvalId/execute',
+    async (c: Context<HonoEnv>) => {
+      const ctx = c.get('ctx');
+      await handleExecuteApprovedAgentAction({
+        ...ctx,
+        workspaceId: c.req.param('workspaceId'),
+        approvalId: c.req.param('approvalId'),
+      });
+      return c.body(null);
+    },
+  );
 
   // -------------------------------------------------------------------------
   // 404 — no route matched
