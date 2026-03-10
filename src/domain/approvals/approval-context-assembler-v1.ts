@@ -173,8 +173,12 @@ function computeReadiness(params: {
   // Check escalation
   const isEscalated = params.escalationEvaluation?.isEscalated ?? false;
 
+  // Snapshot drift is a hard blocker: the approver must not decide on stale content.
+  const hasDrift =
+    params.snapshotVerification !== null && params.snapshotVerification.status === 'drifted';
+
   // Overall decision: can decide if in decidable status and no hard blockers
-  const canDecide = inDecidableStatus && !policiesFail && !isExpired;
+  const canDecide = inDecidableStatus && !policiesFail && !isExpired && !hasDrift;
 
   return Object.freeze({
     canDecide,
