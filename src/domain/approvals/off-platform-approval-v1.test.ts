@@ -241,6 +241,38 @@ describe('validateTokenConsumption — success', () => {
 // ---------------------------------------------------------------------------
 
 describe('validateTokenConsumption — rejection', () => {
+  it('rejects Expired as a human-submitted decision (bead-0921)', () => {
+    const token = makeActiveToken();
+    const result = validateTokenConsumption(token, {
+      attemptedByUserId: USER_BOB,
+      attemptedAction: 'Expired',
+      currentPayloadHash: PAYLOAD_HASH,
+      nowIso: NOW,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe('invalid_decision');
+      expect(result.message).toContain('Expired');
+      expect(result.message).toContain('Approved, Denied, RequestChanges');
+    }
+  });
+
+  it('rejects Executed as a human-submitted decision (bead-0921)', () => {
+    const token = makeActiveToken();
+    const result = validateTokenConsumption(token, {
+      attemptedByUserId: USER_BOB,
+      attemptedAction: 'Executed',
+      currentPayloadHash: PAYLOAD_HASH,
+      nowIso: NOW,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe('invalid_decision');
+    }
+  });
+
   it('rejects consumed token', () => {
     const token = makeActiveToken({ status: 'consumed' });
     const result = validateTokenConsumption(token, {
