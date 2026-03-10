@@ -191,7 +191,9 @@ function parseOptionalId<T>(
 }
 
 function isApprovalDecision(value: string): value is ApprovalDecision {
-  return value === 'Approved' || value === 'Denied' || value === 'RequestChanges';
+  return (
+    value === 'Approved' || value === 'Denied' || value === 'Expired' || value === 'RequestChanges'
+  );
 }
 
 function isApprovalStatus(value: string): value is ApprovalStatus {

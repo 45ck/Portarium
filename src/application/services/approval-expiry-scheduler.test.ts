@@ -15,6 +15,7 @@ import type { IdGenerator } from '../ports/id-generator.js';
 import {
   evaluatePendingApprovals,
   resetSchedulerState,
+  getSchedulerStateSize,
   EXPIRY_GRACE_HOURS,
   type ApprovalExpirySchedulerDeps,
   type SchedulerContext,
@@ -250,5 +251,38 @@ describe('evaluatePendingApprovals — domain event shape', () => {
     expect(event.correlationId).toBe(ctx.correlationId);
     expect(typeof event.eventId).toBe('string');
     expect(event.occurredAtIso).toBe('2026-03-10T11:00:00.000Z');
+  });
+});
+
+describe('evaluatePendingApprovals — state cleanup', () => {
+  it('prunes state map entries when an approval is no longer pending', async () => {
+    const approval = makePendingApproval();
+    // First sweep at 3h => step 0 recorded in state map
+    const deps1 = makeDeps([approval], '2026-03-10T11:00:00.000Z');
+    await evaluatePendingApprovals(deps1, makeCtx());
+    expect(getSchedulerStateSize()).toBe(1);
+
+    // Second sweep: approval is no longer in the pending list (human approved it)
+    const deps2 = makeDeps([], '2026-03-10T12:00:00.000Z');
+    await evaluatePendingApprovals(deps2, makeCtx());
+    expect(getSchedulerStateSize()).toBe(0);
+  });
+
+  it('does not prune entries for a different workspace', async () => {
+    const approval = makePendingApproval();
+    // Sweep in ws-1 => step 0 recorded
+    const deps1 = makeDeps([approval], '2026-03-10T11:00:00.000Z');
+    await evaluatePendingApprovals(deps1, makeCtx());
+    expect(getSchedulerStateSize()).toBe(1);
+
+    // Sweep in ws-2 with no approvals should not prune ws-1 entry
+    const deps2 = makeDeps([], '2026-03-10T12:00:00.000Z');
+    const ctx2 = {
+      tenantId: WorkspaceId('ws-2'),
+      workspaceId: WorkspaceId('ws-2'),
+      correlationId: CorrelationId('corr-scheduler'),
+    };
+    await evaluatePendingApprovals(deps2, ctx2);
+    expect(getSchedulerStateSize()).toBe(1);
   });
 });

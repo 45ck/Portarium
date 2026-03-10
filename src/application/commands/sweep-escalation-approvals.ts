@@ -51,17 +51,37 @@ export interface SweepEscalationDeps {
   clock: Clock;
   idGenerator: IdGenerator;
   evidenceLog?: EvidenceLogPort;
+  /**
+   * Optional injected escalation audit state map. When provided, the command
+   * uses this map instead of the module-level default. This avoids shared
+   * mutable state across independent scheduler instances.
+   */
+  escalationAuditState?: Map<string, number>;
 }
 
 // ---------------------------------------------------------------------------
 // State tracking (avoids re-auditing the same escalation step)
 // ---------------------------------------------------------------------------
 
-const lastAuditedStepByApproval = new Map<string, number>();
+/**
+ * Default in-memory map of workspaceId:approvalId -> last audited escalation
+ * step index. Used as a fallback when no escalation audit state map is
+ * injected via `deps.escalationAuditState`.
+ */
+const defaultAuditState = new Map<string, number>();
 
-/** Reset tracked state -- useful for testing. */
-export function resetEscalationAuditState(): void {
-  lastAuditedStepByApproval.clear();
+/**
+ * Reset tracked state -- useful for testing.
+ * Clears both the default module-level map and, optionally, a caller-provided map.
+ */
+export function resetEscalationAuditState(injectedState?: Map<string, number>): void {
+  defaultAuditState.clear();
+  if (injectedState) injectedState.clear();
+}
+
+/** Return the number of tracked entries -- useful for testing cleanup. */
+export function getEscalationAuditStateSize(injectedState?: Map<string, number>): number {
+  return (injectedState ?? defaultAuditState).size;
 }
 
 // ---------------------------------------------------------------------------
@@ -75,6 +95,7 @@ export async function sweepEscalationApprovals(
   const workspaceId = input.workspaceId as WorkspaceIdType;
   const correlationId = input.correlationId as CorrelationIdType;
   const nowIso = deps.clock.nowIso();
+  const stateMap = deps.escalationAuditState ?? defaultAuditState;
 
   const page = await deps.approvalQueryStore.listApprovals(workspaceId, workspaceId, {
     status: 'Pending',
@@ -103,8 +124,21 @@ export async function sweepEscalationApprovals(
       workspaceId,
       correlationId,
       nowIso,
+      stateMap,
     );
     entries.push(...newEntries);
+  }
+
+  // Prune state map entries for approvals no longer pending (resolved by
+  // human decision or other means). This prevents unbounded memory growth.
+  const pendingKeys = new Set(
+    pendingApprovals.map((a) => `${String(workspaceId)}:${String(a.approvalId)}`),
+  );
+  const wsPrefix = `${String(workspaceId)}:`;
+  for (const key of stateMap.keys()) {
+    if (key.startsWith(wsPrefix) && !pendingKeys.has(key)) {
+      stateMap.delete(key);
+    }
   }
 
   return {
@@ -125,11 +159,12 @@ async function evaluateAndAudit(
   workspaceId: WorkspaceIdType,
   correlationId: CorrelationIdType,
   nowIso: string,
+  stateMap: Map<string, number>,
 ): Promise<EscalationAuditEntry[]> {
   if (!evaluation.isEscalated) return [];
 
-  const approvalKey = String(approval.approvalId);
-  const lastAudited = lastAuditedStepByApproval.get(approvalKey) ?? -1;
+  const approvalKey = `${String(workspaceId)}:${String(approval.approvalId)}`;
+  const lastAudited = stateMap.get(approvalKey) ?? -1;
 
   if (evaluation.activeStepIndex <= lastAudited) return [];
 
@@ -156,7 +191,7 @@ async function evaluateAndAudit(
     });
   }
 
-  lastAuditedStepByApproval.set(approvalKey, evaluation.activeStepIndex);
+  stateMap.set(approvalKey, evaluation.activeStepIndex);
 
   return [entry];
 }

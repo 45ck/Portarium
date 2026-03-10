@@ -195,6 +195,7 @@ async function saveProposalRecord(
     correlationId: CorrelationId(String(ctx.correlationId)),
     proposedAtIso: deps.clock.nowIso(),
     ...(parsedInput.idempotencyKey ? { idempotencyKey: parsedInput.idempotencyKey } : {}),
+    evidenceId: audit.evidenceId,
   };
   try {
     await deps.proposalStore.saveProposal(ctx.tenantId, proposal);
@@ -206,7 +207,9 @@ async function saveProposalRecord(
 function proposalToOutput(proposal: AgentActionProposalV1): ProposeAgentActionOutput {
   return {
     proposalId: String(proposal.proposalId),
-    evidenceId: EvidenceId(`idempotent-replay:${String(proposal.proposalId)}`),
+    evidenceId: proposal.evidenceId
+      ? EvidenceId(proposal.evidenceId)
+      : EvidenceId(`idempotent-replay:${String(proposal.proposalId)}`),
     decision: proposal.decision,
     ...(proposal.approvalId ? { approvalId: String(proposal.approvalId) } : {}),
   };

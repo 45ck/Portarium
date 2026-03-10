@@ -10,6 +10,9 @@ import type { AgentActionProposalStore } from '../../application/ports/agent-act
 /** Default idempotency key TTL: 24 hours in milliseconds. */
 const DEFAULT_IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 
+/** Run cleanup every N saveProposal calls. */
+const CLEANUP_INTERVAL = 100;
+
 export interface InMemoryAgentActionProposalStoreOptions {
   /** TTL for idempotency key entries in milliseconds. Defaults to 24h. */
   idempotencyTtlMs?: number;
@@ -23,6 +26,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
   readonly #idempotencyTimestamps = new Map<string, number>();
   readonly #idempotencyTtlMs: number;
   readonly #now: () => number;
+  #saveCount = 0;
 
   public constructor(options?: InMemoryAgentActionProposalStoreOptions) {
     this.#idempotencyTtlMs = options?.idempotencyTtlMs ?? DEFAULT_IDEMPOTENCY_TTL_MS;
@@ -37,11 +41,16 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
   }
 
   public async getProposalByApprovalId(
-    _tenantId: TenantId,
+    tenantId: TenantId,
     approvalId: ApprovalId,
   ): Promise<AgentActionProposalV1 | null> {
-    for (const proposal of this.#store.values()) {
-      if (proposal.approvalId && String(proposal.approvalId) === String(approvalId)) {
+    const prefix = `${String(tenantId)}:`;
+    for (const [key, proposal] of this.#store.entries()) {
+      if (
+        key.startsWith(prefix) &&
+        proposal.approvalId &&
+        String(proposal.approvalId) === String(approvalId)
+      ) {
         return proposal;
       }
     }
@@ -49,7 +58,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
   }
 
   public async getProposalByIdempotencyKey(
-    _tenantId: TenantId,
+    tenantId: TenantId,
     workspaceId: WorkspaceId,
     idempotencyKey: string,
   ): Promise<AgentActionProposalV1 | null> {
@@ -65,8 +74,10 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
       return null;
     }
 
-    for (const proposal of this.#store.values()) {
+    const prefix = `${String(tenantId)}:`;
+    for (const [key, proposal] of this.#store.entries()) {
       if (
+        key.startsWith(prefix) &&
         proposal.idempotencyKey === idempotencyKey &&
         String(proposal.workspaceId) === String(workspaceId)
       ) {
@@ -113,6 +124,25 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
       this.#idempotencyTimestamps.set(idemKey, this.#now());
     }
     this.#store.set(this.#key(tenantId, proposal.proposalId), proposal);
+
+    this.#saveCount++;
+    if (this.#saveCount >= CLEANUP_INTERVAL) {
+      this.#saveCount = 0;
+      this.cleanup();
+    }
+  }
+
+  /**
+   * Removes expired idempotency timestamps.
+   * Called automatically every {@link CLEANUP_INTERVAL} saves, or can be invoked externally.
+   */
+  public cleanup(): void {
+    const now = this.#now();
+    for (const [idemKey, insertedAt] of this.#idempotencyTimestamps) {
+      if (now - insertedAt > this.#idempotencyTtlMs) {
+        this.#idempotencyTimestamps.delete(idemKey);
+      }
+    }
   }
 
   #key(tenantId: TenantId, proposalId: ProposalId): string {

@@ -97,6 +97,7 @@ const DOMAIN_APPROVAL_STATUSES: DomainApprovalStatus[] = [
   'Pending',
   'Approved',
   'Denied',
+  'Expired',
   'RequestChanges',
 ];
 
@@ -104,6 +105,7 @@ const COCKPIT_APPROVAL_STATUSES: CockpitApprovalStatus[] = [
   'Pending',
   'Approved',
   'Denied',
+  'Expired',
   'RequestChanges',
 ];
 

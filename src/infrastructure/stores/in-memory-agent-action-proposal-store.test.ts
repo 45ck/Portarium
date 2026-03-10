@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AgentId,
+  ApprovalId,
   CorrelationId,
   PolicyId,
   ProposalId,
@@ -281,6 +282,111 @@ describe('InMemoryAgentActionProposalStore', () => {
     expect(fromWs2).not.toBeNull();
     expect(String(fromWs1!.proposalId)).toBe('prop-ws1');
     expect(String(fromWs2!.proposalId)).toBe('prop-ws2');
+  });
+
+  // -------------------------------------------------------------------------
+  // Cross-tenant isolation (fagan-0909 MAJOR 2)
+  // -------------------------------------------------------------------------
+
+  it('isolates idempotencyKey lookup by tenantId', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const tenantA = TenantId('tenant-a');
+    const tenantB = TenantId('tenant-b');
+    const proposal = makeProposal({
+      proposalId: ProposalId('prop-cross-tenant'),
+      idempotencyKey: 'cross-tenant-key',
+    });
+
+    await store.saveProposal(tenantA, proposal);
+
+    const fromA = await store.getProposalByIdempotencyKey(
+      tenantA,
+      WorkspaceId('ws-1'),
+      'cross-tenant-key',
+    );
+    const fromB = await store.getProposalByIdempotencyKey(
+      tenantB,
+      WorkspaceId('ws-1'),
+      'cross-tenant-key',
+    );
+
+    expect(fromA).not.toBeNull();
+    expect(fromB).toBeNull();
+  });
+
+  it('isolates approvalId lookup by tenantId', async () => {
+    const store = new InMemoryAgentActionProposalStore();
+    const tenantA = TenantId('tenant-a');
+    const tenantB = TenantId('tenant-b');
+    const proposal = makeProposal({
+      proposalId: ProposalId('prop-approval-tenant'),
+      approvalId: ApprovalId('approval-1'),
+    });
+
+    await store.saveProposal(tenantA, proposal);
+
+    const fromA = await store.getProposalByApprovalId(tenantA, ApprovalId('approval-1'));
+    const fromB = await store.getProposalByApprovalId(tenantB, ApprovalId('approval-1'));
+
+    expect(fromA).not.toBeNull();
+    expect(fromB).toBeNull();
+  });
+
+  // -------------------------------------------------------------------------
+  // Periodic cleanup (fagan-0909 MAJOR 3)
+  // -------------------------------------------------------------------------
+
+  it('cleanup() removes expired idempotency timestamps', async () => {
+    let nowMs = 1_000_000;
+    const store = new InMemoryAgentActionProposalStore({
+      idempotencyTtlMs: 60_000,
+      now: () => nowMs,
+    });
+
+    const proposal = makeProposal({ idempotencyKey: 'cleanup-key' });
+    await store.saveProposal(tenantId, proposal);
+
+    // Verify findable before expiry
+    const before = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'cleanup-key',
+    );
+    expect(before).not.toBeNull();
+
+    // Advance past TTL and run cleanup
+    nowMs += 120_000;
+    store.cleanup();
+
+    // After cleanup, idempotency lookup should return null
+    const after = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'cleanup-key',
+    );
+    expect(after).toBeNull();
+  });
+
+  it('cleanup() preserves non-expired entries', async () => {
+    let nowMs = 1_000_000;
+    const store = new InMemoryAgentActionProposalStore({
+      idempotencyTtlMs: 60_000,
+      now: () => nowMs,
+    });
+
+    const proposal = makeProposal({ idempotencyKey: 'keep-key' });
+    await store.saveProposal(tenantId, proposal);
+
+    // Advance but stay within TTL
+    nowMs += 30_000;
+    store.cleanup();
+
+    const result = await store.getProposalByIdempotencyKey(
+      tenantId,
+      WorkspaceId('ws-1'),
+      'keep-key',
+    );
+    expect(result).not.toBeNull();
   });
 
   it('allows multiple proposals with no idempotencyKey', async () => {

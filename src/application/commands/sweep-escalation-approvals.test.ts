@@ -15,6 +15,7 @@ import type { ApprovalQueryStore } from '../ports/approval-store.js';
 import type { EvidenceLogPort } from '../ports/evidence-log.js';
 import {
   resetEscalationAuditState,
+  getEscalationAuditStateSize,
   sweepEscalationApprovals,
   type SweepEscalationDeps,
 } from './sweep-escalation-approvals.js';
@@ -247,5 +248,24 @@ describe('sweepEscalationApprovals', () => {
     });
 
     expect(result.entries[0]!.elapsedHours).toBeCloseTo(3, 1);
+  });
+
+  it('prunes state map entries when an approval is no longer pending', async () => {
+    const approval = makePendingApproval();
+    // First sweep at 3h => step 0 recorded
+    const deps1 = makeDeps([approval], '2026-03-10T11:00:00.000Z');
+    await sweepEscalationApprovals(deps1, {
+      workspaceId: 'ws-1',
+      correlationId: 'corr-test',
+    });
+    expect(getEscalationAuditStateSize()).toBe(1);
+
+    // Second sweep: approval is no longer pending (human approved it)
+    const deps2 = makeDeps([], '2026-03-10T12:00:00.000Z');
+    await sweepEscalationApprovals(deps2, {
+      workspaceId: 'ws-1',
+      correlationId: 'corr-test',
+    });
+    expect(getEscalationAuditStateSize()).toBe(0);
   });
 });
