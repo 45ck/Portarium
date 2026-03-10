@@ -8,7 +8,10 @@ import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import { createLogger } from '../../infrastructure/observability/logger.js';
 import { initializeOtel } from '../../infrastructure/observability/otel-setup.js';
 import { CorrelationId, WorkspaceId } from '../../domain/primitives/index.js';
-import { startApprovalScheduler, type SchedulerHandle } from '../../application/services/approval-scheduler-runner.js';
+import {
+  startApprovalScheduler,
+  type SchedulerHandle,
+} from '../../application/services/approval-scheduler-runner.js';
 
 const log = createLogger('control-plane');
 
@@ -41,7 +44,8 @@ function tryStartApprovalScheduler(
     return null;
   }
 
-  const intervalMs = Number(process.env['PORTARIUM_APPROVAL_SCHEDULER_INTERVAL_MS'] ?? '60000');
+  const rawInterval = Number(process.env['PORTARIUM_APPROVAL_SCHEDULER_INTERVAL_MS'] ?? '60000');
+  const intervalMs = Number.isFinite(rawInterval) && rawInterval > 0 ? rawInterval : 60_000;
 
   const handle = startApprovalScheduler(
     {
@@ -52,10 +56,15 @@ function tryStartApprovalScheduler(
     {
       tenantId: WorkspaceId(systemWorkspaceId),
       workspaceId: WorkspaceId(systemWorkspaceId),
-      correlationId: CorrelationId('approval-scheduler'),
+      correlationId: CorrelationId(`approval-scheduler-${randomUUID()}`),
     },
     intervalMs,
     (result) => {
+      // TODO(bead-XXXX): Wire scheduler actions to EventPublisher for
+      // ApprovalExpired/ApprovalEscalated event publishing. Currently
+      // the scheduler evaluates state but does not persist transitions.
+      // This is safe — the scheduler is read-only and events will be
+      // published once the full lifecycle integration is implemented.
       if (result.actions.length > 0) {
         log.info('Approval scheduler sweep', {
           evaluated: result.evaluated,
@@ -63,6 +72,11 @@ function tryStartApprovalScheduler(
           expired: result.actions.filter((a) => a.kind === 'expired').length,
         });
       }
+    },
+    (error) => {
+      log.warn('Approval scheduler sweep failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     },
   );
 

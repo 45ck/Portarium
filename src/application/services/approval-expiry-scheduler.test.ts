@@ -51,7 +51,7 @@ function makeCtx(): SchedulerContext {
   return {
     tenantId: WorkspaceId('ws-1'),
     workspaceId: WorkspaceId('ws-1'),
-    correlationId: CorrelationId('corr-sched'),
+    correlationId: CorrelationId('corr-scheduler'),
   };
 }
 
@@ -71,10 +71,7 @@ function makeQueryStore(items: ApprovalPendingV1[]): ApprovalQueryStore {
   };
 }
 
-function makeDeps(
-  items: ApprovalPendingV1[],
-  nowIso: string,
-): ApprovalExpirySchedulerDeps {
+function makeDeps(items: ApprovalPendingV1[], nowIso: string): ApprovalExpirySchedulerDeps {
   return {
     approvalQueryStore: makeQueryStore(items),
     clock: makeClock(nowIso),

@@ -10,7 +10,11 @@ import {
 } from '../../domain/primitives/index.js';
 import type { ApprovalPendingV1, EscalationStepV1 } from '../../domain/approvals/index.js';
 import type { ApprovalQueryStore } from '../ports/approval-store.js';
-import { resetSchedulerState, type ApprovalExpirySchedulerDeps, type SchedulerContext } from './approval-expiry-scheduler.js';
+import {
+  resetSchedulerState,
+  type ApprovalExpirySchedulerDeps,
+  type SchedulerContext,
+} from './approval-expiry-scheduler.js';
 import { startApprovalScheduler, type SchedulerHandle } from './approval-scheduler-runner.js';
 
 // ---------------------------------------------------------------------------
@@ -124,5 +128,63 @@ describe('startApprovalScheduler', () => {
     const result = onSweep.mock.calls[0]![0];
     expect(result.evaluated).toBe(1);
     expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it('continues running after sweep failure', async () => {
+    const deps = makeDeps([]);
+    // Make the first call reject, subsequent calls succeed
+    const listApprovals = deps.approvalQueryStore.listApprovals as ReturnType<typeof vi.fn>;
+    listApprovals
+      .mockRejectedValueOnce(new Error('transient DB failure'))
+      .mockResolvedValue({ items: [] });
+
+    const onSweep = vi.fn();
+    const onError = vi.fn();
+    handle = startApprovalScheduler(deps, makeCtx(), 100, onSweep, onError);
+
+    // First sweep fails
+    await vi.advanceTimersByTimeAsync(150);
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
+    expect(onSweep).toHaveBeenCalledTimes(0);
+
+    // Second sweep succeeds — scheduler recovered
+    await vi.advanceTimersByTimeAsync(100);
+    expect(onSweep).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips overlapping sweeps', async () => {
+    const deps = makeDeps([]);
+    // Make listApprovals take longer than the interval to resolve
+    let resolveFirst!: (value: { items: never[] }) => void;
+    const slowPromise = new Promise<{ items: never[] }>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const listApprovals = deps.approvalQueryStore.listApprovals as ReturnType<typeof vi.fn>;
+    listApprovals.mockReturnValueOnce(slowPromise).mockResolvedValue({ items: [] });
+
+    const onSweep = vi.fn();
+    handle = startApprovalScheduler(deps, makeCtx(), 100, onSweep);
+
+    // First interval fires — starts slow sweep
+    await vi.advanceTimersByTimeAsync(150);
+    expect(listApprovals).toHaveBeenCalledTimes(1);
+
+    // Second interval fires — should be skipped (first sweep still in progress)
+    await vi.advanceTimersByTimeAsync(100);
+    // listApprovals was NOT called again because the guard prevented overlap
+    expect(listApprovals).toHaveBeenCalledTimes(1);
+
+    // Resolve the slow first sweep
+    resolveFirst({ items: [] });
+    await vi.advanceTimersByTimeAsync(0); // flush microtasks
+
+    expect(onSweep).toHaveBeenCalledTimes(1);
+
+    // Next interval — should fire normally now that the guard is released
+    await vi.advanceTimersByTimeAsync(100);
+    expect(listApprovals).toHaveBeenCalledTimes(2);
+    expect(onSweep).toHaveBeenCalledTimes(2);
   });
 });

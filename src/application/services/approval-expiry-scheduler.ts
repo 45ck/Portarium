@@ -92,15 +92,20 @@ export async function evaluatePendingApprovals(
 ): Promise<EvaluatePendingResult> {
   const nowIso = deps.clock.nowIso();
 
-  // Fetch all pending approvals (paginate if needed)
+  // Fetch first page of pending approvals (pagination not implemented — only
+  // the first 500 are evaluated per sweep).
   const page = await deps.approvalQueryStore.listApprovals(ctx.tenantId, ctx.workspaceId, {
     status: 'Pending',
     limit: 500,
   });
 
-  const pendingApprovals = page.items.filter(
-    (a): a is ApprovalPendingV1 => a.status === 'Pending',
-  );
+  if (page.items.length >= 500) {
+    // TODO(pagination): implement cursor-based pagination for >500 pending approvals.
+    // Until then, approvals beyond the first page will not be evaluated for
+    // escalation or expiry in this sweep.
+  }
+
+  const pendingApprovals = page.items.filter((a): a is ApprovalPendingV1 => a.status === 'Pending');
 
   const actions: SchedulerAction[] = [];
 
