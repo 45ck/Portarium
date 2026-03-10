@@ -13,6 +13,8 @@
  * prevent a single failure from stopping the periodic cycle.
  */
 
+import { randomUUID } from 'node:crypto';
+
 import type { ApprovalSchedulerPort } from '../../application/ports/approval-scheduler.js';
 import {
   sweepExpiredApprovals,
@@ -62,11 +64,12 @@ export function createApprovalExpiryScheduler(
   const correlationPrefix = config.correlationIdPrefix ?? DEFAULT_CORRELATION_PREFIX;
 
   let timer: ReturnType<typeof setInterval> | null = null;
-  let sweepCounter = 0;
 
   const runSweep = async (): Promise<void> => {
-    sweepCounter++;
-    const correlationId = `${correlationPrefix}-${String(sweepCounter)}`;
+    // Each sweep gets a unique UUID correlation ID for distributed tracing.
+    // Using randomUUID() avoids monotonic counter collisions when multiple
+    // scheduler instances run concurrently (e.g. multi-tenant deployments).
+    const correlationId = `${correlationPrefix}-${randomUUID()}`;
 
     try {
       const result = await sweepExpiredApprovals(deps, {
