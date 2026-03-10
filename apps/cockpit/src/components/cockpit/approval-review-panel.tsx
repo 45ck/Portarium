@@ -27,6 +27,7 @@ import type {
 } from '@portarium/cockpit-types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
   Link2,
@@ -345,6 +346,8 @@ export function ApprovalReviewPanel({
   initialTab = 'evidence',
 }: ApprovalReviewPanelProps) {
   const [activeTab, setActiveTab] = useState<ReviewTab>(initialTab);
+  const [rationale, setRationale] = useState('');
+  const [denyAttempted, setDenyAttempted] = useState(false);
   const history = approval.decisionHistory ?? [];
 
   const tabContent: Record<ReviewTab, React.ReactNode> = {
@@ -411,8 +414,10 @@ export function ApprovalReviewPanel({
           return (
             <button
               key={tab.id}
+              id={`tab-${tab.id}`}
               role="tab"
               aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
               className={cn(
                 'flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors',
                 'border-b-2 -mb-px',
@@ -435,19 +440,43 @@ export function ApprovalReviewPanel({
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4" role="tabpanel">
+      <div
+        id={`panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+        className="flex-1 min-h-0 overflow-y-auto px-6 py-4"
+      >
         {tabContent[activeTab]}
       </div>
 
       {/* Decision bar — pending only */}
       {approval.status === 'Pending' && (
-        <div className="shrink-0 border-t border-border bg-muted/10 px-6 py-4">
+        <div className="shrink-0 border-t border-border bg-muted/10 px-6 py-4 space-y-3">
+          <Textarea
+            className={cn(
+              'text-xs min-h-16 resize-none',
+              denyAttempted &&
+                !rationale.trim() &&
+                'border-yellow-500 focus-visible:ring-yellow-500',
+            )}
+            placeholder="Decision rationale — optional for approve, required for deny or request changes..."
+            value={rationale}
+            onChange={(e) => {
+              setRationale(e.target.value);
+              if (e.target.value.trim()) setDenyAttempted(false);
+            }}
+          />
+          {denyAttempted && !rationale.trim() && (
+            <p role="alert" className="text-xs text-yellow-600 font-medium">
+              A rationale is required when denying or requesting changes.
+            </p>
+          )}
           <div className="flex gap-2">
             <Button
               size="sm"
               className="flex-1 h-9 bg-green-600 hover:bg-green-700 text-white border-0"
               disabled={Boolean(loading)}
-              onClick={() => onDecide('Approved', '')}
+              onClick={() => onDecide('Approved', rationale)}
             >
               <CheckCircle2 className="h-4 w-4 mr-1.5" />
               Approve
@@ -457,7 +486,13 @@ export function ApprovalReviewPanel({
               size="sm"
               className="flex-1 h-9"
               disabled={Boolean(loading)}
-              onClick={() => onDecide('Denied', '')}
+              onClick={() => {
+                if (!rationale.trim()) {
+                  setDenyAttempted(true);
+                  return;
+                }
+                onDecide('Denied', rationale);
+              }}
             >
               <XCircle className="h-4 w-4 mr-1.5" />
               Deny
@@ -467,7 +502,13 @@ export function ApprovalReviewPanel({
               size="sm"
               className="h-9"
               disabled={Boolean(loading)}
-              onClick={() => onDecide('RequestChanges', '')}
+              onClick={() => {
+                if (!rationale.trim()) {
+                  setDenyAttempted(true);
+                  return;
+                }
+                onDecide('RequestChanges', rationale);
+              }}
             >
               <RotateCcw className="h-4 w-4 mr-1.5" />
               Request Changes

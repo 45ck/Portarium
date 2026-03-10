@@ -399,7 +399,18 @@ describe('ApprovalReviewPanel — actions', () => {
     expect(screen.getByRole('button', { name: /Request Changes/i })).toBeTruthy();
   });
 
-  it('calls onDecide with Approved when approve button clicked', async () => {
+  it('calls onDecide with Approved and rationale when approve button clicked', async () => {
+    const user = userEvent.setup();
+    const onDecide = vi.fn();
+    render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
+
+    await user.type(screen.getByPlaceholderText(/Decision rationale/i), 'Looks good');
+    await user.click(screen.getByRole('button', { name: /Approve/i }));
+
+    expect(onDecide).toHaveBeenCalledWith('Approved', 'Looks good');
+  });
+
+  it('calls onDecide with Approved and empty rationale when no rationale provided', async () => {
     const user = userEvent.setup();
     const onDecide = vi.fn();
     render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
@@ -409,14 +420,48 @@ describe('ApprovalReviewPanel — actions', () => {
     expect(onDecide).toHaveBeenCalledWith('Approved', '');
   });
 
-  it('calls onDecide with Denied when deny button clicked', async () => {
+  it('does not call onDecide when deny clicked without rationale and shows validation', async () => {
     const user = userEvent.setup();
     const onDecide = vi.fn();
     render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
 
     await user.click(screen.getByRole('button', { name: /Deny/i }));
 
-    expect(onDecide).toHaveBeenCalledWith('Denied', '');
+    expect(onDecide).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toBeTruthy();
+  });
+
+  it('calls onDecide with Denied and rationale when deny button clicked with rationale', async () => {
+    const user = userEvent.setup();
+    const onDecide = vi.fn();
+    render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
+
+    await user.type(screen.getByPlaceholderText(/Decision rationale/i), 'Too risky');
+    await user.click(screen.getByRole('button', { name: /Deny/i }));
+
+    expect(onDecide).toHaveBeenCalledWith('Denied', 'Too risky');
+  });
+
+  it('does not call onDecide when request changes clicked without rationale and shows validation', async () => {
+    const user = userEvent.setup();
+    const onDecide = vi.fn();
+    render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
+
+    await user.click(screen.getByRole('button', { name: /Request Changes/i }));
+
+    expect(onDecide).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toBeTruthy();
+  });
+
+  it('calls onDecide with RequestChanges and rationale when request changes clicked with rationale', async () => {
+    const user = userEvent.setup();
+    const onDecide = vi.fn();
+    render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
+
+    await user.type(screen.getByPlaceholderText(/Decision rationale/i), 'Need more info');
+    await user.click(screen.getByRole('button', { name: /Request Changes/i }));
+
+    expect(onDecide).toHaveBeenCalledWith('RequestChanges', 'Need more info');
   });
 
   it('hides action bar for decided approvals', () => {
