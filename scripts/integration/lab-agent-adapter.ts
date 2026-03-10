@@ -64,7 +64,7 @@ const TOOL_NAME_MAP: Record<string, string> = {
 // Shared agent loop
 // ---------------------------------------------------------------------------
 
-export async function runAgentLoop(opts: {
+export interface RunAgentLoopOpts {
   adapter: LLMAdapter;
   proxyUrl: string;
   systemPrompt: string;
@@ -72,8 +72,24 @@ export async function runAgentLoop(opts: {
   policyTier?: string;
   maxRounds?: number;
   onApprovalRequired?: (approvalId: string, toolName: string) => Promise<{ approved: boolean }>;
-}): Promise<AgentLoopTrace> {
-  const { adapter, proxyUrl, systemPrompt, userPrompt, policyTier = 'Auto', maxRounds = 8 } = opts;
+  /**
+   * Maximum milliseconds to wait for an approval decision when polling.
+   * Default: Infinity — poll forever until a decision is made.
+   * Set to a finite number (e.g. 60_000) for time-bounded polling.
+   */
+  waitTimeout?: number;
+}
+
+export async function runAgentLoop(opts: RunAgentLoopOpts): Promise<AgentLoopTrace> {
+  const {
+    adapter,
+    proxyUrl,
+    systemPrompt,
+    userPrompt,
+    policyTier = 'Auto',
+    maxRounds = 8,
+    waitTimeout = Infinity,
+  } = opts;
 
   const trace: AgentLoopTrace = {
     provider: adapter.provider,
@@ -134,9 +150,9 @@ export async function runAgentLoop(opts: {
             continue;
           }
         } else {
-          // Poll until decided (with timeout)
-          const deadline = Date.now() + 60_000;
-          while (Date.now() < deadline) {
+          // Poll until decided (configurable timeout; default: Infinity)
+          const deadline = waitTimeout === Infinity ? Infinity : Date.now() + waitTimeout;
+          while (deadline === Infinity || Date.now() < deadline) {
             await new Promise((r) => setTimeout(r, 200));
             const pollResp = await fetch(`${proxyUrl}/approvals/${approvalId}`);
             const pollData = (await pollResp.json()) as Record<string, unknown>;
