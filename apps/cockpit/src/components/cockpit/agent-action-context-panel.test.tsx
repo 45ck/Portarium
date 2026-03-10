@@ -152,4 +152,35 @@ describe('AgentActionContextPanel', () => {
     render(<AgentActionContextPanel proposal={FULL_PROPOSAL} />);
     expect(screen.getByRole('region', { name: 'Agent action context' })).toBeTruthy();
   });
+
+  it('renders Unknown tool category badge', () => {
+    const unknown: AgentActionProposalMeta = {
+      ...FULL_PROPOSAL,
+      toolCategory: 'Unknown',
+      blastRadiusTier: 'Auto',
+    };
+    render(<AgentActionContextPanel proposal={unknown} />);
+    expect(screen.getByText('Unknown')).toBeTruthy();
+  });
+
+  it('renders Assisted blast-radius tier badge', () => {
+    const assisted: AgentActionProposalMeta = {
+      ...FULL_PROPOSAL,
+      toolCategory: 'ReadOnly',
+      blastRadiusTier: 'Assisted',
+    };
+    render(<AgentActionContextPanel proposal={assisted} />);
+    expect(screen.getByText('Assisted')).toBeTruthy();
+  });
+
+  it('applies destructive border when blastRadiusTier is ManualOnly with Mutation category', () => {
+    const manualMutation: AgentActionProposalMeta = {
+      ...FULL_PROPOSAL,
+      toolCategory: 'Mutation',
+      blastRadiusTier: 'ManualOnly',
+    };
+    const { container } = render(<AgentActionContextPanel proposal={manualMutation} />);
+    const section = container.querySelector('section');
+    expect(section?.className).toContain('border-destructive');
+  });
 });
