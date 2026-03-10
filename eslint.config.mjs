@@ -1,6 +1,6 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import sonarjs from 'eslint-plugin-sonarjs';
 import eslintComments from 'eslint-plugin-eslint-comments';
 import unicorn from 'eslint-plugin-unicorn';
@@ -84,7 +84,7 @@ export default tseslint.config(
       n: nPlugin,
     },
     settings: {
-      'import/resolver': {
+      'import-x/resolver': {
         typescript: {
           project: ['./tsconfig.json'],
         },
