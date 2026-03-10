@@ -191,7 +191,10 @@ describe('APPROVAL_STATUS_TRANSITIONS table', () => {
   });
 
   it('all listed successors are valid ApprovalStatus values', () => {
-    for (const [, successors] of Object.entries(APPROVAL_STATUS_TRANSITIONS) as [string, readonly string[]][]) {
+    for (const [, successors] of Object.entries(APPROVAL_STATUS_TRANSITIONS) as [
+      string,
+      readonly string[],
+    ][]) {
       for (const successor of successors) {
         expect(ALL_STATUSES).toContain(successor);
       }
