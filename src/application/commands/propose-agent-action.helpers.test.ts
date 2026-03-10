@@ -69,6 +69,24 @@ describe('generateIdempotencyKey', () => {
     expect(key).toMatch(/^auto:[0-9a-f]{64}$/);
   });
 
+  it('produces different keys for different executionTier values', () => {
+    const keyAuto = generateIdempotencyKey(makeInput({ executionTier: 'Auto' }));
+    const keyHuman = generateIdempotencyKey(makeInput({ executionTier: 'HumanApprove' }));
+    expect(keyAuto).not.toBe(keyHuman);
+  });
+
+  it('same action at Auto vs HumanApprove tier produces different keys', () => {
+    const base = {
+      agentId: 'agent-1',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      parameters: { to: 'user@example.com', body: 'hello' },
+    };
+    const keyAuto = generateIdempotencyKey(makeInput({ ...base, executionTier: 'Auto' }));
+    const keyHuman = generateIdempotencyKey(makeInput({ ...base, executionTier: 'HumanApprove' }));
+    expect(keyAuto).not.toBe(keyHuman);
+  });
+
   it('treats undefined parameters as distinct from empty object', () => {
     const keyNone = generateIdempotencyKey(makeInput());
     const keyEmpty = generateIdempotencyKey(makeInput({ parameters: {} }));

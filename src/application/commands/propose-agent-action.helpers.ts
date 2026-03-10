@@ -245,6 +245,7 @@ export function generateIdempotencyKey(input: ParsedProposeAgentActionInput): st
     input.agentId,
     input.actionKind,
     input.toolName,
+    input.executionTier,
     input.parameters ? stableJsonStringify(input.parameters) : '',
   ];
   return `auto:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;

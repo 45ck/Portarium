@@ -78,6 +78,7 @@ export type AgentActionProposalV1 = Readonly<{
   correlationId: CorrelationIdType;
   proposedAtIso: string;
   idempotencyKey?: string;
+  evidenceId?: string;
 }>;
 
 // ---------------------------------------------------------------------------
@@ -127,6 +128,7 @@ export function parseAgentActionProposalV1(value: unknown): AgentActionProposalV
   const correlationId = CorrelationId(readString(record, 'correlationId', E));
   const proposedAtIso = readIsoString(record, 'proposedAtIso', E);
   const idempotencyKey = readOptionalString(record, 'idempotencyKey', E);
+  const evidenceId = readOptionalString(record, 'evidenceId', E);
 
   return {
     schemaVersion: 1,
@@ -148,6 +150,7 @@ export function parseAgentActionProposalV1(value: unknown): AgentActionProposalV
     correlationId,
     proposedAtIso,
     ...(idempotencyKey !== undefined ? { idempotencyKey } : {}),
+    ...(evidenceId !== undefined ? { evidenceId } : {}),
   };
 }
 
