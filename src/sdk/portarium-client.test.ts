@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   PortariumClient,
   PortariumApiError,
+  ApprovalTimeoutError,
+  type ApprovalSummary,
   type PortariumClientConfig,
   type ProblemDetails,
 } from './portarium-client.js';
@@ -242,6 +244,140 @@ describe('PortariumClient', () => {
       expect(sub.onEvent).toBe(onEvent);
       expect(typeof sub.unsubscribe).toBe('function');
       sub.unsubscribe(); // should not throw
+    });
+
+    it('initiates a fetch to the SSE endpoint with auth headers', async () => {
+      // Mock a fetch that returns a streaming response
+      const mockReadableStream = (): ReadableStream => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode('data: {"type":"test"}\n\n');
+        return new ReadableStream({
+          start(controller) {
+            controller.enqueue(data);
+            controller.close();
+          },
+        });
+      };
+
+      const fetchFn = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: mockReadableStream(),
+        json: () => Promise.resolve({}),
+      } as unknown as Response);
+
+      const events: unknown[] = [];
+      const client = makeClient({ fetchFn });
+      const sub = client.events.subscribe((e) => events.push(e));
+
+      // Wait briefly for the async stream processing
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      sub.unsubscribe();
+
+      expect(fetchFn).toHaveBeenCalledOnce();
+      const [url, opts] = getCallArgs(fetchFn);
+      expect(url).toContain('/events:stream');
+      const headers = getHeaders(opts);
+      expect(headers['accept']).toBe('text/event-stream');
+      expect(headers['authorization']).toBe('Bearer test-token');
+      // Event data should have been parsed
+      expect(events).toContainEqual({ type: 'test' });
+    });
+  });
+
+  describe('approvals.get', () => {
+    it('sends GET to the correct approvals endpoint', async () => {
+      const summary: ApprovalSummary = {
+        approvalId: 'appr-1',
+        status: 'Pending',
+      };
+      const fetchFn = mockFetch(200, summary);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.approvals.get('appr-1');
+
+      expect(result.approvalId).toBe('appr-1');
+      expect(result.status).toBe('Pending');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/approvals/appr-1');
+      expect(options.method).toBe('GET');
+    });
+
+    it('throws PortariumApiError on 404', async () => {
+      const problem: ProblemDetails = {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: 'Approval appr-999 not found.',
+      };
+      const fetchFn = mockFetch(404, problem);
+      const client = makeClient({ fetchFn });
+
+      await expect(client.approvals.get('appr-999')).rejects.toThrow(PortariumApiError);
+    });
+  });
+
+  describe('approvals.waitFor', () => {
+    it('resolves immediately when approval is already non-Pending', async () => {
+      const summary: ApprovalSummary = {
+        approvalId: 'appr-2',
+        status: 'Approved',
+        decidedAt: '2026-03-10T12:00:00Z',
+      };
+      const fetchFn = mockFetch(200, summary);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.approvals.waitFor('appr-2');
+
+      expect(result.status).toBe('Approved');
+      expect(fetchFn).toHaveBeenCalledOnce();
+    });
+
+    it('polls until approval reaches a terminal state', async () => {
+      let callCount = 0;
+      const fetchFn = vi.fn().mockImplementation(() => {
+        callCount++;
+        const status = callCount < 3 ? 'Pending' : 'Approved';
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ approvalId: 'appr-3', status } satisfies ApprovalSummary),
+        });
+      });
+
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+      const result = await client.approvals.waitFor('appr-3', { pollIntervalMs: 10 });
+
+      expect(result.status).toBe('Approved');
+      expect(callCount).toBe(3);
+    });
+
+    it('throws ApprovalTimeoutError when timeout is exceeded', async () => {
+      const fetchFn = mockFetch(200, {
+        approvalId: 'appr-4',
+        status: 'Pending',
+      } satisfies ApprovalSummary);
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+
+      await expect(
+        client.approvals.waitFor('appr-4', { pollIntervalMs: 10, timeout: 50 }),
+      ).rejects.toThrow(ApprovalTimeoutError);
+    });
+
+    it('ApprovalTimeoutError carries the approvalId', async () => {
+      const fetchFn = mockFetch(200, {
+        approvalId: 'appr-5',
+        status: 'Pending',
+      } satisfies ApprovalSummary);
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+
+      try {
+        await client.approvals.waitFor('appr-5', { pollIntervalMs: 10, timeout: 50 });
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).toBeInstanceOf(ApprovalTimeoutError);
+        expect((err as ApprovalTimeoutError).approvalId).toBe('appr-5');
+      }
     });
   });
 });

@@ -89,6 +89,38 @@ export type ApprovalDecisionInput = Readonly<{
   reason?: string;
 }>;
 
+export type ApprovalStatus =
+  | 'Pending'
+  | 'Approved'
+  | 'Denied'
+  | 'Executed'
+  | 'Expired'
+  | 'RequestChanges';
+
+export type ApprovalSummary = Readonly<{
+  approvalId: string;
+  status: ApprovalStatus;
+  decidedAt?: string;
+  rationale?: string;
+}>;
+
+export type WaitForApprovalOpts = Readonly<{
+  /** Polling interval in ms. Default: 2000 ms. */
+  pollIntervalMs?: number;
+  /** Maximum ms to wait before throwing ApprovalTimeoutError. Default: Infinity. */
+  timeout?: number;
+}>;
+
+export class ApprovalTimeoutError extends Error {
+  public override readonly name = 'ApprovalTimeoutError';
+  public readonly approvalId: string;
+
+  public constructor(approvalId: string, timeoutMs: number) {
+    super(`Approval ${approvalId} did not reach a terminal state within ${timeoutMs} ms.`);
+    this.approvalId = approvalId;
+  }
+}
+
 export type AgentRegistrationInput = Readonly<{
   agentId: string;
   displayName: string;
@@ -151,12 +183,43 @@ export class PortariumClient {
     this.approvals = new ApprovalsNamespace(this);
     this.agents = new AgentsNamespace(this);
     this.machines = new MachinesNamespace(this);
-    this.events = new EventsNamespace();
+    this.events = new EventsNamespace(this);
   }
 
   /** @internal */
   get workspaceId(): string {
     return this.#config.workspaceId;
+  }
+
+  /** @internal — base URL without trailing slash, used by EventsNamespace. */
+  get baseUrl(): string {
+    return this.#config.baseUrl;
+  }
+
+  /** @internal — fetch implementation, used by EventsNamespace for streaming. */
+  get fetchFn(): typeof fetch {
+    return this.#config.fetchFn;
+  }
+
+  /** @internal — build auth + trace headers without content-type (for SSE). */
+  buildSseHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      accept: 'text/event-stream',
+      'x-correlation-id': randomUUID(),
+    };
+    if (this.#config.auth.kind === 'bearerToken') {
+      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
+    } else {
+      headers['authorization'] = `Bearer ${this.#config.auth.token}`;
+      headers['x-client-cert'] = this.#config.auth.clientCert;
+    }
+    if (this.#config.traceparent) {
+      headers['traceparent'] = this.#config.traceparent;
+    }
+    if (this.#config.tracestate) {
+      headers['tracestate'] = this.#config.tracestate;
+    }
+    return headers;
   }
 
   /** @internal */
@@ -298,6 +361,47 @@ class ApprovalsNamespace {
       { decision: input.decision, reason: input.reason },
     );
   }
+
+  /**
+   * Retrieve the current state of an approval.
+   * Throws PortariumApiError (status 404) if the approval does not exist.
+   */
+  async get(approvalId: string): Promise<ApprovalSummary> {
+    return this.#client.request<ApprovalSummary>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/approvals/${encodeURIComponent(approvalId)}`,
+    );
+  }
+
+  /**
+   * Poll until the approval reaches a terminal status (not 'Pending').
+   *
+   * Polling uses exponential backoff starting at `pollIntervalMs` (default: 2000 ms),
+   * capped at 30 000 ms.
+   *
+   * When `timeout !== Infinity` and the deadline is exceeded, throws `ApprovalTimeoutError`.
+   */
+  async waitFor(approvalId: string, opts: WaitForApprovalOpts = {}): Promise<ApprovalSummary> {
+    const { pollIntervalMs = 2_000, timeout = Infinity } = opts;
+    const deadline = timeout === Infinity ? Infinity : Date.now() + timeout;
+    let intervalMs = pollIntervalMs;
+    const MAX_INTERVAL_MS = 30_000;
+
+    for (;;) {
+      const approval = await this.get(approvalId);
+      if (approval.status !== 'Pending') {
+        return approval;
+      }
+
+      if (deadline !== Infinity && Date.now() >= deadline) {
+        throw new ApprovalTimeoutError(approvalId, timeout);
+      }
+
+      await sleep(intervalMs);
+      // Exponential backoff capped at MAX_INTERVAL_MS
+      intervalMs = Math.min(intervalMs * 2, MAX_INTERVAL_MS);
+    }
+  }
 }
 
 class AgentsNamespace {
@@ -347,12 +451,68 @@ class MachinesNamespace {
 }
 
 class EventsNamespace {
+  readonly #client: PortariumClient;
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
+
+  /**
+   * Subscribe to the workspace SSE event stream.
+   *
+   * Connects to `GET /v1/workspaces/:id/events:stream` using a streaming
+   * fetch (works in Node.js 18+ and modern browsers).
+   *
+   * Each server-sent `data:` line is parsed as JSON and forwarded to `onEvent`.
+   * Call `unsubscribe()` to abort the connection.
+   */
   subscribe(onEvent: (event: unknown) => void): EventSubscription {
-    // Placeholder: real implementation uses NATS or SSE subscription
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const workspaceId = this.#client.workspaceId;
+    // Path matches the Hono route: GET /v1/workspaces/:workspaceId/events:stream
+    const url = `${this.#client.baseUrl}/v1/workspaces/${encodeURIComponent(workspaceId)}/events:stream`;
+    const headers = this.#client.buildSseHeaders();
+    const fetchFn = this.#client.fetchFn;
+
+    // Start streaming in background; errors are silently ignored to avoid
+    // crashing the caller (connection drops are expected in SSE lifecycles).
+    void (async () => {
+      try {
+        const response = await fetchFn(url, { headers, signal });
+        if (!response.ok || !response.body) return;
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const raw = line.slice(5).trim();
+              if (raw) {
+                try {
+                  onEvent(JSON.parse(raw));
+                } catch {
+                  // Non-JSON data line — forward as raw string
+                  onEvent(raw);
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Connection closed or aborted — silently exit
+      }
+    })();
+
     return {
       onEvent,
       unsubscribe() {
-        // No-op until NATS/SSE subscription lifecycle is wired
+        controller.abort();
       },
     };
   }
