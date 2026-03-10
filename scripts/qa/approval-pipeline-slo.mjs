@@ -5,9 +5,10 @@
  * Load characterization script for the Portarium approval pipeline.
  *
  * Measures p50/p95/p99 latencies for the core approval pipeline operations:
- *   1. createApproval  — propose a new approval (Pending)
- *   2. submitApproval  — decide on an approval (Approved / Denied)
- *   3. sweepExpiredApprovals — expire pending approvals via scheduler
+ *   1. proposeAgentAction  — Allow path (in-memory adapters)
+ *   2. proposeAgentAction  — NeedsApproval path
+ *   3. submitApproval      — the human approval step
+ *   4. Full pipeline: proposeAgentAction(NeedsApproval) → submitApproval
  *
  * Uses in-memory mock implementations of all application ports so the
  * measurements reflect pure domain + application-layer overhead (no I/O).
@@ -41,7 +42,7 @@ const REPORT_PATH = resolve(REPO_ROOT, 'reports/approval-pipeline-slo.json');
 const args = process.argv.slice(2);
 const MODE_CHECK = args.includes('--check');
 const N_IDX = args.indexOf('--n');
-const N = N_IDX !== -1 ? Number(args[N_IDX + 1]) || 1000 : 1000;
+const N = N_IDX !== -1 ? Number(args[N_IDX + 1]) || 50 : 50;
 
 // ---------------------------------------------------------------------------
 // SLO thresholds (in-memory; these are pure computation costs)
@@ -55,9 +56,10 @@ const N = N_IDX !== -1 ? Number(args[N_IDX + 1]) || 1000 : 1000;
  * @type {Record<string, { p95Ms: number; p99Ms: number; minThroughputOps?: number }>}
  */
 const SLOS = {
-  createApproval: { p95Ms: 50, p99Ms: 100, minThroughputOps: 200 },
+  'proposeAgentAction (Allow)': { p95Ms: 50, p99Ms: 100 },
+  'proposeAgentAction (NeedsApproval)': { p95Ms: 50, p99Ms: 100 },
   submitApproval: { p95Ms: 50, p99Ms: 100 },
-  sweepExpiredApprovals: { p95Ms: 50, p99Ms: 100 },
+  'full pipeline (propose→submit)': { p95Ms: 150, p99Ms: 300 },
 };
 
 // ---------------------------------------------------------------------------
@@ -70,16 +72,16 @@ let _counter = 0;
 function makeIdGenerator() {
   return {
     generateId() {
-      return `id-${++_counter}-${Date.now()}`;
+      return `id-${++_counter}-${Math.random().toString(36).slice(2)}`;
     },
   };
 }
 
 /** @returns {import('../../src/application/ports/index.js').Clock} */
-function makeClock(nowMs = Date.now()) {
+function makeClock() {
   return {
     nowIso() {
-      return new Date(nowMs).toISOString();
+      return new Date().toISOString();
     },
   };
 }
@@ -88,8 +90,7 @@ function makeClock(nowMs = Date.now()) {
 const _approvalStore = new Map();
 
 /**
- * @returns {import('../../src/application/ports/approval-store.js').ApprovalStore
- *   & import('../../src/application/ports/approval-store.js').ApprovalQueryStore}
+ * @returns {import('../../src/application/ports/approval-store.js').ApprovalStore}
  */
 function makeApprovalStore() {
   return {
@@ -139,17 +140,48 @@ function makeUnitOfWork() {
 /** @returns {import('../../src/application/ports/evidence-log.js').EvidenceLogPort} */
 function makeEvidenceLog() {
   return {
-    async appendEntry() {
-      // no-op
+    async appendEntry(_tenantId, entry) {
+      return { ...entry, hashSha256: 'bench-hash' };
+    },
+  };
+}
+
+/**
+ * Minimal in-memory policy store that returns a fixed policy.
+ * @param {object} policy
+ */
+function makePolicyStore(policy) {
+  return {
+    async getPolicyById() {
+      return policy;
+    },
+  };
+}
+
+/**
+ * Minimal in-memory proposal store (no idempotency dedup — each bench call is unique).
+ */
+function makeProposalStore() {
+  /** @type {Map<string, object>} */
+  const store = new Map();
+  return {
+    async getProposalByIdempotencyKey() {
+      return null;
+    },
+    async saveProposal(_tenantId, proposal) {
+      store.set(String(proposal.proposalId), proposal);
+    },
+    async getProposalById(_tenantId, _workspaceId, proposalId) {
+      return store.get(String(proposalId)) ?? null;
     },
   };
 }
 
 /** @type {import('../../src/application/common/index.js').AppContext} */
 const CTX = {
-  tenantId: /** @type {any} */ ('tenant-bench'),
-  principalId: /** @type {any} */ ('user-requester'),
-  roles: /** @type {any} */ ([]),
+  tenantId: /** @type {any} */ ('ws-bench'),
+  principalId: /** @type {any} */ ('agent-bench'),
+  roles: /** @type {any} */ (['operator']),
   scopes: /** @type {any} */ ([]),
   correlationId: /** @type {any} */ ('corr-bench'),
 };
@@ -159,11 +191,11 @@ const CTX = {
  * @type {import('../../src/application/common/index.js').AppContext}
  */
 const APPROVER_CTX = {
-  tenantId: /** @type {any} */ ('tenant-bench'),
-  principalId: /** @type {any} */ ('user-approver'),
-  roles: /** @type {any} */ ([]),
+  tenantId: /** @type {any} */ ('ws-bench'),
+  principalId: /** @type {any} */ ('approver-bench'),
+  roles: /** @type {any} */ (['approver']),
   scopes: /** @type {any} */ ([]),
-  correlationId: /** @type {any} */ ('corr-bench'),
+  correlationId: /** @type {any} */ ('corr-bench-approve'),
 };
 
 // ---------------------------------------------------------------------------
@@ -204,24 +236,40 @@ export function computePercentiles(samples) {
 // ---------------------------------------------------------------------------
 
 /**
- * @param {() => Promise<void>} fn
+ * Runs N concurrent calls to fn() via Promise.all — matching the spec's
+ * "Issue N=50 concurrent calls via Promise.all" requirement.
+ *
+ * Each call measures its own wall-clock duration independently.
+ * Warm-up runs N calls once before starting measurement.
+ *
+ * An optional `setup` function runs sequentially for each slot OUTSIDE the
+ * timed section — use it to reset shared state (e.g. reset approvals to
+ * Pending) so the reset overhead is not included in latency samples.
+ *
+ * @param {(slot: number) => Promise<void>} fn - called with slot index (0..N-1); TIMED
  * @param {number} iterations
+ * @param {{ setup?: (slot: number) => Promise<void> }} [opts]
  * @returns {Promise<{ samples: number[]; totalMs: number }>}
  */
-async function bench(fn, iterations) {
-  // Warm up (10% of iterations, min 10)
-  const warmup = Math.max(10, Math.floor(iterations * 0.1));
-  for (let i = 0; i < warmup; i++) {
-    await fn();
+async function bench(fn, iterations, opts = {}) {
+  // Warm up: one full concurrent batch (untimed)
+  await Promise.all(Array.from({ length: iterations }, (_, i) => fn(i)));
+
+  // Reset state between warm-up and measurement (outside timing).
+  if (opts.setup) {
+    for (let i = 0; i < iterations; i++) {
+      await opts.setup(i);
+    }
   }
 
-  const samples = [];
   const start = performance.now();
-  for (let i = 0; i < iterations; i++) {
-    const t0 = performance.now();
-    await fn();
-    samples.push(performance.now() - t0);
-  }
+  const samples = await Promise.all(
+    Array.from({ length: iterations }, async (_, i) => {
+      const t0 = performance.now();
+      await fn(i);
+      return performance.now() - t0;
+    }),
+  );
   const totalMs = performance.now() - start;
 
   return { samples, totalMs };
@@ -232,169 +280,213 @@ async function bench(fn, iterations) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log(`Approval pipeline SLO characterization — ${N} iterations per operation\n`);
+  console.log(`Approval pipeline SLO characterization — ${N} concurrent slots per operation\n`);
 
   // Dynamically import the actual command functions from the application layer
-  const { createApproval } = await import('../../src/application/commands/create-approval.js');
+  const { proposeAgentAction } = await import(
+    '../../src/application/commands/propose-agent-action.js'
+  );
   const { submitApproval } = await import('../../src/application/commands/submit-approval.js');
-  const { sweepExpiredApprovals } =
-    await import('../../src/application/commands/sweep-expired-approvals.js');
+  const { parsePolicyV1 } = await import('../../src/domain/policy/index.js');
+  const { parseApprovalV1 } = await import('../../src/domain/approvals/index.js');
+  const { TenantId } = await import('../../src/domain/primitives/index.js');
 
-  const idGen = makeIdGenerator();
-  const clock = makeClock();
+  // Build a fixed policy that proposeAgentAction can load.
+  const policy = parsePolicyV1({
+    schemaVersion: 1,
+    policyId: 'pol-bench-1',
+    workspaceId: 'ws-bench',
+    name: 'Bench Policy',
+    active: true,
+    priority: 1,
+    version: 1,
+    createdAtIso: '2026-01-01T00:00:00.000Z',
+    createdByUserId: 'admin-bench',
+  });
+
   const approvalStore = makeApprovalStore();
   const authorization = makeAuthorizationPort();
   const eventPublisher = makeEventPublisher();
   const unitOfWork = makeUnitOfWork();
   const evidenceLog = makeEvidenceLog();
+  const clock = makeClock();
 
-  const createDeps = {
-    idGenerator: idGen,
-    clock,
-    approvalStore,
-    authorization,
-    eventPublisher,
-    unitOfWork,
-    evidenceLog,
-  };
+  /**
+   * Build deps for proposeAgentAction — each call gets its own idGenerator
+   * (and fresh proposalStore) so idempotency dedup doesn't short-circuit.
+   */
+  function makeProposeDeps() {
+    return {
+      authorization,
+      clock,
+      idGenerator: makeIdGenerator(),
+      unitOfWork,
+      policyStore: makePolicyStore(policy),
+      approvalStore,
+      proposalStore: makeProposalStore(),
+      eventPublisher,
+      evidenceLog,
+    };
+  }
 
-  // Pre-create approvals for submit benchmark
-  /** @type {string[]} */
-  const approvalIds = [];
-  for (let i = 0; i < N; i++) {
-    const result = await createApproval(createDeps, CTX, {
-      workspaceId: String(CTX.tenantId),
-      runId: `run-seed-${i}`,
-      planId: `plan-seed-${i}`,
-      prompt: `Approve action ${i}`,
-    });
-    if (result.ok) approvalIds.push(String(result.value.approvalId));
+  function makeSubmitDeps() {
+    return {
+      authorization,
+      clock,
+      idGenerator: makeIdGenerator(),
+      unitOfWork,
+      approvalStore,
+      eventPublisher,
+      evidenceLog,
+    };
   }
 
   // --------------------------------------------------------------------------
-  // 1. createApproval
+  // 1. proposeAgentAction — Allow path (executionTier: 'Auto')
   // --------------------------------------------------------------------------
-  console.log('Benchmarking createApproval...');
-  const createResult = await bench(async () => {
-    await createApproval(createDeps, CTX, {
-      workspaceId: String(CTX.tenantId),
-      runId: `run-${idGen.generateId()}`,
-      planId: `plan-${idGen.generateId()}`,
-      prompt: 'Load test approval prompt — please approve this agent action.',
+  console.log('Benchmarking proposeAgentAction (Allow path)...');
+  const proposeAllowResult = await bench(async (slot) => {
+    const deps = makeProposeDeps();
+    const result = await proposeAgentAction(deps, CTX, {
+      workspaceId: 'ws-bench',
+      agentId: `agent-bench-${slot}`,
+      actionKind: 'comms:listEmails',
+      toolName: 'email:list',
+      executionTier: 'Auto',
+      policyIds: ['pol-bench-1'],
+      rationale: `Allow bench slot ${slot}`,
     });
+    if (!result.ok) throw new Error(`proposeAgentAction(Allow) failed: ${result.error.kind}`);
   }, N);
 
   // --------------------------------------------------------------------------
-  // 2. submitApproval (Approve)
+  // 2. proposeAgentAction — NeedsApproval path (executionTier: 'HumanApprove')
+  // --------------------------------------------------------------------------
+  console.log('Benchmarking proposeAgentAction (NeedsApproval path)...');
+  const proposeNeedsApprovalResult = await bench(async (slot) => {
+    const deps = makeProposeDeps();
+    const result = await proposeAgentAction(deps, CTX, {
+      workspaceId: 'ws-bench',
+      agentId: `agent-bench-na-${slot}`,
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-bench-1'],
+      rationale: `NeedsApproval bench slot ${slot}`,
+    });
+    if (!result.ok)
+      throw new Error(`proposeAgentAction(NeedsApproval) failed: ${result.error.kind}`);
+  }, N);
+
+  // --------------------------------------------------------------------------
+  // 3. submitApproval — pre-seed one Pending approval per concurrent slot
+  //    OUTSIDE the timed section, then measure only the submit call.
   // --------------------------------------------------------------------------
   console.log('Benchmarking submitApproval...');
-  let submitIdx = 0;
-  const submitDeps = {
-    idGenerator: idGen,
-    clock,
-    approvalStore,
-    authorization,
-    eventPublisher,
-    unitOfWork,
-    evidenceLog,
-  };
 
-  const submitResult = await bench(async () => {
-    const approvalId = approvalIds[submitIdx % approvalIds.length];
-    submitIdx++;
-    // Re-save as Pending so we can submit it again (reset for bench)
-    const existing = await approvalStore.getApprovalById(
-      /** @type {any} */ (CTX.tenantId),
-      /** @type {any} */ (CTX.tenantId),
-      /** @type {any} */ (approvalId),
-    );
-    if (existing) {
-      await approvalStore.saveApproval(/** @type {any} */ (CTX.tenantId), {
-        ...existing,
+  // Pre-seed: one Pending approval per slot, before any timing starts.
+  const submitApprovalIds = Array.from({ length: N }, (_, i) => `bench-submit-approval-${i}`);
+  for (const approvalId of submitApprovalIds) {
+    await approvalStore.saveApproval(
+      TenantId('ws-bench'),
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId,
+        workspaceId: 'ws-bench',
+        runId: `run-bench-${approvalId}`,
+        planId: `plan-bench-${approvalId}`,
+        prompt: `Bench submit approval ${approvalId}`,
+        requestedAtIso: '2026-03-10T00:00:00.000Z',
+        requestedByUserId: 'agent-bench',
         status: 'Pending',
-        decidedAtIso: undefined,
-        decidedByUserId: undefined,
-        rationale: undefined,
-      });
-    }
-    await submitApproval(submitDeps, APPROVER_CTX, {
-      workspaceId: String(CTX.tenantId),
-      approvalId: String(approvalId),
-      decision: 'Approved',
-      rationale: 'Load test approval — approved.',
-    });
-  }, N);
-
-  // --------------------------------------------------------------------------
-  // 3. sweepExpiredApprovals
-  // --------------------------------------------------------------------------
-  console.log('Benchmarking sweepExpiredApprovals...');
-
-  // Seed approvals that are past their due date
-  const pastClock = makeClock(Date.now() - 48 * 60 * 60 * 1000); // 48h ago
-  const expiredSeedDeps = { ...createDeps, clock: pastClock };
-  const expiredIds = [];
-  const SWEEP_BATCH = Math.min(N, 50);
-  for (let i = 0; i < SWEEP_BATCH; i++) {
-    const r = await createApproval(expiredSeedDeps, CTX, {
-      workspaceId: String(CTX.tenantId),
-      runId: `run-exp-${i}`,
-      planId: `plan-exp-${i}`,
-      prompt: `Expiring approval ${i}`,
-      dueAtIso: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    });
-    if (r.ok) expiredIds.push(String(r.value.approvalId));
+      }),
+    );
   }
 
-  const sweepDeps = {
-    idGenerator: idGen,
-    clock,
-    approvalStore,
-    eventPublisher,
-    evidenceLog,
-  };
+  /**
+   * Reset a slot's approval to Pending — runs OUTSIDE timing via bench's setup hook.
+   * @param {number} slot
+   */
+  async function resetApprovalToPending(slot) {
+    const approvalId = submitApprovalIds[slot % submitApprovalIds.length];
+    await approvalStore.saveApproval(
+      TenantId('ws-bench'),
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId,
+        workspaceId: 'ws-bench',
+        runId: `run-bench-${approvalId}`,
+        planId: `plan-bench-${approvalId}`,
+        prompt: `Bench submit approval ${approvalId}`,
+        requestedAtIso: '2026-03-10T00:00:00.000Z',
+        requestedByUserId: 'agent-bench',
+        status: 'Pending',
+      }),
+    );
+  }
 
-  const sweepResult = await bench(
-    async () => {
-      // Reset expired approvals to Pending before each sweep so sweep has work to do
-      for (const eid of expiredIds) {
-        const existing = await approvalStore.getApprovalById(
-          /** @type {any} */ (CTX.tenantId),
-          /** @type {any} */ (CTX.tenantId),
-          /** @type {any} */ (eid),
-        );
-        if (existing) {
-          await approvalStore.saveApproval(/** @type {any} */ (CTX.tenantId), {
-            ...existing,
-            status: 'Pending',
-            decidedAtIso: undefined,
-            decidedByUserId: undefined,
-            rationale: undefined,
-          });
-        }
-      }
-      await sweepExpiredApprovals(sweepDeps, {
-        workspaceId: String(CTX.tenantId),
-        correlationId: 'corr-sweep',
+  const submitResult = await bench(
+    async (slot) => {
+      // Timed section: only the submitApproval call — no reset logic here.
+      const approvalId = submitApprovalIds[slot % submitApprovalIds.length];
+      const deps = makeSubmitDeps();
+      const result = await submitApproval(deps, APPROVER_CTX, {
+        workspaceId: 'ws-bench',
+        approvalId,
+        decision: 'Approved',
+        rationale: `Bench approve slot ${slot}`,
       });
+      if (!result.ok) throw new Error(`submitApproval failed: ${result.error.kind}`);
     },
-    Math.min(N, 200),
+    N,
+    { setup: resetApprovalToPending },
   );
+
+  // --------------------------------------------------------------------------
+  // 4. Full pipeline: proposeAgentAction(NeedsApproval) → submitApproval
+  //    Each concurrent slot runs the full two-stage pipeline end-to-end.
+  // --------------------------------------------------------------------------
+  console.log('Benchmarking full pipeline (propose→submit)...');
+  const fullPipelineResult = await bench(async (slot) => {
+    const proposeDeps = makeProposeDeps();
+    const proposeResult = await proposeAgentAction(proposeDeps, CTX, {
+      workspaceId: 'ws-bench',
+      agentId: `agent-pipeline-${slot}`,
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-bench-1'],
+      rationale: `Full pipeline bench slot ${slot}`,
+    });
+    if (!proposeResult.ok)
+      throw new Error(`full pipeline proposeAgentAction failed: ${proposeResult.error.kind}`);
+    const { approvalId } = proposeResult.value;
+    if (!approvalId) throw new Error('Expected NeedsApproval with approvalId in full pipeline');
+
+    const submitDeps = makeSubmitDeps();
+    const submitRes = await submitApproval(submitDeps, APPROVER_CTX, {
+      workspaceId: 'ws-bench',
+      approvalId,
+      decision: 'Approved',
+      rationale: `Full pipeline approve slot ${slot}`,
+    });
+    if (!submitRes.ok)
+      throw new Error(`full pipeline submitApproval failed: ${submitRes.error.kind}`);
+  }, N);
 
   // --------------------------------------------------------------------------
   // Report
   // --------------------------------------------------------------------------
 
   const results = {
-    createApproval: computePercentiles(createResult.samples),
+    'proposeAgentAction (Allow)': computePercentiles(proposeAllowResult.samples),
+    'proposeAgentAction (NeedsApproval)': computePercentiles(proposeNeedsApprovalResult.samples),
     submitApproval: computePercentiles(submitResult.samples),
-    sweepExpiredApprovals: computePercentiles(sweepResult.samples),
+    'full pipeline (propose→submit)': computePercentiles(fullPipelineResult.samples),
   };
 
-  const createThroughput = (N / createResult.totalMs) * 1000;
-
   console.log('\n=== Approval Pipeline SLO Report ===\n');
-  console.log(`Iterations: ${N}  |  Timestamp: ${new Date().toISOString()}\n`);
+  console.log(`Concurrent slots: ${N}  |  Timestamp: ${new Date().toISOString()}\n`);
 
   /** @type {boolean} */
   let sloBreached = false;
@@ -422,14 +514,6 @@ async function main() {
 
   console.table(tableRows);
 
-  // Throughput row
-  const tpSlo = SLOS.createApproval.minThroughputOps ?? 0;
-  const tpOk = createThroughput >= tpSlo;
-  if (!tpOk) sloBreached = true;
-  console.log(
-    `\ncreatApproval throughput: ${createThroughput.toFixed(0)} ops/sec  (SLO: >=${tpSlo})  [${tpOk ? 'PASS' : 'FAIL'}]`,
-  );
-
   // --------------------------------------------------------------------------
   // Write report
   // --------------------------------------------------------------------------
@@ -438,7 +522,6 @@ async function main() {
     timestamp: new Date().toISOString(),
     n: N,
     results,
-    throughput: { createApproval: createThroughput },
     slos: SLOS,
     passed: !sloBreached,
   };
