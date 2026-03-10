@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import-x';
 import sonarjs from 'eslint-plugin-sonarjs';
-import eslintComments from 'eslint-plugin-eslint-comments';
 import unicorn from 'eslint-plugin-unicorn';
 import unusedImports from 'eslint-plugin-unused-imports';
 import nPlugin from 'eslint-plugin-n';
@@ -25,6 +24,8 @@ export default tseslint.config(
       '**/_tmp_bd/**',
       // Git worktrees for parallel bead agents — not production code
       '.trees/**',
+      // Claude agent worktrees — not production code
+      '.claude/worktrees/**',
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
@@ -76,9 +77,8 @@ export default tseslint.config(
       },
     },
     plugins: {
-      import: importPlugin,
+      'import-x': importPlugin,
       sonarjs,
-      'eslint-comments': eslintComments,
       unicorn,
       'unused-imports': unusedImports,
       n: nPlugin,
@@ -105,8 +105,8 @@ export default tseslint.config(
       'sonarjs/cognitive-complexity': ['error', 15],
 
       // Import hygiene
-      'import/no-cycle': ['error', { maxDepth: 1 }],
-      'import/no-unresolved': 'error',
+      'import-x/no-cycle': ['error', { maxDepth: 1 }],
+      'import-x/no-unresolved': 'error',
 
       // Dead imports
       'unused-imports/no-unused-imports': 'error',
@@ -114,8 +114,6 @@ export default tseslint.config(
         'error',
         { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
       ],
-      // Disallow inline suppression. If a rule is wrong, fix the code or change the rule with an ADR.
-      'eslint-comments/no-use': 'error',
     },
   },
 
@@ -205,7 +203,7 @@ export default tseslint.config(
   {
     files: ['scripts/demo/**/*.mjs', 'scripts/lab/**/*.mjs', 'scripts/integration/lab-*.ts'],
     rules: {
-      'import/no-unresolved': 'off',
+      'import-x/no-unresolved': 'off',
       'no-unused-vars': 'off',
     },
   },

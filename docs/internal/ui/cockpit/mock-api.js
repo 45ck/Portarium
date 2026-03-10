@@ -373,7 +373,7 @@
       segments.length === 4 &&
       segments[3] === 'decision'
     ) {
-      let payload = {};
+      let payload;
       try {
         payload = init?.body ? JSON.parse(String(init.body)) : {};
       } catch {

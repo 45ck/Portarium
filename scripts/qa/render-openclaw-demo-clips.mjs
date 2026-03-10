@@ -494,7 +494,7 @@ async function renderClip(browser, ffmpegBin, clip) {
   });
   const page = await context.newPage();
 
-  let frameCount = 0;
+  let frameCount;
   try {
     await openApprovals(page);
     if (clip.setupSkips > 0) {

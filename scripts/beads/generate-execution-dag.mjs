@@ -57,7 +57,7 @@ async function loadIssues() {
 
 async function loadEvidenceIndex() {
   const index = new Map();
-  let entries = [];
+  let entries;
   try {
     entries = await fs.readdir(REVIEW_DIR, { withFileTypes: true });
   } catch {

@@ -456,7 +456,7 @@ async function main() {
     },
   );
 
-  let frameCount = 0;
+  let frameCount;
   try {
     await waitForServer(baseUrl);
 

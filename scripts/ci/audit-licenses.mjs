@@ -182,7 +182,7 @@ const csvPath =
 
 // Collect production dep tree
 console.log('[audit-licenses] Resolving production dependency tree...');
-let lsOutput = '';
+let lsOutput;
 try {
   lsOutput = execSync('npm ls --json --omit=dev --all 2>NUL', {
     encoding: 'utf8',

@@ -131,7 +131,7 @@ describe('GET /v1/workspaces/:workspaceId/events:stream', () => {
     const base = await startWith(makeDeps({ eventStream: broadcast }));
 
     const ac = new AbortController();
-    let received = '';
+    let received: string;
     try {
       const res = await fetch(`${base}/v1/workspaces/ws-test/events:stream`, {
         headers: { authorization: 'Bearer test-token' },
@@ -165,7 +165,7 @@ describe('GET /v1/workspaces/:workspaceId/events:stream', () => {
     const base = await startWith(makeDeps({ eventStream: broadcast }));
 
     const ac = new AbortController();
-    let received = '';
+    let received: string;
     try {
       const res = await fetch(`${base}/v1/workspaces/ws-test/events:stream`, {
         headers: { authorization: 'Bearer test-token' },

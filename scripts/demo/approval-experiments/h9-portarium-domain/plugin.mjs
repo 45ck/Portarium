@@ -62,7 +62,9 @@ export async function waitForApproval(approvalId, portariumApiBase, options = {}
     } catch (err) {
       // Network errors during polling are expected (server might be starting up)
       if (Date.now() + pollInterval > deadline) {
-        throw new Error(`Approval ${approvalId} timed out after ${timeout}ms: ${err.message}`);
+        throw new Error(`Approval ${approvalId} timed out after ${timeout}ms: ${err.message}`, {
+          cause: err,
+        });
       }
     }
 

@@ -62,7 +62,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
     workspaceId: WorkspaceId,
     idempotencyKey: string,
   ): Promise<AgentActionProposalV1 | null> {
-    const idemKey = this.#idempotencyKey(workspaceId, idempotencyKey);
+    const idemKey = this.#idempotencyKey(tenantId, workspaceId, idempotencyKey);
 
     // TTL check: the idempotency key must have a non-expired timestamp to be valid.
     // If the timestamp is missing (never set or already cleaned up) or expired,
@@ -92,7 +92,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
     // If a non-expired proposal with the same idempotency key already exists
     // (race loser), silently skip the duplicate — the first writer wins.
     if (proposal.idempotencyKey) {
-      const idemKey = this.#idempotencyKey(proposal.workspaceId, proposal.idempotencyKey);
+      const idemKey = this.#idempotencyKey(tenantId, proposal.workspaceId, proposal.idempotencyKey);
       const insertedAt = this.#idempotencyTimestamps.get(idemKey);
 
       if (insertedAt !== undefined && this.#now() - insertedAt <= this.#idempotencyTtlMs) {
@@ -149,7 +149,7 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
     return `${String(tenantId)}:${String(proposalId)}`;
   }
 
-  #idempotencyKey(workspaceId: WorkspaceId, idempotencyKey: string): string {
-    return `${String(workspaceId)}:${idempotencyKey}`;
+  #idempotencyKey(tenantId: TenantId, workspaceId: WorkspaceId, idempotencyKey: string): string {
+    return `${String(tenantId)}:${String(workspaceId)}:${idempotencyKey}`;
   }
 }

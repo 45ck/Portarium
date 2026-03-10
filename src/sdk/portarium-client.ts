@@ -243,7 +243,7 @@ export class PortariumClient {
       throw new PortariumApiError(problem);
     } catch (error) {
       if (error instanceof Error) throw error;
-      throw new Error(String(error));
+      throw new Error(String(error), { cause: error });
     } finally {
       clearTimeout(timeout);
     }

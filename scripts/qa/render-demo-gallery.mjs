@@ -328,7 +328,7 @@ async function renderClip(clipFile, puppeteer, pythonBin) {
     defaultViewport: VIEWPORT,
   });
 
-  let framePaths = [];
+  let framePaths;
   try {
     const page = await browser.newPage();
 
