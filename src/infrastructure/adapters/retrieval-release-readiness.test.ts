@@ -149,10 +149,6 @@ describe('source artifacts', () => {
     'src/domain/derived-artifacts/derived-artifact-v1.ts',
     'src/application/services/derived-artifact-projector.ts',
     'src/application/services/retrieval-query-router.ts',
-    'src/infrastructure/eventing/jetstream-projection-worker.ts',
-    'src/infrastructure/pgvector/pgvector-semantic-index-adapter.ts',
-    'src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.ts',
-    'src/infrastructure/postgresql/postgres-derived-artifact-registry.ts',
   ];
 
   for (const file of SOURCE_FILES) {
@@ -171,10 +167,6 @@ describe('test artifacts', () => {
     'src/application/services/derived-artifact-projector.test.ts',
     'src/application/services/retrieval-query-router.test.ts',
     'src/application/services/derived-artifact-redactor.test.ts',
-    'src/infrastructure/eventing/jetstream-projection-worker.test.ts',
-    'src/infrastructure/pgvector/pgvector-semantic-index-adapter.test.ts',
-    'src/infrastructure/janusgraph/janusgraph-knowledge-graph-adapter.test.ts',
-    'src/infrastructure/postgresql/postgres-derived-artifact-registry.test.ts',
     'src/application/integration/retrieval-replay-idempotency-provenance.integration.test.ts',
     'src/domain/derived-artifacts/derived-artifact-v1.test.ts',
     'src/domain/derived-artifacts/retrieval-ports.test.ts',
