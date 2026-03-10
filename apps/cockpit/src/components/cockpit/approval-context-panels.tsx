@@ -1,5 +1,5 @@
 import { format, formatDistanceToNow } from 'date-fns';
-import { ShieldCheck, Link2, Clock3, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Link2, Clock3, ArrowRight, Bot } from 'lucide-react';
 import type { ApprovalSummary, EvidenceEntry, RunSummary } from '@portarium/cockpit-types';
 import type { TriageViewMode } from '@/stores/ui-store';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import {
   buildEvidencePanelSummary,
   buildPolicyPanelSummary,
   buildRunTimelinePanelSummary,
+  buildAgentActionPanelSummary,
 } from './lib/approval-context-panels-summary';
 
 interface ApprovalContextPanelsProps {
@@ -48,11 +49,16 @@ export function ApprovalContextPanels({
   const policy = buildPolicyPanelSummary(approval);
   const evidence = buildEvidencePanelSummary(evidenceEntries);
   const timeline = buildRunTimelinePanelSummary(approval, run);
+  const agentAction = buildAgentActionPanelSummary(approval);
+
+  const gridCols = agentAction
+    ? 'md:grid-cols-2 lg:grid-cols-4'
+    : 'md:grid-cols-3';
 
   return (
     <section
       aria-label="Cross-layer context"
-      className="grid gap-2 md:grid-cols-3 rounded-lg border border-border bg-muted/15 p-2"
+      className={cn('grid gap-2 rounded-lg border border-border bg-muted/15 p-2', gridCols)}
     >
       <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
         <div className="flex items-center gap-2">
@@ -154,6 +160,43 @@ export function ApprovalContextPanels({
           <ArrowRight className="h-3 w-3 ml-1" />
         </Button>
       </article>
+
+      {agentAction && (
+        <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Bot className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-semibold">Agent Action</h3>
+            </div>
+            <Badge variant={agentAction.categoryVariant} className="text-[11px] h-5">
+              {agentAction.categoryLabel}
+            </Badge>
+          </div>
+          <div className="space-y-1 text-[11px] text-muted-foreground">
+            <p>
+              Tool: <span className="font-medium text-foreground font-mono">{agentAction.toolName}</span>
+            </p>
+            <p>
+              Agent: <span className="font-medium text-foreground font-mono">{agentAction.agentId}</span>
+            </p>
+            <p>
+              Tier: <span className="font-medium text-foreground">{agentAction.tierLabel}</span>
+            </p>
+            <p className="truncate" title={agentAction.rationale}>
+              Reason: <span className="font-medium text-foreground">{agentAction.rationale}</span>
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-[11px]"
+            onClick={() => onOpenMode('agent-overview')}
+          >
+            Agent Overview
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        </article>
+      )}
     </section>
   );
 }

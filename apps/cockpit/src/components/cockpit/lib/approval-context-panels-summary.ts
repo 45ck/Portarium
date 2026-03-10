@@ -1,4 +1,9 @@
-import type { ApprovalSummary, EvidenceEntry, RunSummary } from '@portarium/cockpit-types';
+import type {
+  AgentActionProposalMeta,
+  ApprovalSummary,
+  EvidenceEntry,
+  RunSummary,
+} from '@portarium/cockpit-types';
 
 export interface PolicyPanelSummary {
   tierLabel: string;
@@ -103,5 +108,53 @@ export function buildRunTimelinePanelSummary(
     executionTierLabel: run?.executionTier ?? approval.policyRule?.tier ?? 'Not specified',
     cycleCount,
     isOverdue,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Agent Action Panel Summary
+// ---------------------------------------------------------------------------
+
+export interface AgentActionPanelSummary {
+  toolName: string;
+  agentId: string;
+  categoryLabel: string;
+  categoryVariant: 'secondary' | 'warning' | 'destructive' | 'outline';
+  tierLabel: string;
+  rationale: string;
+}
+
+const CATEGORY_LABELS: Record<
+  AgentActionProposalMeta['toolCategory'],
+  { label: string; variant: AgentActionPanelSummary['categoryVariant'] }
+> = {
+  ReadOnly: { label: 'Read-only', variant: 'secondary' },
+  Mutation: { label: 'Mutation', variant: 'warning' },
+  Dangerous: { label: 'Dangerous', variant: 'destructive' },
+  Unknown: { label: 'Unknown', variant: 'outline' },
+};
+
+const TIER_LABELS: Record<AgentActionProposalMeta['blastRadiusTier'], string> = {
+  Auto: 'Auto',
+  Assisted: 'Assisted',
+  HumanApprove: 'Human Approve',
+  ManualOnly: 'Manual Only',
+};
+
+export function buildAgentActionPanelSummary(
+  approval: ApprovalSummary,
+): AgentActionPanelSummary | null {
+  const proposal = approval.agentActionProposal;
+  if (!proposal) return null;
+
+  const cat = CATEGORY_LABELS[proposal.toolCategory] ?? CATEGORY_LABELS['Unknown'];
+
+  return {
+    toolName: proposal.toolName,
+    agentId: proposal.agentId,
+    categoryLabel: cat.label,
+    categoryVariant: cat.variant,
+    tierLabel: TIER_LABELS[proposal.blastRadiusTier] ?? 'Auto',
+    rationale: proposal.rationale,
   };
 }

@@ -25,6 +25,7 @@ import type {
   SodEvaluation,
   PolicyRule,
   DecisionHistoryEntry,
+  AgentActionProposalMeta,
 } from '@portarium/cockpit-types';
 import type {
   RobotSummary,
@@ -877,6 +878,62 @@ export function generateMeridianDataset(cfg: MeridianDatasetConfig): MeridianDat
       a.decidedAtIso = undefined;
       a.decidedByUserId = undefined;
       a.rationale = undefined;
+    }
+  }
+
+  // ---- Attach agent-action proposals to ~30% of approvals ----------------
+  const agentActionToolNames: Array<{
+    toolName: string;
+    toolCategory: AgentActionProposalMeta['toolCategory'];
+    blastRadiusTier: AgentActionProposalMeta['blastRadiusTier'];
+    rationale: string;
+  }> = [
+    {
+      toolName: 'send_email',
+      toolCategory: 'Mutation',
+      blastRadiusTier: 'HumanApprove',
+      rationale: 'Sending notification email to external client about shipment status change.',
+    },
+    {
+      toolName: 'update_shipment_status',
+      toolCategory: 'Mutation',
+      blastRadiusTier: 'Assisted',
+      rationale: 'Updating shipment tracking record to reflect carrier-reported delay.',
+    },
+    {
+      toolName: 'read_temperature_logs',
+      toolCategory: 'ReadOnly',
+      blastRadiusTier: 'Auto',
+      rationale: 'Retrieving cold chain sensor readings for compliance audit preparation.',
+    },
+    {
+      toolName: 'delete_expired_records',
+      toolCategory: 'Dangerous',
+      blastRadiusTier: 'ManualOnly',
+      rationale: 'Purging expired batch records older than 7 years per retention policy.',
+    },
+    {
+      toolName: 'generate_invoice',
+      toolCategory: 'Mutation',
+      blastRadiusTier: 'HumanApprove',
+      rationale: 'Generating and dispatching invoice for completed cold chain delivery.',
+    },
+  ];
+
+  for (const approval of APPROVALS) {
+    if (rand() < 0.3) {
+      const tmpl = pick(rand, agentActionToolNames);
+      const agentId = AGENTS.length > 0 ? pick(rand, AGENTS).agentId : 'agent-auto';
+      const machine = MACHINES.length > 0 ? pick(rand, MACHINES) : undefined;
+      approval.agentActionProposal = {
+        proposalId: `prop-${approval.approvalId}`,
+        agentId,
+        machineId: machine?.machineId,
+        toolName: tmpl.toolName,
+        toolCategory: tmpl.toolCategory,
+        blastRadiusTier: tmpl.blastRadiusTier,
+        rationale: tmpl.rationale,
+      };
     }
   }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ApprovalSummary, EvidenceEntry, RunSummary } from '@portarium/cockpit-types';
 import {
+  buildAgentActionPanelSummary,
   buildEvidencePanelSummary,
   buildPolicyPanelSummary,
   buildRunTimelinePanelSummary,
@@ -108,5 +109,162 @@ describe('approval context panel summary helpers', () => {
     expect(summary.executionTierLabel).toBe('HumanApprove');
     expect(summary.cycleCount).toBe(2);
     expect(summary.isOverdue).toBe(true);
+  });
+
+  describe('buildAgentActionPanelSummary', () => {
+    it('returns null when agentActionProposal is absent', () => {
+      const result = buildAgentActionPanelSummary(BASE_APPROVAL);
+      expect(result).toBeNull();
+    });
+
+    it('correctly maps ReadOnly toolCategory', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-1',
+          agentId: 'agent-1',
+          toolName: 'read_file',
+          toolCategory: 'ReadOnly',
+          blastRadiusTier: 'Auto',
+          rationale: 'Reading config',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.categoryLabel).toBe('Read-only');
+      expect(result.categoryVariant).toBe('secondary');
+    });
+
+    it('correctly maps Mutation toolCategory', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-2',
+          agentId: 'agent-1',
+          toolName: 'update_record',
+          toolCategory: 'Mutation',
+          blastRadiusTier: 'HumanApprove',
+          rationale: 'Updating a record',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.categoryLabel).toBe('Mutation');
+      expect(result.categoryVariant).toBe('warning');
+    });
+
+    it('correctly maps Dangerous toolCategory', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-3',
+          agentId: 'agent-1',
+          toolName: 'delete_all',
+          toolCategory: 'Dangerous',
+          blastRadiusTier: 'ManualOnly',
+          rationale: 'Deleting everything',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.categoryLabel).toBe('Dangerous');
+      expect(result.categoryVariant).toBe('destructive');
+    });
+
+    it('correctly maps Unknown toolCategory', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-4',
+          agentId: 'agent-1',
+          toolName: 'custom_tool',
+          toolCategory: 'Unknown',
+          blastRadiusTier: 'Auto',
+          rationale: 'Unknown tool usage',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.categoryLabel).toBe('Unknown');
+      expect(result.categoryVariant).toBe('outline');
+    });
+
+    it('correctly maps Auto blastRadiusTier', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-5',
+          agentId: 'agent-1',
+          toolName: 'read_file',
+          toolCategory: 'ReadOnly',
+          blastRadiusTier: 'Auto',
+          rationale: 'Reading',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.tierLabel).toBe('Auto');
+    });
+
+    it('correctly maps Assisted blastRadiusTier', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-6',
+          agentId: 'agent-1',
+          toolName: 'suggest_fix',
+          toolCategory: 'Mutation',
+          blastRadiusTier: 'Assisted',
+          rationale: 'Suggesting a fix',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.tierLabel).toBe('Assisted');
+    });
+
+    it('correctly maps HumanApprove blastRadiusTier', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-7',
+          agentId: 'agent-1',
+          toolName: 'send_email',
+          toolCategory: 'Mutation',
+          blastRadiusTier: 'HumanApprove',
+          rationale: 'Sending email',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.tierLabel).toBe('Human Approve');
+    });
+
+    it('correctly maps ManualOnly blastRadiusTier', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-8',
+          agentId: 'agent-1',
+          toolName: 'delete_all',
+          toolCategory: 'Dangerous',
+          blastRadiusTier: 'ManualOnly',
+          rationale: 'Deleting everything',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.tierLabel).toBe('Manual Only');
+    });
+
+    it('populates toolName, agentId, and rationale from the proposal', () => {
+      const approval: ApprovalSummary = {
+        ...BASE_APPROVAL,
+        agentActionProposal: {
+          proposalId: 'prop-9',
+          agentId: 'agent-42',
+          toolName: 'run_query',
+          toolCategory: 'ReadOnly',
+          blastRadiusTier: 'Auto',
+          rationale: 'Running a diagnostic query',
+        },
+      };
+      const result = buildAgentActionPanelSummary(approval)!;
+      expect(result.toolName).toBe('run_query');
+      expect(result.agentId).toBe('agent-42');
+      expect(result.rationale).toBe('Running a diagnostic query');
+    });
   });
 });
