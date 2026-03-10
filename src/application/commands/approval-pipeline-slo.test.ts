@@ -9,8 +9,8 @@
  * Does NOT assert on actual latency values — those are environment-dependent.
  * For latency assertions, run the script with --check in a controlled environment.
  *
- * Performance tests use describe.skipIf(process.env['CI_PERF_SKIP']) so they
- * can be excluded from standard CI runners where timing is unreliable.
+ * Performance tests use describe.skipIf(!process.env['CI_PERF_ENABLED']) so they
+ * only run when explicitly opted in (set CI_PERF_ENABLED=true in the environment).
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -349,14 +349,13 @@ describe('approval pipeline round-trip (createApproval + submitApproval)', () =>
 });
 
 // ---------------------------------------------------------------------------
-// SLO baseline assertions (skipped in standard CI — run locally for perf gating)
+// SLO baseline assertions (opt-in: only runs when CI_PERF_ENABLED=true)
 // ---------------------------------------------------------------------------
 
-describe.skipIf(process.env['CI_PERF_SKIP'] === 'true')(
+describe.skipIf(!process.env['CI_PERF_ENABLED'])(
   'approval pipeline SLO baselines (in-memory)',
   () => {
     const SLO_P95_MS = 50; // from approval-pipeline-slo-v1.md
-    const SLO_P99_MS = 100;
     const ITERATIONS = 500;
 
     async function measureCreateApproval(): Promise<number[]> {
@@ -390,10 +389,11 @@ describe.skipIf(process.env['CI_PERF_SKIP'] === 'true')(
       expect(result.p95).toBeLessThanOrEqual(SLO_P95_MS);
     }, 30_000);
 
-    it(`createApproval p99 is within ${SLO_P99_MS}ms SLO`, async () => {
+    it('createApproval p99 is monitored (non-gating)', async () => {
       const samples = await measureCreateApproval();
       const result = computePercentiles(samples);
-      expect(result.p99).toBeLessThanOrEqual(SLO_P99_MS);
+      // p99 is monitored only — not a hard gate per approval-pipeline-slo-v1.md
+      console.info(`[SLO] createApproval p99=${String(result.p99.toFixed(2))}ms`);
     }, 30_000);
   },
 );
