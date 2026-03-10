@@ -378,7 +378,7 @@ export type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 // Approval status
 // ---------------------------------------------------------------------------
 
-export type ApprovalDecision = 'Approved' | 'Denied' | 'RequestChanges';
+export type ApprovalDecision = 'Approved' | 'Denied' | 'Expired' | 'RequestChanges';
 
 // ---------------------------------------------------------------------------
 // Workspace RBAC roles (control plane v1)

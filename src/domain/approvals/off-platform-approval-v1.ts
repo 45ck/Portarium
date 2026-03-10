@@ -410,6 +410,7 @@ function mapDecisionToAction(decision: ApprovalDecision): OffPlatformAction {
     case 'Approved':
       return 'approve';
     case 'Denied':
+    case 'Expired':
       return 'deny';
     case 'RequestChanges':
       return 'request_changes';

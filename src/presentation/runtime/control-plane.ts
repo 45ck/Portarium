@@ -7,11 +7,12 @@ import { createControlPlaneHandler } from './control-plane-handler.js';
 import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import { createLogger } from '../../infrastructure/observability/logger.js';
 import { initializeOtel } from '../../infrastructure/observability/otel-setup.js';
-import { CorrelationId, WorkspaceId } from '../../domain/primitives/index.js';
 import {
-  startApprovalScheduler,
-  type SchedulerHandle,
-} from '../../application/services/approval-scheduler-runner.js';
+  createApprovalExpiryScheduler,
+  type InfraApprovalExpirySchedulerOptions,
+} from '../../infrastructure/scheduler/approval-expiry-scheduler.js';
+import type { ApprovalSchedulerPort } from '../../application/ports/approval-scheduler.js';
+import type { EventPublisher } from '../../application/ports/event-publisher.js';
 
 const log = createLogger('control-plane');
 
@@ -29,14 +30,17 @@ function readPort(defaultPort: number): number {
 }
 
 /**
- * Start the approval expiry/escalation scheduler if an approval query store
- * is available and the feature is not explicitly disabled.
+ * Start the approval expiry/escalation scheduler if an approval store and
+ * query store are available and the feature is not explicitly disabled.
+ *
+ * Uses the full-lifecycle sweep commands that persist transitions and
+ * publish CloudEvents, replacing the earlier no-op evaluation-only path.
  */
 function tryStartApprovalScheduler(
   deps: ReturnType<typeof buildControlPlaneDeps>,
-): SchedulerHandle | null {
+): ApprovalSchedulerPort | null {
   if (process.env['PORTARIUM_APPROVAL_SCHEDULER_DISABLED'] === 'true') return null;
-  if (!deps.approvalQueryStore) return null;
+  if (!deps.approvalQueryStore || !deps.approvalStore) return null;
 
   const systemWorkspaceId = process.env['PORTARIUM_SYSTEM_WORKSPACE_ID']?.trim();
   if (!systemWorkspaceId) {
@@ -47,41 +51,54 @@ function tryStartApprovalScheduler(
   const rawInterval = Number(process.env['PORTARIUM_APPROVAL_SCHEDULER_INTERVAL_MS'] ?? '60000');
   const intervalMs = Number.isFinite(rawInterval) && rawInterval > 0 ? rawInterval : 60_000;
 
-  const handle = startApprovalScheduler(
-    {
+  // Use the event publisher from deps if available, otherwise fall back to a
+  // logging-only publisher that records events for observability but does not
+  // push to an external bus. This ensures the sweep commands always have a
+  // valid publisher to call.
+  const eventPublisher: EventPublisher = deps.eventPublisher ?? {
+    publish: async (event) => {
+      log.info('Approval scheduler event (no publisher configured)', {
+        type: event.type,
+        subject: event.subject,
+      });
+    },
+  };
+
+  const options: InfraApprovalExpirySchedulerOptions = {
+    deps: {
+      approvalStore: deps.approvalStore,
       approvalQueryStore: deps.approvalQueryStore,
       clock: { nowIso: () => new Date().toISOString() },
       idGenerator: { generateId: () => randomUUID() },
+      eventPublisher,
+      ...(deps.evidenceLog ? { evidenceLog: deps.evidenceLog } : {}),
     },
-    {
-      tenantId: WorkspaceId(systemWorkspaceId),
-      workspaceId: WorkspaceId(systemWorkspaceId),
-      correlationId: CorrelationId(`approval-scheduler-${randomUUID()}`),
+    config: {
+      intervalMs,
+      workspaceId: systemWorkspaceId,
+      correlationIdPrefix: 'approval-scheduler',
     },
-    intervalMs,
-    (result) => {
-      // TODO(bead-XXXX): Wire scheduler actions to EventPublisher for
-      // ApprovalExpired/ApprovalEscalated event publishing. Currently
-      // the scheduler evaluates state but does not persist transitions.
-      // This is safe — the scheduler is read-only and events will be
-      // published once the full lifecycle integration is implemented.
-      if (result.actions.length > 0) {
+    onSweep: (result) => {
+      if (result.expiredCount > 0 || result.escalatedCount > 0) {
         log.info('Approval scheduler sweep', {
           evaluated: result.evaluated,
-          escalated: result.actions.filter((a) => a.kind === 'escalated').length,
-          expired: result.actions.filter((a) => a.kind === 'expired').length,
+          escalated: result.escalatedCount,
+          expired: result.expiredCount,
         });
       }
     },
-    (error) => {
+    onError: (error) => {
       log.warn('Approval scheduler sweep failed', {
         error: error instanceof Error ? error.message : String(error),
       });
     },
-  );
+  };
+
+  const scheduler = createApprovalExpiryScheduler(options);
+  scheduler.start();
 
   log.info('Approval scheduler started', { intervalMs });
-  return handle;
+  return scheduler;
 }
 
 export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<HealthServerHandle> {

@@ -51,9 +51,7 @@ export function ApprovalContextPanels({
   const timeline = buildRunTimelinePanelSummary(approval, run);
   const agentAction = buildAgentActionPanelSummary(approval);
 
-  const gridCols = agentAction
-    ? 'md:grid-cols-2 lg:grid-cols-4'
-    : 'md:grid-cols-3';
+  const gridCols = agentAction ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3';
 
   return (
     <section
@@ -174,10 +172,12 @@ export function ApprovalContextPanels({
           </div>
           <div className="space-y-1 text-[11px] text-muted-foreground">
             <p>
-              Tool: <span className="font-medium text-foreground font-mono">{agentAction.toolName}</span>
+              Tool:{' '}
+              <span className="font-medium text-foreground font-mono">{agentAction.toolName}</span>
             </p>
             <p>
-              Agent: <span className="font-medium text-foreground font-mono">{agentAction.agentId}</span>
+              Agent:{' '}
+              <span className="font-medium text-foreground font-mono">{agentAction.agentId}</span>
             </p>
             <p>
               Tier: <span className="font-medium text-foreground">{agentAction.tierLabel}</span>

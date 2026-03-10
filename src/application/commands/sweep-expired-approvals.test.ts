@@ -10,7 +10,12 @@ import {
   UserId,
   WorkspaceId,
 } from '../../domain/primitives/index.js';
-import type { ApprovalPendingV1, EscalationStepV1 } from '../../domain/approvals/index.js';
+import type {
+  ApprovalDecidedV1,
+  ApprovalPendingV1,
+  ApprovalV1,
+  EscalationStepV1,
+} from '../../domain/approvals/index.js';
 import type { ApprovalQueryStore, ApprovalStore } from '../ports/approval-store.js';
 import type { EventPublisher } from '../ports/index.js';
 import type { EvidenceLogPort } from '../ports/evidence-log.js';
@@ -190,7 +195,7 @@ describe('sweepExpiredApprovals', () => {
     expect(evidenceCall).toBeDefined();
   });
 
-  it('saves expired approval to store with Denied status', async () => {
+  it('saves expired approval to store with Expired status', async () => {
     const approval = makePendingApproval();
     const deps = makeDeps([approval], '2026-03-10T19:00:00.000Z');
     await sweepExpiredApprovals(deps, {
@@ -200,7 +205,7 @@ describe('sweepExpiredApprovals', () => {
 
     expect(deps.mocks.saveApproval).toHaveBeenCalled();
     const savedApproval = deps.mocks.saveApproval.mock.calls[0]![1];
-    expect(savedApproval.status).toBe('Denied');
+    expect(savedApproval.status).toBe('Expired');
     expect(savedApproval.rationale).toContain('grace period');
   });
 
@@ -260,6 +265,54 @@ describe('sweepExpiredApprovals', () => {
 
     expect(result.expiredCount).toBe(1);
     // Should not throw even without evidence log
+  });
+
+  it('does not publish events or evidence for already-decided approvals (F-23)', async () => {
+    // Simulate an approval that the scheduler evaluation considers expired,
+    // but which has already been decided (e.g. Denied by a human).
+    const pendingApproval = makePendingApproval();
+    const decidedApproval: ApprovalDecidedV1 = {
+      ...pendingApproval,
+      status: 'Denied',
+      decidedAtIso: '2026-03-10T15:00:00.000Z',
+      decidedByUserId: UserId('user-human'),
+      rationale: 'Denied by reviewer.',
+    };
+
+    // The query store still returns the Pending shape (scheduler evaluates
+    // escalation chains), but the approval store returns the decided version.
+    const nowIso = '2026-03-10T19:00:00.000Z';
+    const deps = makeDeps([pendingApproval], nowIso);
+
+    // Override getApprovalById to return the already-decided approval
+    (deps.approvalStore.getApprovalById as ReturnType<typeof vi.fn>).mockResolvedValue(
+      decidedApproval as ApprovalV1,
+    );
+
+    await sweepExpiredApprovals(deps, {
+      workspaceId: 'ws-1',
+      correlationId: 'corr-test',
+    });
+
+    // The expired action should be skipped entirely for the decided approval.
+    // Events should only be published for escalation actions (if any), NOT for the expired action.
+    const expiredPublishCalls = deps.mocks.eventPublisher.mock.calls.filter((c: unknown[]) => {
+      const event = c[0] as { type?: string };
+      return typeof event.type === 'string' && event.type.includes('ApprovalExpired');
+    });
+    expect(expiredPublishCalls).toHaveLength(0);
+
+    // Evidence log should NOT contain an expired entry
+    const expiredEvidenceCalls = deps.mocks.evidenceLog.mock.calls.filter((c: unknown[]) => {
+      const entry = c[1] as Record<string, unknown>;
+      const summary = entry['summary'];
+      return typeof summary === 'string' && summary.includes('expired');
+    });
+    expect(expiredEvidenceCalls).toHaveLength(0);
+
+    // saveApproval should NOT be called at all (no state transition for
+    // an already-decided approval).
+    expect(deps.mocks.saveApproval).not.toHaveBeenCalled();
   });
 
   it('handles multiple approvals independently', async () => {

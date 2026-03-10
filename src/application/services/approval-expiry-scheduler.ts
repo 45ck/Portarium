@@ -53,6 +53,13 @@ export interface ApprovalExpirySchedulerDeps {
   approvalQueryStore: ApprovalQueryStore;
   clock: Clock;
   idGenerator: IdGenerator;
+  /**
+   * Optional injected escalation state map. When provided, the scheduler uses
+   * this map instead of the module-level default. This avoids shared mutable
+   * state across independent scheduler instances and enables tenant-scoped
+   * isolation in multi-tenant deployments.
+   */
+  escalationState?: Map<string, number>;
 }
 
 /** Minimal context needed for the scheduler (system actor). */
@@ -67,14 +74,25 @@ export type SchedulerContext = Readonly<{
 // ---------------------------------------------------------------------------
 
 /**
- * In-memory map of approvalId -> last observed escalation step index.
- * Prevents duplicate ApprovalEscalated events across sweeps.
+ * Default in-memory map of tenantId:approvalId -> last observed escalation
+ * step index. Used as a fallback when no escalation state map is injected
+ * via deps. Callers that need isolated state (e.g. multi-tenant schedulers)
+ * should pass their own Map via `deps.escalationState`.
  */
-const lastStepByApproval = new Map<string, number>();
+const defaultEscalationState = new Map<string, number>();
 
-/** Reset tracked state — useful for testing. */
-export function resetSchedulerState(): void {
-  lastStepByApproval.clear();
+/**
+ * Reset tracked state — useful for testing.
+ * Clears both the default module-level map and, optionally, a caller-provided map.
+ */
+export function resetSchedulerState(injectedState?: Map<string, number>): void {
+  defaultEscalationState.clear();
+  if (injectedState) injectedState.clear();
+}
+
+/** Return the number of tracked entries -- useful for testing cleanup. */
+export function getSchedulerStateSize(injectedState?: Map<string, number>): number {
+  return (injectedState ?? defaultEscalationState).size;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,6 +109,7 @@ export async function evaluatePendingApprovals(
   ctx: SchedulerContext,
 ): Promise<EvaluatePendingResult> {
   const nowIso = deps.clock.nowIso();
+  const stateMap = deps.escalationState ?? defaultEscalationState;
 
   // Fetch first page of pending approvals (pagination not implemented — only
   // the first 500 are evaluated per sweep).
@@ -120,8 +139,20 @@ export async function evaluatePendingApprovals(
       nowIso,
     );
 
-    const approvalActions = evaluateOneApproval(deps, ctx, approval, evaluation, nowIso);
+    const approvalActions = evaluateOneApproval(deps, ctx, approval, evaluation, nowIso, stateMap);
     actions.push(...approvalActions);
+  }
+
+  // Prune state map entries for approvals no longer pending (resolved by
+  // human decision or other means). This prevents unbounded memory growth.
+  const pendingKeys = new Set(
+    pendingApprovals.map((a) => `${String(ctx.tenantId)}:${String(a.approvalId)}`),
+  );
+  const wsPrefix = `${String(ctx.tenantId)}:`;
+  for (const key of stateMap.keys()) {
+    if (key.startsWith(wsPrefix) && !pendingKeys.has(key)) {
+      stateMap.delete(key);
+    }
   }
 
   return { evaluated: pendingApprovals.length, actions };
@@ -133,9 +164,11 @@ function evaluateOneApproval(
   approval: ApprovalPendingV1,
   evaluation: EscalationEvaluationV1,
   nowIso: string,
+  stateMap: Map<string, number>,
 ): SchedulerAction[] {
-  const approvalKey = String(approval.approvalId);
-  const lastStep = lastStepByApproval.get(approvalKey) ?? -1;
+  // Tenant-scoped key prevents cross-tenant state leaks in shared deployments.
+  const approvalKey = `${String(ctx.tenantId)}:${String(approval.approvalId)}`;
+  const lastStep = stateMap.get(approvalKey) ?? -1;
   const actions: SchedulerAction[] = [];
 
   // Check for expiry: fully escalated + grace period exceeded
@@ -154,7 +187,7 @@ function evaluateOneApproval(
         event: buildEvent(deps, ctx, approval.approvalId, 'ApprovalExpired', nowIso, payload),
       });
       // Clean up tracking state for expired approvals
-      lastStepByApproval.delete(approvalKey);
+      stateMap.delete(approvalKey);
       return actions;
     }
   }
@@ -171,7 +204,7 @@ function evaluateOneApproval(
       kind: 'escalated',
       event: buildEvent(deps, ctx, approval.approvalId, 'ApprovalEscalated', nowIso, payload),
     });
-    lastStepByApproval.set(approvalKey, evaluation.activeStepIndex);
+    stateMap.set(approvalKey, evaluation.activeStepIndex);
   }
 
   return actions;

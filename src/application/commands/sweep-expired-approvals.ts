@@ -16,6 +16,7 @@ import {
   EvidenceId,
   UserId,
   type ApprovalId as ApprovalIdType,
+  type ApprovalDecision,
   type WorkspaceId as WorkspaceIdType,
   type CorrelationId as CorrelationIdType,
 } from '../../domain/primitives/index.js';
@@ -34,6 +35,13 @@ import type { ApprovalQueryStore } from '../ports/approval-store.js';
 
 const SWEEP_SOURCE = 'portarium.scheduler.approval-expiry';
 const SYSTEM_ACTOR_ID = 'system:scheduler';
+
+/**
+ * Status value used when an approval expires via the scheduler.
+ * Uses a dedicated 'Expired' terminal status to distinguish system-level
+ * expiry from human-initiated 'Denied' decisions.
+ */
+const EXPIRY_DECISION_STATUS: ApprovalDecision = 'Expired';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -119,23 +127,23 @@ async function processExpiredAction(
   const payload = action.event.payload as ApprovalExpiredPayload;
   const approvalId = payload.approvalId;
 
-  // Load the current approval
+  // Load the current approval -- only process if still Pending.
+  // Already-decided approvals must not trigger events or evidence entries.
   const existing = await deps.approvalStore.getApprovalById(workspaceId, workspaceId, approvalId);
 
-  if (existing?.status === 'Pending') {
-    // Transition to expired by saving a decided record with 'Denied' status
-    // representing the system-level expiry. We use the ApprovalDecidedV1 shape
-    // with a system actor and expiry rationale.
-    const expired: ApprovalDecidedV1 = {
-      ...existing,
-      status: 'Denied',
-      decidedAtIso: payload.expiredAtIso,
-      decidedByUserId: UserId(SYSTEM_ACTOR_ID),
-      rationale: payload.reason,
-    };
+  if (existing?.status !== 'Pending') return;
 
-    await deps.approvalStore.saveApproval(workspaceId, expired);
-  }
+  // Transition to 'Expired' -- a dedicated terminal status distinct from
+  // human-initiated 'Denied'. This preserves semantic clarity in audit logs.
+  const expired: ApprovalDecidedV1 = {
+    ...existing,
+    status: EXPIRY_DECISION_STATUS,
+    decidedAtIso: payload.expiredAtIso,
+    decidedByUserId: UserId(SYSTEM_ACTOR_ID),
+    rationale: payload.reason,
+  };
+
+  await deps.approvalStore.saveApproval(workspaceId, expired);
 
   // Publish CloudEvent
   const cloudEvent = domainEventToPortariumCloudEvent(action.event, SWEEP_SOURCE);
