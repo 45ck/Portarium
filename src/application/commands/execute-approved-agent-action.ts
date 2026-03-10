@@ -195,6 +195,18 @@ export async function executeApprovedAgentAction(
   // --- Persist event + evidence ---
   try {
     await deps.unitOfWork.execute(async () => {
+      // Mark approval as Executed to prevent double-execution on retry.
+      // Only update to terminal 'Executed' state when dispatch succeeded.
+      if (dispatchResult.ok) {
+        await deps.approvalStore.saveApproval(ctx.tenantId, {
+          ...approval,
+          status: 'Executed',
+          decidedAtIso: executedAtIso,
+          decidedByUserId: ctx.principalId,
+          rationale: `Executed via action runner (executionId: ${executionId})`,
+        });
+      }
+
       await deps.eventPublisher.publish(
         domainEventToPortariumCloudEvent(domainEvent, EXECUTE_SOURCE, ctx.traceparent),
       );

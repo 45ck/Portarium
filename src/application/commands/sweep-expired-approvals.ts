@@ -17,6 +17,7 @@ import {
   UserId,
   type ApprovalId as ApprovalIdType,
   type ApprovalDecision,
+  type TenantId as TenantIdType,
   type WorkspaceId as WorkspaceIdType,
   type CorrelationId as CorrelationIdType,
 } from '../../domain/primitives/index.js';
@@ -99,10 +100,10 @@ export async function sweepExpiredApprovals(
   // Process each action
   for (const action of result.actions) {
     if (action.kind === 'expired') {
-      await processExpiredAction(deps, action, workspaceId, correlationId);
+      await processExpiredAction(deps, action, ctx.tenantId, workspaceId, correlationId);
       expiredCount++;
     } else if (action.kind === 'escalated') {
-      await processEscalatedAction(deps, action, workspaceId, correlationId);
+      await processEscalatedAction(deps, action, ctx.tenantId, workspaceId, correlationId);
       escalatedCount++;
     }
   }
@@ -121,6 +122,7 @@ export async function sweepExpiredApprovals(
 async function processExpiredAction(
   deps: SweepExpiredApprovalsDeps,
   action: SchedulerAction,
+  tenantId: TenantIdType,
   workspaceId: WorkspaceIdType,
   correlationId: CorrelationIdType,
 ): Promise<void> {
@@ -129,7 +131,7 @@ async function processExpiredAction(
 
   // Load the current approval -- only process if still Pending.
   // Already-decided approvals must not trigger events or evidence entries.
-  const existing = await deps.approvalStore.getApprovalById(workspaceId, workspaceId, approvalId);
+  const existing = await deps.approvalStore.getApprovalById(tenantId, workspaceId, approvalId);
 
   if (existing?.status !== 'Pending') return;
 
@@ -143,7 +145,7 @@ async function processExpiredAction(
     rationale: payload.reason,
   };
 
-  await deps.approvalStore.saveApproval(workspaceId, expired);
+  await deps.approvalStore.saveApproval(tenantId, expired);
 
   // Publish CloudEvent
   const cloudEvent = domainEventToPortariumCloudEvent(action.event, SWEEP_SOURCE);
@@ -152,7 +154,7 @@ async function processExpiredAction(
   // Record audit evidence
   if (deps.evidenceLog) {
     const evidenceId = EvidenceId(deps.idGenerator.generateId());
-    await deps.evidenceLog.appendEntry(workspaceId, {
+    await deps.evidenceLog.appendEntry(tenantId, {
       schemaVersion: 1,
       evidenceId,
       workspaceId,
@@ -173,6 +175,7 @@ async function processExpiredAction(
 async function processEscalatedAction(
   deps: SweepExpiredApprovalsDeps,
   action: SchedulerAction,
+  tenantId: TenantIdType,
   workspaceId: WorkspaceIdType,
   correlationId: CorrelationIdType,
 ): Promise<void> {
@@ -190,7 +193,7 @@ async function processEscalatedAction(
     };
 
     const evidenceId = EvidenceId(deps.idGenerator.generateId());
-    await deps.evidenceLog.appendEntry(workspaceId, {
+    await deps.evidenceLog.appendEntry(tenantId, {
       schemaVersion: 1,
       evidenceId,
       workspaceId,

@@ -82,7 +82,7 @@ export function parseApprovalV1(value: unknown): ApprovalV1 {
   const statusRaw = readString(record, 'status', ApprovalParseError);
   if (!isApprovalStatus(statusRaw)) {
     throw new ApprovalParseError(
-      'status must be one of: Pending, Approved, Denied, RequestChanges, Expired.',
+      'status must be one of: Pending, Approved, Denied, Executed, Expired, RequestChanges.'
     );
   }
 
@@ -194,7 +194,11 @@ function parseOptionalId<T>(
 
 function isApprovalDecision(value: string): value is ApprovalDecision {
   return (
-    value === 'Approved' || value === 'Denied' || value === 'Expired' || value === 'RequestChanges'
+    value === 'Approved' ||
+    value === 'Denied' ||
+    value === 'Executed' ||
+    value === 'Expired' ||
+    value === 'RequestChanges'
   );
 }
 

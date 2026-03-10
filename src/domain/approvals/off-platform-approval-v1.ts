@@ -408,6 +408,7 @@ export function isOffPlatformChannelKind(value: string): value is OffPlatformCha
 function mapDecisionToAction(decision: ApprovalDecision): OffPlatformAction {
   switch (decision) {
     case 'Approved':
+    case 'Executed':
       return 'approve';
     case 'Denied':
     case 'Expired':

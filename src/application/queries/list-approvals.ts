@@ -27,7 +27,7 @@ import type {
   ListApprovalsFilter,
 } from '../ports/index.js';
 
-const APPROVAL_STATUSES = ['Pending', 'Approved', 'Denied', 'Expired', 'RequestChanges'] as const;
+const APPROVAL_STATUSES = ['Pending', 'Approved', 'Denied', 'Executed', 'Expired', 'RequestChanges'] as const;
 
 export type ListApprovalsInput = Readonly<{
   workspaceId: string;
