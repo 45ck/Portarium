@@ -1010,4 +1010,4 @@
 {"id":"bead-0913","title":"Remove 17 unused shadcn components + Radix deps from cockpit","status":"closed","priority":"P2","createdAt":"2026-03-08T22:40:33.565Z","updatedAt":"2026-03-10T03:45:59.346Z"}
 {"id":"bead-0914","title":"Remove dead CLI commands, domain barrels, and infra adapters","status":"closed","priority":"P2","createdAt":"2026-03-08T22:40:38.177Z","updatedAt":"2026-03-10T02:24:06.877Z"}
 {"id":"bead-0915","title":"Release infrastructure: changelog, tagging strategy, versioning tooling","status":"closed","priority":"P1","createdAt":"2026-03-08T22:40:43.399Z","updatedAt":"2026-03-09T04:10:05.340Z"}
-{"id":"bead-0916","title":"Major dependency upgrades: eslint 10, vite 7, storybook 10","status":"open","priority":"P3","createdAt":"2026-03-08T22:40:47.921Z","updatedAt":"2026-03-10T03:06:38.085Z","claimedBy":"agent-bead-0916","claimedAt":"2026-03-10T03:06:38.085Z"}
+{"id":"bead-0916","title":"Major dependency upgrades: eslint 10, vite 7, storybook 10","status":"closed","priority":"P3","createdAt":"2026-03-08T22:40:47.921Z","updatedAt":"2026-03-10T03:55:12.162Z"}
