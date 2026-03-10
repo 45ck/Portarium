@@ -3,7 +3,6 @@
  * embedding, and checkpoints.
  *
  * These are pure port interfaces — no infrastructure dependencies.
- * Adapters (Weaviate, Neo4j, OpenAI) implement these interfaces.
  */
 
 import type { WorkspaceId, RunId, EvidenceId } from '../primitives/index.js';
@@ -62,7 +61,6 @@ export type SemanticSearchParams = Readonly<{
 
 /**
  * Port for vector-based semantic search.
- * Implementations: WeaviateSemanticIndexAdapter, PgvectorSemanticIndexAdapter.
  */
 export interface SemanticIndexPort {
   upsert(entry: SemanticIndexEntry): Promise<void>;
@@ -107,7 +105,6 @@ export type GraphTraversalResult = Readonly<{
 
 /**
  * Port for graph projection and traversal.
- * Implementations: Neo4jGraphAdapter, InMemoryGraphAdapter.
  */
 export interface KnowledgeGraphPort {
   upsertNode(node: GraphNodeV1): Promise<void>;
@@ -134,7 +131,6 @@ export type EmbeddingResponse = Readonly<{
 
 /**
  * Port for computing dense vector embeddings.
- * Implementations: OpenAIEmbeddingAdapter, OnnxEmbeddingAdapter.
  */
 export interface EmbeddingPort {
   embed(request: EmbeddingRequest): Promise<EmbeddingResponse>;

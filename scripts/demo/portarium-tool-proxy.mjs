@@ -131,11 +131,37 @@ function proposeViaControlPlane(input) {
 // ---------------------------------------------------------------------------
 
 // tsx resolves .js → .ts at runtime
-import { InMemoryApprovalStore } from '../../src/infrastructure/stores/in-memory-approval-store.js';
 import { createApproval } from '../../src/application/commands/create-approval.js';
 import { submitApproval } from '../../src/application/commands/submit-approval.js';
 import { toAppContext } from '../../src/application/common/context.js';
 import { TenantId, WorkspaceId, ApprovalId } from '../../src/domain/primitives/index.js';
+
+/**
+ * Minimal in-memory approval store for demo use.
+ * The full InMemoryApprovalStore was removed in bead-0914; the production
+ * bootstrap uses an equivalent inline implementation.
+ */
+class InMemoryApprovalStore {
+  /** @type {Map<string, any>} */
+  #store = new Map();
+
+  async getApprovalById(_tenantId, _workspaceId, approvalId) {
+    return this.#store.get(String(approvalId)) ?? null;
+  }
+
+  async saveApproval(_tenantId, approval) {
+    this.#store.set(String(approval.approvalId), approval);
+  }
+
+  async listApprovals(_tenantId, _workspaceId, filter) {
+    let items = [...this.#store.values()];
+    if (filter.status) items = items.filter((a) => a.status === filter.status);
+    if (filter.runId) items = items.filter((a) => String(a.runId) === String(filter.runId));
+    if (filter.planId) items = items.filter((a) => String(a.planId) === String(filter.planId));
+    if (filter.limit) items = items.slice(0, filter.limit);
+    return { items };
+  }
+}
 
 const approvalStore = new InMemoryApprovalStore();
 
