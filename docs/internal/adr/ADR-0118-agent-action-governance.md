@@ -88,24 +88,46 @@ Agent/Operator → ExecuteApprovedAgentAction command
   → Load and guard approval (must be Approved)
   → Guard workspace match
   → Dispatch via ActionRunnerPort
+  → Transition approval to Executed (re-execution guard: only Approved → Executed allowed)
   → Record evidence
   → Emit AgentActionExecuted or AgentActionExecutionFailed event
 ```
 
+### Executed Terminal Status and Re-execution Guard (bead-0922)
+
+The `Executed` status is a terminal approval lifecycle state introduced alongside the Execute phase. It serves two purposes:
+
+1. **Audit clarity**: Distinguishes between "approved but not yet executed" (`Approved`) and "approved and action dispatched" (`Executed`). This preserves a clear semantic separation in the evidence trail.
+
+2. **Re-execution guard**: The state machine enforces `Approved → Executed` as a one-way, single-use transition. An approval in `Executed` state cannot be re-executed. This prevents replay attacks or accidental duplicate dispatches of the same approved action.
+
+The domain state machine (`approval-status-transitions.ts`) reflects this:
+
+```
+Pending → Approved → Executed  (terminal)
+Pending → Denied               (terminal)
+Pending → Expired              (terminal, system-only)
+Pending → RequestChanges → Pending  (re-opens for revision)
+```
+
+`Expired` is also terminal and is set **exclusively by the system scheduler** — it cannot be submitted as a human decision through the approval pipeline or off-platform tokens.
+
 ### Component Map
 
-| Component                           | Layer          | Responsibility                                  |
-| ----------------------------------- | -------------- | ----------------------------------------------- |
-| `AgentActionProposalV1`             | Domain         | Typed proposal aggregate with parser            |
-| `ProposalId`                        | Domain         | Branded primitive for proposal identity         |
-| `classifyOpenClawToolBlastRadiusV1` | Domain         | Tool risk classification by name patterns       |
-| `proposeAgentAction`                | Application    | Proposal evaluation command                     |
-| `submitApproval`                    | Application    | Approval decision with maker-checker            |
-| `executeApprovedAgentAction`        | Application    | Post-approval dispatch command                  |
-| `AgentActionProposalStore`          | Application    | Port for durable proposal persistence           |
-| `MachineInvokerActionRunner`        | Infrastructure | ActionRunnerPort adapter via MachineInvokerPort |
-| `InMemoryAgentActionProposalStore`  | Infrastructure | Test adapter for proposal store                 |
-| Approval CRUD endpoints             | Presentation   | HTTP routes for listing/viewing/deciding        |
+| Component                            | Layer          | Responsibility                                          |
+| ------------------------------------ | -------------- | ------------------------------------------------------- |
+| `AgentActionProposalV1`              | Domain         | Typed proposal aggregate with parser                    |
+| `ProposalId`                         | Domain         | Branded primitive for proposal identity                 |
+| `classifyOpenClawToolBlastRadiusV1`  | Domain         | Tool risk classification by name patterns               |
+| `ApprovalStatusTransitionMap`        | Domain         | Compile-time state machine (Pending/Approved/Executed/…)|
+| `APPROVAL_STATUS_TRANSITIONS`        | Domain         | Runtime transition table with re-execution guard        |
+| `proposeAgentAction`                 | Application    | Proposal evaluation command                             |
+| `submitApproval`                     | Application    | Approval decision with maker-checker                    |
+| `executeApprovedAgentAction`         | Application    | Post-approval dispatch + Executed transition            |
+| `AgentActionProposalStore`           | Application    | Port for durable proposal persistence                   |
+| `MachineInvokerActionRunner`         | Infrastructure | ActionRunnerPort adapter via MachineInvokerPort         |
+| `InMemoryAgentActionProposalStore`   | Infrastructure | Test adapter for proposal store                         |
+| Approval CRUD endpoints              | Presentation   | HTTP routes for listing/viewing/deciding                |
 
 ### RBAC Matrix
 
@@ -127,6 +149,7 @@ Agent/Operator → ExecuteApprovedAgentAction command
 - Tamper-evident evidence chain satisfies SOC 2 / ISO 27001 audit requirements.
 - The pipeline reuses the existing approval subsystem (no parallel approval mechanism).
 - `ActionRunnerPort` abstraction allows pluggable dispatch (OpenClaw, Activepieces, Langflow, etc.).
+- The `Executed` terminal state and re-execution guard prevent replay attacks and double-dispatch of approved actions, providing an additional safety layer beyond the single-use token model.
 
 ### Negative
 
@@ -146,4 +169,4 @@ Agent/Operator → ExecuteApprovedAgentAction command
 - ADR-0117: Approval-Wait Loop Mechanism
 - ADR-0070: Hybrid Architecture (orchestration + CloudEvents)
 - Spec: `.specify/specs/agent-action-governance-lifecycle-v1.md`
-- Implementation: bead-0864 (propose), bead-0866 (approve), bead-0867 (execute), bead-0874 (domain model), bead-0876 (store port), bead-0882 (gateway wiring)
+- Implementation: bead-0864 (propose), bead-0866 (approve), bead-0867 (execute), bead-0874 (domain model), bead-0876 (store port), bead-0882 (gateway wiring), bead-0922 (Executed status + state machine doc)
