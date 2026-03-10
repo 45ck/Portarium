@@ -206,7 +206,8 @@ export type TokenRejectionReason =
   | 'payload_changed'
   | 'action_not_permitted'
   | 'identity_mismatch'
-  | 'sod_violation';
+  | 'sod_violation'
+  | 'invalid_decision';
 
 /**
  * A validated off-platform decision, ready to be fed into the approval pipeline.
@@ -262,6 +263,16 @@ export function validateTokenConsumption(
     rationale?: string;
   },
 ): TokenConsumptionResultV1 {
+  // 0. Decision must be human-submittable.
+  // `Expired` and `Executed` are system-only — a human cannot submit them.
+  if (!HUMAN_SUBMITTABLE_DECISIONS.has(params.attemptedAction)) {
+    return {
+      ok: false,
+      reason: 'invalid_decision',
+      message: `Decision "${params.attemptedAction}" cannot be submitted by a human. Valid decisions are: Approved, Denied, RequestChanges.`,
+    };
+  }
+
   // 1. Token must be active
   if (token.status === 'consumed') {
     return {
@@ -400,6 +411,24 @@ const VALID_CHANNEL_KINDS = new Set<string>(['slack', 'teams', 'email', 'mobile_
 export function isOffPlatformChannelKind(value: string): value is OffPlatformChannelKind {
   return VALID_CHANNEL_KINDS.has(value);
 }
+
+// ---------------------------------------------------------------------------
+// Validation constants
+// ---------------------------------------------------------------------------
+
+/**
+ * The set of decisions that a human may submit via an off-platform token.
+ *
+ * `Expired` and `Executed` are system-only statuses:
+ *   - `Expired` is set by the scheduler when the approval deadline passes.
+ *   - `Executed` is set by the system when an approved action is dispatched.
+ * Neither may be submitted by a human through the off-platform approval path.
+ */
+const HUMAN_SUBMITTABLE_DECISIONS = new Set<ApprovalDecision>([
+  'Approved',
+  'Denied',
+  'RequestChanges',
+]);
 
 // ---------------------------------------------------------------------------
 // Helpers
