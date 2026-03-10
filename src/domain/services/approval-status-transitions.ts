@@ -8,8 +8,14 @@ import type { ApprovalStatus } from '../approvals/approval-v1.js';
  * Maps each ApprovalStatus to the union of states it can legally transition to.
  * `never` for terminal states means no outgoing transitions are valid.
  *
- * Approval lifecycle: an approval starts Pending and moves to exactly one
- * terminal decision state.  Decision states are final; there is no re-opening.
+ * Approval lifecycle:
+ *   - Starts in `Pending`.
+ *   - `RequestChanges` is a non-terminal decision: it transitions back to
+ *     `Pending` so the requester can revise and resubmit.
+ *   - `Approved` is a non-terminal decision: it transitions to `Executed`
+ *     once the approved agent action is dispatched (re-execution guard
+ *     ensures this is a one-way, single-use transition).
+ *   - `Denied`, `Expired`, and `Executed` are terminal: no outgoing transitions.
  */
 export interface ApprovalStatusTransitionMap {
   Pending: 'Approved' | 'Denied' | 'Expired' | 'RequestChanges';
@@ -26,7 +32,9 @@ export interface ApprovalStatusTransitionMap {
  *
  * Usage:
  *   type ValidFrom = ValidApprovalStatusTransition<'Pending'>;
- *   // => 'Approved' | 'Denied' | 'RequestChanges'
+ *   // => 'Approved' | 'Denied' | 'Expired' | 'RequestChanges'
+ *   type ValidFromApproved = ValidApprovalStatusTransition<'Approved'>;
+ *   // => 'Executed'
  */
 export type ValidApprovalStatusTransition<From extends ApprovalStatus = ApprovalStatus> =
   ApprovalStatusTransitionMap[From];
