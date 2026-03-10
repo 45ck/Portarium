@@ -234,7 +234,7 @@ export function toProposeAgentActionPolicyGateError(params: {
 
 /**
  * Derives a deterministic idempotency key from the proposal's identity fields:
- * workspaceId + agentId + toolName + canonical parameters JSON.
+ * workspaceId + agentId + actionKind + toolName + canonical parameters JSON.
  *
  * This allows automatic deduplication even when callers do not provide an
  * explicit idempotencyKey.
@@ -243,6 +243,7 @@ export function generateIdempotencyKey(input: ParsedProposeAgentActionInput): st
   const parts = [
     String(input.workspaceId),
     input.agentId,
+    input.actionKind,
     input.toolName,
     input.parameters ? stableJsonStringify(input.parameters) : '',
   ];

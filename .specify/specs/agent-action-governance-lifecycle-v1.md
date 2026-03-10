@@ -203,7 +203,7 @@ Proposal deduplication prevents duplicate approvals and evidence entries when th
 
 Each proposal may carry an optional `idempotencyKey`. When provided, the key is scoped to `(tenantId, workspaceId)` -- the same key in different workspaces creates independent proposals.
 
-When the caller does not supply an `idempotencyKey`, the system auto-generates one from a SHA-256 hash of `workspaceId + agentId + toolName + canonicalParameters`. This ensures that structurally identical proposals are automatically deduplicated.
+When the caller does not supply an `idempotencyKey`, the system auto-generates one from a SHA-256 hash of `workspaceId + agentId + actionKind + toolName + canonicalParameters`. This ensures that structurally identical proposals are automatically deduplicated.
 
 ### Uniqueness Enforcement
 

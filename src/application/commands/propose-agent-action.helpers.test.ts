@@ -58,6 +58,12 @@ describe('generateIdempotencyKey', () => {
     expect(keyA).not.toBe(keyB);
   });
 
+  it('produces different keys for different actionKind values', () => {
+    const keyA = generateIdempotencyKey(makeInput({ actionKind: 'comms:listEmails' }));
+    const keyB = generateIdempotencyKey(makeInput({ actionKind: 'comms:sendEmail' }));
+    expect(keyA).not.toBe(keyB);
+  });
+
   it('prefixes auto-generated keys with "auto:"', () => {
     const key = generateIdempotencyKey(makeInput());
     expect(key).toMatch(/^auto:[0-9a-f]{64}$/);

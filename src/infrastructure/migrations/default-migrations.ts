@@ -373,6 +373,7 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
     scope: 'Global',
     compatibility: 'BackwardCompatible',
     upSql: [
+      'DROP INDEX IF EXISTS idx_agent_action_proposals_idempotency;',
       `CREATE UNIQUE INDEX IF NOT EXISTS uk_agent_action_proposals_idempotency
   ON agent_action_proposals (tenant_id, workspace_id, idempotency_key)
   WHERE idempotency_key IS NOT NULL;`,

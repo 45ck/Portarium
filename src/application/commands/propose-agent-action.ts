@@ -217,6 +217,20 @@ function proposalToOutput(proposal: AgentActionProposalV1): ProposeAgentActionOu
  * the store to check whether a different proposal won the write (race loser
  * scenario). If so, return the winning proposal's output so the caller always
  * gets a consistent response.
+ *
+ * NOTE (accepted trade-off): When two concurrent requests race, the loser may
+ * have already created an ApprovalPendingV1 record and an evidence log entry
+ * before discovering it lost the idempotency race here. This is harmless because:
+ *
+ * 1. The orphan approval record will never be acted upon -- `submit-approval`
+ *    validates that the approval's associated proposal exists and matches before
+ *    allowing any decision, so an approval pointing at a non-winning proposalId
+ *    cannot be approved or denied.
+ * 2. The extra evidence entry is acceptable for audit completeness -- it documents
+ *    that a duplicate request was evaluated, which is useful forensic information.
+ * 3. A future improvement could wrap the entire propose sequence (evidence +
+ *    approval + proposal persistence) in a single transaction to eliminate the
+ *    orphan, but the current design is safe without it.
  */
 async function checkIdempotencyRaceWinner(
   deps: ProposeAgentActionDeps,
@@ -266,7 +280,7 @@ export async function proposeAgentAction(
   }
 
   // Auto-generate idempotency key when not provided by the caller.
-  // Uses hash(workspaceId + agentId + toolName + parameters) for deterministic dedup.
+  // Uses hash(workspaceId + agentId + actionKind + toolName + parameters) for deterministic dedup.
   const effectiveIdempotencyKey =
     parsedInput.value.idempotencyKey ??
     (deps.proposalStore ? generateIdempotencyKey(parsedInput.value) : undefined);
