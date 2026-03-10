@@ -82,7 +82,7 @@ export function parseApprovalV1(value: unknown): ApprovalV1 {
   const statusRaw = readString(record, 'status', ApprovalParseError);
   if (!isApprovalStatus(statusRaw)) {
     throw new ApprovalParseError(
-      'status must be one of: Pending, Approved, Denied, Executed, Expired, RequestChanges.'
+      'status must be one of: Pending, Approved, Denied, Executed, Expired, RequestChanges.',
     );
   }
 

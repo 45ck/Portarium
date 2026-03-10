@@ -196,7 +196,13 @@ export interface EvidenceEntry {
   hashSha256: string;
 }
 
-export type ApprovalStatus = 'Pending' | 'Approved' | 'Denied' | 'Executed' | 'Expired' | 'RequestChanges';
+export type ApprovalStatus =
+  | 'Pending'
+  | 'Approved'
+  | 'Denied'
+  | 'Executed'
+  | 'Expired'
+  | 'RequestChanges';
 
 export type SodState = 'eligible' | 'blocked-self' | 'blocked-role' | 'n-of-m';
 

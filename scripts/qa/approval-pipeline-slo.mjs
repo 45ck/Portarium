@@ -283,9 +283,8 @@ async function main() {
   console.log(`Approval pipeline SLO characterization — ${N} concurrent slots per operation\n`);
 
   // Dynamically import the actual command functions from the application layer
-  const { proposeAgentAction } = await import(
-    '../../src/application/commands/propose-agent-action.js'
-  );
+  const { proposeAgentAction } =
+    await import('../../src/application/commands/propose-agent-action.js');
   const { submitApproval } = await import('../../src/application/commands/submit-approval.js');
   const { parsePolicyV1 } = await import('../../src/domain/policy/index.js');
   const { parseApprovalV1 } = await import('../../src/domain/approvals/index.js');
