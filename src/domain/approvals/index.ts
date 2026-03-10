@@ -7,6 +7,7 @@ export * from './approval-snapshot-binding-v1.js';
 export * from './approval-decision-record-v1.js';
 export * from './approval-delegation-v1.js';
 export * from './approval-context-assembler-v1.js';
+export * from './approval-escalation-events-v1.js';
 
 // These modules have name conflicts with other domain modules and must be
 // imported directly rather than through the barrel:
