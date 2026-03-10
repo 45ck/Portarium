@@ -238,7 +238,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-n": "^17.23.2",
     "eslint-plugin-sonarjs": "^4.0.1",
     "eslint-plugin-unicorn": "^63.0.0",
@@ -253,7 +253,7 @@
     "shadcn": "^3.8.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
+    "typescript-eslint": "^8.57.0",
     "vitest": "^4.0.18",
     "yaml": "^2.8.2"
   },
