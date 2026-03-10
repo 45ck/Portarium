@@ -2,6 +2,7 @@ import {
   AgentId,
   ApprovalId,
   CorrelationId,
+  EvidenceId,
   MachineId,
   PolicyId,
   ProposalId,
@@ -10,6 +11,7 @@ import {
   type AgentId as AgentIdType,
   type ApprovalId as ApprovalIdType,
   type CorrelationId as CorrelationIdType,
+  type EvidenceId as EvidenceIdType,
   type ExecutionTier,
   type MachineId as MachineIdType,
   type PolicyId as PolicyIdType,
@@ -78,7 +80,7 @@ export type AgentActionProposalV1 = Readonly<{
   correlationId: CorrelationIdType;
   proposedAtIso: string;
   idempotencyKey?: string;
-  evidenceId?: string;
+  evidenceId?: EvidenceIdType;
 }>;
 
 // ---------------------------------------------------------------------------
@@ -128,7 +130,7 @@ export function parseAgentActionProposalV1(value: unknown): AgentActionProposalV
   const correlationId = CorrelationId(readString(record, 'correlationId', E));
   const proposedAtIso = readIsoString(record, 'proposedAtIso', E);
   const idempotencyKey = readOptionalString(record, 'idempotencyKey', E);
-  const evidenceId = readOptionalString(record, 'evidenceId', E);
+  const evidenceIdRaw = readOptionalString(record, 'evidenceId', E);
 
   return {
     schemaVersion: 1,
@@ -150,7 +152,7 @@ export function parseAgentActionProposalV1(value: unknown): AgentActionProposalV
     correlationId,
     proposedAtIso,
     ...(idempotencyKey !== undefined ? { idempotencyKey } : {}),
-    ...(evidenceId !== undefined ? { evidenceId } : {}),
+    ...(evidenceIdRaw !== undefined ? { evidenceId: EvidenceId(evidenceIdRaw) } : {}),
   };
 }
 

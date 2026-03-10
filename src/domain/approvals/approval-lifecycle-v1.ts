@@ -132,7 +132,6 @@ void _TRANSITION_TABLE_COVERAGE_GUARD;
  * One event kind per logical transition type (not per status pair).
  */
 export type ApprovalLifecycleEventKind =
-  | 'ApprovalOpened' //           Initial creation (→ Open)
   | 'ApprovalAssigned' //         Open/Assigned → Assigned
   | 'ApprovalUnderReview' //      Assigned/Open → UnderReview
   | 'ApprovalGranted' //          UnderReview → Approved

@@ -82,7 +82,7 @@ export function parseApprovalV1(value: unknown): ApprovalV1 {
   const statusRaw = readString(record, 'status', ApprovalParseError);
   if (!isApprovalStatus(statusRaw)) {
     throw new ApprovalParseError(
-      'status must be one of: Pending, Approved, Denied, RequestChanges.',
+      'status must be one of: Pending, Approved, Denied, RequestChanges, Expired.',
     );
   }
 
@@ -176,8 +176,10 @@ function parseEscalationChain(value: unknown): readonly EscalationStepV1[] {
 function parseEscalationStep(value: unknown, pathLabel: string): EscalationStepV1 {
   const record = parseRecord(value, pathLabel, ApprovalParseError);
   const stepOrder = readInteger(record, 'stepOrder', ApprovalParseError);
+  if (stepOrder < 1) throw new ApprovalParseError('stepOrder must be >= 1');
   const escalateToUserId = readString(record, 'escalateToUserId', ApprovalParseError);
   const afterHours = readInteger(record, 'afterHours', ApprovalParseError);
+  if (afterHours <= 0) throw new ApprovalParseError('afterHours must be > 0');
   return { stepOrder, escalateToUserId, afterHours };
 }
 

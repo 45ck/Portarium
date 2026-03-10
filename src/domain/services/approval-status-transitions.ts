@@ -17,7 +17,7 @@ export interface ApprovalStatusTransitionMap {
   Approved: never;
   Denied: never;
   Expired: never;
-  RequestChanges: never;
+  RequestChanges: 'Pending';
 }
 
 /**
@@ -42,14 +42,13 @@ export const APPROVAL_STATUS_TRANSITIONS: Readonly<
   Approved: [],
   Denied: [],
   Expired: [],
-  RequestChanges: [],
+  RequestChanges: ['Pending'],
 } as const;
 
 export const TERMINAL_APPROVAL_STATUSES: readonly ApprovalStatus[] = [
   'Approved',
   'Denied',
   'Expired',
-  'RequestChanges',
 ];
 
 // ---------------------------------------------------------------------------
