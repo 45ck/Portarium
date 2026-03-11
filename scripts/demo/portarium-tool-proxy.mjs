@@ -494,6 +494,48 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
     return;
   }
 
+  // POST /approvals/:id/execute
+  const executeMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})\/execute$/);
+  if (req.method === 'POST' && executeMatch) {
+    const id = /** @type {string} */ (executeMatch[1]);
+    const approval = await approvalStore.getApprovalById(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      ApprovalId(id),
+    );
+    if (!approval) {
+      jsonResponse(res, 404, { error: `Approval ${id} not found` });
+      return;
+    }
+    if (approval.status !== 'Approved') {
+      jsonResponse(res, 409, {
+        error: `Cannot execute: approval status is ${approval.status}, expected Approved`,
+      });
+      return;
+    }
+    const toolCtx = toolContextByApprovalId.get(id);
+    const toolName = toolCtx?.toolName ?? '(unknown)';
+    const parameters = toolCtx?.parameters ?? {};
+    const mockResult = await mockMachineInvoker.invokeTool({
+      toolName,
+      parameters,
+      machineId: /** @type {any} */ ('machine-demo-proxy'),
+      runId: /** @type {any} */ (`run-${Date.now()}`),
+    });
+    // Mark the approval as Executed in the store
+    await approvalStore.saveApproval(TenantId(DEMO_TENANT_ID), { ...approval, status: 'Executed' });
+    const executedAt = new Date().toISOString();
+    console.log(`[portarium-proxy] Executed ${id.slice(0, 8)}… (${toolName})`);
+    jsonResponse(res, 200, {
+      approvalId: id,
+      status: 'Executed',
+      toolName,
+      output: mockResult.ok ? mockResult.output : null,
+      executedAt,
+    });
+    return;
+  }
+
   // GET /tools
   if (req.method === 'GET' && url.pathname === '/tools') {
     const tools = DEMO_TOOLS.map((t) => {
@@ -737,7 +779,7 @@ export function startPolicyProxy(port = 9999) {
         );
       }
       console.log(
-        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  GET /approvals/ui`,
+        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  POST /approvals/:id/execute  GET /approvals/ui`,
       );
       resolve({
         url,
