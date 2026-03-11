@@ -1029,4 +1029,4 @@
 {"id":"bead-0932","title":"Wire stub stores for dev mode (DEV_STUB_STORES=true)","status":"closed","priority":"P1","createdAt":"2026-03-11T00:59:35.629Z","updatedAt":"2026-03-11T01:16:09.567Z"}
 {"id":"bead-0933","title":"SDK: list operations + waitForApproval convenience","status":"open","priority":"P1","createdAt":"2026-03-11T00:59:45.815Z","updatedAt":"2026-03-11T01:11:02.010Z","claimedBy":"claude","claimedAt":"2026-03-11T01:11:02.010Z"}
 {"id":"bead-0934","title":"Cockpit: render agentActionProposal metadata in approval cards","status":"open","priority":"P2","createdAt":"2026-03-11T00:59:46.324Z","updatedAt":"2026-03-11T00:59:46.324Z"}
-{"id":"bead-0935","title":"Integration test: overnight approval durability (ADR-0117)","status":"open","priority":"P2","createdAt":"2026-03-11T00:59:46.845Z","updatedAt":"2026-03-11T00:59:46.845Z"}
+{"id":"bead-0935","title":"Integration test: overnight approval durability (ADR-0117)","status":"open","priority":"P2","createdAt":"2026-03-11T00:59:46.845Z","updatedAt":"2026-03-11T01:18:22.642Z","claimedBy":"claude","claimedAt":"2026-03-11T01:18:22.642Z"}
