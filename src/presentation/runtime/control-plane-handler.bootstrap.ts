@@ -18,6 +18,7 @@ import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authoriz
 import { InMemoryQueryCache, RedisQueryCache } from '../../infrastructure/caching/index.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
 import {
+  PostgresApprovalStore,
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
@@ -247,13 +248,11 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
 
-  // In-memory approval store used until PostgresApprovalStore (bead-0877) is available.
-  const approvalStore = buildInMemoryApprovalStore();
-
   if (usePostgresStores && connectionString) {
     const sqlClient = new NodePostgresSqlClient({ connectionString });
     const workspaceStore = new PostgresWorkspaceStore(sqlClient);
     const runStore = new PostgresRunStore(sqlClient);
+    const approvalStore = new PostgresApprovalStore(sqlClient);
     return {
       authentication,
       authorization,
@@ -268,6 +267,8 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       approvalQueryStore: approvalStore,
     };
   }
+
+  const approvalStore = buildInMemoryApprovalStore();
 
   // Guard: in-memory stub stores require DEV_STUB_STORES=true in dev/test.
   const gate = checkStoreBootstrapGate();
