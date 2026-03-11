@@ -15,6 +15,16 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Bot, Search } from 'lucide-react';
 
+const CATEGORY_BADGE: Record<
+  string,
+  { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string }
+> = {
+  ReadOnly: { variant: 'secondary', label: 'Read-only' },
+  Mutation: { variant: 'warning', label: 'Mutation' },
+  Dangerous: { variant: 'destructive', label: 'Dangerous' },
+  Unknown: { variant: 'outline', label: 'Unknown' },
+};
+
 interface ApprovalListPanelProps {
   items: ApprovalSummary[];
   pendingCount: number;
@@ -122,11 +132,21 @@ export function ApprovalListPanel({
                     >
                       <p className="text-xs font-medium truncate leading-tight">{a.prompt}</p>
                       {a.agentActionProposal && (
-                        <div className="flex items-center gap-1 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <Bot className="h-3 w-3 text-primary shrink-0" />
                           <span className="text-[11px] font-mono text-primary truncate">
                             {a.agentActionProposal.toolName}
                           </span>
+                          {(() => {
+                            const cat =
+                              CATEGORY_BADGE[a.agentActionProposal.toolCategory] ??
+                              CATEGORY_BADGE['Unknown']!;
+                            return (
+                              <Badge variant={cat.variant} className="text-[9px] h-4 px-1 shrink-0">
+                                {cat.label}
+                              </Badge>
+                            );
+                          })()}
                         </div>
                       )}
                       <div className="flex items-center gap-2 mt-1">

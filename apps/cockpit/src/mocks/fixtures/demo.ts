@@ -257,6 +257,15 @@ export const APPROVALS: ApprovalSummary[] = [
       blastRadius: ['Odoo', '1 record'],
       irreversibility: 'full',
     },
+    agentActionProposal: {
+      proposalId: 'prop-8001',
+      agentId: 'agent-finance-reconciler',
+      toolName: 'write:finance',
+      toolCategory: 'Mutation',
+      blastRadiusTier: 'HumanApprove',
+      rationale:
+        'Invoice INV-4271 has a €1,240 discrepancy. Issuing a credit note to correct the billing error per standard reconciliation procedure.',
+    },
   },
   {
     schemaVersion: 1,
@@ -348,6 +357,15 @@ export const APPROVALS: ApprovalSummary[] = [
       tier: 'HumanApprove',
       blastRadius: ['Stripe', 'NetSuite', '12 records'],
       irreversibility: 'full',
+    },
+    agentActionProposal: {
+      proposalId: 'prop-8004',
+      agentId: 'agent-payments-processor',
+      toolName: 'write:finance',
+      toolCategory: 'Dangerous',
+      blastRadiusTier: 'HumanApprove',
+      rationale:
+        'Automated payment processing for supplier ACME Corp order #ORD-9921. Amount exceeds automated threshold requiring human sign-off.',
     },
   },
 ];
