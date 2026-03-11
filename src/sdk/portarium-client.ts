@@ -148,6 +148,36 @@ export type EventSubscription = Readonly<{
   unsubscribe: () => void;
 }>;
 
+export type ProposeAgentActionInput = Readonly<{
+  agentId: string;
+  actionKind: string;
+  toolName?: string;
+  parameters?: Record<string, unknown>;
+  executionTier?: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+  policyIds?: string[];
+  rationale?: string;
+  idempotencyKey?: string;
+}>;
+
+export type ProposeAgentActionResult = Readonly<{
+  proposalId: string;
+  decision: 'Allow' | 'NeedsApproval' | 'Denied';
+  approvalId?: string;
+  message?: string;
+}>;
+
+export type ExecuteAgentActionInput = Readonly<{
+  rationale?: string;
+}>;
+
+export type ExecuteAgentActionResult = Readonly<{
+  proposalId: string;
+  approvalId: string;
+  status: 'Executed';
+  executedAt: string;
+  result?: unknown;
+}>;
+
 // ---------------------------------------------------------------------------
 // PortariumClient
 // ---------------------------------------------------------------------------
@@ -164,6 +194,7 @@ export class PortariumClient {
   public readonly approvals: ApprovalsNamespace;
   public readonly agents: AgentsNamespace;
   public readonly machines: MachinesNamespace;
+  public readonly agentActions: AgentActionsNamespace;
   public readonly events: EventsNamespace;
 
   public constructor(config: PortariumClientConfig) {
@@ -183,6 +214,7 @@ export class PortariumClient {
     this.approvals = new ApprovalsNamespace(this);
     this.agents = new AgentsNamespace(this);
     this.machines = new MachinesNamespace(this);
+    this.agentActions = new AgentActionsNamespace(this);
     this.events = new EventsNamespace(this);
   }
 
@@ -446,6 +478,33 @@ class MachinesNamespace {
       'POST',
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/machines/${encodeURIComponent(input.machineId)}/heartbeat`,
       { statusMessage: input.statusMessage },
+    );
+  }
+}
+
+class AgentActionsNamespace {
+  readonly #client: PortariumClient;
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
+
+  async propose(input: ProposeAgentActionInput): Promise<ProposeAgentActionResult> {
+    return this.#client.request<ProposeAgentActionResult>(
+      'POST',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agent-actions:propose`,
+      input,
+      input.idempotencyKey ?? randomUUID(),
+    );
+  }
+
+  async execute(
+    approvalId: string,
+    input: ExecuteAgentActionInput = {},
+  ): Promise<ExecuteAgentActionResult> {
+    return this.#client.request<ExecuteAgentActionResult>(
+      'POST',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agent-actions/${encodeURIComponent(approvalId)}/execute`,
+      input,
     );
   }
 }

@@ -6,6 +6,8 @@ import {
   type ApprovalSummary,
   type PortariumClientConfig,
   type ProblemDetails,
+  type ProposeAgentActionResult,
+  type ExecuteAgentActionResult,
 } from './portarium-client.js';
 
 function mockFetch(status: number, body?: unknown): typeof fetch {
@@ -314,6 +316,121 @@ describe('PortariumClient', () => {
       const client = makeClient({ fetchFn });
 
       await expect(client.approvals.get('appr-999')).rejects.toThrow(PortariumApiError);
+    });
+  });
+
+  describe('agentActions.propose', () => {
+    it('sends POST to the agent-actions:propose endpoint with idempotency key', async () => {
+      const proposalResult: ProposeAgentActionResult = {
+        proposalId: 'prop-1',
+        decision: 'Allow',
+      };
+      const fetchFn = mockFetch(200, proposalResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.agentActions.propose({
+        agentId: 'agent-1',
+        actionKind: 'send_email',
+        toolName: 'email.send',
+        parameters: { to: 'user@example.com' },
+      });
+
+      expect(result.proposalId).toBe('prop-1');
+      expect(result.decision).toBe('Allow');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/agent-actions:propose');
+      expect(options.method).toBe('POST');
+      const headers = getHeaders(options);
+      expect(headers['idempotency-key']).toBeDefined();
+    });
+
+    it('uses caller-supplied idempotencyKey when provided', async () => {
+      const proposalResult: ProposeAgentActionResult = {
+        proposalId: 'prop-2',
+        decision: 'NeedsApproval',
+        approvalId: 'appr-10',
+      };
+      const fetchFn = mockFetch(200, proposalResult);
+      const client = makeClient({ fetchFn });
+
+      await client.agentActions.propose({
+        agentId: 'agent-1',
+        actionKind: 'delete_record',
+        idempotencyKey: 'my-idem-key',
+      });
+
+      const [, options] = getCallArgs(fetchFn);
+      const headers = getHeaders(options);
+      expect(headers['idempotency-key']).toBe('my-idem-key');
+    });
+
+    it('throws PortariumApiError on 403 Denied', async () => {
+      const problem: ProblemDetails = {
+        type: 'urn:portarium:error:forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Action denied by policy.',
+      };
+      const fetchFn = mockFetch(403, problem);
+      const client = makeClient({ fetchFn });
+
+      await expect(
+        client.agentActions.propose({ agentId: 'agent-1', actionKind: 'nuke' }),
+      ).rejects.toThrow(PortariumApiError);
+    });
+  });
+
+  describe('agentActions.execute', () => {
+    it('sends POST to the agent-actions/:approvalId/execute endpoint', async () => {
+      const execResult: ExecuteAgentActionResult = {
+        proposalId: 'prop-1',
+        approvalId: 'appr-10',
+        status: 'Executed',
+        executedAt: '2026-03-11T10:00:00Z',
+      };
+      const fetchFn = mockFetch(200, execResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.agentActions.execute('appr-10', { rationale: 'approved' });
+
+      expect(result.status).toBe('Executed');
+      expect(result.approvalId).toBe('appr-10');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/agent-actions/appr-10/execute');
+      expect(options.method).toBe('POST');
+    });
+
+    it('accepts empty input (no rationale)', async () => {
+      const execResult: ExecuteAgentActionResult = {
+        proposalId: 'prop-2',
+        approvalId: 'appr-20',
+        status: 'Executed',
+        executedAt: '2026-03-11T11:00:00Z',
+      };
+      const fetchFn = mockFetch(200, execResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.agentActions.execute('appr-20');
+
+      expect(result.approvalId).toBe('appr-20');
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/agent-actions/appr-20/execute');
+    });
+
+    it('URL-encodes the approvalId', async () => {
+      const execResult: ExecuteAgentActionResult = {
+        proposalId: 'prop-3',
+        approvalId: 'appr with spaces',
+        status: 'Executed',
+        executedAt: '2026-03-11T12:00:00Z',
+      };
+      const fetchFn = mockFetch(200, execResult);
+      const client = makeClient({ fetchFn });
+
+      await client.agentActions.execute('appr with spaces');
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/agent-actions/appr%20with%20spaces/execute');
     });
   });
 
