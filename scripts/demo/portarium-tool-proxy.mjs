@@ -126,6 +126,57 @@ function proposeViaControlPlane(input) {
   });
 }
 
+/**
+ * Trigger execution of an approved agent action proposal via the control plane.
+ *
+ * @param {string} approvalId
+ * @param {{ toolName: string; parameters: unknown }} toolCtx
+ * @returns {Promise<{ ok: boolean; statusCode: number; body: any }>}
+ */
+function executeViaControlPlane(approvalId, toolCtx) {
+  if (!controlPlane) throw new Error('controlPlane not configured');
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      flowRef: `machine-demo-proxy/${toolCtx.toolName}`,
+      payload: toolCtx.parameters ?? {},
+    });
+    const url = new URL(
+      `/v1/workspaces/${controlPlane.workspaceId}/agent-actions/${encodeURIComponent(approvalId)}/execute`,
+      controlPlane.url,
+    );
+    const opts = {
+      hostname: url.hostname,
+      port: url.port || 80,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${controlPlane.bearerToken}`,
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+    const req = httpRequest(opts, (res) => {
+      let raw = '';
+      res.on('data', (c) => (raw += c));
+      res.on('end', () => {
+        try {
+          const body = JSON.parse(raw);
+          resolve({
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            statusCode: res.statusCode ?? 500,
+            body,
+          });
+        } catch (e) {
+          reject(new Error(`Failed to parse execute response: ${String(e)}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Domain-layer approval store (ADR-0117 H9 bridge)
 // ---------------------------------------------------------------------------
@@ -490,7 +541,72 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
     console.log(
       `[portarium-proxy] Approval ${id.slice(0, 8)}… → ${decision} (${toolCtx?.toolName ?? 'unknown'})`,
     );
+
+    // When approved and control plane is configured, trigger execute
+    if (decision === 'approved' && controlPlane && toolCtx) {
+      try {
+        const execResult = await executeViaControlPlane(id, toolCtx);
+        console.log(
+          `[portarium-proxy] Execute ${id.slice(0, 8)}… → ${execResult.ok ? 'OK' : 'FAILED'} (${execResult.statusCode})`,
+        );
+        jsonResponse(res, 200, {
+          approvalId: id,
+          status: decision,
+          decidedAt,
+          executed: execResult.ok,
+          executionResult: execResult.body,
+        });
+        return;
+      } catch (err) {
+        console.error(`[portarium-proxy] Execute failed for ${id.slice(0, 8)}…:`, err);
+        jsonResponse(res, 502, { error: 'Execute call to control plane failed', approvalId: id });
+        return;
+      }
+    }
+
     jsonResponse(res, 200, { approvalId: id, status: decision, decidedAt });
+    return;
+  }
+
+  // POST /approvals/:id/execute
+  const executeMatch = url.pathname.match(/^\/approvals\/([0-9a-f-]{36})\/execute$/);
+  if (req.method === 'POST' && executeMatch) {
+    const id = /** @type {string} */ (executeMatch[1]);
+    const approval = await approvalStore.getApprovalById(
+      TenantId(DEMO_TENANT_ID),
+      WorkspaceId(DEMO_WORKSPACE_ID),
+      ApprovalId(id),
+    );
+    if (!approval) {
+      jsonResponse(res, 404, { error: `Approval ${id} not found` });
+      return;
+    }
+    if (approval.status !== 'Approved') {
+      jsonResponse(res, 409, {
+        error: `Cannot execute: approval status is ${approval.status}, expected Approved`,
+      });
+      return;
+    }
+    const toolCtx = toolContextByApprovalId.get(id);
+    const toolName = toolCtx?.toolName ?? '(unknown)';
+    const parameters = toolCtx?.parameters ?? {};
+    const mockResult = await mockMachineInvoker.invokeTool({
+      toolName,
+      parameters,
+      machineId: /** @type {any} */ ('machine-demo-proxy'),
+      runId: /** @type {any} */ (`run-${Date.now()}`),
+    });
+    // Mark the approval as Executed in the store
+    await approvalStore.saveApproval(TenantId(DEMO_TENANT_ID), { ...approval, status: 'Executed' });
+    const executedAt = new Date().toISOString();
+    console.log(`[portarium-proxy] Executed ${id.slice(0, 8)}… (${toolName})`);
+    jsonResponse(res, 200, {
+      approvalId: id,
+      status: 'Executed',
+      toolName,
+      output: mockResult.ok ? mockResult.output : null,
+      executedAt,
+    });
     return;
   }
 
@@ -737,7 +853,7 @@ export function startPolicyProxy(port = 9999) {
         );
       }
       console.log(
-        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  GET /approvals/ui`,
+        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  POST /approvals/:id/execute  GET /approvals/ui`,
       );
       resolve({
         url,
