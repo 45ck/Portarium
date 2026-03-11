@@ -22,6 +22,7 @@ import {
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
+import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresql/postgres-agent-action-proposal-store.js';
 import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
@@ -253,6 +254,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const workspaceStore = new PostgresWorkspaceStore(sqlClient);
     const runStore = new PostgresRunStore(sqlClient);
     const approvalStore = new PostgresApprovalStore(sqlClient);
+    const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
     return {
       authentication,
       authorization,
@@ -265,6 +267,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       eventStream,
       approvalStore,
       approvalQueryStore: approvalStore,
+      agentActionProposalStore,
     };
   }
 
