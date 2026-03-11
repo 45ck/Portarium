@@ -8,6 +8,8 @@ import {
   type ProblemDetails,
   type ProposeAgentActionResult,
   type ExecuteAgentActionResult,
+  type ApprovalListResult,
+  type RunListResult,
 } from './portarium-client.js';
 
 function mockFetch(status: number, body?: unknown): typeof fetch {
@@ -431,6 +433,133 @@ describe('PortariumClient', () => {
 
       const [url] = getCallArgs(fetchFn);
       expect(url).toContain('/agent-actions/appr%20with%20spaces/execute');
+    });
+  });
+
+  describe('approvals.list', () => {
+    it('sends GET to the approvals list endpoint with no filter', async () => {
+      const listResult: ApprovalListResult = {
+        items: [{ approvalId: 'appr-1', status: 'Pending' }],
+      };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.approvals.list();
+
+      expect(result.items).toHaveLength(1);
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/approvals');
+      expect(options.method).toBe('GET');
+    });
+
+    it('appends query parameters when filter is provided', async () => {
+      const listResult: ApprovalListResult = { items: [] };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      await client.approvals.list({ status: 'Approved', runId: 'run-42', limit: 10 });
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('status=Approved');
+      expect(url).toContain('runId=run-42');
+      expect(url).toContain('limit=10');
+    });
+  });
+
+  describe('runs.list', () => {
+    it('sends GET to the runs list endpoint with no filter', async () => {
+      const listResult: RunListResult = {
+        items: [
+          {
+            runId: 'run-1',
+            workflowId: 'wf-1',
+            status: 'Running',
+            createdAtIso: '2026-03-11T00:00:00Z',
+          },
+        ],
+      };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.runs.list();
+
+      expect(result.items).toHaveLength(1);
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/runs');
+      expect(options.method).toBe('GET');
+    });
+
+    it('appends limit query parameter when provided', async () => {
+      const listResult: RunListResult = { items: [] };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      await client.runs.list({ limit: 5 });
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('limit=5');
+    });
+  });
+
+  describe('agentActions.waitForApproval', () => {
+    it('calls execute() when approval is already Approved', async () => {
+      const approvalSummary: ApprovalSummary = {
+        approvalId: 'appr-10',
+        status: 'Approved',
+        decidedAt: '2026-03-11T10:00:00Z',
+      };
+      const execResult: ExecuteAgentActionResult = {
+        proposalId: 'prop-1',
+        approvalId: 'appr-10',
+        status: 'Executed',
+        executedAt: '2026-03-11T10:01:00Z',
+      };
+      // First call returns the approval GET; second call returns execute result
+      let callCount = 0;
+      const fetchFn = vi.fn().mockImplementation(() => {
+        callCount++;
+        const body = callCount === 1 ? approvalSummary : execResult;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(body),
+        });
+      });
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+
+      const result = await client.agentActions.waitForApproval('appr-10', { rationale: 'ready' });
+
+      expect(result.status).toBe('Executed');
+      expect(result.approvalId).toBe('appr-10');
+      // First call: GET approval, second call: POST execute
+      expect(callCount).toBe(2);
+      const [, executeOptions] = getCallArgs(fetchFn, 1);
+      expect(executeOptions.method).toBe('POST');
+      const [executeUrl] = getCallArgs(fetchFn, 1);
+      expect(executeUrl).toContain('/agent-actions/appr-10/execute');
+    });
+
+    it('throws when approval is Denied', async () => {
+      const approvalSummary: ApprovalSummary = {
+        approvalId: 'appr-20',
+        status: 'Denied',
+        decidedAt: '2026-03-11T10:00:00Z',
+      };
+      const fetchFn = mockFetch(200, approvalSummary);
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+
+      await expect(client.agentActions.waitForApproval('appr-20')).rejects.toThrow(/denied/i);
+    });
+
+    it('throws when approval is Expired', async () => {
+      const approvalSummary: ApprovalSummary = {
+        approvalId: 'appr-30',
+        status: 'Expired',
+      };
+      const fetchFn = mockFetch(200, approvalSummary);
+      const client = makeClient({ fetchFn, maxRetries: 0 });
+
+      await expect(client.agentActions.waitForApproval('appr-30')).rejects.toThrow(/expired/i);
     });
   });
 
