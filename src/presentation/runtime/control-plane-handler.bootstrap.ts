@@ -8,7 +8,9 @@ import type {
   AuthenticationPort,
   AuthorizationPort,
   QueryCache,
+  RunQueryStore,
   RunStore,
+  WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
@@ -23,6 +25,7 @@ import {
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresql/postgres-agent-action-proposal-store.js';
+import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
 import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
@@ -290,25 +293,31 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       'Data will not persist across restarts. Do not use in production.\n',
   );
 
-  const workspaceStore: WorkspaceStore = {
+  const workspaceStore: WorkspaceStore & WorkspaceQueryStore = {
     getWorkspaceById: () => Promise.resolve(null),
     getWorkspaceByName: () => Promise.resolve(null),
     saveWorkspace: () => Promise.resolve(),
+    listWorkspaces: () => Promise.resolve({ items: [] }),
   };
-  const runStore: RunStore = {
+  const runStore: RunStore & RunQueryStore = {
     getRunById: () => Promise.resolve(null),
     saveRun: () => Promise.resolve(),
+    listRuns: () => Promise.resolve({ items: [] }),
   };
+  const agentActionProposalStore = new InMemoryAgentActionProposalStore();
 
   return {
     authentication,
     authorization,
     workspaceStore,
+    workspaceQueryStore: workspaceStore,
     runStore,
+    runQueryStore: runStore,
     rateLimitStore,
     queryCache,
     eventStream,
     approvalStore,
     approvalQueryStore: approvalStore,
+    agentActionProposalStore,
   };
 }
