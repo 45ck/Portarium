@@ -126,6 +126,57 @@ function proposeViaControlPlane(input) {
   });
 }
 
+/**
+ * Trigger execution of an approved agent action proposal via the control plane.
+ *
+ * @param {string} approvalId
+ * @param {{ toolName: string; parameters: unknown }} toolCtx
+ * @returns {Promise<{ ok: boolean; statusCode: number; body: any }>}
+ */
+function executeViaControlPlane(approvalId, toolCtx) {
+  if (!controlPlane) throw new Error('controlPlane not configured');
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      flowRef: `machine-demo-proxy/${toolCtx.toolName}`,
+      payload: toolCtx.parameters ?? {},
+    });
+    const url = new URL(
+      `/v1/workspaces/${controlPlane.workspaceId}/agent-actions/${encodeURIComponent(approvalId)}/execute`,
+      controlPlane.url,
+    );
+    const opts = {
+      hostname: url.hostname,
+      port: url.port || 80,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${controlPlane.bearerToken}`,
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+    const req = httpRequest(opts, (res) => {
+      let raw = '';
+      res.on('data', (c) => (raw += c));
+      res.on('end', () => {
+        try {
+          const body = JSON.parse(raw);
+          resolve({
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            statusCode: res.statusCode ?? 500,
+            body,
+          });
+        } catch (e) {
+          reject(new Error(`Failed to parse execute response: ${String(e)}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Domain-layer approval store (ADR-0117 H9 bridge)
 // ---------------------------------------------------------------------------
@@ -490,6 +541,29 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #dd
     console.log(
       `[portarium-proxy] Approval ${id.slice(0, 8)}… → ${decision} (${toolCtx?.toolName ?? 'unknown'})`,
     );
+
+    // When approved and control plane is configured, trigger execute
+    if (decision === 'approved' && controlPlane && toolCtx) {
+      try {
+        const execResult = await executeViaControlPlane(id, toolCtx);
+        console.log(
+          `[portarium-proxy] Execute ${id.slice(0, 8)}… → ${execResult.ok ? 'OK' : 'FAILED'} (${execResult.statusCode})`,
+        );
+        jsonResponse(res, 200, {
+          approvalId: id,
+          status: decision,
+          decidedAt,
+          executed: execResult.ok,
+          executionResult: execResult.body,
+        });
+        return;
+      } catch (err) {
+        console.error(`[portarium-proxy] Execute failed for ${id.slice(0, 8)}…:`, err);
+        jsonResponse(res, 502, { error: 'Execute call to control plane failed', approvalId: id });
+        return;
+      }
+    }
+
     jsonResponse(res, 200, { approvalId: id, status: decision, decidedAt });
     return;
   }
