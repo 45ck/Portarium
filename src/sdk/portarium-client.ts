@@ -178,6 +178,25 @@ export type ExecuteAgentActionResult = Readonly<{
   result?: unknown;
 }>;
 
+// ---------- list types ----------
+export type ListApprovalsFilter = Readonly<{
+  status?: ApprovalStatus;
+  runId?: string;
+  limit?: number;
+}>;
+
+export type ApprovalListResult = Readonly<{
+  items: readonly ApprovalSummary[];
+}>;
+
+export type ListRunsFilter = Readonly<{
+  limit?: number;
+}>;
+
+export type RunListResult = Readonly<{
+  items: readonly RunSummary[];
+}>;
+
 // ---------------------------------------------------------------------------
 // PortariumClient
 // ---------------------------------------------------------------------------
@@ -378,6 +397,16 @@ class RunsNamespace {
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/runs/${encodeURIComponent(runId)}/cancel`,
     );
   }
+
+  async list(filter: ListRunsFilter = {}): Promise<RunListResult> {
+    const params = new URLSearchParams();
+    if (filter.limit !== undefined) params.set('limit', String(filter.limit));
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.#client.request<RunListResult>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/runs${query}`,
+    );
+  }
 }
 
 class ApprovalsNamespace {
@@ -402,6 +431,18 @@ class ApprovalsNamespace {
     return this.#client.request<ApprovalSummary>(
       'GET',
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/approvals/${encodeURIComponent(approvalId)}`,
+    );
+  }
+
+  async list(filter: ListApprovalsFilter = {}): Promise<ApprovalListResult> {
+    const params = new URLSearchParams();
+    if (filter.status) params.set('status', filter.status);
+    if (filter.runId) params.set('runId', filter.runId);
+    if (filter.limit !== undefined) params.set('limit', String(filter.limit));
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.#client.request<ApprovalListResult>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/approvals${query}`,
     );
   }
 
@@ -506,6 +547,40 @@ class AgentActionsNamespace {
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agent-actions/${encodeURIComponent(approvalId)}/execute`,
       input,
     );
+  }
+
+  /**
+   * Poll until the approval transitions out of Pending, then call execute().
+   * Returns the execute result. Throws if the approval is Denied or Expired.
+   */
+  async waitForApproval(
+    approvalId: string,
+    executeInput: ExecuteAgentActionInput = {},
+    opts: { pollInterval?: number; timeout?: number } = {},
+  ): Promise<ExecuteAgentActionResult> {
+    const pollIntervalMs = opts.pollInterval ?? 2_000;
+    const deadline = opts.timeout !== undefined ? Date.now() + opts.timeout : Infinity;
+
+    for (;;) {
+      const approval = await this.#client.approvals.waitFor(approvalId, {
+        timeout: Math.min(pollIntervalMs * 2, 30_000),
+        pollIntervalMs,
+      });
+
+      if (approval.status === 'Approved') {
+        return this.execute(approvalId, executeInput);
+      }
+      if (approval.status === 'Denied') {
+        throw new Error(`Approval ${approvalId} was denied`);
+      }
+      if (approval.status === 'Expired') {
+        throw new Error(`Approval ${approvalId} expired`);
+      }
+      // Still Pending (shouldn't happen since waitFor polls to terminal) — check timeout
+      if (deadline !== Infinity && Date.now() >= deadline) {
+        throw new Error(`waitForApproval timed out waiting for approval ${approvalId}`);
+      }
+    }
   }
 }
 
