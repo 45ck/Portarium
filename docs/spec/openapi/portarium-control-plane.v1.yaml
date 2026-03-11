@@ -3215,7 +3215,7 @@ components:
     # ---- Approval schemas ----
     ApprovalStatus:
       type: string
-      enum: [Pending, Approved, Denied, RequestChanges]
+      enum: [Pending, Approved, Denied, Executed, Expired, RequestChanges]
     ApprovalV1:
       type: object
       additionalProperties: false
