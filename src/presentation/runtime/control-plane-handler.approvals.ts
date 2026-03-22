@@ -301,7 +301,32 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
     return;
   }
 
-  const body = await readJsonBody(req);
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/bad-request',
+        title: bodyResult.error === 'unsupported-content-type' ? 'Unsupported Media Type' : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const body = bodyResult.value;
   if (!body || typeof body !== 'object') {
     respondProblem(
       res,

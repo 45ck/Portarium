@@ -164,8 +164,27 @@ export async function handleSavePolicy(args: PolicyListArgs): Promise<void> {
     return;
   }
 
-  const body = await readJsonBody(req);
-  if (!body || typeof body !== 'object') {
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!bodyResult.value || typeof bodyResult.value !== 'object') {
     respondProblem(
       res,
       {
@@ -182,7 +201,7 @@ export async function handleSavePolicy(args: PolicyListArgs): Promise<void> {
   }
 
   try {
-    const record = body as Record<string, unknown>;
+    const record = bodyResult.value as Record<string, unknown>;
     // Ensure workspaceId matches the URL
     const policyData = { ...record, workspaceId };
     const policy = parsePolicyV1(policyData);

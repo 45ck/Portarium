@@ -51,7 +51,7 @@ import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
 /** Seed a default governance policy into the given policy store. */
-function seedDefaultPolicy(store: PolicyStore, workspaceId: string): void {
+async function seedDefaultPolicy(store: PolicyStore, workspaceId: string): Promise<void> {
   const policy = parsePolicyV1({
     schemaVersion: 1,
     policyId: 'default-governance',
@@ -64,7 +64,7 @@ function seedDefaultPolicy(store: PolicyStore, workspaceId: string): void {
     createdAtIso: new Date().toISOString(),
     createdByUserId: 'system',
   });
-  void store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
+  await store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
 }
 
 /**
@@ -341,9 +341,9 @@ function buildUnitOfWork(): UnitOfWork {
  */
 function buildActionRunner(): ActionRunnerPort {
   const gatewayUrl = process.env['OPENCLAW_GATEWAY_BASE_URL']?.trim();
-  const gatewayToken = process.env['OPENCLAW_GATEWAY_BEARER_TOKEN']?.trim() ?? 'dev-token';
+  const gatewayToken = process.env['OPENCLAW_GATEWAY_BEARER_TOKEN']?.trim();
 
-  if (gatewayUrl) {
+  if (gatewayUrl && gatewayToken) {
     process.stderr.write(
       `[portarium] Action runner: OpenClaw gateway (${gatewayUrl})\n`,
     );
@@ -352,6 +352,13 @@ function buildActionRunner(): ActionRunnerPort {
       resolveBearerToken: async () => gatewayToken,
     });
     return new MachineInvokerActionRunner(invoker);
+  }
+
+  if (gatewayUrl && !gatewayToken) {
+    process.stderr.write(
+      '[portarium] WARNING: OPENCLAW_GATEWAY_BASE_URL is set but OPENCLAW_GATEWAY_BEARER_TOKEN is not. ' +
+        'Falling back to stub action runner. Set OPENCLAW_GATEWAY_BEARER_TOKEN to enable real dispatch.\n',
+    );
   }
 
   process.stderr.write(
@@ -368,7 +375,7 @@ function buildActionRunner(): ActionRunnerPort {
   };
 }
 
-export function buildControlPlaneDeps(): ControlPlaneDeps {
+export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
   const rateLimitStore = buildRateLimitStore();
@@ -391,7 +398,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const evidenceLog: EvidenceLogPort = new PostgresEvidenceLog(sqlClient);
     const policyStore = new PostgresPolicyStore(sqlClient);
     const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
-    seedDefaultPolicy(policyStore, devWsId);
+    await seedDefaultPolicy(policyStore, devWsId);
     return {
       authentication,
       authorization,
@@ -447,7 +454,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
   const machineRegistryStore = new InMemoryMachineRegistryStore();
   const policyStore = new InMemoryPolicyStore();
   const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
-  seedDefaultPolicy(policyStore, devWsId);
+  await seedDefaultPolicy(policyStore, devWsId);
   const evidenceLog: EvidenceLogPort = new InMemoryEvidenceLog();
 
   return {

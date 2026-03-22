@@ -122,8 +122,27 @@ export async function handleExecuteApprovedAgentAction(
     return;
   }
 
-  const body = await readJsonBody(req);
-  if (!body || typeof body !== 'object') {
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!bodyResult.value || typeof bodyResult.value !== 'object') {
     respondProblem(
       res,
       {
@@ -139,7 +158,7 @@ export async function handleExecuteApprovedAgentAction(
     return;
   }
 
-  const record = body as Record<string, unknown>;
+  const record = bodyResult.value as Record<string, unknown>;
   const flowRef = record['flowRef'];
   if (typeof flowRef !== 'string' || flowRef.trim() === '') {
     respondProblem(

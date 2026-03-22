@@ -13,7 +13,6 @@ import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
 import type { RunStatus } from '../../domain/runs/index.js';
 import { TenantId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
-import { buildControlPlaneDeps } from './control-plane-handler.bootstrap.js';
 import {
   defaultRegistry,
   httpActiveConnections,
@@ -409,7 +408,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     app.use('*', async (c, next) => {
       const { incoming, outgoing } = c.env;
       const origin = incoming.headers.origin;
-      if (typeof origin === 'string' && (allowedOrigins ? allowedOrigins.includes(origin) : true)) {
+      if (typeof origin === 'string' && (allowedOrigins ? allowedOrigins.includes(origin) : false)) {
         outgoing.setHeader('access-control-allow-origin', origin);
         outgoing.setHeader(
           'access-control-allow-methods',
@@ -966,9 +965,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
  * middleware/handlers via `respondJson` / `respondProblem`.  The `Response`
  * returned by `app.fetch()` is discarded.  See ADR-0097.
  */
-export function createControlPlaneHandler(
-  deps: ControlPlaneDeps = buildControlPlaneDeps(),
-): RequestHandler {
+export function createControlPlaneHandler(deps: ControlPlaneDeps): RequestHandler {
   const app = buildRouter(deps);
 
   return (req, res) => {

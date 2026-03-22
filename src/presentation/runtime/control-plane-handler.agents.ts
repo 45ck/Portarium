@@ -132,7 +132,28 @@ export async function handleMachineHeartbeat(args: MachineHeartbeatArgs): Promis
     respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
     return;
   }
-  const parsed = parseHeartbeatBody(await readJsonBody(req));
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const parsed = parseHeartbeatBody(bodyResult.value);
   if (!parsed.ok) {
     respondProblem(
       res,
@@ -180,7 +201,28 @@ export async function handleAgentHeartbeat(args: AgentArgs): Promise<void> {
     respondProblem(res, problemFromError(scopeCheck.error, pathname), correlationId, traceContext);
     return;
   }
-  const parsed = parseHeartbeatBody(await readJsonBody(req));
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const parsed = parseHeartbeatBody(bodyResult.value);
   if (!parsed.ok) {
     respondProblem(
       res,

@@ -162,7 +162,27 @@ export async function handlePatchWorkforceAvailability(args: HandlerArgsWithMemb
     return;
   }
 
-  const body = parseAvailabilityPatchBody(await readJsonBody(args.req));
+  const bodyResult = await readJsonBody(args.req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      args.res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: args.pathname,
+      },
+      args.correlationId,
+      args.traceContext,
+    );
+    return;
+  }
+
+  const body = parseAvailabilityPatchBody(bodyResult.value);
   if (!body.ok) {
     respondProblem(
       args.res,

@@ -245,10 +245,29 @@ export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<
     return;
   }
 
-  const body = await readJsonBody(req);
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
   let registration;
   try {
-    registration = parseMachineRegistrationV1(body);
+    registration = parseMachineRegistrationV1(bodyResult.value);
   } catch (err) {
     if (err instanceof MachineRegistrationParseError) {
       respondProblem(
@@ -407,10 +426,29 @@ export async function handleCreateAgent(args: AgentRegistryArgs): Promise<void> 
     return;
   }
 
-  const body = await readJsonBody(req);
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
   let agent;
   try {
-    agent = parseAgentConfigV1(body);
+    agent = parseAgentConfigV1(bodyResult.value);
   } catch (err) {
     if (err instanceof AgentConfigParseError) {
       respondProblem(

@@ -143,5 +143,55 @@ describe('InMemoryMachineRegistryStore', () => {
       expect(page.items).toHaveLength(1);
       expect(page.items[0]!.agentId).toBe('a-1');
     });
+
+    it('isolates machines by tenantId in listMachineRegistrations', async () => {
+      const store = new InMemoryMachineRegistryStore();
+      const tenantA = TenantId('tenant-a');
+      const tenantB = TenantId('tenant-b');
+      const machineA = makeMachine('m-shared');
+      const machineB = makeMachine('m-shared');
+
+      await store.saveMachineRegistration(tenantA, machineA);
+      await store.saveMachineRegistration(tenantB, machineB);
+
+      const pageA = await store.listMachineRegistrations(tenantA, {
+        workspaceId: WS,
+        pagination: { limit: 50 },
+      });
+      const pageB = await store.listMachineRegistrations(tenantB, {
+        workspaceId: WS,
+        pagination: { limit: 50 },
+      });
+
+      expect(pageA.items).toHaveLength(1);
+      expect(pageB.items).toHaveLength(1);
+      expect(pageA.items[0]!.machineId).toBe('m-shared');
+      expect(pageB.items[0]!.machineId).toBe('m-shared');
+    });
+
+    it('isolates agents by tenantId in listAgentConfigs', async () => {
+      const store = new InMemoryMachineRegistryStore();
+      const tenantA = TenantId('tenant-a');
+      const tenantB = TenantId('tenant-b');
+      const agentA = makeAgent('a-shared', 'm-1');
+      const agentB = makeAgent('a-shared', 'm-1');
+
+      await store.saveAgentConfig(tenantA, agentA);
+      await store.saveAgentConfig(tenantB, agentB);
+
+      const pageA = await store.listAgentConfigs(tenantA, {
+        workspaceId: WS,
+        pagination: { limit: 50 },
+      });
+      const pageB = await store.listAgentConfigs(tenantB, {
+        workspaceId: WS,
+        pagination: { limit: 50 },
+      });
+
+      expect(pageA.items).toHaveLength(1);
+      expect(pageB.items).toHaveLength(1);
+      expect(pageA.items[0]!.agentId).toBe('a-shared');
+      expect(pageB.items[0]!.agentId).toBe('a-shared');
+    });
   });
 });

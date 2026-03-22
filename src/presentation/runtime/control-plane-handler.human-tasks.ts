@@ -196,7 +196,27 @@ export async function handleAssignHumanTask(args: HandlerArgsWithHumanTask): Pro
     return;
   }
 
-  const body = parseAssignHumanTaskBody(await readJsonBody(args.req));
+  const bodyResult = await readJsonBody(args.req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      args.res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: args.pathname,
+      },
+      args.correlationId,
+      args.traceContext,
+    );
+    return;
+  }
+
+  const body = parseAssignHumanTaskBody(bodyResult.value);
   if (!body.ok) {
     respondProblem(
       args.res,
@@ -240,7 +260,27 @@ export async function handleCompleteHumanTask(args: HandlerArgsWithHumanTask): P
     return;
   }
 
-  const parsed = parseCompleteHumanTaskBody(await readJsonBody(args.req));
+  const bodyResult = await readJsonBody(args.req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      args.res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: args.pathname,
+      },
+      args.correlationId,
+      args.traceContext,
+    );
+    return;
+  }
+
+  const parsed = parseCompleteHumanTaskBody(bodyResult.value);
   if (!parsed.ok) {
     respondProblem(
       args.res,
@@ -292,7 +332,27 @@ export async function handleEscalateHumanTask(args: HandlerArgsWithHumanTask): P
     return;
   }
 
-  const parsed = parseEscalateHumanTaskBody(await readJsonBody(args.req));
+  const bodyResult = await readJsonBody(args.req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      args.res,
+      {
+        type:
+          bodyResult.status === 415
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/validation-failed',
+        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
+        status: bodyResult.status,
+        detail: bodyResult.message,
+        instance: args.pathname,
+      },
+      args.correlationId,
+      args.traceContext,
+    );
+    return;
+  }
+
+  const parsed = parseEscalateHumanTaskBody(bodyResult.value);
   if (!parsed.ok) {
     respondProblem(
       args.res,

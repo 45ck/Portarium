@@ -97,7 +97,9 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
 
       if (insertedAt !== undefined && this.#now() - insertedAt <= this.#idempotencyTtlMs) {
         // Key is live — check if it belongs to a different proposal.
-        for (const existing of this.#store.values()) {
+        for (const [key, existing] of this.#store.entries()) {
+          const tenantPrefix = String(tenantId) + ':';
+          if (!key.startsWith(tenantPrefix)) continue;
           if (
             existing.idempotencyKey === proposal.idempotencyKey &&
             String(existing.workspaceId) === String(proposal.workspaceId) &&
@@ -111,6 +113,8 @@ export class InMemoryAgentActionProposalStore implements AgentActionProposalStor
         // Key is either expired or never existed — clean up any stale entry
         // with the same idempotency key so lookups return the new proposal.
         for (const [key, existing] of this.#store.entries()) {
+          const tenantPrefix = String(tenantId) + ':';
+          if (!key.startsWith(tenantPrefix)) continue;
           if (
             existing.idempotencyKey === proposal.idempotencyKey &&
             String(existing.workspaceId) === String(proposal.workspaceId) &&

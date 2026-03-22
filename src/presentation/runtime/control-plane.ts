@@ -41,7 +41,7 @@ function readPort(defaultPort: number): number {
  * publish CloudEvents, replacing the earlier no-op evaluation-only path.
  */
 function tryStartApprovalScheduler(
-  deps: ReturnType<typeof buildControlPlaneDeps>,
+  deps: Awaited<ReturnType<typeof buildControlPlaneDeps>>,
 ): ApprovalSchedulerPort | null {
   if (process.env['PORTARIUM_APPROVAL_SCHEDULER_DISABLED'] === 'true') return null;
   if (!deps.approvalQueryStore || !deps.approvalStore) return null;
@@ -112,7 +112,7 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
   const port = options.port ?? readPort(8080);
   const host = options.host ?? '0.0.0.0';
 
-  const deps = buildControlPlaneDeps();
+  const deps = await buildControlPlaneDeps();
 
   const readinessCheck = async (): Promise<ReadinessResult> => {
     const checks: Record<string, { ok: boolean; message?: string }> = {};

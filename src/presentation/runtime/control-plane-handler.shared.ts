@@ -360,10 +360,32 @@ export class PayloadTooLargeError extends Error {
   }
 }
 
+/**
+ * Result of reading and parsing JSON from a request body.
+ * - `{ ok: true, value }` — valid JSON body
+ * - `{ ok: false, error: 'empty-body' }` — no body present
+ * - `{ ok: false, error: 'invalid-json' }` — malformed JSON
+ * - `{ ok: false, error: 'unsupported-content-type' }` — Content-Type is not application/json
+ */
+export type JsonBodyResult =
+  | { ok: true; value: unknown }
+  | { ok: false; error: 'empty-body' | 'invalid-json' | 'unsupported-content-type' };
+
+/**
+ * Read and parse JSON from request body with proper error handling.
+ *
+ * Returns:
+ * - `{ ok: true, value: <parsed> }` on valid JSON
+ * - `{ ok: false, error: 'empty-body' }` when body is empty
+ * - `{ ok: false, error: 'unsupported-content-type' }` when Content-Type is not application/json
+ * - `{ ok: false, error: 'invalid-json' }` when JSON is malformed
+ *
+ * Throws `PayloadTooLargeError` if body exceeds maxBytes.
+ */
 export async function readJsonBody(
   req: IncomingMessage,
   maxBytes: number = DEFAULT_MAX_BODY_BYTES,
-): Promise<unknown> {
+): Promise<JsonBodyResult> {
   const chunks: Buffer[] = [];
   let totalBytes = 0;
   for await (const chunk of req) {
@@ -375,13 +397,27 @@ export async function readJsonBody(
     }
     chunks.push(buf);
   }
-  if (chunks.length === 0) return null;
+
+  // No body bytes at all
+  if (chunks.length === 0) {
+    return { ok: false, error: 'empty-body' };
+  }
+
+  // If body is present, Content-Type must be application/json
+  const contentType = req.headers['content-type'] ?? '';
+  if (!contentType.toLowerCase().startsWith('application/json')) {
+    return { ok: false, error: 'unsupported-content-type' };
+  }
+
   const raw = Buffer.concat(chunks).toString('utf8').trim();
-  if (raw === '') return null;
+  if (raw === '') {
+    return { ok: false, error: 'empty-body' };
+  }
+
   try {
-    return JSON.parse(raw);
+    return { ok: true, value: JSON.parse(raw) };
   } catch {
-    return null;
+    return { ok: false, error: 'invalid-json' };
   }
 }
 

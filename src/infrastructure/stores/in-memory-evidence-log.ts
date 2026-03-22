@@ -1,10 +1,9 @@
 /**
  * In-memory implementation of EvidenceLogPort for local development and testing.
  *
- * Hash-chains evidence entries using JSON.stringify for the hash input. Note:
- * JSON.stringify does not guarantee canonical key ordering, so hashes may differ
- * from PostgresEvidenceLog which uses NodeCryptoEvidenceHasher with canonical
- * serialization. This is acceptable for dev/test but must not be used in production.
+ * Hash-chains evidence entries using canonical JSON serialization (RFC 8785 JCS)
+ * to match PostgresEvidenceLog behavior. Hashes are deterministic and reproducible
+ * across implementations and runs.
  */
 
 import { createHash } from 'node:crypto';
@@ -12,6 +11,7 @@ import { createHash } from 'node:crypto';
 import type { TenantId } from '../../domain/primitives/index.js';
 import { HashSha256 } from '../../domain/primitives/index.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
+import { canonicalizeJson } from '../../domain/evidence/canonical-json.js';
 import type {
   EvidenceEntryAppendInput,
   EvidenceLogPort,
@@ -27,7 +27,7 @@ export class InMemoryEvidenceLog implements EvidenceLogPort {
     const prev = chain[chain.length - 1];
     const previousHash = prev?.hashSha256;
 
-    const hashInput = JSON.stringify({
+    const hashInput = canonicalizeJson({
       ...entry,
       ...(previousHash !== undefined ? { previousHash } : {}),
     });
