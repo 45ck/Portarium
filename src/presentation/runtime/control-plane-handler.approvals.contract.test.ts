@@ -157,16 +157,16 @@ describe('GET /approvals/:approvalId — get', () => {
 // ---------------------------------------------------------------------------
 
 describe('POST /approvals/:approvalId/decide', () => {
-  it('returns 422 when body is not JSON', async () => {
+  it('returns 400 when body is not valid JSON', async () => {
     await startWith({ approvals: [PENDING_APPROVAL] });
     const res = await fetch(decideUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: 'not-json',
     });
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(400);
     const body = (await res.json()) as { type: string };
-    expect(body.type).toMatch(/validation-failed/);
+    expect(body.type).toMatch(/bad-request/);
   });
 
   it('returns 422 when decision is invalid', async () => {

@@ -121,10 +121,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     return { items: items.slice(0, limit) };
   }
 
-  async listAgentConfigs(
-    tenantId: TenantId,
-    query: ListAgentsQuery,
-  ): Promise<Page<AgentConfigV1>> {
+  async listAgentConfigs(tenantId: TenantId, query: ListAgentsQuery): Promise<Page<AgentConfigV1>> {
     const tenantPrefix = `${String(tenantId)}::`;
     const wsId = String(query.workspaceId);
     let items = [...this.#agents.entries()]

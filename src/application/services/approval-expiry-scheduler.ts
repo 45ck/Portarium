@@ -121,7 +121,7 @@ export async function evaluatePendingApprovals(
       ...(cursor ? { cursor } : {}),
     });
     for (const item of page.items) {
-      if (item.status === 'Pending') allItems.push(item as ApprovalPendingV1);
+      if (item.status === 'Pending') allItems.push(item);
     }
     cursor = page.nextCursor;
   } while (cursor);

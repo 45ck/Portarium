@@ -49,10 +49,9 @@ describe('control-plane security headers', () => {
       handler: createControlPlaneHandler(makeDeps()),
     });
 
-    const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/ws-sec-test`,
-      { headers: { authorization: 'Bearer test-token' } },
-    );
+    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-sec-test`, {
+      headers: { authorization: 'Bearer test-token' },
+    });
 
     expect(res.headers.get('content-security-policy')).toBe(
       "default-src 'none'; frame-ancestors 'none'",
@@ -60,9 +59,7 @@ describe('control-plane security headers', () => {
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
     expect(res.headers.get('x-frame-options')).toBe('DENY');
     expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
-    expect(res.headers.get('permissions-policy')).toBe(
-      'camera=(), microphone=(), geolocation=()',
-    );
+    expect(res.headers.get('permissions-policy')).toBe('camera=(), microphone=(), geolocation=()');
   });
 
   it('does not set HSTS in development/test mode', async () => {
@@ -73,10 +70,9 @@ describe('control-plane security headers', () => {
       handler: createControlPlaneHandler(makeDeps()),
     });
 
-    const res = await fetch(
-      `http://${handle.host}:${handle.port}/v1/workspaces/ws-sec-test`,
-      { headers: { authorization: 'Bearer test-token' } },
-    );
+    const res = await fetch(`http://${handle.host}:${handle.port}/v1/workspaces/ws-sec-test`, {
+      headers: { authorization: 'Bearer test-token' },
+    });
 
     // HSTS should not be set in test environment (plain HTTP)
     expect(res.headers.get('strict-transport-security')).toBeNull();

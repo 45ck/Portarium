@@ -344,9 +344,7 @@ function buildActionRunner(): ActionRunnerPort {
   const gatewayToken = process.env['OPENCLAW_GATEWAY_BEARER_TOKEN']?.trim();
 
   if (gatewayUrl && gatewayToken) {
-    process.stderr.write(
-      `[portarium] Action runner: OpenClaw gateway (${gatewayUrl})\n`,
-    );
+    process.stderr.write(`[portarium] Action runner: OpenClaw gateway (${gatewayUrl})\n`);
     const invoker = new OpenClawGatewayMachineInvoker({
       baseUrl: gatewayUrl,
       resolveBearerToken: async () => gatewayToken,

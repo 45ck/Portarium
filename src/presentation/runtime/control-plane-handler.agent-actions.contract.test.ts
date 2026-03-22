@@ -104,16 +104,16 @@ function proposeUrl(): string {
 // ---------------------------------------------------------------------------
 
 describe('POST /agent-actions:propose — body validation', () => {
-  it('returns 422 when body is not a JSON object', async () => {
+  it('returns 400 when body is not valid JSON', async () => {
     await startWith();
     const res = await fetch(proposeUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: 'not-json',
     });
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(400);
     const body = (await res.json()) as { type: string };
-    expect(body.type).toMatch(/validation-failed/);
+    expect(body.type).toMatch(/bad-request/);
   });
 
   it('returns 422 when required fields are missing', async () => {

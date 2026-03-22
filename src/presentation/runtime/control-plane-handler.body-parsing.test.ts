@@ -6,8 +6,12 @@ import { PayloadTooLargeError, readJsonBody } from './control-plane-handler.shar
 
 /**
  * Create a fake IncomingMessage-like readable stream from a Buffer or string.
+ * Sets Content-Type to application/json by default.
  */
-function fakeReq(body: string | Buffer): IncomingMessage {
+function fakeReq(
+  body: string | Buffer,
+  headers: Record<string, string> = { 'content-type': 'application/json' },
+): IncomingMessage {
   const buf = typeof body === 'string' ? Buffer.from(body, 'utf8') : body;
   const stream = new Readable({
     read() {
@@ -15,6 +19,7 @@ function fakeReq(body: string | Buffer): IncomingMessage {
       this.push(null);
     },
   });
+  (stream as unknown as IncomingMessage).headers = headers;
   return stream as unknown as IncomingMessage;
 }
 
@@ -24,37 +29,55 @@ function emptyReq(): IncomingMessage {
       this.push(null);
     },
   });
+  (stream as unknown as IncomingMessage).headers = {};
   return stream as unknown as IncomingMessage;
 }
 
 // ---------------------------------------------------------------------------
-// readJsonBody — existing behaviour preserved
+// readJsonBody — discriminated union result
 // ---------------------------------------------------------------------------
 
 describe('readJsonBody', () => {
   it('parses valid JSON', async () => {
-    const body = await readJsonBody(fakeReq('{"key":"value"}'));
-    expect(body).toEqual({ key: 'value' });
+    const result = await readJsonBody(fakeReq('{"key":"value"}'));
+    expect(result).toEqual({ ok: true, value: { key: 'value' } });
   });
 
-  it('returns null for empty body', async () => {
-    const body = await readJsonBody(emptyReq());
-    expect(body).toBeNull();
+  it('returns empty-body error for empty body', async () => {
+    const result = await readJsonBody(emptyReq());
+    expect(result).toEqual({ ok: false, error: 'empty-body' });
   });
 
-  it('returns null for whitespace-only body', async () => {
-    const body = await readJsonBody(fakeReq('   '));
-    expect(body).toBeNull();
+  it('returns empty-body error for whitespace-only body', async () => {
+    const result = await readJsonBody(fakeReq('   '));
+    expect(result).toEqual({ ok: false, error: 'empty-body' });
   });
 
-  it('returns null for invalid JSON', async () => {
-    const body = await readJsonBody(fakeReq('not json'));
-    expect(body).toBeNull();
+  it('returns invalid-json error for malformed JSON', async () => {
+    const result = await readJsonBody(fakeReq('not json'));
+    expect(result).toEqual({ ok: false, error: 'invalid-json' });
   });
 
   it('parses arrays', async () => {
-    const body = await readJsonBody(fakeReq('[1,2,3]'));
-    expect(body).toEqual([1, 2, 3]);
+    const result = await readJsonBody(fakeReq('[1,2,3]'));
+    expect(result).toEqual({ ok: true, value: [1, 2, 3] });
+  });
+
+  it('returns unsupported-content-type when Content-Type is not application/json', async () => {
+    const result = await readJsonBody(fakeReq('{"key":"value"}', { 'content-type': 'text/plain' }));
+    expect(result).toEqual({ ok: false, error: 'unsupported-content-type' });
+  });
+
+  it('returns unsupported-content-type when Content-Type is missing but body is present', async () => {
+    const result = await readJsonBody(fakeReq('{"key":"value"}', {}));
+    expect(result).toEqual({ ok: false, error: 'unsupported-content-type' });
+  });
+
+  it('accepts application/json with charset parameter', async () => {
+    const result = await readJsonBody(
+      fakeReq('{"key":"value"}', { 'content-type': 'application/json; charset=utf-8' }),
+    );
+    expect(result).toEqual({ ok: true, value: { key: 'value' } });
   });
 });
 
@@ -65,8 +88,9 @@ describe('readJsonBody', () => {
 describe('readJsonBody size limit', () => {
   it('accepts a body within the limit', async () => {
     const payload = JSON.stringify({ data: 'x'.repeat(100) });
-    const body = await readJsonBody(fakeReq(payload), 1024);
-    expect(body).toEqual({ data: 'x'.repeat(100) });
+    const result = await readJsonBody(fakeReq(payload), 1024);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual({ data: 'x'.repeat(100) });
   });
 
   it('throws PayloadTooLargeError when body exceeds limit', async () => {
@@ -87,8 +111,9 @@ describe('readJsonBody size limit', () => {
 
   it('accepts body exactly at the limit', async () => {
     const payload = '{"a":1}'; // 7 bytes
-    const body = await readJsonBody(fakeReq(payload), 7);
-    expect(body).toEqual({ a: 1 });
+    const result = await readJsonBody(fakeReq(payload), 7);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual({ a: 1 });
   });
 
   it('rejects body one byte over the limit', async () => {
@@ -99,8 +124,9 @@ describe('readJsonBody size limit', () => {
   it('uses default limit (1 MiB) when no limit specified', async () => {
     // A body under 1 MiB should succeed with default limit
     const payload = JSON.stringify({ data: 'x'.repeat(1000) });
-    const body = await readJsonBody(fakeReq(payload));
-    expect(body).toHaveProperty('data');
+    const result = await readJsonBody(fakeReq(payload));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toHaveProperty('data');
   });
 
   it('rejects multi-chunk bodies that cumulatively exceed the limit', async () => {
@@ -120,6 +146,7 @@ describe('readJsonBody size limit', () => {
         }
       },
     });
+    (stream as unknown as IncomingMessage).headers = { 'content-type': 'application/json' };
 
     await expect(readJsonBody(stream as unknown as IncomingMessage, limit)).rejects.toThrow(
       PayloadTooLargeError,

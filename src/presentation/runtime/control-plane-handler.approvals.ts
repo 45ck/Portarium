@@ -310,7 +310,10 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
           bodyResult.error === 'unsupported-content-type'
             ? 'https://portarium.dev/problems/unsupported-media-type'
             : 'https://portarium.dev/problems/bad-request',
-        title: bodyResult.error === 'unsupported-content-type' ? 'Unsupported Media Type' : 'Bad Request',
+        title:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
         status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
         detail:
           bodyResult.error === 'invalid-json'

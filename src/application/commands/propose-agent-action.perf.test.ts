@@ -114,7 +114,10 @@ function makeDeps(
     generateId: () => `id-${++idSeqRef.n}-${Math.random().toString(36).slice(2)}`,
   };
   const unitOfWork: UnitOfWork = { execute: async (fn) => fn() };
-  const policyStore: PolicyStore = { getPolicyById: async () => makePolicy(), savePolicy: async () => {} };
+  const policyStore: PolicyStore = {
+    getPolicyById: async () => makePolicy(),
+    savePolicy: async () => {},
+  };
   const eventPublisher: EventPublisher = { publish: async () => undefined };
   const evidenceLog: EvidenceLogPort = {
     appendEntry: async (_tenantId, entry) => ({

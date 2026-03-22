@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { startHealthServer, type HealthServerHandle, type ReadinessResult } from './health-server.js';
+import {
+  startHealthServer,
+  type HealthServerHandle,
+  type ReadinessResult,
+} from './health-server.js';
 
 let handle: HealthServerHandle | undefined;
 

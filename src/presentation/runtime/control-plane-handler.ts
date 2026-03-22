@@ -408,7 +408,10 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     app.use('*', async (c, next) => {
       const { incoming, outgoing } = c.env;
       const origin = incoming.headers.origin;
-      if (typeof origin === 'string' && (allowedOrigins ? allowedOrigins.includes(origin) : false)) {
+      if (
+        typeof origin === 'string' &&
+        (allowedOrigins ? allowedOrigins.includes(origin) : false)
+      ) {
         outgoing.setHeader('access-control-allow-origin', origin);
         outgoing.setHeader(
           'access-control-allow-methods',
@@ -434,10 +437,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   // -------------------------------------------------------------------------
   app.use('*', async (c, next) => {
     const { outgoing } = c.env;
-    outgoing.setHeader(
-      'content-security-policy',
-      "default-src 'none'; frame-ancestors 'none'",
-    );
+    outgoing.setHeader('content-security-policy', "default-src 'none'; frame-ancestors 'none'");
     outgoing.setHeader('x-content-type-options', 'nosniff');
     outgoing.setHeader('x-frame-options', 'DENY');
     outgoing.setHeader('referrer-policy', 'strict-origin-when-cross-origin');

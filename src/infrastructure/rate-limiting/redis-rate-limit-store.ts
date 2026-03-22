@@ -62,9 +62,7 @@ export class RedisRateLimitStore implements RateLimitStore {
   public getRulesForScope(scope: RateLimitScope): Promise<readonly RateLimitRuleV1[]> {
     const key = serializeRateLimitScope(scope);
     const scopeRules = this.#rules.get(key);
-    return Promise.resolve(
-      scopeRules ?? (this.#defaultRules.length > 0 ? this.#defaultRules : []),
-    );
+    return Promise.resolve(scopeRules ?? (this.#defaultRules.length > 0 ? this.#defaultRules : []));
   }
 
   public async getUsage(params: {

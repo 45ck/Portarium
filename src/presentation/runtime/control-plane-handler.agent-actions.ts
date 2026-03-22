@@ -72,12 +72,20 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
       res,
       {
         type:
-          bodyResult.status === 415
+          bodyResult.error === 'unsupported-content-type'
             ? 'https://portarium.dev/problems/unsupported-media-type'
-            : 'https://portarium.dev/problems/validation-failed',
-        title: bodyResult.status === 415 ? 'Unsupported Media Type' : 'Validation Failed',
-        status: bodyResult.status,
-        detail: bodyResult.message,
+            : 'https://portarium.dev/problems/bad-request',
+        title:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
         instance: pathname,
       },
       correlationId,
@@ -113,7 +121,9 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
     policyStore: deps.policyStore ?? {
       getPolicyById: async () => null,
-      savePolicy: async () => {},
+      savePolicy: async () => {
+        /* noop stub */
+      },
     },
     approvalStore: deps.approvalStore ?? {
       getApprovalById: async () => null,

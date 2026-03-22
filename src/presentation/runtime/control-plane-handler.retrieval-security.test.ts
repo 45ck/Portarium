@@ -361,7 +361,7 @@ function makeReqRes(body?: unknown): {
   const req = Object.assign(Object.create(IncomingMessage.prototype), {
     method: 'POST',
     url: '/',
-    headers: { authorization: 'Bearer dev-token' },
+    headers: { authorization: 'Bearer dev-token', 'content-type': 'application/json' },
     [Symbol.asyncIterator]: async function* () {
       if (body !== undefined) yield Buffer.from(JSON.stringify(body));
     },
