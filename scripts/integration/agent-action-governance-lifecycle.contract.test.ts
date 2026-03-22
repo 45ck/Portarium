@@ -94,6 +94,7 @@ function makeDeps(
     },
     policyStore: {
       getPolicyById: async () => makePolicy(),
+      savePolicy: async () => {},
     },
     approvalStore: {
       getApprovalById: async (_t, _w, id) => approvalStore.get(String(id)) ?? null,
@@ -252,7 +253,7 @@ describe('NeedsApproval flow (Mutation tool, HumanApprove tier)', () => {
           saveWorkspace: async () => undefined,
         },
         runStore: { getRunById: async () => null, saveRun: async () => undefined },
-        policyStore: { getPolicyById: async () => makePolicy() },
+        policyStore: { getPolicyById: async () => makePolicy(), savePolicy: async () => {} },
         approvalStore: {
           getApprovalById: async (_t, _w, id) => sharedStore.get(String(id)) ?? null,
           saveApproval: async (_t, a) => {
@@ -372,7 +373,7 @@ describe('Denied approval flow', () => {
           saveWorkspace: async () => undefined,
         },
         runStore: { getRunById: async () => null, saveRun: async () => undefined },
-        policyStore: { getPolicyById: async () => makePolicy() },
+        policyStore: { getPolicyById: async () => makePolicy(), savePolicy: async () => {} },
         approvalStore: {
           getApprovalById: async (_t, _w, id) => sharedStore.get(String(id)) ?? null,
           saveApproval: async (_t, a) => {
@@ -459,7 +460,7 @@ describe('Auth/authz negative paths', () => {
           saveWorkspace: async () => undefined,
         },
         runStore: { getRunById: async () => null, saveRun: async () => undefined },
-        policyStore: { getPolicyById: async () => makePolicy() },
+        policyStore: { getPolicyById: async () => makePolicy(), savePolicy: async () => {} },
       }),
     });
 
@@ -495,7 +496,7 @@ describe('Auth/authz negative paths', () => {
           saveWorkspace: async () => undefined,
         },
         runStore: { getRunById: async () => null, saveRun: async () => undefined },
-        policyStore: { getPolicyById: async () => makePolicy() },
+        policyStore: { getPolicyById: async () => makePolicy(), savePolicy: async () => {} },
       }),
     });
 
@@ -561,7 +562,7 @@ describe('Auth/authz negative paths', () => {
           saveWorkspace: async () => undefined,
         },
         runStore: { getRunById: async () => null, saveRun: async () => undefined },
-        policyStore: { getPolicyById: async () => makePolicy() },
+        policyStore: { getPolicyById: async () => makePolicy(), savePolicy: async () => {} },
         approvalStore: {
           getApprovalById: async (_t, _w, id) => sharedStore.get(String(id)) ?? null,
           saveApproval: async (_t, a) => {

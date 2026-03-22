@@ -49,7 +49,7 @@ describe('proposeAgentAction', () => {
     let idSeq = 0;
     idGenerator = { generateId: vi.fn(() => `id-${++idSeq}`) };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
-    policyStore = { getPolicyById: vi.fn(async () => makePolicy()) };
+    policyStore = { getPolicyById: vi.fn(async () => makePolicy()), savePolicy: vi.fn() };
     approvalStore = {
       getApprovalById: vi.fn(async () => null),
       saveApproval: vi.fn(async () => undefined),
@@ -178,7 +178,7 @@ describe('proposeAgentAction', () => {
   });
 
   it('returns NotFound when policy does not exist', async () => {
-    policyStore = { getPolicyById: vi.fn(async () => null) };
+    policyStore = { getPolicyById: vi.fn(async () => null), savePolicy: vi.fn() };
 
     const result = await proposeAgentAction(deps(), ctx(), {
       workspaceId: 'ws-1',

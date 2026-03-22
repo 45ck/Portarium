@@ -103,6 +103,7 @@ function makeDeps(
     },
     policyStore: {
       getPolicyById: async () => makePolicy(),
+      savePolicy: async () => {},
     },
     approvalStore: {
       getApprovalById: async (_t, _w, id) => approvalStore.get(String(id)) ?? null,

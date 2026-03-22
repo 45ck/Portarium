@@ -72,6 +72,7 @@ function makeDeps(
     },
     policyStore: {
       getPolicyById: async () => makePolicy(),
+      savePolicy: async () => {},
     },
     approvalStore: {
       getApprovalById: async () => null,

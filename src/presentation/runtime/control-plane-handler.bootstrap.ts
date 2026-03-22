@@ -29,6 +29,7 @@ import { PostgresEvidenceLog } from '../../infrastructure/postgresql/postgres-ev
 import { PostgresMachineRegistryStore } from '../../infrastructure/postgresql/postgres-machine-registry-store.js';
 import {
   PostgresApprovalStore,
+  PostgresPolicyStore,
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
@@ -42,11 +43,12 @@ import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-mem
 import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import type { PolicyStore } from '../../application/ports/policy-store.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
-/** Seed a default governance policy into the in-memory policy store. */
-function seedDefaultPolicy(store: InMemoryPolicyStore, workspaceId: string): void {
+/** Seed a default governance policy into the given policy store. */
+function seedDefaultPolicy(store: PolicyStore, workspaceId: string): void {
   const policy = parsePolicyV1({
     schemaVersion: 1,
     policyId: 'default-governance',
@@ -343,8 +345,7 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
     const machineStore = new PostgresMachineRegistryStore(sqlClient);
     const evidenceLog: EvidenceLogPort = new PostgresEvidenceLog(sqlClient);
-    // TODO: Replace with PostgresPolicyStore once policy CRUD API exists.
-    const policyStore = new InMemoryPolicyStore();
+    const policyStore = new PostgresPolicyStore(sqlClient);
     const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
     seedDefaultPolicy(policyStore, devWsId);
     return {

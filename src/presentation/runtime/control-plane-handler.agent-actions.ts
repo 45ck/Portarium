@@ -94,6 +94,7 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
     policyStore: deps.policyStore ?? {
       getPolicyById: async () => null,
+      savePolicy: async () => {},
     },
     approvalStore: deps.approvalStore ?? {
       getApprovalById: async () => null,

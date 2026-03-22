@@ -7,4 +7,5 @@ export interface PolicyStore {
     workspaceId: WorkspaceId,
     policyId: PolicyId,
   ): Promise<PolicyV1 | null>;
+  savePolicy(tenantId: TenantId, workspaceId: WorkspaceId, policy: PolicyV1): Promise<void>;
 }

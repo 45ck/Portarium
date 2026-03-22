@@ -21,6 +21,7 @@ import { clampLimit, MAX_LIMIT } from '../../application/common/query.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
+import type { PolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import type { RunV1 } from '../../domain/runs/run-v1.js';
 import { parseRunV1 } from '../../domain/runs/run-v1.js';
@@ -326,6 +327,16 @@ export class PostgresPolicyStore implements PolicyStore {
     }
     const parsed = parsePolicyV1(payload);
     return String(parsed.workspaceId) === String(workspaceId) ? parsed : null;
+  }
+
+  public async savePolicy(tenantId: string, workspaceId: string, policy: PolicyV1) {
+    await this.#documents.upsert({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_POLICIES,
+      documentId: String(policy.policyId),
+      payload: policy,
+    });
   }
 }
 

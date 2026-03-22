@@ -44,7 +44,7 @@ describe('submitMapCommandIntent', () => {
     let idSeq = 0;
     idGenerator = { generateId: vi.fn(() => `id-${++idSeq}`) };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
-    policyStore = { getPolicyById: vi.fn(async () => makePolicy()) };
+    policyStore = { getPolicyById: vi.fn(async () => makePolicy()), savePolicy: vi.fn() };
     eventPublisher = { publish: vi.fn(async () => undefined) };
     evidenceLog = {
       appendEntry: vi.fn(async (_tenantId, entry) => ({

@@ -269,7 +269,7 @@ describe('evaluatePendingApprovals — cursor pagination', () => {
     const pages = [
       { items: allApprovals.slice(0, 500), nextCursor: 'cur-1' },
       { items: allApprovals.slice(500, 1000), nextCursor: 'cur-2' },
-      { items: allApprovals.slice(1000), nextCursor: undefined },
+      { items: allApprovals.slice(1000) },
     ];
 
     let callIndex = 0;
