@@ -22,6 +22,7 @@ import type { Page } from '../../application/common/query.js';
 export class InMemoryMachineRegistryStore implements MachineRegistryStore, MachineQueryStore {
   readonly #machines = new Map<string, MachineRegistrationV1>();
   readonly #agents = new Map<string, AgentConfigV1>();
+  readonly #heartbeats = new Map<string, HeartbeatData>();
 
   // -- key helpers --
   #machineKey(tenantId: TenantId, machineId: MachineId): string {
@@ -55,10 +56,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     tenantId: TenantId,
     registration: MachineRegistrationV1,
   ): Promise<void> {
-    this.#machines.set(
-      this.#machineKey(tenantId, registration.machineId as unknown as MachineId),
-      registration,
-    );
+    this.#machines.set(this.#machineKey(tenantId, registration.machineId), registration);
   }
 
   // -- getAgentConfigById: overloaded to satisfy both interfaces --
@@ -79,23 +77,29 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
   }
 
   async saveAgentConfig(tenantId: TenantId, agent: AgentConfigV1): Promise<void> {
-    this.#agents.set(this.#agentKey(tenantId, agent.agentId as unknown as AgentId), agent);
+    this.#agents.set(this.#agentKey(tenantId, agent.agentId), agent);
   }
 
   async updateMachineHeartbeat(
     tenantId: TenantId,
     machineId: MachineId,
-    _heartbeat: HeartbeatData,
+    heartbeat: HeartbeatData,
   ): Promise<boolean> {
-    return this.#machines.has(this.#machineKey(tenantId, machineId));
+    const key = this.#machineKey(tenantId, machineId);
+    if (!this.#machines.has(key)) return false;
+    this.#heartbeats.set(key, heartbeat);
+    return true;
   }
 
   async updateAgentHeartbeat(
     tenantId: TenantId,
     agentId: AgentId,
-    _heartbeat: HeartbeatData,
+    heartbeat: HeartbeatData,
   ): Promise<boolean> {
-    return this.#agents.has(this.#agentKey(tenantId, agentId));
+    const key = this.#agentKey(tenantId, agentId);
+    if (!this.#agents.has(key)) return false;
+    this.#heartbeats.set(key, heartbeat);
+    return true;
   }
 
   // -- MachineQueryStore (read) --

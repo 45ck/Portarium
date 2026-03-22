@@ -213,6 +213,9 @@ function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
       );
       return new InMemoryRateLimitStore();
     }
+    // ioredis connects lazily; fail-open is handled inside RedisRateLimitStore.
+    // Wrap in an adapter to satisfy the RedisRateLimitClient interface without
+    // fighting ioredis's complex overloaded scan() type signatures.
     const redis = new Redis(redisUrl, { enableOfflineQueue: false, lazyConnect: true });
     const client = {
       get: (key: string) => redis.get(key),
@@ -310,10 +313,12 @@ function buildActionRunner(): ActionRunnerPort {
       'Agent actions will appear to succeed but are not dispatched to an execution plane.\n',
   );
   return {
-    dispatchAction: async (input) => ({
-      ok: true as const,
-      output: { status: 'completed', runId: String(input.runId) },
-    }),
+    dispatchAction: async (input) => {
+      process.stderr.write(
+        `[portarium] STUB: action dispatched (not real) — actionId=${String(input.actionId)} runId=${String(input.runId)}\n`,
+      );
+      return { ok: true as const, output: { status: 'completed', runId: String(input.runId) } };
+    },
   };
 }
 

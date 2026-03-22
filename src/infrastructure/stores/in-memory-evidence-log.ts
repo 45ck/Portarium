@@ -1,3 +1,12 @@
+/**
+ * In-memory implementation of EvidenceLogPort for local development and testing.
+ *
+ * Hash-chains evidence entries using JSON.stringify for the hash input. Note:
+ * JSON.stringify does not guarantee canonical key ordering, so hashes may differ
+ * from PostgresEvidenceLog which uses NodeCryptoEvidenceHasher with canonical
+ * serialization. This is acceptable for dev/test but must not be used in production.
+ */
+
 import { createHash } from 'node:crypto';
 
 import type { TenantId } from '../../domain/primitives/index.js';
