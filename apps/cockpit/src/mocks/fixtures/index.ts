@@ -19,6 +19,31 @@ export interface DatasetEntry {
  */
 export const DATASETS: DatasetEntry[] = [
   {
+    id: 'live',
+    label: 'Live',
+    description: 'Live mode — uses the real API (no mock data)',
+    load: () =>
+      Promise.resolve({
+        WORK_ITEMS: [],
+        RUNS: [],
+        APPROVALS: [],
+        PLANS: [],
+        CREDENTIAL_GRANTS: [],
+        EVIDENCE: [],
+        WORKFORCE_MEMBERS: [],
+        WORKFORCE_QUEUES: [],
+        AGENTS: [],
+        MACHINES: [],
+        ADAPTERS: [],
+        ROBOTS: [],
+        MISSIONS: [],
+        SAFETY_CONSTRAINTS: [],
+        APPROVAL_THRESHOLDS: [],
+        ESTOP_AUDIT_LOG: [],
+        OBSERVABILITY_DATA: { runsOverTime: [], successRate: 0, avgSlaDays: 0 },
+      }),
+  },
+  {
     id: 'demo',
     label: 'Portarium Demo',
     description: 'Small generic demo (6 work items, 7 runs)',

@@ -12,6 +12,8 @@ const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
   'meridian-full': 'ws-meridian',
 };
 
+const VALID_DATASETS = Object.keys(DATASET_WORKSPACE_MAP) as DatasetId[];
+
 export type PersonaId = 'Operator' | 'Approver' | 'Auditor' | 'Admin';
 
 export type TriageViewMode =
@@ -74,25 +76,13 @@ function readStoredTriageView(): TriageViewMode {
 
 function readStoredDataset(): DatasetId {
   const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
-  if (
-    envPreferred === 'live' ||
-    envPreferred === 'demo' ||
-    envPreferred === 'openclaw-demo' ||
-    envPreferred === 'meridian-demo' ||
-    envPreferred === 'meridian-full'
-  ) {
-    return envPreferred;
+  if (VALID_DATASETS.includes(envPreferred as DatasetId)) {
+    return envPreferred as DatasetId;
   }
 
   const stored = localStorage.getItem(DATASET_STORAGE_KEY);
-  if (
-    stored === 'live' ||
-    stored === 'demo' ||
-    stored === 'openclaw-demo' ||
-    stored === 'meridian-demo' ||
-    stored === 'meridian-full'
-  ) {
-    return stored;
+  if (stored && VALID_DATASETS.includes(stored as DatasetId)) {
+    return stored as DatasetId;
   }
   return 'meridian-demo';
 }
