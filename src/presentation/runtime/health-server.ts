@@ -2,12 +2,26 @@ import http, { type IncomingMessage, type Server, type ServerResponse } from 'no
 
 export type RequestHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
+/** Result of a single dependency check. */
+export type HealthCheckResult = Readonly<{
+  ok: boolean;
+  message?: string;
+}>;
+
+/** Aggregated readiness probe result. */
+export type ReadinessResult = Readonly<{
+  ok: boolean;
+  checks: Readonly<Record<string, HealthCheckResult>>;
+}>;
+
 export type HealthServerOptions = Readonly<{
   role: string;
   host?: string;
   port: number;
   /** Optional handler for non-health paths. When omitted, a plain text response is returned. */
   handler?: RequestHandler;
+  /** Optional readiness check. When provided, /readyz and /ready run dependency checks. */
+  readinessCheck?: () => Promise<ReadinessResult>;
 }>;
 
 export type HealthServerHandle = Readonly<{
@@ -31,14 +45,50 @@ function respondText(res: ServerResponse, statusCode: number, body: string): voi
   res.end(body);
 }
 
-function isHealthPath(url: string | undefined): boolean {
-  return url === '/healthz' || url === '/readyz' || url === '/ready' || url === '/health';
+function isLivenessPath(url: string | undefined): boolean {
+  return url === '/healthz' || url === '/health' || url === '/livez';
 }
 
-function createHandler(role: string, startedAt: string, handler?: RequestHandler) {
+function isReadinessPath(url: string | undefined): boolean {
+  return url === '/readyz' || url === '/ready';
+}
+
+function createHandler(
+  role: string,
+  startedAt: string,
+  handler?: RequestHandler,
+  readinessCheck?: () => Promise<ReadinessResult>,
+) {
   return (req: IncomingMessage, res: ServerResponse) => {
-    if (isHealthPath(req.url)) {
+    if (isLivenessPath(req.url)) {
       respondJson(res, 200, { service: role, status: 'ok', startedAt });
+      return;
+    }
+
+    if (isReadinessPath(req.url)) {
+      if (!readinessCheck) {
+        respondJson(res, 200, { service: role, status: 'ok', startedAt });
+        return;
+      }
+      void readinessCheck().then(
+        (result) => {
+          const statusCode = result.ok ? 200 : 503;
+          respondJson(res, statusCode, {
+            service: role,
+            status: result.ok ? 'ok' : 'unavailable',
+            startedAt,
+            checks: result.checks,
+          });
+        },
+        () => {
+          respondJson(res, 503, {
+            service: role,
+            status: 'unavailable',
+            startedAt,
+            checks: { readinessCheck: { ok: false, message: 'Readiness check threw' } },
+          });
+        },
+      );
       return;
     }
 
@@ -63,7 +113,9 @@ export async function startHealthServer(options: HealthServerOptions): Promise<H
   const host = options.host ?? '0.0.0.0';
   const startedAt = new Date().toISOString();
 
-  const server = http.createServer(createHandler(role, startedAt, options.handler));
+  const server = http.createServer(
+    createHandler(role, startedAt, options.handler, options.readinessCheck),
+  );
   await listen(server, options.port, host);
 
   const address = server.address();

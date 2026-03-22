@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { startHealthServer, type HealthServerHandle } from './health-server.js';
+import {
+  startHealthServer,
+  type HealthServerHandle,
+  type ReadinessResult,
+} from './health-server.js';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createControlPlaneHandler } from './control-plane-handler.js';
@@ -110,11 +114,36 @@ export async function main(options: ControlPlaneRuntimeOptions = {}): Promise<He
 
   const deps = buildControlPlaneDeps();
 
+  const readinessCheck = async (): Promise<ReadinessResult> => {
+    const checks: Record<string, { ok: boolean; message?: string }> = {};
+
+    // Check workspace store (exercises the primary DB connection)
+    if (deps.workspaceStore) {
+      try {
+        // A lightweight read that exercises the DB connection without side effects.
+        await deps.workspaceStore.getWorkspaceById(
+          '__readiness_probe__' as never,
+          '__readiness_probe__' as never,
+        );
+        checks['database'] = { ok: true };
+      } catch (error: unknown) {
+        checks['database'] = {
+          ok: false,
+          message: error instanceof Error ? error.message : 'DB check failed',
+        };
+      }
+    }
+
+    const allOk = Object.values(checks).every((c) => c.ok);
+    return { ok: allOk, checks };
+  };
+
   const handle = await startHealthServer({
     role,
     host,
     port,
     handler: createControlPlaneHandler(deps),
+    readinessCheck,
   });
 
   const schedulerHandle = tryStartApprovalScheduler(deps);
