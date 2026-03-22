@@ -1,23 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  CorrelationId,
-  EvidenceId,
-  TenantId,
-  WorkspaceId,
-} from '../../domain/primitives/index.js';
+import { CorrelationId, EvidenceId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { EvidenceEntryAppendInput } from '../../application/ports/evidence-log.js';
+import type { EvidenceCategory } from '../../domain/evidence/evidence-entry-v1.js';
 import { InMemoryEvidenceLog } from './in-memory-evidence-log.js';
 
 const T = TenantId('t-1');
 
-function makeEntry(id: string, category: string): EvidenceEntryAppendInput {
+function makeEntry(id: string, category: EvidenceCategory): EvidenceEntryAppendInput {
   return {
     schemaVersion: 1,
     evidenceId: EvidenceId(id),
     workspaceId: WorkspaceId('ws-1'),
     correlationId: CorrelationId('corr-1'),
     category,
+    summary: `Test evidence: ${category}`,
     occurredAtIso: '2026-01-01T00:00:00Z',
     actor: { kind: 'System' },
   };
