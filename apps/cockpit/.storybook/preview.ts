@@ -24,6 +24,7 @@ const preview: Preview = {
           { value: 'theme-midnight', title: 'Midnight' },
           { value: 'theme-warm', title: 'Warm Slate' },
           { value: 'theme-quantum', title: 'Quantum' },
+          { value: 'theme-tactical', title: 'Tactical' },
         ],
         showName: true,
         dynamicTitle: true,

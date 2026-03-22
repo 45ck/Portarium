@@ -49,6 +49,16 @@ const themeInfo: Record<
       'oklch(0.88 0.02 300)',
     ],
   },
+  'theme-tactical': {
+    name: 'Tactical',
+    description: 'Paper briefing, terracotta accent',
+    swatches: [
+      'oklch(0.96 0.01 200)',
+      'oklch(0.58 0.12 20)',
+      'oklch(0.90 0.01 180)',
+      'oklch(0.42 0.02 200)',
+    ],
+  },
 };
 
 export function ThemePicker() {

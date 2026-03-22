@@ -9,6 +9,7 @@ import {
   CommandShortcut,
   CommandSeparator,
 } from '@/components/ui/command';
+import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
 import { router } from '@/router';
 import { EntityIcon } from '@/components/domain/entity-icon';
@@ -35,6 +36,7 @@ interface CommandItemDef {
 
 function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore();
+  const { theme, setTheme, themes } = useTheme();
 
   // Global Ctrl+K / Cmd+K hotkey
   useEffect(() => {
@@ -187,16 +189,8 @@ function CommandPalette() {
       icon: <Palette className="h-4 w-4" />,
       onSelect: () => {
         setCommandPaletteOpen(false);
-        // Cycle through themes
-        const root = document.documentElement;
-        const themes = ['theme-arctic', 'theme-midnight', 'theme-warm', 'theme-quantum'] as const;
-        const current = themes.find((t) => root.classList.contains(t)) ?? 'theme-arctic';
-        const nextTheme = themes[(themes.indexOf(current) + 1) % themes.length] ?? 'theme-arctic';
-        themes.forEach((t) => root.classList.remove(t));
-        root.classList.add(nextTheme);
-        try {
-          localStorage.setItem('cockpit-theme', nextTheme);
-        } catch {}
+        const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length] ?? themes[0];
+        setTheme(nextTheme);
       },
     },
   ];

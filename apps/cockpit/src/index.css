@@ -17,6 +17,50 @@
   font-display: swap;
 }
 
+/* Tactical theme fonts — referenced only by .theme-tactical; browsers fetch on first use */
+@font-face {
+  font-family: 'Rajdhani';
+  src: url('/fonts/Rajdhani-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Rajdhani';
+  src: url('/fonts/Rajdhani-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Orbitron';
+  src: url('/fonts/Orbitron-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Orbitron';
+  src: url('/fonts/Orbitron-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Condensed';
+  src: url('/fonts/IBMPlexSansCondensed-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Condensed';
+  src: url('/fonts/IBMPlexSansCondensed-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -504,4 +548,129 @@
   --sidebar-ring: hsl(221.2 83.2% 53.3%);
 
   --radius: 0.75rem;
+}
+
+/* ── Tactical — Atlas briefing aesthetic, terracotta accent ── */
+.theme-tactical {
+  /* Colors: exact matches to aw/argos concept palettes (neutral grays, no cyan) */
+  --background: hsl(180 4% 97%);       /* #f7f8f8  aw.paperTop */
+  --foreground: hsl(200 5% 37%);       /* #5a6266  aw.textStrong */
+
+  --card: hsl(200 4% 93%);             /* #eceeef  aw.paperBottom */
+  --card-foreground: hsl(200 5% 37%);  /* #5a6266  aw.textStrong */
+
+  --popover: hsl(160 5% 94%);          /* #eef1f1  aw.haze */
+  --popover-foreground: hsl(200 5% 37%);
+
+  --primary: hsl(11 52% 54%);          /* #c85f49  aw.accentStrong */
+  --primary-foreground: hsl(0 0% 97%); /* #f8f8f8  aw.inverse */
+
+  --secondary: hsl(180 3% 91%);        /* #e5e8e8  aw.mapSoft */
+  --secondary-foreground: hsl(200 5% 37%);
+
+  --muted: hsl(192 3% 86%);            /* #d8ddde  aw.shell */
+  --muted-foreground: hsl(200 3% 59%); /* #93999c  aw.textSoft */
+
+  --accent: hsl(160 5% 94%);           /* #eef1f1  aw.haze */
+  --accent-foreground: hsl(200 5% 37%);
+
+  --destructive: hsl(0 65% 50%);
+  --destructive-foreground: hsl(0 0% 97%);
+
+  --border: hsl(195 5% 76%);           /* #bec4c6  aw.line */
+  --input: hsl(180 2% 87%);            /* #dcdfdf  aw.lineFaint */
+  --ring: hsl(8 56% 60%);              /* #d56f5f  aw.accent */
+
+  --success: oklch(0.65 0.12 150);
+  --success-foreground: oklch(0.98 0.02 150);
+  --warning: oklch(0.75 0.11 84);
+  --warning-foreground: oklch(0.25 0.07 46);
+  --info: oklch(0.68 0.09 230);
+  --info-foreground: oklch(0.18 0.05 230);
+
+  --chart-1: hsl(11 52% 54%);          /* terracotta */
+  --chart-2: oklch(0.65 0.12 150);
+  --chart-3: oklch(0.75 0.11 84);
+  --chart-4: oklch(0.68 0.09 230);
+  --chart-5: hsl(200 5% 46%);          /* #6e767a  aw.text */
+
+  --sidebar: hsl(147 6% 80%);          /* #c8d1cc  argos.bgTop */
+  --sidebar-foreground: hsl(193 20% 21%); /* #2b3d42  argos.textStrong */
+  --sidebar-primary: hsl(11 52% 54%);
+  --sidebar-primary-foreground: hsl(0 0% 97%);
+  --sidebar-accent: hsl(147 7% 76%);   /* #bcc7c2  argos.bgBottom */
+  --sidebar-accent-foreground: hsl(193 20% 21%);
+  --sidebar-border: hsl(195 5% 76%);
+  --sidebar-ring: hsl(8 56% 60%);
+
+  --radius: 0.25rem;
+
+  /* Fonts: Rajdhani for body, Geist Mono for code, Orbitron via --font-display */
+  --font-sans: 'Rajdhani', 'IBM Plex Sans Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
+}
+
+/* ── Tactical: paper texture background ── */
+.theme-tactical,
+.theme-tactical body {
+  background-image:
+    radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.82) 0, rgba(255, 255, 255, 0.12) 30%, transparent 58%),
+    radial-gradient(circle at 74% 22%, rgba(255, 255, 255, 0.34) 0, transparent 42%),
+    radial-gradient(circle at 28% 72%, rgba(255, 255, 255, 0.22) 0, transparent 42%),
+    radial-gradient(circle at 1px 1px, rgba(111, 118, 122, 0.10) 0.8px, transparent 1px),
+    linear-gradient(180deg, var(--background) 0%, var(--card) 100%);
+  background-size: auto, auto, auto, 18px 18px, auto;
+  background-attachment: fixed;
+}
+
+/* ── Tactical: Atlas typography hierarchy ── */
+
+/* Display headings — Orbitron 700, large geometric titles */
+.theme-tactical .aw-display {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+/* Sub-display — Orbitron 500, secondary headings */
+.theme-tactical .aw-subdisplay {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+/* Section labels — Rajdhani 700, uppercase category tags */
+.theme-tactical .aw-section {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Body text — IBM Plex Sans Condensed 400, readable copy */
+.theme-tactical .aw-body {
+  font-family: 'IBM Plex Sans Condensed', 'Rajdhani', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
+/* Micro labels — IBM Plex Sans Condensed 500, tiny uppercase metadata */
+.theme-tactical .aw-micro {
+  font-family: 'IBM Plex Sans Condensed', 'Rajdhani', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+}
+
+/* Timestamps — Orbitron 500, large numeric data displays */
+.theme-tactical .aw-timestamp {
+  font-family: 'Orbitron', monospace;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
 }
