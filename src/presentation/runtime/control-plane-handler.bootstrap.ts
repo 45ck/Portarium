@@ -15,6 +15,8 @@ import type {
 } from '../../application/ports/index.js';
 import type { ActionRunnerPort } from '../../application/ports/action-runner.js';
 import type { EvidenceLogPort } from '../../application/ports/evidence-log.js';
+import { MachineInvokerActionRunner } from '../../infrastructure/machines/machine-invoker-action-runner.js';
+import { OpenClawGatewayMachineInvoker } from '../../infrastructure/openclaw/openclaw-gateway-machine-invoker.js';
 import type { EventPublisher } from '../../application/ports/event-publisher.js';
 import type { UnitOfWork } from '../../application/ports/unit-of-work.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
@@ -332,11 +334,29 @@ function buildUnitOfWork(): UnitOfWork {
   return { execute: async (fn) => fn() };
 }
 
-/** Build a stub action runner that always succeeds. Actions are not actually dispatched. */
+/**
+ * Build the action runner. If OPENCLAW_GATEWAY_BASE_URL is set, uses the real
+ * OpenClaw gateway invoker (HTTP dispatch). Otherwise falls back to a stub
+ * that always returns ok:true without dispatching.
+ */
 function buildActionRunner(): ActionRunnerPort {
+  const gatewayUrl = process.env['OPENCLAW_GATEWAY_BASE_URL']?.trim();
+  const gatewayToken = process.env['OPENCLAW_GATEWAY_BEARER_TOKEN']?.trim() ?? 'dev-token';
+
+  if (gatewayUrl) {
+    process.stderr.write(
+      `[portarium] Action runner: OpenClaw gateway (${gatewayUrl})\n`,
+    );
+    const invoker = new OpenClawGatewayMachineInvoker({
+      baseUrl: gatewayUrl,
+      resolveBearerToken: async () => gatewayToken,
+    });
+    return new MachineInvokerActionRunner(invoker);
+  }
+
   process.stderr.write(
-    '[portarium] WARNING: Using stub action runner. ' +
-      'Agent actions will appear to succeed but are not dispatched to an execution plane.\n',
+    '[portarium] WARNING: Using stub action runner (OPENCLAW_GATEWAY_BASE_URL not set). ' +
+      'Agent actions will appear to succeed but are not dispatched.\n',
   );
   return {
     dispatchAction: async (input) => {
