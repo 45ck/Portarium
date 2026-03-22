@@ -254,6 +254,52 @@ describe('evaluatePendingApprovals — domain event shape', () => {
   });
 });
 
+describe('evaluatePendingApprovals — cursor pagination', () => {
+  it('fetches all pages when >500 pending approvals exist', async () => {
+    // Build 3 pages: 500 + 500 + 200 = 1200 approvals, all with escalation at 2h
+    const allApprovals: ApprovalPendingV1[] = [];
+    for (let i = 0; i < 1200; i++) {
+      allApprovals.push(
+        makePendingApproval({
+          approvalId: ApprovalId(`appr-${String(i)}`),
+        }),
+      );
+    }
+
+    const pages = [
+      { items: allApprovals.slice(0, 500), nextCursor: 'cur-1' },
+      { items: allApprovals.slice(500, 1000), nextCursor: 'cur-2' },
+      { items: allApprovals.slice(1000), nextCursor: undefined },
+    ];
+
+    let callIndex = 0;
+    const queryStore: ApprovalQueryStore = {
+      listApprovals: vi.fn(async () => pages[callIndex++]!),
+    };
+
+    const deps: ApprovalExpirySchedulerDeps = {
+      approvalQueryStore: queryStore,
+      clock: makeClock('2026-03-10T11:00:00.000Z'), // 3h after request => step 0
+      idGenerator: makeIdGenerator(),
+    };
+
+    const result = await evaluatePendingApprovals(deps, makeCtx());
+
+    expect(result.evaluated).toBe(1200);
+    expect(result.actions).toHaveLength(1200); // all should escalate
+    expect(queryStore.listApprovals).toHaveBeenCalledTimes(3);
+  });
+
+  it('stops when nextCursor is undefined (single page)', async () => {
+    const approval = makePendingApproval();
+    const deps = makeDeps([approval], '2026-03-10T11:00:00.000Z');
+    const result = await evaluatePendingApprovals(deps, makeCtx());
+
+    expect(result.evaluated).toBe(1);
+    expect(deps.approvalQueryStore.listApprovals).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('evaluatePendingApprovals — state cleanup', () => {
   it('prunes state map entries when an approval is no longer pending', async () => {
     const approval = makePendingApproval();
