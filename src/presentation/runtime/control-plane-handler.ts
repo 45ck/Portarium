@@ -401,7 +401,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const allowedOrigins = process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']?.split(',').map((o) => o.trim());
     app.use('*', async (c, next) => {
       const { incoming, outgoing } = c.env;
-      const origin = incoming.headers['origin'];
+      const origin = incoming.headers.origin;
       if (typeof origin === 'string' && (allowedOrigins ? allowedOrigins.includes(origin) : true)) {
         outgoing.setHeader('access-control-allow-origin', origin);
         outgoing.setHeader('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');

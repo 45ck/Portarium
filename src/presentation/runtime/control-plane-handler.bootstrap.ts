@@ -59,7 +59,7 @@ function seedDefaultPolicy(store: InMemoryPolicyStore, workspaceId: string): voi
     createdAtIso: new Date().toISOString(),
     createdByUserId: 'system',
   });
-  store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
+  void store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
 }
 
 /**
@@ -292,7 +292,11 @@ function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore {
 }
 
 function buildEventPublisher(): EventPublisher {
-  return { publish: async () => {} };
+  return {
+    publish: async () => {
+      /* no-op stub — events are not dispatched in dev mode */
+    },
+  };
 }
 
 function buildUnitOfWork(): UnitOfWork {
