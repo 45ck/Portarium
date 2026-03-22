@@ -105,11 +105,15 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
   // -- MachineQueryStore (read) --
 
   async listMachineRegistrations(
-    _tenantId: TenantId,
+    tenantId: TenantId,
     query: ListMachinesQuery,
   ): Promise<Page<MachineRegistrationV1>> {
+    const tenantPrefix = `${String(tenantId)}::`;
     const wsId = String(query.workspaceId);
-    let items = [...this.#machines.values()].filter((m) => String(m.workspaceId) === wsId);
+    let items = [...this.#machines.entries()]
+      .filter(([key]) => key.startsWith(tenantPrefix))
+      .map(([, machine]) => machine)
+      .filter((m) => String(m.workspaceId) === wsId);
     if (query.active !== undefined) {
       items = items.filter((m) => m.active === query.active);
     }
@@ -118,11 +122,15 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
   }
 
   async listAgentConfigs(
-    _tenantId: TenantId,
+    tenantId: TenantId,
     query: ListAgentsQuery,
   ): Promise<Page<AgentConfigV1>> {
+    const tenantPrefix = `${String(tenantId)}::`;
     const wsId = String(query.workspaceId);
-    let items = [...this.#agents.values()].filter((a) => String(a.workspaceId) === wsId);
+    let items = [...this.#agents.entries()]
+      .filter(([key]) => key.startsWith(tenantPrefix))
+      .map(([, agent]) => agent)
+      .filter((a) => String(a.workspaceId) === wsId);
     if (query.machineId) {
       items = items.filter((a) => String(a.machineId) === String(query.machineId));
     }
