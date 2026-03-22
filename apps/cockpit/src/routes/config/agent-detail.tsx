@@ -18,8 +18,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function agentKind(agent: AgentV1): 'openclaw' | 'code' | 'llm' {
-  if (agent.allowedCapabilities.includes('machine:invoke')) return 'openclaw';
-  if (agent.allowedCapabilities.includes('execute-code')) return 'code';
+  const caps = agent.allowedCapabilities ?? [];
+  if (caps.includes('machine:invoke')) return 'openclaw';
+  if (caps.includes('execute-code')) return 'code';
   return 'llm';
 }
 

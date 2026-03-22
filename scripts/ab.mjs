@@ -224,7 +224,7 @@ function parseArgs(argv) {
       const headless = !flag('--headed');
       // Send launch + navigate
       return [
-        { id: id(), action: 'launch', headless, viewport: null },
+        { id: id(), action: 'launch', headless, viewport: { width: 1280, height: 720 } },
         {
           id: id(),
           action: 'navigate',

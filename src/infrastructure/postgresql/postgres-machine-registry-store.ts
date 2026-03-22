@@ -1,5 +1,5 @@
 /**
- * bead-0791: PostgreSQL adapter for MachineRegistryStore.
+ * bead-0791: PostgreSQL adapter for MachineRegistryStore + MachineQueryStore.
  *
  * Persists machine registrations, agent configs, and live heartbeat data to
  * dedicated tables (added in migrations 0013 and 0014).
@@ -19,11 +19,18 @@ import {
   parseMachineRegistrationV1,
   parseAgentConfigV1,
 } from '../../domain/machines/machine-registration-v1.js';
-import type { AgentId, MachineId, TenantId } from '../../domain/primitives/index.js';
+import type { AgentId, MachineId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type {
   MachineRegistryStore,
   HeartbeatData,
 } from '../../application/ports/machine-registry-store.js';
+import type {
+  MachineQueryStore,
+  ListMachinesQuery,
+  ListAgentsQuery,
+} from '../../application/ports/machine-query-store.js';
+import type { Page } from '../../application/common/query.js';
+import { clampLimit } from '../../application/common/query.js';
 import type { SqlClient } from './sql-client.js';
 
 // ---------------------------------------------------------------------------
@@ -46,7 +53,7 @@ interface AgentConfigRow extends Record<string, unknown> {
 // PostgresMachineRegistryStore
 // ---------------------------------------------------------------------------
 
-export class PostgresMachineRegistryStore implements MachineRegistryStore {
+export class PostgresMachineRegistryStore implements MachineRegistryStore, MachineQueryStore {
   readonly #client: SqlClient;
 
   public constructor(client: SqlClient) {
@@ -54,13 +61,24 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore {
   }
 
   // -------------------------------------------------------------------------
-  // Machine registration
+  // Machine registration — overloaded to satisfy both interfaces
   // -------------------------------------------------------------------------
 
   public async getMachineRegistrationById(
     tenantId: TenantId,
     machineId: MachineId,
+  ): Promise<MachineRegistrationV1 | null>;
+  public async getMachineRegistrationById(
+    tenantId: TenantId,
+    workspaceId: WorkspaceId,
+    machineId: MachineId,
+  ): Promise<MachineRegistrationV1 | null>;
+  public async getMachineRegistrationById(
+    tenantId: TenantId,
+    machineIdOrWorkspaceId: MachineId | WorkspaceId,
+    maybeMachineId?: MachineId,
   ): Promise<MachineRegistrationV1 | null> {
+    const machineId = maybeMachineId ?? (machineIdOrWorkspaceId as MachineId);
     const result = await this.#client.query<MachineRegistrationRow>(
       `SELECT tenant_id, machine_id, payload
          FROM machine_registrations
@@ -95,13 +113,24 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore {
   }
 
   // -------------------------------------------------------------------------
-  // Agent configuration
+  // Agent configuration — overloaded to satisfy both interfaces
   // -------------------------------------------------------------------------
 
   public async getAgentConfigById(
     tenantId: TenantId,
     agentId: AgentId,
+  ): Promise<AgentConfigV1 | null>;
+  public async getAgentConfigById(
+    tenantId: TenantId,
+    workspaceId: WorkspaceId,
+    agentId: AgentId,
+  ): Promise<AgentConfigV1 | null>;
+  public async getAgentConfigById(
+    tenantId: TenantId,
+    agentIdOrWorkspaceId: AgentId | WorkspaceId,
+    maybeAgentId?: AgentId,
   ): Promise<AgentConfigV1 | null> {
+    const agentId = maybeAgentId ?? (agentIdOrWorkspaceId as AgentId);
     const result = await this.#client.query<AgentConfigRow>(
       `SELECT tenant_id, agent_id, payload
          FROM agent_configs
@@ -178,5 +207,81 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore {
       [String(tenantId), String(agentId), heartbeat.status, heartbeat.lastHeartbeatAtIso],
     );
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // -------------------------------------------------------------------------
+  // MachineQueryStore — list methods
+  // -------------------------------------------------------------------------
+
+  public async listMachineRegistrations(
+    tenantId: TenantId,
+    query: ListMachinesQuery,
+  ): Promise<Page<MachineRegistrationV1>> {
+    const limit = clampLimit(query.pagination.limit);
+    const fetchLimit = limit + 1;
+    const params: unknown[] = [String(tenantId), String(query.workspaceId)];
+
+    let sql = `SELECT payload FROM machine_registrations
+      WHERE tenant_id = $1 AND workspace_id = $2`;
+
+    if (query.active !== undefined) {
+      params.push(query.active);
+      sql += ` AND (payload->>'active')::boolean = $${params.length}`;
+    }
+    if (query.pagination.cursor) {
+      params.push(String(query.pagination.cursor));
+      sql += ` AND machine_id > $${params.length}`;
+    }
+
+    params.push(fetchLimit);
+    sql += ` ORDER BY machine_id ASC LIMIT $${params.length}`;
+
+    const result = await this.#client.query<{ payload: unknown }>(sql, params);
+    const rows = result.rows.map((r) => parseMachineRegistrationV1(r.payload));
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const page: Page<MachineRegistrationV1> = { items };
+    if (hasMore && items.length > 0) {
+      (page as { nextCursor?: string }).nextCursor = String(
+        items[items.length - 1]!.machineId,
+      );
+    }
+    return page;
+  }
+
+  public async listAgentConfigs(
+    tenantId: TenantId,
+    query: ListAgentsQuery,
+  ): Promise<Page<AgentConfigV1>> {
+    const limit = clampLimit(query.pagination.limit);
+    const fetchLimit = limit + 1;
+    const params: unknown[] = [String(tenantId), String(query.workspaceId)];
+
+    let sql = `SELECT payload FROM agent_configs
+      WHERE tenant_id = $1 AND workspace_id = $2`;
+
+    if (query.machineId) {
+      params.push(String(query.machineId));
+      sql += ` AND machine_id = $${params.length}`;
+    }
+    if (query.pagination.cursor) {
+      params.push(String(query.pagination.cursor));
+      sql += ` AND agent_id > $${params.length}`;
+    }
+
+    params.push(fetchLimit);
+    sql += ` ORDER BY agent_id ASC LIMIT $${params.length}`;
+
+    const result = await this.#client.query<{ payload: unknown }>(sql, params);
+    const rows = result.rows.map((r) => parseAgentConfigV1(r.payload));
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const page: Page<AgentConfigV1> = { items };
+    if (hasMore && items.length > 0) {
+      (page as { nextCursor?: string }).nextCursor = String(
+        items[items.length - 1]!.agentId,
+      );
+    }
+    return page;
   }
 }

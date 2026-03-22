@@ -15,8 +15,9 @@ import { Button } from '@/components/ui/button';
 import type { AgentV1 } from '@portarium/cockpit-types';
 
 function agentKind(agent: AgentV1): 'openclaw' | 'code' | 'llm' {
-  if (agent.allowedCapabilities.includes('machine:invoke')) return 'openclaw';
-  if (agent.allowedCapabilities.includes('execute-code')) return 'code';
+  const caps = agent.allowedCapabilities ?? [];
+  if (caps.includes('machine:invoke')) return 'openclaw';
+  if (caps.includes('execute-code')) return 'code';
   return 'llm';
 }
 
@@ -43,7 +44,7 @@ function AgentsPage() {
         return (
           <span className="flex items-center gap-2">
             <Icon className={`h-4 w-4 shrink-0 ${cls}`} aria-hidden="true" />
-            <span className="font-medium">{row.name}</span>
+            <span className="font-medium">{row.name ?? row.displayName ?? row.agentId}</span>
           </span>
         );
       },
@@ -64,18 +65,21 @@ function AgentsPage() {
     {
       key: 'endpoint',
       header: 'Endpoint',
-      render: (row: AgentV1) => (
-        <span className="font-mono text-[11px]" title={row.endpoint}>
-          {row.endpoint.length > 40 ? `${row.endpoint.slice(0, 40)}...` : row.endpoint}
-        </span>
-      ),
+      render: (row: AgentV1) => {
+        const ep = row.endpoint ?? '\u2014';
+        return (
+          <span className="font-mono text-[11px]" title={ep}>
+            {ep.length > 40 ? `${ep.slice(0, 40)}...` : ep}
+          </span>
+        );
+      },
     },
     {
       key: 'capabilities',
       header: 'Capabilities',
       render: (row: AgentV1) => (
         <div className="flex flex-wrap gap-1">
-          {row.allowedCapabilities.map((cap) => (
+          {(row.allowedCapabilities ?? []).map((cap) => (
             <AgentCapabilityBadge key={cap} capability={cap} />
           ))}
         </div>

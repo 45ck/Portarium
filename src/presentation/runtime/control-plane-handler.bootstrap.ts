@@ -13,26 +13,53 @@ import type {
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
+import type { ActionRunnerPort } from '../../application/ports/action-runner.js';
+import type { EvidenceLogPort } from '../../application/ports/evidence-log.js';
+import type { EventPublisher } from '../../application/ports/event-publisher.js';
+import type { UnitOfWork } from '../../application/ports/unit-of-work.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
 import { checkDevAuthEnvGate } from '../../infrastructure/auth/dev-token-env-gate.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { InMemoryQueryCache, RedisQueryCache } from '../../infrastructure/caching/index.js';
+import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
 import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-postgres-sql-client.js';
+import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresql/postgres-agent-action-proposal-store.js';
+import { PostgresEvidenceLog } from '../../infrastructure/postgresql/postgres-eventing.js';
+import { PostgresMachineRegistryStore } from '../../infrastructure/postgresql/postgres-machine-registry-store.js';
 import {
   PostgresApprovalStore,
   PostgresRunStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
-import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresql/postgres-agent-action-proposal-store.js';
-import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
 import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
 } from '../../infrastructure/rate-limiting/index.js';
-import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
+import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
+import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
+import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-memory-machine-registry-store.js';
+import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
+import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
+
+/** Seed a default governance policy into the in-memory policy store. */
+function seedDefaultPolicy(store: InMemoryPolicyStore, workspaceId: string): void {
+  const policy = parsePolicyV1({
+    schemaVersion: 1,
+    policyId: 'default-governance',
+    workspaceId,
+    name: 'Default Governance Policy',
+    description: 'Seed policy for local development — allows governed agent actions.',
+    active: true,
+    priority: 1,
+    version: 1,
+    createdAtIso: new Date().toISOString(),
+    createdByUserId: 'system',
+  });
+  store.savePolicy(workspaceId as never, workspaceId as never, policy);
+}
 
 /**
  * Returns any configuration warnings for the JWT authentication setup.
@@ -102,11 +129,35 @@ function tryBuildDevAuthentication(): AuthenticationPort | null {
   );
 
   const devUserId = process.env['PORTARIUM_DEV_USER_ID']?.trim();
-  return new DevTokenAuthentication({
+  const primary = new DevTokenAuthentication({
     token: devToken,
     workspaceId: devWorkspaceId,
     ...(devUserId ? { userId: devUserId } : {}),
   });
+
+  // Optional second dev token for maker-checker QA (different user, same workspace).
+  const devToken2 = process.env['PORTARIUM_DEV_TOKEN_2']?.trim();
+  const devUserId2 = process.env['PORTARIUM_DEV_USER_ID_2']?.trim();
+  if (!devToken2 || !devUserId2) return primary;
+
+  const secondary = new DevTokenAuthentication({
+    token: devToken2,
+    workspaceId: devWorkspaceId,
+    userId: devUserId2,
+  });
+
+  process.stderr.write(
+    `[portarium] Dev auth: two users configured (${devUserId ?? 'dev-user'}, ${devUserId2}).\n`,
+  );
+
+  // Chain: try primary first, then secondary.
+  return {
+    authenticateBearerToken: async (input) => {
+      const r1 = await primary.authenticateBearerToken(input);
+      if (r1.ok) return r1;
+      return secondary.authenticateBearerToken(input);
+    },
+  };
 }
 
 function buildAuthentication(): AuthenticationPort {
@@ -161,9 +212,6 @@ function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
       );
       return new InMemoryRateLimitStore();
     }
-    // ioredis connects lazily; fail-open is handled inside RedisRateLimitStore.
-    // Wrap in an adapter to satisfy the RedisRateLimitClient interface without
-    // fighting ioredis's complex overloaded scan() type signatures.
     const redis = new Redis(redisUrl, { enableOfflineQueue: false, lazyConnect: true });
     const client = {
       get: (key: string) => redis.get(key),
@@ -242,12 +290,37 @@ function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore {
   };
 }
 
+function buildEventPublisher(): EventPublisher {
+  return { publish: async () => {} };
+}
+
+function buildUnitOfWork(): UnitOfWork {
+  return { execute: async (fn) => fn() };
+}
+
+/** Build a stub action runner that always succeeds. Actions are not actually dispatched. */
+function buildActionRunner(): ActionRunnerPort {
+  process.stderr.write(
+    '[portarium] WARNING: Using stub action runner. ' +
+      'Agent actions will appear to succeed but are not dispatched to an execution plane.\n',
+  );
+  return {
+    dispatchAction: async (input) => ({
+      ok: true as const,
+      output: { status: 'completed', runId: String(input.runId) },
+    }),
+  };
+}
+
 export function buildControlPlaneDeps(): ControlPlaneDeps {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
   const rateLimitStore = buildRateLimitStore();
   const queryCache = buildQueryCache();
   const eventStream = new InMemoryEventStreamBroadcast();
+  const eventPublisher = buildEventPublisher();
+  const unitOfWork = buildUnitOfWork();
+  const actionRunner = buildActionRunner();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
@@ -258,6 +331,12 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     const runStore = new PostgresRunStore(sqlClient);
     const approvalStore = new PostgresApprovalStore(sqlClient);
     const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
+    const machineStore = new PostgresMachineRegistryStore(sqlClient);
+    const evidenceLog: EvidenceLogPort = new PostgresEvidenceLog(sqlClient);
+    // TODO: Replace with PostgresPolicyStore once policy CRUD API exists.
+    const policyStore = new InMemoryPolicyStore();
+    const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
+    seedDefaultPolicy(policyStore, devWsId);
     return {
       authentication,
       authorization,
@@ -271,12 +350,18 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
       approvalStore,
       approvalQueryStore: approvalStore,
       agentActionProposalStore,
+      machineRegistryStore: machineStore,
+      machineQueryStore: machineStore,
+      evidenceLog,
+      policyStore,
+      eventPublisher,
+      unitOfWork,
+      actionRunner,
     };
   }
 
   const approvalStore = buildInMemoryApprovalStore();
 
-  // Guard: in-memory stub stores require DEV_STUB_STORES=true in dev/test.
   const gate = checkStoreBootstrapGate();
   if (!gate.allowed) {
     throw new Error(
@@ -287,7 +372,6 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     );
   }
 
-  // DEV_STUB_STORES=true in development/test: warn and use in-memory stubs.
   process.stderr.write(
     '[portarium] WARNING: Using in-memory stub stores (DEV_STUB_STORES=true). ' +
       'Data will not persist across restarts. Do not use in production.\n',
@@ -305,6 +389,11 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     listRuns: () => Promise.resolve({ items: [] }),
   };
   const agentActionProposalStore = new InMemoryAgentActionProposalStore();
+  const machineRegistryStore = new InMemoryMachineRegistryStore();
+  const policyStore = new InMemoryPolicyStore();
+  const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
+  seedDefaultPolicy(policyStore, devWsId);
+  const evidenceLog: EvidenceLogPort = new InMemoryEvidenceLog();
 
   return {
     authentication,
@@ -319,5 +408,12 @@ export function buildControlPlaneDeps(): ControlPlaneDeps {
     approvalStore,
     approvalQueryStore: approvalStore,
     agentActionProposalStore,
+    machineRegistryStore,
+    machineQueryStore: machineRegistryStore,
+    policyStore,
+    evidenceLog,
+    eventPublisher,
+    unitOfWork,
+    actionRunner,
   };
 }

@@ -395,6 +395,26 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // -------------------------------------------------------------------------
+  // CORS — allow cockpit dev server cross-origin requests
+  // -------------------------------------------------------------------------
+  app.use('*', async (c, next) => {
+    const { incoming, outgoing } = c.env;
+    const origin = incoming.headers['origin'];
+    if (origin) {
+      outgoing.setHeader('access-control-allow-origin', origin);
+      outgoing.setHeader('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      outgoing.setHeader('access-control-allow-headers', 'authorization, content-type, x-correlation-id, traceparent, tracestate, if-match');
+      outgoing.setHeader('access-control-max-age', '86400');
+    }
+    if (incoming.method === 'OPTIONS') {
+      outgoing.statusCode = 204;
+      outgoing.end();
+      return;
+    }
+    await next();
+  });
+
+  // -------------------------------------------------------------------------
   // Metrics endpoint — serve before other middleware to avoid auth overhead
   // -------------------------------------------------------------------------
   app.get('/metrics', (c) => {

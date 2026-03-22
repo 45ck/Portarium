@@ -4,7 +4,7 @@
 
 import type { MeridianDataset } from './meridian-seed';
 
-export type DatasetId = 'demo' | 'openclaw-demo' | 'meridian-demo' | 'meridian-full';
+export type DatasetId = 'live' | 'demo' | 'openclaw-demo' | 'meridian-demo' | 'meridian-full';
 
 export interface DatasetEntry {
   id: DatasetId;

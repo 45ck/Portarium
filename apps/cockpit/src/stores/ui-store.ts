@@ -5,6 +5,7 @@ const DATASET_STORAGE_KEY = 'portarium-dataset';
 const TRIAGE_VIEW_STORAGE_KEY = 'portarium-triage-view';
 
 const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
+  live: import.meta.env.VITE_PORTARIUM_DEFAULT_WORKSPACE_ID ?? 'ws-local-dev',
   demo: 'ws-demo',
   'openclaw-demo': 'ws-demo',
   'meridian-demo': 'ws-meridian',
@@ -74,6 +75,7 @@ function readStoredTriageView(): TriageViewMode {
 function readStoredDataset(): DatasetId {
   const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
   if (
+    envPreferred === 'live' ||
     envPreferred === 'demo' ||
     envPreferred === 'openclaw-demo' ||
     envPreferred === 'meridian-demo' ||
@@ -84,6 +86,7 @@ function readStoredDataset(): DatasetId {
 
   const stored = localStorage.getItem(DATASET_STORAGE_KEY);
   if (
+    stored === 'live' ||
     stored === 'demo' ||
     stored === 'openclaw-demo' ||
     stored === 'meridian-demo' ||
