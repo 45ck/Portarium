@@ -202,14 +202,17 @@ export function respondJson(
     correlationId: string;
     traceContext: TraceContext;
     body: unknown;
+    /** RFC 7231 Location header for 201 Created responses. */
+    location?: string;
   }>,
 ): void {
-  const { statusCode, correlationId, traceContext, body } = args;
+  const { statusCode, correlationId, traceContext, body, location } = args;
   res.statusCode = statusCode;
   res.setHeader('content-type', 'application/json');
   res.setHeader('x-correlation-id', correlationId);
   res.setHeader('traceparent', traceContext.traceparent);
   if (traceContext.tracestate) res.setHeader('tracestate', traceContext.tracestate);
+  if (location) res.setHeader('location', location);
   res.end(JSON.stringify(body));
 }
 

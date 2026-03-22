@@ -1,8 +1,10 @@
 import {
   CorrelationId,
+  EventId,
   UserId,
   WorkspaceId,
   type CorrelationId as CorrelationIdType,
+  type EventId as EventIdType,
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
@@ -122,7 +124,7 @@ export type DomainEventType =
 
 export type DomainEventV1 = Readonly<{
   schemaVersion: 1;
-  eventId: string;
+  eventId: EventIdType;
   eventType: DomainEventType;
   aggregateKind: string;
   aggregateId: string;
@@ -257,7 +259,7 @@ export function parseDomainEventV1(value: unknown): DomainEventV1 {
     throw new DomainEventParseError(`Unsupported schemaVersion: ${schemaVersion}`);
   }
 
-  const eventId = readString(record, 'eventId', DomainEventParseError);
+  const eventId = EventId(readString(record, 'eventId', DomainEventParseError));
   const eventType = readEventType(record, 'eventType');
   const aggregateKind = readString(record, 'aggregateKind', DomainEventParseError);
   const aggregateId = readString(record, 'aggregateId', DomainEventParseError);

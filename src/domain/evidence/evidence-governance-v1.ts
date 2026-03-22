@@ -1,10 +1,14 @@
-import { EvidenceId, UserId, WorkspaceId } from '../primitives/index.js';
+import { type Branded, brand, EvidenceId, UserId, WorkspaceId } from '../primitives/index.js';
 import type { EvidenceCategory } from './evidence-entry-v1.js';
 
 export type DispositionAction = 'Destroy' | 'DeIdentify' | 'Quarantine';
 
-export type EvidenceRetentionScheduleId = string;
-export type LegalHoldId = string;
+export type EvidenceRetentionScheduleId = Branded<string, 'EvidenceRetentionScheduleId'>;
+export const EvidenceRetentionScheduleId = (value: string): EvidenceRetentionScheduleId =>
+  brand<string, 'EvidenceRetentionScheduleId'>(value);
+
+export type LegalHoldId = Branded<string, 'LegalHoldId'>;
+export const LegalHoldId = (value: string): LegalHoldId => brand<string, 'LegalHoldId'>(value);
 
 export type EvidenceDispositionStatus =
   | 'Queued'
@@ -119,7 +123,7 @@ export function parseEvidenceRetentionScheduleV1(value: unknown): EvidenceRetent
     throw new EvidenceGovernanceParseError(`schemaVersion must be 1, got: ${schemaVersion}`);
   }
 
-  const scheduleId = readNonEmptyString(record, 'scheduleId');
+  const scheduleId = EvidenceRetentionScheduleId(readNonEmptyString(record, 'scheduleId'));
   const workspaceId = WorkspaceId(readString(record, 'workspaceId'));
   const categories = readEvidenceCategoryList(record, 'categories');
   const defaultDisposition = readDispositionAction(record, 'defaultDisposition');
@@ -244,7 +248,7 @@ export function parseLegalHoldV1(value: unknown): LegalHoldV1 {
 
   return {
     schemaVersion: 1,
-    holdId: readNonEmptyString(record, 'holdId'),
+    holdId: LegalHoldId(readNonEmptyString(record, 'holdId')),
     workspaceId: WorkspaceId(readString(record, 'workspaceId')),
     evidenceCategory: readEvidenceCategory(record, 'evidenceCategory'),
     description: readNonEmptyString(record, 'description'),

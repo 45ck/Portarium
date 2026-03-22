@@ -1,4 +1,4 @@
-import { EvidenceId, HumanTaskId, WorkspaceId } from '../../domain/primitives/index.js';
+import { EvidenceId, EventId, HumanTaskId, WorkspaceId } from '../../domain/primitives/index.js';
 import { completeHumanTaskV1, type HumanTaskV1 } from '../../domain/workforce/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import {
@@ -232,7 +232,7 @@ export class CompleteHumanTaskUseCase {
   }): DomainEventV1 {
     return {
       schemaVersion: 1,
-      eventId: args.eventId,
+      eventId: EventId(args.eventId),
       eventType: 'HumanTaskCompleted',
       aggregateKind: 'HumanTask',
       aggregateId: args.task.humanTaskId,

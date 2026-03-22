@@ -1,5 +1,6 @@
 import {
   EvidenceId,
+  EventId,
   WorkspaceId,
   type HumanTaskId,
   type UserId,
@@ -168,7 +169,7 @@ export function buildAssignmentArtifacts(
     ownerUserId: params.ownerUserId,
     event: {
       schemaVersion: 1,
-      eventId: eventId.value,
+      eventId: EventId(eventId.value),
       eventType: 'WorkforceMemberAssigned',
       aggregateKind: params.aggregateKind,
       aggregateId: params.aggregateId,

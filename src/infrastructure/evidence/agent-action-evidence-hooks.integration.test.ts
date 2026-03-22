@@ -14,7 +14,7 @@ import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js
 import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 import { AGENT_CLOUD_EVENT_TYPES } from '../../domain/event-stream/agent-events-v1.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
-import { CorrelationId, TenantId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
+import { CorrelationId, EventId, TenantId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import { InMemoryWormEvidencePayloadStore } from './in-memory-worm-evidence-payload-store.js';
 import { AgentActionEvidenceHooks } from './agent-action-evidence-hooks.js';
@@ -57,7 +57,7 @@ function agentEventOf(
 ): DomainEventV1 {
   return {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType,
     aggregateKind: 'Run',
     aggregateId: 'run-100',
@@ -146,7 +146,7 @@ describe('AgentActionEvidenceHooks', () => {
 
     const unrelated: DomainEventV1 = {
       schemaVersion: 1,
-      eventId: 'evt-workspace-1',
+      eventId: EventId('evt-workspace-1'),
       eventType: 'WorkspaceUpdated',
       aggregateKind: 'Workspace',
       aggregateId: 'workspace-1',

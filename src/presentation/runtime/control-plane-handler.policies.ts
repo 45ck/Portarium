@@ -231,11 +231,13 @@ export async function handleSavePolicy(args: PolicyListArgs): Promise<void> {
 
     await deps.policyStore.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
 
+    const policyId = String(policy.policyId);
     respondJson(res, {
       statusCode: 201,
       correlationId,
       traceContext,
-      body: { policyId: String(policy.policyId) },
+      body: { policyId },
+      location: `/v1/workspaces/${workspaceId}/policies/${policyId}`,
     });
   } catch (error) {
     respondProblem(

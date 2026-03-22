@@ -312,11 +312,13 @@ export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<
   }
 
   await deps.machineRegistryStore.saveMachineRegistration(authResult.ctx.tenantId, registration);
+  const machineId = String(registration.machineId);
   respondJson(res, {
     statusCode: 201,
     correlationId,
     traceContext,
-    body: { machineId: String(registration.machineId) },
+    body: { machineId },
+    location: `/v1/workspaces/${workspaceId}/machines/${machineId}`,
   });
 }
 
@@ -501,10 +503,12 @@ export async function handleCreateAgent(args: AgentRegistryArgs): Promise<void> 
   }
 
   await deps.machineRegistryStore.saveAgentConfig(authResult.ctx.tenantId, agent);
+  const agentId = String(agent.agentId);
   respondJson(res, {
     statusCode: 201,
     correlationId,
     traceContext,
-    body: { agentId: String(agent.agentId) },
+    body: { agentId },
+    location: `/v1/workspaces/${workspaceId}/agents/${agentId}`,
   });
 }

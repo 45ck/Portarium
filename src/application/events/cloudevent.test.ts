@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CorrelationId, WorkspaceId } from '../../domain/primitives/index.js';
+import { CorrelationId, EventId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import {
   createPortariumCloudEvent,
@@ -10,7 +10,7 @@ import {
 
 const BASE_EVENT: DomainEventV1 = {
   schemaVersion: 1,
-  eventId: 'evt-abc',
+  eventId: EventId('evt-abc'),
   eventType: 'RunStarted',
   aggregateKind: 'Run',
   aggregateId: 'run-1',

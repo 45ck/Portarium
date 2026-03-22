@@ -1,6 +1,7 @@
 import {
   ApprovalId,
   EvidenceId,
+  EventId,
   PlanId,
   RunId,
   UserId,
@@ -195,7 +196,7 @@ function buildDomainEvent(
 ): DomainEventV1 {
   return {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType: 'ApprovalRequested',
     aggregateKind: 'Approval',
     aggregateId: ids.approvalId,

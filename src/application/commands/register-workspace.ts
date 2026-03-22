@@ -1,3 +1,4 @@
+import { EventId } from '../../domain/primitives/index.js';
 import { type WorkspaceV1, parseWorkspaceV1 } from '../../domain/workspaces/workspace-v1.js';
 import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
 import {
@@ -97,7 +98,7 @@ function buildDomainEvent(
 ): DomainEventV1 {
   return {
     schemaVersion: 1,
-    eventId: meta.eventId,
+    eventId: EventId(meta.eventId),
     eventType: 'WorkspaceCreated',
     aggregateKind: 'Workspace',
     aggregateId: workspace.workspaceId,

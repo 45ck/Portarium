@@ -1,5 +1,6 @@
 import {
   EvidenceId,
+  EventId,
   type CorrelationId,
   type EvidenceId as EvidenceIdType,
 } from '../../domain/primitives/index.js';
@@ -93,7 +94,7 @@ function buildAgentActionPolicyEvent(params: {
 
   return {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType: 'AgentActionProposed',
     aggregateKind: 'AgentActionProposal',
     aggregateId: proposalId,

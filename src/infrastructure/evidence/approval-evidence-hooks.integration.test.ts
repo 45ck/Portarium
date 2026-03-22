@@ -8,7 +8,7 @@ import {
 } from '../../domain/evidence/evidence-chain-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
-import { CorrelationId, TenantId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
+import { CorrelationId, EventId, TenantId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import { InMemoryWormEvidencePayloadStore } from './in-memory-worm-evidence-payload-store.js';
 import { ApprovalEvidenceHooks } from './approval-evidence-hooks.js';
@@ -54,7 +54,7 @@ function approvalEventOf(
 ): DomainEventV1 {
   return {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType,
     aggregateKind: 'Approval',
     aggregateId: 'approval-1',
@@ -226,7 +226,7 @@ describe('ApprovalEvidenceHooks', () => {
 
     const unrelated: DomainEventV1 = {
       schemaVersion: 1,
-      eventId: 'evt-unrelated-1',
+      eventId: EventId('evt-unrelated-1'),
       eventType: 'ActionDispatched',
       aggregateKind: 'Run',
       aggregateId: 'run-99',

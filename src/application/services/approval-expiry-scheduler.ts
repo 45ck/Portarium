@@ -6,6 +6,7 @@
  * and ApprovalExpired events when the final deadline + grace period passes.
  */
 
+import { EventId } from '../../domain/primitives/index.js';
 import type {
   ApprovalId as ApprovalIdType,
   UserId as UserIdType,
@@ -226,7 +227,7 @@ function buildEvent(
 ): DomainEventV1 {
   return {
     schemaVersion: 1,
-    eventId: deps.idGenerator.generateId(),
+    eventId: EventId(deps.idGenerator.generateId()),
     eventType,
     aggregateKind: 'Approval',
     aggregateId: approvalId,

@@ -1,6 +1,7 @@
 import {
   ApprovalId,
   EvidenceId,
+  EventId,
   UserId,
   WorkspaceId,
   type ApprovalDecision,
@@ -323,7 +324,7 @@ function buildDomainEvent(args: EventBuildArgs): DomainEventV1 {
   const eventType = decisionToEventType(args.decision);
   return {
     schemaVersion: 1,
-    eventId: args.eventId,
+    eventId: EventId(args.eventId),
     eventType,
     aggregateKind: 'Approval',
     aggregateId: args.ids.approvalId,

@@ -17,6 +17,7 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
+import { EventId } from '../../src/domain/primitives/index.js';
 import type {
   CorrelationId,
   EvidenceId,
@@ -686,7 +687,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-1',
+        eventId: EventId('evt-1'),
         eventType: 'RunStarted',
         aggregateKind: 'Run',
         aggregateId: RUN_ID,
@@ -698,7 +699,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-2',
+        eventId: EventId('evt-2'),
         eventType: 'ApprovalGranted',
         aggregateKind: 'Approval',
         aggregateId: 'approval-001',
@@ -710,7 +711,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-3',
+        eventId: EventId('evt-3'),
         eventType: 'ActionDispatched',
         aggregateKind: 'Run',
         aggregateId: RUN_ID,
@@ -721,7 +722,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-4',
+        eventId: EventId('evt-4'),
         eventType: 'RunSucceeded',
         aggregateKind: 'Run',
         aggregateId: RUN_ID,
@@ -745,7 +746,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-a',
+        eventId: EventId('evt-a'),
         eventType: 'ApprovalGranted',
         aggregateKind: 'Approval',
         aggregateId: 'appr-1',
@@ -756,7 +757,7 @@ describe('Scenario observability pack', () => {
 
       events.publish({
         schemaVersion: 1,
-        eventId: 'evt-b',
+        eventId: EventId('evt-b'),
         eventType: 'ApprovalDenied',
         aggregateKind: 'Approval',
         aggregateId: 'appr-2',
@@ -786,7 +787,7 @@ describe('Scenario observability pack', () => {
       for (let i = 0; i < lifecycle.length; i++) {
         events.publish({
           schemaVersion: 1,
-          eventId: `evt-lc-${i}`,
+          eventId: EventId(`evt-lc-${i}`),
           eventType: lifecycle[i]!,
           aggregateKind: 'Run',
           aggregateId: RUN_ID,

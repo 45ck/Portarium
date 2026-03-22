@@ -14,6 +14,7 @@ import {
   ActionId,
   ApprovalId,
   EvidenceId,
+  EventId,
   WorkspaceId,
   type ApprovalId as ApprovalIdType,
   type WorkspaceId as WorkspaceIdType,
@@ -175,7 +176,7 @@ export async function executeApprovedAgentAction(
   const eventType = dispatchResult.ok ? 'AgentActionExecuted' : 'AgentActionExecutionFailed';
   const domainEvent: DomainEventV1 = {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType,
     aggregateKind: 'AgentActionProposal',
     aggregateId: approvalId,

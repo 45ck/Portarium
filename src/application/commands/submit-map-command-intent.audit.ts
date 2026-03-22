@@ -1,5 +1,6 @@
 import {
   EvidenceId,
+  EventId,
   type CorrelationId,
   type EvidenceId as EvidenceIdType,
 } from '../../domain/primitives/index.js';
@@ -109,7 +110,7 @@ function buildMapCommandPolicyEvent(params: {
 
   return {
     schemaVersion: 1,
-    eventId,
+    eventId: EventId(eventId),
     eventType: 'PolicyEvaluated',
     aggregateKind: 'MapCommandIntent',
     aggregateId: commandIntentId,

@@ -1,3 +1,4 @@
+import type { AgentId, MachineId } from '../primitives/index.js';
 import type { AgentConfigV1, MachineRegistrationV1 } from './machine-registration-v1.js';
 import {
   establishCapabilityHandshakeV1,
@@ -36,8 +37,8 @@ export type OpenClawAgentBindingViolationV1 = Readonly<{
 export type OpenClawAgentBindingResultV1 =
   | Readonly<{
       valid: true;
-      agentId: string;
-      machineId: string;
+      agentId: AgentId;
+      machineId: MachineId;
       /**
        * Full capability handshake result — includes routableCapabilities and
        * nonRoutableAgentCapabilities so callers can identify partial coverage.
@@ -46,8 +47,8 @@ export type OpenClawAgentBindingResultV1 =
     }>
   | Readonly<{
       valid: false;
-      agentId: string;
-      machineId: string;
+      agentId: AgentId;
+      machineId: MachineId;
       violations: readonly OpenClawAgentBindingViolationV1[];
     }>;
 
@@ -71,12 +72,12 @@ export function validateOpenClawAgentBindingV1(
   agent: AgentConfigV1,
   machine: MachineRegistrationV1,
 ): OpenClawAgentBindingResultV1 {
-  const agentId = String(agent.agentId);
-  const machineId = String(machine.machineId);
+  const agentId = agent.agentId;
+  const machineId = machine.machineId;
 
   const violations: OpenClawAgentBindingViolationV1[] = [];
 
-  if (agentId !== machineId && String(agent.machineId) !== String(machine.machineId)) {
+  if (agent.machineId !== machine.machineId) {
     violations.push({
       kind: 'MachineIdMismatch',
       detail:

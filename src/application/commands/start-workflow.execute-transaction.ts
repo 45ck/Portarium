@@ -1,4 +1,5 @@
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
+import { EventId } from '../../domain/primitives/index.js';
 import type { AppContext, DependencyFailure, Result } from '../common/index.js';
 import { err, ok } from '../common/index.js';
 import { domainEventToPortariumCloudEvent } from '../events/cloudevent.js';
@@ -17,7 +18,7 @@ export async function executeStartWorkflowTransaction(
 ): Promise<Result<StartWorkflowOutput, DependencyFailure>> {
   const domainEvent: DomainEventV1 = {
     schemaVersion: 1,
-    eventId: plan.generated.eventIdValue,
+    eventId: EventId(plan.generated.eventIdValue),
     eventType: 'RunStarted',
     aggregateKind: 'Run',
     aggregateId: plan.run.runId,

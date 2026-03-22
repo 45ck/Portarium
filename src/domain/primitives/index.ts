@@ -247,6 +247,9 @@ export type ExecutionEvidenceId = Branded<string, 'ExecutionEvidenceId'>;
 /** Unique identifier for an intent command. */
 export type IntentId = Branded<string, 'IntentId'>;
 
+/** Unique identifier for a domain event. */
+export type EventId = Branded<string, 'EventId'>;
+
 // ---------------------------------------------------------------------------
 // Factory helpers
 // ---------------------------------------------------------------------------
@@ -334,6 +337,7 @@ export const CapabilityKey = (value: string): CapabilityKey =>
 export const ExecutionEvidenceId = (value: string): ExecutionEvidenceId =>
   brand<string, 'ExecutionEvidenceId'>(value);
 export const IntentId = (value: string): IntentId => brand<string, 'IntentId'>(value);
+export const EventId = (value: string): EventId => brand<string, 'EventId'>(value);
 
 // ---------------------------------------------------------------------------
 // Port families
