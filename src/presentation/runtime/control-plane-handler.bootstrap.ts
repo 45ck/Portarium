@@ -59,7 +59,7 @@ function seedDefaultPolicy(store: InMemoryPolicyStore, workspaceId: string): voi
     createdAtIso: new Date().toISOString(),
     createdByUserId: 'system',
   });
-  store.savePolicy(workspaceId as never, workspaceId as never, policy);
+  store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
 }
 
 /**
