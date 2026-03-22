@@ -80,6 +80,13 @@ const RUNTIME_MAP_LAYER_SEED = [
   },
 ] as const;
 
+// Seed timestamps are relative to "1 hour ago" so they always fall inside the
+// 30-day retention window used by enforceLocationTelemetryBoundary.
+const SEED_BASE_MS = Date.now() - 60 * 60 * 1000;
+function seedIso(offsetMs: number): string {
+  return new Date(SEED_BASE_MS + offsetMs).toISOString();
+}
+
 const RUNTIME_LOCATION_EVENT_SEED = [
   {
     schemaVersion: 1,
@@ -90,8 +97,8 @@ const RUNTIME_LOCATION_EVENT_SEED = [
     sourceStreamId: 'stream-1',
     sourceType: 'SLAM',
     coordinateFrame: 'floor-1',
-    observedAtIso: '2026-02-20T10:00:00.000Z',
-    ingestedAtIso: '2026-02-20T10:00:00.100Z',
+    observedAtIso: seedIso(0),
+    ingestedAtIso: seedIso(100),
     pose: { x: 1, y: 2, z: 0, yawRadians: 0.2 },
     quality: { status: 'Known', horizontalStdDevMeters: 0.2 },
     correlationId: 'corr-location-1',
@@ -105,8 +112,8 @@ const RUNTIME_LOCATION_EVENT_SEED = [
     sourceStreamId: 'stream-2',
     sourceType: 'RTLS',
     coordinateFrame: 'floor-1',
-    observedAtIso: '2026-02-20T10:05:00.000Z',
-    ingestedAtIso: '2026-02-20T10:05:00.100Z',
+    observedAtIso: seedIso(5 * 60_000),
+    ingestedAtIso: seedIso(5 * 60_000 + 100),
     pose: { x: 2, y: 3, z: 0, yawRadians: 0.3 },
     quality: { status: 'Known', horizontalStdDevMeters: 0.3 },
     correlationId: 'corr-location-2',
@@ -120,8 +127,8 @@ const RUNTIME_LOCATION_EVENT_SEED = [
     sourceStreamId: 'stream-3',
     sourceType: 'SLAM',
     coordinateFrame: 'floor-1',
-    observedAtIso: '2026-02-20T10:02:00.000Z',
-    ingestedAtIso: '2026-02-20T10:02:00.100Z',
+    observedAtIso: seedIso(2 * 60_000),
+    ingestedAtIso: seedIso(2 * 60_000 + 100),
     pose: { x: 3, y: 4, z: 0, yawRadians: 0.4 },
     quality: { status: 'Known', horizontalStdDevMeters: 0.25 },
     correlationId: 'corr-location-3',

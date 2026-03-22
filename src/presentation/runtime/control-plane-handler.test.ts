@@ -239,8 +239,13 @@ describe('createControlPlaneHandler', () => {
         authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
       }),
     );
+    // Use dates relative to now so seed data (1 hour ago) falls inside the
+    // 30-day retention window enforced by the telemetry boundary.
+    const now = new Date();
+    const from = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
+    const to = now; // now
     const res = await fetch(
-      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/location-events?fromIso=2026-02-20T10:00:00.000Z&toIso=2026-02-20T10:10:00.000Z&sourceType=SLAM&siteId=site-a&floorId=floor-1&limit=1`,
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/location-events?fromIso=${from.toISOString()}&toIso=${to.toISOString()}&sourceType=SLAM&siteId=site-a&floorId=floor-1&limit=1`,
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as { items: { locationEventId: string; sourceType: string }[] };
