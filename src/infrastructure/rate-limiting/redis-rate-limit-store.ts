@@ -47,18 +47,24 @@ const KEY_PREFIX = 'portarium:rl:count:';
 export class RedisRateLimitStore implements RateLimitStore {
   readonly #client: RedisRateLimitClient;
   readonly #rules: ReadonlyMap<string, readonly RateLimitRuleV1[]>;
+  readonly #defaultRules: readonly RateLimitRuleV1[];
 
   public constructor(
     client: RedisRateLimitClient,
     rules?: ReadonlyMap<string, readonly RateLimitRuleV1[]>,
+    defaultRules?: readonly RateLimitRuleV1[],
   ) {
     this.#client = client;
     this.#rules = rules ?? new Map();
+    this.#defaultRules = defaultRules ?? [];
   }
 
   public getRulesForScope(scope: RateLimitScope): Promise<readonly RateLimitRuleV1[]> {
     const key = serializeRateLimitScope(scope);
-    return Promise.resolve(this.#rules.get(key) ?? []);
+    const scopeRules = this.#rules.get(key);
+    return Promise.resolve(
+      scopeRules ?? (this.#defaultRules.length > 0 ? this.#defaultRules : []),
+    );
   }
 
   public async getUsage(params: {

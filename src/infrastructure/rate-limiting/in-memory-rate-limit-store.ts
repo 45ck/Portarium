@@ -19,10 +19,16 @@ import {
 export class InMemoryRateLimitStore implements RateLimitStore {
   readonly #rules = new Map<string, RateLimitRuleV1[]>();
   readonly #usage = new Map<string, RateLimitUsageV1>();
+  readonly #defaultRules: readonly RateLimitRuleV1[];
+
+  constructor(defaultRules?: readonly RateLimitRuleV1[]) {
+    this.#defaultRules = defaultRules ?? [];
+  }
 
   getRulesForScope(scope: RateLimitScope): Promise<readonly RateLimitRuleV1[]> {
     const key = serializeRateLimitScope(scope);
-    return Promise.resolve(this.#rules.get(key) ?? []);
+    const scopeRules = this.#rules.get(key);
+    return Promise.resolve(scopeRules ?? (this.#defaultRules.length > 0 ? this.#defaultRules : []));
   }
 
   getUsage(params: {

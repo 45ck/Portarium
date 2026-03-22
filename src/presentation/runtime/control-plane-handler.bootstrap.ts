@@ -37,6 +37,7 @@ import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
 } from '../../infrastructure/rate-limiting/index.js';
+import type { RateLimitRuleV1 } from '../../domain/rate-limiting/index.js';
 import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in-memory-agent-action-proposal-store.js';
 import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
 import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-memory-machine-registry-store.js';
@@ -203,6 +204,29 @@ function buildAuthorization(): AuthorizationPort {
  *   RATE_LIMIT_STORE=redis|memory   (default: memory)
  *   REDIS_URL                       (required when RATE_LIMIT_STORE=redis)
  */
+/**
+ * Default rate limit rules applied to all tenants unless overridden.
+ *
+ * These protect the platform from abuse while allowing normal usage:
+ * - 600 req/min (10 req/s sustained) prevents runaway clients
+ * - 10,000 req/hour catches slower abuse patterns
+ */
+const DEFAULT_RATE_LIMIT_RULES: readonly RateLimitRuleV1[] = [
+  {
+    schemaVersion: 1,
+    scope: { kind: 'Tenant', tenantId: '__default__' as never },
+    window: 'PerMinute',
+    maxRequests: 600,
+    burstAllowance: 50,
+  },
+  {
+    schemaVersion: 1,
+    scope: { kind: 'Tenant', tenantId: '__default__' as never },
+    window: 'PerHour',
+    maxRequests: 10_000,
+  },
+];
+
 function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
   const storeType = process.env['RATE_LIMIT_STORE']?.trim();
   const redisUrl = process.env['REDIS_URL']?.trim();
@@ -213,7 +237,7 @@ function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
         '[portarium] WARNING: RATE_LIMIT_STORE=redis but REDIS_URL is not set. ' +
           'Falling back to in-memory rate-limit store.\n',
       );
-      return new InMemoryRateLimitStore();
+      return new InMemoryRateLimitStore(DEFAULT_RATE_LIMIT_RULES);
     }
     // ioredis connects lazily; fail-open is handled inside RedisRateLimitStore.
     // Wrap in an adapter to satisfy the RedisRateLimitClient interface without
@@ -232,10 +256,10 @@ function buildRateLimitStore(): InMemoryRateLimitStore | RedisRateLimitStore {
       del: (...keys: string[]) => redis.del(...keys),
     };
     process.stderr.write('[portarium] Rate-limit store: Redis (' + redisUrl + ')\n');
-    return new RedisRateLimitStore(client);
+    return new RedisRateLimitStore(client, undefined, DEFAULT_RATE_LIMIT_RULES);
   }
 
-  return new InMemoryRateLimitStore();
+  return new InMemoryRateLimitStore(DEFAULT_RATE_LIMIT_RULES);
 }
 
 /**
