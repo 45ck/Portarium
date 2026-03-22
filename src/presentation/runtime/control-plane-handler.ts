@@ -80,6 +80,11 @@ import {
   handleGetApproval,
   handleListApprovals,
 } from './control-plane-handler.approvals.js';
+import {
+  handleGetPolicy,
+  handleListPolicies,
+  handleSavePolicy,
+} from './control-plane-handler.policies.js';
 
 // ---------------------------------------------------------------------------
 // Hono environment types
@@ -704,6 +709,31 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/evidence', async (c) => {
     const ctx = c.get('ctx');
     await handleListEvidence({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/policies
+  app.get('/v1/workspaces/:workspaceId/policies', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListPolicies({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/policies/:policyId
+  app.get('/v1/workspaces/:workspaceId/policies/:policyId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetPolicy({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      policyId: c.req.param('policyId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/policies
+  app.post('/v1/workspaces/:workspaceId/policies', async (c) => {
+    const ctx = c.get('ctx');
+    await handleSavePolicy({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 
