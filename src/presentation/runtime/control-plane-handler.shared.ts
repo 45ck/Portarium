@@ -52,6 +52,22 @@ import type { MachineQueryStore } from '../../application/ports/machine-query-st
 import type { MachineRegistryStore } from '../../application/ports/machine-registry-store.js';
 
 // ---------------------------------------------------------------------------
+// Problem type URIs (RFC 9457) — centralised for consistency
+// ---------------------------------------------------------------------------
+
+export const PROBLEM_TYPES = {
+  notFound: 'https://portarium.dev/problems/not-found',
+  validationFailed: 'https://portarium.dev/problems/validation-failed',
+  serviceUnavailable: 'https://portarium.dev/problems/service-unavailable',
+  unauthorized: 'https://portarium.dev/problems/unauthorized',
+  forbidden: 'https://portarium.dev/problems/forbidden',
+  badRequest: 'https://portarium.dev/problems/bad-request',
+  conflict: 'https://portarium.dev/problems/conflict',
+  rateLimited: 'https://portarium.dev/problems/rate-limited',
+  unsupportedMediaType: 'https://portarium.dev/problems/unsupported-media-type',
+} as const;
+
+// ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------
 

@@ -415,7 +415,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
         outgoing.setHeader('access-control-allow-origin', origin);
         outgoing.setHeader(
           'access-control-allow-methods',
-          'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+          'GET, POST, PUT, PATCH, OPTIONS',
         );
         outgoing.setHeader(
           'access-control-allow-headers',

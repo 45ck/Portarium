@@ -365,7 +365,7 @@ async function persistDecision(
           correlationId: ctx.correlationId,
           occurredAtIso: decided.decidedAtIso,
           category: 'Approval',
-          summary: `Approval ${String(ids.approvalId)} decided: ${decided.status} by ${String(ctx.principalId)}`,
+          summary: `Approval ${String(ids.approvalId)} decided: ${decided.status} by ${String(ctx.principalId).slice(0, 8)}…`,
           actor: { kind: 'User', userId: ctx.principalId },
           links: {
             approvalId: ids.approvalId,
