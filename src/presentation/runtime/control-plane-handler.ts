@@ -426,6 +426,25 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   }
 
   // -------------------------------------------------------------------------
+  // Security headers — CSP, HSTS, X-Content-Type-Options, X-Frame-Options
+  // -------------------------------------------------------------------------
+  app.use('*', async (c, next) => {
+    const { outgoing } = c.env;
+    outgoing.setHeader(
+      'content-security-policy',
+      "default-src 'none'; frame-ancestors 'none'",
+    );
+    outgoing.setHeader('x-content-type-options', 'nosniff');
+    outgoing.setHeader('x-frame-options', 'DENY');
+    outgoing.setHeader('referrer-policy', 'strict-origin-when-cross-origin');
+    outgoing.setHeader('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+    if (process.env['NODE_ENV'] !== 'development' && process.env['NODE_ENV'] !== 'test') {
+      outgoing.setHeader('strict-transport-security', 'max-age=63072000; includeSubDomains');
+    }
+    await next();
+  });
+
+  // -------------------------------------------------------------------------
   // Metrics endpoint — serve before other middleware to avoid auth overhead
   // -------------------------------------------------------------------------
   app.get('/metrics', (c) => {
