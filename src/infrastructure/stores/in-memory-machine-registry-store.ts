@@ -63,10 +63,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
 
   // -- getAgentConfigById: overloaded to satisfy both interfaces --
 
-  async getAgentConfigById(
-    tenantId: TenantId,
-    agentId: AgentId,
-  ): Promise<AgentConfigV1 | null>;
+  async getAgentConfigById(tenantId: TenantId, agentId: AgentId): Promise<AgentConfigV1 | null>;
   async getAgentConfigById(
     tenantId: TenantId,
     workspaceId: WorkspaceId,
@@ -82,10 +79,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
   }
 
   async saveAgentConfig(tenantId: TenantId, agent: AgentConfigV1): Promise<void> {
-    this.#agents.set(
-      this.#agentKey(tenantId, agent.agentId as unknown as AgentId),
-      agent,
-    );
+    this.#agents.set(this.#agentKey(tenantId, agent.agentId as unknown as AgentId), agent);
   }
 
   async updateMachineHeartbeat(
@@ -111,9 +105,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     query: ListMachinesQuery,
   ): Promise<Page<MachineRegistrationV1>> {
     const wsId = String(query.workspaceId);
-    let items = [...this.#machines.values()].filter(
-      (m) => String(m.workspaceId) === wsId,
-    );
+    let items = [...this.#machines.values()].filter((m) => String(m.workspaceId) === wsId);
     if (query.active !== undefined) {
       items = items.filter((m) => m.active === query.active);
     }
@@ -126,9 +118,7 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     query: ListAgentsQuery,
   ): Promise<Page<AgentConfigV1>> {
     const wsId = String(query.workspaceId);
-    let items = [...this.#agents.values()].filter(
-      (a) => String(a.workspaceId) === wsId,
-    );
+    let items = [...this.#agents.values()].filter((a) => String(a.workspaceId) === wsId);
     if (query.machineId) {
       items = items.filter((a) => String(a.machineId) === String(query.machineId));
     }

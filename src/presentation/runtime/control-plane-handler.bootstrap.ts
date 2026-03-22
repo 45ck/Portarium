@@ -41,6 +41,7 @@ import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evide
 import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-memory-machine-registry-store.js';
 import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
+import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 

@@ -11,10 +11,7 @@ import type {
 export class InMemoryEvidenceLog implements EvidenceLogPort {
   readonly #entries = new Map<string, EvidenceEntryV1[]>();
 
-  async appendEntry(
-    tenantId: TenantId,
-    entry: EvidenceEntryAppendInput,
-  ): Promise<EvidenceEntryV1> {
+  async appendEntry(tenantId: TenantId, entry: EvidenceEntryAppendInput): Promise<EvidenceEntryV1> {
     const key = String(tenantId);
     const chain = this.#entries.get(key) ?? [];
 
@@ -25,9 +22,7 @@ export class InMemoryEvidenceLog implements EvidenceLogPort {
       ...entry,
       ...(previousHash !== undefined ? { previousHash } : {}),
     });
-    const hashSha256 = HashSha256(
-      `sha256:${createHash('sha256').update(hashInput).digest('hex')}`,
-    );
+    const hashSha256 = HashSha256(`sha256:${createHash('sha256').update(hashInput).digest('hex')}`);
 
     const record: EvidenceEntryV1 = {
       ...entry,

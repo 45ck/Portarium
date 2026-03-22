@@ -553,33 +553,33 @@
 /* ── Tactical — Atlas briefing aesthetic, terracotta accent ── */
 .theme-tactical {
   /* Colors: exact matches to aw/argos concept palettes (neutral grays, no cyan) */
-  --background: hsl(180 4% 97%);       /* #f7f8f8  aw.paperTop */
-  --foreground: hsl(200 5% 37%);       /* #5a6266  aw.textStrong */
+  --background: hsl(180 4% 97%); /* #f7f8f8  aw.paperTop */
+  --foreground: hsl(200 5% 37%); /* #5a6266  aw.textStrong */
 
-  --card: hsl(200 4% 93%);             /* #eceeef  aw.paperBottom */
-  --card-foreground: hsl(200 5% 37%);  /* #5a6266  aw.textStrong */
+  --card: hsl(200 4% 93%); /* #eceeef  aw.paperBottom */
+  --card-foreground: hsl(200 5% 37%); /* #5a6266  aw.textStrong */
 
-  --popover: hsl(160 5% 94%);          /* #eef1f1  aw.haze */
+  --popover: hsl(160 5% 94%); /* #eef1f1  aw.haze */
   --popover-foreground: hsl(200 5% 37%);
 
-  --primary: hsl(11 52% 54%);          /* #c85f49  aw.accentStrong */
+  --primary: hsl(11 52% 54%); /* #c85f49  aw.accentStrong */
   --primary-foreground: hsl(0 0% 97%); /* #f8f8f8  aw.inverse */
 
-  --secondary: hsl(180 3% 91%);        /* #e5e8e8  aw.mapSoft */
+  --secondary: hsl(180 3% 91%); /* #e5e8e8  aw.mapSoft */
   --secondary-foreground: hsl(200 5% 37%);
 
-  --muted: hsl(192 3% 86%);            /* #d8ddde  aw.shell */
+  --muted: hsl(192 3% 86%); /* #d8ddde  aw.shell */
   --muted-foreground: hsl(200 3% 59%); /* #93999c  aw.textSoft */
 
-  --accent: hsl(160 5% 94%);           /* #eef1f1  aw.haze */
+  --accent: hsl(160 5% 94%); /* #eef1f1  aw.haze */
   --accent-foreground: hsl(200 5% 37%);
 
   --destructive: hsl(0 65% 50%);
   --destructive-foreground: hsl(0 0% 97%);
 
-  --border: hsl(195 5% 76%);           /* #bec4c6  aw.line */
-  --input: hsl(180 2% 87%);            /* #dcdfdf  aw.lineFaint */
-  --ring: hsl(8 56% 60%);              /* #d56f5f  aw.accent */
+  --border: hsl(195 5% 76%); /* #bec4c6  aw.line */
+  --input: hsl(180 2% 87%); /* #dcdfdf  aw.lineFaint */
+  --ring: hsl(8 56% 60%); /* #d56f5f  aw.accent */
 
   --success: oklch(0.65 0.12 150);
   --success-foreground: oklch(0.98 0.02 150);
@@ -588,17 +588,17 @@
   --info: oklch(0.68 0.09 230);
   --info-foreground: oklch(0.18 0.05 230);
 
-  --chart-1: hsl(11 52% 54%);          /* terracotta */
+  --chart-1: hsl(11 52% 54%); /* terracotta */
   --chart-2: oklch(0.65 0.12 150);
   --chart-3: oklch(0.75 0.11 84);
   --chart-4: oklch(0.68 0.09 230);
-  --chart-5: hsl(200 5% 46%);          /* #6e767a  aw.text */
+  --chart-5: hsl(200 5% 46%); /* #6e767a  aw.text */
 
-  --sidebar: hsl(147 6% 80%);          /* #c8d1cc  argos.bgTop */
+  --sidebar: hsl(147 6% 80%); /* #c8d1cc  argos.bgTop */
   --sidebar-foreground: hsl(193 20% 21%); /* #2b3d42  argos.textStrong */
   --sidebar-primary: hsl(11 52% 54%);
   --sidebar-primary-foreground: hsl(0 0% 97%);
-  --sidebar-accent: hsl(147 7% 76%);   /* #bcc7c2  argos.bgBottom */
+  --sidebar-accent: hsl(147 7% 76%); /* #bcc7c2  argos.bgBottom */
   --sidebar-accent-foreground: hsl(193 20% 21%);
   --sidebar-border: hsl(195 5% 76%);
   --sidebar-ring: hsl(8 56% 60%);
@@ -615,12 +615,22 @@
 .theme-tactical,
 .theme-tactical body {
   background-image:
-    radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.82) 0, rgba(255, 255, 255, 0.12) 30%, transparent 58%),
+    radial-gradient(
+      circle at 14% 16%,
+      rgba(255, 255, 255, 0.82) 0,
+      rgba(255, 255, 255, 0.12) 30%,
+      transparent 58%
+    ),
     radial-gradient(circle at 74% 22%, rgba(255, 255, 255, 0.34) 0, transparent 42%),
     radial-gradient(circle at 28% 72%, rgba(255, 255, 255, 0.22) 0, transparent 42%),
-    radial-gradient(circle at 1px 1px, rgba(111, 118, 122, 0.10) 0.8px, transparent 1px),
+    radial-gradient(circle at 1px 1px, rgba(111, 118, 122, 0.1) 0.8px, transparent 1px),
     linear-gradient(180deg, var(--background) 0%, var(--card) 100%);
-  background-size: auto, auto, auto, 18px 18px, auto;
+  background-size:
+    auto,
+    auto,
+    auto,
+    18px 18px,
+    auto;
   background-attachment: fixed;
 }
 

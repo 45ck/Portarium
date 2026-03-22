@@ -242,9 +242,7 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore, Machi
     const items = hasMore ? rows.slice(0, limit) : rows;
     const page: Page<MachineRegistrationV1> = { items };
     if (hasMore && items.length > 0) {
-      (page as { nextCursor?: string }).nextCursor = String(
-        items[items.length - 1]!.machineId,
-      );
+      (page as { nextCursor?: string }).nextCursor = String(items[items.length - 1]!.machineId);
     }
     return page;
   }
@@ -278,9 +276,7 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore, Machi
     const items = hasMore ? rows.slice(0, limit) : rows;
     const page: Page<AgentConfigV1> = { items };
     if (hasMore && items.length > 0) {
-      (page as { nextCursor?: string }).nextCursor = String(
-        items[items.length - 1]!.agentId,
-      );
+      (page as { nextCursor?: string }).nextCursor = String(items[items.length - 1]!.agentId);
     }
     return page;
   }
