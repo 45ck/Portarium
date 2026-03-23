@@ -27,6 +27,7 @@ import {
   assertReadAccess,
   authenticate,
   checkIfMatch,
+  checkIfNoneMatch,
   computeETag,
   normalizeCorrelationId,
   normalizeTraceContext,
@@ -146,6 +147,12 @@ async function handleGetWorkspace(args: WorkspaceHandlerArgs): Promise<void> {
 
   const etag = computeETag(result.value);
   res.setHeader('ETag', etag);
+  if (checkIfNoneMatch(req, etag)) {
+    res.statusCode = 304;
+    res.setHeader('x-correlation-id', correlationId);
+    res.end();
+    return;
+  }
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
@@ -182,6 +189,12 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
       correlationId,
       traceContext,
     );
+    return;
+  }
+  if (checkIfNoneMatch(req, etag)) {
+    res.statusCode = 304;
+    res.setHeader('x-correlation-id', correlationId);
+    res.end();
     return;
   }
 
@@ -419,7 +432,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
         );
         outgoing.setHeader(
           'access-control-allow-headers',
-          'authorization, content-type, x-correlation-id, traceparent, tracestate, if-match',
+          'authorization, content-type, x-correlation-id, traceparent, tracestate, if-match, if-none-match',
         );
         outgoing.setHeader('access-control-max-age', '86400');
       }

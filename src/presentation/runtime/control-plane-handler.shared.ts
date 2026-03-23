@@ -309,6 +309,17 @@ export function checkIfMatch(
   };
 }
 
+/**
+ * Check If-None-Match header for conditional GET requests (RFC 7232 §3.2).
+ * Returns `true` when the client's cached copy is still fresh (i.e. the
+ * server should respond with 304 Not Modified).
+ */
+export function checkIfNoneMatch(req: IncomingMessage, etag: string): boolean {
+  const ifNoneMatch = req.headers['if-none-match'];
+  if (!ifNoneMatch) return false;
+  return ifNoneMatch === etag || ifNoneMatch === `"${etag}"` || ifNoneMatch === `W/"${etag}"`;
+}
+
 export async function authenticate(
   deps: ControlPlaneDeps,
   args: Readonly<{

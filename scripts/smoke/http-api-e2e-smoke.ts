@@ -90,6 +90,8 @@ async function main(): Promise<void> {
   {
     const res = await fetch(apiUrl('/healthz'));
     if (res.status !== 200) fail(`GET /healthz returned ${res.status}, expected 200`);
+    const correlationId = res.headers.get('x-correlation-id');
+    if (!correlationId) fail('Response missing x-correlation-id header');
     const body = (await res.json()) as { status: string };
     if (body.status !== 'ok') fail(`healthz status=${body.status}, expected ok`);
     ok(`GET /healthz -> 200 (status=${body.status})`);
@@ -197,6 +199,8 @@ async function main(): Promise<void> {
       const body = await res.text();
       fail(`POST /agent-actions:propose returned ${res.status}: ${body}`);
     }
+    const correlationId = res.headers.get('x-correlation-id');
+    if (!correlationId) fail('Response missing x-correlation-id header');
     const body = (await res.json()) as {
       decision: string;
       approvalId: string;
@@ -242,16 +246,12 @@ async function main(): Promise<void> {
         previousApproverIds: [],
       }),
     });
-    // Maker-checker enforcement should return 403
+    // Maker-checker enforcement must return 403 — self-approval is never allowed
     if (res.status !== 403) {
-      // Some configurations may not enforce maker-checker; log and continue
       const body = await res.text();
-      console.log(`    (info) expected 403 but got ${res.status}: ${body}`);
-      console.log('    (info) maker-checker may not be enforced in this configuration');
-      ok(`POST /decide (self-approve) -> ${res.status} (maker-checker check completed)`);
-    } else {
-      ok('POST /decide (self-approve) -> 403 (maker-checker enforced)');
+      fail(`POST /decide (self-approve) returned ${res.status}, expected 403: ${body}`);
     }
+    ok('POST /decide (self-approve) -> 403 (maker-checker enforced)');
   }
 
   // ── Step 8: Bob approves ─────────────────────────────────────────────
@@ -270,6 +270,8 @@ async function main(): Promise<void> {
       const body = await res.text();
       fail(`POST /decide (Bob) returned ${res.status}: ${body}`);
     }
+    const correlationId = res.headers.get('x-correlation-id');
+    if (!correlationId) fail('Response missing x-correlation-id header');
     const body = (await res.json()) as { status: string };
     if (body.status !== 'Approved') fail(`approval status=${body.status}, expected Approved`);
     ok(`POST /decide (Bob) -> 200 (status=Approved)`);
@@ -295,9 +297,9 @@ async function main(): Promise<void> {
     ok(`POST /execute -> 200 (action executed, status=${body.status ?? 'ok'})`);
   }
 
-  // ── Step 10: Wrong policy tier (400/422) ─────────────────────────────
+  // ── Step 10: Wrong policy tier (403) ──────────────────────────────────
 
-  console.log('\n10. Wrong policy tier (expects 400/422)');
+  console.log('\n10. Wrong policy tier (expects 403)');
   {
     const res = await fetch(wsUrl('/agent-actions:propose'), {
       method: 'POST',
@@ -312,11 +314,11 @@ async function main(): Promise<void> {
       }),
     });
     // ManualOnly + dangerous tool category = 403 Denied by policy
-    if (res.status !== 400 && res.status !== 422 && res.status !== 403) {
+    if (res.status !== 403) {
       const body = await res.text();
-      fail(`POST /agent-actions:propose (ManualOnly) returned ${res.status}: ${body}`);
+      fail(`POST /agent-actions:propose (ManualOnly) returned ${res.status}, expected 403: ${body}`);
     }
-    ok(`POST /agent-actions:propose (ManualOnly) -> ${res.status} (rejected as expected)`);
+    ok('POST /agent-actions:propose (ManualOnly) -> 403 (denied by policy)');
   }
 
   // ── Step 11: No auth (401) ───────────────────────────────────────────
