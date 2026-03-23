@@ -10,6 +10,14 @@ import {
   type ExecuteAgentActionResult,
   type ApprovalListResult,
   type RunListResult,
+  type HealthStatus,
+  type PolicyListResult,
+  type PolicySummary,
+  type SavePolicyResult,
+  type MachineListResult,
+  type MachineSummary,
+  type AgentListResult,
+  type AgentSummary,
 } from './portarium-client.js';
 
 function mockFetch(status: number, body?: unknown): typeof fetch {
@@ -109,7 +117,7 @@ describe('PortariumClient', () => {
   });
 
   describe('approvals.submitDecision', () => {
-    it('sends POST with decision payload', async () => {
+    it('delegates to decide() and sends POST to /decide endpoint', async () => {
       const fetchFn = mockFetch(204);
       const client = makeClient({ fetchFn });
 
@@ -120,10 +128,36 @@ describe('PortariumClient', () => {
       });
 
       const [url, options] = getCallArgs(fetchFn);
-      expect(url).toContain('/approvals/appr-1/decision');
-      const body = JSON.parse(options.body as string) as { decision: string; reason: string };
+      expect(url).toContain('/approvals/appr-1/decide');
+      const body = JSON.parse(options.body as string) as {
+        decision: string;
+        rationale: string;
+      };
       expect(body.decision).toBe('Approved');
-      expect(body.reason).toBe('Looks good');
+      expect(body.rationale).toBe('Looks good');
+    });
+  });
+
+  describe('approvals.decide', () => {
+    it('sends POST to the /decide endpoint with correct payload', async () => {
+      const fetchFn = mockFetch(204);
+      const client = makeClient({ fetchFn });
+
+      await client.approvals.decide({
+        approvalId: 'appr-2',
+        decision: 'Denied',
+        reason: 'Not ready',
+      });
+
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/approvals/appr-2/decide');
+      expect(options.method).toBe('POST');
+      const body = JSON.parse(options.body as string) as {
+        decision: string;
+        rationale: string;
+      };
+      expect(body.decision).toBe('Denied');
+      expect(body.rationale).toBe('Not ready');
     });
   });
 
@@ -624,6 +658,226 @@ describe('PortariumClient', () => {
         expect(err).toBeInstanceOf(ApprovalTimeoutError);
         expect((err as ApprovalTimeoutError).approvalId).toBe('appr-5');
       }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // health
+  // ---------------------------------------------------------------------------
+
+  describe('health', () => {
+    it('sends GET to /healthz', async () => {
+      const healthBody: HealthStatus = { service: 'control-plane', status: 'ok' };
+      const fetchFn = mockFetch(200, healthBody);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.health();
+
+      expect(result.service).toBe('control-plane');
+      expect(result.status).toBe('ok');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/healthz');
+      expect(options.method).toBe('GET');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // machines.list / machines.get
+  // ---------------------------------------------------------------------------
+
+  describe('machines.list', () => {
+    it('sends GET to the machines list endpoint', async () => {
+      const listResult: MachineListResult = {
+        items: [{ machineId: 'mach-1', displayName: 'M1', endpoint: 'http://m1' }],
+      };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.machines.list();
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]!.machineId).toBe('mach-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/machines');
+      expect(options.method).toBe('GET');
+    });
+  });
+
+  describe('machines.get', () => {
+    it('sends GET to the machine detail endpoint', async () => {
+      const machine: MachineSummary = {
+        machineId: 'mach-1',
+        displayName: 'M1',
+        endpoint: 'http://m1',
+      };
+      const fetchFn = mockFetch(200, machine);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.machines.get('mach-1');
+
+      expect(result.machineId).toBe('mach-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/machines/mach-1');
+      expect(options.method).toBe('GET');
+    });
+
+    it('URL-encodes the machineId', async () => {
+      const fetchFn = mockFetch(200, { machineId: 'mach with spaces' });
+      const client = makeClient({ fetchFn });
+
+      await client.machines.get('mach with spaces');
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/machines/mach%20with%20spaces');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // agents.list / agents.get
+  // ---------------------------------------------------------------------------
+
+  describe('agents.list', () => {
+    it('sends GET to the agents list endpoint', async () => {
+      const listResult: AgentListResult = {
+        items: [{ agentId: 'agent-1', displayName: 'A1' }],
+      };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.agents.list();
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]!.agentId).toBe('agent-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/agents');
+      expect(options.method).toBe('GET');
+    });
+  });
+
+  describe('agents.get', () => {
+    it('sends GET to the agent detail endpoint', async () => {
+      const agent: AgentSummary = { agentId: 'agent-1', displayName: 'A1' };
+      const fetchFn = mockFetch(200, agent);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.agents.get('agent-1');
+
+      expect(result.agentId).toBe('agent-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/agents/agent-1');
+      expect(options.method).toBe('GET');
+    });
+
+    it('URL-encodes the agentId', async () => {
+      const fetchFn = mockFetch(200, { agentId: 'agent with spaces' });
+      const client = makeClient({ fetchFn });
+
+      await client.agents.get('agent with spaces');
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/agents/agent%20with%20spaces');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // policies.list / policies.get / policies.save
+  // ---------------------------------------------------------------------------
+
+  describe('policies.list', () => {
+    it('sends GET to the policies list endpoint', async () => {
+      const listResult: PolicyListResult = {
+        items: [{ policyId: 'pol-1', name: 'Default' }],
+      };
+      const fetchFn = mockFetch(200, listResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.policies.list();
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]!.policyId).toBe('pol-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/policies');
+      expect(options.method).toBe('GET');
+    });
+  });
+
+  describe('policies.get', () => {
+    it('sends GET to the policy detail endpoint', async () => {
+      const policy: PolicySummary = { policyId: 'pol-1', name: 'Default' };
+      const fetchFn = mockFetch(200, policy);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.policies.get('pol-1');
+
+      expect(result.policyId).toBe('pol-1');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/policies/pol-1');
+      expect(options.method).toBe('GET');
+    });
+
+    it('URL-encodes the policyId', async () => {
+      const fetchFn = mockFetch(200, { policyId: 'pol with spaces' });
+      const client = makeClient({ fetchFn });
+
+      await client.policies.get('pol with spaces');
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/policies/pol%20with%20spaces');
+    });
+  });
+
+  describe('policies.save', () => {
+    it('sends POST to the policies endpoint', async () => {
+      const saveResult: SavePolicyResult = { policyId: 'pol-new' };
+      const fetchFn = mockFetch(201, saveResult);
+      const client = makeClient({ fetchFn });
+
+      const result = await client.policies.save({
+        policyId: 'pol-new',
+        name: 'New Policy',
+        rules: [],
+      });
+
+      expect(result.policyId).toBe('pol-new');
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toBe('https://api.portarium.test/v1/workspaces/ws-test/policies');
+      expect(options.method).toBe('POST');
+      const body = JSON.parse(options.body as string) as Record<string, unknown>;
+      expect(body['policyId']).toBe('pol-new');
+      expect(body['name']).toBe('New Policy');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // machines.register (existing coverage — verify correct endpoint)
+  // ---------------------------------------------------------------------------
+
+  describe('machines.register', () => {
+    it('sends POST to machines endpoint', async () => {
+      const fetchFn = mockFetch(200, { machineId: 'mach-1' });
+      const client = makeClient({ fetchFn });
+
+      await client.machines.register({
+        machineId: 'mach-1',
+        displayName: 'Machine 1',
+        endpoint: 'http://mach1.local',
+      });
+
+      const [url, options] = getCallArgs(fetchFn);
+      expect(url).toContain('/machines');
+      expect(options.method).toBe('POST');
+    });
+  });
+
+  describe('machines.heartbeat', () => {
+    it('sends POST to heartbeat endpoint', async () => {
+      const fetchFn = mockFetch(204);
+      const client = makeClient({ fetchFn });
+
+      await client.machines.heartbeat({ machineId: 'mach-1', statusMessage: 'alive' });
+
+      const [url] = getCallArgs(fetchFn);
+      expect(url).toContain('/machines/mach-1/heartbeat');
     });
   });
 });

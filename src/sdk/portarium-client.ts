@@ -1,10 +1,10 @@
 /**
  * PortariumClient -- ergonomic facade for the Portarium Control Plane API.
  *
- * Beads: bead-0661, bead-0678
+ * Beads: bead-0661, bead-0678, bead-0939
  *
  * Features:
- * - Namespace-scoped methods (runs, approvals, agents, machines, events)
+ * - Namespace-scoped methods (runs, approvals, agents, machines, policies, events)
  * - Automatic idempotency key generation (crypto.randomUUID)
  * - W3C traceparent/tracestate injection on every request
  * - Retry with exponential backoff for transient failures
@@ -178,6 +178,51 @@ export type ExecuteAgentActionResult = Readonly<{
   result?: unknown;
 }>;
 
+// ---------- health ----------
+export type HealthStatus = Readonly<{
+  service: string;
+  status: string;
+  [key: string]: unknown;
+}>;
+
+// ---------- policy types ----------
+export type PolicySummary = Readonly<{
+  policyId: string;
+  [key: string]: unknown;
+}>;
+
+export type PolicyListResult = Readonly<{
+  items: readonly PolicySummary[];
+}>;
+
+export type SavePolicyInput = Readonly<{
+  policyId: string;
+  [key: string]: unknown;
+}>;
+
+export type SavePolicyResult = Readonly<{
+  policyId: string;
+}>;
+
+// ---------- machine/agent list types ----------
+export type MachineSummary = Readonly<{
+  machineId: string;
+  [key: string]: unknown;
+}>;
+
+export type MachineListResult = Readonly<{
+  items: readonly MachineSummary[];
+}>;
+
+export type AgentSummary = Readonly<{
+  agentId: string;
+  [key: string]: unknown;
+}>;
+
+export type AgentListResult = Readonly<{
+  items: readonly AgentSummary[];
+}>;
+
 // ---------- list types ----------
 export type ListApprovalsFilter = Readonly<{
   status?: ApprovalStatus;
@@ -214,6 +259,7 @@ export class PortariumClient {
   public readonly agents: AgentsNamespace;
   public readonly machines: MachinesNamespace;
   public readonly agentActions: AgentActionsNamespace;
+  public readonly policies: PoliciesNamespace;
   public readonly events: EventsNamespace;
 
   public constructor(config: PortariumClientConfig) {
@@ -234,7 +280,13 @@ export class PortariumClient {
     this.agents = new AgentsNamespace(this);
     this.machines = new MachinesNamespace(this);
     this.agentActions = new AgentActionsNamespace(this);
+    this.policies = new PoliciesNamespace(this);
     this.events = new EventsNamespace(this);
+  }
+
+  /** Check the health of the control-plane server. */
+  async health(): Promise<HealthStatus> {
+    return this.request<HealthStatus>('GET', '/healthz');
   }
 
   /** @internal */
@@ -242,17 +294,17 @@ export class PortariumClient {
     return this.#config.workspaceId;
   }
 
-  /** @internal — base URL without trailing slash, used by EventsNamespace. */
+  /** @internal -- base URL without trailing slash, used by EventsNamespace. */
   get baseUrl(): string {
     return this.#config.baseUrl;
   }
 
-  /** @internal — fetch implementation, used by EventsNamespace for streaming. */
+  /** @internal -- fetch implementation, used by EventsNamespace for streaming. */
   get fetchFn(): typeof fetch {
     return this.#config.fetchFn;
   }
 
-  /** @internal — build auth + trace headers without content-type (for SSE). */
+  /** @internal -- build auth + trace headers without content-type (for SSE). */
   buildSseHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       accept: 'text/event-stream',
@@ -415,11 +467,23 @@ class ApprovalsNamespace {
     this.#client = client;
   }
 
+  /**
+   * @deprecated Use `decide()` instead. This method delegates to `decide()`.
+   */
   async submitDecision(input: ApprovalDecisionInput): Promise<void> {
+    await this.decide(input);
+  }
+
+  /**
+   * Submit a decision on an approval.
+   *
+   * Maps to: POST /v1/workspaces/:ws/approvals/:approvalId/decide
+   */
+  async decide(input: ApprovalDecisionInput): Promise<void> {
     await this.#client.request<void>(
       'POST',
-      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/approvals/${encodeURIComponent(input.approvalId)}/decision`,
-      { decision: input.decision, reason: input.reason },
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/approvals/${encodeURIComponent(input.approvalId)}/decide`,
+      { decision: input.decision, rationale: input.reason },
     );
   }
 
@@ -491,6 +555,20 @@ class AgentsNamespace {
     );
   }
 
+  async list(): Promise<AgentListResult> {
+    return this.#client.request<AgentListResult>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agents`,
+    );
+  }
+
+  async get(agentId: string): Promise<AgentSummary> {
+    return this.#client.request<AgentSummary>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agents/${encodeURIComponent(agentId)}`,
+    );
+  }
+
   async heartbeat(input: AgentHeartbeatInput): Promise<void> {
     await this.#client.request<void>(
       'POST',
@@ -511,6 +589,20 @@ class MachinesNamespace {
       'POST',
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/machines`,
       input,
+    );
+  }
+
+  async list(): Promise<MachineListResult> {
+    return this.#client.request<MachineListResult>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/machines`,
+    );
+  }
+
+  async get(machineId: string): Promise<MachineSummary> {
+    return this.#client.request<MachineSummary>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/machines/${encodeURIComponent(machineId)}`,
     );
   }
 
@@ -576,11 +668,40 @@ class AgentActionsNamespace {
       if (approval.status === 'Expired') {
         throw new Error(`Approval ${approvalId} expired`);
       }
-      // Still Pending (shouldn't happen since waitFor polls to terminal) — check timeout
+      // Still Pending (shouldn't happen since waitFor polls to terminal) -- check timeout
       if (deadline !== Infinity && Date.now() >= deadline) {
         throw new Error(`waitForApproval timed out waiting for approval ${approvalId}`);
       }
     }
+  }
+}
+
+class PoliciesNamespace {
+  readonly #client: PortariumClient;
+  constructor(client: PortariumClient) {
+    this.#client = client;
+  }
+
+  async list(): Promise<PolicyListResult> {
+    return this.#client.request<PolicyListResult>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/policies`,
+    );
+  }
+
+  async get(policyId: string): Promise<PolicySummary> {
+    return this.#client.request<PolicySummary>(
+      'GET',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/policies/${encodeURIComponent(policyId)}`,
+    );
+  }
+
+  async save(input: SavePolicyInput): Promise<SavePolicyResult> {
+    return this.#client.request<SavePolicyResult>(
+      'POST',
+      `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/policies`,
+      input,
+    );
   }
 }
 
@@ -631,7 +752,7 @@ class EventsNamespace {
                 try {
                   onEvent(JSON.parse(raw));
                 } catch {
-                  // Non-JSON data line — forward as raw string
+                  // Non-JSON data line -- forward as raw string
                   onEvent(raw);
                 }
               }
@@ -639,7 +760,7 @@ class EventsNamespace {
           }
         }
       } catch {
-        // Connection closed or aborted — silently exit
+        // Connection closed or aborted -- silently exit
       }
     })();
 

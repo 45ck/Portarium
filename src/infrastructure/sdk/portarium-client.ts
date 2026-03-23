@@ -19,4 +19,13 @@ export {
   type MachineRegistrationInput,
   type MachineHeartbeatInput,
   type EventSubscription,
+  type HealthStatus,
+  type PolicySummary,
+  type PolicyListResult,
+  type SavePolicyInput,
+  type SavePolicyResult,
+  type MachineSummary,
+  type MachineListResult,
+  type AgentSummary,
+  type AgentListResult,
 } from '../../sdk/portarium-client.js';
