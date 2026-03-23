@@ -34,6 +34,7 @@ function toMachineApiView(
   const { authConfig: _authConfig, ...view } = machine;
   return view;
 }
+import { machineRegistrationsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
   authenticate,
@@ -312,6 +313,7 @@ export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<
   }
 
   await deps.machineRegistryStore.saveMachineRegistration(authResult.ctx.tenantId, registration);
+  machineRegistrationsTotal.inc({ workspaceId });
   const machineId = String(registration.machineId);
   respondJson(res, {
     statusCode: 201,

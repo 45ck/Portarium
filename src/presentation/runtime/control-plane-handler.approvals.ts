@@ -20,6 +20,7 @@ import {
   submitApproval,
   type SubmitApprovalError,
 } from '../../application/commands/submit-approval.js';
+import { approvalDecisionsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
   authenticate,
@@ -397,9 +398,12 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
   const result = await submitApproval(commandDeps, auth.ctx, input);
 
   if (!result.ok) {
+    approvalDecisionsTotal.inc({ status: 'error', workspaceId });
     respondProblem(res, submitErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }
+
+  approvalDecisionsTotal.inc({ status: decision as string, workspaceId });
 
   // Broadcast approval decision to SSE event stream for real-time push
   if (deps.eventStream) {

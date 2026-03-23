@@ -13,6 +13,10 @@ import {
 } from '../../application/commands/propose-agent-action.js';
 import { HashSha256 } from '../../domain/primitives/index.js';
 import {
+  proposalsTotal,
+  policyEvaluationDuration,
+} from '../../infrastructure/observability/prometheus-registry.js';
+import {
   type ControlPlaneDeps,
   type QueryError,
   authenticate,
@@ -163,9 +167,13 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     ...(record['idempotencyKey'] ? { idempotencyKey: String(record['idempotencyKey']) } : {}),
   };
 
+  const proposalStartMs = Date.now();
   const result = await proposeAgentAction(commandDeps, auth.ctx, input);
+  const proposalDurationSeconds = (Date.now() - proposalStartMs) / 1000;
+  policyEvaluationDuration.observe(proposalDurationSeconds, { workspaceId });
 
   if (!result.ok) {
+    proposalsTotal.inc({ decision: 'error', workspaceId });
     respondProblem(
       res,
       problemFromError(toQueryError(result.error), pathname),
@@ -175,6 +183,7 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     return;
   }
 
+  proposalsTotal.inc({ decision: result.value.decision, workspaceId });
   respondJson(res, {
     statusCode: result.value.decision === 'Allow' ? 200 : 202,
     correlationId,

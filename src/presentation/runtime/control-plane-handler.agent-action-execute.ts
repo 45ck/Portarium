@@ -13,6 +13,7 @@ import {
   type ExecuteApprovedAgentActionDeps,
   type ExecuteApprovedAgentActionError,
 } from '../../application/commands/execute-approved-agent-action.js';
+import { actionExecutionsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
   type ProblemDetails,
@@ -212,9 +213,11 @@ export async function handleExecuteApprovedAgentAction(
   });
 
   if (!result.ok) {
+    actionExecutionsTotal.inc({ status: 'error', workspaceId });
     respondProblem(res, executeErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }
 
+  actionExecutionsTotal.inc({ status: 'success', workspaceId });
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }

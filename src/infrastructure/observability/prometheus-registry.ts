@@ -205,3 +205,33 @@ export const cacheHitsTotal = defaultRegistry.counter(
   'portarium_cache_hits_total',
   'Total number of cache lookups by result (hit or miss).',
 );
+
+// ---------------------------------------------------------------------------
+// Governance hot-path metrics
+// ---------------------------------------------------------------------------
+
+export const proposalsTotal = defaultRegistry.counter(
+  'portarium_proposals_total',
+  'Total agent action proposals.',
+);
+
+export const approvalDecisionsTotal = defaultRegistry.counter(
+  'portarium_approval_decisions_total',
+  'Total approval decisions.',
+);
+
+export const actionExecutionsTotal = defaultRegistry.counter(
+  'portarium_action_executions_total',
+  'Total approved action executions.',
+);
+
+export const machineRegistrationsTotal = defaultRegistry.counter(
+  'portarium_machine_registrations_total',
+  'Total machine registrations.',
+);
+
+export const policyEvaluationDuration = defaultRegistry.histogram(
+  'portarium_policy_evaluation_duration_seconds',
+  'Policy evaluation latency in seconds.',
+  [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1],
+);
