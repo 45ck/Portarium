@@ -60,12 +60,40 @@ export class MigrationRegistryError extends Error {
 
 export class MigrationExecutionError extends Error {
   readonly causeError: unknown;
+  readonly migrationVersion: number | undefined;
+  readonly migrationId: string | undefined;
+  readonly migrationPhase: MigrationPhase | undefined;
+  readonly migrationTarget: MigrationTarget | undefined;
 
-  public constructor(message: string, causeError: unknown) {
+  public constructor(
+    message: string,
+    causeError: unknown,
+    context?: Readonly<{
+      version?: number;
+      migrationId?: string;
+      phase?: MigrationPhase;
+      target?: MigrationTarget;
+    }>,
+  ) {
     super(message);
     this.name = 'MigrationExecutionError';
     this.causeError = causeError;
+    this.migrationVersion = context?.version;
+    this.migrationId = context?.migrationId;
+    this.migrationPhase = context?.phase;
+    this.migrationTarget = context?.target;
   }
+}
+
+export interface MigrationStatusEntry {
+  version: number;
+  migrationId: string;
+  phase: MigrationPhase;
+  scope: MigrationScope;
+  description: string;
+  status: 'applied' | 'pending';
+  appliedAt: string | null;
+  target: MigrationTarget;
 }
 
 export class InMemoryMigrationJournalStore implements MigrationJournalStore {
@@ -168,8 +196,10 @@ export class SchemaMigrator {
     const plan = await this.plan(migrations, options);
     const applied: PlannedMigrationStep[] = [];
 
+    let currentStep: PlannedMigrationStep | undefined;
     try {
       for (const step of plan) {
+        currentStep = step;
         for (const statement of step.migration.upSql) {
           await driver.execute({ target: step.target, statement });
         }
@@ -189,8 +219,20 @@ export class SchemaMigrator {
         rolledBack: [],
       };
     } catch (error) {
+      const context = currentStep
+        ? {
+            version: currentStep.migration.version,
+            migrationId: currentStep.migration.id,
+            phase: currentStep.migration.phase,
+            target: currentStep.target,
+          }
+        : undefined;
+
       if (options.rollbackOnError !== true || applied.length === 0) {
-        throw new MigrationExecutionError('Migration run failed.', error);
+        const msg = currentStep
+          ? `Migration run failed at v${currentStep.migration.version} (${currentStep.migration.id}) phase=${currentStep.migration.phase} target=${currentStep.target}.`
+          : 'Migration run failed.';
+        throw new MigrationExecutionError(msg, error, context);
       }
 
       const rolledBack: PlannedMigrationStep[] = [];
@@ -203,10 +245,42 @@ export class SchemaMigrator {
       }
 
       throw new MigrationExecutionError(
-        `Migration run failed and rolled back ${rolledBack.length} migration(s).`,
+        `Migration run failed at v${currentStep?.migration.version ?? '?'} (${currentStep?.migration.id ?? '?'}) and rolled back ${rolledBack.length} migration(s).`,
         error,
+        context,
       );
     }
+  }
+
+  public async status(
+    migrations: readonly SchemaMigration[],
+    tenants: readonly string[],
+  ): Promise<readonly MigrationStatusEntry[]> {
+    this.validateRegistry(migrations);
+    const sorted = [...migrations].sort(compareMigration);
+    const normalizedTenants = [...new Set(tenants.map((t) => t.trim()).filter((t) => t.length > 0))].sort();
+
+    const entries: MigrationStatusEntry[] = [];
+
+    for (const migration of sorted) {
+      const targets = resolveTargets(migration, normalizedTenants);
+      for (const target of targets) {
+        const applied = await this.#journal.listApplied(target);
+        const match = applied.find((record) => record.version === migration.version);
+        entries.push({
+          version: migration.version,
+          migrationId: migration.id,
+          phase: migration.phase,
+          scope: migration.scope,
+          description: migration.description,
+          status: match ? 'applied' : 'pending',
+          appliedAt: match?.appliedAtIso ?? null,
+          target,
+        });
+      }
+    }
+
+    return entries;
   }
 
   async #planMigrationTargets(

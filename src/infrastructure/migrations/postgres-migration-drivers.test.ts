@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  PostgresAdvisoryLock,
   PostgresMigrationJournalStore,
   PostgresMigrationSqlDriver,
   SchemaScopedMigrationSqlDriver,
@@ -54,6 +55,25 @@ class FakeSqlClient implements SqlClient {
       return { rows: [] as Row[], rowCount: 0 };
     }
 
+    if (statement.includes('pg_advisory_lock(')) {
+      return { rows: [] as Row[], rowCount: 0 };
+    }
+
+    if (statement.includes('pg_try_advisory_lock(')) {
+      const lockKey = params[0] as number;
+      const locked = this.#advisoryLocks.has(lockKey);
+      return {
+        rows: [{ pg_try_advisory_lock: !locked }] as unknown as Row[],
+        rowCount: 1,
+      };
+    }
+
+    if (statement.includes('pg_advisory_unlock(')) {
+      const lockKey = params[0] as number;
+      this.#advisoryLocks.delete(lockKey);
+      return { rows: [] as Row[], rowCount: 0 };
+    }
+
     return { rows: [] as Row[], rowCount: 0 };
   }
 
@@ -64,6 +84,13 @@ class FakeSqlClient implements SqlClient {
   public executed(): readonly string[] {
     return [...this.#executed];
   }
+
+  /** Simulate an advisory lock being held. */
+  public holdAdvisoryLock(key: number): void {
+    this.#advisoryLocks.add(key);
+  }
+
+  readonly #advisoryLocks = new Set<number>();
 }
 
 describe('PostgresMigrationJournalStore', () => {
@@ -218,5 +245,58 @@ describe('SchemaScopedMigrationSqlDriver', () => {
       'SET search_path TO "tenant_gamma";',
       stmt2,
     ]);
+  });
+});
+
+describe('PostgresAdvisoryLock', () => {
+  it('acquires lock via pg_advisory_lock', async () => {
+    const client = new FakeSqlClient();
+    const lock = new PostgresAdvisoryLock(client);
+
+    await lock.acquire();
+
+    expect(client.executed().some((s) => s.includes('pg_advisory_lock'))).toBe(true);
+  });
+
+  it('tryAcquire returns true when lock is available', async () => {
+    const client = new FakeSqlClient();
+    const lock = new PostgresAdvisoryLock(client);
+
+    const acquired = await lock.tryAcquire();
+    expect(acquired).toBe(true);
+  });
+
+  it('tryAcquire returns false when lock is already held', async () => {
+    const client = new FakeSqlClient();
+    const lockKey = 839_274_651; // default key
+    client.holdAdvisoryLock(lockKey);
+
+    const lock = new PostgresAdvisoryLock(client, lockKey);
+    const acquired = await lock.tryAcquire();
+    expect(acquired).toBe(false);
+  });
+
+  it('releases lock via pg_advisory_unlock', async () => {
+    const client = new FakeSqlClient();
+    const lock = new PostgresAdvisoryLock(client);
+
+    await lock.release();
+
+    expect(client.executed().some((s) => s.includes('pg_advisory_unlock'))).toBe(true);
+  });
+
+  it('uses custom lock key when provided', async () => {
+    const client = new FakeSqlClient();
+    const customKey = 12345;
+    const lock = new PostgresAdvisoryLock(client, customKey);
+
+    const acquired = await lock.tryAcquire();
+    expect(acquired).toBe(true);
+
+    // Verify that holding the custom key blocks acquisition
+    client.holdAdvisoryLock(customKey);
+    const lock2 = new PostgresAdvisoryLock(client, customKey);
+    const acquired2 = await lock2.tryAcquire();
+    expect(acquired2).toBe(false);
   });
 });

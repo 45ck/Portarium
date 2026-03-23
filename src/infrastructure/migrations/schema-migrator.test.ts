@@ -131,4 +131,122 @@ describe('SchemaMigrator', () => {
         .some((row) => row.statement.includes('DROP TABLE IF EXISTS workspace_registry;')),
     ).toBe(true);
   });
+
+  it('includes migration version and phase in error message on failure', async () => {
+    const journal = new InMemoryMigrationJournalStore();
+    const migrator = new SchemaMigrator({ journal });
+    const driver = new FailOnStatementDriver('status_transitioned_at');
+
+    try {
+      await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+        phase: 'Expand',
+        tenants: ['workspace-a'],
+        rollbackOnError: true,
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(MigrationExecutionError);
+      const migrationError = error as MigrationExecutionError;
+      expect(migrationError.message).toContain('v2');
+      expect(migrationError.message).toContain('0002_expand_run_projection_columns');
+      expect(migrationError.message).toContain('rolled back');
+      expect(migrationError.migrationVersion).toBe(2);
+      expect(migrationError.migrationId).toBe('0002_expand_run_projection_columns');
+      expect(migrationError.migrationPhase).toBe('Expand');
+      expect(migrationError.migrationTarget).toBe('workspace-a');
+    }
+  });
+
+  it('includes migration context in error for non-rollback failures', async () => {
+    const journal = new InMemoryMigrationJournalStore();
+    const migrator = new SchemaMigrator({ journal });
+    const driver = new FailOnStatementDriver('schema_migrations');
+
+    try {
+      await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+        phase: 'Expand',
+        tenants: ['workspace-a'],
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(MigrationExecutionError);
+      const migrationError = error as MigrationExecutionError;
+      expect(migrationError.message).toContain('v1');
+      expect(migrationError.message).toContain('0001_expand_runtime_schema_baseline');
+      expect(migrationError.migrationVersion).toBe(1);
+    }
+  });
+
+  it('returns status entries for all migrations with applied/pending state', async () => {
+    const journal = new InMemoryMigrationJournalStore();
+    const migrator = new SchemaMigrator({ journal });
+    const driver = new InMemoryMigrationSqlDriver();
+
+    // Apply only expand migrations first
+    await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+      phase: 'Expand',
+      tenants: ['workspace-a'],
+    });
+
+    const entries = await migrator.status(DEFAULT_SCHEMA_MIGRATIONS, ['workspace-a']);
+
+    // All expand migrations should be applied
+    const expandEntries = entries.filter((e) => e.phase === 'Expand');
+    expect(expandEntries.every((e) => e.status === 'applied')).toBe(true);
+
+    // Contract migration should be pending
+    const contractEntries = entries.filter((e) => e.phase === 'Contract');
+    expect(contractEntries.every((e) => e.status === 'pending')).toBe(true);
+    expect(contractEntries[0]?.appliedAt).toBeNull();
+
+    // Each entry should have proper metadata
+    const firstEntry = entries[0];
+    expect(firstEntry).toBeDefined();
+    expect(firstEntry?.version).toBe(1);
+    expect(firstEntry?.migrationId).toBe('0001_expand_runtime_schema_baseline');
+    expect(firstEntry?.phase).toBe('Expand');
+    expect(firstEntry?.scope).toBe('Global');
+    expect(firstEntry?.target).toBe('global');
+    expect(firstEntry?.status).toBe('applied');
+    expect(firstEntry?.appliedAt).toBeTruthy();
+  });
+
+  it('returns all pending when no migrations have been applied', async () => {
+    const journal = new InMemoryMigrationJournalStore();
+    const migrator = new SchemaMigrator({ journal });
+
+    const entries = await migrator.status(DEFAULT_SCHEMA_MIGRATIONS, ['workspace-a']);
+    expect(entries.every((e) => e.status === 'pending')).toBe(true);
+    expect(entries.every((e) => e.appliedAt === null)).toBe(true);
+  });
+
+  it('shows per-tenant status for tenant-scoped migrations', async () => {
+    const journal = new InMemoryMigrationJournalStore();
+    const migrator = new SchemaMigrator({ journal });
+    const driver = new InMemoryMigrationSqlDriver();
+
+    // Apply for workspace-a only
+    await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+      phase: 'Expand',
+      tenants: ['workspace-a'],
+    });
+
+    // Check status across both tenants
+    const entries = await migrator.status(DEFAULT_SCHEMA_MIGRATIONS, [
+      'workspace-a',
+      'workspace-b',
+    ]);
+
+    // Tenant-scoped migration v2 on workspace-a should be applied
+    const v2a = entries.find(
+      (e) => e.version === 2 && e.target === 'workspace-a',
+    );
+    expect(v2a?.status).toBe('applied');
+
+    // Tenant-scoped migration v2 on workspace-b should be pending
+    const v2b = entries.find(
+      (e) => e.version === 2 && e.target === 'workspace-b',
+    );
+    expect(v2b?.status).toBe('pending');
+  });
 });

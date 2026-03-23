@@ -1,6 +1,10 @@
 import { NodePostgresSqlClient } from '../postgresql/node-postgres-sql-client.js';
 import { DEFAULT_SCHEMA_MIGRATIONS } from './default-migrations.js';
-import { PostgresMigrationSqlDriver } from './postgres-migration-drivers.js';
+import {
+  PostgresAdvisoryLock,
+  PostgresMigrationJournalStore,
+  PostgresMigrationSqlDriver,
+} from './postgres-migration-drivers.js';
 import {
   InMemoryMigrationJournalStore,
   InMemoryMigrationSqlDriver,
@@ -37,6 +41,14 @@ async function main(): Promise<void> {
     await runDryRun();
     return;
   }
+  if (command === 'status') {
+    await runStatus();
+    return;
+  }
+  if (command === 'apply') {
+    await runApply();
+    return;
+  }
   if (command === 'bootstrap') {
     await runBootstrap();
     return;
@@ -54,7 +66,9 @@ async function main(): Promise<void> {
     return;
   }
 
-  throw new Error(`Unsupported command: ${command}`);
+  throw new Error(
+    `Unsupported command: ${command}. Available: check, plan, dry-run, status, apply, bootstrap, reset, provision-tenant, deprovision-tenant`,
+  );
 }
 
 function runCheck(): void {
@@ -109,6 +123,24 @@ async function runDryRun(): Promise<void> {
     rollbackOnError: true,
   });
 
+  const executedStatements = driver.__test__executed();
+
+  // Print human-readable SQL summary followed by JSON details
+  process.stdout.write(`-- Dry-run: ${phase} phase, ${result.applied.length} migration(s)\n`);
+  process.stdout.write(`-- Tenants: ${tenants.join(', ')}\n`);
+  process.stdout.write(`-- Total SQL statements: ${executedStatements.length}\n`);
+  process.stdout.write('--\n');
+
+  for (const step of result.applied) {
+    process.stdout.write(
+      `-- Migration v${step.migration.version}: ${step.migration.id} → ${step.target}\n`,
+    );
+    for (const statement of step.migration.upSql) {
+      process.stdout.write(`${statement}\n`);
+    }
+    process.stdout.write('\n');
+  }
+
   process.stdout.write(
     `${JSON.stringify(
       {
@@ -118,7 +150,7 @@ async function runDryRun(): Promise<void> {
           migrationId: step.migration.id,
           target: step.target,
         })),
-        executedStatements: driver.__test__executed(),
+        executedStatements,
       },
       null,
       2,
@@ -126,13 +158,108 @@ async function runDryRun(): Promise<void> {
   );
 }
 
+/**
+ * Shows applied vs pending migrations by querying the real schema_migrations table.
+ *
+ * Requires DATABASE_URL. Uses the Postgres journal to determine which migrations
+ * have been applied and which are still pending.
+ */
+async function runStatus(): Promise<void> {
+  const connectionString = requireEnv('DATABASE_URL');
+  const tenants = parseTenants(readArg('--tenants'));
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+
+  try {
+    // Ensure schema_migrations table exists before querying
+    const journalStore = await createSafeJournalStore(sqlClient);
+    const migrator = new SchemaMigrator({ journal: journalStore });
+    const entries = await migrator.status(DEFAULT_SCHEMA_MIGRATIONS, tenants);
+
+    // Print table header
+    process.stdout.write(
+      padRight('version', 10) +
+        padRight('phase', 12) +
+        padRight('scope', 10) +
+        padRight('target', 24) +
+        padRight('status', 12) +
+        padRight('applied_at', 28) +
+        'migration_id\n',
+    );
+    process.stdout.write('─'.repeat(120) + '\n');
+
+    let appliedCount = 0;
+    let pendingCount = 0;
+
+    for (const entry of entries) {
+      const statusLabel = entry.status === 'applied' ? 'applied' : 'PENDING';
+      if (entry.status === 'applied') appliedCount++;
+      else pendingCount++;
+
+      process.stdout.write(
+        padRight(String(entry.version), 10) +
+          padRight(entry.phase, 12) +
+          padRight(entry.scope, 10) +
+          padRight(entry.target, 24) +
+          padRight(statusLabel, 12) +
+          padRight(entry.appliedAt ?? '-', 28) +
+          entry.migrationId +
+          '\n',
+      );
+    }
+
+    process.stdout.write('─'.repeat(120) + '\n');
+    process.stdout.write(
+      `Total: ${entries.length} | Applied: ${appliedCount} | Pending: ${pendingCount}\n`,
+    );
+  } finally {
+    await sqlClient.close();
+  }
+}
+
+/**
+ * Applies migrations to the real database with advisory locking and Postgres journal.
+ *
+ * Supports both Expand and Contract phases. Uses pg_advisory_lock to prevent
+ * concurrent migration runs against the same database.
+ */
+async function runApply(): Promise<void> {
+  const connectionString = requireEnv('DATABASE_URL');
+  const phase = parsePhase(readArg('--phase') ?? 'expand');
+  const tenants = parseTenants(readArg('--tenants'));
+  const allowContractBreaking = readFlag('--allow-contract-breaking');
+  const sqlClient = new NodePostgresSqlClient({ connectionString });
+
+  try {
+    await withAdvisoryLock(sqlClient, async () => {
+      // Bootstrap creates schema_migrations if needed (migration v1 includes it).
+      // For apply with Postgres journal we need the table to exist first.
+      // If it doesn't exist, we bootstrap with the first migration that creates it.
+      const journalStore = await createSafeJournalStore(sqlClient);
+      const migrator = new SchemaMigrator({ journal: journalStore });
+      const driver = new PostgresMigrationSqlDriver(sqlClient);
+
+      const result = await migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, {
+        phase,
+        tenants,
+        allowContractBreaking,
+      });
+
+      printApplyResult(phase, result);
+    });
+  } finally {
+    await sqlClient.close();
+  }
+}
+
 async function runBootstrap(): Promise<void> {
   const connectionString = requireEnv('DATABASE_URL');
   const tenants = parseTenants(readArg('--tenants'));
   const sqlClient = new NodePostgresSqlClient({ connectionString });
   try {
-    const result = await applyExpandMigrations(sqlClient, tenants);
-    printBootstrapResult(result);
+    await withAdvisoryLock(sqlClient, async () => {
+      const result = await applyExpandMigrations(sqlClient, tenants);
+      printBootstrapResult(result);
+    });
   } finally {
     await sqlClient.close();
   }
@@ -148,24 +275,87 @@ async function runReset(): Promise<void> {
   const tenants = parseTenants(readArg('--tenants'));
   const sqlClient = new NodePostgresSqlClient({ connectionString });
   try {
-    for (const statement of RESET_DROP_STATEMENTS) {
-      await sqlClient.query(statement);
-    }
-    process.stdout.write('Reset: dropped all known tables.\n');
-    const result = await applyExpandMigrations(sqlClient, tenants);
-    printBootstrapResult(result);
+    await withAdvisoryLock(sqlClient, async () => {
+      for (const statement of RESET_DROP_STATEMENTS) {
+        await sqlClient.query(statement);
+      }
+      process.stdout.write('Reset: dropped all known tables.\n');
+      const result = await applyExpandMigrations(sqlClient, tenants);
+      printBootstrapResult(result);
+    });
   } finally {
     await sqlClient.close();
   }
+}
+
+/**
+ * Creates a PostgresMigrationJournalStore, gracefully handling the case where
+ * schema_migrations does not yet exist (first-ever run).
+ *
+ * On first-ever run, falls back to an InMemoryMigrationJournalStore so that
+ * migration v1 (which creates the table) can be applied. After that,
+ * subsequent calls will use the Postgres journal.
+ */
+async function createSafeJournalStore(
+  sqlClient: NodePostgresSqlClient,
+): Promise<PostgresMigrationJournalStore | InMemoryMigrationJournalStore> {
+  try {
+    const result = await sqlClient.query<{ exists: boolean }>(
+      "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'schema_migrations') AS exists;",
+    );
+    if (result.rows[0]?.exists === true) {
+      return new PostgresMigrationJournalStore(sqlClient);
+    }
+  } catch {
+    // Table doesn't exist or can't query — fall back to in-memory
+  }
+  return new InMemoryMigrationJournalStore();
 }
 
 async function applyExpandMigrations(
   sqlClient: NodePostgresSqlClient,
   tenants: readonly string[],
 ): Promise<MigrationRunResult> {
-  const migrator = new SchemaMigrator({ journal: new InMemoryMigrationJournalStore() });
+  const journalStore = await createSafeJournalStore(sqlClient);
+  const migrator = new SchemaMigrator({ journal: journalStore });
   const driver = new PostgresMigrationSqlDriver(sqlClient);
   return migrator.run(DEFAULT_SCHEMA_MIGRATIONS, driver, { phase: 'Expand', tenants });
+}
+
+/**
+ * Acquires a PostgreSQL advisory lock for the duration of the migration operation.
+ * Prevents concurrent migration runs against the same database.
+ */
+async function withAdvisoryLock(
+  sqlClient: NodePostgresSqlClient,
+  fn: () => Promise<void>,
+): Promise<void> {
+  const lock = new PostgresAdvisoryLock(sqlClient);
+  const acquired = await lock.tryAcquire();
+  if (!acquired) {
+    throw new Error(
+      'Could not acquire migration advisory lock — another migration may be running. ' +
+        'If this is unexpected, check for stale advisory locks in pg_locks.',
+    );
+  }
+  try {
+    await fn();
+  } finally {
+    await lock.release();
+  }
+}
+
+function printApplyResult(phase: MigrationPhase, result: MigrationRunResult): void {
+  if (result.applied.length === 0) {
+    process.stdout.write(`Apply (${phase}): no pending migrations.\n`);
+    return;
+  }
+  process.stdout.write(
+    `Apply (${phase}) complete. Applied ${result.applied.length} migration step(s).\n`,
+  );
+  for (const step of result.applied) {
+    process.stdout.write(`  + v${step.migration.version} ${step.migration.id} → ${step.target}\n`);
+  }
 }
 
 function printBootstrapResult(result: MigrationRunResult): void {
@@ -173,6 +363,10 @@ function printBootstrapResult(result: MigrationRunResult): void {
   for (const step of result.applied) {
     process.stdout.write(`  + ${step.migration.id} → ${step.target}\n`);
   }
+}
+
+function padRight(text: string, width: number): string {
+  return text.length >= width ? text + ' ' : text + ' '.repeat(width - text.length);
 }
 
 function readArg(flag: string): string | undefined {
