@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { TriageAction } from './types';
 
@@ -23,11 +23,26 @@ export function TriageProgressDots({
   actionHistory,
 }: TriageProgressDotsProps) {
   const triagePosition = index + 1;
+  const remaining = total - index;
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-muted-foreground font-medium">
-        {triagePosition} of {total} pending
-      </span>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground font-medium">
+          {triagePosition} of {total} pending
+        </span>
+        <AnimatePresence mode="popLayout">
+          <motion.span
+            key={remaining}
+            className="inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] font-semibold tabular-nums px-2 py-0.5"
+            initial={{ y: -8, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 8, opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          >
+            {remaining} left
+          </motion.span>
+        </AnimatePresence>
+      </div>
       <div className="flex gap-1 sm:gap-1.5 overflow-hidden max-w-[60%] sm:max-w-none">
         {Array.from({ length: total }).map((_, i) => {
           const action = actionHistory[i];

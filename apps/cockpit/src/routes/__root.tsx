@@ -143,6 +143,16 @@ const NAV_SECTIONS: NavSectionDef[] = [
         icon: <EntityIcon entityType="credential" size="sm" decorative />,
       },
       {
+        label: 'Policies',
+        to: '/config/policies',
+        icon: <EntityIcon entityType="policy" size="sm" decorative />,
+      },
+      {
+        label: 'Blast Radius',
+        to: '/config/blast-radius',
+        icon: <ShieldAlert className="h-4 w-4" />,
+      },
+      {
         label: 'Users',
         to: '/config/users',
         icon: <Users className="h-4 w-4" />,

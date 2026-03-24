@@ -48,6 +48,9 @@ import { Route as configAgentDetailRoute } from './routes/config/agent-detail';
 import { Route as configAdaptersRoute } from './routes/config/adapters';
 import { Route as configCredentialsRoute } from './routes/config/credentials';
 import { Route as configUsersRoute } from './routes/config/users';
+import { Route as configPoliciesRoute } from './routes/config/policies';
+import { Route as configPolicyDetailRoute } from './routes/config/policy-detail';
+import { Route as configBlastRadiusRoute } from './routes/config/blast-radius';
 import { Route as configSettingsRoute } from './routes/config/settings';
 
 // Explore
@@ -96,6 +99,9 @@ export const routeTree = rootRoute.addChildren([
   configAdaptersRoute,
   configCredentialsRoute,
   configUsersRoute,
+  configPoliciesRoute,
+  configPolicyDetailRoute,
+  configBlastRadiusRoute,
   configSettingsRoute,
   exploreObjectsRoute,
   exploreEventsRoute,

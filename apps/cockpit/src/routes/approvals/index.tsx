@@ -21,9 +21,16 @@ import {
 } from '@/components/cockpit/triage-complete-state';
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
-import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
+import { NotificationBanner } from '@/components/cockpit/notification-banner';
+import { CheckSquare, AlertCircle, RotateCcw, Bell, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import type { ApprovalSummary, ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import {
+  usePolicyUpdates,
+  useDemoTriggers,
+  type PolicyUpdatePayload,
+} from '@/lib/policy-event-bridge';
+import { APPROVALS as FIXTURE_APPROVALS } from '@/mocks/fixtures/openclaw-demo';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -38,6 +45,8 @@ interface PendingAction {
 
 interface ApprovalsSearch {
   focus?: string;
+  from?: string;
+  demo?: string;
 }
 
 function ApprovalsPage() {
@@ -45,7 +54,82 @@ function ApprovalsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
-  const items = data?.items ?? [];
+  const rawItems = data?.items ?? [];
+
+  // -- Live-update state (policy event bridge) --
+  const [injectedApprovals, setInjectedApprovals] = useState<ApprovalSummary[]>([]);
+  const [removedApprovalIds, setRemovedApprovalIds] = useState<Set<string>>(new Set());
+  const [relaxFlashId, setRelaxFlashId] = useState<string | null>(null);
+
+  const showDemo = search.demo === 'true' || import.meta.env.DEV;
+  const { triggerTighten, triggerRelax } = useDemoTriggers();
+
+  usePolicyUpdates(
+    useCallback(
+      (payload: PolicyUpdatePayload) => {
+        if (payload.effect === 'tighten') {
+          // Inject an approval that was previously auto-approved as now needing review
+          const injected = FIXTURE_APPROVALS.find(
+            (a) => payload.affectedApprovalIds.includes(a.approvalId),
+          );
+          if (injected) {
+            const asNewPending: ApprovalSummary = {
+              ...injected,
+              status: 'Pending',
+              decidedAtIso: undefined,
+              decidedByUserId: undefined,
+              rationale: undefined,
+              requestedAtIso: new Date().toISOString(),
+            };
+            setInjectedApprovals((prev) => {
+              if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
+              return [...prev, asNewPending];
+            });
+            // Remove from removed set if it was there
+            setRemovedApprovalIds((prev) => {
+              if (!prev.has(asNewPending.approvalId)) return prev;
+              const next = new Set(prev);
+              next.delete(asNewPending.approvalId);
+              return next;
+            });
+          }
+
+          toast(`Policy tightened: ${payload.policyName}`, {
+            description: payload.changeDescription,
+            icon: <Bell className="h-4 w-4 text-orange-500" />,
+            duration: 5_000,
+          });
+        } else {
+          // Relax: remove affected approvals with green flash
+          const targetId = payload.affectedApprovalIds[0];
+          if (targetId) {
+            setRelaxFlashId(targetId);
+            setTimeout(() => {
+              setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
+              setRelaxFlashId(null);
+              // Also remove from injected if it was there
+              setInjectedApprovals((prev) =>
+                prev.filter((a) => a.approvalId !== targetId),
+              );
+            }, 800);
+          }
+
+          toast(`Policy relaxed: ${payload.policyName}`, {
+            description: payload.changeDescription,
+            icon: <Zap className="h-4 w-4 text-green-500" />,
+            duration: 5_000,
+          });
+        }
+      },
+      [],
+    ),
+  );
+
+  // Merge injected approvals and filter removed ones
+  const items = [
+    ...rawItems.filter((a) => !removedApprovalIds.has(a.approvalId)),
+    ...injectedApprovals.filter((a) => !removedApprovalIds.has(a.approvalId)),
+  ];
   const pendingItems = items.filter((a) => a.status === 'Pending');
 
   const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set());
@@ -288,22 +372,36 @@ function ApprovalsPage() {
       );
   } else {
     triageChild = (
-      <ApprovalTriageDeck
-        key={currentApproval.approvalId}
-        approval={currentApproval}
-        index={currentIndex}
-        total={pendingItems.length}
-        hasMore={triageQueue.length > 1}
-        onAction={handleTriageAction}
-        loading={isFlushing}
-        plannedEffects={planData?.plannedEffects}
-        evidenceEntries={filteredEvidence}
-        run={runData}
-        workflow={workflowData}
-        actionHistory={actionHistory}
-        undoAvailable={pendingAction !== null}
-        onUndo={() => handleUndo()}
-      />
+      <div className="relative">
+        {/* Green flash overlay for relax animation */}
+        <AnimatePresence>
+          {relaxFlashId === currentApproval.approvalId && (
+            <motion.div
+              className="absolute inset-0 z-20 rounded-xl bg-green-500/20 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.6, 0.3, 0.6, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+            />
+          )}
+        </AnimatePresence>
+        <ApprovalTriageDeck
+          key={currentApproval.approvalId}
+          approval={currentApproval}
+          index={currentIndex}
+          total={pendingItems.length}
+          hasMore={triageQueue.length > 1}
+          onAction={handleTriageAction}
+          loading={isFlushing}
+          plannedEffects={planData?.plannedEffects}
+          evidenceEntries={filteredEvidence}
+          run={runData}
+          workflow={workflowData}
+          actionHistory={actionHistory}
+          undoAvailable={pendingAction !== null}
+          onUndo={() => handleUndo()}
+        />
+      </div>
     );
   }
 
@@ -337,8 +435,13 @@ function ApprovalsPage() {
     );
   }
 
+  const showNotification = search.from === 'notification' || pendingItems.length > 0;
+
   return (
     <div className="p-6 space-y-4">
+      {showNotification && (
+        <NotificationBanner pendingCount={pendingItems.length} />
+      )}
       <PageHeader
         title="Approvals"
         icon={<EntityIcon entityType="approval" size="md" decorative />}
@@ -349,6 +452,33 @@ function ApprovalsPage() {
         lastSyncAtIso={offlineMeta.lastSyncAtIso}
         pendingOutboxCount={pendingCount}
       />
+      {showDemo && (
+        <motion.div
+          className="flex items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 px-3 py-2"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+        >
+          <span className="text-[11px] font-medium text-muted-foreground mr-1">Demo</span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1.5"
+            onClick={triggerTighten}
+          >
+            <Bell className="h-3 w-3" />
+            Policy tightened
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1.5"
+            onClick={triggerRelax}
+          >
+            <Zap className="h-3 w-3" />
+            Policy relaxed
+          </Button>
+        </motion.div>
+      )}
       {currentApproval && triageQueue.length > 0 ? (
         <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
@@ -374,5 +504,7 @@ export const Route = createRoute({
   component: ApprovalsPage,
   validateSearch: (search: Record<string, unknown>): ApprovalsSearch => ({
     focus: typeof search.focus === 'string' ? search.focus : undefined,
+    from: typeof search.from === 'string' ? search.from : undefined,
+    demo: typeof search.demo === 'string' ? search.demo : undefined,
   }),
 });

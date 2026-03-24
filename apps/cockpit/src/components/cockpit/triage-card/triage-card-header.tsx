@@ -7,9 +7,48 @@ import type {
 } from '@portarium/cockpit-types';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ArrowRight, Bot, Clock, Paperclip, User } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Bot, Clock, Mail, Calendar, MessageSquare, Paperclip, User } from 'lucide-react';
 import { ActorBadge } from './actor-badge';
+import { SorBadge } from './sor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
+
+// ---------------------------------------------------------------------------
+// Agent display name resolution (demo-friendly)
+// ---------------------------------------------------------------------------
+
+const AGENT_DISPLAY_NAMES: Record<string, string> = {
+  'agent-openclaw-001': 'OpenClaw Watchtower',
+  'agent-openclaw-watchtower-001': 'OpenClaw Watchtower',
+};
+
+function resolveAgentDisplayName(agentId: string): string {
+  return AGENT_DISPLAY_NAMES[agentId] ?? agentId;
+}
+
+// ---------------------------------------------------------------------------
+// Target SoR icon mapping
+// ---------------------------------------------------------------------------
+
+const SOR_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Gmail: Mail,
+  'Google Calendar': Calendar,
+  Slack: MessageSquare,
+};
+
+function SorTargetPill({ name }: { name: string }) {
+  const Icon = SOR_ICON_MAP[name];
+  if (Icon) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2 py-0.5">
+        <Icon className="h-3 w-3 shrink-0" />
+        {name}
+      </span>
+    );
+  }
+  // Fall back to SorBadge for unknown SoRs (only if it looks like a system name, not a quantity)
+  if (/^\d/.test(name)) return null;
+  return <SorBadge name={name} />;
+}
 
 export interface TriageCardHeaderProps {
   approval: ApprovalSummary;
@@ -68,6 +107,27 @@ export function TriageCardHeader({
                 </Badge>
               )}
             </div>
+
+            {/* Agent identity + target SoR */}
+            {run?.agentIds && run.agentIds.length > 0 && (
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Bot className="h-3 w-3 shrink-0 text-primary" />
+                  <span className="font-medium text-foreground">
+                    {resolveAgentDisplayName(run.agentIds[0]!)}
+                  </span>
+                </span>
+                {policyRule?.blastRadius && policyRule.blastRadius.length > 0 && (
+                  <>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+                    {policyRule.blastRadius.slice(0, 2).map((sor) => (
+                      <SorTargetPill key={sor} name={sor} />
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+
             <p className="text-sm font-semibold leading-snug">{approval.prompt}</p>
 
             {/* Requested by */}

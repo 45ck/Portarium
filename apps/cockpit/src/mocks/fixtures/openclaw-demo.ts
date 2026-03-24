@@ -771,12 +771,322 @@ const OPENCLAW_AGENTS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Policy rules (full policy definitions backing the inline policyRule refs)
+// ---------------------------------------------------------------------------
+
+const OPENCLAW_POLICIES = [
+  {
+    schemaVersion: 1 as const,
+    policyId: 'COMMUNICATION-APPROVAL-001',
+    name: 'External Email Approval',
+    description:
+      'Requires human approval before sending any email to external recipients. Prevents accidental data leaks and ensures tone/content review.',
+    trigger: 'send:email AND external_recipient',
+    tier: 'HumanApprove' as const,
+    blastRadius: [
+      { system: 'Gmail', scope: '1 message per invocation' },
+    ],
+    irreversibility: 'partial' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'simple' as const,
+      rolesRequired: ['approver'],
+    },
+    scope: {
+      agents: ['agent-openclaw-001', 'agent-openclaw-watchtower-001'],
+      tools: ['gmail:send-email', 'gmail:create-draft'],
+    },
+    createdAtIso: '2026-01-15T09:00:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'CALENDAR-APPROVAL-001',
+    name: 'External Calendar Event Approval',
+    description:
+      'Requires human approval for calendar events that include external attendees. Guards against unvetted meeting invitations sent on behalf of the organisation.',
+    trigger: 'calendar:create_event AND external_attendees',
+    tier: 'HumanApprove' as const,
+    blastRadius: [
+      { system: 'Google Calendar', scope: '1 event' },
+    ],
+    irreversibility: 'partial' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'simple' as const,
+      rolesRequired: ['approver'],
+    },
+    scope: {
+      agents: ['agent-openclaw-001', 'agent-openclaw-watchtower-001'],
+      tools: ['calendar:create-event', 'calendar:update-event'],
+    },
+    createdAtIso: '2026-01-15T09:05:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'EMAIL-DESTRUCTIVE-BLOCK-001',
+    name: 'Bulk Email Deletion Block',
+    description:
+      'Blocks all bulk email delete operations. Destructive mailbox actions require a security-admin and can never be auto-approved.',
+    trigger: 'email:bulk-delete AND scope=all-mailboxes',
+    tier: 'ManualOnly' as const,
+    blastRadius: [
+      { system: 'Gmail', scope: 'all folders' },
+      { system: 'Gmail', scope: 'all messages' },
+    ],
+    irreversibility: 'full' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'blocked-role' as const,
+      rolesRequired: ['security-admin'],
+    },
+    scope: {
+      agents: ['*'],
+      tools: ['gmail:bulk-delete', 'gmail:purge-mailbox'],
+    },
+    createdAtIso: '2026-01-15T09:10:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'CRON-BATCH-APPROVAL-001',
+    name: 'Cron Batch Output Approval',
+    description:
+      'Requires n-of-m human approval for cron outputs that deliver content to external systems. Ensures batch dispatches are reviewed by multiple stakeholders.',
+    trigger: 'cron:output AND external_delivery',
+    tier: 'HumanApprove' as const,
+    blastRadius: [
+      { system: 'Slack', scope: 'channel message' },
+      { system: 'Email', scope: 'batch notification' },
+    ],
+    irreversibility: 'partial' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'n-of-m' as const,
+      rolesRequired: ['approver', 'operations.dispatch'],
+      nRequired: 2,
+      nTotal: 2,
+    },
+    scope: {
+      agents: ['agent-openclaw-001'],
+      tools: ['slack:post-message', 'gmail:send-email'],
+    },
+    createdAtIso: '2026-01-20T11:00:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'CRON-CREATE-BLOCK-001',
+    name: 'Persistent Automation Creation Block',
+    description:
+      'Blocks creation of persistent cron jobs or recurring automations. Only admins may create schedules that run unattended after initial setup.',
+    trigger: 'cron:create AND persistent_automation',
+    tier: 'ManualOnly' as const,
+    blastRadius: [
+      { system: 'OpenClaw Gateway', scope: 'persistent schedule' },
+    ],
+    irreversibility: 'full' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'blocked-role' as const,
+      rolesRequired: ['admin'],
+    },
+    scope: {
+      agents: ['*'],
+      tools: ['cron:create-job', 'cron:update-schedule'],
+    },
+    createdAtIso: '2026-01-20T11:05:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'SUBAGENT-APPLY-001',
+    name: 'Sub-Agent Inbox Update Approval',
+    description:
+      'Requires human approval before applying sub-agent triage results (labels, tags) to the inbox. Prevents automated mis-categorisation.',
+    trigger: 'subagent:output AND inbox:update_tags',
+    tier: 'HumanApprove' as const,
+    blastRadius: [
+      { system: 'Gmail labels', scope: '10 threads' },
+    ],
+    irreversibility: 'none' as const,
+    status: 'active' as const,
+    sodRule: {
+      type: 'simple' as const,
+      rolesRequired: ['approver'],
+    },
+    scope: {
+      agents: ['agent-openclaw-001'],
+      tools: ['gmail:update-labels', 'gmail:apply-tags'],
+    },
+    createdAtIso: '2026-02-01T08:00:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+  {
+    schemaVersion: 1 as const,
+    policyId: 'CRON-GREEN-AUTO-001',
+    name: 'Internal Notes Auto-Approve',
+    description:
+      'Automatically approves updates to internal-only notes with no external side effects. Allows routine summarisation without human friction.',
+    trigger: 'notes:update_internal_only',
+    tier: 'Auto' as const,
+    blastRadius: [
+      { system: 'Internal notes', scope: '1 document' },
+    ],
+    irreversibility: 'none' as const,
+    status: 'active' as const,
+    scope: {
+      agents: ['agent-openclaw-001'],
+      tools: ['notion:update-page', 'notion:append-block'],
+    },
+    createdAtIso: '2026-02-01T08:05:00Z',
+    updatedAtIso: '2026-02-20T14:30:00Z',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Tool classifications
+// ---------------------------------------------------------------------------
+
+const OPENCLAW_TOOL_CLASSIFICATIONS = [
+  // --- Email tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:send-email',
+    category: 'Mutation' as const,
+    minimumTier: 'HumanApprove' as const,
+    rationale: 'Sends email to external recipients; requires human review to prevent data leaks.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:create-draft',
+    category: 'Mutation' as const,
+    minimumTier: 'HumanApprove' as const,
+    rationale: 'Creates a draft visible in the user mailbox; mutation but lower risk than send.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:read-thread',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Read-only access to email threads; no external side effects.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:bulk-delete',
+    category: 'Dangerous' as const,
+    minimumTier: 'ManualOnly' as const,
+    rationale: 'Irreversible bulk deletion of emails; classified as Dangerous by default.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:update-labels',
+    category: 'Mutation' as const,
+    minimumTier: 'HumanApprove' as const,
+    rationale: 'Modifies label/tag state on threads; reversible but affects organisation.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'gmail:search-inbox',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Search query against inbox; read-only operation.',
+    overridden: false,
+  },
+  // --- Calendar tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'calendar:create-event',
+    category: 'Mutation' as const,
+    minimumTier: 'HumanApprove' as const,
+    rationale: 'Creates calendar events that may include external attendees and send invitations.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'calendar:list-events',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Lists calendar entries; no side effects.',
+    overridden: false,
+  },
+  // --- Slack tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'slack:post-message',
+    category: 'Mutation' as const,
+    minimumTier: 'HumanApprove' as const,
+    rationale: 'Posts messages to Slack channels visible to the team; requires review.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'slack:read-channel',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Reads channel history; no external side effects.',
+    overridden: false,
+  },
+  // --- Cron/automation tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'cron:create-job',
+    category: 'Dangerous' as const,
+    minimumTier: 'ManualOnly' as const,
+    rationale: 'Creates persistent automated schedules; classified Dangerous due to ongoing execution.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'cron:list-jobs',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Lists existing cron jobs; read-only inspection.',
+    overridden: false,
+  },
+  // --- Notion tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'notion:update-page',
+    category: 'Mutation' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Updates internal Notion pages; admin-overridden to Auto for internal notes workflow.',
+    overridden: true,
+  },
+  // --- Sub-agent tools ---
+  {
+    schemaVersion: 1 as const,
+    toolName: 'subagent:spawn-session',
+    category: 'Mutation' as const,
+    minimumTier: 'Assisted' as const,
+    rationale: 'Spawns an isolated sub-agent session; contained but creates a new execution context.',
+    overridden: false,
+  },
+  {
+    schemaVersion: 1 as const,
+    toolName: 'subagent:read-results',
+    category: 'ReadOnly' as const,
+    minimumTier: 'Auto' as const,
+    rationale: 'Reads completed sub-agent session results; no side effects.',
+    overridden: false,
+  },
+];
+
 export const WORK_ITEMS = OPENCLAW_WORK_ITEMS;
 export const RUNS = OPENCLAW_RUNS;
 export const APPROVALS = OPENCLAW_APPROVALS;
 export const PLANS = OPENCLAW_PLANS;
 export const EVIDENCE = OPENCLAW_EVIDENCE;
 export const AGENTS = OPENCLAW_AGENTS;
+export const POLICIES = OPENCLAW_POLICIES;
+export const TOOL_CLASSIFICATIONS = OPENCLAW_TOOL_CLASSIFICATIONS;
 
 export {
   CREDENTIAL_GRANTS,
