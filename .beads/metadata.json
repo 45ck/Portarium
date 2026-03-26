@@ -1,6 +1,5 @@
 {
-  "database": "dolt",
+  "database": "no-db",
   "jsonl_export": "issues.jsonl",
-  "backend": "dolt",
-  "dolt_database": "beads_bead"
+  "backend": "no-db"
 }
