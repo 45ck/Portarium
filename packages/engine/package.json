@@ -1,0 +1,45 @@
+{
+  "name": "@portarium/engine",
+  "version": "0.1.0",
+  "description": "Validation middleware for agent tool calls — enforce schemas, call limits, and audit hooks.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Calvin Kennedy <calvin@calvinkennedy.com>",
+  "keywords": [
+    "agent-safety",
+    "tool-calling",
+    "validation",
+    "middleware",
+    "ai-governance",
+    "langgraph",
+    "control-plane",
+    "human-in-the-loop"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/45ck/Portarium.git",
+    "directory": "packages/engine"
+  },
+  "homepage": "https://github.com/45ck/Portarium#readme",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
