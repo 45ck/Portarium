@@ -18,7 +18,8 @@
     "risk-controls"
   ],
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -200,6 +201,9 @@
     "lab:approval:claude": "PORTARIUM_LAB_PROVIDER=claude tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:openai": "PORTARIUM_LAB_PROVIDER=openai tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:gemini": "PORTARIUM_LAB_PROVIDER=gemini tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "lab:plugin": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=A",
+    "lab:plugin:fail-closed": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=B",
+    "lab:plugin:cockpit": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=C",
     "release:collect-changelog": "node scripts/release/collect-changelog.mjs",
     "release:collect-changelog:json": "node scripts/release/collect-changelog.mjs --json",
     "release:prepare": "node scripts/release/prepare-release.mjs",

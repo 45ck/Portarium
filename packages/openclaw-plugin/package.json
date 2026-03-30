@@ -1,0 +1,30 @@
+{
+  "name": "@portarium/openclaw-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Native OpenClaw plugin that routes all tool calls through Portarium governance",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "openclaw": {
+    "extensions": ["./src/index.ts"]
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.2.14"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": { "optional": true }
+  }
+}
