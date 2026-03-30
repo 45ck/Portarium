@@ -226,7 +226,9 @@
   "overrides": {
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
-    }
+    },
+    "@hono/node-server": "^1.19.11",
+    "fast-xml-parser": "^5.5.9"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
