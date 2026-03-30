@@ -29,8 +29,9 @@ export default tseslint.config(
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
-      // apps/ workspaces have their own tsconfig and lint setup
+      // apps/ and packages/ workspaces have their own tsconfig and lint setup
       'apps/**',
+      'packages/**',
       // Templates, examples, and scaffolds are developer-facing starter code, not production
       'templates/**',
       'examples/**',

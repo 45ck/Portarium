@@ -403,7 +403,7 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
     return;
   }
 
-  approvalDecisionsTotal.inc({ status: decision as string, workspaceId });
+  approvalDecisionsTotal.inc({ status: decision, workspaceId });
 
   // Broadcast approval decision to SSE event stream for real-time push
   if (deps.eventStream) {
