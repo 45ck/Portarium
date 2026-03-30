@@ -23,14 +23,14 @@ T3 Code's layout is the right foundation. It was designed for exactly this — o
 
 ### T3 Code → Portarium mapping
 
-| T3 Code | Portarium |
-|---|---|
-| Projects list (left) | Bead list — filterable by status / policy tier / actor |
-| Thread list (center) | Bead kanban: Ready → Running → **Awaiting Approval** → Done |
-| Chat + diff + terminal (right) | Bead thread: tool call feed + diff + approval gate |
-| "New thread" | "New bead" / trigger workflow (command palette `Ctrl+K`) |
-| Commit → push → PR (one action) | Approve → evidence signed → bead merges (one action) |
-| One worktree per thread | One worktree per bead (already how Portarium works) |
+| T3 Code                         | Portarium                                                   |
+| ------------------------------- | ----------------------------------------------------------- |
+| Projects list (left)            | Bead list — filterable by status / policy tier / actor      |
+| Thread list (center)            | Bead kanban: Ready → Running → **Awaiting Approval** → Done |
+| Chat + diff + terminal (right)  | Bead thread: tool call feed + diff + approval gate          |
+| "New thread"                    | "New bead" / trigger workflow (command palette `Ctrl+K`)    |
+| Commit → push → PR (one action) | Approve → evidence signed → bead merges (one action)        |
+| One worktree per thread         | One worktree per bead (already how Portarium works)         |
 
 The key adaptation: T3 Code's right panel shows a diff and a commit button. Portarium's right panel shows the same diff but routes approval through the policy engine. Same surface, different consequence.
 
@@ -40,12 +40,12 @@ The key adaptation: T3 Code's right panel shows a diff and a commit button. Port
 
 Mission Control's 32-panel concept fails (cognitive overload, no visual hierarchy). What works:
 
-| Mission Control concept | Where it goes in Portarium |
-|---|---|
-| Kanban REVIEW column | The center panel kanban gets an **Awaiting Approval** column |
-| Operational overview | Sticky topbar KPI strip (not a separate page) |
+| Mission Control concept          | Where it goes in Portarium                                      |
+| -------------------------------- | --------------------------------------------------------------- |
+| Kanban REVIEW column             | The center panel kanban gets an **Awaiting Approval** column    |
+| Operational overview             | Sticky topbar KPI strip (not a separate page)                   |
 | Skills Hub / capability registry | `/engineering/autonomy` route — separate from the 3-panel shell |
-| Per-item status color | `PolicyTierBadge` + `BlastRadiusBadge` on every bead card |
+| Per-item status color            | `PolicyTierBadge` + `BlastRadiusBadge` on every bead card       |
 
 ---
 
@@ -55,22 +55,23 @@ Portarium doesn't score trust. It evaluates policy. The two badges that replace 
 
 ### `PolicyTierBadge`
 
-| Tier | Badge color | Meaning |
-|---|---|---|
-| `AUTO` | Green | Engine approved — no human needed |
-| `ASSISTED` | Blue | Executed, cockpit notified — human can review after |
-| `HUMAN-APPROVE` | Amber | **Blocked** — human must decide before anything executes |
-| `BLOCKED` | Red | Policy denies this action class entirely |
+| Tier            | Badge color | Meaning                                                  |
+| --------------- | ----------- | -------------------------------------------------------- |
+| `AUTO`          | Green       | Engine approved — no human needed                        |
+| `ASSISTED`      | Blue        | Executed, cockpit notified — human can review after      |
+| `HUMAN-APPROVE` | Amber       | **Blocked** — human must decide before anything executes |
+| `BLOCKED`       | Red         | Policy denies this action class entirely                 |
 
 ### `BlastRadiusBadge`
+
 From the existing `openclaw-tool-blast-radius-v1.ts` classifier.
 
-| Level | Badge | Meaning |
-|---|---|---|
-| `low` | Grey | Read-only, isolated, fully reversible |
-| `medium` | Yellow | Writes to a single system, reversible |
-| `high` | Orange | Writes to multiple systems or hard to reverse |
-| `critical` | Red | Irreversible, wide-blast, or touches money/auth |
+| Level      | Badge  | Meaning                                         |
+| ---------- | ------ | ----------------------------------------------- |
+| `low`      | Grey   | Read-only, isolated, fully reversible           |
+| `medium`   | Yellow | Writes to a single system, reversible           |
+| `high`     | Orange | Writes to multiple systems or hard to reverse   |
+| `critical` | Red    | Irreversible, wide-blast, or touches money/auth |
 
 ---
 
@@ -153,6 +154,7 @@ Full-width inside right panel, or full-page route for deep-link:
 ```
 
 Anti-rubber-stamp mechanics:
+
 1. Scroll gate — IntersectionObserver on sentinel at diff bottom
 2. Rationale required — min 10 chars
 3. SoD banner — if you triggered the run, Approve is disabled
@@ -196,10 +198,10 @@ Simulate per row: shows how many recent runs would have been affected. No slider
 
 Three modes from bead detail Evidence tab:
 
-| Mode | Purpose |
-|---|---|
+| Mode                   | Purpose                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | **Timeline** (default) | Chronological feed. Each entry: sequence number, event in plain language, actor, relative time, 8-char hash chip. |
-| **Chain verifier** | Hash-chain as node graph. Broken links render red. Export: verification report, evidence bundle, legal hold. |
-| **Search** | Filter by run ID, actor, event kind, date range, bead ID. For incident reconstruction. |
+| **Chain verifier**     | Hash-chain as node graph. Broken links render red. Export: verification report, evidence bundle, legal hold.      |
+| **Search**             | Filter by run ID, actor, event kind, date range, bead ID. For incident reconstruction.                            |
 
 Full SHA-256 hashes truncated to 8 chars on primary surfaces — full hash in tooltip.

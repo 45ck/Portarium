@@ -48,19 +48,19 @@ Any actor (human / ops / agent)
 
 ## Component placement
 
-| Component | Layer | Status |
-|---|---|---|
-| `IntentRouter` | `src/application/` | New |
-| `ProjectIntent` value object | `src/domain/` | New |
-| `BeadPlanner` | `src/application/` | New — PlanV1 exists |
-| `BeadProposal/v1` domain event | `src/domain/` | New — versioned |
-| `WorktreeExecutor` Temporal activity | `src/infrastructure/temporal/` | New |
-| `WorktreePort` interface | `src/infrastructure/` | New — thin adapter over `bd` CLI |
-| openclaw-plugin sandbox | `packages/openclaw-plugin/` | Extend (beads 0959/0960) |
-| `@portarium/engine` | `packages/engine/` | Stable |
-| `ArtifactCollector` | `src/infrastructure/` | New |
-| `DiffApprovalSurface` API endpoint | `src/presentation/` | New |
-| `MergeExecutor` Temporal activity | `src/infrastructure/temporal/` | New |
+| Component                            | Layer                          | Status                           |
+| ------------------------------------ | ------------------------------ | -------------------------------- |
+| `IntentRouter`                       | `src/application/`             | New                              |
+| `ProjectIntent` value object         | `src/domain/`                  | New                              |
+| `BeadPlanner`                        | `src/application/`             | New — PlanV1 exists              |
+| `BeadProposal/v1` domain event       | `src/domain/`                  | New — versioned                  |
+| `WorktreeExecutor` Temporal activity | `src/infrastructure/temporal/` | New                              |
+| `WorktreePort` interface             | `src/infrastructure/`          | New — thin adapter over `bd` CLI |
+| openclaw-plugin sandbox              | `packages/openclaw-plugin/`    | Extend (beads 0959/0960)         |
+| `@portarium/engine`                  | `packages/engine/`             | Stable                           |
+| `ArtifactCollector`                  | `src/infrastructure/`          | New                              |
+| `DiffApprovalSurface` API endpoint   | `src/presentation/`            | New                              |
+| `MergeExecutor` Temporal activity    | `src/infrastructure/temporal/` | New                              |
 
 ---
 
@@ -101,37 +101,37 @@ WorktreeExecutor spins up agent → loads openclaw-plugin
 
 ## Failure modes
 
-| Failure | Detection | Response |
-|---|---|---|
-| Agent execution loop | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `NeedsReview`, creates approval request |
-| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit | `ArtifactFailed`, worktree preserved, bd finish does NOT run |
-| Approval queue backup | >5 pending Class A items | Stop accepting new HUMAN-APPROVE, new requests → BLOCKED |
-| Temporal signal loss | CloudEvent retry with backoff | Escalation chain fires if no signal within N hours |
-| BeadPlanner overdecomposition | Output validation | Proposal gate + maxBeadsPerIntent:20, each bead needs spec reference |
+| Failure                       | Detection                                       | Response                                                             |
+| ----------------------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
+| Agent execution loop          | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `NeedsReview`, creates approval request                   |
+| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit               | `ArtifactFailed`, worktree preserved, bd finish does NOT run         |
+| Approval queue backup         | >5 pending Class A items                        | Stop accepting new HUMAN-APPROVE, new requests → BLOCKED             |
+| Temporal signal loss          | CloudEvent retry with backoff                   | Escalation chain fires if no signal within N hours                   |
+| BeadPlanner overdecomposition | Output validation                               | Proposal gate + maxBeadsPerIntent:20, each bead needs spec reference |
 
 ---
 
 ## New domain types needed
 
-| Type | Why |
-|---|---|
-| `ProjectIntent` | Branded value object for trigger input |
-| `BeadProposal/v1` | Versioned domain event from BeadPlanner — must be versioned before autonomous production |
-| `AutonomyPolicy` | Per-workspace tier matrix |
-| `PolicyTierAssignment` | Explicit PolicyRuleV1 → resolved ExecutionTier |
-| `WorktreeHandle` | Bead ID + worktree path + branch name |
+| Type                   | Why                                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `ProjectIntent`        | Branded value object for trigger input                                                   |
+| `BeadProposal/v1`      | Versioned domain event from BeadPlanner — must be versioned before autonomous production |
+| `AutonomyPolicy`       | Per-workspace tier matrix                                                                |
+| `PolicyTierAssignment` | Explicit PolicyRuleV1 → resolved ExecutionTier                                           |
+| `WorktreeHandle`       | Bead ID + worktree path + branch name                                                    |
 
 ---
 
 ## What NOT to build custom
 
-| Concern | Use instead |
-|---|---|
-| Durable lifecycle | Temporal (already in stack) |
-| Git worktree lifecycle | `bd` CLI via thin `WorktreePort` adapter |
-| Diff rendering | `git diff` output + `ScrollArea` |
-| Fine-grained approval routing | OpenFGA (already in stack) |
-| SBOM / provenance | OpenSSF Scorecard + SLSA (ADR-0110, ADR-0113) |
+| Concern                       | Use instead                                   |
+| ----------------------------- | --------------------------------------------- |
+| Durable lifecycle             | Temporal (already in stack)                   |
+| Git worktree lifecycle        | `bd` CLI via thin `WorktreePort` adapter      |
+| Diff rendering                | `git diff` output + `ScrollArea`              |
+| Fine-grained approval routing | OpenFGA (already in stack)                    |
+| SBOM / provenance             | OpenSSF Scorecard + SLSA (ADR-0110, ADR-0113) |
 
 ---
 

@@ -18,28 +18,34 @@ Produced at the end of every bead run.
 
 ```markdown
 # Run Artifact: bead-0936
+
 **Goal:** Refactor telemetry boundary to remove infrastructure dependency
-**Agent:** agent:openclaw  **Duration:** 4m 31s
-**Policy tier:** HUMAN-APPROVE (highest tier reached)  **Blast radius:** high
+**Agent:** agent:openclaw **Duration:** 4m 31s
+**Policy tier:** HUMAN-APPROVE (highest tier reached) **Blast radius:** high
 
 ## What was done
+
 1. Read `src/domain/telemetry/boundary.ts` — identified 3 infrastructure imports
 2. Edited `src/domain/telemetry/boundary.ts` — removed PrismaClient import, replaced with port
 3. Added `src/domain/telemetry/telemetry-port.ts` — new port interface
 4. Ran tests: 427 passed, 0 failed
 
 ## What changed
+
 3 files modified, 1 file added
 
 ## Policy gates hit
-| Action | Tier | Decision | Decided by |
-|--------|------|----------|------------|
+
+| Action               | Tier          | Decision | Decided by     |
+| -------------------- | ------------- | -------- | -------------- |
 | git_push origin main | HUMAN-APPROVE | Approved | alice@acme.com |
 
 ## Verification
-- Tests: 427 passed ✓  Lint: 0 errors ✓  Typecheck: clean ✓
+
+- Tests: 427 passed ✓ Lint: 0 errors ✓ Typecheck: clean ✓
 
 ## Evidence chain
+
 First entry: #141 · Last entry: #156 · Chain: verified ✓
 ```
 
@@ -53,18 +59,21 @@ Produced by `BeadPlanner` before any worktrees are created. The human confirmati
 
 ```markdown
 # Plan: "Add webhook endpoint for payments"
+
 Decomposed into 4 beads by BeadPlanner
 
 ## Beads
+
 1. bead-0969 Add PaymentWebhookController [ASSISTED]
 2. bead-0970 Add PaymentEventProcessor [ASSISTED]
 3. bead-0971 Add webhook signature verification middleware [HUMAN-APPROVE]
 4. bead-0972 Add integration test [AUTO]
 
 ## Dependencies
+
 0969 → 0970 → 0971 → 0972
 
-[Approve this plan →]  [Modify →]  [Cancel →]
+[Approve this plan →] [Modify →] [Cancel →]
 ```
 
 Humans approve the plan before any worktree is created.
@@ -77,6 +86,7 @@ The permanent record of a human approval decision, appended to the WORM chain.
 
 ```markdown
 # Approval Record: APR-0291
+
 **Action:** git_push origin main
 **Policy:** INFRA-WRITE-002 [HUMAN-APPROVE]
 **Decision:** Approved by alice@acme.com
@@ -112,17 +122,18 @@ Weekly summary of all AUTO activity — the autonomy confidence loop surface.
 ```markdown
 # Weekly Autonomy Digest: 2026-03-24 → 2026-03-31
 
-| Tier | Actions | Anomalies | Reversals |
-|------|---------|-----------|-----------|
-| AUTO | 247 | 0 | 0 |
-| ASSISTED | 31 | 2 | 0 |
-| HUMAN-APPROVE | 18 | — | 1 |
+| Tier          | Actions | Anomalies | Reversals |
+| ------------- | ------- | --------- | --------- |
+| AUTO          | 247     | 0         | 0         |
+| ASSISTED      | 31      | 2         | 0         |
+| HUMAN-APPROVE | 18      | —         | 1         |
 
 ## Recommended policy adjustments
+
 - `write:lint-fix` has 34 AUTO decisions, 0 anomalies over 90 days
   → Consider promoting `write:refactor-small` to AUTO
 
-[Acknowledge digest →]  [Adjust policy →]
+[Acknowledge digest →] [Adjust policy →]
 ```
 
 ---
@@ -150,6 +161,7 @@ Standalone page, shareable URL. Cross-links: approval decision → artifact → 
 ## Connection to demo-machine and content-machine
 
 Extension plan:
+
 1. **Demo clips produce Run Artifacts** — each clip execution generates a markdown run artifact with embedded screenshots
 2. **content-machine produces Demo Artifacts** — recorded mp4/gif of the approval flow, embedded in artifact viewer
 3. **Marketing artifacts** — demo artifacts are designed to be shareable externally (redacted of sensitive data)

@@ -42,20 +42,20 @@ t3code/
 
 ### 2.2 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Bun (server), Vite 8 (web dev server) |
-| Type system | Effect + Schema (domain modeling, DI, error handling) |
-| Server transport | Raw WebSocket (`ws` package) |
-| State management | Zustand (client), Effect ServiceMap (server) |
-| Routing | TanStack Router (file-based, `apps/web/src/routes/`) |
-| Editor | Lexical (rich text composer for chat input) |
-| Terminal | xterm.js (`@xterm/xterm` + `@xterm/addon-fit`) |
-| Diff rendering | `@pierre/diffs` |
-| UI framework | React 19, Tailwind CSS 4, Lucide icons |
-| Desktop | Electron (via `apps/desktop/`) |
-| Testing | Vitest 4, Effect Vitest integration, Playwright (browser tests) |
-| Linting/formatting | oxlint + oxfmt (NOT ESLint/Prettier) |
+| Layer              | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| Runtime            | Bun (server), Vite 8 (web dev server)                           |
+| Type system        | Effect + Schema (domain modeling, DI, error handling)           |
+| Server transport   | Raw WebSocket (`ws` package)                                    |
+| State management   | Zustand (client), Effect ServiceMap (server)                    |
+| Routing            | TanStack Router (file-based, `apps/web/src/routes/`)            |
+| Editor             | Lexical (rich text composer for chat input)                     |
+| Terminal           | xterm.js (`@xterm/xterm` + `@xterm/addon-fit`)                  |
+| Diff rendering     | `@pierre/diffs`                                                 |
+| UI framework       | React 19, Tailwind CSS 4, Lucide icons                          |
+| Desktop            | Electron (via `apps/desktop/`)                                  |
+| Testing            | Vitest 4, Effect Vitest integration, Playwright (browser tests) |
+| Linting/formatting | oxlint + oxfmt (NOT ESLint/Prettier)                            |
 
 ### 2.3 Key Design Patterns
 
@@ -67,6 +67,7 @@ in the type system.
 
 **Event sourcing (orchestration):** The orchestration domain follows a full CQRS
 event-sourcing pattern:
+
 - **Commands** (`OrchestrationCommand`) are validated through a **decider**
   (`orchestration/decider.ts`) that checks invariants and produces events
 - **Events** (`OrchestrationEvent`) are persisted to an event store
@@ -91,6 +92,7 @@ The heart of T3 Code. Manages the lifecycle of projects, threads, turns, and
 messages through event sourcing.
 
 **Key services:**
+
 - `OrchestrationEngine` -- Accepts commands, runs them through the decider,
   persists events, updates projections
 - `OrchestrationReactor` -- Reacts to orchestration events (e.g., starting
@@ -103,6 +105,7 @@ messages through event sourcing.
   stream
 
 **Domain model (from contracts):**
+
 - `OrchestrationProject` -- workspace with title, cwd, scripts, model selection
 - `OrchestrationThread` -- conversation thread with runtime mode, interaction mode,
   messages, proposed plans, session status
@@ -115,11 +118,13 @@ messages through event sourcing.
 Abstracts AI provider differences behind a uniform adapter interface.
 
 **Adapters:**
+
 - `CodexAdapter` / `CodexProvider` -- Wraps Codex CLI app-server (JSON-RPC over
   stdio). Sessions are started as child processes.
 - `ClaudeAdapter` / `ClaudeProvider` -- Uses `@anthropic-ai/claude-agent-sdk`.
 
 **Provider adapter contract (`ProviderAdapterShape`):**
+
 - `startSession(input)` -- Start a provider session
 - `sendTurn(input)` -- Send a user turn
 - `interruptTurn(threadId)` -- Interrupt an active turn
@@ -135,6 +140,7 @@ Filesystem checkpoint management using hidden Git refs. Captures workspace state
 at turn boundaries so users can revert to any previous turn.
 
 **Key contract (`CheckpointStoreShape`):**
+
 - `captureCheckpoint(cwd, checkpointRef)` -- Snapshot workspace via isolated Git index
 - `restoreCheckpoint(cwd, checkpointRef)` -- Restore workspace to a checkpoint
 - `diffCheckpoints(from, to)` -- Compute patch between checkpoints
@@ -143,6 +149,7 @@ at turn boundaries so users can revert to any previous turn.
 ### 3.4 Persistence (`apps/server/src/persistence/`)
 
 SQLite-backed (via `@effect/sql-sqlite-bun`) storage for all state:
+
 - `OrchestrationEventStore` -- Event log
 - `OrchestrationCommandReceipts` -- Command idempotency
 - Projection tables: Projects, Threads, Messages, Activities, Turns, Sessions,
@@ -151,6 +158,7 @@ SQLite-backed (via `@effect/sql-sqlite-bun`) storage for all state:
 ### 3.5 WebSocket Server (`apps/server/src/wsServer/`)
 
 JSON-RPC-style WebSocket protocol connecting the web UI to the server:
+
 - **Methods** (request/response): `orchestration.dispatch`, `git.*`,
   `terminal.*`, `server.*`, `projects.*`
 - **Channels** (server push): `orchestration.domainEvent`,
@@ -170,7 +178,7 @@ T3 Code has a built-in approval system that maps closely to Portarium's concepts
 ### 4.1 Runtime Modes
 
 ```typescript
-RuntimeMode = "approval-required" | "full-access"
+RuntimeMode = 'approval-required' | 'full-access';
 ```
 
 - **full-access:** `approvalPolicy: "never"`, `sandboxMode: "danger-full-access"`
@@ -180,13 +188,13 @@ RuntimeMode = "approval-required" | "full-access"
 ### 4.2 Approval Policy
 
 ```typescript
-ProviderApprovalPolicy = "untrusted" | "on-failure" | "on-request" | "never"
+ProviderApprovalPolicy = 'untrusted' | 'on-failure' | 'on-request' | 'never';
 ```
 
 ### 4.3 Sandbox Modes
 
 ```typescript
-ProviderSandboxMode = "read-only" | "workspace-write" | "danger-full-access"
+ProviderSandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access';
 ```
 
 ### 4.4 Approval Flow
@@ -203,6 +211,7 @@ ProviderSandboxMode = "read-only" | "workspace-write" | "danger-full-access"
 
 Agents can emit proposed plans (`thread.proposed-plan.upsert` command). Plans
 contain markdown describing what the agent intends to do. Users can:
+
 - Review the plan in-UI
 - Accept and "implement" (creates a new thread with `sourceProposedPlan` reference)
 - Modify the plan text before implementing
@@ -253,6 +262,7 @@ User -> T3 Code -> PortariumGovernanceAdapter -> CodexAdapter/ClaudeAdapter
 ```
 
 **How it works:**
+
 1. `PortariumGovernanceAdapter` implements `ProviderAdapterShape`
 2. On `sendTurn`, it inspects the turn for tool calls
 3. Before forwarding to the inner adapter, it calls Portarium's
@@ -264,6 +274,7 @@ User -> T3 Code -> PortariumGovernanceAdapter -> CodexAdapter/ClaudeAdapter
    inner provider adapter
 
 **Advantages:**
+
 - Zero changes to T3 Code's orchestration or UI layers
 - Portarium's approval queue, audit trail, and policy engine are authoritative
 - T3 Code's existing approval UI could show Portarium approval status
@@ -284,20 +295,20 @@ no per-tool-call granularity, requires the WebSocket to be exposed to Portarium.
 
 ### 6.3 Concept Mapping
 
-| T3 Code Concept | Portarium Concept |
-|---|---|
-| `Thread` | `Run` (governed execution context) |
-| `OrchestrationProject` | `Workspace` (tenant scope) |
-| `ProviderApprovalPolicy` | `ExecutionTier` (Auto/Assisted/HumanApprove) |
-| `request.opened` (approval) | `AgentActionProposal` (pre-execution gate) |
-| `respondToRequest(accept)` | `ApprovalGranted` decision |
-| `respondToRequest(decline)` | `ApprovalDenied` decision |
-| `OrchestrationProposedPlan` | Plan-level governance (Portarium run plan review) |
-| `CheckpointStore` | Evidence chain (immutable audit of state at each turn) |
-| `ProviderRuntimeEvent` stream | CloudEvents (external choreography) |
-| `RuntimeMode: approval-required` | `ExecutionTier: HumanApprove` |
-| `RuntimeMode: full-access` | `ExecutionTier: Auto` |
-| `ProviderSandboxMode` | Portarium sandbox containment (ADR-0070) |
+| T3 Code Concept                  | Portarium Concept                                      |
+| -------------------------------- | ------------------------------------------------------ |
+| `Thread`                         | `Run` (governed execution context)                     |
+| `OrchestrationProject`           | `Workspace` (tenant scope)                             |
+| `ProviderApprovalPolicy`         | `ExecutionTier` (Auto/Assisted/HumanApprove)           |
+| `request.opened` (approval)      | `AgentActionProposal` (pre-execution gate)             |
+| `respondToRequest(accept)`       | `ApprovalGranted` decision                             |
+| `respondToRequest(decline)`      | `ApprovalDenied` decision                              |
+| `OrchestrationProposedPlan`      | Plan-level governance (Portarium run plan review)      |
+| `CheckpointStore`                | Evidence chain (immutable audit of state at each turn) |
+| `ProviderRuntimeEvent` stream    | CloudEvents (external choreography)                    |
+| `RuntimeMode: approval-required` | `ExecutionTier: HumanApprove`                          |
+| `RuntimeMode: full-access`       | `ExecutionTier: Auto`                                  |
+| `ProviderSandboxMode`            | Portarium sandbox containment (ADR-0070)               |
 
 ---
 
