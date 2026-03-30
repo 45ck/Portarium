@@ -12,7 +12,7 @@
  *   → If awaiting_approval: hook suspends, polls until human decides
  *   → Result: tool allowed or rejected with reason
  *
- * Config (openclaw.plugin.json configSchema):
+ * Config (plugins.entries.portarium.config in openclaw config):
  *   portariumUrl   - base URL of Portarium control plane
  *   workspaceId    - workspace to govern within
  *   bearerToken    - auth token
@@ -23,84 +23,109 @@
  *   bypassToolNames - tools that skip governance (internal Portarium tools)
  */
 
-// Re-export types for external use
 export type { PortariumPluginConfig } from './config.js';
-export type { PortariumClient } from './client/portarium-client.js';
 export { resolveConfig } from './config.js';
-export { PortariumClient as PortariumClientClass } from './client/portarium-client.js';
+export { PortariumClient } from './client/portarium-client.js';
 
+import type { TSchema } from '@sinclair/typebox';
 import { resolveConfig } from './config.js';
 import { PortariumClient } from './client/portarium-client.js';
 import { ApprovalPoller } from './services/approval-poller.js';
 import { registerBeforeToolCallHook } from './hooks/before-tool-call.js';
-import { registerGetRunTool } from './tools/get-run.js';
-import { registerListApprovalsTool } from './tools/list-approvals.js';
-import { registerCapabilityLookupTool } from './tools/capability-lookup.js';
-import { registerHealthMethod } from './gateway/health.js';
+import { createGetRunTool } from './tools/get-run.js';
+import { createListApprovalsTool } from './tools/list-approvals.js';
+import { createCapabilityLookupTool } from './tools/capability-lookup.js';
 
 /**
- * Plugin entry point.
- *
- * This module is loaded by OpenClaw's plugin system when the user has
- * configured and enabled the "portarium" plugin. OpenClaw calls register(api)
- * to set up all capabilities.
- *
- * The actual definePluginEntry import path depends on the installed OpenClaw
- * version. This is written as a plain export to avoid a hard peer dependency
- * at import time — OpenClaw's loader wraps this for us.
+ * Minimal slice of the OpenClaw plugin API used by this plugin.
+ * The full type lives in 'openclaw/plugin-sdk/plugin-entry' (peer dep).
  */
-
-interface PluginApi {
+export interface PluginApi {
   readonly id: string;
-  readonly config: Record<string, unknown>;
+  readonly pluginConfig: Record<string, unknown>;
   readonly logger: {
     info(msg: string): void;
     warn(msg: string): void;
     error(msg: string): void;
   };
-  registerHook(spec: {
-    name: string;
-    priority?: number;
-    handler: (ctx: {
-      toolName: string;
-      parameters?: Record<string, unknown>;
-      sessionKey?: string;
-      reject(reason: string): void;
-    }) => Promise<void>;
-  }): void;
-  registerTool(spec: {
-    name: string;
-    description: string;
-    inputSchema: Record<string, unknown>;
-    handler: (input: Record<string, unknown>) => Promise<unknown>;
-  }): void;
-  registerGatewayMethod(spec: {
-    name: string;
-    handler: (input: Record<string, unknown>) => Promise<unknown>;
-  }): void;
+  on(
+    event: string,
+    handler: (
+      event: Record<string, unknown>,
+      ctx: Record<string, unknown>,
+    ) => Promise<unknown> | unknown,
+    opts?: { priority?: number },
+  ): void;
+  registerTool(
+    tool: {
+      name: string;
+      description: string;
+      parameters: TSchema;
+      execute(toolCallId: string, params: Record<string, unknown>): Promise<unknown>;
+    },
+    opts?: { optional?: boolean },
+  ): void;
+  registerGatewayMethod(
+    name: string,
+    handler: (input: Record<string, unknown>) => Promise<unknown>,
+    opts?: { scope?: string },
+  ): void;
 }
 
-function register(api: PluginApi): void {
-  const config = resolveConfig(api.config);
-  const client = new PortariumClient(config);
-  const poller = new ApprovalPoller(client, config);
+/**
+ * Plugin entry object compatible with OpenClaw's definePluginEntry shape.
+ *
+ * When openclaw is installed, wrap with definePluginEntry from
+ * 'openclaw/plugin-sdk/plugin-entry'. Exported directly for tests and
+ * non-OpenClaw hosts.
+ */
+export const portariumPlugin = {
+  id: 'portarium',
+  name: 'Portarium Governance',
+  description:
+    'Routes all agent tool calls through Portarium policy engine, blocking or queuing for human approval.',
 
-  // Layer 1: Transparent governance — intercepts ALL tool calls
-  registerBeforeToolCallHook(api.registerHook.bind(api), client, poller, config, api.logger);
+  register(api: PluginApi): void {
+    const config = resolveConfig(api.pluginConfig);
+    const client = new PortariumClient(config);
+    const poller = new ApprovalPoller(client, config);
 
-  // Layer 2: Explicit Portarium-facing agent tools
-  registerGetRunTool(api.registerTool.bind(api), client);
-  registerListApprovalsTool(api.registerTool.bind(api), client);
-  registerCapabilityLookupTool(api.registerTool.bind(api), client);
+    // Layer 1: Transparent governance — intercepts ALL tool calls
+    registerBeforeToolCallHook(api, client, poller, config, api.logger);
 
-  // Operator visibility: Gateway RPC health check
-  registerHealthMethod(api.registerGatewayMethod.bind(api), client, config);
+    // Layer 2: Explicit Portarium-facing agent tools (optional — user opt-in)
+    api.registerTool(createGetRunTool(client), { optional: true });
+    api.registerTool(createListApprovalsTool(client), { optional: true });
+    api.registerTool(createCapabilityLookupTool(client), { optional: true });
 
-  api.logger.info(
-    `[portarium] Plugin registered — governing ${config.workspaceId} at ${config.portariumUrl} (failClosed=${config.failClosed})`,
-  );
-}
+    // Operator visibility: Gateway RPC health check
+    api.registerGatewayMethod('portarium.status', async () => {
+      const url = `${config.portariumUrl}/health`;
+      try {
+        const response = await fetch(url, {
+          headers: { authorization: `Bearer ${config.bearerToken}` },
+          signal: AbortSignal.timeout(5_000),
+        });
+        return {
+          ok: response.ok,
+          status: response.status,
+          portariumUrl: config.portariumUrl,
+          workspaceId: config.workspaceId,
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          portariumUrl: config.portariumUrl,
+          workspaceId: config.workspaceId,
+        };
+      }
+    });
 
-// Export in both named and default forms for OpenClaw plugin loader compatibility
-export { register };
-export default { id: 'portarium', register };
+    api.logger.info(
+      `[portarium] Plugin registered — governing ${config.workspaceId} at ${config.portariumUrl} (failClosed=${config.failClosed})`,
+    );
+  },
+};
+
+export default portariumPlugin;

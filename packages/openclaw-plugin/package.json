@@ -14,17 +14,27 @@
   "openclaw": {
     "extensions": [
       "./src/index.ts"
-    ]
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
   },
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@sinclair/typebox": "*",
     "typescript": "*"
   },
   "peerDependencies": {
-    "openclaw": ">=2026.2.14"
+    "@sinclair/typebox": ">=0.33.0",
+    "openclaw": ">=2026.3.24-beta.2"
   },
   "peerDependenciesMeta": {
     "openclaw": {

@@ -19,54 +19,44 @@ function makeConfig(overrides?: Partial<PortariumPluginConfig>): PortariumPlugin
 }
 
 function makeLogger() {
-  return {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  };
-}
-
-interface HookSpec {
-  name: string;
-  priority: number;
-  handler: (ctx: {
-    toolName: string;
-    parameters?: Record<string, unknown>;
-    sessionKey?: string;
-    reject(reason: string): void;
-  }) => Promise<void>;
+  return { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 }
 
 /**
- * Calls registerBeforeToolCallHook and returns the registered handler for direct testing.
+ * Registers the hook and returns the captured async handler + priority.
  */
-function buildHook(
-  client: PortariumClient,
-  poller: ApprovalPoller,
-  config: PortariumPluginConfig,
-) {
-  let capturedSpec: HookSpec | undefined;
-  const registerHook = (spec: HookSpec) => {
-    capturedSpec = spec;
+function buildHook(client: PortariumClient, poller: ApprovalPoller, config: PortariumPluginConfig) {
+  type HookHandler = (
+    event: { toolName: string; params: Record<string, unknown>; runId?: string },
+    ctx: { sessionKey?: string; runId?: string },
+  ) => Promise<{ block?: boolean; blockReason?: string } | void>;
+
+  let capturedHandler: HookHandler | undefined;
+  let capturedPriority: number | undefined;
+
+  const api = {
+    on(_event: string, handler: HookHandler, opts?: { priority?: number }) {
+      capturedHandler = handler;
+      capturedPriority = opts?.priority;
+    },
   };
+
   const logger = makeLogger();
-  registerBeforeToolCallHook(registerHook, client, poller, config, logger);
-  if (!capturedSpec) throw new Error('Hook was not registered');
-  return { handler: capturedSpec.handler, priority: capturedSpec.priority, logger };
+  registerBeforeToolCallHook(api as never, client, poller, config, logger);
+  if (!capturedHandler) throw new Error('Hook was not registered');
+  return { handler: capturedHandler, priority: capturedPriority, logger };
 }
 
-function makeCtx(overrides?: {
-  toolName?: string;
-  parameters?: Record<string, unknown>;
-  sessionKey?: string;
-}) {
-  const reject = vi.fn<[string], void>();
+function makeEvent(overrides?: Partial<{ toolName: string; params: Record<string, unknown>; runId: string }>) {
   return {
     toolName: overrides?.toolName ?? 'bash_exec',
-    parameters: overrides?.parameters ?? { cmd: 'ls' },
-    sessionKey: overrides?.sessionKey,
-    reject,
+    params: overrides?.params ?? { cmd: 'ls' },
+    ...(overrides?.runId ? { runId: overrides.runId } : {}),
   };
+}
+
+function makeCtx(overrides?: { sessionKey?: string; runId?: string }) {
+  return { sessionKey: overrides?.sessionKey, runId: overrides?.runId };
 }
 
 describe('registerBeforeToolCallHook', () => {
@@ -82,10 +72,9 @@ describe('registerBeforeToolCallHook', () => {
       const client = { proposeAction: vi.fn() } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx({ toolName: 'portarium_get_run' });
-      await handler(ctx);
+      const result = await handler(makeEvent({ toolName: 'portarium_get_run' }), makeCtx());
       expect(client.proposeAction).not.toHaveBeenCalled();
-      expect(ctx.reject).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
     });
 
     it('governs tools not in bypassToolNames', async () => {
@@ -94,45 +83,39 @@ describe('registerBeforeToolCallHook', () => {
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx({ toolName: 'bash_exec' });
-      await handler(ctx);
+      await handler(makeEvent({ toolName: 'bash_exec' }), makeCtx());
       expect(client.proposeAction).toHaveBeenCalledOnce();
     });
   });
 
   describe('allowed decision', () => {
-    it('returns without calling reject', async () => {
+    it('returns undefined (allow) when proposeAction returns allowed', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx();
-      await handler(ctx);
-      expect(ctx.reject).not.toHaveBeenCalled();
+      const result = await handler(makeEvent(), makeCtx());
+      expect(result).toBeUndefined();
     });
   });
 
   describe('denied decision', () => {
-    it('calls ctx.reject with the denial reason', async () => {
+    it('returns { block: true, blockReason } with the denial reason', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({
-          status: 'denied',
-          reason: 'Tool is too dangerous',
-        }),
+        proposeAction: vi.fn().mockResolvedValue({ status: 'denied', reason: 'Tool is too dangerous' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx();
-      await handler(ctx);
-      expect(ctx.reject).toHaveBeenCalledOnce();
-      expect(ctx.reject.mock.calls[0]![0]).toContain('Tool is too dangerous');
-      expect(ctx.reject.mock.calls[0]![0]).toContain('bash_exec');
+      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('Tool is too dangerous');
+      expect(result.blockReason).toContain('bash_exec');
     });
   });
 
   describe('awaiting_approval decision', () => {
-    it('calls poller and returns cleanly when human approves', async () => {
+    it('returns undefined (allow) when human approves', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({
           status: 'awaiting_approval',
@@ -144,13 +127,12 @@ describe('registerBeforeToolCallHook', () => {
         waitForDecision: vi.fn().mockResolvedValue({ approved: true }),
       } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx();
-      await handler(ctx);
+      const result = await handler(makeEvent(), makeCtx());
       expect(poller.waitForDecision).toHaveBeenCalledWith('appr-123');
-      expect(ctx.reject).not.toHaveBeenCalled();
+      expect(result).toBeUndefined();
     });
 
-    it('calls ctx.reject when human denies', async () => {
+    it('returns { block: true, blockReason } when human denies', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({
           status: 'awaiting_approval',
@@ -159,48 +141,35 @@ describe('registerBeforeToolCallHook', () => {
         }),
       } as unknown as PortariumClient;
       const poller = {
-        waitForDecision: vi.fn().mockResolvedValue({
-          approved: false,
-          reason: 'Operator denied',
-        }),
+        waitForDecision: vi.fn().mockResolvedValue({ approved: false, reason: 'Operator denied' }),
       } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx();
-      await handler(ctx);
-      expect(ctx.reject).toHaveBeenCalledOnce();
-      expect(ctx.reject.mock.calls[0]![0]).toContain('Operator denied');
-      expect(ctx.reject.mock.calls[0]![0]).toContain('bash_exec');
+      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('Operator denied');
     });
   });
 
   describe('error decision', () => {
-    it('calls ctx.reject when failClosed=true', async () => {
+    it('returns { block: true } when failClosed=true', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({
-          status: 'error',
-          reason: 'Portarium unreachable',
-        }),
+        proposeAction: vi.fn().mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig({ failClosed: true }));
-      const ctx = makeCtx();
-      await handler(ctx);
-      expect(ctx.reject).toHaveBeenCalledOnce();
-      expect(ctx.reject.mock.calls[0]![0]).toContain('failing closed');
+      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('failing closed');
     });
 
-    it('allows tool when failClosed=false', async () => {
+    it('returns undefined (allow) when failClosed=false', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({
-          status: 'error',
-          reason: 'Portarium unreachable',
-        }),
+        proposeAction: vi.fn().mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig({ failClosed: false }));
-      const ctx = makeCtx();
-      await handler(ctx);
-      expect(ctx.reject).not.toHaveBeenCalled();
+      const result = await handler(makeEvent(), makeCtx());
+      expect(result).toBeUndefined();
     });
   });
 
@@ -211,21 +180,19 @@ describe('registerBeforeToolCallHook', () => {
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx({ sessionKey: 'agent-session-abc' });
-      await handler(ctx);
+      await handler(makeEvent(), makeCtx({ sessionKey: 'agent:main:main' }));
       expect(client.proposeAction).toHaveBeenCalledWith(
-        expect.objectContaining({ sessionKey: 'agent-session-abc' }),
+        expect.objectContaining({ sessionKey: 'agent:main:main' }),
       );
     });
 
-    it('defaults sessionKey to portarium:{workspaceId} when absent', async () => {
+    it('defaults sessionKey to portarium:{workspaceId} when ctx.sessionKey is absent', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig({ workspaceId: 'my-ws' }));
-      const ctx = makeCtx({ sessionKey: undefined });
-      await handler(ctx);
+      await handler(makeEvent(), makeCtx());
       expect(client.proposeAction).toHaveBeenCalledWith(
         expect.objectContaining({ sessionKey: 'portarium:my-ws' }),
       );
@@ -233,32 +200,27 @@ describe('registerBeforeToolCallHook', () => {
   });
 
   describe('proposeAction input', () => {
-    it('passes toolName and parameters to proposeAction', async () => {
+    it('forwards toolName and params to proposeAction', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = makeCtx({ toolName: 'write_file', parameters: { path: '/tmp/x', content: 'y' } });
-      await handler(ctx);
+      await handler(makeEvent({ toolName: 'write_file', params: { path: '/tmp/x' } }), makeCtx());
       expect(client.proposeAction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          toolName: 'write_file',
-          parameters: { path: '/tmp/x', content: 'y' },
-        }),
+        expect.objectContaining({ toolName: 'write_file', parameters: { path: '/tmp/x' } }),
       );
     });
 
-    it('defaults parameters to {} when ctx.parameters is undefined', async () => {
+    it('forwards ctx.runId as correlationId when present', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const ctx = { toolName: 'no_params_tool', parameters: undefined, reject: vi.fn() };
-      await handler(ctx);
+      await handler(makeEvent(), makeCtx({ runId: 'run-xyz' }));
       expect(client.proposeAction).toHaveBeenCalledWith(
-        expect.objectContaining({ parameters: {} }),
+        expect.objectContaining({ correlationId: 'run-xyz' }),
       );
     });
   });

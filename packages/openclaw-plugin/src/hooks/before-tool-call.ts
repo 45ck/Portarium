@@ -1,52 +1,58 @@
 /**
  * The core governance hook.
  *
- * Intercepts every tool call before execution, routes it through Portarium
- * policy evaluation, and either allows, blocks, or suspends for human approval.
+ * Registers the before_tool_call hook at priority 1000, intercepts every tool
+ * call, routes it through Portarium policy evaluation, and either allows,
+ * blocks, or suspends for human approval.
+ *
+ * Hook return semantics (OpenClaw SDK):
+ *   void / {}          → allow
+ *   { block: true }    → terminal block — lower-priority hooks are skipped
+ *   { blockReason }    → block with human-readable reason logged by OpenClaw
  */
 import type { PortariumPluginConfig } from '../config.js';
 import type { PortariumClient } from '../client/portarium-client.js';
 import type { ApprovalPoller } from '../services/approval-poller.js';
 
-interface HookContext {
-  readonly toolName: string;
-  readonly parameters?: Record<string, unknown>;
-  readonly sessionKey?: string;
-  reject(reason: string): void;
+/** Slice of OpenClaw plugin API used by this hook. */
+interface HookApi {
+  on(
+    event: string,
+    handler: (
+      event: { toolName: string; params: Record<string, unknown>; runId?: string },
+      ctx: { sessionKey?: string; agentId?: string; runId?: string },
+    ) => Promise<{ block?: boolean; blockReason?: string } | void>,
+    opts?: { priority?: number },
+  ): void;
 }
 
-type RegisterHookFn = (spec: {
-  name: string;
-  priority: number;
-  handler: (ctx: HookContext) => Promise<void>;
-}) => void;
-
 export function registerBeforeToolCallHook(
-  registerHook: RegisterHookFn,
+  api: HookApi,
   client: PortariumClient,
   poller: ApprovalPoller,
   config: PortariumPluginConfig,
   logger: { info(msg: string): void; warn(msg: string): void; error(msg: string): void },
 ): void {
-  registerHook({
-    name: 'before_tool_call',
-    priority: 1000, // Highest priority — runs before anything else
-    handler: async (ctx: HookContext) => {
-      const toolName = ctx.toolName;
+  api.on(
+    'before_tool_call',
+    async (event, ctx) => {
+      const { toolName, params } = event;
 
       // Bypass governance for explicit Portarium introspection tools
       if (config.bypassToolNames.includes(toolName)) {
         return;
       }
 
+      // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace
       const sessionKey = ctx.sessionKey ?? `portarium:${config.workspaceId}`;
 
       logger.info(`[portarium] Governing tool call: ${toolName}`);
 
       const decision = await client.proposeAction({
         toolName,
-        parameters: ctx.parameters ?? {},
+        parameters: params,
         sessionKey,
+        ...(ctx.runId ? { correlationId: ctx.runId } : {}),
       });
 
       switch (decision.status) {
@@ -56,8 +62,10 @@ export function registerBeforeToolCallHook(
 
         case 'denied':
           logger.warn(`[portarium] Denied: ${toolName} — ${decision.reason}`);
-          ctx.reject(`Portarium policy blocked tool "${toolName}": ${decision.reason}`);
-          return;
+          return {
+            block: true,
+            blockReason: `Portarium policy blocked tool "${toolName}": ${decision.reason}`,
+          };
 
         case 'awaiting_approval': {
           logger.info(
@@ -69,8 +77,10 @@ export function registerBeforeToolCallHook(
             return;
           }
           logger.warn(`[portarium] Denied by human: ${toolName} — ${result.reason}`);
-          ctx.reject(`Portarium approval denied for tool "${toolName}": ${result.reason}`);
-          return;
+          return {
+            block: true,
+            blockReason: `Portarium approval denied for tool "${toolName}": ${result.reason}`,
+          };
         }
 
         case 'error':
@@ -78,16 +88,17 @@ export function registerBeforeToolCallHook(
             logger.error(
               `[portarium] Governance error (fail-closed) for ${toolName}: ${decision.reason}`,
             );
-            ctx.reject(
-              `Portarium governance unavailable — failing closed. Tool "${toolName}" blocked. Reason: ${decision.reason}`,
-            );
-          } else {
-            logger.warn(
-              `[portarium] Governance error (fail-open) for ${toolName}: ${decision.reason} — allowing`,
-            );
+            return {
+              block: true,
+              blockReason: `Portarium governance unavailable — failing closed. Tool "${toolName}" blocked. Reason: ${decision.reason}`,
+            };
           }
+          logger.warn(
+            `[portarium] Governance error (fail-open) for ${toolName}: ${decision.reason} — allowing`,
+          );
           return;
       }
     },
-  });
+    { priority: 1000 },
+  );
 }
