@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { CommandPalette } from '@/components/cockpit/command-palette';
 import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
+import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { Toaster } from 'sonner';
 import {
@@ -529,6 +530,7 @@ function RootLayout() {
             id="main-content"
             className={cn('flex-1 overflow-y-auto overflow-x-hidden', isMobile && 'pb-14')}
           >
+            <OfflineIndicator className="mx-4 mt-2" />
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
