@@ -32,9 +32,10 @@ export default tseslint.config(
       // apps/ and packages/ workspaces have their own tsconfig and lint setup
       'apps/**',
       'packages/**',
-      // Templates, examples, and scaffolds are developer-facing starter code, not production
+      // Templates, examples, scaffolds, and experiments are developer-facing starter code, not production
       'templates/**',
       'examples/**',
+      'experiments/**',
       'scaffolds/**',
       // QA automation scripts — not production code
       'qa/**',
