@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { createGetRunTool } from './get-run.js';
 import { createListApprovalsTool } from './list-approvals.js';
 import { createCapabilityLookupTool } from './capability-lookup.js';
-import type { PortariumClient, RunStatus, ApprovalSummary, CapabilityInfo } from '../client/portarium-client.js';
+import type {
+  PortariumClient,
+  RunStatus,
+  ApprovalSummary,
+  CapabilityInfo,
+} from '../client/portarium-client.js';
 
 // ──────────────────────────────────────────────
 // portarium_get_run
@@ -61,8 +66,18 @@ describe('portarium_get_run', () => {
 describe('portarium_list_approvals', () => {
   it('returns count and approvals when items exist', async () => {
     const approvals: ApprovalSummary[] = [
-      { approvalId: 'appr-1', toolName: 'bash_exec', status: 'pending', createdAt: '2026-01-01T00:00:00Z' },
-      { approvalId: 'appr-2', toolName: 'write_file', status: 'pending', createdAt: '2026-01-01T00:01:00Z' },
+      {
+        approvalId: 'appr-1',
+        toolName: 'bash_exec',
+        status: 'pending',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        approvalId: 'appr-2',
+        toolName: 'write_file',
+        status: 'pending',
+        createdAt: '2026-01-01T00:01:00Z',
+      },
     ];
     const client = {
       listPendingApprovals: vi.fn().mockResolvedValue(approvals),
@@ -117,7 +132,10 @@ describe('portarium_capability_lookup', () => {
     } as unknown as PortariumClient;
     const tool = createCapabilityLookupTool(client);
 
-    const result = await tool.execute('tc-7', { toolName: 'unknown_tool' }) as Record<string, unknown>;
+    const result = (await tool.execute('tc-7', { toolName: 'unknown_tool' })) as Record<
+      string,
+      unknown
+    >;
     expect(result.requiredTier).toBe('HumanApprove');
     expect(result.toolName).toBe('unknown_tool');
     expect(result.note).toBeTruthy();

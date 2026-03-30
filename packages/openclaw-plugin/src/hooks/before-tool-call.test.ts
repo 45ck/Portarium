@@ -47,7 +47,9 @@ function buildHook(client: PortariumClient, poller: ApprovalPoller, config: Port
   return { handler: capturedHandler, priority: capturedPriority, logger };
 }
 
-function makeEvent(overrides?: Partial<{ toolName: string; params: Record<string, unknown>; runId: string }>) {
+function makeEvent(
+  overrides?: Partial<{ toolName: string; params: Record<string, unknown>; runId: string }>,
+) {
   return {
     toolName: overrides?.toolName ?? 'bash_exec',
     params: overrides?.params ?? { cmd: 'ls' },
@@ -103,11 +105,16 @@ describe('registerBeforeToolCallHook', () => {
   describe('denied decision', () => {
     it('returns { block: true, blockReason } with the denial reason', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({ status: 'denied', reason: 'Tool is too dangerous' }),
+        proposeAction: vi
+          .fn()
+          .mockResolvedValue({ status: 'denied', reason: 'Tool is too dangerous' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      const result = (await handler(makeEvent(), makeCtx())) as {
+        block: boolean;
+        blockReason: string;
+      };
       expect(result.block).toBe(true);
       expect(result.blockReason).toContain('Tool is too dangerous');
       expect(result.blockReason).toContain('bash_exec');
@@ -144,7 +151,10 @@ describe('registerBeforeToolCallHook', () => {
         waitForDecision: vi.fn().mockResolvedValue({ approved: false, reason: 'Operator denied' }),
       } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      const result = (await handler(makeEvent(), makeCtx())) as {
+        block: boolean;
+        blockReason: string;
+      };
       expect(result.block).toBe(true);
       expect(result.blockReason).toContain('Operator denied');
     });
@@ -153,18 +163,25 @@ describe('registerBeforeToolCallHook', () => {
   describe('error decision', () => {
     it('returns { block: true } when failClosed=true', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
+        proposeAction: vi
+          .fn()
+          .mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig({ failClosed: true }));
-      const result = await handler(makeEvent(), makeCtx()) as { block: boolean; blockReason: string };
+      const result = (await handler(makeEvent(), makeCtx())) as {
+        block: boolean;
+        blockReason: string;
+      };
       expect(result.block).toBe(true);
       expect(result.blockReason).toContain('failing closed');
     });
 
     it('returns undefined (allow) when failClosed=false', async () => {
       const client = {
-        proposeAction: vi.fn().mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
+        proposeAction: vi
+          .fn()
+          .mockResolvedValue({ status: 'error', reason: 'Portarium unreachable' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig({ failClosed: false }));
