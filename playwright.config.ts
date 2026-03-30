@@ -196,6 +196,17 @@ export default defineConfig({
     },
 
     // -----------------------------------------------------------------------
+    // Accessibility project — WCAG 2.1 AA automated scans via axe-core.
+    // Run via: npm run test:e2e:a11y
+    // Bead: bead-0945
+    // -----------------------------------------------------------------------
+    {
+      name: 'a11y',
+      testMatch: 'e2e/a11y/**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    // -----------------------------------------------------------------------
     // Quarantine project — known-flaky tests run in isolation, don't block CI.
     // Run via: npm run test:e2e:quarantine
     // Tests are selected by title match (see e2e/quarantine.json).
