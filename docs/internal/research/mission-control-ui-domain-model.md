@@ -78,7 +78,7 @@ interface Mission {
 }
 ```
 
-**Key observation:** `Stage` is being refactored -- `'escalation'` as a stage is deprecated in favor of the `escalationActive` boolean overlay flag. This means escalation can happen at ANY stage, not just as a dedicated stage.
+**Key observation:** `Stage` is being refactored -- `'escalation'` as a stage is deprecated in favour of the `escalationActive` boolean overlay flag. This means escalation can happen at ANY stage, not just as a dedicated stage.
 
 #### Workflow (mission grouping)
 
@@ -238,7 +238,7 @@ interface Notification {
 #### Workspace (deprecated)
 
 ```typescript
-/** @deprecated -- dissolved in favor of Mission.branch + LiveViewState */
+/** @deprecated -- dissolved in favour of Mission.branch + LiveViewState */
 interface Workspace {
   id: string;
   missionId: string;
@@ -524,7 +524,7 @@ MCU currently uses static fixture data (`apps/web/src/data/*.ts`). To integrate 
 
 - MCU is at v0.1.0 and still uses static fixture data -- no backend API exists yet
 - The `Workspace` entity is deprecated; MCU is moving toward `Mission.branch + LiveViewState` instead
-- The `escalation` stage is deprecated in favor of `escalationActive` overlay flag -- this is a design improvement that Portarium should consider adopting (escalation as an orthogonal concern, not a phase)
+- The `escalation` stage is deprecated in favour of `escalationActive` overlay flag -- this is a design improvement that Portarium should consider adopting (escalation as an orthogonal concern, not a phase)
 - MCU's doc system uses `.toon` source files that generate markdown -- different from Portarium's spec system
 - The HCI docs in `docs/hci/` include cognitive walkthrough, heuristic evaluation, state model, user journeys, information architecture, and consistency audit -- these are valuable UX research assets
 - Fonts (Orbitron, Rajdhani) are loaded via `@fontsource/*` packages -- these would need to be added to cockpit's dependencies if the MCU theme is adopted
