@@ -105,6 +105,7 @@
     "tmp/**",
     ".tmp/**",
     "scratch/**",
+    "experiments/**",
     "*.local.ts",
     "*.local.js",
     "*.local.mjs",
