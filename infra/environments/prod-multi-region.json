@@ -1,0 +1,51 @@
+{
+  "$schema": "./environment-schema.json",
+  "name": "prod-multi-region",
+  "description": "Production multi-region environment — primary-active / secondary-standby failover per ADR-0075.",
+  "tier": "production",
+  "promotion": {
+    "source": "staging",
+    "target": null,
+    "requiresApproval": true,
+    "autoPromoteOnSuccess": false
+  },
+  "kubernetes": {
+    "overlay": "infra/kubernetes/overlays/prod",
+    "namespace": "portarium",
+    "imageTag": "sha-${COMMIT_SHA}"
+  },
+  "terraform": {
+    "cloud": "aws",
+    "tfvars": "infra/terraform/environments/prod-multi-region/terraform.tfvars",
+    "backendKey": "portarium/prod-multi-region/terraform.tfstate"
+  },
+  "config": {
+    "PORTARIUM_ENVIRONMENT": "production",
+    "PORTARIUM_TENANCY_DEFAULT_ISOLATION_TIER": "A",
+    "PORTARIUM_LOG_LEVEL": "warn",
+    "PORTARIUM_EVIDENCE_STORE_RETENTION_DAYS": "2555",
+    "PORTARIUM_FEATURE_RATE_LIMITING": "true",
+    "PORTARIUM_FEATURE_APPROVAL_GATES": "true",
+    "PORTARIUM_MULTI_REGION": "true",
+    "PORTARIUM_PRIMARY_REGION": "us-east-1",
+    "PORTARIUM_SECONDARY_REGION": "us-west-2"
+  },
+  "scaling": {
+    "minReplicas": 3,
+    "maxReplicas": 10,
+    "workersMin": 3,
+    "workersMax": 20
+  },
+  "database": {
+    "multiAz": true,
+    "backupRetentionDays": 35,
+    "deletionProtection": true,
+    "crossRegionReplication": true,
+    "replicationMode": "aurora-global"
+  },
+  "gates": {
+    "requireCiGreen": true,
+    "requireProvenance": true,
+    "requireSecurityScan": true
+  }
+}

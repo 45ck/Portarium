@@ -1059,3 +1059,6 @@ mytest
 # Approval domain terms (approval-context-assembler)
 delegators
 Delegators
+# Multi-region Terraform (bead-0943)
+tfstate
+xlarge
