@@ -163,6 +163,8 @@
     "smoke:http-e2e": "tsx scripts/smoke/http-api-e2e-smoke.ts",
     "analytics:adoption-snapshot": "node scripts/analytics/adoption-snapshot.mjs",
     "seed:bundle": "tsx scripts/seed/seed-bundle.ts",
+    "load:smoke": "LOAD_MODE=smoke node node_modules/vitest/vitest.mjs run scripts/load/",
+    "load:full": "LOAD_MODE=full node node_modules/vitest/vitest.mjs run scripts/load/",
     "test": "node node_modules/vitest/vitest.mjs run",
     "test:watch": "node node_modules/vitest/vitest.mjs",
     "test:coverage": "node node_modules/vitest/vitest.mjs run --coverage",
