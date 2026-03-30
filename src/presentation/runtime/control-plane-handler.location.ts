@@ -363,7 +363,7 @@ export async function handleListLocationEvents(args: HandlerArgs): Promise<void>
     fromIso && toIso
       ? { mode: 'history' as const, purpose, fromIso, toIso }
       : { mode: 'history' as const, purpose };
-  const boundary = enforceLocationTelemetryBoundary(appCtx, boundaryRequest, undefined, new Date());
+  const boundary = enforceLocationTelemetryBoundary(appCtx, boundaryRequest, undefined, args.deps.clock?.() ?? new Date());
   if (!boundary.ok) {
     respondProblem(res, problemFromError(boundary.error, pathname), correlationId, traceContext);
     return;

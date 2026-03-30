@@ -234,9 +234,11 @@ describe('createControlPlaneHandler', () => {
   });
 
   it('lists location events in a bounded playback window with filters', async () => {
+    // Pin clock to 2026-02-21 so the seed data (2026-02-20) stays within the 30-day retention window.
     await startWith(
       makeDeps({
         authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+        clock: () => new Date('2026-02-21T00:00:00.000Z'),
       }),
     );
     // Use dates relative to now so seed data (1 hour ago) falls inside the
