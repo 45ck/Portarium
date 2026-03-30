@@ -147,32 +147,24 @@ describe('load: concurrent multi-tenant requests', () => {
             if (!approvalId) throw new Error('Expected NeedsApproval');
 
             // Stage 2: approve
-            const submitResult = await submitApproval(
-              { ...deps },
-              approverCtx,
-              {
-                workspaceId: `ws-load-${t}`,
-                approvalId,
-                decision: 'Approved',
-                rationale: `Load approve t=${t} i=${idx}`,
-              },
-            );
+            const submitResult = await submitApproval({ ...deps }, approverCtx, {
+              workspaceId: `ws-load-${t}`,
+              approvalId,
+              decision: 'Approved',
+              rationale: `Load approve t=${t} i=${idx}`,
+            });
 
             if (!submitResult.ok) {
               throw new Error(`submit failed: ${submitResult.error.kind}`);
             }
 
             // Stage 3: execute
-            const executeResult = await executeApprovedAgentAction(
-              { ...deps },
-              agentCtx,
-              {
-                workspaceId: `ws-load-${t}`,
-                approvalId,
-                flowRef: `flow-${t}-${idx}`,
-                payload: { tenant: t, index: idx },
-              },
-            );
+            const executeResult = await executeApprovedAgentAction({ ...deps }, agentCtx, {
+              workspaceId: `ws-load-${t}`,
+              approvalId,
+              flowRef: `flow-${t}-${idx}`,
+              payload: { tenant: t, index: idx },
+            });
 
             if (!executeResult.ok) {
               throw new Error(`execute failed: ${executeResult.error.kind}`);

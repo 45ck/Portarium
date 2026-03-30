@@ -12,7 +12,9 @@
     }
   },
   "openclaw": {
-    "extensions": ["./src/index.ts"]
+    "extensions": [
+      "./src/index.ts"
+    ]
   },
   "scripts": {
     "build": "tsc",
@@ -25,6 +27,8 @@
     "openclaw": ">=2026.2.14"
   },
   "peerDependenciesMeta": {
-    "openclaw": { "optional": true }
+    "openclaw": {
+      "optional": true
+    }
   }
 }

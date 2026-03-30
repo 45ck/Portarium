@@ -316,7 +316,9 @@ async function main(): Promise<void> {
     // ManualOnly + dangerous tool category = 403 Denied by policy
     if (res.status !== 403) {
       const body = await res.text();
-      fail(`POST /agent-actions:propose (ManualOnly) returned ${res.status}, expected 403: ${body}`);
+      fail(
+        `POST /agent-actions:propose (ManualOnly) returned ${res.status}, expected 403: ${body}`,
+      );
     }
     ok('POST /agent-actions:propose (ManualOnly) -> 403 (denied by policy)');
   }

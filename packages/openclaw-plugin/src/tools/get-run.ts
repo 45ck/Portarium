@@ -11,10 +11,7 @@ type RegisterToolFn = (spec: {
   handler: (input: Record<string, unknown>) => Promise<unknown>;
 }) => void;
 
-export function registerGetRunTool(
-  registerTool: RegisterToolFn,
-  client: PortariumClient,
-): void {
+export function registerGetRunTool(registerTool: RegisterToolFn, client: PortariumClient): void {
   registerTool({
     name: 'portarium_get_run',
     description:

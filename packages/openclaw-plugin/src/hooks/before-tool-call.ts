@@ -8,12 +8,12 @@ import type { PortariumPluginConfig } from '../config.js';
 import type { PortariumClient } from '../client/portarium-client.js';
 import type { ApprovalPoller } from '../services/approval-poller.js';
 
-type HookContext = {
+interface HookContext {
   readonly toolName: string;
   readonly parameters?: Record<string, unknown>;
   readonly sessionKey?: string;
   reject(reason: string): void;
-};
+}
 
 type RegisterHookFn = (spec: {
   name: string;

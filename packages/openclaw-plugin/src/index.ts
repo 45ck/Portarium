@@ -50,7 +50,7 @@ import { registerHealthMethod } from './gateway/health.js';
  * at import time — OpenClaw's loader wraps this for us.
  */
 
-type PluginApi = {
+interface PluginApi {
   readonly id: string;
   readonly config: Record<string, unknown>;
   readonly logger: {
@@ -78,7 +78,7 @@ type PluginApi = {
     name: string;
     handler: (input: Record<string, unknown>) => Promise<unknown>;
   }): void;
-};
+}
 
 function register(api: PluginApi): void {
   const config = resolveConfig(api.config);
@@ -86,13 +86,7 @@ function register(api: PluginApi): void {
   const poller = new ApprovalPoller(client, config);
 
   // Layer 1: Transparent governance — intercepts ALL tool calls
-  registerBeforeToolCallHook(
-    api.registerHook.bind(api),
-    client,
-    poller,
-    config,
-    api.logger,
-  );
+  registerBeforeToolCallHook(api.registerHook.bind(api), client, poller, config, api.logger);
 
   // Layer 2: Explicit Portarium-facing agent tools
   registerGetRunTool(api.registerTool.bind(api), client);

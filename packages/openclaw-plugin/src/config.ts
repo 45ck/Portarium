@@ -2,7 +2,7 @@
  * Portarium plugin configuration.
  * Matches the configSchema in openclaw.plugin.json.
  */
-export type PortariumPluginConfig = {
+export interface PortariumPluginConfig {
   readonly portariumUrl: string;
   readonly workspaceId: string;
   readonly bearerToken: string;
@@ -11,7 +11,7 @@ export type PortariumPluginConfig = {
   readonly approvalTimeoutMs: number;
   readonly pollIntervalMs: number;
   readonly bypassToolNames: readonly string[];
-};
+}
 
 export const DEFAULT_CONFIG: Pick<
   PortariumPluginConfig,
@@ -37,8 +37,8 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
 
   return {
     portariumUrl: raw['portariumUrl'].replace(/\/+$/, ''),
-    workspaceId: raw['workspaceId'] as string,
-    bearerToken: raw['bearerToken'] as string,
+    workspaceId: raw['workspaceId'],
+    bearerToken: raw['bearerToken'],
     tenantId: typeof raw['tenantId'] === 'string' ? raw['tenantId'] : DEFAULT_CONFIG.tenantId,
     failClosed: raw['failClosed'] !== false,
     approvalTimeoutMs:

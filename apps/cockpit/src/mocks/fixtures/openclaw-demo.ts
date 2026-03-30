@@ -784,9 +784,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval before sending any email to external recipients. Prevents accidental data leaks and ensures tone/content review.',
     trigger: 'send:email AND external_recipient',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Gmail', scope: '1 message per invocation' },
-    ],
+    blastRadius: [{ system: 'Gmail', scope: '1 message per invocation' }],
     irreversibility: 'partial' as const,
     status: 'active' as const,
     sodRule: {
@@ -808,9 +806,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval for calendar events that include external attendees. Guards against unvetted meeting invitations sent on behalf of the organisation.',
     trigger: 'calendar:create_event AND external_attendees',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Google Calendar', scope: '1 event' },
-    ],
+    blastRadius: [{ system: 'Google Calendar', scope: '1 event' }],
     irreversibility: 'partial' as const,
     status: 'active' as const,
     sodRule: {
@@ -884,9 +880,7 @@ const OPENCLAW_POLICIES = [
       'Blocks creation of persistent cron jobs or recurring automations. Only admins may create schedules that run unattended after initial setup.',
     trigger: 'cron:create AND persistent_automation',
     tier: 'ManualOnly' as const,
-    blastRadius: [
-      { system: 'OpenClaw Gateway', scope: 'persistent schedule' },
-    ],
+    blastRadius: [{ system: 'OpenClaw Gateway', scope: 'persistent schedule' }],
     irreversibility: 'full' as const,
     status: 'active' as const,
     sodRule: {
@@ -908,9 +902,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval before applying sub-agent triage results (labels, tags) to the inbox. Prevents automated mis-categorisation.',
     trigger: 'subagent:output AND inbox:update_tags',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Gmail labels', scope: '10 threads' },
-    ],
+    blastRadius: [{ system: 'Gmail labels', scope: '10 threads' }],
     irreversibility: 'none' as const,
     status: 'active' as const,
     sodRule: {
@@ -932,9 +924,7 @@ const OPENCLAW_POLICIES = [
       'Automatically approves updates to internal-only notes with no external side effects. Allows routine summarisation without human friction.',
     trigger: 'notes:update_internal_only',
     tier: 'Auto' as const,
-    blastRadius: [
-      { system: 'Internal notes', scope: '1 document' },
-    ],
+    blastRadius: [{ system: 'Internal notes', scope: '1 document' }],
     irreversibility: 'none' as const,
     status: 'active' as const,
     scope: {
@@ -1040,7 +1030,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'cron:create-job',
     category: 'Dangerous' as const,
     minimumTier: 'ManualOnly' as const,
-    rationale: 'Creates persistent automated schedules; classified Dangerous due to ongoing execution.',
+    rationale:
+      'Creates persistent automated schedules; classified Dangerous due to ongoing execution.',
     overridden: false,
   },
   {
@@ -1057,7 +1048,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'notion:update-page',
     category: 'Mutation' as const,
     minimumTier: 'Auto' as const,
-    rationale: 'Updates internal Notion pages; admin-overridden to Auto for internal notes workflow.',
+    rationale:
+      'Updates internal Notion pages; admin-overridden to Auto for internal notes workflow.',
     overridden: true,
   },
   // --- Sub-agent tools ---
@@ -1066,7 +1058,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'subagent:spawn-session',
     category: 'Mutation' as const,
     minimumTier: 'Assisted' as const,
-    rationale: 'Spawns an isolated sub-agent session; contained but creates a new execution context.',
+    rationale:
+      'Spawns an isolated sub-agent session; contained but creates a new execution context.',
     overridden: false,
   },
   {

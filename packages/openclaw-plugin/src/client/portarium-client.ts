@@ -6,7 +6,7 @@
  */
 import type { PortariumPluginConfig } from '../config.js';
 
-export type ProposeActionInput = {
+export interface ProposeActionInput {
   readonly toolName: string;
   readonly parameters: Record<string, unknown>;
   readonly sessionKey: string;
@@ -15,7 +15,7 @@ export type ProposeActionInput = {
   readonly agentId?: string;
   /** The execution tier hint ('Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly'). */
   readonly executionTier?: string;
-};
+}
 
 export type ProposeActionResult =
   | { readonly status: 'allowed' }
@@ -30,25 +30,25 @@ export type ApprovalPollResult =
   | { readonly status: 'expired' }
   | { readonly status: 'error'; readonly reason: string };
 
-export type RunStatus = {
+export interface RunStatus {
   readonly runId: string;
   readonly stage: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-};
+}
 
-export type ApprovalSummary = {
+export interface ApprovalSummary {
   readonly approvalId: string;
   readonly toolName: string;
   readonly status: 'pending' | 'approved' | 'denied' | 'expired';
   readonly createdAt: string;
-};
+}
 
-export type CapabilityInfo = {
+export interface CapabilityInfo {
   readonly capabilityId: string;
   readonly requiredTier: string;
   readonly riskClass: string;
-};
+}
 
 export class PortariumClient {
   readonly #config: PortariumPluginConfig;
@@ -228,7 +228,10 @@ function parseProposalResponse(body: Record<string, unknown>): ProposeActionResu
   const status = body['status'] as string | undefined;
   if (status === 'allowed' || status === 'auto_allowed') return { status: 'allowed' };
   if (status === 'denied' || status === 'policy_denied') {
-    return { status: 'denied', reason: String(body['reason'] ?? body['message'] ?? 'Policy denied') };
+    return {
+      status: 'denied',
+      reason: String(body['reason'] ?? body['message'] ?? 'Policy denied'),
+    };
   }
   if (status === 'awaiting_approval' || status === 'pending_approval') {
     const approvalId = String(body['approvalId'] ?? body['id'] ?? '');

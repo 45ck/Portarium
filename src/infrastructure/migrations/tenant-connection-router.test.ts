@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  TenantConnectionRouter,
-  TenantConnectionRouterError,
-} from './tenant-connection-router.js';
+import { TenantConnectionRouter, TenantConnectionRouterError } from './tenant-connection-router.js';
 import { InMemoryTenantStorageProvisioner } from './tenant-storage-provisioner.js';
 import type { SqlClient, SqlQueryResult, SqlRow } from '../postgresql/sql-client.js';
 
@@ -121,8 +118,6 @@ describe('TenantConnectionRouter', () => {
       provisioner,
     });
 
-    await expect(router.getClientForTenant('tier-c')).rejects.toThrow(
-      TenantConnectionRouterError,
-    );
+    await expect(router.getClientForTenant('tier-c')).rejects.toThrow(TenantConnectionRouterError);
   });
 });

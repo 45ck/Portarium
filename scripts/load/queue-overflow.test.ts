@@ -173,40 +173,36 @@ describe('load: queue overflow scenarios', () => {
     },
   );
 
-  it(
-    'consumer drains queue after burst subsides',
-    { timeout: 15_000 },
-    async () => {
-      const capacity = 200;
-      const outbox = new BoundedInMemoryOutbox(capacity);
+  it('consumer drains queue after burst subsides', { timeout: 15_000 }, async () => {
+    const capacity = 200;
+    const outbox = new BoundedInMemoryOutbox(capacity);
 
-      // Enqueue 150 events (under capacity)
-      for (let i = 0; i < 150; i++) {
-        await outbox.enqueue(makeCloudEvent(i));
+    // Enqueue 150 events (under capacity)
+    for (let i = 0; i < 150; i++) {
+      await outbox.enqueue(makeCloudEvent(i));
+    }
+    expect(outbox.size).toBe(150);
+
+    // Simulate consumer draining in batches
+    let totalPublished = 0;
+    let batchCount = 0;
+    while (true) {
+      const pending = await outbox.fetchPending(20);
+      if (pending.length === 0) break;
+      for (const entry of pending) {
+        await outbox.markPublished(entry.entryId);
+        totalPublished++;
       }
-      expect(outbox.size).toBe(150);
+      batchCount++;
+    }
 
-      // Simulate consumer draining in batches
-      let totalPublished = 0;
-      let batchCount = 0;
-      while (true) {
-        const pending = await outbox.fetchPending(20);
-        if (pending.length === 0) break;
-        for (const entry of pending) {
-          await outbox.markPublished(entry.entryId);
-          totalPublished++;
-        }
-        batchCount++;
-      }
+    expect(totalPublished).toBe(150);
+    expect(batchCount).toBeGreaterThan(0);
 
-      expect(totalPublished).toBe(150);
-      expect(batchCount).toBeGreaterThan(0);
-
-      // After drain, new entries should be accepted
-      await outbox.enqueue(makeCloudEvent(999));
-      expect(outbox.size).toBe(151);
-    },
-  );
+    // After drain, new entries should be accepted
+    await outbox.enqueue(makeCloudEvent(999));
+    expect(outbox.size).toBe(151);
+  });
 
   it(
     'burst-then-drain cycle: capacity is reusable after publish',
@@ -242,32 +238,28 @@ describe('load: queue overflow scenarios', () => {
     },
   );
 
-  it(
-    'failed entries are retried and do not block new entries',
-    { timeout: 10_000 },
-    async () => {
-      const outbox = new BoundedInMemoryOutbox(100);
+  it('failed entries are retried and do not block new entries', { timeout: 10_000 }, async () => {
+    const outbox = new BoundedInMemoryOutbox(100);
 
-      // Enqueue 10 events
-      for (let i = 0; i < 10; i++) {
-        await outbox.enqueue(makeCloudEvent(i));
-      }
+    // Enqueue 10 events
+    for (let i = 0; i < 10; i++) {
+      await outbox.enqueue(makeCloudEvent(i));
+    }
 
-      // Mark first 5 as failed
-      const pending = await outbox.fetchPending(5);
-      for (const entry of pending) {
-        await outbox.markFailed(entry.entryId, 'transient error', new Date().toISOString());
-      }
+    // Mark first 5 as failed
+    const pending = await outbox.fetchPending(5);
+    for (const entry of pending) {
+      await outbox.markFailed(entry.entryId, 'transient error', new Date().toISOString());
+    }
 
-      // Remaining 5 should still be fetchable as Pending
-      const stillPending = await outbox.fetchPending(10);
-      expect(stillPending.length).toBe(5);
+    // Remaining 5 should still be fetchable as Pending
+    const stillPending = await outbox.fetchPending(10);
+    expect(stillPending.length).toBe(5);
 
-      // New entries can still be added (capacity not exhausted)
-      for (let i = 10; i < 50; i++) {
-        await outbox.enqueue(makeCloudEvent(i));
-      }
-      expect(outbox.size).toBe(50);
-    },
-  );
+    // New entries can still be added (capacity not exhausted)
+    for (let i = 10; i < 50; i++) {
+      await outbox.enqueue(makeCloudEvent(i));
+    }
+    expect(outbox.size).toBe(50);
+  });
 });

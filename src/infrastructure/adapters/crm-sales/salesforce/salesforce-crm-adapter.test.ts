@@ -204,9 +204,7 @@ describe('SalesforceCrmAdapter', () => {
     it('queries and maps accounts', async () => {
       const stubFetch = createStubFetch([
         tokenResponse(),
-        queryResponse([
-          { Id: '001xx000001', Name: 'Acme Corp', Phone: '555-0001' },
-        ]),
+        queryResponse([{ Id: '001xx000001', Name: 'Acme Corp', Phone: '555-0001' }]),
       ]);
       const adapter = new SalesforceCrmAdapter(CONFIG, { fetch: stubFetch });
 
@@ -399,9 +397,7 @@ describe('SalesforceCrmAdapter', () => {
     it('queries and maps tasks', async () => {
       const stubFetch = createStubFetch([
         tokenResponse(),
-        queryResponse([
-          { Id: '00Txx000001', Subject: 'Follow up call', Status: 'Not Started' },
-        ]),
+        queryResponse([{ Id: '00Txx000001', Subject: 'Follow up call', Status: 'Not Started' }]),
       ]);
       const adapter = new SalesforceCrmAdapter(CONFIG, { fetch: stubFetch });
 

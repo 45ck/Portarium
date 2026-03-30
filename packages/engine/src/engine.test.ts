@@ -45,7 +45,9 @@ describe('PortariumEngine', () => {
 
     it('matches regex pattern', async () => {
       const engine = new PortariumEngine({
-        rules: [{ name: 'Block destructive', matchTool: /^(delete|drop|truncate)/, tier: 'manual-only' }],
+        rules: [
+          { name: 'Block destructive', matchTool: /^(delete|drop|truncate)/, tier: 'manual-only' },
+        ],
       });
       expect((await engine.validate(makeCall('delete_file'))).outcome).toBe('require-approval');
       expect((await engine.validate(makeCall('truncate_table'))).outcome).toBe('require-approval');

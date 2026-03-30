@@ -24,9 +24,7 @@ export class ApprovalPoller {
       const result = await this.#client.pollApproval(approvalId);
 
       if ('approved' in result) {
-        return result.approved
-          ? { approved: true }
-          : { approved: false, reason: result.reason };
+        return result.approved ? { approved: true } : { approved: false, reason: result.reason };
       }
 
       if (result.status === 'expired') {
@@ -42,7 +40,10 @@ export class ApprovalPoller {
       await sleep(this.#config.pollIntervalMs);
     }
 
-    return { approved: false, reason: `Approval timed out after ${this.#config.approvalTimeoutMs}ms` };
+    return {
+      approved: false,
+      reason: `Approval timed out after ${this.#config.approvalTimeoutMs}ms`,
+    };
   }
 }
 

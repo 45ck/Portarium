@@ -7,7 +7,17 @@ import type {
 } from '@portarium/cockpit-types';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ArrowRight, Bot, Clock, Mail, Calendar, MessageSquare, Paperclip, User } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  Bot,
+  Clock,
+  Mail,
+  Calendar,
+  MessageSquare,
+  Paperclip,
+  User,
+} from 'lucide-react';
 import { ActorBadge } from './actor-badge';
 import { SorBadge } from './sor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
