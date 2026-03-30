@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
 
 let mockIsOnline = true;
 let mockPendingCount = 0;
@@ -18,6 +18,10 @@ vi.mock('@/hooks/useOfflineQueue', () => ({
 import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 
 describe('OfflineIndicator', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
     mockIsOnline = true;
     mockPendingCount = 0;
@@ -32,14 +36,16 @@ describe('OfflineIndicator', () => {
     mockIsOnline = true;
     mockPendingCount = 3;
     render(<OfflineIndicator />);
-    expect(screen.getByRole('status')).toHaveTextContent('3 pending');
+    const status = screen.getByRole('status');
+    expect(status.textContent).toContain('3 pending');
   });
 
   it('shows offline status when browser is offline', () => {
     mockIsOnline = false;
     mockPendingCount = 0;
     render(<OfflineIndicator />);
-    expect(screen.getByRole('status')).toHaveTextContent('Offline');
+    const status = screen.getByRole('status');
+    expect(status.textContent).toContain('Offline');
   });
 
   it('shows offline with pending count', () => {
@@ -47,7 +53,7 @@ describe('OfflineIndicator', () => {
     mockPendingCount = 2;
     render(<OfflineIndicator />);
     const status = screen.getByRole('status');
-    expect(status).toHaveTextContent('Offline');
-    expect(status).toHaveTextContent('2 pending');
+    expect(status.textContent).toContain('Offline');
+    expect(status.textContent).toContain('2 pending');
   });
 });
