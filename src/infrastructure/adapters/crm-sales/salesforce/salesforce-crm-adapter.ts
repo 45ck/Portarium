@@ -129,10 +129,20 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
   async #getContact(input: CrmSalesExecuteInputV1): Promise<CrmSalesExecuteOutputV1> {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getContact.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getContact.',
+      };
     }
     const record = await this.#client.getRecord<SalesforceContact>('Contact', partyId, [
-      'Id', 'Name', 'FirstName', 'LastName', 'Email', 'Phone', 'AccountId',
+      'Id',
+      'Name',
+      'FirstName',
+      'LastName',
+      'Email',
+      'Phone',
+      'AccountId',
     ]);
     return { ok: true, result: { kind: 'party', party: mapContact(input.tenantId, record) } };
   }
@@ -149,7 +159,13 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
     const sfPayload = toSalesforceContactPayload(input.payload ?? {});
     const id = await this.#client.createRecord('Contact', sfPayload);
     const record = await this.#client.getRecord<SalesforceContact>('Contact', id, [
-      'Id', 'Name', 'FirstName', 'LastName', 'Email', 'Phone', 'AccountId',
+      'Id',
+      'Name',
+      'FirstName',
+      'LastName',
+      'Email',
+      'Phone',
+      'AccountId',
     ]);
     return { ok: true, result: { kind: 'party', party: mapContact(input.tenantId, record) } };
   }
@@ -166,7 +182,13 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
     const sfPayload = toSalesforceContactPayload(input.payload ?? {});
     await this.#client.updateRecord('Contact', partyId, sfPayload);
     const record = await this.#client.getRecord<SalesforceContact>('Contact', partyId, [
-      'Id', 'Name', 'FirstName', 'LastName', 'Email', 'Phone', 'AccountId',
+      'Id',
+      'Name',
+      'FirstName',
+      'LastName',
+      'Email',
+      'Phone',
+      'AccountId',
     ]);
     return { ok: true, result: { kind: 'party', party: mapContact(input.tenantId, record) } };
   }
@@ -184,10 +206,17 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
   async #getCompany(input: CrmSalesExecuteInputV1): Promise<CrmSalesExecuteOutputV1> {
     const partyId = readString(input.payload, 'partyId');
     if (partyId === null) {
-      return { ok: false, error: 'validation_error', message: 'partyId is required for getCompany.' };
+      return {
+        ok: false,
+        error: 'validation_error',
+        message: 'partyId is required for getCompany.',
+      };
     }
     const record = await this.#client.getRecord<SalesforceAccount>('Account', partyId, [
-      'Id', 'Name', 'Phone', 'Website',
+      'Id',
+      'Name',
+      'Phone',
+      'Website',
     ]);
     return { ok: true, result: { kind: 'party', party: mapAccount(input.tenantId, record) } };
   }
@@ -204,7 +233,10 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
     const sfPayload = toSalesforceAccountPayload(input.payload ?? {});
     const id = await this.#client.createRecord('Account', sfPayload);
     const record = await this.#client.getRecord<SalesforceAccount>('Account', id, [
-      'Id', 'Name', 'Phone', 'Website',
+      'Id',
+      'Name',
+      'Phone',
+      'Website',
     ]);
     return { ok: true, result: { kind: 'party', party: mapAccount(input.tenantId, record) } };
   }
@@ -254,7 +286,13 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
     const sfPayload = toSalesforceOpportunityPayload(input.payload ?? {});
     const id = await this.#client.createRecord('Opportunity', sfPayload);
     const record = await this.#client.getRecord<SalesforceOpportunity>('Opportunity', id, [
-      'Id', 'Name', 'StageName', 'Amount', 'CloseDate', 'Probability', 'AccountId',
+      'Id',
+      'Name',
+      'StageName',
+      'Amount',
+      'CloseDate',
+      'Probability',
+      'AccountId',
     ]);
     return {
       ok: true,
@@ -293,9 +331,11 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
 
   async #listPipelines(_input: CrmSalesExecuteInputV1): Promise<CrmSalesExecuteOutputV1> {
     // Salesforce doesn't have a native Pipeline object; return stage picklist values as externalRefs
-    const records = await this.#client.query<{ ApiName: string; Label: string; MasterLabel: string }>(
-      "SELECT ApiName, Label, MasterLabel FROM OpportunityStage WHERE IsActive = true",
-    );
+    const records = await this.#client.query<{
+      ApiName: string;
+      Label: string;
+      MasterLabel: string;
+    }>('SELECT ApiName, Label, MasterLabel FROM OpportunityStage WHERE IsActive = true');
     return {
       ok: true,
       result: {
@@ -333,7 +373,11 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
     const sfPayload = toSalesforceTaskPayload(input.payload ?? {});
     const id = await this.#client.createRecord('Task', sfPayload);
     const record = await this.#client.getRecord<SalesforceTask>('Task', id, [
-      'Id', 'Subject', 'Status', 'OwnerId', 'ActivityDate',
+      'Id',
+      'Subject',
+      'Status',
+      'OwnerId',
+      'ActivityDate',
     ]);
     return { ok: true, result: { kind: 'task', task: mapTask(input.tenantId, record) } };
   }
@@ -360,16 +404,18 @@ export class SalesforceCrmAdapter implements CrmSalesAdapterPort {
         message: 'title is required for createNote.',
       };
     }
-    const content = typeof input.payload?.['content'] === 'string'
-      ? input.payload['content']
-      : '';
+    const content = typeof input.payload?.['content'] === 'string' ? input.payload['content'] : '';
     const base64Content = Buffer.from(content).toString('base64');
     const id = await this.#client.createRecord('ContentNote', {
       Title: title,
       Content: base64Content,
     });
     const record = await this.#client.getRecord<SalesforceContentNote>('ContentNote', id, [
-      'Id', 'Title', 'FileType', 'ContentSize', 'CreatedDate',
+      'Id',
+      'Title',
+      'FileType',
+      'ContentSize',
+      'CreatedDate',
     ]);
     return {
       ok: true,

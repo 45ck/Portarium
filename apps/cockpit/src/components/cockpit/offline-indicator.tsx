@@ -36,7 +36,9 @@ export function OfflineIndicator({ className }: { className?: string }) {
         <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />
       )}
       <span>
-        {isOnline ? `${pendingCount} pending` : `Offline${pendingCount > 0 ? ` \u2013 ${pendingCount} pending` : ''}`}
+        {isOnline
+          ? `${pendingCount} pending`
+          : `Offline${pendingCount > 0 ? ` \u2013 ${pendingCount} pending` : ''}`}
       </span>
     </div>
   );

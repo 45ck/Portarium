@@ -95,7 +95,11 @@ export interface DrainResult {
 }
 
 export function useOfflineQueue(): OfflineQueueState {
-  const isOnline = useSyncExternalStore(subscribeOnline, getOnlineSnapshot, getServerOnlineSnapshot);
+  const isOnline = useSyncExternalStore(
+    subscribeOnline,
+    getOnlineSnapshot,
+    getServerOnlineSnapshot,
+  );
   const [pendingCount, setPendingCount] = useState(0);
   const drainInProgress = useRef(false);
 

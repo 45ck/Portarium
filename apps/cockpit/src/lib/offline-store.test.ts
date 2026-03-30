@@ -129,16 +129,18 @@ describe('offline-store graceful degradation', () => {
     delete globalThis.indexedDB;
 
     try {
-      await expect(putPendingDecision({
-        idempotencyKey: 'test',
-        workspaceId: 'ws-1',
-        approvalId: 'ap-1',
-        decision: 'Approved',
-        rationale: 'test',
-        queuedAt: new Date().toISOString(),
-        attemptCount: 0,
-        nextAttemptAt: new Date().toISOString(),
-      })).rejects.toThrow('IndexedDB not available');
+      await expect(
+        putPendingDecision({
+          idempotencyKey: 'test',
+          workspaceId: 'ws-1',
+          approvalId: 'ap-1',
+          decision: 'Approved',
+          rationale: 'test',
+          queuedAt: new Date().toISOString(),
+          attemptCount: 0,
+          nextAttemptAt: new Date().toISOString(),
+        }),
+      ).rejects.toThrow('IndexedDB not available');
     } finally {
       // @ts-ignore — restoring
       globalThis.indexedDB = original;

@@ -11,10 +11,7 @@ type RegisterToolFn = (spec: {
   handler: (input: Record<string, unknown>) => Promise<unknown>;
 }) => void;
 
-export function registerGetRunTool(
-  registerTool: RegisterToolFn,
-  client: PortariumClient,
-): void {
+export function registerGetRunTool(registerTool: RegisterToolFn, client: PortariumClient): void {
   registerTool({
     name: 'portarium_get_run',
     description:
@@ -30,7 +27,7 @@ export function registerGetRunTool(
       },
     },
     handler: async (input: Record<string, unknown>) => {
-      const runId = String(input['runId'] ?? '');
+      const runId = String(input.runId ?? '');
       if (!runId) return { error: 'runId is required' };
 
       const status = await client.getRunStatus(runId);

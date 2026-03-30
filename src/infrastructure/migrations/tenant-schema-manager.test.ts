@@ -117,9 +117,7 @@ describe('TenantSchemaManager', () => {
       const { manager, provisioner } = createManager();
       await provisioner.provision('tier-a-tenant', 'TierA');
 
-      await expect(manager.migrateTenantSchema('tier-a-tenant')).rejects.toThrow(
-        'not TierB',
-      );
+      await expect(manager.migrateTenantSchema('tier-a-tenant')).rejects.toThrow('not TierB');
     });
 
     it('succeeds for a provisioned Tier B tenant', async () => {
@@ -173,9 +171,7 @@ describe('TenantSchemaManager', () => {
       const { manager, provisioner } = createManager();
       await provisioner.provision('tier-a-tenant', 'TierA');
 
-      await expect(manager.getTenantConnection('tier-a-tenant')).rejects.toThrow(
-        'only for TierB',
-      );
+      await expect(manager.getTenantConnection('tier-a-tenant')).rejects.toThrow('only for TierB');
     });
 
     it('returns a SchemaScopedSqlClient for Tier B tenant', async () => {

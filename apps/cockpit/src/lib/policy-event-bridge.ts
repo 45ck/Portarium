@@ -24,9 +24,7 @@ export function emitPolicyUpdate(payload: PolicyUpdatePayload): void {
   window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: payload }));
 }
 
-export function onPolicyUpdate(
-  callback: (payload: PolicyUpdatePayload) => void,
-): () => void {
+export function onPolicyUpdate(callback: (payload: PolicyUpdatePayload) => void): () => void {
   const handler = (e: Event) => {
     callback((e as CustomEvent<PolicyUpdatePayload>).detail);
   };
@@ -38,9 +36,7 @@ export function onPolicyUpdate(
 // React hook
 // ---------------------------------------------------------------------------
 
-export function usePolicyUpdates(
-  callback: (payload: PolicyUpdatePayload) => void,
-): void {
+export function usePolicyUpdates(callback: (payload: PolicyUpdatePayload) => void): void {
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 

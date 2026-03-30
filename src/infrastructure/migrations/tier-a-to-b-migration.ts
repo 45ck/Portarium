@@ -86,10 +86,6 @@ async function copyTable(
   return count;
 }
 
-async function deleteSharedRows(
-  tx: SqlClient,
-  tableName: string,
-  tenantId: string,
-): Promise<void> {
+async function deleteSharedRows(tx: SqlClient, tableName: string, tenantId: string): Promise<void> {
   await tx.query(`DELETE FROM public."${tableName}" WHERE tenant_id = $1;`, [tenantId]);
 }

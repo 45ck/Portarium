@@ -30,7 +30,7 @@ export function registerCapabilityLookupTool(
       },
     },
     handler: async (input: Record<string, unknown>) => {
-      const toolName = String(input['toolName'] ?? '');
+      const toolName = String(input.toolName ?? '');
       if (!toolName) return { error: 'toolName is required' };
 
       const info = await client.lookupCapability(toolName);

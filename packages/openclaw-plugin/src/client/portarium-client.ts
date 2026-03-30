@@ -6,7 +6,7 @@
  */
 import type { PortariumPluginConfig } from '../config.js';
 
-export type ProposeActionInput = {
+export interface ProposeActionInput {
   readonly toolName: string;
   readonly parameters: Record<string, unknown>;
   readonly sessionKey: string;
@@ -15,7 +15,7 @@ export type ProposeActionInput = {
   readonly agentId?: string;
   /** The execution tier hint ('Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly'). */
   readonly executionTier?: string;
-};
+}
 
 export type ProposeActionResult =
   | { readonly status: 'allowed' }
@@ -30,25 +30,25 @@ export type ApprovalPollResult =
   | { readonly status: 'expired' }
   | { readonly status: 'error'; readonly reason: string };
 
-export type RunStatus = {
+export interface RunStatus {
   readonly runId: string;
   readonly stage: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-};
+}
 
-export type ApprovalSummary = {
+export interface ApprovalSummary {
   readonly approvalId: string;
   readonly toolName: string;
   readonly status: 'pending' | 'approved' | 'denied' | 'expired';
   readonly createdAt: string;
-};
+}
 
-export type CapabilityInfo = {
+export interface CapabilityInfo {
   readonly capabilityId: string;
   readonly requiredTier: string;
   readonly riskClass: string;
-};
+}
 
 export class PortariumClient {
   readonly #config: PortariumPluginConfig;
@@ -138,10 +138,10 @@ export class PortariumClient {
       if (!response.ok) return null;
       const body = (await response.json()) as Record<string, unknown>;
       return {
-        runId: String(body['runId'] ?? body['id'] ?? runId),
-        stage: String(body['stage'] ?? body['status'] ?? 'unknown'),
-        createdAt: String(body['createdAt'] ?? ''),
-        updatedAt: String(body['updatedAt'] ?? ''),
+        runId: String(body.runId ?? body.id ?? runId),
+        stage: String(body.stage ?? body.status ?? 'unknown'),
+        createdAt: String(body.createdAt ?? ''),
+        updatedAt: String(body.updatedAt ?? ''),
       };
     } catch {
       return null;
@@ -159,12 +159,12 @@ export class PortariumClient {
       });
       if (!response.ok) return [];
       const body = (await response.json()) as Record<string, unknown>;
-      const items = Array.isArray(body['items']) ? body['items'] : [];
+      const items = Array.isArray(body.items) ? body.items : [];
       return items.map((item: Record<string, unknown>) => ({
-        approvalId: String(item['id'] ?? item['approvalId'] ?? ''),
-        toolName: String(item['toolName'] ?? item['capability'] ?? 'unknown'),
-        status: (item['status'] as ApprovalSummary['status']) ?? 'pending',
-        createdAt: String(item['createdAt'] ?? ''),
+        approvalId: String(item.id ?? item.approvalId ?? ''),
+        toolName: String(item.toolName ?? item.capability ?? 'unknown'),
+        status: (item.status as ApprovalSummary['status']) ?? 'pending',
+        createdAt: String(item.createdAt ?? ''),
       }));
     } catch {
       return [];
@@ -183,9 +183,9 @@ export class PortariumClient {
       if (!response.ok) return null;
       const body = (await response.json()) as Record<string, unknown>;
       return {
-        capabilityId: String(body['capabilityId'] ?? toolName),
-        requiredTier: String(body['requiredTier'] ?? 'HumanApprove'),
-        riskClass: String(body['riskClass'] ?? 'unknown'),
+        capabilityId: String(body.capabilityId ?? toolName),
+        requiredTier: String(body.requiredTier ?? 'HumanApprove'),
+        riskClass: String(body.riskClass ?? 'unknown'),
       };
     } catch {
       return null;
@@ -204,7 +204,7 @@ export class PortariumClient {
 
 function parseProposalResponse(body: Record<string, unknown>): ProposeActionResult {
   // Actual Portarium control plane response: { decision: 'Allow'|'NeedsApproval'|'Denied', proposalId, approvalId?, message? }
-  const decision = body['decision'] as string | undefined;
+  const decision = body.decision as string | undefined;
 
   if (decision === 'Allow') {
     return { status: 'allowed' };
@@ -212,12 +212,12 @@ function parseProposalResponse(body: Record<string, unknown>): ProposeActionResu
   if (decision === 'Denied') {
     return {
       status: 'denied',
-      reason: String(body['message'] ?? body['reason'] ?? 'Policy denied'),
+      reason: String(body.message ?? body.reason ?? 'Policy denied'),
     };
   }
   if (decision === 'NeedsApproval') {
-    const approvalId = String(body['approvalId'] ?? '');
-    const actionId = String(body['proposalId'] ?? body['actionId'] ?? '');
+    const approvalId = String(body.approvalId ?? '');
+    const actionId = String(body.proposalId ?? body.actionId ?? '');
     if (!approvalId) {
       return { status: 'error', reason: 'Portarium returned NeedsApproval without approvalId' };
     }
@@ -225,33 +225,33 @@ function parseProposalResponse(body: Record<string, unknown>): ProposeActionResu
   }
 
   // Fallbacks for older / alternative response shapes
-  const status = body['status'] as string | undefined;
+  const status = body.status as string | undefined;
   if (status === 'allowed' || status === 'auto_allowed') return { status: 'allowed' };
   if (status === 'denied' || status === 'policy_denied') {
-    return { status: 'denied', reason: String(body['reason'] ?? body['message'] ?? 'Policy denied') };
+    return { status: 'denied', reason: String(body.reason ?? body.message ?? 'Policy denied') };
   }
   if (status === 'awaiting_approval' || status === 'pending_approval') {
-    const approvalId = String(body['approvalId'] ?? body['id'] ?? '');
-    const actionId = String(body['actionId'] ?? '');
+    const approvalId = String(body.approvalId ?? body.id ?? '');
+    const actionId = String(body.actionId ?? '');
     if (!approvalId) {
       return { status: 'error', reason: 'Portarium returned awaiting_approval without approvalId' };
     }
     return { status: 'awaiting_approval', approvalId, actionId };
   }
-  if (typeof body['allowed'] === 'boolean') {
-    if (body['allowed']) return { status: 'allowed' };
-    return { status: 'denied', reason: String(body['message'] ?? body['reason'] ?? 'Denied') };
+  if (typeof body.allowed === 'boolean') {
+    if (body.allowed) return { status: 'allowed' };
+    return { status: 'denied', reason: String(body.message ?? body.reason ?? 'Denied') };
   }
 
   return { status: 'error', reason: `Unrecognised proposal response: ${JSON.stringify(body)}` };
 }
 
 function parseApprovalStatus(body: Record<string, unknown>): ApprovalPollResult {
-  const status = body['status'] as string | undefined;
+  const status = body.status as string | undefined;
 
   if (status === 'approved') return { approved: true };
   if (status === 'denied')
-    return { approved: false, reason: String(body['reason'] ?? 'Denied by operator') };
+    return { approved: false, reason: String(body.reason ?? 'Denied by operator') };
   if (status === 'expired') return { status: 'expired' };
   if (status === 'pending') return { status: 'pending' };
   return { status: 'error', reason: `Unknown approval status: ${status}` };

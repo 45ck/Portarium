@@ -17,10 +17,7 @@ export function parseSalesforceErrorResponse(body: unknown): SalesforceErrorResp
   return body as SalesforceErrorResponse;
 }
 
-export function mapSalesforceHttpError(
-  status: number,
-  body: unknown,
-): SalesforceHttpErrorResult {
+export function mapSalesforceHttpError(status: number, body: unknown): SalesforceHttpErrorResult {
   const errors = parseSalesforceErrorResponse(body);
   const firstMessage = errors?.[0]?.message ?? 'Unknown Salesforce error';
   const firstCode = errors?.[0]?.errorCode ?? '';

@@ -45,12 +45,9 @@ const portariumUrl =
     ? 'http://localhost:19999' // deliberately unreachable
     : (cliArgs['cp-url'] ?? process.env['CONTROL_PLANE_URL'] ?? 'http://localhost:8080');
 
-const workspaceId =
-  cliArgs['workspace-id'] ?? process.env['WORKSPACE_ID'] ?? 'ws-demo';
-const bearerToken =
-  cliArgs['bearer-token'] ?? process.env['BEARER_TOKEN'] ?? 'dev-token';
-const sessionKey =
-  cliArgs['session-key'] ?? `plugin-lab:${randomUUID()}`;
+const workspaceId = cliArgs['workspace-id'] ?? process.env['WORKSPACE_ID'] ?? 'ws-demo';
+const bearerToken = cliArgs['bearer-token'] ?? process.env['BEARER_TOKEN'] ?? 'dev-token';
+const sessionKey = cliArgs['session-key'] ?? `plugin-lab:${randomUUID()}`;
 
 console.log('\n[plugin-lab] === Portarium Plugin Experiment Lab ===');
 console.log(`[plugin-lab] Experiment:   ${experiment}`);
@@ -163,8 +160,7 @@ async function governTool(toolName, parameters) {
 
   // Parse proposal response
   const status =
-    proposalResponse?.status ??
-    (proposalResponse?.allowed === true ? 'allowed' : 'denied');
+    proposalResponse?.status ?? (proposalResponse?.allowed === true ? 'allowed' : 'denied');
 
   if (status === 'allowed' || status === 'auto_allowed') {
     return { allowed: true };
@@ -173,10 +169,7 @@ async function governTool(toolName, parameters) {
   if (status === 'denied' || status === 'policy_denied') {
     return {
       allowed: false,
-      message:
-        proposalResponse?.reason ??
-        proposalResponse?.message ??
-        'Policy denied',
+      message: proposalResponse?.reason ?? proposalResponse?.message ?? 'Policy denied',
     };
   }
 
@@ -194,9 +187,7 @@ async function governTool(toolName, parameters) {
       console.log(`[plugin-lab] Tool: ${toolName}`);
       console.log(`[plugin-lab] Approval ID: ${approvalId}`);
       console.log(`[plugin-lab] Action: Open Cockpit → Approvals queue`);
-      console.log(
-        `[plugin-lab]         URL: http://cockpit.localhost:1355/approvals`,
-      );
+      console.log(`[plugin-lab]         URL: http://cockpit.localhost:1355/approvals`);
       console.log(
         `[plugin-lab]         or: curl -X POST ${portariumUrl}/v1/workspaces/${workspaceId}/approvals/${approvalId}/decision -d '{"decision":"approved"}' -H "Authorization: Bearer ${bearerToken}" -H "content-type: application/json"`,
       );
@@ -334,9 +325,7 @@ async function runAgent() {
         });
       } else {
         const failFlag = governance.failClosed ? ' [FAIL-CLOSED]' : '';
-        console.log(
-          `[plugin-hook] BLOCKED${failFlag}: ${portariumName} — ${governance.message}`,
-        );
+        console.log(`[plugin-hook] BLOCKED${failFlag}: ${portariumName} — ${governance.message}`);
         resultContent = `BLOCKED by Portarium: ${governance.message}`;
       }
 
@@ -368,9 +357,7 @@ async function runAgent() {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log(
-    `[plugin-lab] Experiment ${experiment}: ${getExperimentDescription(experiment)}\n`,
-  );
+  console.log(`[plugin-lab] Experiment ${experiment}: ${getExperimentDescription(experiment)}\n`);
 
   if (experiment === 'B') {
     console.log(
@@ -395,12 +382,8 @@ async function main() {
     const allBlocked = interactions.every((i) => !i.allowed && i.failClosed);
     const allFailClosed = interactions.every((i) => i.failClosed);
     console.log('\n[plugin-lab] === Experiment B Assertions ===');
-    console.log(
-      `[plugin-lab] All tools blocked: ${allBlocked ? 'PASS' : 'FAIL'}`,
-    );
-    console.log(
-      `[plugin-lab] All fail-closed:   ${allFailClosed ? 'PASS' : 'FAIL'}`,
-    );
+    console.log(`[plugin-lab] All tools blocked: ${allBlocked ? 'PASS' : 'FAIL'}`);
+    console.log(`[plugin-lab] All fail-closed:   ${allFailClosed ? 'PASS' : 'FAIL'}`);
     if (!allBlocked || !allFailClosed) {
       console.error(
         '[plugin-lab] ASSERTION FAILED: Some tools were allowed when Portarium was unreachable!',

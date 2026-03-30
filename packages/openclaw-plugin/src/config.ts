@@ -2,7 +2,7 @@
  * Portarium plugin configuration.
  * Matches the configSchema in openclaw.plugin.json.
  */
-export type PortariumPluginConfig = {
+export interface PortariumPluginConfig {
   readonly portariumUrl: string;
   readonly workspaceId: string;
   readonly bearerToken: string;
@@ -11,7 +11,7 @@ export type PortariumPluginConfig = {
   readonly approvalTimeoutMs: number;
   readonly pollIntervalMs: number;
   readonly bypassToolNames: readonly string[];
-};
+}
 
 export const DEFAULT_CONFIG: Pick<
   PortariumPluginConfig,
@@ -25,32 +25,30 @@ export const DEFAULT_CONFIG: Pick<
 };
 
 export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConfig {
-  if (typeof raw['portariumUrl'] !== 'string' || !raw['portariumUrl']) {
+  if (typeof raw.portariumUrl !== 'string' || !raw.portariumUrl) {
     throw new Error('[portarium-plugin] config.portariumUrl is required');
   }
-  if (typeof raw['workspaceId'] !== 'string' || !raw['workspaceId']) {
+  if (typeof raw.workspaceId !== 'string' || !raw.workspaceId) {
     throw new Error('[portarium-plugin] config.workspaceId is required');
   }
-  if (typeof raw['bearerToken'] !== 'string' || !raw['bearerToken']) {
+  if (typeof raw.bearerToken !== 'string' || !raw.bearerToken) {
     throw new Error('[portarium-plugin] config.bearerToken is required');
   }
 
   return {
-    portariumUrl: raw['portariumUrl'].replace(/\/+$/, ''),
-    workspaceId: raw['workspaceId'] as string,
-    bearerToken: raw['bearerToken'] as string,
-    tenantId: typeof raw['tenantId'] === 'string' ? raw['tenantId'] : DEFAULT_CONFIG.tenantId,
-    failClosed: raw['failClosed'] !== false,
+    portariumUrl: raw.portariumUrl.replace(/\/+$/, ''),
+    workspaceId: raw.workspaceId,
+    bearerToken: raw.bearerToken,
+    tenantId: typeof raw.tenantId === 'string' ? raw.tenantId : DEFAULT_CONFIG.tenantId,
+    failClosed: raw.failClosed !== false,
     approvalTimeoutMs:
-      typeof raw['approvalTimeoutMs'] === 'number'
-        ? raw['approvalTimeoutMs']
+      typeof raw.approvalTimeoutMs === 'number'
+        ? raw.approvalTimeoutMs
         : DEFAULT_CONFIG.approvalTimeoutMs,
     pollIntervalMs:
-      typeof raw['pollIntervalMs'] === 'number'
-        ? raw['pollIntervalMs']
-        : DEFAULT_CONFIG.pollIntervalMs,
-    bypassToolNames: Array.isArray(raw['bypassToolNames'])
-      ? (raw['bypassToolNames'] as string[])
+      typeof raw.pollIntervalMs === 'number' ? raw.pollIntervalMs : DEFAULT_CONFIG.pollIntervalMs,
+    bypassToolNames: Array.isArray(raw.bypassToolNames)
+      ? (raw.bypassToolNames as string[])
       : [...DEFAULT_CONFIG.bypassToolNames],
   };
 }

@@ -81,9 +81,7 @@ function sfRef(externalId: string, externalType: string, displayLabel?: string):
 
 export function mapContact(tenantId: TenantId, record: SalesforceContact): PartyV1 {
   const displayName =
-    record.Name ??
-    [record.FirstName, record.LastName].filter(Boolean).join(' ') ??
-    record.Id;
+    record.Name ?? [record.FirstName, record.LastName].filter(Boolean).join(' ') ?? record.Id;
 
   return {
     partyId: PartyId(record.Id),
@@ -109,10 +107,7 @@ export function mapAccount(tenantId: TenantId, record: SalesforceAccount): Party
   };
 }
 
-export function mapOpportunity(
-  tenantId: TenantId,
-  record: SalesforceOpportunity,
-): OpportunityV1 {
+export function mapOpportunity(tenantId: TenantId, record: SalesforceOpportunity): OpportunityV1 {
   return {
     opportunityId: OpportunityId(record.Id),
     tenantId,
