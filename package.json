@@ -188,6 +188,7 @@
     "ab": "node scripts/ab.mjs",
     "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium --workers=1",
     "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13",
+    "test:e2e:a11y": "node node_modules/@playwright/test/cli.js test e2e/a11y --project=a11y --workers=1",
     "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium",
     "demo:policy": "tsx scripts/demo/policy-demo.mjs",
     "demo:proxy": "tsx scripts/demo/portarium-tool-proxy.mjs",
@@ -226,6 +227,7 @@
     }
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^10.0.0",
     "@google/generative-ai": "^0.24.1",
     "@playwright/test": "^1.58.2",
