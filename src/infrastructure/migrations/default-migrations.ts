@@ -380,4 +380,43 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
     ],
     downSql: ['DROP INDEX IF EXISTS uk_agent_action_proposals_idempotency;'],
   },
+  {
+    version: 17,
+    id: '0017_expand_tenant_schema_migration_journal',
+    description:
+      'Creates per-schema migration journal table inside each Tier B tenant schema. ' +
+      'Used by TenantSchemaManager to track which migrations have been applied to each schema (bead-0947).',
+    phase: 'Expand',
+    scope: 'Tenant',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      `CREATE TABLE IF NOT EXISTS schema_migrations_tenant (
+  target          TEXT        NOT NULL,
+  version         INTEGER     NOT NULL,
+  migration_id    TEXT        NOT NULL,
+  phase           TEXT        NOT NULL,
+  applied_at      TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (target, version)
+);`,
+    ],
+    downSql: ['DROP TABLE IF EXISTS schema_migrations_tenant;'],
+  },
+  {
+    version: 18,
+    id: '0018_expand_tenant_storage_tiers_upgraded_at',
+    description:
+      'Adds upgraded_at and upgraded_from columns to tenant_storage_tiers for tracking ' +
+      'Tier A -> Tier B migration history (bead-0947).',
+    phase: 'Expand',
+    scope: 'Global',
+    compatibility: 'BackwardCompatible',
+    upSql: [
+      'ALTER TABLE IF EXISTS tenant_storage_tiers ADD COLUMN IF NOT EXISTS upgraded_at TIMESTAMPTZ NULL;',
+      'ALTER TABLE IF EXISTS tenant_storage_tiers ADD COLUMN IF NOT EXISTS upgraded_from TEXT NULL;',
+    ],
+    downSql: [
+      'ALTER TABLE IF EXISTS tenant_storage_tiers DROP COLUMN IF EXISTS upgraded_from;',
+      'ALTER TABLE IF EXISTS tenant_storage_tiers DROP COLUMN IF EXISTS upgraded_at;',
+    ],
+  },
 ];
