@@ -17,6 +17,10 @@ export * from './adapters/procurement-spend/in-memory-procurement-spend-adapter.
 export * from './adapters/hris-hcm/in-memory-hris-hcm-adapter.js';
 export * from './adapters/payroll/in-memory-payroll-adapter.js';
 export * from './adapters/crm-sales/in-memory-crm-sales-adapter.js';
+export * from './adapters/crm-sales/salesforce/salesforce-crm-adapter.js';
+export * from './adapters/crm-sales/salesforce/salesforce-client.js';
+export * from './adapters/crm-sales/salesforce/salesforce-field-mapper.js';
+export * from './adapters/crm-sales/salesforce/salesforce-error-handler.js';
 export * from './adapters/customer-support/in-memory-customer-support-adapter.js';
 export * from './adapters/itsm-it-ops/in-memory-itsm-it-ops-adapter.js';
 export * from './adapters/iam-directory/in-memory-iam-directory-adapter.js';
