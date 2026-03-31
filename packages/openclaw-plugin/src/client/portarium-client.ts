@@ -15,6 +15,10 @@ export interface ProposeActionInput {
   readonly agentId?: string;
   /** The execution tier hint ('Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly'). */
   readonly executionTier?: string;
+  /** Human-readable rationale for this tool call. Defaults to a generated description. */
+  readonly rationale?: string;
+  /** Policy IDs to evaluate against. Falls back to config.defaultPolicyIds. */
+  readonly policyIds?: readonly string[];
 }
 
 export type ProposeActionResult =
@@ -72,8 +76,10 @@ export class PortariumClient {
           actionKind: 'tool_call',
           toolName: input.toolName,
           parameters: input.parameters,
-          // Optional governance hints
-          ...(input.executionTier ? { executionTier: input.executionTier } : {}),
+          rationale:
+            input.rationale ?? `Agent tool call: ${input.toolName} (session: ${input.sessionKey})`,
+          policyIds: input.policyIds ?? [...this.#config.defaultPolicyIds],
+          executionTier: input.executionTier ?? this.#config.defaultExecutionTier,
           ...(input.correlationId ? { correlationId: input.correlationId } : {}),
         }),
         signal: AbortSignal.timeout(10_000),
@@ -247,12 +253,16 @@ function parseProposalResponse(body: Record<string, unknown>): ProposeActionResu
 }
 
 function parseApprovalStatus(body: Record<string, unknown>): ApprovalPollResult {
-  const status = body.status as string | undefined;
+  // Normalize to lowercase for comparison — control plane uses capitalized values (Approved, Denied, etc.)
+  const status = String(body.status ?? '').toLowerCase();
 
   if (status === 'approved') return { approved: true };
   if (status === 'denied')
-    return { approved: false, reason: String(body.reason ?? 'Denied by operator') };
+    return {
+      approved: false,
+      reason: String(body.reason ?? body.rationale ?? 'Denied by operator'),
+    };
   if (status === 'expired') return { status: 'expired' };
   if (status === 'pending') return { status: 'pending' };
-  return { status: 'error', reason: `Unknown approval status: ${status}` };
+  return { status: 'error', reason: `Unknown approval status: ${String(body.status)}` };
 }

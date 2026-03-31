@@ -18,11 +18,21 @@ import { runExperiment, assert } from '../shared/experiment-runner.js';
 const PORTARIUM_URL = process.env['PORTARIUM_URL'] ?? 'http://localhost:3000';
 const WORKSPACE_ID = process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-experiment';
 const BEARER_TOKEN = process.env['PORTARIUM_BEARER_TOKEN'] ?? 'dev-token';
+/** Operator token — must be a different user to satisfy maker-checker. */
+const OPERATOR_TOKEN = process.env['PORTARIUM_OPERATOR_TOKEN'] ?? 'dev-token-operator';
 const TENANT_ID = process.env['PORTARIUM_TENANT_ID'] ?? 'default';
 
 const BASE_HEADERS = {
   'content-type': 'application/json',
   authorization: `Bearer ${BEARER_TOKEN}`,
+  'x-portarium-tenant-id': TENANT_ID,
+  'x-portarium-workspace-id': WORKSPACE_ID,
+};
+
+/** Headers used for operator-side actions (approval decisions). */
+const OPERATOR_HEADERS = {
+  'content-type': 'application/json',
+  authorization: `Bearer ${OPERATOR_TOKEN}`,
   'x-portarium-tenant-id': TENANT_ID,
   'x-portarium-workspace-id': WORKSPACE_ID,
 };
@@ -117,6 +127,9 @@ const outcome = await runExperiment({
         actionKind: 'tool_call',
         toolName: 'send_email',
         parameters: { to: 'ops@example.com', subject: 'Experiment: governed tool call' },
+        rationale: 'Sending experiment notification to ops team to validate governance loop.',
+        executionTier: 'HumanApprove',
+        policyIds: ['default-governance'],
         correlationId: `exp-openclaw-governance-${Date.now()}`,
       }),
       signal: AbortSignal.timeout(10_000),
@@ -157,12 +170,12 @@ const outcome = await runExperiment({
       console.log(`  [execute] initial approval status: ${ctx.state.initialApprovalStatus}`);
     }
 
-    // 2c. Operator approves
+    // 2c. Operator approves (must be a different user — maker-checker enforcement)
     const decideRes = await fetch(
       workspaceUrl(`/approvals/${encodeURIComponent(approvalId)}/decide`),
       {
         method: 'POST',
-        headers: BASE_HEADERS,
+        headers: OPERATOR_HEADERS,
         body: JSON.stringify({ decision: 'Approved', rationale: 'Experiment auto-approval' }),
         signal: AbortSignal.timeout(10_000),
       },
@@ -199,8 +212,8 @@ const outcome = await runExperiment({
     // Core flow assertions
     assertions.push(
       assert(
-        'POST /agent-actions:propose returned HTTP 200',
-        ctx.state.proposeStatus === 200,
+        'POST /agent-actions:propose returned HTTP 200 or 202',
+        ctx.state.proposeStatus === 200 || ctx.state.proposeStatus === 202,
         `HTTP status was ${ctx.state.proposeStatus}`,
       ),
     );

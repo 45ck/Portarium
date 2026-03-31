@@ -44,6 +44,18 @@
         "items": { "type": "string" },
         "description": "Tool names to bypass governance (use sparingly, for internal Portarium tools only)",
         "default": ["portarium_get_run", "portarium_list_approvals", "portarium_capability_lookup"]
+      },
+      "defaultPolicyIds": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Policy IDs to evaluate all proposals against (default: ['default-governance'])",
+        "default": ["default-governance"]
+      },
+      "defaultExecutionTier": {
+        "type": "string",
+        "enum": ["Auto", "Assisted", "HumanApprove", "ManualOnly"],
+        "description": "Default execution tier for tool proposals when not overridden (default: HumanApprove)",
+        "default": "HumanApprove"
       }
     }
   }

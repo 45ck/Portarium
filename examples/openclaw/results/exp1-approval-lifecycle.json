@@ -1,0 +1,44 @@
+{
+  "experiment": "openclaw-governance",
+  "timestamp": "2026-03-31T01:48:02.450Z",
+  "outcome": "confirmed",
+  "duration_ms": 100,
+  "assertions": [
+    {
+      "label": "POST /agent-actions:propose returned HTTP 200 or 202",
+      "passed": true,
+      "detail": "HTTP status was 202"
+    },
+    {
+      "label": "propose decision is NeedsApproval (tool routed to human-approval tier)",
+      "passed": true,
+      "detail": "decision was \"NeedsApproval\""
+    },
+    {
+      "label": "propose response includes a non-empty approvalId",
+      "passed": true,
+      "detail": "approvalId=\"670e72e9-4317-4b4c-a5ee-3e8b83df5b69\""
+    },
+    {
+      "label": "GET /approvals/:approvalId returns HTTP 200 immediately after proposal",
+      "passed": true,
+      "detail": "HTTP status was 200"
+    },
+    {
+      "label": "initial approval status is pending",
+      "passed": true,
+      "detail": "status was \"Pending\""
+    },
+    {
+      "label": "POST /approvals/:approvalId/decide returned HTTP 200",
+      "passed": true,
+      "detail": "HTTP status was 200"
+    },
+    {
+      "label": "ApprovalPoller resolves approved=true after operator decision",
+      "passed": true,
+      "detail": "approved=true"
+    }
+  ],
+  "notes": "A tool call intercepted by the openclaw-plugin is blocked for human approval and the agent is unblocked exactly when the operator approves it via the Portarium control plane."
+}

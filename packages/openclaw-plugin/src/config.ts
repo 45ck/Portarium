@@ -11,17 +11,29 @@ export interface PortariumPluginConfig {
   readonly approvalTimeoutMs: number;
   readonly pollIntervalMs: number;
   readonly bypassToolNames: readonly string[];
+  /** Policy IDs to evaluate each proposal against. Defaults to ['default-governance']. */
+  readonly defaultPolicyIds: readonly string[];
+  /** Default execution tier when none is provided. Defaults to 'HumanApprove'. */
+  readonly defaultExecutionTier: string;
 }
 
 export const DEFAULT_CONFIG: Pick<
   PortariumPluginConfig,
-  'tenantId' | 'failClosed' | 'approvalTimeoutMs' | 'pollIntervalMs' | 'bypassToolNames'
+  | 'tenantId'
+  | 'failClosed'
+  | 'approvalTimeoutMs'
+  | 'pollIntervalMs'
+  | 'bypassToolNames'
+  | 'defaultPolicyIds'
+  | 'defaultExecutionTier'
 > = {
   tenantId: 'default',
   failClosed: true,
   approvalTimeoutMs: 86_400_000, // 24 hours
   pollIntervalMs: 3_000,
   bypassToolNames: ['portarium_get_run', 'portarium_list_approvals', 'portarium_capability_lookup'],
+  defaultPolicyIds: ['default-governance'],
+  defaultExecutionTier: 'HumanApprove',
 };
 
 export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConfig {
@@ -50,5 +62,12 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
     bypassToolNames: Array.isArray(raw.bypassToolNames)
       ? (raw.bypassToolNames as string[])
       : [...DEFAULT_CONFIG.bypassToolNames],
+    defaultPolicyIds: Array.isArray(raw.defaultPolicyIds)
+      ? (raw.defaultPolicyIds as string[])
+      : [...DEFAULT_CONFIG.defaultPolicyIds],
+    defaultExecutionTier:
+      typeof raw.defaultExecutionTier === 'string'
+        ? raw.defaultExecutionTier
+        : DEFAULT_CONFIG.defaultExecutionTier,
   };
 }

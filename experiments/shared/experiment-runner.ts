@@ -7,6 +7,7 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export interface ExperimentContext {
   /** Experiment name (kebab-case). */
@@ -47,7 +48,7 @@ export interface ExperimentDefinition {
 export async function runExperiment(definition: ExperimentDefinition): Promise<ExperimentOutcome> {
   const resultsDir =
     definition.resultsDir ??
-    join(dirname(new URL(import.meta.url).pathname), '..', definition.name, 'results');
+    join(dirname(fileURLToPath(import.meta.url)), '..', definition.name, 'results');
 
   mkdirSync(resultsDir, { recursive: true });
 
