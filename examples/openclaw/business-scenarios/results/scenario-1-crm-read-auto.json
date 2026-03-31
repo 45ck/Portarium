@@ -1,0 +1,42 @@
+{
+  "scenario": "1-crm-read-auto",
+  "business_context": "Nexus Capital Advisory",
+  "agent": {
+    "name": "Aria",
+    "id": "aria-customer-service",
+    "role": "Customer Service AI"
+  },
+  "human_operator": null,
+  "tool": "crm_read_client",
+  "governance_tier": "Auto",
+  "outcome": "auto_allowed",
+  "timeline": {
+    "t0_experiment_start": "2026-03-31T03:49:13.177Z",
+    "t1_propose_sent": "2026-03-31T03:49:13.177Z",
+    "t2_propose_response": "2026-03-31T03:49:13.182Z",
+    "t2_propose_response_ms": 5,
+    "t3_approval_status": "Allow",
+    "t6_agent_unblocked": "2026-03-31T03:49:13.182Z",
+    "total_blocked_ms": 0,
+    "polls": []
+  },
+  "governance_data": {
+    "proposalId": "770f0d1d-50ff-4eb2-8f24-8e295fe0a4af",
+    "evidenceId": "07d5fb34-33df-4b1b-8db5-7554df818d9c",
+    "decision": "Allow",
+    "httpStatus": 200
+  },
+  "assertions": [
+    {
+      "label": "Auto tier returns HTTP 200 with Allow",
+      "passed": true,
+      "detail": "HTTP 200, decision=Allow"
+    },
+    {
+      "label": "No approvalId required (agent proceeds immediately)",
+      "passed": true,
+      "detail": "approvalId=none"
+    }
+  ],
+  "business_insight": "Read-only CRM lookups bypass human approval entirely, enabling Aria to serve clients instantly with zero governance overhead."
+}

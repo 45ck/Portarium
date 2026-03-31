@@ -1,0 +1,69 @@
+{
+  "scenario": "2-email-approval",
+  "business_context": "Nexus Capital Advisory",
+  "agent": {
+    "name": "Aria",
+    "id": "aria-customer-service",
+    "role": "Customer Service AI"
+  },
+  "human_operator": {
+    "name": "Sarah Chen",
+    "role": "Compliance Manager"
+  },
+  "tool": "email_send_client",
+  "governance_tier": "HumanApprove",
+  "outcome": "approved",
+  "timeline": {
+    "t0_experiment_start": "2026-03-31T03:49:13.183Z",
+    "t1_propose_sent": "2026-03-31T03:49:13.183Z",
+    "t2_propose_response": "2026-03-31T03:49:13.185Z",
+    "t2_propose_response_ms": 2,
+    "t3_approval_status": "Pending",
+    "polls": [
+      {
+        "n": 1,
+        "at": "2026-03-31T03:49:13.185Z",
+        "status": "Pending"
+      },
+      {
+        "n": 2,
+        "at": "2026-03-31T03:49:13.187Z",
+        "status": "Approved"
+      }
+    ],
+    "t4_operator_decided": "2026-03-31T03:49:13.186Z",
+    "t5_detection_latency_ms": 1,
+    "t6_agent_unblocked": "2026-03-31T03:49:13.188Z",
+    "total_blocked_ms": 5
+  },
+  "governance_data": {
+    "proposalId": "35e4f8c9-7c38-4f7f-97fd-12eec50e93b5",
+    "approvalId": "429bbb83-5ba3-4635-82f5-9c20684ac015",
+    "evidenceId": "9b941aa2-4cae-4b42-9e59-3d34f1cb264a",
+    "decision": "NeedsApproval",
+    "operator_rationale": "Email content reviewed. Complaint resolution confirmed in system. Approved to send to client."
+  },
+  "assertions": [
+    {
+      "label": "propose returns NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "initial status is Pending",
+      "passed": true,
+      "detail": "status=Pending"
+    },
+    {
+      "label": "operator approval succeeds",
+      "passed": true,
+      "detail": "HTTP 200, status=Approved"
+    },
+    {
+      "label": "post-approval poll returns Approved",
+      "passed": true,
+      "detail": "status=Approved"
+    }
+  ],
+  "business_insight": "Customer-facing emails are held for compliance review before sending, ensuring Aria never sends unapproved communications to clients."
+}
