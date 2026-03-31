@@ -11,10 +11,11 @@ function makeConfig(overrides?: Record<string, unknown>) {
   });
 }
 
-function mockFetch(response: unknown, status = 200): typeof fetch {
+function mockFetch(response: unknown, status = 200, contentType = 'application/json'): typeof fetch {
   return (async () => ({
     ok: status >= 200 && status < 300,
     status,
+    headers: { get: (name: string) => (name === 'content-type' ? contentType : null) },
     json: async () => response,
   })) as unknown as typeof fetch;
 }
@@ -106,6 +107,20 @@ describe('PortariumClient', () => {
         sessionKey: 'sess-1',
       });
       expect(result).toEqual({ status: 'error', reason: 'Control plane returned HTTP 500' });
+    });
+
+    it('returns error when response content-type is not application/json', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch('<html>Login</html>', 200, 'text/html'),
+      );
+      const result = await client.proposeAction({
+        toolName: 'bash',
+        parameters: {},
+        sessionKey: 'sess-1',
+      });
+      expect(result).toMatchObject({ status: 'error' });
+      expect((result as { reason: string }).reason).toContain('text/html');
     });
 
     it('returns error on network failure', async () => {

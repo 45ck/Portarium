@@ -32,13 +32,47 @@ describe('resolveConfig', () => {
       failClosed: false,
       approvalTimeoutMs: 1000,
       pollIntervalMs: 500,
-      bypassToolNames: ['my_tool'],
+      // Only permitted introspection tools are accepted in bypassToolNames;
+      // arbitrary tool names are silently dropped (security: bead-0979)
+      bypassToolNames: ['portarium_get_run'],
     });
     expect(config.tenantId).toBe('custom-tenant');
     expect(config.failClosed).toBe(false);
     expect(config.approvalTimeoutMs).toBe(1000);
     expect(config.pollIntervalMs).toBe(500);
-    expect(config.bypassToolNames).toEqual(['my_tool']);
+    expect(config.bypassToolNames).toEqual(['portarium_get_run']);
+  });
+
+  it('silently drops bypassToolNames entries outside the permitted introspection set', () => {
+    const config = resolveConfig({ ...validRaw, bypassToolNames: ['my_tool', 'send_email'] });
+    expect(config.bypassToolNames).toEqual(DEFAULT_CONFIG.bypassToolNames);
+  });
+
+  it('throws when approvalTimeoutMs is zero or negative', () => {
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: 0 })).toThrow(
+      'approvalTimeoutMs must be a finite positive number',
+    );
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: -1 })).toThrow(
+      'approvalTimeoutMs must be a finite positive number',
+    );
+  });
+
+  it('throws when approvalTimeoutMs is NaN or Infinity', () => {
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: NaN })).toThrow(
+      'approvalTimeoutMs must be a finite positive number',
+    );
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: Infinity })).toThrow(
+      'approvalTimeoutMs must be a finite positive number',
+    );
+  });
+
+  it('throws when pollIntervalMs is below 500ms', () => {
+    expect(() => resolveConfig({ ...validRaw, pollIntervalMs: 0 })).toThrow(
+      'pollIntervalMs must be a finite number >= 500ms',
+    );
+    expect(() => resolveConfig({ ...validRaw, pollIntervalMs: 499 })).toThrow(
+      'pollIntervalMs must be a finite number >= 500ms',
+    );
   });
 
   it('throws when portariumUrl is missing', () => {
