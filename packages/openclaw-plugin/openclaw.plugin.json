@@ -1,5 +1,5 @@
 {
-  "id": "portarium",
+  "id": "openclaw-plugin",
   "name": "Portarium Governance",
   "description": "Routes all tool calls through Portarium policy, approvals, and evidence before execution. Blocks, approves, or queues human approval for every tool call.",
   "configSchema": {

@@ -51,9 +51,9 @@ export interface PluginApi {
   on(
     event: string,
     handler: (
-      event: Record<string, unknown>,
-      ctx: Record<string, unknown>,
-    ) => Promise<unknown> | unknown,
+      event: { toolName: string; params: Record<string, unknown>; runId?: string },
+      ctx: { sessionKey?: string; agentId?: string; runId?: string },
+    ) => Promise<{ block?: boolean; blockReason?: string } | void>,
     opts?: { priority?: number },
   ): void;
   registerTool(
