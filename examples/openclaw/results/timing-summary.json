@@ -1,0 +1,38 @@
+{
+  "run_at": "2026-03-31T03:36:18.794Z",
+  "control_plane_mode": "in-memory-dev",
+  "experiments": {
+    "A_approval": {
+      "total_ms": 11,
+      "propose_rtt_ms": 7,
+      "polls_until_detected": 1,
+      "outcome": "confirmed"
+    },
+    "B_denial": {
+      "total_ms": 5,
+      "propose_rtt_ms": 1,
+      "polls_until_detected": 1,
+      "outcome": "confirmed"
+    },
+    "C_maker_checker": {
+      "enforcement_latency_ms": 0,
+      "recovery_after_rejection_ms": 1,
+      "propose_rtt_ms": 1,
+      "outcome": "confirmed"
+    },
+    "D_polling_delay": {
+      "simulated_wait_ms": 8025,
+      "polls_during_wait": 4,
+      "all_pending_during_wait": true,
+      "total_blocked_duration_ms": 8029,
+      "propose_rtt_ms": 1,
+      "outcome": "confirmed"
+    }
+  },
+  "governance_overhead_analysis": {
+    "min_propose_rtt_ms": 1,
+    "max_propose_rtt_ms": 7,
+    "avg_propose_rtt_ms": 3,
+    "notes": "RTT includes local HTTP round-trip only — in production this would include network latency to hosted control plane"
+  }
+}
