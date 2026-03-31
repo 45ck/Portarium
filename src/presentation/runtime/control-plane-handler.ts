@@ -459,9 +459,31 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // -------------------------------------------------------------------------
-  // Metrics endpoint — serve before other middleware to avoid auth overhead
+  // Metrics endpoint — protected by PORTARIUM_METRICS_TOKEN bearer token.
+  // If the env var is not set, the endpoint returns 403 to prevent accidental
+  // exposure of workspace IDs, throughput, and approval rates.
+  // Bind this port to an internal network interface in production.
   // -------------------------------------------------------------------------
   app.get('/metrics', (c) => {
+    const metricsToken = process.env['PORTARIUM_METRICS_TOKEN']?.trim();
+    if (!metricsToken) {
+      c.env.outgoing.statusCode = 403;
+      c.env.outgoing.setHeader('content-type', 'application/json');
+      c.env.outgoing.end(
+        JSON.stringify({
+          error: 'Metrics endpoint requires PORTARIUM_METRICS_TOKEN to be configured',
+        }),
+      );
+      return c.body(null);
+    }
+    const authHeader = c.env.incoming.headers.authorization ?? '';
+    const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+    if (provided !== metricsToken) {
+      c.env.outgoing.statusCode = 401;
+      c.env.outgoing.setHeader('content-type', 'application/json');
+      c.env.outgoing.end(JSON.stringify({ error: 'Invalid metrics token' }));
+      return c.body(null);
+    }
     c.env.outgoing.statusCode = 200;
     c.env.outgoing.setHeader('content-type', 'text/plain; version=0.0.4; charset=utf-8');
     c.env.outgoing.end(defaultRegistry.format());

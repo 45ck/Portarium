@@ -111,6 +111,13 @@ async function experimentA() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  // Bail out early if we didn't get an approvalId — subsequent steps would query /approvals/undefined
+  if (!approvalId) {
+    result.outcome = 'FAILED';
+    result.failReason = `propose did not return approvalId (HTTP ${propose.status}, decision=${propose.json.decision})`;
+    return result;
+  }
+
   // t3/t4 initial poll
   result.timestamps.t3_initial_poll = now();
   const initialPoll = await api('GET', `/approvals/${approvalId}`);
@@ -362,7 +369,16 @@ async function experimentC() {
     detail: `HTTP ${selfApprove.status}, detail=${selfApprove.json.detail || selfApprove.json.message || 'N/A'}`,
   });
 
-  // Legitimate operator approval
+  // Legitimate operator approval — only proceed if self-approve was correctly rejected (403).
+  // If self-approve returned 200, the experiment has already recorded a governance failure;
+  // running operator-approve on top would produce a misleadingly mixed outcome.
+  if (selfApprove.status !== 403) {
+    result.outcome = 'FAILED';
+    result.failReason = `Maker-checker NOT enforced: self-approve returned HTTP ${selfApprove.status} instead of 403`;
+    result.timestamps.t7_experiment_end = now();
+    return result;
+  }
+
   result.timestamps.t5_operator_approve_sent = now();
   const operatorApprove = await api(
     'POST',

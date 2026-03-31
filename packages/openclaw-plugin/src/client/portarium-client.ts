@@ -32,6 +32,7 @@ export type ApprovalPollResult =
   | { readonly approved: false; readonly reason: string }
   | { readonly status: 'pending' }
   | { readonly status: 'expired' }
+  | { readonly status: 'executed' }
   | { readonly status: 'error'; readonly reason: string };
 
 export interface RunStatus {
@@ -98,6 +99,13 @@ export class PortariumClient {
         };
       }
 
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        return {
+          status: 'error',
+          reason: `Portarium returned unexpected content-type: ${contentType || '(none)'}`,
+        };
+      }
       const body = (await response.json()) as Record<string, unknown>;
       return parseProposalResponse(body);
     } catch (error) {
@@ -122,6 +130,13 @@ export class PortariumClient {
         return { status: 'error', reason: `HTTP ${response.status} polling approval` };
       }
 
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.includes('application/json')) {
+        return {
+          status: 'error',
+          reason: `Portarium returned unexpected content-type while polling: ${contentType || '(none)'}`,
+        };
+      }
       const body = (await response.json()) as Record<string, unknown>;
       return parseApprovalStatus(body);
     } catch (error) {
@@ -174,6 +189,35 @@ export class PortariumClient {
       }));
     } catch {
       return [];
+    }
+  }
+
+  public async ping(): Promise<{
+    ok: boolean;
+    status?: number;
+    error?: string;
+    portariumUrl: string;
+    workspaceId: string;
+  }> {
+    const url = `${this.#config.portariumUrl}/health`;
+    try {
+      const response = await this.#fetchImpl(url, {
+        headers: { authorization: `Bearer ${this.#config.bearerToken}` },
+        signal: AbortSignal.timeout(5_000),
+      });
+      return {
+        ok: response.ok,
+        status: response.status,
+        portariumUrl: this.#config.portariumUrl,
+        workspaceId: this.#config.workspaceId,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        portariumUrl: this.#config.portariumUrl,
+        workspaceId: this.#config.workspaceId,
+      };
     }
   }
 
@@ -263,6 +307,7 @@ function parseApprovalStatus(body: Record<string, unknown>): ApprovalPollResult 
       reason: String(body.reason ?? body.rationale ?? 'Denied by operator'),
     };
   if (status === 'expired') return { status: 'expired' };
+  if (status === 'executed') return { status: 'executed' };
   if (status === 'pending') return { status: 'pending' };
   return { status: 'error', reason: `Unknown approval status: ${String(body.status)}` };
 }

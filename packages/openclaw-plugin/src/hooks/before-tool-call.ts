@@ -43,8 +43,10 @@ export function registerBeforeToolCallHook(
         return;
       }
 
-      // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace
-      const sessionKey = ctx.sessionKey ?? `portarium:${config.workspaceId}`;
+      // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace.
+      // Sanitize: strip control characters and truncate to 128 chars to prevent header injection.
+      const rawKey = ctx.sessionKey ?? `portarium:${config.workspaceId}`;
+      const sessionKey = rawKey.replace(/[\r\n\0]/g, '').slice(0, 128);
 
       logger.info(`[portarium] Governing tool call: ${toolName}`);
 

@@ -82,7 +82,7 @@ Create an isolated OpenClaw profile so experiments do not touch your real OpenCl
           "workspaceId": "ws-experiment",
           "bearerToken": "dev-token",
           "tenantId": "default",
-          "failClosed": false,
+          "failClosed": true,
           "approvalTimeoutMs": 86400000,
           "pollIntervalMs": 3000,
           "defaultPolicyIds": ["default-governance"],
@@ -96,7 +96,7 @@ Create an isolated OpenClaw profile so experiments do not touch your real OpenCl
 
 Key decisions:
 
-- `failClosed: false` — allows the agent to run even when Portarium is not running (produces warning log). Set to `true` for production hardening.
+- `failClosed: true` — blocks all tool calls if Portarium is unreachable. **This is the safe default.** Set to `false` only for local experimentation where you explicitly want fail-open behaviour; never use `false` in production.
 - `defaultExecutionTier: "HumanApprove"` — routes all unknown tools to human approval by default.
 - `defaultPolicyIds: ["default-governance"]` — evaluates against the seed policy seeded on startup.
 

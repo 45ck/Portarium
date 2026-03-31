@@ -98,28 +98,9 @@ export const portariumPlugin = {
     api.registerTool(createListApprovalsTool(client), { optional: true });
     api.registerTool(createCapabilityLookupTool(client), { optional: true });
 
-    // Operator visibility: Gateway RPC health check
+    // Operator visibility: Gateway RPC health check (uses client.ping() so tests can mock it)
     api.registerGatewayMethod('portarium.status', async () => {
-      const url = `${config.portariumUrl}/health`;
-      try {
-        const response = await fetch(url, {
-          headers: { authorization: `Bearer ${config.bearerToken}` },
-          signal: AbortSignal.timeout(5_000),
-        });
-        return {
-          ok: response.ok,
-          status: response.status,
-          portariumUrl: config.portariumUrl,
-          workspaceId: config.workspaceId,
-        };
-      } catch (error) {
-        return {
-          ok: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          portariumUrl: config.portariumUrl,
-          workspaceId: config.workspaceId,
-        };
-      }
+      return client.ping();
     });
 
     api.logger.info(
