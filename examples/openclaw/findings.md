@@ -154,6 +154,27 @@ hook registration mechanism and cannot make tool calls without going through the
 
 ---
 
+## Timing analysis
+
+Timing data from `results/timing-summary.json` once available will replace these estimates.
+The values below are based on observed behavior from Experiment 1 (automated, local control plane).
+
+| Metric                                              | Observed / Estimate                                    |
+| --------------------------------------------------- | ------------------------------------------------------ |
+| `POST /agent-actions:propose` RTT (local)           | < 10ms                                                 |
+| Time to create Pending approval (included in above) | < 10ms                                                 |
+| Poll detection latency after approval decision      | <= pollIntervalMs (3000ms)                             |
+| Minimum governance overhead — auto-allow path       | propose RTT only (< 10ms)                              |
+| Minimum governance overhead — human-approval path   | propose RTT + operator decision time + <= 3s detection |
+| Default polling timeout                             | 86,400,000ms (24 hours)                                |
+| `AbortSignal.timeout` per HTTP call                 | 10,000ms                                               |
+
+The dominant latency in the human-approval path is the operator decision time, not the polling
+overhead. The governance layer itself adds at most `pollIntervalMs` of detection latency after
+a decision is made.
+
+---
+
 ## Conclusion
 
 The Portarium governance system provides a working, policy-enforced gate for OpenClaw tool calls.
