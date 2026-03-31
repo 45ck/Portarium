@@ -26,12 +26,12 @@ For the full company profile, see [company.md](./company.md).
 
 ## Contents
 
-| File | Description |
-| ---- | ----------- |
-| [`company.md`](./company.md) | Full company profile: background, AI adoption rationale, governance framework, agent-tool mapping, day-in-the-life walkthrough |
-| [`policy-catalog.md`](./policy-catalog.md) | Authoritative tool policy catalog: every tool, its tier, approver, business justification, and regulatory basis |
-| [`scenarios-overview.md`](./scenarios-overview.md) | Narrative walkthrough of all 6 governance scenarios from a business perspective |
-| [`run-business-experiments.mjs`](./run-business-experiments.mjs) | Automated experiment runner for all 6 scenarios |
+| File                                                             | Description                                                                                                                    |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [`company.md`](./company.md)                                     | Full company profile: background, AI adoption rationale, governance framework, agent-tool mapping, day-in-the-life walkthrough |
+| [`policy-catalog.md`](./policy-catalog.md)                       | Authoritative tool policy catalog: every tool, its tier, approver, business justification, and regulatory basis                |
+| [`scenarios-overview.md`](./scenarios-overview.md)               | Narrative walkthrough of all 6 governance scenarios from a business perspective                                                |
+| [`run-business-experiments.mjs`](./run-business-experiments.mjs) | Automated experiment runner for all 6 scenarios                                                                                |
 
 ---
 
@@ -79,14 +79,14 @@ node examples/openclaw/business-scenarios/run-business-experiments.mjs --scenari
 
 ## Scenarios at a Glance
 
-| # | Agent | Action | Tier | Approver | Outcome |
-| -- | ----- | ------ | ---- | -------- | ------- |
-| 1 | Aria | Read client CRM profile | Auto | — | Auto-allowed, instant |
-| 2 | Aria | Send complaint resolution email | HumanApprove | Sarah Chen | Approved |
-| 3 | Atlas | Execute $2M NVDA buy order | HumanApprove | Marcus Webb | Approved after review |
-| 4 | Zeus | Emergency production deploy at 2:47am | HumanApprove | David Park | Approved from phone |
-| 5 | Aria | Send bulk promotional email campaign | HumanApprove | Rachel Torres | Denied — compliance violation |
-| 6 | Aria | GDPR client data erasure | HumanApprove | James Okafor | Approved by DPO, maker-checker enforced |
+| #   | Agent | Action                                | Tier         | Approver      | Outcome                                 |
+| --- | ----- | ------------------------------------- | ------------ | ------------- | --------------------------------------- |
+| 1   | Aria  | Read client CRM profile               | Auto         | —             | Auto-allowed, instant                   |
+| 2   | Aria  | Send complaint resolution email       | HumanApprove | Sarah Chen    | Approved                                |
+| 3   | Atlas | Execute $2M NVDA buy order            | HumanApprove | Marcus Webb   | Approved after review                   |
+| 4   | Zeus  | Emergency production deploy at 2:47am | HumanApprove | David Park    | Approved from phone                     |
+| 5   | Aria  | Send bulk promotional email campaign  | HumanApprove | Rachel Torres | Denied — compliance violation           |
+| 6   | Aria  | GDPR client data erasure              | HumanApprove | James Okafor  | Approved by DPO, maker-checker enforced |
 
 For the full narrative walkthrough of each scenario, see [scenarios-overview.md](./scenarios-overview.md).
 

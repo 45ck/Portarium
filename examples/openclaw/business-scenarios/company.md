@@ -53,12 +53,12 @@ Four pressures converged that made AI augmentation attractive:
 
 Nexus deployed four purpose-built AI agents in early 2025:
 
-| Agent | Function | Primary Responsibilities |
-| ------ | ---------- | ------------------------- |
-| **Aria** | Customer Service AI | Client enquiries, communications, support ticket resolution, document retrieval |
-| **Atlas** | Finance AI | Market monitoring, trade proposals, portfolio risk analysis |
-| **Zeus** | Operations AI | Infrastructure health, deployments, monitoring alerts, incident response |
-| **Apollo** | Compliance AI | Regulatory obligation tracking, filing preparation, audit trail management |
+| Agent      | Function            | Primary Responsibilities                                                        |
+| ---------- | ------------------- | ------------------------------------------------------------------------------- |
+| **Aria**   | Customer Service AI | Client enquiries, communications, support ticket resolution, document retrieval |
+| **Atlas**  | Finance AI          | Market monitoring, trade proposals, portfolio risk analysis                     |
+| **Zeus**   | Operations AI       | Infrastructure health, deployments, monitoring alerts, incident response        |
+| **Apollo** | Compliance AI       | Regulatory obligation tracking, filing preparation, audit trail management      |
 
 Each agent has access to a defined set of business tools. What they cannot do — without a human
 decision — is take consequential action.
@@ -204,24 +204,24 @@ these categories.
 The following table shows which tools each agent can use, the governance tier for each tool, and
 the named approver for HumanApprove-tier actions.
 
-| Tool | Tier | Aria | Atlas | Zeus | Apollo | Approver |
-| ---- | ---- | ---- | ----- | ---- | ------ | -------- |
-| `crm_read_client` | Auto | Yes | — | — | — | — |
-| `crm_update_contact` | Assisted | Yes | — | — | — | — |
-| `email_send_client` | HumanApprove | Yes | — | — | — | Sarah Chen (CCM) |
-| `email_send_bulk_campaign` | HumanApprove | Yes | — | — | — | Rachel Torres (CCO) |
-| `trading_execute_order` | HumanApprove | — | Yes | — | — | Marcus Webb (Head of Portfolio) |
-| `trading_cancel_order` | Assisted | — | Yes | — | — | — |
-| `risk_query_exposure` | Auto | — | Yes | — | — | — |
-| `risk_modify_limit` | HumanApprove | — | Yes | — | — | Marcus Webb (Head of Portfolio) |
-| `infra_deploy_production` | HumanApprove | — | — | Yes | — | David Park (Lead Platform Engineer) |
-| `infra_rollback` | HumanApprove | — | — | Yes | — | David Park (Lead Platform Engineer) |
-| `db_query_customer` | Auto | Yes | — | — | Yes | — |
-| `db_delete_customer` | HumanApprove | Yes | — | — | — | James Okafor (DPO) |
-| `compliance_file_report` | HumanApprove | — | — | — | Yes | Sarah Chen (CCM) |
-| `payroll_process_batch` | HumanApprove | — | — | — | — | Linda Huang (COO) |
-| `document_read_contract` | Auto | Yes | — | — | Yes | — |
-| `document_sign_contract` | HumanApprove | Yes | — | — | — | Linda Huang (COO) |
+| Tool                       | Tier         | Aria | Atlas | Zeus | Apollo | Approver                            |
+| -------------------------- | ------------ | ---- | ----- | ---- | ------ | ----------------------------------- |
+| `crm_read_client`          | Auto         | Yes  | —     | —    | —      | —                                   |
+| `crm_update_contact`       | Assisted     | Yes  | —     | —    | —      | —                                   |
+| `email_send_client`        | HumanApprove | Yes  | —     | —    | —      | Sarah Chen (CCM)                    |
+| `email_send_bulk_campaign` | HumanApprove | Yes  | —     | —    | —      | Rachel Torres (CCO)                 |
+| `trading_execute_order`    | HumanApprove | —    | Yes   | —    | —      | Marcus Webb (Head of Portfolio)     |
+| `trading_cancel_order`     | Assisted     | —    | Yes   | —    | —      | —                                   |
+| `risk_query_exposure`      | Auto         | —    | Yes   | —    | —      | —                                   |
+| `risk_modify_limit`        | HumanApprove | —    | Yes   | —    | —      | Marcus Webb (Head of Portfolio)     |
+| `infra_deploy_production`  | HumanApprove | —    | —     | Yes  | —      | David Park (Lead Platform Engineer) |
+| `infra_rollback`           | HumanApprove | —    | —     | Yes  | —      | David Park (Lead Platform Engineer) |
+| `db_query_customer`        | Auto         | Yes  | —     | —    | Yes    | —                                   |
+| `db_delete_customer`       | HumanApprove | Yes  | —     | —    | —      | James Okafor (DPO)                  |
+| `compliance_file_report`   | HumanApprove | —    | —     | —    | Yes    | Sarah Chen (CCM)                    |
+| `payroll_process_batch`    | HumanApprove | —    | —     | —    | —      | Linda Huang (COO)                   |
+| `document_read_contract`   | Auto         | Yes  | —     | —    | Yes    | —                                   |
+| `document_sign_contract`   | HumanApprove | Yes  | —     | —    | —      | Linda Huang (COO)                   |
 
 ---
 
@@ -230,14 +230,14 @@ the named approver for HumanApprove-tier actions.
 Named approvers at Nexus Capital are assigned by role, not by individual preference. When a named
 approver is unavailable, escalation paths are defined in the governance policy.
 
-| Approver | Title | Approval Scope |
-| -------- | ----- | -------------- |
-| **Sarah Chen** | Chief Compliance Manager | Client email communications, compliance filings |
-| **Marcus Webb** | Head of Portfolio Management | Trade execution, risk limit modifications |
-| **David Park** | Lead Platform Engineer / On-Call | Production deployments, rollbacks |
-| **Rachel Torres** | Chief Compliance Officer | Bulk campaigns, unusual or escalated operations |
-| **James Okafor** | Data Protection Officer | GDPR operations, customer data deletion |
-| **Linda Huang** | COO | Payroll, contract execution |
+| Approver          | Title                            | Approval Scope                                  |
+| ----------------- | -------------------------------- | ----------------------------------------------- |
+| **Sarah Chen**    | Chief Compliance Manager         | Client email communications, compliance filings |
+| **Marcus Webb**   | Head of Portfolio Management     | Trade execution, risk limit modifications       |
+| **David Park**    | Lead Platform Engineer / On-Call | Production deployments, rollbacks               |
+| **Rachel Torres** | Chief Compliance Officer         | Bulk campaigns, unusual or escalated operations |
+| **James Okafor**  | Data Protection Officer          | GDPR operations, customer data deletion         |
+| **Linda Huang**   | COO                              | Payroll, contract execution                     |
 
 All approvers have access to the Portarium cockpit — a real-time dashboard showing pending approval
 requests, agent context, and proposed action details. Approvers can act from any device, including
