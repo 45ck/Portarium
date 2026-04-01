@@ -39,6 +39,7 @@ export default tseslint.config(
       'scaffolds/**',
       // QA automation scripts — not production code
       'qa/**',
+      'qa-reports/**',
       // Playwright E2E tests — not production code, typed via tsconfig.e2e.json
       'e2e/**',
       'playwright.config.ts',
