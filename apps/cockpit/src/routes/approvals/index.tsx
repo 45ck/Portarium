@@ -213,13 +213,16 @@ function ApprovalsPage() {
       skipped: prev.skipped + (action === 'Skip' ? 1 : 0),
     }));
 
+    // Compute the next card BEFORE removing the current one from the queue.
+    // Using a direct set (not a functional updater) avoids stale-closure
+    // issues where the updater captured a triageQueue that still includes the
+    // outgoing item — and also handles the initial null selectedApprovalId.
+    const queueIds = triageQueue.map((item) => item.approvalId);
+    const idx = queueIds.indexOf(approvalId);
+    const nextId = queueIds[idx + 1] ?? queueIds[idx - 1] ?? null;
+
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
-    setSelectedApprovalId((prevSelected) => {
-      const currentIds = triageQueue.map((item) => item.approvalId);
-      const idx = currentIds.indexOf(approvalId);
-      const nextId = currentIds[idx + 1] ?? currentIds[idx - 1] ?? null;
-      return prevSelected === approvalId ? nextId : prevSelected;
-    });
+    setSelectedApprovalId(nextId);
 
     if (action === 'Skip') return;
 
