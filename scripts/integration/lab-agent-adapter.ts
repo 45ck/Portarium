@@ -362,6 +362,7 @@ export async function createOpenAIAdapter(): Promise<LLMAdapter | null> {
 
   let OpenAI: any;
   try {
+    // @ts-expect-error — optional peer dependency, not always installed
     const mod = await import('openai');
     OpenAI = mod.default;
   } catch {
@@ -513,6 +514,7 @@ export async function createGeminiAdapter(): Promise<LLMAdapter | null> {
 
   let GoogleGenerativeAI: any;
   try {
+    // @ts-expect-error — optional peer dependency, not always installed
     const mod = await import('@google/generative-ai');
     GoogleGenerativeAI = mod.GoogleGenerativeAI;
   } catch {
