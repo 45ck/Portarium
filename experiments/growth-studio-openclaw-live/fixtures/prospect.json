@@ -1,0 +1,18 @@
+{
+  "contact": {
+    "name": "Jordan Ellis",
+    "role": "VP Marketing",
+    "email": "jordan.ellis@example.com"
+  },
+  "company": {
+    "name": "Northstar Pipeline",
+    "website": "https://northstar.example.com",
+    "industry": "Revenue operations software"
+  },
+  "signals": [
+    "Recently launched a partner-led demand generation program",
+    "Hiring for lifecycle marketing operations",
+    "Publicly discussed the need for stronger campaign governance"
+  ],
+  "goal": "Book a discovery call for a governed autonomous growth workflow demo"
+}

@@ -1,0 +1,16 @@
+{
+  "segment": "B2B SaaS",
+  "companySize": "20-200 employees",
+  "buyerRoles": ["Head of Revenue Operations", "VP Marketing", "Growth Lead"],
+  "painPoints": [
+    "manual outbound campaign setup",
+    "weak lead qualification notes",
+    "inconsistent content follow-through",
+    "poor attribution between outreach and pipeline"
+  ],
+  "valueThemes": [
+    "governed execution for autonomous agents",
+    "approval-aware outbound workflow",
+    "audit trail for sales and marketing actions"
+  ]
+}
