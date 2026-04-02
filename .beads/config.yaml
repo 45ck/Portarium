@@ -1,7 +1,6 @@
 issue-prefix: "bead"
-no-db: true
 sync-branch: "beads-metadata"
 flush-debounce: "5s"
 events-export: true
 dolt:
-  auto-start: false
+  auto-start: true
