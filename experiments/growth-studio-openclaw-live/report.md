@@ -69,6 +69,24 @@ evidence records instead of `0`.
 This branch also aligns the tracked experiment config with the plugin's OpenClaw manifest id
 (`portarium`) so the committed template matches the plugin's runtime identity.
 
+## Remaining Flaws
+
+This experiment did not prove a flawless system.
+
+- The control plane still runs with the local stub action runner in this slice, so no true external
+  execution-plane dispatch was exercised.
+- `openclaw doctor` still emits the plugin path-hint mismatch warning because the package directory
+  name and runtime plugin id are not yet aligned.
+- The operator approval path in this run is automated by the harness, which is useful for repeatable
+  testing but weaker than a real human approval exercise.
+
+## Threats To Validity
+
+- This run proves governed drafting and staging, not real outbound send behavior.
+- The run used one workstation profile and one model-provider path.
+- The target fixture was synthetic enough that it does not represent the full variability of live
+  business inputs.
+
 ## Result Artifacts
 
 The raw local artifacts for the confirmed run are captured under `results/`:

@@ -6,6 +6,9 @@ Live validation scripts that test Portarium's governance pipeline end-to-end.
 
 This workspace provides a structured environment for running experiments against a live (or emulated) Portarium instance. Each experiment validates a specific hypothesis about system behaviour -- agent action governance, approval flows, policy enforcement, evidence integrity, etc.
 
+For the current cross-experiment narrative and defect summary, see
+[scientific-synthesis.md](./scientific-synthesis.md).
+
 ## Directory structure
 
 ```

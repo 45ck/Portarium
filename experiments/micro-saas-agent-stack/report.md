@@ -60,3 +60,19 @@ On this host, `manual-qa-machine` remains toolchain-ready but its `agent-browser
 stable enough to complete a browser run. That failure is preserved in the result bundle and the
 Playwright fallback completed the independent black-box verification so the run still has
 reproducible browser evidence.
+
+## Flaws Found
+
+- The preferred independent verifier, `manual-qa-machine`, is not yet reliable on this Windows host
+  because `agent-browser` cannot auto-launch Chrome consistently.
+- The browser fallback initially over-classified benign analytics `net::ERR_ABORTED` noise as test
+  failure, so the verifier oracle itself needed hardening.
+- `demo-machine` is present in the local repo set but is not runnable in this workstation setup, so
+  the full "generate demo after validation" path remains unproven.
+
+## Threats To Validity
+
+- Publish and send actions were queued into stub systems, not dispatched to real systems.
+- The run used automated operator approval rather than a real human review decision.
+- Browser verification succeeded through the fallback verifier, not through the preferred
+  `manual-qa-machine` path.
