@@ -2,6 +2,7 @@ import { Redis } from 'ioredis';
 
 import { err } from '../../application/common/result.js';
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
+import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import type {
   ApprovalQueryStore,
   ApprovalStore,
@@ -47,7 +48,8 @@ import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-polic
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { PolicyStore } from '../../application/ports/policy-store.js';
-import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
+import type { ControlPlaneDeps, EvidenceRecord } from './control-plane-handler.shared.js';
+import { appendRuntimeEvidence } from './control-plane-handler.workforce-state.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
 /** Seed a default governance policy into the given policy store. */
@@ -373,6 +375,48 @@ function buildActionRunner(): ActionRunnerPort {
   };
 }
 
+export function toRuntimeEvidenceRecord(entry: EvidenceEntryV1): EvidenceRecord {
+  const actor: EvidenceRecord['actor'] =
+    entry.actor.kind === 'User'
+      ? { kind: 'User', userId: String(entry.actor.userId) }
+      : entry.actor.kind === 'Machine'
+        ? { kind: 'Machine', machineId: String(entry.actor.machineId) }
+        : entry.actor.kind === 'Adapter'
+          ? { kind: 'Adapter', adapterId: String(entry.actor.adapterId) }
+          : { kind: 'System' };
+
+  const links = {
+    ...(entry.links?.runId ? { runId: String(entry.links.runId) } : {}),
+    ...(entry.links?.planId ? { planId: String(entry.links.planId) } : {}),
+    ...(entry.links?.workItemId ? { workItemId: String(entry.links.workItemId) } : {}),
+  };
+
+  return {
+    schemaVersion: entry.schemaVersion,
+    evidenceId: String(entry.evidenceId),
+    workspaceId: String(entry.workspaceId),
+    occurredAtIso: entry.occurredAtIso,
+    category: entry.category === 'PolicyViolation' ? 'Policy' : entry.category,
+    summary: entry.summary,
+    actor,
+    ...(Object.keys(links).length > 0 ? { links } : {}),
+    hashSha256: String(entry.hashSha256),
+  };
+}
+
+export function createRuntimeMirroredEvidenceLog(
+  base: EvidenceLogPort,
+  sink: (entry: EvidenceRecord) => void = appendRuntimeEvidence,
+): EvidenceLogPort {
+  return {
+    appendEntry: async (tenantId, entry) => {
+      const appended = await base.appendEntry(tenantId, entry);
+      sink(toRuntimeEvidenceRecord(appended));
+      return appended;
+    },
+  };
+}
+
 export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
@@ -393,7 +437,9 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     const approvalStore = new PostgresApprovalStore(sqlClient);
     const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
     const machineStore = new PostgresMachineRegistryStore(sqlClient);
-    const evidenceLog: EvidenceLogPort = new PostgresEvidenceLog(sqlClient);
+    const evidenceLog: EvidenceLogPort = createRuntimeMirroredEvidenceLog(
+      new PostgresEvidenceLog(sqlClient),
+    );
     const policyStore = new PostgresPolicyStore(sqlClient);
     const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
     await seedDefaultPolicy(policyStore, devWsId);
@@ -453,7 +499,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const policyStore = new InMemoryPolicyStore();
   const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
   await seedDefaultPolicy(policyStore, devWsId);
-  const evidenceLog: EvidenceLogPort = new InMemoryEvidenceLog();
+  const evidenceLog: EvidenceLogPort = createRuntimeMirroredEvidenceLog(new InMemoryEvidenceLog());
 
   return {
     authentication,

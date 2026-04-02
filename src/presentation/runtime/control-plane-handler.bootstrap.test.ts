@@ -1,5 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { getJoseAuthConfigWarnings } from './control-plane-handler.bootstrap.js';
+import { describe, expect, it, vi } from 'vitest';
+
+import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
+import type { EvidenceLogPort } from '../../application/ports/evidence-log.js';
+import {
+  createRuntimeMirroredEvidenceLog,
+  getJoseAuthConfigWarnings,
+  toRuntimeEvidenceRecord,
+} from './control-plane-handler.bootstrap.js';
 
 describe('getJoseAuthConfigWarnings', () => {
   it('returns no warnings when both issuer and audience are set', () => {
@@ -63,5 +70,77 @@ describe('getJoseAuthConfigWarnings', () => {
   it('returns a readonly array', () => {
     const warnings = getJoseAuthConfigWarnings({});
     expect(Array.isArray(warnings)).toBe(true);
+  });
+});
+
+describe('runtime evidence mirroring', () => {
+  it('converts domain evidence entries into runtime evidence records', () => {
+    const entry = {
+      schemaVersion: 1,
+      evidenceId: 'evi-1' as never,
+      workspaceId: 'ws-1' as never,
+      correlationId: 'corr-1' as never,
+      occurredAtIso: '2026-04-02T05:10:00.000Z',
+      category: 'PolicyViolation' as const,
+      summary: 'Policy violation recorded.',
+      actor: { kind: 'User', userId: 'usr-1' as never },
+      links: {
+        runId: 'run-1' as never,
+        planId: 'plan-1' as never,
+        workItemId: 'wi-1' as never,
+        approvalId: 'app-1' as never,
+      },
+      hashSha256: 'sha256:abc123' as never,
+    } satisfies EvidenceEntryV1;
+
+    expect(toRuntimeEvidenceRecord(entry)).toEqual({
+      schemaVersion: 1,
+      evidenceId: 'evi-1',
+      workspaceId: 'ws-1',
+      occurredAtIso: '2026-04-02T05:10:00.000Z',
+      category: 'Policy',
+      summary: 'Policy violation recorded.',
+      actor: { kind: 'User', userId: 'usr-1' },
+      links: {
+        runId: 'run-1',
+        planId: 'plan-1',
+        workItemId: 'wi-1',
+      },
+      hashSha256: 'sha256:abc123',
+    });
+  });
+
+  it('mirrors appended evidence entries into the runtime sink', async () => {
+    const appended = {
+      schemaVersion: 1,
+      evidenceId: 'evi-2' as never,
+      workspaceId: 'ws-2' as never,
+      correlationId: 'corr-2' as never,
+      occurredAtIso: '2026-04-02T05:15:00.000Z',
+      category: 'Approval' as const,
+      summary: 'Approval recorded.',
+      actor: { kind: 'System' as const },
+      hashSha256: 'sha256:def456' as never,
+    } satisfies EvidenceEntryV1;
+    const base: EvidenceLogPort = {
+      appendEntry: vi.fn(async () => appended),
+    };
+    const sink = vi.fn();
+
+    const mirrored = createRuntimeMirroredEvidenceLog(base, sink);
+    const result = await mirrored.appendEntry('tenant-1' as never, appended);
+
+    expect(result).toBe(appended);
+    expect(base.appendEntry).toHaveBeenCalledTimes(1);
+    expect(sink).toHaveBeenCalledWith({
+      schemaVersion: 1,
+      evidenceId: 'evi-2',
+      workspaceId: 'ws-2',
+      occurredAtIso: '2026-04-02T05:15:00.000Z',
+      category: 'Approval',
+      summary: 'Approval recorded.',
+      actor: { kind: 'System' },
+      hashSha256: 'sha256:def456',
+    });
   });
 });

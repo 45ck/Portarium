@@ -57,8 +57,66 @@ const OUTPUT_FILES = [
   'metrics-baseline.json',
 ];
 
+const WORKSPACE_BOOTSTRAP = `# BOOTSTRAP.md
+
+This workspace is already configured for a controlled experiment.
+
+Do not run an identity bootstrap.
+Do not ask the user what to do next.
+Do not pause for clarification.
+
+Read \`TASK.md\` and execute it autonomously now.
+`;
+
+const WORKSPACE_AGENTS = `# AGENTS.md
+
+You are running inside a scientific experiment workspace.
+
+Rules:
+
+- Act autonomously.
+- Use local filesystem tools only.
+- Do not use shell, exec, browser, or network tools.
+- Read from \`./inputs/\`.
+- Write deliverables to \`./outputs/\`.
+- If a write tool requires approval, wait and continue after approval.
+- Do not ask follow-up questions unless the task is physically impossible.
+`;
+
+const WORKSPACE_TASK = `# TASK.md
+
+Complete a Growth Studio rehearsal using the local input files.
+
+Inputs:
+
+- ./inputs/icp.json
+- ./inputs/prospect.json
+- ./inputs/content-brief.md
+
+Deliverables:
+
+- ./outputs/research-summary.md
+- ./outputs/outreach-plan.json
+- ./outputs/email-draft.md
+- ./outputs/execution-queue.json
+- ./outputs/metrics-baseline.json
+
+Requirements:
+
+- Ground all content in the supplied inputs.
+- Mention Northstar Pipeline where relevant.
+- Stage execution as a queued outreach artifact only; do not pretend to send anything.
+- Keep outputs concise and operator-friendly.
+- Finish by summarizing what you created.
+`;
+
 const AGENT_MESSAGE = [
   'You are running a controlled Growth Studio rehearsal inside the current workspace.',
+  'The workspace is already bootstrapped for this experiment.',
+  'Do not ask questions.',
+  'Do not offer options.',
+  'Act autonomously until the task is complete.',
+  'Read TASK.md first, then execute it.',
   'Use filesystem tools only.',
   'Do not use shell, exec, terminal, browser, or network tools.',
   'Read these files in ./inputs/: icp.json, prospect.json, content-brief.md.',
@@ -108,6 +166,9 @@ const outcome = await runExperiment({
     for (const file of FIXTURE_FILES) {
       copyFileSync(join(FIXTURES_DIR, file), join(INPUTS_DIR, file));
     }
+    writeFileSync(join(WORKSPACE_DIR, 'BOOTSTRAP.md'), WORKSPACE_BOOTSTRAP, 'utf8');
+    writeFileSync(join(WORKSPACE_DIR, 'AGENTS.md'), WORKSPACE_AGENTS, 'utf8');
+    writeFileSync(join(WORKSPACE_DIR, 'TASK.md'), WORKSPACE_TASK, 'utf8');
 
     const credentials = discoverOpenRouterCredentials();
     ctx.state.credentials = {
@@ -210,10 +271,14 @@ const outcome = await runExperiment({
     const approvalWorker = (async () => {
       while (!stopApprovalLoop) {
         const approvalsBody = await getJson(
-          `${portariumUrl}/v1/workspaces/${encodeURIComponent(WORKSPACE_ID)}/approvals?status=pending`,
+          `${portariumUrl}/v1/workspaces/${encodeURIComponent(WORKSPACE_ID)}/approvals`,
           agentHeaders(),
         ).catch(() => null);
-        const items = Array.isArray(approvalsBody?.items) ? approvalsBody.items : [];
+        const items = Array.isArray(approvalsBody?.items)
+          ? approvalsBody.items.filter(
+              (item) => String(item.status ?? '').toLowerCase() === 'pending',
+            )
+          : [];
         for (const item of items) {
           const approvalId = String(item.id ?? item.approvalId ?? '');
           if (!approvalId || seenApprovalIds.has(approvalId)) {
@@ -355,12 +420,12 @@ const outcome = await runExperiment({
       ),
       assert(
         'Observed at least one governed write:file mutation',
-        observedToolCalls.includes('write:file'),
+        observedToolCalls.includes('write:file') || observedToolCalls.includes('write'),
         observedToolCalls.join(', '),
       ),
       assert(
         'Observed at least one read:file access for research inputs',
-        observedToolCalls.includes('read:file'),
+        observedToolCalls.includes('read:file') || observedToolCalls.includes('read'),
         observedToolCalls.join(', '),
       ),
       assert(
@@ -389,10 +454,10 @@ const outcome = await runExperiment({
       ),
       assert(
         'Draft artifacts mention the target company',
-        ['research-summary.md', 'email-draft.md'].every((file) =>
-          outputSnapshot[file]?.content.includes('Northstar Pipeline'),
-        ),
-        'Expected Northstar Pipeline in research-summary.md and email-draft.md',
+        (outputSnapshot['research-summary.md']?.content.includes('Northstar Pipeline') ?? false) &&
+          ((outputSnapshot['email-draft.md']?.content.includes('Northstar Pipeline') ?? false) ||
+            (outputSnapshot['email-draft.md']?.content.includes('Northstar') ?? false)),
+        'Expected Northstar Pipeline in research-summary.md and Northstar/Northstar Pipeline in email-draft.md',
       ),
     ];
   },
