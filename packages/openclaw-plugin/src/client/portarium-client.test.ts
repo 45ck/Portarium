@@ -11,7 +11,11 @@ function makeConfig(overrides?: Record<string, unknown>) {
   });
 }
 
-function mockFetch(response: unknown, status = 200, contentType = 'application/json'): typeof fetch {
+function mockFetch(
+  response: unknown,
+  status = 200,
+  contentType = 'application/json',
+): typeof fetch {
   return (async () => ({
     ok: status >= 200 && status < 300,
     status,
