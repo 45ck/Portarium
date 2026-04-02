@@ -21,17 +21,23 @@ export function OfflineSyncBanner({
   lastSyncAtIso,
   pendingOutboxCount = 0,
 }: OfflineSyncBannerProps) {
-  if (!isOffline && !isStaleData && pendingOutboxCount === 0) return null;
+  // Suppress stale-data banner in demo/MSW mode — there is no real server to
+  // be out of sync with, so showing "cached data" is misleading.
+  const isDemoMode =
+    import.meta.env.VITE_DEMO_MODE === 'true' || Boolean(import.meta.env.VITE_PORTARIUM_ENABLE_MSW);
+  const effectiveStale = isStaleData && !isDemoMode;
+
+  if (!isOffline && !effectiveStale && pendingOutboxCount === 0) return null;
 
   const title = isOffline
     ? 'Offline mode active'
-    : isStaleData
+    : effectiveStale
       ? 'Showing cached data'
       : 'Sync pending';
 
   return (
     <Alert
-      variant={isOffline || isStaleData ? 'warning' : 'info'}
+      variant={isOffline || effectiveStale ? 'warning' : 'info'}
       className="border border-border/70"
     >
       {isOffline ? <CloudOff /> : pendingOutboxCount > 0 ? <RefreshCcw /> : <Clock3 />}

@@ -1,0 +1,70 @@
+{
+  "experiment": "A_approval_timed",
+  "timestamps": {
+    "t0_experiment_start": "2026-03-31T03:36:10.743Z",
+    "t1_propose_sent": "2026-03-31T03:36:10.743Z",
+    "t2_propose_response": "2026-03-31T03:36:10.750Z",
+    "t3_initial_poll": "2026-03-31T03:36:10.751Z",
+    "t4_initial_poll_response": "2026-03-31T03:36:10.752Z",
+    "t5_decide_sent": "2026-03-31T03:36:10.752Z",
+    "t6_decide_response": "2026-03-31T03:36:10.753Z",
+    "t7_poller_loop_start": "2026-03-31T03:36:10.753Z",
+    "t8_approval_detected": "2026-03-31T03:36:10.754Z",
+    "t9_experiment_end": "2026-03-31T03:36:10.754Z"
+  },
+  "derived": {
+    "propose_rtt_ms": 7,
+    "time_to_pending_ms": 9,
+    "time_pending_to_decided_ms": 1,
+    "time_decided_to_detected_ms": 1,
+    "total_governance_duration_ms": 11,
+    "polls_while_pending": 0,
+    "polls_until_detected": 1,
+    "effective_poll_interval_ms": 0
+  },
+  "polls": [
+    {
+      "poll_number": 1,
+      "timestamp": "2026-03-31T03:36:10.753Z",
+      "response_at": "2026-03-31T03:36:10.754Z",
+      "status_observed": "Approved"
+    }
+  ],
+  "assertions": [
+    {
+      "label": "propose returns 202 with NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "initial poll returns Pending",
+      "passed": true,
+      "detail": "status=Pending"
+    },
+    {
+      "label": "decide returns 200 with Approved",
+      "passed": true,
+      "detail": "HTTP 200, status=Approved"
+    },
+    {
+      "label": "approval detected in poll loop",
+      "passed": true,
+      "detail": "detected after 1 poll(s)"
+    }
+  ],
+  "propose": {
+    "httpStatus": 202,
+    "proposalId": "ec8fa525-29f8-4d1d-aa7c-f92011409d77",
+    "evidenceId": "f99a7357-0790-47ca-8946-8e4445d2ace8",
+    "decision": "NeedsApproval",
+    "approvalId": "56f83838-913d-48e6-b013-cd74f2cdbb66",
+    "message": "Tool 'send_email' (Mutation) requires approval at tier HumanApprove."
+  },
+  "initialPollStatus": "Pending",
+  "decide": {
+    "httpStatus": 200,
+    "approvalId": "56f83838-913d-48e6-b013-cd74f2cdbb66",
+    "status": "Approved"
+  },
+  "outcome": "confirmed"
+}

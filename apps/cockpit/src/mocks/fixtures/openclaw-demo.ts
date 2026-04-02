@@ -647,6 +647,9 @@ const OPENCLAW_PLANS: Plan[] = [
   },
 ];
 
+// Evidence entries form a hash chain: each entry's previousHash references the
+// preceding entry's hashSha256 (sorted chronologically). The first entry in
+// the chain has no previousHash — the verifier treats index-0 as the genesis.
 const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
   {
     schemaVersion: 1,
@@ -657,6 +660,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
     summary: 'Heartbeat fired at 10:30 and read HEARTBEAT.md checklist.',
     actor: { kind: 'Machine', machineId: 'machine-001' },
     links: { runId: 'run-oc-2201', planId: 'plan-oc-5201', workItemId: 'wi-oc-2001' },
+    previousHash: 'oc4207fa629e7af4f17ce7d0d8a0d4f83a7b9972f6f9d86b2c95fbbd52c78207',
     hashSha256: 'oc4201f06a7f8c3923d8a3fe0873fe901baeb7338b5af2528c4b77493f0f1201',
   },
   {
@@ -668,6 +672,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
     summary: 'Heartbeat emitted schedule-followup proposal (no execution before approval).',
     actor: { kind: 'Machine', machineId: 'machine-001' },
     links: { runId: 'run-oc-2202', planId: 'plan-oc-5202', workItemId: 'wi-oc-2002' },
+    previousHash: 'oc4201f06a7f8c3923d8a3fe0873fe901baeb7338b5af2528c4b77493f0f1201',
     hashSha256: 'oc4202e1294fdd6ea7ce31f769ca6fa86938eb5cc129a7d11e1a522e6d2b6202',
   },
   {
@@ -679,6 +684,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
     summary: 'Blocked by policy: destructive email delete proposal is not approvable.',
     actor: { kind: 'System' },
     links: { runId: 'run-oc-2203', planId: 'plan-oc-5203', workItemId: 'wi-oc-2003' },
+    previousHash: 'oc4202e1294fdd6ea7ce31f769ca6fa86938eb5cc129a7d11e1a522e6d2b6202',
     hashSha256: 'oc4203e321ef5d0d9de7d8a6ad4f7e48622bbf79f4b3a1b1e3bca71ad3f4a203',
   },
   {
@@ -713,6 +719,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
     summary: 'Persistent cron creation denied by default policy for non-admin approvers.',
     actor: { kind: 'System' },
     links: { runId: 'run-oc-2205', planId: 'plan-oc-5205', workItemId: 'wi-oc-2005' },
+    previousHash: 'oc429913b98f6f5dc7e1d14f0d42e7ca7126e2e4a0fe35595cc0e0f5f8b1a299',
     hashSha256: 'oc4206f4ee0dfbcde3a3eaf88a996ec4d4f85655c38409d01bf7eeb18e7ca206',
   },
   {
@@ -737,6 +744,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
       'Sub-agent completed isolated session and returned unread-thread priority ranking for approval.',
     actor: { kind: 'Machine', machineId: 'machine-001' },
     links: { runId: 'run-oc-2206', planId: 'plan-oc-5206', workItemId: 'wi-oc-2006' },
+    previousHash: 'oc4204fbf7a9145e8d3367b4159e0bf35314b892af9e338e7d673269d42de204',
     hashSha256: 'oc42082cc2f9604dbcc66c3f9f7b5db084fb0f83679cecb92876049ccb454208',
   },
   {
@@ -748,6 +756,7 @@ const OPENCLAW_EVIDENCE: EvidenceEntry[] = [
     summary: 'Green item auto-approved and executed: internal notes updated.',
     actor: { kind: 'User', userId: 'user-approver-dana' },
     links: { runId: 'run-oc-2299', planId: 'plan-oc-5299' },
+    previousHash: 'oc4205c8daf3e4c73a6797f5712d0f781f9443c80b1d7fabf4c72fd40253f205',
     hashSha256: 'oc429913b98f6f5dc7e1d14f0d42e7ca7126e2e4a0fe35595cc0e0f5f8b1a299',
   },
 ];
@@ -784,9 +793,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval before sending any email to external recipients. Prevents accidental data leaks and ensures tone/content review.',
     trigger: 'send:email AND external_recipient',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Gmail', scope: '1 message per invocation' },
-    ],
+    blastRadius: [{ system: 'Gmail', scope: '1 message per invocation' }],
     irreversibility: 'partial' as const,
     status: 'active' as const,
     sodRule: {
@@ -808,9 +815,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval for calendar events that include external attendees. Guards against unvetted meeting invitations sent on behalf of the organisation.',
     trigger: 'calendar:create_event AND external_attendees',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Google Calendar', scope: '1 event' },
-    ],
+    blastRadius: [{ system: 'Google Calendar', scope: '1 event' }],
     irreversibility: 'partial' as const,
     status: 'active' as const,
     sodRule: {
@@ -884,9 +889,7 @@ const OPENCLAW_POLICIES = [
       'Blocks creation of persistent cron jobs or recurring automations. Only admins may create schedules that run unattended after initial setup.',
     trigger: 'cron:create AND persistent_automation',
     tier: 'ManualOnly' as const,
-    blastRadius: [
-      { system: 'OpenClaw Gateway', scope: 'persistent schedule' },
-    ],
+    blastRadius: [{ system: 'OpenClaw Gateway', scope: 'persistent schedule' }],
     irreversibility: 'full' as const,
     status: 'active' as const,
     sodRule: {
@@ -908,9 +911,7 @@ const OPENCLAW_POLICIES = [
       'Requires human approval before applying sub-agent triage results (labels, tags) to the inbox. Prevents automated mis-categorisation.',
     trigger: 'subagent:output AND inbox:update_tags',
     tier: 'HumanApprove' as const,
-    blastRadius: [
-      { system: 'Gmail labels', scope: '10 threads' },
-    ],
+    blastRadius: [{ system: 'Gmail labels', scope: '10 threads' }],
     irreversibility: 'none' as const,
     status: 'active' as const,
     sodRule: {
@@ -932,9 +933,7 @@ const OPENCLAW_POLICIES = [
       'Automatically approves updates to internal-only notes with no external side effects. Allows routine summarisation without human friction.',
     trigger: 'notes:update_internal_only',
     tier: 'Auto' as const,
-    blastRadius: [
-      { system: 'Internal notes', scope: '1 document' },
-    ],
+    blastRadius: [{ system: 'Internal notes', scope: '1 document' }],
     irreversibility: 'none' as const,
     status: 'active' as const,
     scope: {
@@ -1040,7 +1039,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'cron:create-job',
     category: 'Dangerous' as const,
     minimumTier: 'ManualOnly' as const,
-    rationale: 'Creates persistent automated schedules; classified Dangerous due to ongoing execution.',
+    rationale:
+      'Creates persistent automated schedules; classified Dangerous due to ongoing execution.',
     overridden: false,
   },
   {
@@ -1057,7 +1057,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'notion:update-page',
     category: 'Mutation' as const,
     minimumTier: 'Auto' as const,
-    rationale: 'Updates internal Notion pages; admin-overridden to Auto for internal notes workflow.',
+    rationale:
+      'Updates internal Notion pages; admin-overridden to Auto for internal notes workflow.',
     overridden: true,
   },
   // --- Sub-agent tools ---
@@ -1066,7 +1067,8 @@ const OPENCLAW_TOOL_CLASSIFICATIONS = [
     toolName: 'subagent:spawn-session',
     category: 'Mutation' as const,
     minimumTier: 'Assisted' as const,
-    rationale: 'Spawns an isolated sub-agent session; contained but creates a new execution context.',
+    rationale:
+      'Spawns an isolated sub-agent session; contained but creates a new execution context.',
     overridden: false,
   },
   {

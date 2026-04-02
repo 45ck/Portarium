@@ -64,6 +64,9 @@ describe('SchemaMigrator', () => {
       '0014_expand_agent_configs_table:global',
       '0015_expand_agent_action_proposals_table:global',
       '0016_expand_agent_action_proposals_idempotency_unique:global',
+      '0017_expand_tenant_schema_migration_journal:workspace-a',
+      '0017_expand_tenant_schema_migration_journal:workspace-b',
+      '0018_expand_tenant_storage_tiers_upgraded_at:global',
     ]);
   });
 

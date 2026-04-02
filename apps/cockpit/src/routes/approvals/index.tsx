@@ -65,64 +65,59 @@ function ApprovalsPage() {
   const { triggerTighten, triggerRelax } = useDemoTriggers();
 
   usePolicyUpdates(
-    useCallback(
-      (payload: PolicyUpdatePayload) => {
-        if (payload.effect === 'tighten') {
-          // Inject an approval that was previously auto-approved as now needing review
-          const injected = FIXTURE_APPROVALS.find(
-            (a) => payload.affectedApprovalIds.includes(a.approvalId),
-          );
-          if (injected) {
-            const asNewPending: ApprovalSummary = {
-              ...injected,
-              status: 'Pending',
-              decidedAtIso: undefined,
-              decidedByUserId: undefined,
-              rationale: undefined,
-              requestedAtIso: new Date().toISOString(),
-            };
-            setInjectedApprovals((prev) => {
-              if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
-              return [...prev, asNewPending];
-            });
-            // Remove from removed set if it was there
-            setRemovedApprovalIds((prev) => {
-              if (!prev.has(asNewPending.approvalId)) return prev;
-              const next = new Set(prev);
-              next.delete(asNewPending.approvalId);
-              return next;
-            });
-          }
-
-          toast(`Policy tightened: ${payload.policyName}`, {
-            description: payload.changeDescription,
-            icon: <Bell className="h-4 w-4 text-orange-500" />,
-            duration: 5_000,
+    useCallback((payload: PolicyUpdatePayload) => {
+      if (payload.effect === 'tighten') {
+        // Inject an approval that was previously auto-approved as now needing review
+        const injected = FIXTURE_APPROVALS.find((a) =>
+          payload.affectedApprovalIds.includes(a.approvalId),
+        );
+        if (injected) {
+          const asNewPending: ApprovalSummary = {
+            ...injected,
+            status: 'Pending',
+            decidedAtIso: undefined,
+            decidedByUserId: undefined,
+            rationale: undefined,
+            requestedAtIso: new Date().toISOString(),
+          };
+          setInjectedApprovals((prev) => {
+            if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
+            return [...prev, asNewPending];
           });
-        } else {
-          // Relax: remove affected approvals with green flash
-          const targetId = payload.affectedApprovalIds[0];
-          if (targetId) {
-            setRelaxFlashId(targetId);
-            setTimeout(() => {
-              setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
-              setRelaxFlashId(null);
-              // Also remove from injected if it was there
-              setInjectedApprovals((prev) =>
-                prev.filter((a) => a.approvalId !== targetId),
-              );
-            }, 800);
-          }
-
-          toast(`Policy relaxed: ${payload.policyName}`, {
-            description: payload.changeDescription,
-            icon: <Zap className="h-4 w-4 text-green-500" />,
-            duration: 5_000,
+          // Remove from removed set if it was there
+          setRemovedApprovalIds((prev) => {
+            if (!prev.has(asNewPending.approvalId)) return prev;
+            const next = new Set(prev);
+            next.delete(asNewPending.approvalId);
+            return next;
           });
         }
-      },
-      [],
-    ),
+
+        toast(`Policy tightened: ${payload.policyName}`, {
+          description: payload.changeDescription,
+          icon: <Bell className="h-4 w-4 text-orange-500" />,
+          duration: 5_000,
+        });
+      } else {
+        // Relax: remove affected approvals with green flash
+        const targetId = payload.affectedApprovalIds[0];
+        if (targetId) {
+          setRelaxFlashId(targetId);
+          setTimeout(() => {
+            setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
+            setRelaxFlashId(null);
+            // Also remove from injected if it was there
+            setInjectedApprovals((prev) => prev.filter((a) => a.approvalId !== targetId));
+          }, 800);
+        }
+
+        toast(`Policy relaxed: ${payload.policyName}`, {
+          description: payload.changeDescription,
+          icon: <Zap className="h-4 w-4 text-green-500" />,
+          duration: 5_000,
+        });
+      }
+    }, []),
   );
 
   // Merge injected approvals and filter removed ones
@@ -218,13 +213,16 @@ function ApprovalsPage() {
       skipped: prev.skipped + (action === 'Skip' ? 1 : 0),
     }));
 
+    // Compute the next card BEFORE removing the current one from the queue.
+    // Using a direct set (not a functional updater) avoids stale-closure
+    // issues where the updater captured a triageQueue that still includes the
+    // outgoing item — and also handles the initial null selectedApprovalId.
+    const queueIds = triageQueue.map((item) => item.approvalId);
+    const idx = queueIds.indexOf(approvalId);
+    const nextId = queueIds[idx + 1] ?? queueIds[idx - 1] ?? null;
+
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
-    setSelectedApprovalId((prevSelected) => {
-      const currentIds = triageQueue.map((item) => item.approvalId);
-      const idx = currentIds.indexOf(approvalId);
-      const nextId = currentIds[idx + 1] ?? currentIds[idx - 1] ?? null;
-      return prevSelected === approvalId ? nextId : prevSelected;
-    });
+    setSelectedApprovalId(nextId);
 
     if (action === 'Skip') return;
 
@@ -439,9 +437,7 @@ function ApprovalsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      {showNotification && (
-        <NotificationBanner pendingCount={pendingItems.length} />
-      )}
+      {showNotification && <NotificationBanner pendingCount={pendingItems.length} />}
       <PageHeader
         title="Approvals"
         icon={<EntityIcon entityType="approval" size="md" decorative />}

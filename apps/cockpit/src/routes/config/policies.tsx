@@ -160,7 +160,10 @@ function PoliciesPage() {
         getRowKey={(row) => row.policyId}
         pagination={{ pageSize: 20 }}
         onRowClick={(row) => {
-          void navigate({ to: '/config/policies/$policyId' as string, params: { policyId: row.policyId } });
+          void navigate({
+            to: '/config/policies/$policyId' as string,
+            params: { policyId: row.policyId },
+          });
         }}
       />
     </div>

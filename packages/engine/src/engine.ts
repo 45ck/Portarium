@@ -29,10 +29,7 @@ function matchesTool(pattern: string | RegExp, toolName: string): boolean {
   return pattern.test(toolName);
 }
 
-function applyRules(
-  rules: PolicyRule[],
-  call: ToolCall,
-): ExecutionTier | null {
+function applyRules(rules: PolicyRule[], call: ToolCall): ExecutionTier | null {
   for (const rule of rules) {
     if (rule.matchTool !== undefined && !matchesTool(rule.matchTool, call.toolName)) {
       continue;

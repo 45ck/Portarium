@@ -29,14 +29,17 @@ export default tseslint.config(
       'package/**',
       '**/vendor/**',
       '**/.specify/**/generated/**',
-      // apps/ workspaces have their own tsconfig and lint setup
+      // apps/ and packages/ workspaces have their own tsconfig and lint setup
       'apps/**',
-      // Templates, examples, and scaffolds are developer-facing starter code, not production
+      'packages/**',
+      // Templates, examples, scaffolds, and experiments are developer-facing starter code, not production
       'templates/**',
       'examples/**',
+      'experiments/**',
       'scaffolds/**',
       // QA automation scripts — not production code
       'qa/**',
+      'qa-reports/**',
       // Playwright E2E tests — not production code, typed via tsconfig.e2e.json
       'e2e/**',
       'playwright.config.ts',

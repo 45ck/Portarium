@@ -1,0 +1,68 @@
+{
+  "experiment": "B_denial_timed",
+  "timestamps": {
+    "t0_experiment_start": "2026-03-31T03:36:10.755Z",
+    "t1_propose_sent": "2026-03-31T03:36:10.755Z",
+    "t2_propose_response": "2026-03-31T03:36:10.756Z",
+    "t3_initial_poll": "2026-03-31T03:36:10.758Z",
+    "t4_initial_poll_response": "2026-03-31T03:36:10.759Z",
+    "t5_decide_sent": "2026-03-31T03:36:10.759Z",
+    "t6_decide_response": "2026-03-31T03:36:10.760Z",
+    "t7_poller_loop_start": "2026-03-31T03:36:10.760Z",
+    "t8_denial_detected": "2026-03-31T03:36:10.760Z",
+    "t9_experiment_end": "2026-03-31T03:36:10.760Z"
+  },
+  "derived": {
+    "propose_rtt_ms": 1,
+    "time_to_pending_ms": 4,
+    "time_pending_to_decided_ms": 1,
+    "time_decided_to_detected_ms": 0,
+    "total_governance_duration_ms": 5,
+    "polls_until_detected": 1
+  },
+  "polls": [
+    {
+      "poll_number": 1,
+      "timestamp": "2026-03-31T03:36:10.760Z",
+      "response_at": "2026-03-31T03:36:10.760Z",
+      "status_observed": "Denied"
+    }
+  ],
+  "assertions": [
+    {
+      "label": "propose returns 202 with NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "initial poll returns Pending",
+      "passed": true,
+      "detail": "status=Pending"
+    },
+    {
+      "label": "decide returns 200 with Denied",
+      "passed": true,
+      "detail": "HTTP 200, status=Denied"
+    },
+    {
+      "label": "denial detected in poll loop",
+      "passed": true,
+      "detail": "detected after 1 poll(s)"
+    }
+  ],
+  "propose": {
+    "httpStatus": 202,
+    "proposalId": "cfe7ad29-babd-4f8e-b7ee-0f8b5b077fd5",
+    "evidenceId": "efdd2ba3-7668-41f3-a1eb-0954226572b1",
+    "decision": "NeedsApproval",
+    "approvalId": "932bf482-7372-4fcc-95b4-a340f2653891",
+    "message": "Tool 'drop_production_database' (Unknown) requires approval at tier HumanApprove."
+  },
+  "initialPollStatus": "Pending",
+  "decide": {
+    "httpStatus": 200,
+    "approvalId": "932bf482-7372-4fcc-95b4-a340f2653891",
+    "status": "Denied"
+  },
+  "outcome": "confirmed"
+}

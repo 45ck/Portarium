@@ -1,14 +1,6 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Activity,
-  ArrowRight,
-  CheckCircle,
-  Zap,
-  UserCheck,
-  Hand,
-  Users,
-} from 'lucide-react';
+import { Activity, ArrowRight, CheckCircle, Zap, UserCheck, Hand, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { APPROVALS } from '@/mocks/fixtures/openclaw-demo';
@@ -76,37 +68,26 @@ function triggerOverlaps(formTrigger: string, approvalTrigger: string): boolean 
     .split(' AND ')
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  const approvalParts = approvalTrigger
-    .split(' AND ')
-    .map((s) => s.trim().toLowerCase());
+  const approvalParts = approvalTrigger.split(' AND ').map((s) => s.trim().toLowerCase());
 
   // Match if every part of the form trigger appears in (or is a prefix of) an approval part
-  return formParts.every((fp) =>
-    approvalParts.some((ap) => ap.includes(fp) || fp.includes(ap)),
-  );
+  return formParts.every((fp) => approvalParts.some((ap) => ap.includes(fp) || fp.includes(ap)));
 }
 
 function extractSystems(approval: ApprovalSummary): string[] {
   const br = approval.policyRule?.blastRadius ?? [];
   // blastRadius is string[] like ["Gmail", "1 message"] -- take only system-like entries
-  return br.filter(
-    (s) => !s.match(/^\d/) && !s.match(/^all\s/i) && s.length > 2,
-  );
+  return br.filter((s) => !s.match(/^\d/) && !s.match(/^all\s/i) && s.length > 2);
 }
 
-function classifyImpact(
-  currentRank: number,
-  newRank: number,
-): AffectedApproval['impact'] {
+function classifyImpact(currentRank: number, newRank: number): AffectedApproval['impact'] {
   if (newRank < currentRank) return 'auto-approve';
   if (newRank > currentRank && newRank >= (TIER_RANK.ManualOnly ?? 3)) return 'blocked';
   return 'require-approval';
 }
 
 function computeAffected(form: PolicyPreviewFormState): AffectedApproval[] {
-  const formTrigger = [form.triggerAction, form.triggerCondition]
-    .filter(Boolean)
-    .join(' AND ');
+  const formTrigger = [form.triggerAction, form.triggerCondition].filter(Boolean).join(' AND ');
 
   const pending = APPROVALS.filter((a) => a.status === 'Pending');
 
@@ -177,13 +158,7 @@ function ImpactBadge({ impact }: { impact: AffectedApproval['impact'] }) {
 // Tier transition arrow
 // ---------------------------------------------------------------------------
 
-function TierTransition({
-  from,
-  to,
-}: {
-  from: string;
-  to: string;
-}) {
+function TierTransition({ from, to }: { from: string; to: string }) {
   const FromIcon = TIER_ICON[from] ?? UserCheck;
   const ToIcon = TIER_ICON[to] ?? UserCheck;
 
@@ -217,9 +192,7 @@ function MiniApprovalCard({ item }: { item: AffectedApproval }) {
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="rounded-lg border border-border bg-background p-3 space-y-2"
     >
-      <p className="text-xs text-foreground line-clamp-1 font-medium">
-        {item.approval.prompt}
-      </p>
+      <p className="text-xs text-foreground line-clamp-1 font-medium">{item.approval.prompt}</p>
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <TierTransition from={item.currentTier} to={item.newTier} />
         <ImpactBadge impact={item.impact} />
@@ -227,11 +200,7 @@ function MiniApprovalCard({ item }: { item: AffectedApproval }) {
       {item.systems.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {item.systems.map((sys) => (
-            <Badge
-              key={sys}
-              variant="secondary"
-              className="text-[10px] h-5 px-1.5 font-normal"
-            >
+            <Badge key={sys} variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
               {sys}
             </Badge>
           ))}
@@ -308,12 +277,7 @@ export function PolicyLivePreview({ form }: { form: PolicyPreviewFormState }) {
       <div className="space-y-2">
         <AnimatePresence mode="popLayout">
           {affected.length > 0 ? (
-            affected.map((item) => (
-              <MiniApprovalCard
-                key={item.approval.approvalId}
-                item={item}
-              />
-            ))
+            affected.map((item) => <MiniApprovalCard key={item.approval.approvalId} item={item} />)
           ) : (
             <motion.div
               key="empty"

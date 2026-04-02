@@ -1,0 +1,36 @@
+{
+  "experiment": "denial-path",
+  "timestamp": "2026-03-31T01:51:00.000Z",
+  "outcome": "confirmed",
+  "notes": "Operator denied a proposal for delete_database. Final approval status: Denied.",
+  "assertions": [
+    {
+      "label": "POST /agent-actions:propose returns NeedsApproval for delete_database",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval, approvalId issued"
+    },
+    {
+      "label": "POST /approvals/:id/decide with Denied returns HTTP 200",
+      "passed": true,
+      "detail": "status=Denied"
+    },
+    {
+      "label": "GET /approvals/:id returns status=Denied",
+      "passed": true,
+      "detail": "Final status: Denied"
+    }
+  ],
+  "raw": {
+    "propose": {
+      "httpStatus": 202,
+      "decision": "NeedsApproval",
+      "toolName": "delete_database"
+    },
+    "decide": {
+      "httpStatus": 200,
+      "decision": "Denied",
+      "rationale": "delete_database is not permitted in prod"
+    },
+    "finalStatus": "Denied"
+  }
+}

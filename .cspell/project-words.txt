@@ -1059,3 +1059,18 @@ mytest
 # Approval domain terms (approval-context-assembler)
 delegators
 Delegators
+# Multi-region Terraform (bead-0943)
+tfstate
+xlarge
+# Mission-control-ui research (bead-0965) — font family names
+Orbitron
+Rajdhani
+# Engineering-layer planning docs (bead-0969+)
+annotatable
+anesthetic
+bookmarkable
+Bookmarkable
+overdecomposition
+Parasuraman
+theater
+Wickens

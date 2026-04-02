@@ -1,0 +1,80 @@
+{
+  "scenario": "3-trade-execution",
+  "business_context": "Nexus Capital Advisory",
+  "agent": {
+    "name": "Atlas",
+    "id": "atlas-finance",
+    "role": "Trading AI"
+  },
+  "human_operator": {
+    "name": "Marcus Webb",
+    "role": "Portfolio Manager"
+  },
+  "tool": "trading_execute_order",
+  "governance_tier": "HumanApprove",
+  "outcome": "approved",
+  "timeline": {
+    "t0_experiment_start": "2026-03-31T03:49:13.189Z",
+    "t1_propose_sent": "2026-03-31T03:49:13.189Z",
+    "t2_propose_response": "2026-03-31T03:49:13.190Z",
+    "t2_propose_response_ms": 1,
+    "t3_approval_status": "Pending",
+    "polls": [
+      {
+        "n": 1,
+        "at": "2026-03-31T03:49:14.709Z",
+        "status": "Pending"
+      },
+      {
+        "n": 2,
+        "at": "2026-03-31T03:49:16.220Z",
+        "status": "Pending"
+      },
+      {
+        "n": 3,
+        "at": "2026-03-31T03:49:17.739Z",
+        "status": "Pending"
+      },
+      {
+        "n": 4,
+        "at": "2026-03-31T03:49:18.242Z",
+        "status": "Approved"
+      }
+    ],
+    "t4_operator_decided": "2026-03-31T03:49:18.240Z",
+    "t5_detection_latency_ms": 2,
+    "t6_agent_unblocked": "2026-03-31T03:49:18.244Z",
+    "total_blocked_ms": 5055,
+    "deliberation_ms": 5050
+  },
+  "governance_data": {
+    "proposalId": "682f1401-1a87-4e7c-8414-e5cd2abf0fbe",
+    "approvalId": "0bca2eba-339d-4e98-8c4d-e990239a7762",
+    "evidenceId": "98e08eb3-300c-4510-8667-54c2426172f0",
+    "decision": "NeedsApproval",
+    "operator_rationale": "Checked risk exposure: position within limits. NVDA technical setup confirmed on Bloomberg. Volume above 2x average. Approved for execution."
+  },
+  "assertions": [
+    {
+      "label": "propose returns NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "operator approval succeeds after deliberation",
+      "passed": true,
+      "detail": "HTTP 200, status=Approved, deliberation=5050ms"
+    },
+    {
+      "label": "all polls during deliberation return Pending",
+      "passed": true,
+      "detail": "statuses: [Pending, Pending, Pending]"
+    },
+    {
+      "label": "post-approval poll returns Approved",
+      "passed": true,
+      "detail": "status=Approved"
+    }
+  ],
+  "business_insight": "A $2.04M NVDA trade was held for 5 seconds while the portfolio manager verified risk limits and technical setup on Bloomberg before approving execution."
+}

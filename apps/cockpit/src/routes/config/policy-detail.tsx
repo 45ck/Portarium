@@ -38,13 +38,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { emitPolicyUpdate } from '@/lib/policy-event-bridge';
 import { PolicyLivePreview } from '@/components/cockpit/policy-live-preview';
@@ -210,16 +204,19 @@ function parseTrigger(trigger: string): { action: string; condition: string } {
   };
 }
 
-function deriveSodType(
-  sodRule?: { type: string; nRequired?: number; nTotal?: number },
-): SodType {
+function deriveSodType(sodRule?: { type: string; nRequired?: number; nTotal?: number }): SodType {
   if (!sodRule) return 'none';
   return sodRule.type as SodType;
 }
 
 function policyToFormState(policy: (typeof POLICIES)[number]): PolicyFormState {
   const { action, condition } = parseTrigger(policy.trigger);
-  const sodRule = 'sodRule' in policy ? (policy as Record<string, unknown>).sodRule as { type: string; rolesRequired?: string[]; nRequired?: number; nTotal?: number } | undefined : undefined;
+  const sodRule =
+    'sodRule' in policy
+      ? ((policy as Record<string, unknown>).sodRule as
+          | { type: string; rolesRequired?: string[]; nRequired?: number; nTotal?: number }
+          | undefined)
+      : undefined;
   return {
     name: policy.name,
     status: policy.status,
@@ -286,9 +283,7 @@ function TierSelector({
             </AnimatePresence>
             <div className="relative z-10 flex flex-col items-center gap-2">
               <Icon className={cn('h-5 w-5', active ? opt.color : 'text-muted-foreground')} />
-              <span className={cn('text-sm font-medium', active && opt.color)}>
-                {opt.label}
-              </span>
+              <span className={cn('text-sm font-medium', active && opt.color)}>{opt.label}</span>
               <span className="text-[11px] text-muted-foreground">{opt.description}</span>
             </div>
           </button>
@@ -321,11 +316,11 @@ function IrreversibilitySelector({
               active ? `${opt.borderColor} ${opt.bgTint}` : 'border-border bg-background',
             )}
           >
-            <Icon className={cn('h-5 w-5 shrink-0', active ? opt.color : 'text-muted-foreground')} />
+            <Icon
+              className={cn('h-5 w-5 shrink-0', active ? opt.color : 'text-muted-foreground')}
+            />
             <div>
-              <span className={cn('text-sm font-medium', active && opt.color)}>
-                {opt.label}
-              </span>
+              <span className={cn('text-sm font-medium', active && opt.color)}>{opt.label}</span>
               <p className="text-[11px] text-muted-foreground">{opt.description}</p>
             </div>
           </button>
@@ -355,9 +350,7 @@ function BlastRadiusEditor({
 
   const updateEntry = useCallback(
     (index: number, field: keyof BlastRadiusEntry, value: string) => {
-      const updated = entries.map((e, i) =>
-        i === index ? { ...e, [field]: value } : e,
-      );
+      const updated = entries.map((e, i) => (i === index ? { ...e, [field]: value } : e));
       onChange(updated);
     },
     [entries, onChange],
@@ -377,10 +370,7 @@ function BlastRadiusEditor({
           >
             <span className="inline-flex items-center gap-1 text-xs border border-border rounded-full px-2 py-1 bg-background shrink-0">
               <SorBadge name={entry.system} />
-              <Select
-                value={entry.system}
-                onValueChange={(v) => updateEntry(i, 'system', v)}
-              >
+              <Select value={entry.system} onValueChange={(v) => updateEntry(i, 'system', v)}>
                 <SelectTrigger className="h-6 border-0 shadow-none text-xs w-auto min-w-[100px] px-1">
                   <SelectValue />
                 </SelectTrigger>
@@ -418,13 +408,7 @@ function BlastRadiusEditor({
   );
 }
 
-function RoleChips({
-  roles,
-  onChange,
-}: {
-  roles: string[];
-  onChange: (roles: string[]) => void;
-}) {
+function RoleChips({ roles, onChange }: { roles: string[]; onChange: (roles: string[]) => void }) {
   const [inputValue, setInputValue] = useState('');
 
   const addRole = useCallback(() => {
@@ -614,10 +598,7 @@ function PolicyDetailPage() {
         <PageHeader
           title="Policy Not Found"
           icon={<EntityIcon entityType="policy" size="md" decorative />}
-          breadcrumb={[
-            { label: 'Policies', to: '/config/policies' },
-            { label: policyId },
-          ]}
+          breadcrumb={[{ label: 'Policies', to: '/config/policies' }, { label: policyId }]}
         />
         <EmptyState
           title="Policy not found"
@@ -642,326 +623,317 @@ function PolicyDetailPage() {
       <div className="flex gap-6 max-w-6xl">
         {/* Main editor column */}
         <div className="flex-1 min-w-0 space-y-6 max-w-4xl">
+          {/* Header */}
+          <div className="space-y-4">
+            <Link
+              to="/config/policies"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to Policies
+            </Link>
 
-      {/* Header */}
-      <div className="space-y-4">
-        <Link
-          to="/config/policies"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Policies
-        </Link>
+            <PageHeader
+              title={form.name}
+              icon={<ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />}
+              breadcrumb={[{ label: 'Policies', to: '/config/policies' }, { label: form.name }]}
+              action={
+                <div className="flex items-center gap-2">
+                  {dirty && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setForm(policyToFormState(policy));
+                        setDirty(false);
+                      }}
+                    >
+                      <Undo2 className="h-4 w-4 mr-1" />
+                      Discard
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    disabled={!dirty}
+                    onClick={() => {
+                      setDirty(false);
+                      toast.success('Policy saved', {
+                        description: `${form.name} has been updated.`,
+                      });
 
-        <PageHeader
-          title={form.name}
-          icon={
-            <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-          }
-          breadcrumb={[
-            { label: 'Policies', to: '/config/policies' },
-            { label: form.name },
-          ]}
-          action={
-            <div className="flex items-center gap-2">
-              {dirty && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setForm(policyToFormState(policy));
-                    setDirty(false);
-                  }}
-                >
-                  <Undo2 className="h-4 w-4 mr-1" />
-                  Discard
-                </Button>
-              )}
-              <Button
-                size="sm"
-                disabled={!dirty}
-                onClick={() => {
-                  setDirty(false);
-                  toast.success('Policy saved', {
-                    description: `${form.name} has been updated.`,
-                  });
+                      // Emit policy update for live triage deck reaction
+                      const originalTier = policy.tier;
+                      const newTier = form.tier;
+                      const tierWeight = {
+                        Auto: 0,
+                        Assisted: 1,
+                        HumanApprove: 2,
+                        ManualOnly: 3,
+                      } as const;
+                      const tightened =
+                        tierWeight[newTier] > tierWeight[originalTier as keyof typeof tierWeight];
+                      const affected = APPROVALS.filter(
+                        (a) => a.policyRule?.ruleId === policy.policyId,
+                      ).map((a) => a.approvalId);
 
-                  // Emit policy update for live triage deck reaction
-                  const originalTier = policy.tier;
-                  const newTier = form.tier;
-                  const tierWeight = { Auto: 0, Assisted: 1, HumanApprove: 2, ManualOnly: 3 } as const;
-                  const tightened = tierWeight[newTier] > tierWeight[originalTier as keyof typeof tierWeight];
-                  const affected = APPROVALS
-                    .filter((a) => a.policyRule?.ruleId === policy.policyId)
-                    .map((a) => a.approvalId);
-
-                  emitPolicyUpdate({
-                    policyId: policy.policyId,
-                    policyName: form.name,
-                    changeDescription: `Tier changed from ${originalTier} to ${newTier}`,
-                    effect: tightened ? 'tighten' : 'relax',
-                    affectedApprovalIds: affected,
-                  });
-                }}
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save Changes
-              </Button>
-            </div>
-          }
-        />
-
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-[11px] text-muted-foreground">
-            {policy.policyId}
-          </span>
-          <Separator orientation="vertical" className="h-4" />
-          <div className="flex items-center gap-2">
-            <Label htmlFor="policy-status" className="text-xs text-muted-foreground">
-              {form.status === 'active' ? 'Active' : 'Paused'}
-            </Label>
-            <Switch
-              id="policy-status"
-              size="sm"
-              checked={form.status === 'active'}
-              onCheckedChange={(checked) =>
-                update('status', checked ? 'active' : 'paused')
+                      emitPolicyUpdate({
+                        policyId: policy.policyId,
+                        policyName: form.name,
+                        changeDescription: `Tier changed from ${originalTier} to ${newTier}`,
+                        effect: tightened ? 'tighten' : 'relax',
+                        affectedApprovalIds: affected,
+                      });
+                    }}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Save Changes
+                  </Button>
+                </div>
               }
             />
+
+            <div className="flex items-center gap-4">
+              <span className="font-mono text-[11px] text-muted-foreground">{policy.policyId}</span>
+              <Separator orientation="vertical" className="h-4" />
+              <div className="flex items-center gap-2">
+                <Label htmlFor="policy-status" className="text-xs text-muted-foreground">
+                  {form.status === 'active' ? 'Active' : 'Paused'}
+                </Label>
+                <Switch
+                  id="policy-status"
+                  size="sm"
+                  checked={form.status === 'active'}
+                  onCheckedChange={(checked) => update('status', checked ? 'active' : 'paused')}
+                />
+              </div>
+            </div>
+
+            {policy.description && (
+              <p className="text-xs text-muted-foreground max-w-prose">{policy.description}</p>
+            )}
           </div>
-        </div>
 
-        {policy.description && (
-          <p className="text-xs text-muted-foreground max-w-prose">
-            {policy.description}
-          </p>
-        )}
-      </div>
-
-      {/* Trigger Builder */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>When this happens...</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Action</Label>
-              <Select
-                value={form.triggerAction}
-                onValueChange={(v) => update('triggerAction', v)}
-              >
-                <SelectTrigger size="sm" className="min-w-[200px]">
-                  <SelectValue placeholder="Select action..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRIGGER_ACTIONS.map((a) => (
-                    <SelectItem key={a} value={a}>
-                      <span className="font-mono text-xs">{a}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <span className="text-xs font-semibold text-muted-foreground mt-5">AND</span>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Condition</Label>
-              <Select
-                value={form.triggerCondition}
-                onValueChange={(v) => update('triggerCondition', v)}
-              >
-                <SelectTrigger size="sm" className="min-w-[200px]">
-                  <SelectValue placeholder="Select condition..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRIGGER_CONDITIONS.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      <span className="font-mono text-xs">{c}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          {triggerExpression && (
-            <div className="inline-flex items-center rounded-md bg-muted px-3 py-1.5">
-              <code className="text-xs font-mono">{triggerExpression}</code>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Execution Tier */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>Required approval level</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TierSelector value={form.tier} onChange={(t) => update('tier', t)} />
-        </CardContent>
-      </Card>
-
-      {/* Blast Radius */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>Impact scope</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BlastRadiusEditor
-            entries={form.blastRadius}
-            onChange={(entries) => update('blastRadius', entries)}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Irreversibility */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>Can this be undone?</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <IrreversibilitySelector
-            value={form.irreversibility}
-            onChange={(v) => update('irreversibility', v)}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Separation of Duties */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>Who can approve?</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SodSection
-            sodType={form.sodType}
-            onTypeChange={(t) => update('sodType', t)}
-            roles={form.sodRoles}
-            onRolesChange={(r) => update('sodRoles', r)}
-            nRequired={form.sodNRequired}
-            onNRequiredChange={(n) => update('sodNRequired', n)}
-            nTotal={form.sodNTotal}
-            onNTotalChange={(n) => update('sodNTotal', n)}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Scope */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            <SectionLabel>Applies to</SectionLabel>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-medium">Agents</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {AGENTS.map((agent) => {
-                const checked =
-                  form.scopeAgents.includes('*') ||
-                  form.scopeAgents.includes(agent.agentId);
-                return (
-                  <label
-                    key={agent.agentId}
-                    className="flex items-center gap-2 text-xs cursor-pointer"
+          {/* Trigger Builder */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>When this happens...</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Action</Label>
+                  <Select
+                    value={form.triggerAction}
+                    onValueChange={(v) => update('triggerAction', v)}
                   >
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(c) => {
-                        if (c) {
-                          update('scopeAgents', [...form.scopeAgents, agent.agentId]);
-                        } else {
-                          update(
-                            'scopeAgents',
-                            form.scopeAgents.filter(
-                              (a) => a !== agent.agentId && a !== '*',
-                            ),
-                          );
-                        }
-                      }}
-                    />
-                    <span className="font-medium">{agent.name}</span>
-                    <span className="text-muted-foreground font-mono text-[10px]">
-                      {agent.agentId}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <Label className="text-xs font-medium">Tools</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {TOOL_CLASSIFICATIONS.map((tool) => {
-                const checked = form.scopeTools.includes(tool.toolName);
-                return (
-                  <label
-                    key={tool.toolName}
-                    className="flex items-center gap-2 text-xs cursor-pointer"
+                    <SelectTrigger size="sm" className="min-w-[200px]">
+                      <SelectValue placeholder="Select action..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRIGGER_ACTIONS.map((a) => (
+                        <SelectItem key={a} value={a}>
+                          <span className="font-mono text-xs">{a}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <span className="text-xs font-semibold text-muted-foreground mt-5">AND</span>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Condition</Label>
+                  <Select
+                    value={form.triggerCondition}
+                    onValueChange={(v) => update('triggerCondition', v)}
                   >
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={(c) => {
-                        if (c) {
-                          update('scopeTools', [...form.scopeTools, tool.toolName]);
-                        } else {
-                          update(
-                            'scopeTools',
-                            form.scopeTools.filter((t) => t !== tool.toolName),
-                          );
-                        }
-                      }}
-                    />
-                    <span className="font-mono font-medium">{tool.toolName}</span>
-                    <Badge
-                      variant={
-                        tool.category === 'Dangerous'
-                          ? 'destructive'
-                          : tool.category === 'ReadOnly'
-                            ? 'secondary'
-                            : 'default'
-                      }
-                      className="text-[10px] h-4 px-1"
-                    >
-                      {tool.category}
-                    </Badge>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                    <SelectTrigger size="sm" className="min-w-[200px]">
+                      <SelectValue placeholder="Select condition..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRIGGER_CONDITIONS.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          <span className="font-mono text-xs">{c}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {triggerExpression && (
+                <div className="inline-flex items-center rounded-md bg-muted px-3 py-1.5">
+                  <code className="text-xs font-mono">{triggerExpression}</code>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Mobile: Preview Impact button + Sheet */}
-      <div className="lg:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="w-full">
-              <Eye className="h-4 w-4 mr-2" />
-              Preview Impact
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle className="sr-only">Live Impact Preview</SheetTitle>
-            </SheetHeader>
-            <PolicyLivePreview form={previewFormState} />
-          </SheetContent>
-        </Sheet>
-      </div>
+          {/* Execution Tier */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>Required approval level</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TierSelector value={form.tier} onChange={(t) => update('tier', t)} />
+            </CardContent>
+          </Card>
+
+          {/* Blast Radius */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>Impact scope</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BlastRadiusEditor
+                entries={form.blastRadius}
+                onChange={(entries) => update('blastRadius', entries)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Irreversibility */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>Can this be undone?</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <IrreversibilitySelector
+                value={form.irreversibility}
+                onChange={(v) => update('irreversibility', v)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Separation of Duties */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>Who can approve?</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SodSection
+                sodType={form.sodType}
+                onTypeChange={(t) => update('sodType', t)}
+                roles={form.sodRoles}
+                onRolesChange={(r) => update('sodRoles', r)}
+                nRequired={form.sodNRequired}
+                onNRequiredChange={(n) => update('sodNRequired', n)}
+                nTotal={form.sodNTotal}
+                onNTotalChange={(n) => update('sodNTotal', n)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Scope */}
+          <Card className="shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">
+                <SectionLabel>Applies to</SectionLabel>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Agents</Label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {AGENTS.map((agent) => {
+                    const checked =
+                      form.scopeAgents.includes('*') || form.scopeAgents.includes(agent.agentId);
+                    return (
+                      <label
+                        key={agent.agentId}
+                        className="flex items-center gap-2 text-xs cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(c) => {
+                            if (c) {
+                              update('scopeAgents', [...form.scopeAgents, agent.agentId]);
+                            } else {
+                              update(
+                                'scopeAgents',
+                                form.scopeAgents.filter((a) => a !== agent.agentId && a !== '*'),
+                              );
+                            }
+                          }}
+                        />
+                        <span className="font-medium">{agent.name}</span>
+                        <span className="text-muted-foreground font-mono text-[10px]">
+                          {agent.agentId}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">Tools</Label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {TOOL_CLASSIFICATIONS.map((tool) => {
+                    const checked = form.scopeTools.includes(tool.toolName);
+                    return (
+                      <label
+                        key={tool.toolName}
+                        className="flex items-center gap-2 text-xs cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(c) => {
+                            if (c) {
+                              update('scopeTools', [...form.scopeTools, tool.toolName]);
+                            } else {
+                              update(
+                                'scopeTools',
+                                form.scopeTools.filter((t) => t !== tool.toolName),
+                              );
+                            }
+                          }}
+                        />
+                        <span className="font-mono font-medium">{tool.toolName}</span>
+                        <Badge
+                          variant={
+                            tool.category === 'Dangerous'
+                              ? 'destructive'
+                              : tool.category === 'ReadOnly'
+                                ? 'secondary'
+                                : 'default'
+                          }
+                          className="text-[10px] h-4 px-1"
+                        >
+                          {tool.category}
+                        </Badge>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Mobile: Preview Impact button + Sheet */}
+          <div className="lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview Impact
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Live Impact Preview</SheetTitle>
+                </SheetHeader>
+                <PolicyLivePreview form={previewFormState} />
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
 
         {/* Desktop: Sticky sidebar preview */}

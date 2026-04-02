@@ -1,0 +1,58 @@
+{
+  "experiment": "C_maker_checker_timed",
+  "timestamps": {
+    "t0_experiment_start": "2026-03-31T03:36:10.761Z",
+    "t1_propose_sent": "2026-03-31T03:36:10.761Z",
+    "t2_propose_response": "2026-03-31T03:36:10.762Z",
+    "t3_self_approve_sent": "2026-03-31T03:36:10.763Z",
+    "t4_self_approve_response": "2026-03-31T03:36:10.763Z",
+    "t5_operator_approve_sent": "2026-03-31T03:36:10.763Z",
+    "t6_operator_approve_response": "2026-03-31T03:36:10.764Z",
+    "t7_experiment_end": "2026-03-31T03:36:10.764Z"
+  },
+  "derived": {
+    "propose_rtt_ms": 1,
+    "enforcement_latency_ms": 0,
+    "recovery_after_rejection_ms": 1,
+    "total_governance_duration_ms": 3
+  },
+  "assertions": [
+    {
+      "label": "propose returns NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "self-approve returns 403 Forbidden",
+      "passed": true,
+      "detail": "HTTP 403, detail=Maker-checker violation: the deciding user cannot be the same as the requesting user."
+    },
+    {
+      "label": "operator approve returns 200 Approved",
+      "passed": true,
+      "detail": "HTTP 200, status=Approved"
+    }
+  ],
+  "propose": {
+    "httpStatus": 202,
+    "proposalId": "5f268a47-b405-4c10-a1ed-70a3fa7f5a5c",
+    "evidenceId": "befc5fad-7929-4365-aa19-e811cac83a73",
+    "decision": "NeedsApproval",
+    "approvalId": "5ad53e62-01ef-4f74-aaa0-de0423e0d542",
+    "message": "Tool 'send_wire_transfer' (Mutation) requires approval at tier HumanApprove."
+  },
+  "selfApprove": {
+    "httpStatus": 403,
+    "type": "https://portarium.dev/problems/forbidden",
+    "title": "Forbidden",
+    "status": 403,
+    "detail": "Maker-checker violation: the deciding user cannot be the same as the requesting user.",
+    "instance": "/v1/workspaces/ws-experiment/approvals/5ad53e62-01ef-4f74-aaa0-de0423e0d542/decide"
+  },
+  "operatorApprove": {
+    "httpStatus": 200,
+    "approvalId": "5ad53e62-01ef-4f74-aaa0-de0423e0d542",
+    "status": "Approved"
+  },
+  "outcome": "confirmed"
+}

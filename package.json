@@ -18,7 +18,8 @@
     "risk-controls"
   ],
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -162,6 +163,8 @@
     "smoke:http-e2e": "tsx scripts/smoke/http-api-e2e-smoke.ts",
     "analytics:adoption-snapshot": "node scripts/analytics/adoption-snapshot.mjs",
     "seed:bundle": "tsx scripts/seed/seed-bundle.ts",
+    "load:smoke": "LOAD_MODE=smoke node node_modules/vitest/vitest.mjs run scripts/load/",
+    "load:full": "LOAD_MODE=full node node_modules/vitest/vitest.mjs run scripts/load/",
     "test": "node node_modules/vitest/vitest.mjs run",
     "test:watch": "node node_modules/vitest/vitest.mjs",
     "test:coverage": "node node_modules/vitest/vitest.mjs run --coverage",
@@ -187,6 +190,7 @@
     "ab": "node scripts/ab.mjs",
     "test:e2e:smoke": "node node_modules/@playwright/test/cli.js test e2e/smoke --project=chromium --workers=1",
     "test:e2e:matrix": "node node_modules/@playwright/test/cli.js test e2e --project=matrix-desktop-chrome --project=matrix-desktop-firefox --project=matrix-desktop-webkit --project=matrix-tablet-chrome --project=matrix-mobile-pixel5 --project=matrix-mobile-iphone13",
+    "test:e2e:a11y": "node node_modules/@playwright/test/cli.js test e2e/a11y --project=a11y --workers=1",
     "test:e2e:full": "node node_modules/@playwright/test/cli.js test e2e --project=chromium",
     "demo:policy": "tsx scripts/demo/policy-demo.mjs",
     "demo:proxy": "tsx scripts/demo/portarium-tool-proxy.mjs",
@@ -200,6 +204,9 @@
     "lab:approval:claude": "PORTARIUM_LAB_PROVIDER=claude tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:openai": "PORTARIUM_LAB_PROVIDER=openai tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:gemini": "PORTARIUM_LAB_PROVIDER=gemini tsx scripts/lab/approval-lifecycle-lab.mjs",
+    "lab:plugin": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=A",
+    "lab:plugin:fail-closed": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=B",
+    "lab:plugin:cockpit": "node scripts/lab/openclaw-plugin-lab.mjs --experiment=C",
     "release:collect-changelog": "node scripts/release/collect-changelog.mjs",
     "release:collect-changelog:json": "node scripts/release/collect-changelog.mjs --json",
     "release:prepare": "node scripts/release/prepare-release.mjs",
@@ -219,9 +226,12 @@
   "overrides": {
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
-    }
+    },
+    "@hono/node-server": "^1.19.11",
+    "fast-xml-parser": "^5.5.9"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^10.0.0",
     "@google/generative-ai": "^0.24.1",
     "@playwright/test": "^1.58.2",

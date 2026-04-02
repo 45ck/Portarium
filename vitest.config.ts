@@ -5,7 +5,12 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['src/test-setup.ts'],
     testTimeout: 30_000,
-    include: ['src/**/*.test.ts', 'scaffolds/**/*.test.ts', 'scripts/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'scaffolds/**/*.test.ts',
+      'scripts/**/*.test.ts',
+      'packages/**/*.test.ts',
+    ],
     reporters: process.env['CI'] ? ['verbose', 'junit'] : ['default'],
     outputFile: {
       junit: './test-results/junit.xml',
@@ -14,10 +19,12 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'html', 'lcov', 'clover'],
-      include: ['src/**/*.ts'],
+      include: ['src/**/*.ts', 'packages/**/*.ts'],
       exclude: [
         'src/**/*.test.ts',
         'src/**/index.ts',
+        'packages/**/*.test.ts',
+        'packages/**/dist/**',
         // CLI entry points are process-level wiring; exclude from unit coverage
         'src/infrastructure/migrations/cli.ts',
         'src/infrastructure/observability/otel-setup.ts',
@@ -52,6 +59,12 @@ export default defineConfig({
           branches: 65,
           functions: 70,
           lines: 70,
+        },
+        'packages/openclaw-plugin/src/**': {
+          statements: 80,
+          branches: 75,
+          functions: 85,
+          lines: 80,
         },
       },
     },

@@ -1,0 +1,62 @@
+{
+  "id": "openclaw-plugin",
+  "name": "Portarium Governance",
+  "description": "Routes all tool calls through Portarium policy, approvals, and evidence before execution. Blocks, approves, or queues human approval for every tool call.",
+  "configSchema": {
+    "type": "object",
+    "required": ["portariumUrl", "workspaceId", "bearerToken"],
+    "additionalProperties": false,
+    "properties": {
+      "portariumUrl": {
+        "type": "string",
+        "description": "Base URL of the Portarium control plane, e.g. http://localhost:8080"
+      },
+      "workspaceId": {
+        "type": "string",
+        "description": "Portarium workspace ID to govern tool calls within"
+      },
+      "bearerToken": {
+        "type": "string",
+        "description": "Bearer token for authenticating with the Portarium control plane"
+      },
+      "tenantId": {
+        "type": "string",
+        "description": "Portarium tenant ID (defaults to 'default')",
+        "default": "default"
+      },
+      "failClosed": {
+        "type": "boolean",
+        "description": "When true, block all tool calls if Portarium is unreachable (default: true)",
+        "default": true
+      },
+      "approvalTimeoutMs": {
+        "type": "number",
+        "description": "Max time to wait for human approval in milliseconds (default: 86400000 = 24h)",
+        "default": 86400000
+      },
+      "pollIntervalMs": {
+        "type": "number",
+        "description": "How often to poll for approval decisions in milliseconds (default: 3000)",
+        "default": 3000
+      },
+      "bypassToolNames": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Tool names to bypass governance (use sparingly, for internal Portarium tools only)",
+        "default": ["portarium_get_run", "portarium_list_approvals", "portarium_capability_lookup"]
+      },
+      "defaultPolicyIds": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Policy IDs to evaluate all proposals against (default: ['default-governance'])",
+        "default": ["default-governance"]
+      },
+      "defaultExecutionTier": {
+        "type": "string",
+        "enum": ["Auto", "Assisted", "HumanApprove", "ManualOnly"],
+        "description": "Default execution tier for tool proposals when not overridden (default: HumanApprove)",
+        "default": "HumanApprove"
+      }
+    }
+  }
+}

@@ -1,8 +1,9 @@
 # ADR-0075: Multi-Region Deployment Strategy
 
 **Beads:** bead-0682
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-02-21
+**Implemented:** 2026-03-30 (bead-0943)
 
 ## Context
 

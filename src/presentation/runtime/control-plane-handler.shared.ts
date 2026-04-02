@@ -133,6 +133,8 @@ export type ControlPlaneDeps = Readonly<{
   unitOfWork?: UnitOfWork;
   /** Optional action runner for executing approved agent actions. */
   actionRunner?: ActionRunnerPort;
+  /** Optional clock override for testing; defaults to () => new Date(). */
+  clock?: () => Date;
 }>;
 
 export type WorkforceAvailabilityStatus = 'available' | 'busy' | 'offline';

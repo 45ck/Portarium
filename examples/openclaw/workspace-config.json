@@ -1,0 +1,80 @@
+{
+  "_comment": "Annotated openclaw profile for Portarium governance experiments.",
+  "_note": "Copy to ~/.openclaw-portarium-dev/openclaw.json and fill in API key / paths.",
+
+  "gateway": {
+    "mode": "local",
+    "port": 19100,
+    "auth": {
+      "token": "portarium-dev-token"
+    }
+  },
+
+  "models": {
+    "providers": {
+      "openrouter": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": "<YOUR_OPENROUTER_API_KEY>",
+        "api": "openai-responses",
+        "models": [
+          {
+            "id": "anthropic/claude-3-5-haiku",
+            "name": "Claude 3.5 Haiku (via OpenRouter)",
+            "api": "openai-responses",
+            "reasoning": false,
+            "input": ["text"],
+            "contextWindow": 200000,
+            "maxTokens": 8192,
+            "cost": { "input": 0.001, "output": 0.005, "cacheRead": 0, "cacheWrite": 0 }
+          },
+          {
+            "id": "anthropic/claude-sonnet-4-5",
+            "name": "Claude Sonnet 4.5 (via OpenRouter)",
+            "api": "openai-responses",
+            "reasoning": false,
+            "input": ["text"],
+            "contextWindow": 200000,
+            "maxTokens": 8192,
+            "cost": { "input": 0.003, "output": 0.015, "cacheRead": 0, "cacheWrite": 0 }
+          }
+        ]
+      }
+    }
+  },
+
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openrouter/anthropic/claude-3-5-haiku"
+      },
+      "workspace": "<HOME>/.openclaw-portarium-dev/workspace"
+    }
+  },
+
+  "plugins": {
+    "load": {
+      "paths": ["<REPO_ROOT>/packages/openclaw-plugin"]
+    },
+    "entries": {
+      "openclaw-plugin": {
+        "enabled": true,
+        "config": {
+          "portariumUrl": "http://localhost:3000",
+          "workspaceId": "ws-experiment",
+          "bearerToken": "dev-token",
+          "tenantId": "default",
+          "failClosed": true,
+          "_failClosedNote": "SECURITY: keep true in all deployments. failClosed:false is for local dev only — if Portarium is unreachable, all tools execute unguarded.",
+          "approvalTimeoutMs": 86400000,
+          "_approvalTimeoutNote": "24 hours — agent can wait for approval indefinitely",
+          "pollIntervalMs": 3000,
+          "_pollNote": "How often (ms) the plugin polls for a decision while suspended",
+          "defaultPolicyIds": ["default-governance"],
+          "_policyNote": "Policies evaluated for each tool call proposal",
+          "defaultExecutionTier": "HumanApprove",
+          "_tierNote": "All tools default to HumanApprove — unknown tools always need human sign-off"
+        }
+      }
+    }
+  }
+}

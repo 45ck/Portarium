@@ -1,0 +1,58 @@
+{
+  "company": "Nexus Capital Advisory",
+  "run_at": "2026-03-31T03:49:18.255Z",
+  "scenarios_run": 6,
+  "all_passed": true,
+  "outcomes": {
+    "auto_allowed": 1,
+    "approved": 4,
+    "denied": 1
+  },
+  "governance_stats": {
+    "fastest_auto_allow_ms": 0,
+    "avg_propose_rtt_ms": 2,
+    "max_propose_rtt_ms": 5,
+    "maker_checker_enforcement_ms": 0,
+    "trade_deliberation_ms": 5050
+  },
+  "scenario_results": [
+    {
+      "scenario": 1,
+      "outcome": "auto_allowed",
+      "propose_rtt_ms": 5
+    },
+    {
+      "scenario": 2,
+      "outcome": "approved",
+      "propose_rtt_ms": 2,
+      "total_blocked_ms": 5
+    },
+    {
+      "scenario": 3,
+      "outcome": "approved",
+      "propose_rtt_ms": 1,
+      "total_blocked_ms": 5055,
+      "deliberation_ms": 5050
+    },
+    {
+      "scenario": 4,
+      "outcome": "approved",
+      "propose_rtt_ms": 1,
+      "total_blocked_ms": 3
+    },
+    {
+      "scenario": 5,
+      "outcome": "denied",
+      "propose_rtt_ms": 1,
+      "total_blocked_ms": 3
+    },
+    {
+      "scenario": 6,
+      "outcome": "approved",
+      "propose_rtt_ms": 0,
+      "total_blocked_ms": 2,
+      "enforcement_ms": 0,
+      "recovery_after_rejection_ms": 1
+    }
+  ]
+}

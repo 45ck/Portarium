@@ -1,0 +1,38 @@
+# Portarium Production Multi-Region — example tfvars
+# Copy to terraform.tfvars and fill in environment-specific values.
+
+primary_region   = "us-east-1"
+secondary_region = "us-west-2"
+
+primary_vpc_cidr   = "10.30.0.0/16"
+secondary_vpc_cidr = "10.31.0.0/16"
+
+domain_name    = "api.portarium.example.com"
+hosted_zone_id = "Z0123456789ABCDEF"
+
+# These are populated after initial single-region deploy
+primary_alb_dns_name   = "portarium-prod-alb-123456.us-east-1.elb.amazonaws.com"
+primary_alb_zone_id    = "Z0123456789PRIMARY"
+secondary_alb_dns_name = "portarium-prod-dr-alb-789012.us-west-2.elb.amazonaws.com"
+secondary_alb_zone_id  = "Z0123456789SECONDARY"
+
+failover_threshold = 3
+
+# Database replication: "aurora-global" or "rds-read-replica"
+db_replication_mode     = "aurora-global"
+primary_db_cluster_arn  = "arn:aws:rds:us-east-1:123456789012:cluster:portarium-prod"
+primary_db_instance_arn = ""
+
+# EKS
+eks_cluster_version     = "1.31"
+eks_node_instance_types = ["t3.xlarge"]
+eks_node_min_size       = 3
+eks_node_max_size       = 10
+eks_node_desired_size   = 3
+
+# Database
+postgres_instance_class = "db.r6g.large"
+
+# ElastiCache (Redis) global datastore
+enable_elasticache_failover = false
+elasticache_node_type       = "cache.r6g.large"

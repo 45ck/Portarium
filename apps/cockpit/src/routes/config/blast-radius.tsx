@@ -1,13 +1,6 @@
 import { Fragment } from 'react';
 import { createRoute } from '@tanstack/react-router';
-import {
-  Eye,
-  Pencil,
-  AlertTriangle,
-  HelpCircle,
-  ShieldAlert,
-  PenLine,
-} from 'lucide-react';
+import { Eye, Pencil, AlertTriangle, HelpCircle, ShieldAlert, PenLine } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
@@ -21,11 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TOOL_CLASSIFICATIONS } from '@/mocks/fixtures/openclaw-demo';
 
 // ---------------------------------------------------------------------------
@@ -149,7 +138,12 @@ function DistributionBar({ tools }: { tools: ToolClassification[] }) {
   const total = tools.length;
   if (total === 0) return null;
 
-  const counts: Record<ToolCategory, number> = { ReadOnly: 0, Mutation: 0, Dangerous: 0, Unknown: 0 };
+  const counts: Record<ToolCategory, number> = {
+    ReadOnly: 0,
+    Mutation: 0,
+    Dangerous: 0,
+    Unknown: 0,
+  };
   for (const t of tools) {
     counts[t.category] = (counts[t.category] ?? 0) + 1;
   }
@@ -188,7 +182,10 @@ function DistributionBar({ tools }: { tools: ToolClassification[] }) {
       </div>
       <div className="flex gap-3">
         {segments.map((seg) => (
-          <span key={seg.category} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span
+            key={seg.category}
+            className="flex items-center gap-1 text-[10px] text-muted-foreground"
+          >
             <span className={`inline-block h-2 w-2 rounded-full ${colors[seg.category]}`} />
             {CATEGORY_CONFIG[seg.category].label}
           </span>
@@ -292,9 +289,7 @@ function BlastRadiusPage() {
                             {tool.rationale}
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          {tool.rationale}
-                        </TooltipContent>
+                        <TooltipContent className="max-w-xs">{tool.rationale}</TooltipContent>
                       </Tooltip>
                     </TableCell>
                     <TableCell className="text-center">

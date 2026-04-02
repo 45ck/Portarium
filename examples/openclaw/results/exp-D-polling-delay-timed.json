@@ -1,0 +1,94 @@
+{
+  "experiment": "D_polling_delay_timed",
+  "timestamps": {
+    "t0_experiment_start": "2026-03-31T03:36:10.765Z",
+    "t1_propose_sent": "2026-03-31T03:36:10.765Z",
+    "t2_propose_response": "2026-03-31T03:36:10.766Z",
+    "t3_wait_start": "2026-03-31T03:36:10.766Z",
+    "t4_wait_end": "2026-03-31T03:36:18.791Z",
+    "t5_approve_sent": "2026-03-31T03:36:18.791Z",
+    "t6_approve_response": "2026-03-31T03:36:18.793Z",
+    "t7_post_approval_poll": "2026-03-31T03:36:18.793Z",
+    "t8_post_approval_poll_response": "2026-03-31T03:36:18.794Z",
+    "t9_experiment_end": "2026-03-31T03:36:18.794Z"
+  },
+  "derived": {
+    "propose_rtt_ms": 1,
+    "simulated_wait_ms": 8025,
+    "total_blocked_duration_ms": 8029,
+    "polls_during_wait": 4,
+    "all_pending_during_wait": true,
+    "time_approve_to_detected_ms": 1
+  },
+  "polls_during_wait": [
+    {
+      "poll_number": 1,
+      "timestamp": "2026-03-31T03:36:12.769Z",
+      "response_at": "2026-03-31T03:36:12.770Z",
+      "status_observed": "Pending",
+      "elapsed_since_propose_ms": 2004
+    },
+    {
+      "poll_number": 2,
+      "timestamp": "2026-03-31T03:36:14.772Z",
+      "response_at": "2026-03-31T03:36:14.773Z",
+      "status_observed": "Pending",
+      "elapsed_since_propose_ms": 4007
+    },
+    {
+      "poll_number": 3,
+      "timestamp": "2026-03-31T03:36:16.782Z",
+      "response_at": "2026-03-31T03:36:16.784Z",
+      "status_observed": "Pending",
+      "elapsed_since_propose_ms": 6017
+    },
+    {
+      "poll_number": 4,
+      "timestamp": "2026-03-31T03:36:18.789Z",
+      "response_at": "2026-03-31T03:36:18.791Z",
+      "status_observed": "Pending",
+      "elapsed_since_propose_ms": 8024
+    }
+  ],
+  "post_approval_poll": {
+    "timestamp": "2026-03-31T03:36:18.793Z",
+    "response_at": "2026-03-31T03:36:18.794Z",
+    "status_observed": "Approved"
+  },
+  "assertions": [
+    {
+      "label": "propose returns NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval"
+    },
+    {
+      "label": "all 4 pre-approval polls return Pending",
+      "passed": true,
+      "detail": "statuses: [Pending, Pending, Pending, Pending]"
+    },
+    {
+      "label": "post-approval poll returns Approved",
+      "passed": true,
+      "detail": "status=Approved"
+    },
+    {
+      "label": "simulated wait is approximately 8 seconds",
+      "passed": true,
+      "detail": "simulated_wait_ms=8025 (expected ~8000)"
+    }
+  ],
+  "propose": {
+    "httpStatus": 202,
+    "proposalId": "416bfa36-4324-40a7-aa43-bc889d21dfab",
+    "evidenceId": "c1f4ab50-eb43-4cb6-bf8e-9773c9e49759",
+    "decision": "NeedsApproval",
+    "approvalId": "f80bad5e-9050-41fc-99f7-c575f1328011",
+    "message": "Tool 'deploy_to_staging' (Mutation) requires approval at tier HumanApprove."
+  },
+  "decide": {
+    "httpStatus": 200,
+    "approvalId": "f80bad5e-9050-41fc-99f7-c575f1328011",
+    "status": "Approved"
+  },
+  "outcome": "confirmed"
+}

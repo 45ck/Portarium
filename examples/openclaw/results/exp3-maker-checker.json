@@ -1,0 +1,30 @@
+{
+  "experiment": "maker-checker-enforcement",
+  "timestamp": "2026-03-31T01:52:00.000Z",
+  "outcome": "confirmed",
+  "notes": "Same user cannot approve their own proposal. HTTP 403 returned on self-approval attempt.",
+  "assertions": [
+    {
+      "label": "POST /agent-actions:propose returns NeedsApproval",
+      "passed": true,
+      "detail": "HTTP 202, decision=NeedsApproval, toolName=send_wire_transfer"
+    },
+    {
+      "label": "Same user attempting /decide returns HTTP 403 Forbidden",
+      "passed": true,
+      "detail": "detail: Maker-checker violation: the deciding user cannot be the same as the requesting user."
+    }
+  ],
+  "raw": {
+    "propose": {
+      "httpStatus": 202,
+      "decision": "NeedsApproval",
+      "toolName": "send_wire_transfer"
+    },
+    "selfApproveAttempt": {
+      "httpStatus": 403,
+      "title": "Forbidden",
+      "detail": "Maker-checker violation: the deciding user cannot be the same as the requesting user."
+    }
+  }
+}
