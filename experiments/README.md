@@ -8,6 +8,8 @@ This workspace provides a structured environment for running experiments against
 
 For the current cross-experiment narrative and defect summary, see
 [scientific-synthesis.md](./scientific-synthesis.md).
+For the planned next wave of reruns and scaled business scenarios, see
+[iteration-2-plan.md](./iteration-2-plan.md).
 
 ## Directory structure
 
