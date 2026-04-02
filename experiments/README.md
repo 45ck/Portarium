@@ -15,6 +15,7 @@ experiments/
     hypothesis.md      What you expect to happen and why
     setup.md           Prerequisites, environment config, seed data
     run.mjs            The experiment script (executable with `node run.mjs`)
+    repro/             Tracked config templates + reproduction notes
     results/           Output artefacts (logs, screenshots, JSON snapshots)
       .gitkeep
   <experiment-name>/   Each experiment lives in its own directory
@@ -55,6 +56,8 @@ experiments/
    ```
 
 5. Capture results in `results/` -- the runner writes a JSON summary automatically.
+6. Keep reproducible runtime configuration in `repro/` when the experiment depends on external CLIs
+   or agent frameworks.
 
 ## Conventions
 
@@ -62,6 +65,8 @@ experiments/
 - Each experiment must be independently runnable (`node experiments/<name>/run.mjs`).
 - Do not import from `src/` directly -- use the Portarium SDK or HTTP API.
 - Results in `results/` are gitignored except `.gitkeep`.
+- When reproducibility matters, commit the source config template in `repro/` and render it at run
+  time.
 - Tag experiments with the bead that created them in `hypothesis.md`.
 
 ## Result capture format

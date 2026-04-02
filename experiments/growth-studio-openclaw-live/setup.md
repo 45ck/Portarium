@@ -2,19 +2,29 @@
 
 ## Purpose
 
-This experiment runs a live OpenClaw agent against a local Portarium control plane and records the
-full Growth Studio rehearsal output.
+This experiment runs the official OpenClaw CLI against a local Portarium control plane and records
+the full Growth Studio rehearsal output.
+
+Official references:
+
+- `https://openclaw.ai/`
+- `https://github.com/openclaw/openclaw`
 
 ## What the runner does
 
 `run.mjs` performs the full setup automatically:
 
 1. Creates an isolated OpenClaw config and state directory under `results/runtime/`.
-2. Copies the committed fixture inputs into an isolated agent workspace.
-3. Starts the Portarium control plane in dev stub mode on a free local port.
-4. Launches `openclaw agent --local` with the Portarium governance plugin enabled.
-5. Polls Portarium for pending approvals and approves them using a separate operator token.
-6. Captures raw logs, approvals, evidence, output file snapshots, and the final runner outcome.
+2. Creates an isolated OpenClaw home directory under `results/runtime/home/` so the run does not
+   depend on the host `~/.openclaw` profile.
+3. Renders the committed `repro/openclaw.template.json` into an isolated `openclaw.json`.
+4. Copies the committed fixture inputs into an isolated agent workspace.
+5. Starts the Portarium control plane in dev stub mode on a free local port.
+6. Records `openclaw --version`, runs `openclaw plugins doctor`, and captures `openclaw doctor`.
+7. Launches `openclaw agent --local` with the Portarium governance plugin enabled.
+8. Polls Portarium for pending approvals and approves them using a separate operator token.
+9. Captures raw logs, approvals, evidence, output file snapshots, `timeline.ndjson`, and the final
+   runner outcome.
 
 ## Credential discovery
 
@@ -32,7 +42,7 @@ gitignored.
 From the repo root:
 
 ```bash
-node node_modules/tsx/dist/cli.mjs experiments/growth-studio-openclaw-live/run.mjs
+npm run experiment:growth-studio:live
 ```
 
 Optional overrides:
@@ -61,5 +71,10 @@ Important files:
 - `approvals.json`
 - `evidence.json`
 - `outputs.snapshot.json`
+- `timeline.ndjson`
 
 `report.md` is the committed summary of the latest confirmed run captured for this bead.
+`repro/` contains the tracked OpenClaw config template and reproduction notes kept in Git.
+
+The tracked template uses `plugins.entries.portarium.config`, matching the plugin's exported
+OpenClaw id and manifest id.

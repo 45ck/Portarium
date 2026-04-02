@@ -1,0 +1,84 @@
+{
+  "env": {
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+    "OPENROUTER_BASE_URL": "${OPENROUTER_BASE_URL}",
+    "GATEWAY_AUTH_TOKEN": "${GATEWAY_AUTH_TOKEN}"
+  },
+  "auth": {
+    "profiles": {
+      "openrouter:default": {
+        "provider": "openrouter",
+        "mode": "api_key"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "${MODEL_PRIMARY}",
+        "fallbacks": []
+      },
+      "models": {
+        "${MODEL_PRIMARY}": {}
+      },
+      "workspace": "${EXPERIMENT_WORKSPACE_DIR}",
+      "userTimezone": "Australia/Sydney",
+      "thinkingDefault": "low",
+      "sandbox": {
+        "mode": "off"
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "Growth Studio Lab",
+        "workspace": "${EXPERIMENT_WORKSPACE_DIR}",
+        "identity": {
+          "name": "Growth Studio Lab"
+        },
+        "tools": {
+          "profile": "coding",
+          "alsoAllow": ["group:fs"]
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "port": "${GATEWAY_PORT}",
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "${GATEWAY_AUTH_TOKEN}"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    }
+  },
+  "plugins": {
+    "load": {
+      "paths": ["${PORTARIUM_PLUGIN_PATH}"]
+    },
+    "entries": {
+      "portarium": {
+        "enabled": true,
+        "config": {
+          "portariumUrl": "${PORTARIUM_URL}",
+          "workspaceId": "${WORKSPACE_ID}",
+          "bearerToken": "${AGENT_TOKEN}",
+          "tenantId": "${TENANT_ID}",
+          "failClosed": true,
+          "approvalTimeoutMs": 900000,
+          "pollIntervalMs": 1000,
+          "defaultPolicyIds": ["default-governance"],
+          "defaultExecutionTier": "HumanApprove"
+        }
+      }
+    }
+  }
+}

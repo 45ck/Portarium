@@ -1,6 +1,6 @@
 // @ts-check
 
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import {
   appendFileSync,
   copyFileSync,
@@ -8,6 +8,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
+  watch,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -24,22 +25,28 @@ const __filename = fileURLToPath(import.meta.url);
 const EXPERIMENT_DIR = dirname(__filename);
 const REPO_ROOT = resolve(EXPERIMENT_DIR, '..', '..');
 const FIXTURES_DIR = join(EXPERIMENT_DIR, 'fixtures');
+const REPRO_DIR = join(EXPERIMENT_DIR, 'repro');
 const RESULTS_DIR = join(EXPERIMENT_DIR, 'results');
 const RUNTIME_DIR = join(RESULTS_DIR, 'runtime');
+const OPENCLAW_HOME_DIR = join(RUNTIME_DIR, 'home');
 const WORKSPACE_DIR = join(RUNTIME_DIR, 'workspace');
 const INPUTS_DIR = join(WORKSPACE_DIR, 'inputs');
 const OUTPUTS_DIR = join(WORKSPACE_DIR, 'outputs');
 const OPENCLAW_STATE_DIR = join(RUNTIME_DIR, 'openclaw-state');
 const OPENCLAW_CONFIG_PATH = join(RUNTIME_DIR, 'openclaw.json');
+const OPENCLAW_TEMPLATE_PATH = join(REPRO_DIR, 'openclaw.template.json');
 const CONTROL_PLANE_LOG = join(RESULTS_DIR, 'control-plane.log');
 const AGENT_STDOUT_LOG = join(RESULTS_DIR, 'agent.stdout.log');
 const AGENT_STDERR_LOG = join(RESULTS_DIR, 'agent.stderr.log');
+const OPENCLAW_DOCTOR_LOG = join(RESULTS_DIR, 'openclaw-doctor.log');
 const PLUGIN_DOCTOR_LOG = join(RESULTS_DIR, 'plugin-doctor.log');
 const APPROVALS_SNAPSHOT = join(RESULTS_DIR, 'approvals.json');
 const EVIDENCE_SNAPSHOT = join(RESULTS_DIR, 'evidence.json');
 const OUTPUTS_SNAPSHOT = join(RESULTS_DIR, 'outputs.snapshot.json');
 const RUN_CONTEXT = join(RESULTS_DIR, 'run-context.json');
+const TIMELINE_PATH = join(RESULTS_DIR, 'timeline.ndjson');
 const SESSION_ID = `growth-studio-live-${Date.now()}`;
+const TIMELINE_START_MS = Date.now();
 
 const WORKSPACE_ID = process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-growth-studio-live';
 const TENANT_ID = process.env['PORTARIUM_TENANT_ID'] ?? 'default';
@@ -157,18 +164,28 @@ const outcome = await runExperiment({
   async setup(ctx) {
     ensureDir(RESULTS_DIR);
     resetGeneratedArtifacts();
+    appendTimelineEvent('experiment.setup_started', { experiment: EXPERIMENT_NAME });
     ensureDir(RUNTIME_DIR);
+    ensureDir(OPENCLAW_HOME_DIR);
     ensureDir(WORKSPACE_DIR);
     ensureDir(INPUTS_DIR);
     ensureDir(OUTPUTS_DIR);
     ensureDir(OPENCLAW_STATE_DIR);
+    ensureDir(join(OPENCLAW_STATE_DIR, 'credentials'));
+    ensureDir(join(OPENCLAW_STATE_DIR, 'completions'));
+    ensureDir(join(OPENCLAW_STATE_DIR, 'agents', 'main', 'sessions'));
+    ctx.state.outputWatcher = startOutputWatcher();
 
     for (const file of FIXTURE_FILES) {
       copyFileSync(join(FIXTURES_DIR, file), join(INPUTS_DIR, file));
+      appendTimelineEvent('workspace.input_copied', { file, target: join(INPUTS_DIR, file) });
     }
     writeFileSync(join(WORKSPACE_DIR, 'BOOTSTRAP.md'), WORKSPACE_BOOTSTRAP, 'utf8');
     writeFileSync(join(WORKSPACE_DIR, 'AGENTS.md'), WORKSPACE_AGENTS, 'utf8');
     writeFileSync(join(WORKSPACE_DIR, 'TASK.md'), WORKSPACE_TASK, 'utf8');
+    appendTimelineEvent('workspace.control_file_written', { file: 'BOOTSTRAP.md' });
+    appendTimelineEvent('workspace.control_file_written', { file: 'AGENTS.md' });
+    appendTimelineEvent('workspace.control_file_written', { file: 'TASK.md' });
 
     const credentials = discoverOpenRouterCredentials();
     ctx.state.credentials = {
@@ -176,12 +193,49 @@ const outcome = await runExperiment({
       keyDiscovered: credentials.key !== null,
       baseUrl: credentials.baseUrl,
     };
+    appendTimelineEvent('openrouter.credentials_discovered', {
+      discovered: credentials.key !== null,
+      source: credentials.source ?? 'none',
+      baseUrl: credentials.baseUrl,
+    });
 
     const controlPlanePort = await findFreePort();
     const gatewayPort = await findFreePort();
     ctx.state.portariumUrl = `http://127.0.0.1:${controlPlanePort}`;
     ctx.state.gatewayPort = gatewayPort;
     ctx.state.sessionId = SESSION_ID;
+    appendTimelineEvent('runtime.ports_reserved', {
+      controlPlanePort,
+      gatewayPort,
+      sessionId: SESSION_ID,
+    });
+
+    const openClawLocator = await locateOpenClawBinary();
+    const renderedConfig = buildOpenClawConfig({
+      gatewayPort,
+      portariumUrl: /** @type {string} */ (ctx.state.portariumUrl),
+      openRouterApiKey: credentials.key,
+      openRouterBaseUrl: credentials.baseUrl,
+    });
+    writeJson(OPENCLAW_CONFIG_PATH, renderedConfig);
+    appendTimelineEvent('openclaw.config_rendered', {
+      templatePath: OPENCLAW_TEMPLATE_PATH,
+      outputPath: OPENCLAW_CONFIG_PATH,
+    });
+
+    const version = await runOpenClawCommand(['--version'], buildOpenClawRuntimeEnv(), 90_000);
+    const resolvedOpenClawVersion = extractOpenClawVersion(version.stdout, version.stderr);
+    ctx.state.openClawVersion = {
+      exitCode: version.exitCode,
+      stdout: version.stdout.trim(),
+      stderr: version.stderr.trim(),
+      locator: openClawLocator,
+    };
+    appendTimelineEvent('openclaw.version_checked', {
+      exitCode: version.exitCode,
+      version: resolvedOpenClawVersion,
+      locator: openClawLocator,
+    });
 
     writeJson(RUN_CONTEXT, {
       experiment: EXPERIMENT_NAME,
@@ -193,20 +247,18 @@ const outcome = await runExperiment({
       gatewayPort,
       openRouterKeySource: credentials.source,
       openRouterKeyDiscovered: credentials.key !== null,
+      openClawVersion: resolvedOpenClawVersion,
+      openClawVersionExitCode: version.exitCode,
+      openClawBinary: openClawLocator.primary,
+      openClawBinaryCandidates: openClawLocator.candidates,
+      openClawOfficialWebsite: 'https://openclaw.ai/',
+      openClawOfficialRepository: 'https://github.com/openclaw/openclaw',
+      openClawTrackedTemplatePath: OPENCLAW_TEMPLATE_PATH,
       workspaceDir: WORKSPACE_DIR,
       outputsDir: OUTPUTS_DIR,
       generatedAt: new Date().toISOString(),
     });
-
-    writeJson(
-      OPENCLAW_CONFIG_PATH,
-      buildOpenClawConfig({
-        gatewayPort,
-        portariumUrl: /** @type {string} */ (ctx.state.portariumUrl),
-        openRouterApiKey: credentials.key,
-        openRouterBaseUrl: credentials.baseUrl,
-      }),
-    );
+    appendTimelineEvent('experiment.run_context_written', { path: RUN_CONTEXT });
 
     const controlPlane = spawn(
       process.execPath,
@@ -230,19 +282,30 @@ const outcome = await runExperiment({
         windowsHide: true,
       },
     );
-    pipeChildOutput(controlPlane, CONTROL_PLANE_LOG, '[control-plane]');
+    pipeChildOutput(
+      controlPlane,
+      CONTROL_PLANE_LOG,
+      CONTROL_PLANE_LOG,
+      '[control-plane]',
+      'control-plane',
+    );
     ctx.state.controlPlane = controlPlane;
     ctx.state.controlPlanePid = controlPlane.pid ?? null;
+    appendTimelineEvent('process.spawned', {
+      process: 'control-plane',
+      pid: controlPlane.pid ?? null,
+    });
 
     await waitForHealth(/** @type {string} */ (ctx.state.portariumUrl));
     ctx.state.health = await getJson(`${ctx.state.portariumUrl}/health`);
+    appendTimelineEvent('control-plane.healthy', {
+      health: ctx.state.health,
+    });
 
+    appendTimelineEvent('openclaw.plugins_doctor_started', {});
     const doctor = await runOpenClawCommand(
       ['plugins', 'doctor'],
-      {
-        OPENCLAW_CONFIG_PATH,
-        OPENCLAW_STATE_DIR,
-      },
+      buildOpenClawRuntimeEnv(),
       60_000,
     );
     writeFileSync(
@@ -255,6 +318,25 @@ const outcome = await runExperiment({
       stdout: doctor.stdout,
       stderr: doctor.stderr,
     };
+    appendTimelineEvent('openclaw.plugins_doctor_finished', {
+      exitCode: doctor.exitCode,
+    });
+
+    appendTimelineEvent('openclaw.doctor_started', {});
+    const fullDoctor = await runOpenClawCommand(['doctor'], buildOpenClawRuntimeEnv(), 90_000);
+    writeFileSync(
+      OPENCLAW_DOCTOR_LOG,
+      [fullDoctor.stdout, fullDoctor.stderr].filter(Boolean).join('\n').trim() + '\n',
+      'utf8',
+    );
+    ctx.state.openClawDoctor = {
+      exitCode: fullDoctor.exitCode,
+      stdout: fullDoctor.stdout,
+      stderr: fullDoctor.stderr,
+    };
+    appendTimelineEvent('openclaw.doctor_finished', {
+      exitCode: fullDoctor.exitCode,
+    });
   },
 
   async execute(ctx) {
@@ -263,6 +345,10 @@ const outcome = await runExperiment({
       /** @type {{ keySource: string | null; keyDiscovered: boolean; baseUrl: string }} */ (
         ctx.state.credentials
       );
+    appendTimelineEvent('experiment.execute_started', {
+      portariumUrl,
+      workspaceId: WORKSPACE_ID,
+    });
 
     const approvalTraces = /** @type {ApprovalTrace[]} */ ([]);
     const seenApprovalIds = new Set();
@@ -285,6 +371,11 @@ const outcome = await runExperiment({
             continue;
           }
           seenApprovalIds.add(approvalId);
+          appendTimelineEvent('approval.pending_detected', {
+            approvalId,
+            toolName: String(item.toolName ?? ''),
+            status: String(item.status ?? ''),
+          });
           const before = await getJson(
             `${portariumUrl}/v1/workspaces/${encodeURIComponent(WORKSPACE_ID)}/approvals/${encodeURIComponent(approvalId)}`,
             agentHeaders(),
@@ -306,6 +397,12 @@ const outcome = await runExperiment({
             approvedAtIso: new Date().toISOString(),
           });
           writeJson(APPROVALS_SNAPSHOT, approvalTraces);
+          appendTimelineEvent('approval.decided', {
+            approvalId,
+            toolName: String(before?.toolName ?? item.toolName ?? ''),
+            statusBefore: String(before?.status ?? ''),
+            statusAfter: String(after?.status ?? ''),
+          });
         }
         await delay(1_000);
       }
@@ -329,8 +426,7 @@ const outcome = await runExperiment({
       cwd: REPO_ROOT,
       env: {
         ...process.env,
-        OPENCLAW_CONFIG_PATH,
-        OPENCLAW_STATE_DIR,
+        ...buildOpenClawRuntimeEnv(),
         ...(credentials.keySource && credentials.keyDiscovered
           ? { OPENROUTER_API_KEY: discoverOpenRouterCredentials().key ?? '' }
           : {}),
@@ -338,9 +434,13 @@ const outcome = await runExperiment({
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     });
-    pipeChildOutput(agent, AGENT_STDOUT_LOG, '[agent]');
-    pipeChildOutput(agent, AGENT_STDERR_LOG, '[agent]');
+    pipeChildOutput(agent, AGENT_STDOUT_LOG, AGENT_STDERR_LOG, '[agent]', 'agent');
     ctx.state.agentPid = agent.pid ?? null;
+    appendTimelineEvent('process.spawned', {
+      process: 'agent',
+      pid: agent.pid ?? null,
+      sessionId: SESSION_ID,
+    });
 
     const agentExit = await waitForExit(agent, 240_000);
     stopApprovalLoop = true;
@@ -348,6 +448,12 @@ const outcome = await runExperiment({
 
     ctx.state.agentExit = agentExit;
     ctx.state.approvalTraces = approvalTraces;
+    appendTimelineEvent('process.exited', {
+      process: 'agent',
+      exitCode: agentExit.exitCode,
+      signal: agentExit.signal,
+      timedOut: agentExit.timedOut,
+    });
 
     const approvals = await getJson(
       `${portariumUrl}/v1/workspaces/${encodeURIComponent(WORKSPACE_ID)}/approvals`,
@@ -361,10 +467,22 @@ const outcome = await runExperiment({
     writeJson(EVIDENCE_SNAPSHOT, evidence);
     ctx.state.approvals = approvals;
     ctx.state.evidence = evidence;
+    appendTimelineEvent('snapshot.captured', {
+      approvals: Array.isArray(approvals.items) ? approvals.items.length : 0,
+      evidence: Array.isArray(evidence.items) ? evidence.items.length : 0,
+    });
 
     const outputSnapshot = snapshotOutputs();
     writeJson(OUTPUTS_SNAPSHOT, outputSnapshot);
     ctx.state.outputSnapshot = outputSnapshot;
+    appendTimelineEvent('outputs.snapshot_captured', {
+      files: Object.fromEntries(
+        Object.entries(outputSnapshot).map(([file, meta]) => [
+          file,
+          { exists: meta.exists, bytes: meta.bytes, sha256: meta.sha256 },
+        ]),
+      ),
+    });
 
     const combinedLogs = [
       safeRead(AGENT_STDOUT_LOG),
@@ -373,6 +491,9 @@ const outcome = await runExperiment({
     ].join('\n');
     ctx.state.observedToolCalls = extractToolCalls(combinedLogs);
     ctx.state.combinedLogs = combinedLogs;
+    appendTimelineEvent('experiment.execute_finished', {
+      observedToolCalls: ctx.state.observedToolCalls,
+    });
   },
 
   async verify(ctx) {
@@ -389,7 +510,7 @@ const outcome = await runExperiment({
     );
     const evidence = /** @type {{ items?: Array<Record<string, unknown>> }} */ (ctx.state.evidence);
     const outputSnapshot =
-      /** @type {Record<string, { exists: boolean; bytes: number; content: string }>} */ (
+      /** @type {Record<string, { exists: boolean; bytes: number; sha256: string; content: string }>} */ (
         ctx.state.outputSnapshot
       );
     const observedToolCalls = /** @type {string[]} */ (ctx.state.observedToolCalls ?? []);
@@ -412,6 +533,11 @@ const outcome = await runExperiment({
         'OpenClaw plugin doctor completed without a command failure',
         Number((ctx.state.pluginDoctor ?? {}).exitCode ?? 1) === 0,
         `exitCode=${String((ctx.state.pluginDoctor ?? {}).exitCode ?? 'unknown')}`,
+      ),
+      assert(
+        'OpenClaw doctor completed without a command failure',
+        Number((ctx.state.openClawDoctor ?? {}).exitCode ?? 1) === 0,
+        `exitCode=${String((ctx.state.openClawDoctor ?? {}).exitCode ?? 'unknown')}`,
       ),
       assert(
         'OpenClaw agent process exited cleanly',
@@ -463,12 +589,26 @@ const outcome = await runExperiment({
   },
 
   async teardown(ctx) {
+    const outputWatcher = /** @type {import('node:fs').FSWatcher | undefined} */ (
+      ctx.state.outputWatcher
+    );
+    outputWatcher?.close();
+    appendTimelineEvent('workspace.output_watch_stopped', {});
+
     const controlPlane = /** @type {import('node:child_process').ChildProcess | undefined} */ (
       ctx.state.controlPlane
     );
     if (controlPlane && controlPlane.exitCode === null) {
       controlPlane.kill();
-      await waitForExit(controlPlane, 15_000).catch(() => {});
+      const controlPlaneExit = await waitForExit(controlPlane, 15_000).catch(() => null);
+      if (controlPlaneExit) {
+        appendTimelineEvent('process.exited', {
+          process: 'control-plane',
+          exitCode: controlPlaneExit.exitCode,
+          signal: controlPlaneExit.signal,
+          timedOut: controlPlaneExit.timedOut,
+        });
+      }
     }
   },
 });
@@ -487,90 +627,21 @@ process.exitCode = outcome.outcome === 'confirmed' ? 0 : 1;
 
 function buildOpenClawConfig(input) {
   const gatewayToken = randomBytes(20).toString('hex');
-  return {
-    env: {
-      ...(input.openRouterApiKey ? { OPENROUTER_API_KEY: input.openRouterApiKey } : {}),
+  return pruneNullishFields(
+    renderJsonTemplate(OPENCLAW_TEMPLATE_PATH, {
+      OPENROUTER_API_KEY: input.openRouterApiKey,
       OPENROUTER_BASE_URL: input.openRouterBaseUrl,
       GATEWAY_AUTH_TOKEN: gatewayToken,
-    },
-    auth: {
-      profiles: {
-        'openrouter:default': {
-          provider: 'openrouter',
-          mode: 'api_key',
-        },
-      },
-    },
-    models: {
-      mode: 'merge',
-    },
-    agents: {
-      defaults: {
-        model: {
-          primary: MODEL_PRIMARY,
-          fallbacks: [],
-        },
-        models: {
-          [MODEL_PRIMARY]: {},
-        },
-        workspace: WORKSPACE_DIR,
-        userTimezone: 'Australia/Sydney',
-        thinkingDefault: 'low',
-        sandbox: {
-          mode: 'off',
-        },
-      },
-      list: [
-        {
-          id: 'main',
-          default: true,
-          name: 'Growth Studio Lab',
-          workspace: WORKSPACE_DIR,
-          identity: {
-            name: 'Growth Studio Lab',
-          },
-          tools: {
-            profile: 'coding',
-            alsoAllow: ['group:fs'],
-          },
-        },
-      ],
-    },
-    gateway: {
-      port: input.gatewayPort,
-      mode: 'local',
-      bind: 'loopback',
-      auth: {
-        mode: 'token',
-        token: '${GATEWAY_AUTH_TOKEN}',
-      },
-      tailscale: {
-        mode: 'off',
-        resetOnExit: false,
-      },
-    },
-    plugins: {
-      load: {
-        paths: [join(REPO_ROOT, 'packages', 'openclaw-plugin')],
-      },
-      entries: {
-        'openclaw-plugin': {
-          enabled: true,
-          config: {
-            portariumUrl: input.portariumUrl,
-            workspaceId: WORKSPACE_ID,
-            bearerToken: AGENT_TOKEN,
-            tenantId: TENANT_ID,
-            failClosed: true,
-            approvalTimeoutMs: 900_000,
-            pollIntervalMs: 1_000,
-            defaultPolicyIds: ['default-governance'],
-            defaultExecutionTier: 'HumanApprove',
-          },
-        },
-      },
-    },
-  };
+      MODEL_PRIMARY,
+      EXPERIMENT_WORKSPACE_DIR: WORKSPACE_DIR,
+      GATEWAY_PORT: input.gatewayPort,
+      PORTARIUM_PLUGIN_PATH: join(REPO_ROOT, 'packages', 'openclaw-plugin'),
+      PORTARIUM_URL: input.portariumUrl,
+      WORKSPACE_ID,
+      AGENT_TOKEN,
+      TENANT_ID,
+    }),
+  );
 }
 
 function ensureDir(path) {
@@ -584,13 +655,29 @@ function resetGeneratedArtifacts() {
     AGENT_STDOUT_LOG,
     AGENT_STDERR_LOG,
     PLUGIN_DOCTOR_LOG,
+    OPENCLAW_DOCTOR_LOG,
     APPROVALS_SNAPSHOT,
     EVIDENCE_SNAPSHOT,
     OUTPUTS_SNAPSHOT,
     RUN_CONTEXT,
+    TIMELINE_PATH,
   ]) {
     rmSync(file, { force: true });
   }
+}
+
+function appendTimelineEvent(type, data = {}) {
+  ensureDir(RESULTS_DIR);
+  appendFileSync(
+    TIMELINE_PATH,
+    JSON.stringify({
+      atIso: new Date().toISOString(),
+      tRelMs: Date.now() - TIMELINE_START_MS,
+      type,
+      data,
+    }) + '\n',
+    'utf8',
+  );
 }
 
 function writeJson(path, value) {
@@ -601,14 +688,39 @@ function safeRead(path) {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
 }
 
-function pipeChildOutput(child, targetPath, label) {
-  const append = (chunk) => {
+function pipeChildOutput(child, stdoutPath, stderrPath, label, source) {
+  attachStreamCapture(child.stdout, stdoutPath, label, source, 'stdout');
+  attachStreamCapture(child.stderr, stderrPath, label, source, 'stderr');
+}
+
+function attachStreamCapture(stream, targetPath, label, source, streamName) {
+  if (!stream) {
+    return;
+  }
+
+  let buffered = '';
+  const flushBufferedLines = (force = false) => {
+    const lines = buffered.split(/\r?\n/);
+    buffered = force ? '' : (lines.pop() ?? '');
+    for (const line of force ? lines.filter((item) => item.length > 0) : lines) {
+      appendTimelineEvent('process.output_line', {
+        source,
+        stream: streamName,
+        line,
+      });
+    }
+  };
+
+  stream.on('data', (chunk) => {
     const text = chunk.toString();
     appendFileSync(targetPath, text, 'utf8');
     process.stdout.write(`${label} ${text}`);
-  };
-  child.stdout?.on('data', append);
-  child.stderr?.on('data', append);
+    buffered += text;
+    flushBufferedLines(false);
+  });
+  stream.on('end', () => {
+    flushBufferedLines(true);
+  });
 }
 
 function waitForExit(child, timeoutMs) {
@@ -680,45 +792,82 @@ function operatorHeaders() {
 }
 
 async function getJson(url, headers = {}) {
-  const response = await fetch(url, {
-    headers,
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed: HTTP ${response.status}`);
+  const startedMs = Date.now();
+  try {
+    const response = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(10_000),
+    });
+    appendTimelineEvent('http.response', {
+      method: 'GET',
+      url: sanitizeUrlForTimeline(url),
+      status: response.status,
+      durationMs: Date.now() - startedMs,
+    });
+    if (!response.ok) {
+      throw new Error(`GET ${url} failed: HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    appendTimelineEvent('http.error', {
+      method: 'GET',
+      url: sanitizeUrlForTimeline(url),
+      durationMs: Date.now() - startedMs,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
-  return await response.json();
 }
 
 async function postJson(url, body, headers = {}) {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      ...headers,
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
-    throw new Error(`POST ${url} failed: HTTP ${response.status}`);
+  const startedMs = Date.now();
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...headers,
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
+    });
+    appendTimelineEvent('http.response', {
+      method: 'POST',
+      url: sanitizeUrlForTimeline(url),
+      status: response.status,
+      durationMs: Date.now() - startedMs,
+      body: redactTimelineBody(body),
+    });
+    if (!response.ok) {
+      throw new Error(`POST ${url} failed: HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    appendTimelineEvent('http.error', {
+      method: 'POST',
+      url: sanitizeUrlForTimeline(url),
+      durationMs: Date.now() - startedMs,
+      body: redactTimelineBody(body),
+      message: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
-  return await response.json();
 }
 
 function snapshotOutputs() {
-  /** @type {Record<string, { exists: boolean; bytes: number; content: string }>} */
+  /** @type {Record<string, { exists: boolean; bytes: number; sha256: string; content: string }>} */
   const snapshot = {};
   for (const file of OUTPUT_FILES) {
     const path = join(OUTPUTS_DIR, file);
     if (!existsSync(path)) {
-      snapshot[file] = { exists: false, bytes: 0, content: '' };
+      snapshot[file] = { exists: false, bytes: 0, sha256: '', content: '' };
       continue;
     }
     const content = readFileSync(path, 'utf8');
     snapshot[file] = {
       exists: true,
       bytes: Buffer.byteLength(content, 'utf8'),
+      sha256: sha256(content),
       content,
     };
   }
@@ -873,4 +1022,135 @@ function runShortCommand(command, args, extraEnv, timeoutMs) {
 function runOpenClawCommand(args, extraEnv, timeoutMs) {
   const command = openClawCommand(args);
   return runShortCommand(command.command, command.args, extraEnv, timeoutMs);
+}
+
+function buildOpenClawRuntimeEnv() {
+  return {
+    OPENCLAW_CONFIG_PATH,
+    OPENCLAW_STATE_DIR,
+    HOME: OPENCLAW_HOME_DIR,
+    USERPROFILE: OPENCLAW_HOME_DIR,
+  };
+}
+
+function renderJsonTemplate(templatePath, replacements) {
+  const template = JSON.parse(readFileSync(templatePath, 'utf8'));
+  return substituteTemplateValue(template, replacements);
+}
+
+function pruneNullishFields(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => pruneNullishFields(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, item]) => item !== null && item !== undefined)
+        .map(([key, item]) => [key, pruneNullishFields(item)]),
+    );
+  }
+  return value;
+}
+
+function substituteTemplateValue(value, replacements) {
+  if (typeof value === 'string') {
+    const exact = value.match(/^\$\{([A-Z0-9_]+)\}$/);
+    if (exact) {
+      return replacements[exact[1]];
+    }
+    return value.replace(/\$\{([A-Z0-9_]+)\}/g, (_match, key) => String(replacements[key] ?? ''));
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => substituteTemplateValue(item, replacements));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        substituteTemplateValue(key, replacements),
+        substituteTemplateValue(item, replacements),
+      ]),
+    );
+  }
+  return value;
+}
+
+function sanitizeUrlForTimeline(url) {
+  const parsed = new URL(url);
+  return `${parsed.pathname}${parsed.search}`;
+}
+
+function redactTimelineBody(value) {
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      /token|secret|key|authorization/i.test(key) ? '[REDACTED]' : item,
+    ]),
+  );
+}
+
+function sha256(value) {
+  return `sha256:${createHash('sha256').update(value).digest('hex')}`;
+}
+
+function startOutputWatcher() {
+  ensureDir(OUTPUTS_DIR);
+  const pendingTimers = new Map();
+  const watcher = watch(OUTPUTS_DIR, { persistent: false }, (eventType, filename) => {
+    const file = filename?.toString();
+    if (!file) {
+      return;
+    }
+
+    const existing = pendingTimers.get(file);
+    if (existing) {
+      clearTimeout(existing);
+    }
+
+    const timer = setTimeout(() => {
+      pendingTimers.delete(file);
+      const path = join(OUTPUTS_DIR, file);
+      const exists = existsSync(path);
+      const content = exists ? readFileSync(path, 'utf8') : '';
+      appendTimelineEvent('workspace.output_changed', {
+        eventType,
+        file,
+        exists,
+        bytes: exists ? Buffer.byteLength(content, 'utf8') : 0,
+        sha256: exists ? sha256(content) : '',
+      });
+    }, 75);
+    pendingTimers.set(file, timer);
+  });
+
+  appendTimelineEvent('workspace.output_watch_started', { path: OUTPUTS_DIR });
+  return watcher;
+}
+
+function extractOpenClawVersion(stdout, stderr) {
+  const versionPattern = /\b\d{4}\.\d+\.\d+\b/;
+  return (
+    stdout.match(versionPattern)?.[0] ??
+    stderr.match(versionPattern)?.[0] ??
+    stdout.trim() ??
+    stderr.trim() ??
+    ''
+  );
+}
+
+async function locateOpenClawBinary() {
+  const locator =
+    process.platform === 'win32'
+      ? await runShortCommand('where', ['openclaw'], {}, 10_000).catch(() => null)
+      : await runShortCommand('which', ['openclaw'], {}, 10_000).catch(() => null);
+  const candidates = (locator?.stdout || locator?.stderr || '')
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return {
+    primary: candidates[0] ?? 'unresolved',
+    candidates,
+  };
 }

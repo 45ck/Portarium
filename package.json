@@ -200,6 +200,7 @@
     "demo:agent:gemini": "tsx scripts/demo/google-gemini-agent-demo.mjs",
     "demo:agent:multi": "tsx scripts/demo/multi-agent-routing-demo.mjs",
     "demo:approve": "node scripts/demo/portarium-approval-cli.mjs",
+    "experiment:growth-studio:live": "node node_modules/tsx/dist/cli.mjs experiments/growth-studio-openclaw-live/run.mjs",
     "lab:approval": "tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:claude": "PORTARIUM_LAB_PROVIDER=claude tsx scripts/lab/approval-lifecycle-lab.mjs",
     "lab:approval:openai": "PORTARIUM_LAB_PROVIDER=openai tsx scripts/lab/approval-lifecycle-lab.mjs",
