@@ -1,5 +1,7 @@
 {
   "database": "no-db",
-  "jsonl_export": "issues.jsonl",
-  "backend": "no-db"
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "bead",
+  "project_id": "4975fd8d-aef8-48dd-817d-56bf3ad55c0c"
 }
