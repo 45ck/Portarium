@@ -1,0 +1,18 @@
+{
+  "mode": "stub",
+  "channels": [
+    {
+      "channelId": "linkedin-company",
+      "network": "linkedin",
+      "requiresApproval": true,
+      "state": "idle"
+    },
+    {
+      "channelId": "x-brand",
+      "network": "x",
+      "requiresApproval": true,
+      "state": "idle"
+    }
+  ],
+  "queuedPosts": []
+}

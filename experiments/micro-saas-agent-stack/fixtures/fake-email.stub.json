@@ -1,0 +1,9 @@
+{
+  "mode": "stub",
+  "outbox": [],
+  "inboxReplies": [],
+  "rules": {
+    "requiresApproval": true,
+    "delivery": "queue-only"
+  }
+}

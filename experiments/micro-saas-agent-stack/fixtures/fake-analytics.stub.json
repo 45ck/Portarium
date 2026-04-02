@@ -1,0 +1,12 @@
+{
+  "mode": "stub",
+  "acceptedEvents": [
+    "page_view",
+    "cta_click",
+    "signup_start",
+    "signup_complete",
+    "email_open",
+    "email_click"
+  ],
+  "events": []
+}

@@ -1,0 +1,21 @@
+{
+  "productName": "Prompt Review Copilot",
+  "category": "micro-saas",
+  "targetAudience": [
+    "solo founders shipping AI products",
+    "small teams iterating on landing pages and onboarding flows"
+  ],
+  "offer": "Audit prompt UX, landing-page copy, and onboarding messaging for clarity and conversion.",
+  "primaryGoal": "Generate launch copy, queue outbound drafts into stub systems, and verify the funnel before any real send.",
+  "successMetrics": {
+    "landingPageVariants": 3,
+    "emailDrafts": 2,
+    "socialDrafts": 3,
+    "qaFlows": 1
+  },
+  "constraints": [
+    "no live outbound email",
+    "no live social publishing",
+    "approval required before publish or send transitions"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "mode": "stub",
+  "workspaceId": "ws-micro-saas-stack",
+  "pipeline": "launch-alpha",
+  "prospects": [
+    {
+      "prospectId": "lead-001",
+      "name": "Riley Hart",
+      "company": "North Ridge Labs",
+      "status": "new"
+    }
+  ]
+}
