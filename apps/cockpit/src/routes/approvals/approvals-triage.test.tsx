@@ -95,9 +95,9 @@ function createMemoryStorage(): Storage {
   };
 }
 
-async function renderApprovalsRoute() {
+async function renderApprovalsRoute(initialEntry = '/approvals') {
   const router = createCockpitRouter({
-    history: createMemoryHistory({ initialEntries: ['/approvals'] }),
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
   render(<RouterProvider router={router} />);
   await router.load();
@@ -190,6 +190,18 @@ describe('Approvals triage page', () => {
 
     expect(await screen.findByText(/failed to load approvals/i)).toBeTruthy();
     expect(await screen.findByRole('button', { name: /retry/i })).toBeTruthy();
+  });
+
+  it('shows a policy-studio handoff banner when arriving with focus from the studio', async () => {
+    const focused = ALL_PENDING[0]!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio`,
+    );
+
+    expect(await screen.findByText(/opened from policy studio/i)).toBeTruthy();
+    expect(await screen.findByRole('link', { name: /Back to Policy Studio/i })).toBeTruthy();
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
   });
 
   it('advances to the next approval after skipping the current one', async () => {

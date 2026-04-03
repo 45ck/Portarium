@@ -82,7 +82,13 @@ const proposeRtts = [];
 
 async function experimentA() {
   console.log('\n=== Experiment A: Approval flow with timing ===');
-  const result = { experiment: 'A_approval_timed', timestamps: {}, derived: {}, polls: [], assertions: [] };
+  const result = {
+    experiment: 'A_approval_timed',
+    timestamps: {},
+    derived: {},
+    polls: [],
+    assertions: [],
+  };
 
   // t0
   result.timestamps.t0_experiment_start = now();
@@ -103,7 +109,9 @@ async function experimentA() {
   const approvalId = propose.json.approvalId;
   const proposalId = propose.json.proposalId;
   const evidenceId = propose.json.evidenceId;
-  console.log(`  propose: HTTP ${propose.status}, decision=${propose.json.decision}, approvalId=${approvalId}`);
+  console.log(
+    `  propose: HTTP ${propose.status}, decision=${propose.json.decision}, approvalId=${approvalId}`,
+  );
 
   result.assertions.push({
     label: 'propose returns 202 with NeedsApproval',
@@ -155,7 +163,12 @@ async function experimentA() {
   for (let i = 1; i <= 5; i++) {
     const pollTs = now();
     const poll = await api('GET', `/approvals/${approvalId}`);
-    const pollResult = { poll_number: i, timestamp: pollTs, response_at: now(), status_observed: poll.json.status };
+    const pollResult = {
+      poll_number: i,
+      timestamp: pollTs,
+      response_at: now(),
+      status_observed: poll.json.status,
+    };
     result.polls.push(pollResult);
     if (poll.json.status === 'Approved') {
       detected = true;
@@ -176,10 +189,22 @@ async function experimentA() {
   // Derived timings
   result.derived = {
     propose_rtt_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t2_propose_response),
-    time_to_pending_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t4_initial_poll_response),
-    time_pending_to_decided_ms: ms(result.timestamps.t4_initial_poll_response, result.timestamps.t6_decide_response),
-    time_decided_to_detected_ms: ms(result.timestamps.t6_decide_response, result.timestamps.t8_approval_detected || result.timestamps.t9_experiment_end),
-    total_governance_duration_ms: ms(result.timestamps.t0_experiment_start, result.timestamps.t8_approval_detected || result.timestamps.t9_experiment_end),
+    time_to_pending_ms: ms(
+      result.timestamps.t1_propose_sent,
+      result.timestamps.t4_initial_poll_response,
+    ),
+    time_pending_to_decided_ms: ms(
+      result.timestamps.t4_initial_poll_response,
+      result.timestamps.t6_decide_response,
+    ),
+    time_decided_to_detected_ms: ms(
+      result.timestamps.t6_decide_response,
+      result.timestamps.t8_approval_detected || result.timestamps.t9_experiment_end,
+    ),
+    total_governance_duration_ms: ms(
+      result.timestamps.t0_experiment_start,
+      result.timestamps.t8_approval_detected || result.timestamps.t9_experiment_end,
+    ),
     polls_while_pending: result.polls.filter((p) => p.status_observed === 'Pending').length,
     polls_until_detected: result.polls.length,
     effective_poll_interval_ms:
@@ -203,7 +228,9 @@ async function experimentA() {
     outcome: result.outcome,
   };
 
-  console.log(`  outcome: ${result.outcome} (total ${result.derived.total_governance_duration_ms}ms)`);
+  console.log(
+    `  outcome: ${result.outcome} (total ${result.derived.total_governance_duration_ms}ms)`,
+  );
   writeResult('exp-A-approval-timed.json', result);
   return result;
 }
@@ -214,7 +241,13 @@ async function experimentA() {
 
 async function experimentB() {
   console.log('\n=== Experiment B: Denial flow with timing ===');
-  const result = { experiment: 'B_denial_timed', timestamps: {}, derived: {}, polls: [], assertions: [] };
+  const result = {
+    experiment: 'B_denial_timed',
+    timestamps: {},
+    derived: {},
+    polls: [],
+    assertions: [],
+  };
 
   result.timestamps.t0_experiment_start = now();
 
@@ -232,7 +265,9 @@ async function experimentB() {
   result.timestamps.t2_propose_response = now();
   result.propose = { httpStatus: propose.status, ...propose.json };
   const approvalId = propose.json.approvalId;
-  console.log(`  propose: HTTP ${propose.status}, decision=${propose.json.decision}, approvalId=${approvalId}`);
+  console.log(
+    `  propose: HTTP ${propose.status}, decision=${propose.json.decision}, approvalId=${approvalId}`,
+  );
 
   result.assertions.push({
     label: 'propose returns 202 with NeedsApproval',
@@ -257,7 +292,10 @@ async function experimentB() {
   const decide = await api(
     'POST',
     `/approvals/${approvalId}/decide`,
-    { decision: 'Denied', rationale: 'Unauthorized destructive operation — denied by security policy' },
+    {
+      decision: 'Denied',
+      rationale: 'Unauthorized destructive operation — denied by security policy',
+    },
     OPERATOR_TOKEN,
   );
   result.timestamps.t6_decide_response = now();
@@ -276,7 +314,12 @@ async function experimentB() {
   for (let i = 1; i <= 5; i++) {
     const pollTs = now();
     const poll = await api('GET', `/approvals/${approvalId}`);
-    result.polls.push({ poll_number: i, timestamp: pollTs, response_at: now(), status_observed: poll.json.status });
+    result.polls.push({
+      poll_number: i,
+      timestamp: pollTs,
+      response_at: now(),
+      status_observed: poll.json.status,
+    });
     if (poll.json.status === 'Denied') {
       detected = true;
       result.timestamps.t8_denial_detected = now();
@@ -295,10 +338,22 @@ async function experimentB() {
 
   result.derived = {
     propose_rtt_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t2_propose_response),
-    time_to_pending_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t4_initial_poll_response),
-    time_pending_to_decided_ms: ms(result.timestamps.t4_initial_poll_response, result.timestamps.t6_decide_response),
-    time_decided_to_detected_ms: ms(result.timestamps.t6_decide_response, result.timestamps.t8_denial_detected || result.timestamps.t9_experiment_end),
-    total_governance_duration_ms: ms(result.timestamps.t0_experiment_start, result.timestamps.t8_denial_detected || result.timestamps.t9_experiment_end),
+    time_to_pending_ms: ms(
+      result.timestamps.t1_propose_sent,
+      result.timestamps.t4_initial_poll_response,
+    ),
+    time_pending_to_decided_ms: ms(
+      result.timestamps.t4_initial_poll_response,
+      result.timestamps.t6_decide_response,
+    ),
+    time_decided_to_detected_ms: ms(
+      result.timestamps.t6_decide_response,
+      result.timestamps.t8_denial_detected || result.timestamps.t9_experiment_end,
+    ),
+    total_governance_duration_ms: ms(
+      result.timestamps.t0_experiment_start,
+      result.timestamps.t8_denial_detected || result.timestamps.t9_experiment_end,
+    ),
     polls_until_detected: result.polls.length,
   };
   proposeRtts.push(result.derived.propose_rtt_ms);
@@ -314,7 +369,9 @@ async function experimentB() {
     outcome: result.outcome,
   };
 
-  console.log(`  outcome: ${result.outcome} (total ${result.derived.total_governance_duration_ms}ms)`);
+  console.log(
+    `  outcome: ${result.outcome} (total ${result.derived.total_governance_duration_ms}ms)`,
+  );
   writeResult('exp-B-denial-timed.json', result);
   return result;
 }
@@ -325,7 +382,12 @@ async function experimentB() {
 
 async function experimentC() {
   console.log('\n=== Experiment C: Maker-checker enforcement timing ===');
-  const result = { experiment: 'C_maker_checker_timed', timestamps: {}, derived: {}, assertions: [] };
+  const result = {
+    experiment: 'C_maker_checker_timed',
+    timestamps: {},
+    derived: {},
+    assertions: [],
+  };
 
   result.timestamps.t0_experiment_start = now();
 
@@ -383,12 +445,17 @@ async function experimentC() {
   const operatorApprove = await api(
     'POST',
     `/approvals/${approvalId}/decide`,
-    { decision: 'Approved', rationale: 'Legitimate operator approval after maker-checker enforcement' },
+    {
+      decision: 'Approved',
+      rationale: 'Legitimate operator approval after maker-checker enforcement',
+    },
     OPERATOR_TOKEN,
   );
   result.timestamps.t6_operator_approve_response = now();
   result.operatorApprove = { httpStatus: operatorApprove.status, ...operatorApprove.json };
-  console.log(`  operator approve: HTTP ${operatorApprove.status}, status=${operatorApprove.json.status}`);
+  console.log(
+    `  operator approve: HTTP ${operatorApprove.status}, status=${operatorApprove.json.status}`,
+  );
 
   result.assertions.push({
     label: 'operator approve returns 200 Approved',
@@ -400,9 +467,18 @@ async function experimentC() {
 
   result.derived = {
     propose_rtt_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t2_propose_response),
-    enforcement_latency_ms: ms(result.timestamps.t3_self_approve_sent, result.timestamps.t4_self_approve_response),
-    recovery_after_rejection_ms: ms(result.timestamps.t4_self_approve_response, result.timestamps.t6_operator_approve_response),
-    total_governance_duration_ms: ms(result.timestamps.t0_experiment_start, result.timestamps.t7_experiment_end),
+    enforcement_latency_ms: ms(
+      result.timestamps.t3_self_approve_sent,
+      result.timestamps.t4_self_approve_response,
+    ),
+    recovery_after_rejection_ms: ms(
+      result.timestamps.t4_self_approve_response,
+      result.timestamps.t6_operator_approve_response,
+    ),
+    total_governance_duration_ms: ms(
+      result.timestamps.t0_experiment_start,
+      result.timestamps.t7_experiment_end,
+    ),
   };
   proposeRtts.push(result.derived.propose_rtt_ms);
 
@@ -417,7 +493,9 @@ async function experimentC() {
     outcome: result.outcome,
   };
 
-  console.log(`  outcome: ${result.outcome} (enforcement ${result.derived.enforcement_latency_ms}ms, recovery ${result.derived.recovery_after_rejection_ms}ms)`);
+  console.log(
+    `  outcome: ${result.outcome} (enforcement ${result.derived.enforcement_latency_ms}ms, recovery ${result.derived.recovery_after_rejection_ms}ms)`,
+  );
   writeResult('exp-C-maker-checker-timed.json', result);
   return result;
 }
@@ -477,11 +555,15 @@ async function experimentD() {
       elapsed_since_propose_ms: ms(result.timestamps.t1_propose_sent, pollTs),
     };
     result.polls_during_wait.push(pollResult);
-    console.log(`    poll ${i}: status=${poll.json.status} (elapsed ${pollResult.elapsed_since_propose_ms}ms)`);
+    console.log(
+      `    poll ${i}: status=${poll.json.status} (elapsed ${pollResult.elapsed_since_propose_ms}ms)`,
+    );
   }
   result.timestamps.t4_wait_end = now();
 
-  const allPendingDuringWait = result.polls_during_wait.every((p) => p.status_observed === 'Pending');
+  const allPendingDuringWait = result.polls_during_wait.every(
+    (p) => p.status_observed === 'Pending',
+  );
   result.assertions.push({
     label: 'all 4 pre-approval polls return Pending',
     passed: allPendingDuringWait,
@@ -520,7 +602,10 @@ async function experimentD() {
   result.timestamps.t9_experiment_end = now();
 
   const simulated_wait_ms = ms(result.timestamps.t3_wait_start, result.timestamps.t4_wait_end);
-  const total_blocked_ms = ms(result.timestamps.t1_propose_sent, result.timestamps.t8_post_approval_poll_response);
+  const total_blocked_ms = ms(
+    result.timestamps.t1_propose_sent,
+    result.timestamps.t8_post_approval_poll_response,
+  );
 
   result.derived = {
     propose_rtt_ms: ms(result.timestamps.t1_propose_sent, result.timestamps.t2_propose_response),
@@ -528,7 +613,10 @@ async function experimentD() {
     total_blocked_duration_ms: total_blocked_ms,
     polls_during_wait: result.polls_during_wait.length,
     all_pending_during_wait: allPendingDuringWait,
-    time_approve_to_detected_ms: ms(result.timestamps.t6_approve_response, result.timestamps.t8_post_approval_poll_response),
+    time_approve_to_detected_ms: ms(
+      result.timestamps.t6_approve_response,
+      result.timestamps.t8_post_approval_poll_response,
+    ),
   };
   proposeRtts.push(result.derived.propose_rtt_ms);
 
@@ -553,7 +641,9 @@ async function experimentD() {
     outcome: result.outcome,
   };
 
-  console.log(`  outcome: ${result.outcome} (wait ${simulated_wait_ms}ms, total blocked ${total_blocked_ms}ms)`);
+  console.log(
+    `  outcome: ${result.outcome} (wait ${simulated_wait_ms}ms, total blocked ${total_blocked_ms}ms)`,
+  );
   writeResult('exp-D-polling-delay-timed.json', result);
   return result;
 }

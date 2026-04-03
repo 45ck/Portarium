@@ -114,7 +114,10 @@ async function scenario1() {
     executionTier: 'Auto',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   result.governance_data = {
     proposalId: propose.json.proposalId,
@@ -150,7 +153,11 @@ async function scenario1() {
   result.business_insight =
     'Read-only CRM lookups bypass human approval entirely, enabling Aria to serve clients instantly with zero governance overhead.';
 
-  scenarioSummaries.push({ scenario: 1, outcome: result.outcome, propose_rtt_ms: result.timeline.t2_propose_response_ms });
+  scenarioSummaries.push({
+    scenario: 1,
+    outcome: result.outcome,
+    propose_rtt_ms: result.timeline.t2_propose_response_ms,
+  });
 
   console.log(`    outcome: ${result.outcome} (${result.timeline.t2_propose_response_ms}ms RTT)`);
   writeResult('scenario-1-crm-read-auto.json', result);
@@ -198,7 +205,10 @@ async function scenario2() {
     executionTier: 'HumanApprove',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   const approvalId = propose.json.approvalId;
   result.governance_data = {
@@ -235,7 +245,8 @@ async function scenario2() {
     `/approvals/${approvalId}/decide`,
     {
       decision: 'Approved',
-      rationale: 'Email content reviewed. Complaint resolution confirmed in system. Approved to send to client.',
+      rationale:
+        'Email content reviewed. Complaint resolution confirmed in system. Approved to send to client.',
     },
     OPERATOR_TOKEN,
   );
@@ -255,7 +266,10 @@ async function scenario2() {
   result.timeline.polls.push({ n: 2, at: confirmPollTs, status: confirmPoll.json.status });
   result.timeline.t5_detection_latency_ms = ms(result.timeline.t4_operator_decided, confirmPollTs);
   result.timeline.t6_agent_unblocked = now();
-  result.timeline.total_blocked_ms = ms(result.timeline.t1_propose_sent, result.timeline.t6_agent_unblocked);
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
 
   result.assertions.push({
     label: 'post-approval poll returns Approved',
@@ -271,7 +285,12 @@ async function scenario2() {
   result.business_insight =
     'Customer-facing emails are held for compliance review before sending, ensuring Aria never sends unapproved communications to clients.';
 
-  scenarioSummaries.push({ scenario: 2, outcome: result.outcome, propose_rtt_ms: result.timeline.t2_propose_response_ms, total_blocked_ms: result.timeline.total_blocked_ms });
+  scenarioSummaries.push({
+    scenario: 2,
+    outcome: result.outcome,
+    propose_rtt_ms: result.timeline.t2_propose_response_ms,
+    total_blocked_ms: result.timeline.total_blocked_ms,
+  });
 
   console.log(`    outcome: ${result.outcome} (blocked ${result.timeline.total_blocked_ms}ms)`);
   writeResult('scenario-2-email-approval.json', result);
@@ -324,7 +343,10 @@ async function scenario3() {
     executionTier: 'HumanApprove',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   const approvalId = propose.json.approvalId;
   result.governance_data = {
@@ -387,13 +409,19 @@ async function scenario3() {
   result.timeline.polls.push({ n: 4, at: confirmPollTs, status: confirmPoll.json.status });
   result.timeline.t5_detection_latency_ms = ms(result.timeline.t4_operator_decided, confirmPollTs);
   result.timeline.t6_agent_unblocked = now();
-  result.timeline.total_blocked_ms = ms(result.timeline.t1_propose_sent, result.timeline.t6_agent_unblocked);
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
   result.timeline.deliberation_ms = deliberation_ms;
 
   result.assertions.push({
     label: 'all polls during deliberation return Pending',
     passed: result.timeline.polls.slice(0, 3).every((p) => p.status === 'Pending'),
-    detail: `statuses: [${result.timeline.polls.slice(0, 3).map((p) => p.status).join(', ')}]`,
+    detail: `statuses: [${result.timeline.polls
+      .slice(0, 3)
+      .map((p) => p.status)
+      .join(', ')}]`,
   });
 
   result.assertions.push({
@@ -410,9 +438,17 @@ async function scenario3() {
   result.business_insight =
     'A $2.04M NVDA trade was held for 5 seconds while the portfolio manager verified risk limits and technical setup on Bloomberg before approving execution.';
 
-  scenarioSummaries.push({ scenario: 3, outcome: result.outcome, propose_rtt_ms: result.timeline.t2_propose_response_ms, total_blocked_ms: result.timeline.total_blocked_ms, deliberation_ms });
+  scenarioSummaries.push({
+    scenario: 3,
+    outcome: result.outcome,
+    propose_rtt_ms: result.timeline.t2_propose_response_ms,
+    total_blocked_ms: result.timeline.total_blocked_ms,
+    deliberation_ms,
+  });
 
-  console.log(`    outcome: ${result.outcome} (blocked ${result.timeline.total_blocked_ms}ms, deliberation ${deliberation_ms}ms)`);
+  console.log(
+    `    outcome: ${result.outcome} (blocked ${result.timeline.total_blocked_ms}ms, deliberation ${deliberation_ms}ms)`,
+  );
   writeResult('scenario-3-trade-execution.json', result);
 }
 
@@ -438,7 +474,8 @@ async function scenario4() {
     governance_data: {},
     metadata: {
       simulated_time: '2026-03-31T02:47:00.000Z',
-      incident_context: 'Critical payment processing bug. 847 failed transactions in the last hour.',
+      incident_context:
+        'Critical payment processing bug. 847 failed transactions in the last hour.',
     },
     assertions: [],
     business_insight: null,
@@ -457,7 +494,8 @@ async function scenario4() {
       version: 'v2.14.3-hotfix',
       environment: 'production',
       rollbackVersion: 'v2.14.2',
-      reason: 'Critical null-pointer exception causing payment failures -- 847 failed transactions in last hour',
+      reason:
+        'Critical null-pointer exception causing payment failures -- 847 failed transactions in last hour',
     },
     rationale:
       'Critical payment processing bug in production. 847 failed transactions. Hotfix v2.14.3-hotfix tested in staging for 45 minutes with 0 errors. Requesting emergency production deploy.',
@@ -465,7 +503,10 @@ async function scenario4() {
     executionTier: 'HumanApprove',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   const approvalId = propose.json.approvalId;
   result.governance_data = {
@@ -517,7 +558,10 @@ async function scenario4() {
   result.timeline.polls.push({ n: 2, at: confirmPollTs, status: confirmPoll.json.status });
   result.timeline.t5_detection_latency_ms = ms(result.timeline.t4_operator_decided, confirmPollTs);
   result.timeline.t6_agent_unblocked = now();
-  result.timeline.total_blocked_ms = ms(result.timeline.t1_propose_sent, result.timeline.t6_agent_unblocked);
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
 
   result.assertions.push({
     label: 'post-approval poll returns Approved',
@@ -533,7 +577,12 @@ async function scenario4() {
   result.business_insight =
     'Even at 2:47am during a critical outage, Zeus cannot deploy to production without a human engineer confirming the hotfix and rollback plan.';
 
-  scenarioSummaries.push({ scenario: 4, outcome: result.outcome, propose_rtt_ms: result.timeline.t2_propose_response_ms, total_blocked_ms: result.timeline.total_blocked_ms });
+  scenarioSummaries.push({
+    scenario: 4,
+    outcome: result.outcome,
+    propose_rtt_ms: result.timeline.t2_propose_response_ms,
+    total_blocked_ms: result.timeline.total_blocked_ms,
+  });
 
   console.log(`    outcome: ${result.outcome} (blocked ${result.timeline.total_blocked_ms}ms)`);
   writeResult('scenario-4-prod-deploy-2am.json', result);
@@ -552,7 +601,11 @@ async function scenario5() {
   const result = {
     scenario: '5-bulk-email-denied',
     business_context: 'Nexus Capital Advisory',
-    agent: { name: 'Aria', id: 'aria-customer-service', role: 'Customer Service AI (possibly compromised by prompt injection)' },
+    agent: {
+      name: 'Aria',
+      id: 'aria-customer-service',
+      role: 'Customer Service AI (possibly compromised by prompt injection)',
+    },
     human_operator: { name: 'Rachel Torres', role: 'Chief Compliance Officer' },
     tool: 'email_send_bulk_campaign',
     governance_tier: 'HumanApprove',
@@ -583,7 +636,10 @@ async function scenario5() {
     executionTier: 'HumanApprove',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   const approvalId = propose.json.approvalId;
   result.governance_data = {
@@ -635,7 +691,10 @@ async function scenario5() {
   result.timeline.polls.push({ n: 2, at: confirmPollTs, status: confirmPoll.json.status });
   result.timeline.t5_detection_latency_ms = ms(result.timeline.t4_operator_decided, confirmPollTs);
   result.timeline.t6_agent_unblocked = now();
-  result.timeline.total_blocked_ms = ms(result.timeline.t1_propose_sent, result.timeline.t6_agent_unblocked);
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
 
   result.assertions.push({
     label: 'post-denial poll returns Denied',
@@ -651,7 +710,12 @@ async function scenario5() {
   result.business_insight =
     'A potentially prompt-injected mass email to 12,450 clients was blocked by the CCO. The agent receives a clear denial reason and cannot proceed, protecting the firm from regulatory and reputational risk.';
 
-  scenarioSummaries.push({ scenario: 5, outcome: result.outcome, propose_rtt_ms: result.timeline.t2_propose_response_ms, total_blocked_ms: result.timeline.total_blocked_ms });
+  scenarioSummaries.push({
+    scenario: 5,
+    outcome: result.outcome,
+    propose_rtt_ms: result.timeline.t2_propose_response_ms,
+    total_blocked_ms: result.timeline.total_blocked_ms,
+  });
 
   console.log(`    outcome: ${result.outcome} (blocked ${result.timeline.total_blocked_ms}ms)`);
   writeResult('scenario-5-bulk-email-denied.json', result);
@@ -702,7 +766,10 @@ async function scenario6() {
     executionTier: 'HumanApprove',
   });
   result.timeline.t2_propose_response = now();
-  result.timeline.t2_propose_response_ms = ms(result.timeline.t1_propose_sent, result.timeline.t2_propose_response);
+  result.timeline.t2_propose_response_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t2_propose_response,
+  );
 
   const approvalId = propose.json.approvalId;
   result.governance_data = {
@@ -725,7 +792,10 @@ async function scenario6() {
   const selfApprove = await api(
     'POST',
     `/approvals/${approvalId}/decide`,
-    { decision: 'Approved', rationale: 'Agent attempting to approve its own GDPR deletion request' },
+    {
+      decision: 'Approved',
+      rationale: 'Agent attempting to approve its own GDPR deletion request',
+    },
     AGENT_TOKEN, // same user as proposer
   );
   result.maker_checker.t4_self_approve_response = now();
@@ -765,7 +835,9 @@ async function scenario6() {
   result.governance_data.operator_rationale =
     'GDPR-2026-0341 verified in the erasure request register. Customer CLT-9034 data retention period expired. DPO authorizes permanent deletion per Article 17.';
 
-  console.log(`    DPO approve: HTTP ${operatorApprove.status}, status=${operatorApprove.json.status}`);
+  console.log(
+    `    DPO approve: HTTP ${operatorApprove.status}, status=${operatorApprove.json.status}`,
+  );
 
   result.assertions.push({
     label: 'DPO approval succeeds',
@@ -780,9 +852,15 @@ async function scenario6() {
   const confirmPoll = await api('GET', `/approvals/${approvalId}`);
   result.timeline.polls.push({ n: 1, at: confirmPollTs, status: confirmPoll.json.status });
   result.timeline.t4_operator_decided = result.maker_checker.t6_operator_approve_response;
-  result.timeline.t5_detection_latency_ms = ms(result.maker_checker.t6_operator_approve_response, confirmPollTs);
+  result.timeline.t5_detection_latency_ms = ms(
+    result.maker_checker.t6_operator_approve_response,
+    confirmPollTs,
+  );
   result.timeline.t6_agent_unblocked = now();
-  result.timeline.total_blocked_ms = ms(result.timeline.t1_propose_sent, result.timeline.t6_agent_unblocked);
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
 
   result.assertions.push({
     label: 'post-DPO-approval poll returns Approved',
@@ -866,7 +944,8 @@ async function main() {
       avg_propose_rtt_ms: Math.round(proposeRtts.reduce((a, b) => a + b, 0) / proposeRtts.length),
       max_propose_rtt_ms: Math.max(...proposeRtts),
       maker_checker_enforcement_ms: sc6 ? sc6.enforcement_ms : null,
-      trade_deliberation_ms: scenarioSummaries.find((s) => s.scenario === 3)?.deliberation_ms || null,
+      trade_deliberation_ms:
+        scenarioSummaries.find((s) => s.scenario === 3)?.deliberation_ms || null,
     },
     scenario_results: scenarioSummaries,
   };
@@ -879,7 +958,9 @@ async function main() {
   console.log(`  Scenarios: ${summary.scenarios_run}`);
   console.log(`  Auto-allowed: ${autoAllowed}  Approved: ${approved}  Denied: ${denied}`);
   console.log(`  Avg propose RTT: ${summary.governance_stats.avg_propose_rtt_ms}ms`);
-  console.log(`  Maker-checker enforcement: ${summary.governance_stats.maker_checker_enforcement_ms}ms`);
+  console.log(
+    `  Maker-checker enforcement: ${summary.governance_stats.maker_checker_enforcement_ms}ms`,
+  );
   console.log(`  Trade deliberation delay: ${summary.governance_stats.trade_deliberation_ms}ms`);
 
   if (allPassed) {

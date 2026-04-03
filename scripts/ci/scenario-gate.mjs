@@ -15,7 +15,7 @@
  * Bead: bead-0851
  */
 
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -43,20 +43,30 @@ function emit(msg) {
 
 emit(`Running scenario suite with seed=${SEED} ...`);
 
-const vitestCmd = [
-  'node node_modules/vitest/vitest.mjs run',
-  '--reporter=verbose --reporter=json --reporter=junit',
+const vitestArgs = [
+  'node_modules/vitest/vitest.mjs',
+  'run',
+  '--reporter=verbose',
+  '--reporter=json',
+  '--reporter=junit',
   `--outputFile.json=${JSON_RESULT_PATH}`,
   `--outputFile.junit=${JUNIT_PATH}`,
   `--sequence.seed=${SEED}`,
   'scripts/integration/scenario',
-].join(' ');
+];
 
 let testExitCode = 0;
-try {
-  execSync(vitestCmd, { stdio: 'inherit', env: { ...process.env, CI: 'true' } });
-} catch (err) {
-  testExitCode = err.status ?? 1;
+const vitestRun = spawnSync(process.execPath, vitestArgs, {
+  stdio: 'inherit',
+  env: { ...process.env, CI: 'true' },
+});
+
+if (vitestRun.error) {
+  throw vitestRun.error;
+}
+
+if (vitestRun.status !== 0) {
+  testExitCode = vitestRun.status ?? 1;
 }
 
 // ---------------------------------------------------------------------------
