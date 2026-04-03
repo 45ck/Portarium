@@ -137,6 +137,7 @@ describe('Policy Studio route', () => {
     const href = handoffLink.getAttribute('href') ?? '';
 
     expect(href).toContain('/approvals');
+    expect(href).toContain('demo=true');
     expect(href).toContain('from=policy-studio');
     expect(href).toContain('focus=');
   });

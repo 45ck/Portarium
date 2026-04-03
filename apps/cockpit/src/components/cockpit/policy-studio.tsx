@@ -599,7 +599,7 @@ export function PolicyStudioPage() {
                     <Link
                       to="/approvals"
                       search={{
-                        demo: 'true',
+                        demo: true,
                         from: 'policy-studio',
                         focus: triageTargetApproval.approvalId,
                       }}

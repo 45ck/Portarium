@@ -46,7 +46,7 @@ interface PendingAction {
 interface ApprovalsSearch {
   focus?: string;
   from?: string;
-  demo?: string;
+  demo?: boolean;
 }
 
 function ApprovalsPage() {
@@ -61,7 +61,7 @@ function ApprovalsPage() {
   const [removedApprovalIds, setRemovedApprovalIds] = useState<Set<string>>(new Set());
   const [relaxFlashId, setRelaxFlashId] = useState<string | null>(null);
 
-  const showDemo = search.demo === 'true' || import.meta.env.DEV;
+  const showDemo = search.demo === true || import.meta.env.DEV;
   const { triggerTighten, triggerRelax } = useDemoTriggers();
 
   usePolicyUpdates(
@@ -524,6 +524,13 @@ export const Route = createRoute({
   validateSearch: (search: Record<string, unknown>): ApprovalsSearch => ({
     focus: typeof search.focus === 'string' ? search.focus : undefined,
     from: typeof search.from === 'string' ? search.from : undefined,
-    demo: typeof search.demo === 'string' ? search.demo : undefined,
+    demo:
+      search.demo === true ||
+      search.demo === 'true' ||
+      search.demo === '"true"' ||
+      search.demo === 1 ||
+      search.demo === '1'
+        ? true
+        : undefined,
   }),
 });
