@@ -374,6 +374,19 @@ Every runtime intervention intended to inform Policy must distinguish:
 - role-routing change
 - approval-tier change
 
+### R16 Round-trip continuity
+
+When an operator moves from Policy authoring into a focused approval review and then returns, Cockpit must preserve:
+
+- selected capability slice
+- selected runtime precedent
+- selected replay scenario
+- drafted Execution Tier change
+- drafted evidence packet
+- drafted rationale text
+
+The return path must be explicit and typed, not dependent on transient in-memory component state.
+
 ## Policy Object Requirements
 
 Every persisted policy object shown in Cockpit must surface:
@@ -488,6 +501,10 @@ Policy is not static. Cockpit should make it obvious:
 - why it changed
 - what runtime event motivated it
 - who approved it
+
+### I5 Preserve operator context across surfaces
+
+Cross-surface navigation between `Policy Studio` and `Approvals` must keep the operator in the same working thread rather than resetting them to a generic default state.
 
 ## Acceptance Signals
 

@@ -30,6 +30,11 @@ import {
   useDemoTriggers,
   type PolicyUpdatePayload,
 } from '@/lib/policy-event-bridge';
+import {
+  fromApprovalReturnSearch,
+  type PolicyStudioReturnSearch,
+  validatePolicyStudioReturnSearch,
+} from '@/lib/policy-studio-search';
 import { APPROVALS as FIXTURE_APPROVALS } from '@/mocks/fixtures/openclaw-demo';
 
 const UNDO_DELAY_MS = 5_000;
@@ -43,7 +48,7 @@ interface PendingAction {
   queueIndex: number;
 }
 
-interface ApprovalsSearch {
+interface ApprovalsSearch extends PolicyStudioReturnSearch {
   focus?: string;
   from?: string;
   demo?: boolean;
@@ -150,6 +155,10 @@ function ApprovalsPage() {
       : null) ??
     triageQueue[0] ??
     null;
+  const focusedApproval = search.focus
+    ? (items.find((approval) => approval.approvalId === search.focus) ?? null)
+    : currentApproval;
+  const returnPolicyStudioSearch = fromApprovalReturnSearch(search);
 
   const { data: planData } = usePlan(wsId, currentApproval?.planId);
   const { data: evidenceData } = useEvidence(wsId);
@@ -438,7 +447,7 @@ function ApprovalsPage() {
   return (
     <div className="p-6 space-y-4">
       {showNotification && <NotificationBanner pendingCount={pendingItems.length} />}
-      {search.from === 'policy-studio' && currentApproval ? (
+      {search.from === 'policy-studio' ? (
         <motion.div
           className="rounded-lg border border-primary/30 bg-primary/5 p-4"
           initial={{ opacity: 0, y: -8 }}
@@ -449,14 +458,19 @@ function ApprovalsPage() {
               <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
                 Opened from Policy Studio
               </div>
-              <div className="text-sm font-medium">{currentApproval.prompt}</div>
+              <div className="text-sm font-medium">
+                {focusedApproval?.prompt ?? 'Return to the staged policy draft when you are done.'}
+              </div>
               <p className="text-sm text-muted-foreground">
-                You are focused on {currentApproval.approvalId}. Review the live case in the deck,
-                then return to Policy Studio if the decision should become future policy.
+                {focusedApproval
+                  ? `You are focused on ${focusedApproval.approvalId}. Review the live case in the deck, then return to Policy Studio with the same staged draft.`
+                  : 'The original live card is no longer active in the queue, but the staged Policy Studio draft is still preserved on the return path.'}
               </p>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/config/policies">Back to Policy Studio</Link>
+              <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                Back to Policy Studio
+              </Link>
             </Button>
           </div>
         </motion.div>
@@ -521,16 +535,20 @@ export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/approvals',
   component: ApprovalsPage,
-  validateSearch: (search: Record<string, unknown>): ApprovalsSearch => ({
-    focus: typeof search.focus === 'string' ? search.focus : undefined,
-    from: typeof search.from === 'string' ? search.from : undefined,
-    demo:
-      search.demo === true ||
-      search.demo === 'true' ||
-      search.demo === '"true"' ||
-      search.demo === 1 ||
-      search.demo === '1'
-        ? true
-        : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): ApprovalsSearch => {
+    const policyStudioReturnSearch = validatePolicyStudioReturnSearch(search);
+    return {
+      focus: typeof search.focus === 'string' ? search.focus : undefined,
+      from: typeof search.from === 'string' ? search.from : undefined,
+      demo:
+        search.demo === true ||
+        search.demo === 'true' ||
+        search.demo === '"true"' ||
+        search.demo === 1 ||
+        search.demo === '1'
+          ? true
+          : undefined,
+      ...policyStudioReturnSearch,
+    };
+  },
 });

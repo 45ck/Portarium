@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useCallback, useMemo } from 'react';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import {
   ArrowRight,
   BrainCircuit,
@@ -33,10 +33,15 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  type ExecutionTier,
+  type PolicyStudioSearch,
+  serializeDelimitedSearchList,
+  parseDelimitedSearchList,
+  toApprovalReturnSearch,
+} from '@/lib/policy-studio-search';
 import { cn } from '@/lib/utils';
 import { APPROVALS, POLICIES } from '@/mocks/fixtures/openclaw-demo';
-
-type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 
 interface PolicySlice {
   id: string;
@@ -303,6 +308,48 @@ function createDraftState(slice: PolicySlice): DraftState {
   };
 }
 
+function createDraftStateFromSearch(slice: PolicySlice, search: PolicyStudioSearch): DraftState {
+  return {
+    tier: search.draftTier ?? slice.tier,
+    evidence: parseDelimitedSearchList(search.draftEvidence) ?? [...slice.evidence],
+    rationale: search.draftRationale ?? '',
+  };
+}
+
+function areListsEqual(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+  return left.every((item, index) => item === right[index]);
+}
+
+function buildPolicyStudioSearchState({
+  defaultSliceId,
+  defaultPrecedentId,
+  selectedSliceId,
+  selectedPrecedentId,
+  selectedScenarioId,
+  selectedSlice,
+  draft,
+}: {
+  defaultSliceId: string;
+  defaultPrecedentId: string;
+  selectedSliceId: string;
+  selectedPrecedentId: string;
+  selectedScenarioId: string;
+  selectedSlice: PolicySlice;
+  draft: DraftState;
+}): PolicyStudioSearch {
+  return {
+    slice: selectedSliceId === defaultSliceId ? undefined : selectedSliceId,
+    precedent: selectedPrecedentId === defaultPrecedentId ? undefined : selectedPrecedentId,
+    scenario: selectedScenarioId || undefined,
+    draftTier: draft.tier === selectedSlice.tier ? undefined : draft.tier,
+    draftEvidence: areListsEqual(draft.evidence, selectedSlice.evidence)
+      ? undefined
+      : serializeDelimitedSearchList(draft.evidence),
+    draftRationale: draft.rationale.trim() ? draft.rationale : undefined,
+  };
+}
+
 function getPlatformDoctrine(slice: PolicySlice): string {
   if (slice.tier === 'ManualOnly') {
     return 'Platform doctrine does not allow this action family to run below a manual control path.';
@@ -371,6 +418,8 @@ function StatCard({
 }
 
 export function PolicyStudioPage() {
+  const navigate = useNavigate();
+  const search = useSearch({ from: '/config/policies' }) as PolicyStudioSearch;
   const slices = useMemo(() => buildPolicySlices(), []);
   const defaultSlice = slices[0];
   const defaultPrecedent = RUNTIME_PRECEDENTS[0];
@@ -379,14 +428,14 @@ export function PolicyStudioPage() {
     return null;
   }
 
-  const [selectedSliceId, setSelectedSliceId] = useState<string>(defaultSlice.id);
-  const [selectedPrecedentId, setSelectedPrecedentId] = useState<string>(defaultPrecedent.id);
+  const selectedSliceId = search.slice ?? defaultSlice.id;
+  const selectedPrecedentId = search.precedent ?? defaultPrecedent.id;
   const selectedSlice = slices.find((slice) => slice.id === selectedSliceId) ?? defaultSlice;
   const selectedPrecedent =
     RUNTIME_PRECEDENTS.find((precedent) => precedent.id === selectedPrecedentId) ??
     defaultPrecedent;
-  const [draft, setDraft] = useState<DraftState>(() => createDraftState(defaultSlice));
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('');
+  const draft = createDraftStateFromSearch(selectedSlice, search);
+  const selectedScenarioId = search.scenario ?? '';
 
   const matchingApprovals = useMemo(
     () =>
@@ -437,34 +486,90 @@ export function PolicyStudioPage() {
     draft.rationale.trim().length > 0 ||
     draft.evidence.join('|') !== selectedSlice.evidence.join('|');
 
+  const writeStudioState = useCallback(
+    ({
+      nextSliceId = selectedSliceId,
+      nextPrecedentId = selectedPrecedentId,
+      nextScenarioId = selectedScenarioId,
+      nextDraft = draft,
+    }: {
+      nextSliceId?: string;
+      nextPrecedentId?: string;
+      nextScenarioId?: string;
+      nextDraft?: DraftState;
+    }) => {
+      const nextSlice = slices.find((slice) => slice.id === nextSliceId) ?? defaultSlice;
+      navigate({
+        to: '/config/policies',
+        search: buildPolicyStudioSearchState({
+          defaultSliceId: defaultSlice.id,
+          defaultPrecedentId: defaultPrecedent.id,
+          selectedSliceId: nextSlice.id,
+          selectedPrecedentId: nextPrecedentId,
+          selectedScenarioId: nextScenarioId,
+          selectedSlice: nextSlice,
+          draft: nextDraft,
+        }),
+        replace: true,
+      });
+    },
+    [
+      defaultPrecedent.id,
+      defaultSlice,
+      draft,
+      navigate,
+      selectedPrecedentId,
+      selectedScenarioId,
+      selectedSliceId,
+      slices,
+    ],
+  );
+
+  const currentStudioSearch = buildPolicyStudioSearchState({
+    defaultSliceId: defaultSlice.id,
+    defaultPrecedentId: defaultPrecedent.id,
+    selectedSliceId: selectedSlice.id,
+    selectedPrecedentId,
+    selectedScenarioId,
+    selectedSlice,
+    draft,
+  });
+  const approvalReturnSearch = toApprovalReturnSearch(currentStudioSearch);
+
   function handleSelectSlice(sliceId: string) {
     const next = slices.find((slice) => slice.id === sliceId);
     if (!next) return;
-    setSelectedSliceId(next.id);
-    setDraft(createDraftState(next));
-    setSelectedScenarioId('');
+    writeStudioState({
+      nextSliceId: next.id,
+      nextScenarioId: '',
+      nextDraft: createDraftState(next),
+    });
   }
 
   function handleToggleEvidence(evidence: string) {
-    setDraft((current) => ({
-      ...current,
-      evidence: current.evidence.includes(evidence)
-        ? current.evidence.filter((item) => item !== evidence)
-        : [...current.evidence, evidence],
-    }));
+    writeStudioState({
+      nextDraft: {
+        ...draft,
+        evidence: draft.evidence.includes(evidence)
+          ? draft.evidence.filter((item) => item !== evidence)
+          : [...draft.evidence, evidence],
+      },
+    });
   }
 
   function handleApplyPrecedent(precedent: RuntimePrecedent) {
     const target = slices.find((slice) => slice.policyId === precedent.targetPolicyId);
     if (!target) return;
 
-    setSelectedPrecedentId(precedent.id);
-    setSelectedSliceId(target.id);
-    setSelectedScenarioId(precedent.approvalId);
-    setDraft({
-      tier: precedent.recommendedTier,
-      evidence: Array.from(new Set([...target.evidence, ...precedent.recommendedEvidence])),
-      rationale: precedent.feedback,
+    writeStudioState({
+      nextPrecedentId: precedent.id,
+      nextSliceId: target.id,
+      nextScenarioId: precedent.approvalId,
+      nextDraft: {
+        tier: precedent.recommendedTier,
+        evidence: Array.from(new Set([...target.evidence, ...precedent.recommendedEvidence])),
+        rationale: precedent.feedback,
+      },
     });
   }
 
@@ -602,6 +707,7 @@ export function PolicyStudioPage() {
                         demo: true,
                         from: 'policy-studio',
                         focus: triageTargetApproval.approvalId,
+                        ...approvalReturnSearch,
                       }}
                     >
                       Open in triage deck
@@ -794,7 +900,9 @@ export function PolicyStudioPage() {
               <Select
                 value={draft.tier}
                 onValueChange={(value) =>
-                  setDraft((current) => ({ ...current, tier: value as ExecutionTier }))
+                  writeStudioState({
+                    nextDraft: { ...draft, tier: value as ExecutionTier },
+                  })
                 }
               >
                 <SelectTrigger id="policy-studio-tier" className="w-full">
@@ -843,7 +951,9 @@ export function PolicyStudioPage() {
                 id="policy-rationale"
                 value={draft.rationale}
                 onChange={(event) =>
-                  setDraft((current) => ({ ...current, rationale: event.target.value }))
+                  writeStudioState({
+                    nextDraft: { ...draft, rationale: event.target.value },
+                  })
                 }
                 placeholder="Explain why this posture should change, what risk it manages, and how operators should use it."
                 className="min-h-24"
@@ -928,7 +1038,7 @@ export function PolicyStudioPage() {
                       <Label htmlFor="scenario-select">Replay scenario</Label>
                       <Select
                         value={selectedScenario?.approvalId ?? matchingApprovals[0]!.approvalId}
-                        onValueChange={setSelectedScenarioId}
+                        onValueChange={(value) => writeStudioState({ nextScenarioId: value })}
                       >
                         <SelectTrigger id="scenario-select" className="w-full">
                           <SelectValue />
@@ -1014,7 +1124,7 @@ export function PolicyStudioPage() {
                       'rounded-lg border p-3 text-left transition-colors',
                       active ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/40',
                     )}
-                    onClick={() => setSelectedPrecedentId(precedent.id)}
+                    onClick={() => writeStudioState({ nextPrecedentId: precedent.id })}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-medium">{precedent.title}</span>

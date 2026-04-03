@@ -67,6 +67,11 @@ async function renderPoliciesRoute(initialEntry = '/config/policies') {
 beforeAll(() => {
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
   Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    configurable: true,
+    value: vi.fn(),
+  });
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: false,
     media: query,
@@ -133,6 +138,11 @@ describe('Policy Studio route', () => {
   it('offers a focused handoff into the approvals triage deck', async () => {
     await renderPoliciesRoute();
 
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Persistent cron creation request/i }),
+    );
+    await userEvent.click(await screen.findByRole('button', { name: /Apply to draft/i }));
+
     const handoffLink = await screen.findByRole('link', { name: /Open in triage deck/i });
     const href = handoffLink.getAttribute('href') ?? '';
 
@@ -140,5 +150,23 @@ describe('Policy Studio route', () => {
     expect(href).toContain('demo=true');
     expect(href).toContain('from=policy-studio');
     expect(href).toContain('focus=');
+    expect(href).toContain('returnSlice=CRON-CREATE-BLOCK-001');
+    expect(href).toContain('returnPrecedent=precedent-persistent-cron');
+    expect(href).toContain('returnScenario=apr-oc-3205');
+    expect(href).toContain('returnDraftRationale=');
+  });
+
+  it('hydrates the staged draft from search params after a return trip', async () => {
+    await renderPoliciesRoute(
+      '/config/policies?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
+    );
+
+    expect(
+      (await screen.findAllByText(/Persistent cron creation request/i)).length,
+    ).toBeGreaterThan(0);
+
+    const rationale = (await screen.findByLabelText(/Rationale capture/i)) as HTMLTextAreaElement;
+    expect(rationale.value).toContain('Escalate schedule creation to a control-room review path');
+    expect((await screen.findAllByText(/Draft staged/i)).length).toBeGreaterThan(0);
   });
 });

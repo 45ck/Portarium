@@ -196,11 +196,17 @@ describe('Approvals triage page', () => {
     const focused = ALL_PENDING[0]!;
 
     await renderApprovalsRoute(
-      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio`,
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001&returnPrecedent=precedent-persistent-cron&returnDraftTier=ManualOnly&returnDraftRationale=${encodeURIComponent('Escalate schedule creation to a control-room review path')}`,
     );
 
     expect(await screen.findByText(/opened from policy studio/i)).toBeTruthy();
-    expect(await screen.findByRole('link', { name: /Back to Policy Studio/i })).toBeTruthy();
+    const backLink = await screen.findByRole('link', { name: /Back to Policy Studio/i });
+    const href = backLink.getAttribute('href') ?? '';
+    expect(href).toContain('/config/policies');
+    expect(href).toContain('slice=CRON-CREATE-BLOCK-001');
+    expect(href).toContain('precedent=precedent-persistent-cron');
+    expect(href).toContain('draftTier=ManualOnly');
+    expect(href).toContain('draftRationale=');
     expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
   });
 
