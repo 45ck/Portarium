@@ -119,7 +119,7 @@ Oversight is only meaningful when the human has:
 
 - authority to change the outcome
 - epistemic access to the relevant facts
-- a reversible or escalatable path when uncertain
+- a reversible or clearly escalated path when uncertain
 - enough time and cognitive bandwidth to decide well
 
 ### P3 Calm operations over constant vigilance
@@ -138,14 +138,14 @@ Human judgment is universal. Taste is domain-specific. Creative, brand, product,
 
 Portarium should distinguish governance functions even where current RBAC roles are coarser.
 
-| Function | Main responsibility | Typical Portarium role today | Notes |
-| --- | --- | --- | --- |
-| Policy owner | Defines allowed autonomy, thresholds, prohibitions, and change workflow | `admin` plus future permission slice | Not every admin should be able to weaken policy |
-| Operator | Launches, steers, hands off, pauses, resumes, and monitors governed work | `operator` | Focused on flow, not final authorization |
-| Approver | Authorizes risky or irreversible actions | `approver` | Must have authority and sufficient evidence |
-| Auditor | Reconstructs and evaluates what happened | `auditor` | Read-only, evidence-first posture |
-| Domain SME | Verifies substantive correctness in specialised areas | current role may vary | Can be layered on top of approver or operator |
-| Platform admin | Manages platform identity, integrations, tenancy, and operational controls | `admin` | Infrastructure and lifecycle authority |
+| Function       | Main responsibility                                                        | Typical Portarium role today         | Notes                                           |
+| -------------- | -------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------- |
+| Policy owner   | Defines allowed autonomy, thresholds, prohibitions, and change workflow    | `admin` plus future permission slice | Not every admin should be able to weaken policy |
+| Operator       | Launches, steers, hands off, pauses, resumes, and monitors governed work   | `operator`                           | Focused on flow, not final authorization        |
+| Approver       | Authorizes risky or irreversible actions                                   | `approver`                           | Must have authority and sufficient evidence     |
+| Auditor        | Reconstructs and evaluates what happened                                   | `auditor`                            | Read-only, evidence-first posture               |
+| Domain SME     | Verifies substantive correctness in specialised areas                      | current role may vary                | Can be layered on top of approver or operator   |
+| Platform admin | Manages platform identity, integrations, tenancy, and operational controls | `admin`                              | Infrastructure and lifecycle authority          |
 
 The system must allow a single person to hold multiple functions in small teams, but the model must not assume that is always safe or desirable.
 
@@ -276,16 +276,16 @@ The final execution decision for a proposed Action based on:
 
 Portarium should treat human input as typed governance signals, not generic comments.
 
-| Input type | Meaning | Typical attachment |
-| --- | --- | --- |
-| Intent | Desired outcome and constraints | Run, Plan |
-| Constraint | Hard boundary or forbidden path | Run, Policy, Approval |
-| Taste | Subjective quality bar for creative or strategic work | Plan, Artifact review |
-| Steering | Mid-run redirect without replacing the agent | Run |
-| Approval decision | Approve, deny, request changes, defer | Approval Gate, policy change |
-| Override | Exceptional deviation from normal rule path | Policy change, Run, Action |
-| Escalation | Route to another person, queue, or authority level | Approval, Run |
-| Audit annotation | Post-hoc observation tied to evidence | Evidence Artifact, Run |
+| Input type        | Meaning                                               | Typical attachment           |
+| ----------------- | ----------------------------------------------------- | ---------------------------- |
+| Intent            | Desired outcome and constraints                       | Run, Plan                    |
+| Constraint        | Hard boundary or forbidden path                       | Run, Policy, Approval        |
+| Taste             | Subjective quality bar for creative or strategic work | Plan, Artifact review        |
+| Steering          | Mid-run redirect without replacing the agent          | Run                          |
+| Approval decision | Approve, deny, request changes, defer                 | Approval Gate, policy change |
+| Override          | Exceptional deviation from normal rule path           | Policy change, Run, Action   |
+| Escalation        | Route to another person, queue, or authority level    | Approval, Run                |
+| Audit annotation  | Post-hoc observation tied to evidence                 | Evidence Artifact, Run       |
 
 Free-text notes are allowed, but the control plane should preserve the semantic type of the human intervention.
 

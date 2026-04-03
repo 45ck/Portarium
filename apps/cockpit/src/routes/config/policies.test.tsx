@@ -1,0 +1,127 @@
+// @vitest-environment jsdom
+
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
+import { createCockpitRouter } from '@/router';
+import { queryClient } from '@/lib/query-client';
+
+function createMemoryStorage(): Storage {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  };
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+function createFetchMock() {
+  return vi.fn((input: RequestInfo | URL) => {
+    const rawUrl =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const url = new URL(rawUrl, 'http://localhost');
+
+    if (url.pathname === '/v1/workspaces') {
+      return Promise.resolve(json({ items: [{ workspaceId: 'ws-demo', name: 'Demo Workspace' }] }));
+    }
+
+    if (url.pathname.includes('/approvals')) {
+      return Promise.resolve(json({ items: [] }));
+    }
+
+    return Promise.resolve(json({ items: [] }));
+  });
+}
+
+async function renderPoliciesRoute() {
+  const router = createCockpitRouter({
+    history: createMemoryHistory({ initialEntries: ['/config/policies'] }),
+  });
+  render(<RouterProvider router={router} />);
+  await router.load();
+}
+
+beforeAll(() => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }));
+  vi.stubGlobal('localStorage', createMemoryStorage());
+  if (typeof ResizeObserver === 'undefined') {
+    class ResizeObserverMock {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+  }
+});
+
+beforeEach(() => {
+  queryClient.clear();
+  localStorage.clear();
+  vi.stubGlobal('fetch', createFetchMock());
+});
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
+describe('Policy Studio route', () => {
+  it('renders the prototype surface and its primary sections', async () => {
+    await renderPoliciesRoute();
+
+    expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
+    expect(await screen.findByText(/Capability posture matrix/i)).toBeTruthy();
+    expect(await screen.findByText(/Simulation lab/i)).toBeTruthy();
+    expect(await screen.findByText(/Runtime precedent to policy/i)).toBeTruthy();
+  });
+
+  it('applies a runtime precedent into the draft state', async () => {
+    await renderPoliciesRoute();
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Persistent cron creation request/i }),
+    );
+    await userEvent.click(await screen.findByRole('button', { name: /Apply to draft/i }));
+
+    const rationale = (await screen.findByLabelText(/Rationale capture/i)) as HTMLTextAreaElement;
+    expect(rationale.value).toContain('Escalate schedule creation to a control-room review path');
+  });
+});
