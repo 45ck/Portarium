@@ -8,7 +8,9 @@
   </picture>
 </p>
 
-Validation middleware and policy control plane for governed AI execution.
+**Let AI do the work. Keep humans in control.**
+
+Portarium is an open-source safety and approval layer for AI workers. AI can draft, suggest, and prepare actions — but Portarium checks the rules, asks a human when needed, and keeps a full record of what happened.
 
 [![CI (PR)](https://github.com/45ck/Portarium/actions/workflows/ci.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/45ck/Portarium/branch/main/graph/badge.svg)](https://codecov.io/gh/45ck/Portarium)
@@ -16,83 +18,68 @@ Validation middleware and policy control plane for governed AI execution.
 
 ## Why this exists
 
-Most agent demos fail in production for boring reasons:
+AI agents can plan, draft, and call tools. The hard part is production reality:
 
-- they can propose actions, but nothing validates whether those actions should run
-- approvals are bolted on after the fact instead of being part of the execution path
-- evidence is fragmented across logs, prompts, and side effects
-- operators cannot explain who approved what, under which policy, and why
+- who allowed this action?
+- what rules were applied?
+- what evidence existed at the time?
+- what can be replayed, audited, or rolled back?
 
-Portarium exists to close that gap.
+Most agent demos skip these questions. When they hit production, approvals are bolted on after the fact, evidence is fragmented, and nobody can explain who approved what or why.
 
-It sits between an agent and the systems that agent wants to touch. The agent can still plan, draft, and propose. Portarium decides whether the action is allowed, needs approval, or must be blocked, then records the evidence trail around the decision.
+Portarium closes that gap. It sits between AI and the systems AI wants to touch. The AI can still propose. Portarium decides whether the action is allowed, needs approval, or must be blocked — then keeps the paper trail.
 
-This is the engineering problem behind the "90% failure gap" in agentic systems: getting from "almost works" to "actually works" requires governance in the execution path, not just a better prompt.
+## What Portarium does
 
-## What Portarium is
+- **Checks the rules** before AI is allowed to actually do anything
+- **Risky actions still need human sign-off** — approval is built into the execution path, not bolted on
+- **Everything is tracked** — you can always see what AI tried to do, what was approved, and what changed
+- **Works with existing tools** — your current business software stays the system of record
+- **Gradual trust** — start with full human oversight, widen autonomy as confidence grows
 
-Portarium is an open-source control plane for governed operations:
+Portarium is not the agent. It is the layer that makes agents safe enough to trust with real work.
 
-- policy evaluation before side effects
-- approval workflows for human-in-the-loop execution
-- orchestration and state transitions for governed runs
-- evidence capture for audit, review, and rollback
-- connectors that let existing systems stay systems of record
-
-The framing is deliberate: Portarium is not the agent. It is the layer that makes agents usable in production.
-
-## Architecture
+## How it works
 
 <p align="center">
   <img src="docs/diagrams/generated/09_isometric_minimal_fusion_textonly_v3_user_left.jpg" alt="Portarium Architecture Overview" />
 </p>
 
-Portarium sits between people, agents, and execution systems:
+Portarium sits between people, AI agents, and the systems those agents want to touch:
 
-- top layer: operators, agents, automations, OpenClaw, physical robots
-- middle layer: Portarium control plane for policy, approvals, orchestration, and evidence
-- bottom layer: APIs, software systems, tools, infrastructure, and robots
+1. **AI proposes an action** — "send this email," "update this record," "deploy this change."
+2. **Portarium checks the rules** — is this allowed? Is it risky? Does it need a human?
+3. **Safe actions proceed automatically.** Risky actions wait for human approval. Dangerous actions are blocked.
+4. **Approved work executes** through connectors to existing business systems.
+5. **Everything is recorded** — the decision, the evidence, and the outcome, linked together for review.
 
-Execution flow:
-
-1. An agent proposes an action.
-2. Portarium evaluates policy, workspace scope, and blast radius.
-3. The run is auto-approved, queued for approval, or blocked.
-4. Approved actions execute through connectors.
-5. Evidence, rationale, and lifecycle state are stored for later review.
-
-Core promise: agents can think and propose actions, but policy and approvals decide what executes.
+Agents can think and propose. Rules and approvals decide what actually happens.
 
 ## Before and after Portarium
 
-| Without a control plane                | With Portarium in the path                       |
-| -------------------------------------- | ------------------------------------------------ |
-| Agent calls tools directly             | Agent submits intent to a governed run           |
-| Prompt text carries the policy burden  | Policy is explicit and enforced before execution |
-| Approval is ad hoc, manual, or absent  | Approval is a first-class runtime state          |
-| Logs exist, but evidence is fragmented | Decision, execution, and evidence stay linked    |
-| Failures are hard to replay or explain | Runs are reviewable, attributable, and auditable |
+| Without Portarium                          | With Portarium                                       |
+| ------------------------------------------ | ---------------------------------------------------- |
+| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs   |
+| Safety lives in the prompt                  | Safety is enforced before anything executes          |
+| Approvals are ad hoc or absent              | Approval is a built-in step, not an afterthought     |
+| Logs exist, but the story is fragmented     | Decision, action, and evidence stay linked together  |
+| When something goes wrong, good luck        | Every action is reviewable, attributable, and auditable |
 
-This is the practical reliability shift Portarium is aiming for. Not "perfect autonomy." Governed execution with visible boundaries.
+Not "perfect autonomy." Safe automation with visible boundaries.
 
 ## OpenClaw integration
 
-OpenClaw is the operator. Portarium is the governance layer.
+OpenClaw is the AI worker. Portarium is the safety layer.
 
-The intended pattern looks like this:
+1. OpenClaw picks up a task or proposes an action.
+2. Portarium checks the rules and assesses risk.
+3. Low-risk work proceeds automatically.
+4. Higher-risk work pauses for human approval.
+5. Results, evidence, and decisions are returned to both the AI and the human operator.
 
-1. OpenClaw classifies a task or proposes a tool action.
-2. Portarium evaluates policy and risk for that action.
-3. Low-risk actions can proceed automatically.
-4. Higher-risk actions pause in an approval queue.
-5. Portarium returns evidence-backed outcomes to OpenClaw and the human operator.
+OpenClaw shows that real business workflows can be automated. Portarium shows they can still be governed, reviewed, and constrained.
 
-That split is what makes the combined system commercially interesting:
-
-- OpenClaw shows that meaningful business workflows can be automated
-- Portarium shows those workflows can still be governed, reviewed, and constrained
-
-If you are building agent workflows, Portarium is the layer that keeps "helpful automation" from turning into "untraceable side effects."
+If you are building with AI agents, Portarium is the layer that keeps "helpful automation" from turning into "untraceable side effects."
 
 ## Feature showcase
 
@@ -102,7 +89,7 @@ If you are building agent workflows, Portarium is the layer that keeps "helpful 
   <img src="docs/internal/ui/cockpit/media/approvals-v2-showcase.gif" alt="Approvals UX v2 showcase: pending queue, triage panel, and approval detail" />
 </p>
 
-The approvals v2 flow in Cockpit demonstrates fast triage with policy context, decision rationale capture, and evidence-linked run governance.
+Review pending AI actions, see why they need approval, decide yes or no, and keep the paper trail — all in one place.
 
 ### OpenClaw approvals on mobile
 
@@ -112,7 +99,7 @@ The approvals v2 flow in Cockpit demonstrates fast triage with policy context, d
   </a>
 </p>
 
-This flow shows the control-plane model in practice. OpenClaw can propose work, but policy determines what is auto-approved, what needs a human decision, and what is blocked entirely.
+AI can propose work, but the rules decide what is auto-approved, what needs a human, and what is blocked entirely.
 
 - MP4 showcase: [openclaw-tinder-approvals-iphone.mp4](docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4)
 - Generation command: `npm run cockpit:demo:openclaw:iphone`
@@ -130,11 +117,11 @@ This flow shows the control-plane model in practice. OpenClaw can propose work, 
 
 ## What you get
 
-- Governed execution tiers: `Auto`, `Assisted`, `Human-approve`, `Manual-only`
-- Explicit approvals and workspace-scoped operations
-- Evidence-first operation history for audit and review
-- Ports/adapters integration model for existing systems of record
-- A control-plane layer that can sit above agents instead of replacing them
+- **Gradual trust levels**: `Auto`, `Assisted`, `Human-approve`, `Manual-only` — start strict, widen as confidence grows
+- **Built-in approvals** — risky actions wait for a human, not a prayer
+- **Full paper trail** — every action, decision, and outcome is recorded and reviewable
+- **Works with your existing tools** — Portarium connects to business systems without replacing them
+- **Sits above any agent** — not a replacement for your AI, but the safety layer on top of it
 
 ## Quickstart
 
@@ -202,9 +189,9 @@ Early and actively built. Runtime and contract foundations are in place; some in
 
 ## Working with Calvin
 
-Portarium is also the architecture Calvin uses to think about governed AI consulting work: not "replace your team with agents," but "put policy, approvals, and evidence in the execution path so automation can survive production reality."
+Portarium is the architecture Calvin uses for governed AI consulting: not "replace your team with agents," but "make AI safe enough to trust with real business work."
 
-If you are exploring governed agent workflows, approvals, or control-plane architecture, start with the docs here and then reach out through Calvin Kennedy's consulting page.
+If you are exploring AI automation with proper safety, approvals, and accountability, start with the docs here and then reach out through Calvin Kennedy's consulting page.
 
 ## Discoverability topics
 
