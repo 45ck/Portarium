@@ -203,7 +203,7 @@ The return path back to `Policy Studio` must remain explicit and must preserve t
 
 - which operator-facing terms should remain Portarium-native even if they are initially harder to learn
 - whether the focused approval view should be a distinct mode label or just a layout variant
-- how far to go on relabeling before the upstream terminology bead is complete
+- how far to go on renaming labels before the upstream terminology bead is complete
 
 ## Completion Criteria
 

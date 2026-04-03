@@ -34,6 +34,7 @@ interface ApprovalTriageDeckProps {
   undoAvailable?: boolean;
   onUndo?: () => void;
   compact?: boolean;
+  policyLinkedMode?: boolean;
 }
 
 export function ApprovalTriageDeck({
@@ -51,6 +52,7 @@ export function ApprovalTriageDeck({
   undoAvailable = false,
   onUndo,
   compact = false,
+  policyLinkedMode = false,
 }: ApprovalTriageDeckProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -312,6 +314,7 @@ export function ApprovalTriageDeck({
           isDragging={isDraggingRef.current}
           onValidationChange={handleValidationChange}
           dragRejection={dragRejection}
+          policyLinkedMode={policyLinkedMode}
         />
       </motion.div>
     </motion.div>

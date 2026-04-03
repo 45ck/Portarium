@@ -106,6 +106,11 @@ async function renderApprovalsRoute(initialEntry = '/approvals') {
 beforeAll(() => {
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
   Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    configurable: true,
+    value: vi.fn(),
+  });
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: false,
     media: query,
@@ -200,6 +205,12 @@ describe('Approvals triage page', () => {
     );
 
     expect(await screen.findByText(/opened from policy studio/i)).toBeTruthy();
+    expect(
+      await screen.findByText(
+        /Focused review for the live case that led to the staged Policy draft/i,
+      ),
+    ).toBeTruthy();
+    expect(await screen.findByText(/Decide this live case now/i)).toBeTruthy();
     const backLink = await screen.findByRole('link', { name: /Back to Policy Studio/i });
     const href = backLink.getAttribute('href') ?? '';
     expect(href).toContain('/config/policies');

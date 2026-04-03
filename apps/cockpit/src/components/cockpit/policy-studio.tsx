@@ -397,7 +397,7 @@ function StatCard({
   icon,
 }: {
   title: string;
-  value: string;
+  value: React.ReactNode;
   note: string;
   icon: React.ReactNode;
 }) {
@@ -485,6 +485,12 @@ export function PolicyStudioPage() {
     draft.tier !== selectedSlice.tier ||
     draft.rationale.trim().length > 0 ||
     draft.evidence.join('|') !== selectedSlice.evidence.join('|');
+  const tierMixSummary = (
+    <span className="text-base leading-snug">
+      Auto {tierCounts.Auto} · Assist {tierCounts.Assisted} · Review {tierCounts.HumanApprove} ·
+      Manual {tierCounts.ManualOnly}
+    </span>
+  );
 
   const writeStudioState = useCallback(
     ({
@@ -577,7 +583,7 @@ export function PolicyStudioPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Policy Studio"
-        description="Layered control, live simulation, and runtime-to-policy conversion for governed agent work."
+        description="Start from a live case, stage the future default, then return to the approval that still needs judgment."
         icon={<EntityIcon entityType="policy" size="md" decorative />}
         action={
           <div className="flex flex-wrap items-center gap-2">
@@ -595,16 +601,24 @@ export function PolicyStudioPage() {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <CardDescription className="text-xs uppercase tracking-[0.18em] text-primary">
-                Operator loop
+                Live case - future policy
               </CardDescription>
               <CardTitle className="text-lg">
-                Set posture, replay the outcome, then drop into the live approval card.
+                Review the live case, stage the future default, then return to the approval.
               </CardTitle>
               <p className="max-w-3xl text-sm text-muted-foreground">
-                Cockpit should read as one governed operator loop: choose the capability default,
-                stage the evidence packet, then hand the operator into the exact live approval that
-                still needs judgment.
+                This page is doing two jobs at once: it shows the live approval that motivated the
+                draft, and it lets you stage how similar cases should route in the future once the
+                Policy change is published.
               </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Badge variant="secondary" className="text-[11px]">
+                  Decide now: live approval
+                </Badge>
+                <Badge variant="secondary" className="text-[11px]">
+                  Change later: future Policy default
+                </Badge>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary" className="text-[11px]">
@@ -620,37 +634,7 @@ export function PolicyStudioPage() {
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-xl border border-border bg-background/80 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                1. Choose capability
-              </div>
-              <div className="mt-2 text-sm font-medium">{selectedSlice.title}</div>
-              <p className="mt-1 text-sm text-muted-foreground">{selectedSlice.family}</p>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Trigger: {toTitleCase(selectedSlice.triggerAction)}
-                {selectedSlice.triggerCondition
-                  ? ` when ${toTitleCase(selectedSlice.triggerCondition)}`
-                  : ''}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border bg-background/80 p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                2. Stage doctrine
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <ExecutionTierBadge tier={draft.tier} />
-                <span className="text-sm font-medium">
-                  {getDraftOutcome(selectedSlice.tier, draft.tier)}
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Evidence packet: {draft.evidence.length} requirement
-                {draft.evidence.length === 1 ? '' : 's'} visible before action.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border bg-background/80 p-4">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                3. Review live card
+                1. Live case in review
               </div>
               {triageTargetApproval ? (
                 <>
@@ -658,13 +642,53 @@ export function PolicyStudioPage() {
                   <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
                     {triageTargetApproval.prompt}
                   </p>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    This is the live case that still needs judgment in Approvals.
+                  </p>
                 </>
               ) : (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  No pending approval currently matches this slice. Use simulation to stage the rule
-                  before the next live case appears.
-                </p>
+                <>
+                  <div className="mt-2 text-sm font-medium">No linked live case</div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Use the replay tools below to preview future impact before the next matching
+                    approval appears.
+                  </p>
+                </>
               )}
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/80 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                2. Future policy draft
+              </div>
+              <div className="mt-2 text-sm font-medium">{selectedSlice.title}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{selectedSlice.family}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <ExecutionTierBadge tier={draft.tier} />
+                <span className="text-sm font-medium">
+                  {getDraftOutcome(selectedSlice.tier, draft.tier)}
+                </span>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                If published, future matching cases would require {draft.evidence.length} evidence
+                item{draft.evidence.length === 1 ? '' : 's'} before action.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/80 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                3. What changes later
+              </div>
+              <div className="mt-2 text-sm font-medium">
+                {getDraftOutcome(selectedSlice.tier, draft.tier)}
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Published default today: {selectedSlice.tier}. Drafted default: {draft.tier}.
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                The live approval still needs a human decision now. This draft only changes how
+                similar cases route after the Policy change is published.
+              </p>
             </div>
           </div>
 
@@ -672,9 +696,9 @@ export function PolicyStudioPage() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Live handoff
+                  Return to the live approval
                 </div>
-                <div className="mt-1 text-base font-medium">Focused triage deck entry point</div>
+                <div className="mt-1 text-base font-medium">Focused review entry point</div>
               </div>
               <Waypoints className="h-4 w-4 text-primary" />
             </div>
@@ -682,9 +706,9 @@ export function PolicyStudioPage() {
             {triageTargetApproval ? (
               <>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Send the operator straight into the approvals deck with the related case focused,
-                  then let them come back here to tighten or relax the rule based on what they
-                  learn.
+                  Open the exact approval that still needs a decision. The staged draft comes back
+                  with you, so you can decide the live case first and then adjust the future
+                  default.
                 </p>
                 <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
                   <div className="text-sm font-medium">{triageTargetApproval.prompt}</div>
@@ -710,7 +734,7 @@ export function PolicyStudioPage() {
                         ...approvalReturnSearch,
                       }}
                     >
-                      Open in triage deck
+                      Open focused review
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
@@ -734,27 +758,27 @@ export function PolicyStudioPage() {
 
       <div className="grid gap-4 xl:grid-cols-4">
         <StatCard
-          title="Posture Mix"
-          value={`${tierCounts.Auto}/${tierCounts.Assisted}/${tierCounts.HumanApprove}/${tierCounts.ManualOnly}`}
-          note="Auto, Assisted, HumanApprove, ManualOnly slices"
+          title="Default Tier Counts"
+          value={tierMixSummary}
+          note="Published capability defaults by execution tier."
           icon={<Layers3 className="h-4 w-4" />}
         />
         <StatCard
-          title="Pending Precedents"
+          title="Recent Decisions"
           value={String(pendingPrecedentCount)}
-          note="Live approvals currently shaping future policy"
+          note="Live approvals currently shaping future Policy."
           icon={<Waypoints className="h-4 w-4" />}
         />
         <StatCard
-          title="Noisy Slices"
+          title="Approval Hotspots"
           value={String(noisySliceCount)}
-          note="Capability slices already generating operator traffic"
+          note="Capability areas already generating repeat operator traffic."
           icon={<BrainCircuit className="h-4 w-4" />}
         />
         <StatCard
-          title="Simulation Ready"
+          title="Ready For Replay"
           value={String(simulationReadyCount)}
-          note="Slices with real OpenClaw scenarios behind the draft"
+          note="Capability areas with real OpenClaw scenarios behind the draft."
           icon={<Sparkles className="h-4 w-4" />}
         />
       </div>
@@ -884,14 +908,39 @@ export function PolicyStudioPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Working context
+              </div>
+              <p className="mt-2 font-medium text-foreground">
+                {triageTargetApproval
+                  ? `Editing the future default because of ${triageTargetApproval.approvalId}.`
+                  : 'Editing the future default without a currently linked live approval.'}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                The live case is decided in Approvals. Changes staged here only affect future
+                matching cases after publication.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-medium">Drafted posture</span>
+                <span className="font-medium">Future Policy draft</span>
                 <ExecutionTierBadge tier={draft.tier} />
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 {hasDraftChange
                   ? getDraftOutcome(selectedSlice.tier, draft.tier)
                   : 'No draft change staged yet.'}
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border p-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium">Published default today</span>
+                <ExecutionTierBadge tier={selectedSlice.tier} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                This is the current routing applied before any new draft is published.
               </p>
             </div>
 
@@ -920,6 +969,9 @@ export function PolicyStudioPage() {
 
             <div className="space-y-2">
               <Label>Evidence requirements</Label>
+              <p className="text-xs text-muted-foreground">
+                These requirements apply to future matching cases after the draft is published.
+              </p>
               <div className="grid gap-2">
                 {evidenceOptions.map((item) => {
                   const checked = draft.evidence.includes(item);
