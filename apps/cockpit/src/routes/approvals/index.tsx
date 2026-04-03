@@ -56,6 +56,7 @@ interface ApprovalsSearch extends PolicyStudioReturnSearch {
 
 function ApprovalsPage() {
   const search = Route.useSearch();
+  const policyLinkedMode = search.from === 'policy-studio';
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
@@ -407,6 +408,7 @@ function ApprovalsPage() {
           actionHistory={actionHistory}
           undoAvailable={pendingAction !== null}
           onUndo={() => handleUndo()}
+          policyLinkedMode={policyLinkedMode}
         />
       </div>
     );
@@ -442,7 +444,9 @@ function ApprovalsPage() {
     );
   }
 
-  const showNotification = search.from === 'notification' || pendingItems.length > 0;
+  const showNotification =
+    search.from === 'notification' || (!policyLinkedMode && pendingItems.length > 0);
+  const showOfflineSyncBanner = !policyLinkedMode || offlineMeta.isOffline || pendingCount > 0;
 
   return (
     <div className="p-6 space-y-4">
@@ -477,15 +481,22 @@ function ApprovalsPage() {
       ) : null}
       <PageHeader
         title="Approvals"
+        description={
+          policyLinkedMode
+            ? 'Focused review for the live case that led to the staged Policy draft.'
+            : undefined
+        }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
       />
-      <OfflineSyncBanner
-        isOffline={offlineMeta.isOffline}
-        isStaleData={offlineMeta.isStaleData}
-        lastSyncAtIso={offlineMeta.lastSyncAtIso}
-        pendingOutboxCount={pendingCount}
-      />
-      {showDemo && (
+      {showOfflineSyncBanner ? (
+        <OfflineSyncBanner
+          isOffline={offlineMeta.isOffline}
+          isStaleData={offlineMeta.isStaleData}
+          lastSyncAtIso={offlineMeta.lastSyncAtIso}
+          pendingOutboxCount={pendingCount}
+        />
+      ) : null}
+      {showDemo && !policyLinkedMode && (
         <motion.div
           className="flex items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 px-3 py-2"
           initial={{ opacity: 0, height: 0 }}
@@ -513,15 +524,21 @@ function ApprovalsPage() {
         </motion.div>
       )}
       {currentApproval && triageQueue.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
-            <ApprovalListPanel
-              items={triageQueue}
-              pendingCount={triageQueue.length}
-              selectedId={currentApproval.approvalId}
-              onSelect={setSelectedApprovalId}
-            />
-          </aside>
+        <div
+          className={
+            policyLinkedMode ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]'
+          }
+        >
+          {!policyLinkedMode ? (
+            <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
+              <ApprovalListPanel
+                items={triageQueue}
+                pendingCount={triageQueue.length}
+                selectedId={currentApproval.approvalId}
+                onSelect={setSelectedApprovalId}
+              />
+            </aside>
+          ) : null}
           <section>{triageContent}</section>
         </div>
       ) : (

@@ -33,6 +33,7 @@ export interface ApprovalTriageCardProps {
   isDragging?: boolean;
   onValidationChange?: (validation: DragValidation) => void;
   dragRejection?: 'approve' | 'deny' | null;
+  policyLinkedMode?: boolean;
 }
 
 export function ApprovalTriageCard({
@@ -54,6 +55,7 @@ export function ApprovalTriageCard({
   isDragging: externalIsDragging = false,
   onValidationChange,
   dragRejection = null,
+  policyLinkedMode = false,
 }: ApprovalTriageCardProps) {
   const card = useTriageCard({
     approval,
@@ -96,37 +98,114 @@ export function ApprovalTriageCard({
           </div>
 
           <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-            <TriageCardBody
-              approval={approval}
-              plannedEffects={plannedEffects}
-              evidenceEntries={evidenceEntries}
-              run={run}
-              workflow={workflow}
-              triageViewMode={card.triageViewMode}
-              setTriageViewMode={card.setTriageViewMode}
-              sodEval={card.sodEval}
-              flashSodBanner={card.flashSodBanner}
-              prefersReducedMotion={card.prefersReducedMotion}
-            />
+            {policyLinkedMode ? (
+              <>
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+                  <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                    Focused review
+                  </div>
+                  <div className="mt-2 text-base font-semibold text-foreground">
+                    Decide this live case now
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <div className="rounded-md border border-border bg-background/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Why it is here
+                      </div>
+                      <p className="mt-2 text-sm text-foreground">
+                        {approval.policyRule?.tier
+                          ? `Policy requires ${approval.policyRule.tier} review for this action.`
+                          : 'This approval was opened from Policy Studio for focused review.'}
+                      </p>
+                    </div>
+                    <div className="rounded-md border border-border bg-background/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Decision needed
+                      </div>
+                      <p className="mt-2 text-sm text-foreground">
+                        Approve, deny, or request changes before returning to the staged policy
+                        draft.
+                      </p>
+                    </div>
+                    <div className="rounded-md border border-border bg-background/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Return path
+                      </div>
+                      <p className="mt-2 text-sm text-foreground">
+                        Policy Studio keeps the draft state so you can adjust the future default
+                        after this decision.
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-            <TriageDecisionArea
-              approvalId={approval.approvalId}
-              rationale={card.rationale}
-              onRationaleChange={card.setRationale}
-              requestChangesMode={card.requestChangesMode}
-              requestChangesMsg={card.requestChangesMsg}
-              onRequestChangesMsgChange={card.setRequestChangesMsg}
-              onCancelRequestChanges={card.cancelRequestChanges}
-              onAction={card.handleAction}
-              loading={loading}
-              isBlocked={card.isBlocked}
-              denyAttempted={card.denyAttempted}
-              onDenyAttempted={() => card.setDenyAttempted(true)}
-              shouldShakeApprove={card.shouldShakeApprove}
-              shouldShakeRationale={card.shouldShakeRationale}
-              onRationaleFocus={() => card.setRationaleHasFocus(true)}
-              onRationaleBlur={() => card.setRationaleHasFocus(false)}
-            />
+                <TriageDecisionArea
+                  approvalId={approval.approvalId}
+                  rationale={card.rationale}
+                  onRationaleChange={card.setRationale}
+                  requestChangesMode={card.requestChangesMode}
+                  requestChangesMsg={card.requestChangesMsg}
+                  onRequestChangesMsgChange={card.setRequestChangesMsg}
+                  onCancelRequestChanges={card.cancelRequestChanges}
+                  onAction={card.handleAction}
+                  loading={loading}
+                  isBlocked={card.isBlocked}
+                  denyAttempted={card.denyAttempted}
+                  onDenyAttempted={() => card.setDenyAttempted(true)}
+                  shouldShakeApprove={card.shouldShakeApprove}
+                  shouldShakeRationale={card.shouldShakeRationale}
+                  onRationaleFocus={() => card.setRationaleHasFocus(true)}
+                  onRationaleBlur={() => card.setRationaleHasFocus(false)}
+                />
+
+                <TriageCardBody
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                  triageViewMode={card.triageViewMode}
+                  setTriageViewMode={card.setTriageViewMode}
+                  sodEval={card.sodEval}
+                  flashSodBanner={card.flashSodBanner}
+                  prefersReducedMotion={card.prefersReducedMotion}
+                />
+              </>
+            ) : (
+              <>
+                <TriageCardBody
+                  approval={approval}
+                  plannedEffects={plannedEffects}
+                  evidenceEntries={evidenceEntries}
+                  run={run}
+                  workflow={workflow}
+                  triageViewMode={card.triageViewMode}
+                  setTriageViewMode={card.setTriageViewMode}
+                  sodEval={card.sodEval}
+                  flashSodBanner={card.flashSodBanner}
+                  prefersReducedMotion={card.prefersReducedMotion}
+                />
+
+                <TriageDecisionArea
+                  approvalId={approval.approvalId}
+                  rationale={card.rationale}
+                  onRationaleChange={card.setRationale}
+                  requestChangesMode={card.requestChangesMode}
+                  requestChangesMsg={card.requestChangesMsg}
+                  onRequestChangesMsgChange={card.setRequestChangesMsg}
+                  onCancelRequestChanges={card.cancelRequestChanges}
+                  onAction={card.handleAction}
+                  loading={loading}
+                  isBlocked={card.isBlocked}
+                  denyAttempted={card.denyAttempted}
+                  onDenyAttempted={() => card.setDenyAttempted(true)}
+                  shouldShakeApprove={card.shouldShakeApprove}
+                  shouldShakeRationale={card.shouldShakeRationale}
+                  onRationaleFocus={() => card.setRationaleHasFocus(true)}
+                  onRationaleBlur={() => card.setRationaleHasFocus(false)}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

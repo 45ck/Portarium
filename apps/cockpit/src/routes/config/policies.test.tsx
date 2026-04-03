@@ -115,9 +115,11 @@ describe('Policy Studio route', () => {
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
     expect(
       await screen.findByText(
-        /Set posture, replay the outcome, then drop into the live approval card/i,
+        /Review the live case, stage the future default, then return to the approval/i,
       ),
     ).toBeTruthy();
+    expect(await screen.findByText(/Decide now: live approval/i)).toBeTruthy();
+    expect(await screen.findByText(/Change later: future Policy default/i)).toBeTruthy();
     expect(await screen.findByText(/Capability posture matrix/i)).toBeTruthy();
     expect(await screen.findByText(/Simulation lab/i)).toBeTruthy();
     expect(await screen.findByText(/Runtime precedent to policy/i)).toBeTruthy();
@@ -143,7 +145,7 @@ describe('Policy Studio route', () => {
     );
     await userEvent.click(await screen.findByRole('button', { name: /Apply to draft/i }));
 
-    const handoffLink = await screen.findByRole('link', { name: /Open in triage deck/i });
+    const handoffLink = await screen.findByRole('link', { name: /Open focused review/i });
     const href = handoffLink.getAttribute('href') ?? '';
 
     expect(href).toContain('/approvals');
@@ -168,5 +170,8 @@ describe('Policy Studio route', () => {
     const rationale = (await screen.findByLabelText(/Rationale capture/i)) as HTMLTextAreaElement;
     expect(rationale.value).toContain('Escalate schedule creation to a control-room review path');
     expect((await screen.findAllByText(/Draft staged/i)).length).toBeGreaterThan(0);
+    expect(
+      await screen.findByText(/Editing the future default because of apr-oc-3205/i),
+    ).toBeTruthy();
   });
 });
