@@ -56,9 +56,9 @@ function createFetchMock() {
   });
 }
 
-async function renderPoliciesRoute() {
+async function renderPoliciesRoute(initialEntry = '/config/policies') {
   const router = createCockpitRouter({
-    history: createMemoryHistory({ initialEntries: ['/config/policies'] }),
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
   render(<RouterProvider router={router} />);
   await router.load();
@@ -108,6 +108,11 @@ describe('Policy Studio route', () => {
     await renderPoliciesRoute();
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
+    expect(
+      await screen.findByText(
+        /Set posture, replay the outcome, then drop into the live approval card/i,
+      ),
+    ).toBeTruthy();
     expect(await screen.findByText(/Capability posture matrix/i)).toBeTruthy();
     expect(await screen.findByText(/Simulation lab/i)).toBeTruthy();
     expect(await screen.findByText(/Runtime precedent to policy/i)).toBeTruthy();
@@ -123,5 +128,16 @@ describe('Policy Studio route', () => {
 
     const rationale = (await screen.findByLabelText(/Rationale capture/i)) as HTMLTextAreaElement;
     expect(rationale.value).toContain('Escalate schedule creation to a control-room review path');
+  });
+
+  it('offers a focused handoff into the approvals triage deck', async () => {
+    await renderPoliciesRoute();
+
+    const handoffLink = await screen.findByRole('link', { name: /Open in triage deck/i });
+    const href = handoffLink.getAttribute('href') ?? '';
+
+    expect(href).toContain('/approvals');
+    expect(href).toContain('from=policy-studio');
+    expect(href).toContain('focus=');
   });
 });

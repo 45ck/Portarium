@@ -401,6 +401,7 @@ export function PolicyStudioPage() {
     matchingApprovals.find((approval) => approval.approvalId === selectedScenarioId) ??
     matchingApprovals[0] ??
     null;
+  const triageTargetApproval = selectedScenario ?? null;
 
   const tierCounts = useMemo(() => {
     return slices.reduce<Record<ExecutionTier, number>>(
@@ -476,11 +477,6 @@ export function PolicyStudioPage() {
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/approvals" search={{ demo: 'true' }}>
-                Review approvals
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
               <Link to="/config/policies/$policyId" params={{ policyId: selectedSlice.policyId }}>
                 Open source rule
               </Link>
@@ -488,6 +484,147 @@ export function PolicyStudioPage() {
           </div>
         }
       />
+
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-none">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-2">
+              <CardDescription className="text-xs uppercase tracking-[0.18em] text-primary">
+                Operator loop
+              </CardDescription>
+              <CardTitle className="text-lg">
+                Set posture, replay the outcome, then drop into the live approval card.
+              </CardTitle>
+              <p className="max-w-3xl text-sm text-muted-foreground">
+                Cockpit should read as one governed operator loop: choose the capability default,
+                stage the evidence packet, then hand the operator into the exact live approval that
+                still needs judgment.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="text-[11px]">
+                {matchingApprovals.length} live case{matchingApprovals.length === 1 ? '' : 's'}
+              </Badge>
+              <Badge variant="secondary" className="text-[11px]">
+                {hasDraftChange ? 'Draft staged' : 'Draft unchanged'}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl border border-border bg-background/80 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                1. Choose capability
+              </div>
+              <div className="mt-2 text-sm font-medium">{selectedSlice.title}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{selectedSlice.family}</p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Trigger: {toTitleCase(selectedSlice.triggerAction)}
+                {selectedSlice.triggerCondition
+                  ? ` when ${toTitleCase(selectedSlice.triggerCondition)}`
+                  : ''}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/80 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                2. Stage doctrine
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <ExecutionTierBadge tier={draft.tier} />
+                <span className="text-sm font-medium">
+                  {getDraftOutcome(selectedSlice.tier, draft.tier)}
+                </span>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Evidence packet: {draft.evidence.length} requirement
+                {draft.evidence.length === 1 ? '' : 's'} visible before action.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/80 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                3. Review live card
+              </div>
+              {triageTargetApproval ? (
+                <>
+                  <div className="mt-2 text-sm font-medium">{triageTargetApproval.approvalId}</div>
+                  <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
+                    {triageTargetApproval.prompt}
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No pending approval currently matches this slice. Use simulation to stage the rule
+                  before the next live case appears.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-primary/30 bg-background/95 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Live handoff
+                </div>
+                <div className="mt-1 text-base font-medium">Focused triage deck entry point</div>
+              </div>
+              <Waypoints className="h-4 w-4 text-primary" />
+            </div>
+
+            {triageTargetApproval ? (
+              <>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Send the operator straight into the approvals deck with the related case focused,
+                  then let them come back here to tighten or relax the rule based on what they
+                  learn.
+                </p>
+                <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
+                  <div className="text-sm font-medium">{triageTargetApproval.prompt}</div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Badge variant="secondary" className="text-[11px]">
+                      {triageTargetApproval.approvalId}
+                    </Badge>
+                    {triageTargetApproval.policyRule?.ruleId ? (
+                      <Badge variant="secondary" className="text-[11px]">
+                        {triageTargetApproval.policyRule.ruleId}
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button size="sm" asChild>
+                    <Link
+                      to="/approvals"
+                      search={{
+                        demo: 'true',
+                        from: 'policy-studio',
+                        focus: triageTargetApproval.approvalId,
+                      }}
+                    >
+                      Open in triage deck
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link
+                      to="/approvals/$approvalId"
+                      params={{ approvalId: triageTargetApproval.approvalId }}
+                    >
+                      Open approval detail
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">
+                The handoff panel will activate when a pending approval matches the selected slice.
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 xl:grid-cols-4">
         <StatCard
@@ -996,8 +1133,8 @@ export function PolicyStudioPage() {
           <div className="rounded-lg border border-border p-4">
             <div className="text-sm font-medium">Demo-ready path</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              The same fixture model can power a later demo-machine flow: choose posture, run
-              simulation, then show the approval gate reacting in the triage queue.
+              This branch already closes the loop: stage posture here, jump into the focused triage
+              card, then come back to convert the decision into reusable policy.
             </p>
           </div>
         </CardContent>

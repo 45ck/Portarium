@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, Link } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
@@ -438,6 +438,29 @@ function ApprovalsPage() {
   return (
     <div className="p-6 space-y-4">
       {showNotification && <NotificationBanner pendingCount={pendingItems.length} />}
+      {search.from === 'policy-studio' && currentApproval ? (
+        <motion.div
+          className="rounded-lg border border-primary/30 bg-primary/5 p-4"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-1">
+              <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                Opened from Policy Studio
+              </div>
+              <div className="text-sm font-medium">{currentApproval.prompt}</div>
+              <p className="text-sm text-muted-foreground">
+                You are focused on {currentApproval.approvalId}. Review the live case in the deck,
+                then return to Policy Studio if the decision should become future policy.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/config/policies">Back to Policy Studio</Link>
+            </Button>
+          </div>
+        </motion.div>
+      ) : null}
       <PageHeader
         title="Approvals"
         icon={<EntityIcon entityType="approval" size="md" decorative />}
