@@ -1,0 +1,199 @@
+# OpenAPI patch: WorkItem.kind rollout on Control Plane API v1
+#
+# This file is an additive patch specification intended to be merged into:
+# docs/spec/openapi/portarium-control-plane.v1.yaml
+#
+# It documents the exact schema/parameter/request/response deltas required for
+# the Stage A compatibility rollout of WorkItem.kind.
+
+components:
+  parameters:
+    WorkItemKindQuery:
+      name: kind
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/WorkItemKind'
+
+  schemas:
+    WorkItemKind:
+      type: string
+      enum:
+        - case
+        - change
+        - investigation
+
+    WorkItemSubtype:
+      type: string
+      minLength: 1
+      pattern: '^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)?$'
+
+    WorkItemV2:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 2
+        workItemId:
+          $ref: '#/components/schemas/WorkItemId'
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        createdAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        createdByUserId:
+          $ref: '#/components/schemas/UserId'
+        title:
+          type: string
+          minLength: 1
+        kind:
+          $ref: '#/components/schemas/WorkItemKind'
+        subtype:
+          $ref: '#/components/schemas/WorkItemSubtype'
+        status:
+          $ref: '#/components/schemas/WorkItemStatus'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        links:
+          $ref: '#/components/schemas/WorkItemLinksV1'
+      required:
+        - schemaVersion
+        - workItemId
+        - workspaceId
+        - createdAtIso
+        - createdByUserId
+        - title
+        - kind
+        - status
+
+    CreateWorkItemRequestV2:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+        kind:
+          $ref: '#/components/schemas/WorkItemKind'
+        subtype:
+          $ref: '#/components/schemas/WorkItemSubtype'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
+      required:
+        - title
+        - kind
+
+    UpdateWorkItemRequestV2:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/WorkItemStatus'
+        ownerUserId:
+          $ref: '#/components/schemas/UserId'
+        subtype:
+          $ref: '#/components/schemas/WorkItemSubtype'
+        sla:
+          $ref: '#/components/schemas/WorkItemSlaV1'
+        externalRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalObjectRef'
+
+paths:
+  /v1/workspaces/{workspaceId}/work-items:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/WorkItemStatusQuery'
+        - $ref: '#/components/parameters/WorkItemOwnerUserIdQuery'
+        - $ref: '#/components/parameters/WorkItemKindQuery'
+        - $ref: '#/components/parameters/WorkItemRunIdQuery'
+        - $ref: '#/components/parameters/WorkItemWorkflowIdQuery'
+        - $ref: '#/components/parameters/WorkItemApprovalIdQuery'
+        - $ref: '#/components/parameters/WorkItemEvidenceIdQuery'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkItemV2'
+                  nextCursor:
+                    type: string
+                    minLength: 1
+                required: [items]
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CreateWorkItemRequestV2'
+                - type: object
+                  additionalProperties: false
+                  properties:
+                    title:
+                      type: string
+                      minLength: 1
+                    ownerUserId:
+                      $ref: '#/components/schemas/UserId'
+                    sla:
+                      $ref: '#/components/schemas/WorkItemSlaV1'
+                    externalRefs:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ExternalObjectRef'
+                  required: [title]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV2'
+
+  /v1/workspaces/{workspaceId}/work-items/{workItemId}:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV2'
+    patch:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkItemRequestV2'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemV2'
