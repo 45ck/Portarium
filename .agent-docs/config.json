@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "sourceExtension": ".md",
+  "sourceRoots": ["docs"],
+  "ignorePaths": [
+    "node_modules",
+    ".git",
+    "dist",
+    "coverage",
+    ".agent-docs",
+    "generated",
+    ".beads",
+    "reports",
+    "README.md",
+    "AGENTS.md",
+    "AGENT_LOOP.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    "src"
+  ],
+  "generated": {
+    "markdownRoot": "generated",
+    "allowMdOnlyWhenGenerated": true,
+    "indexTitle": "Portarium Docs Index",
+    "manifestPath": ".agent-docs/manifest.json",
+    "markdownHeaderPrefix": "# "
+  },
+  "markdownPolicy": {
+    "mode": "warn",
+    "allowInGeneratedPaths": ["generated", "docs/generated"]
+  },
+  "kindDefaults": {
+    "ADR": {
+      "requiredStatus": [
+        "accepted",
+        "draft",
+        "proposed",
+        "superseded",
+        "rejected",
+        "deprecated",
+        "deferred",
+        "open"
+      ]
+    },
+    "PRD": {
+      "requiredStatus": ["accepted", "draft", "proposed", "rejected", "open"]
+    },
+    "SRD": {
+      "requiredStatus": ["accepted", "draft", "proposed", "rejected", "open"]
+    },
+    "JOURNEY": {
+      "requiredStatus": ["accepted", "draft", "proposed", "rejected", "open"]
+    },
+    "POLICY": {
+      "requiredStatus": ["accepted", "draft", "proposed", "rejected", "open"]
+    },
+    "DOMAINTREE": {
+      "requiredStatus": ["accepted", "draft", "proposed", "open"]
+    },
+    "OTHER": {
+      "requiredStatus": ["accepted", "draft", "proposed", "rejected", "open"]
+    }
+  },
+  "strict": {
+    "requireGeneratedFreshness": false,
+    "failOnDuplicateCanonicalKey": true,
+    "requireConflictSymmetry": true,
+    "requireCodeTraceability": false,
+    "requireCodeSymbols": false
+  },
+  "references": {
+    "enabled": false,
+    "rules": []
+  },
+  "terminology": {
+    "enabled": false,
+    "sourceKinds": ["DOMAINTREE"],
+    "termMetadataKeys": ["terms"],
+    "aliasMetadataKey": "termAliases",
+    "termRegex": "{{s*([^}]+?)s*}}",
+    "includeTitle": true,
+    "includeSectionTitles": false,
+    "includeSectionBodies": true,
+    "unknownTermSeverity": "warning"
+  },
+  "contracts": {
+    "enabled": false,
+    "check": null,
+    "generate": null
+  },
+  "codeTraceability": {
+    "requireForKinds": ["ADR", "PRD", "SRD"],
+    "allowedExtensions": ["*"],
+    "ignorePaths": ["node_modules", "dist", "coverage", ".agent-docs", "generated"]
+  },
+  "reportPath": ".agent-docs/reports/check-report.json",
+  "hooks": {
+    "preCommitPath": ".beads/hooks/pre-commit",
+    "prePushPath": ".beads/hooks/pre-push",
+    "installGitHooks": false
+  }
+}
