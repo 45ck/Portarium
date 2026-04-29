@@ -332,12 +332,15 @@ export async function authenticate(
   }>,
 ): Promise<{ ok: true; ctx: AppContext } | { ok: false; error: Unauthorized }> {
   const { req, correlationId, traceContext, expectedWorkspaceId } = args;
+  const method = (req.method ?? 'GET').toUpperCase();
+  const requireExpectedWorkspaceId = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
   const auth = await deps.authentication.authenticateBearerToken({
     authorizationHeader: readAuthorizationHeader(req),
     correlationId,
     traceparent: traceContext.traceparent,
     ...(traceContext.tracestate ? { tracestate: traceContext.tracestate } : {}),
     ...(expectedWorkspaceId ? { expectedWorkspaceId } : {}),
+    ...(requireExpectedWorkspaceId ? { requireExpectedWorkspaceId } : {}),
   });
   if (auth.ok) return { ok: true, ctx: auth.value };
   deps.authEventLogger?.logUnauthorized({

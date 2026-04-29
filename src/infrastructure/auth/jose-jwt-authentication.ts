@@ -378,7 +378,15 @@ export class JoseJwtAuthentication implements AuthenticationPort {
       scopes: parseScopes(payload),
     });
 
-    if (input.expectedWorkspaceId && actor.workspaceId.toString() !== input.expectedWorkspaceId) {
+    const expectedWorkspaceId = input.expectedWorkspaceId?.trim();
+    if (input.requireExpectedWorkspaceId && !expectedWorkspaceId) {
+      return err({
+        kind: 'Unauthorized',
+        message: 'Workspace-bound authentication requires expectedWorkspaceId.',
+      });
+    }
+
+    if (expectedWorkspaceId && actor.workspaceId.toString() !== expectedWorkspaceId) {
       return err({ kind: 'Unauthorized', message: 'Workspace scope mismatch.' });
     }
 

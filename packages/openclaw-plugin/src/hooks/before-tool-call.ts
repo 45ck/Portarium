@@ -47,70 +47,80 @@ export function registerBeforeToolCallHook(
   api.on(
     'before_tool_call',
     async (event, ctx) => {
-      const { toolName, params } = event;
-      const sessionKey = resolveSessionKey(ctx.sessionKey, config.workspaceId);
+      try {
+        const { toolName, params } = event;
+        const sessionKey = resolveSessionKey(ctx.sessionKey, config.workspaceId);
 
-      // Bypass governance only for hard-coded Portarium introspection tools.
-      if (bypassToolNames.has(toolName)) {
-        const runId = ctx.runId ?? event.runId ?? 'none';
-        const agentId = ctx.agentId ?? 'unknown';
-        logger.info(
-          `[portarium][audit] Governance bypassed for Portarium introspection tool: ${formatToolNameForLog(toolName)} (sessionKey=${sessionKey}, runId=${runId}, agentId=${agentId})`,
-        );
-        return;
-      }
-
-      logger.info(`[portarium] Governing tool call: ${toolName}`);
-
-      const decision = await client.proposeAction({
-        toolName,
-        parameters: params,
-        sessionKey,
-        ...(ctx.runId ? { correlationId: ctx.runId } : {}),
-      });
-
-      switch (decision.status) {
-        case 'allowed':
-          logger.info(`[portarium] Allowed: ${toolName}`);
-          return;
-
-        case 'denied':
-          logger.warn(`[portarium] Denied: ${toolName} — ${decision.reason}`);
-          return {
-            block: true,
-            blockReason: `Portarium policy blocked tool "${toolName}": ${decision.reason}`,
-          };
-
-        case 'awaiting_approval': {
+        // Bypass governance only for hard-coded Portarium introspection tools.
+        if (bypassToolNames.has(toolName)) {
+          const runId = ctx.runId ?? event.runId ?? 'none';
+          const agentId = ctx.agentId ?? 'unknown';
           logger.info(
-            `[portarium] Awaiting approval for: ${toolName} (approvalId=${decision.approvalId})`,
+            `[portarium][audit] Governance bypassed for Portarium introspection tool: ${formatToolNameForLog(toolName)} (sessionKey=${sessionKey}, runId=${runId}, agentId=${agentId})`,
           );
-          const result = await poller.waitForDecision(decision.approvalId);
-          if (result.approved) {
-            logger.info(`[portarium] Approved by human: ${toolName}`);
-            return;
-          }
-          logger.warn(`[portarium] Denied by human: ${toolName} — ${result.reason}`);
-          return {
-            block: true,
-            blockReason: `Portarium approval denied for tool "${toolName}": ${result.reason}`,
-          };
+          return;
         }
 
-        case 'error':
-          if (config.failClosed) {
-            logger.error(
-              `[portarium] Governance error (fail-closed) for ${toolName}: ${decision.reason}`,
-            );
+        logger.info(`[portarium] Governing tool call: ${toolName}`);
+
+        const decision = await client.proposeAction({
+          toolName,
+          parameters: params,
+          sessionKey,
+          ...(ctx.runId ? { correlationId: ctx.runId } : {}),
+        });
+
+        switch (decision.status) {
+          case 'allowed':
+            logger.info(`[portarium] Allowed: ${toolName}`);
+            return;
+
+          case 'denied':
+            logger.warn(`[portarium] Denied: ${toolName} — ${decision.reason}`);
             return {
               block: true,
-              blockReason: `Portarium governance unavailable — failing closed. Tool "${toolName}" blocked. Reason: ${decision.reason}`,
+              blockReason: `Portarium policy blocked tool "${toolName}": ${decision.reason}`,
+            };
+
+          case 'awaiting_approval': {
+            logger.info(
+              `[portarium] Awaiting approval for: ${toolName} (approvalId=${decision.approvalId})`,
+            );
+            const result = await poller.waitForDecision(decision.approvalId);
+            if (result.approved) {
+              logger.info(`[portarium] Approved by human: ${toolName}`);
+              return;
+            }
+            logger.warn(`[portarium] Denied by human: ${toolName} — ${result.reason}`);
+            return {
+              block: true,
+              blockReason: `Portarium approval denied for tool "${toolName}": ${result.reason}`,
             };
           }
-          logger.warn(
-            `[portarium] Governance error (fail-open) for ${toolName}: ${decision.reason} — allowing`,
-          );
-          return;
+
+          case 'error':
+            if (config.failClosed) {
+              logger.error(
+                `[portarium] Governance error (fail-closed) for ${toolName}: ${decision.reason}`,
+              );
+              return {
+                block: true,
+                blockReason: `Portarium governance unavailable — failing closed. Tool "${toolName}" blocked. Reason: ${decision.reason}`,
+              };
+            }
+            logger.warn(
+              `[portarium] Governance error (fail-open) for ${toolName}: ${decision.reason} — allowing`,
+            );
+            return;
+        }
+      } catch (error) {
+        const toolName = formatToolNameForLog(event.toolName);
+        const reason = error instanceof Error ? error.message : 'Unknown hook failure.';
+        logger.error(`[portarium] Hook failure (fail-closed) for ${toolName}: ${reason}`);
+        return {
+          block: true,
+          blockReason: `Portarium governance hook failed — failing closed. Tool "${toolName}" blocked.`,
+        };
       }
     },
     { priority: 1000 },
