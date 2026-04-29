@@ -126,6 +126,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       const target = new URL(targetUrl, self.location.origin);
+      if (target.origin !== self.location.origin) {
+        return self.clients.openWindow('/');
+      }
       const focused = windowClients.find((c) => {
         try {
           return new URL(c.url).origin === self.location.origin && 'focus' in c;
@@ -208,7 +211,7 @@ function isStaticAsset(pathname) {
 }
 
 function resolveNotificationTargetUrl(data = {}) {
-  if (typeof data.url === 'string' && data.url.startsWith('/')) {
+  if (typeof data.url === 'string' && data.url.startsWith('/') && !data.url.startsWith('//')) {
     return data.url;
   }
 

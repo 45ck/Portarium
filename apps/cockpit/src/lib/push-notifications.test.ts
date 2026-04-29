@@ -231,6 +231,21 @@ describe('notification target URLs', () => {
       getNotificationTargetUrl({ url: 'https://evil.test/phish' }, 'https://cockpit.test'),
     ).toBe('/');
   });
+
+  it('falls back for protocol-relative explicit URLs', () => {
+    expect(getNotificationTargetUrl({ url: '//evil.test/phish' }, 'https://cockpit.test')).toBe(
+      '/',
+    );
+  });
+
+  it('ignores non-string native payload values', () => {
+    expect(
+      getNotificationTargetUrl(
+        { url: { href: '/approvals?focus=bad' }, approvalId: 42 },
+        'https://cockpit.test',
+      ),
+    ).toBe('/');
+  });
 });
 
 describe('onNotificationActionPerformed (web)', () => {

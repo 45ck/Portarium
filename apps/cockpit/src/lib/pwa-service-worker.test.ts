@@ -16,5 +16,7 @@ describe('pwa service worker', () => {
     expect(swSource).toContain("cache.match('/index.html')");
     expect(swSource).toContain('resolveNotificationTargetUrl');
     expect(swSource).toContain("from: 'notification'");
+    expect(swSource).toContain("!data.url.startsWith('//')");
+    expect(swSource).toContain('target.origin !== self.location.origin');
   });
 });
