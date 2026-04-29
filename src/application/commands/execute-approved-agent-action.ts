@@ -150,6 +150,14 @@ export async function executeApprovedAgentAction(
     });
   }
 
+  if (String(approval.decidedByUserId) === String(ctx.principalId)) {
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.agentActionExecute,
+      message: 'Maker-checker violation: the approval decider cannot execute the same action.',
+    });
+  }
+
   // --- Generate execution ID ---
   const executionId = deps.idGenerator.generateId();
   if (executionId.trim() === '') {
