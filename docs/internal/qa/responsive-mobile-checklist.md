@@ -10,8 +10,8 @@ navigation bar, filter-bar wrapping, and touch-friendly interaction targets.
 - Cockpit dev server running: `cd apps/cockpit && npx vite`
 - Browser DevTools open — toggle **Device Toolbar** (Chrome: `Ctrl+Shift+M`)
 - Set viewport to **390 × 844** (iPhone 14 equivalent)
-- Alternative: use `npm run ab -- open http://localhost:5173 --headed` and
-  resize to mobile dimensions
+- Alternative: use `npm run ab -- open http://cockpit.localhost:1355 --headed`
+  and `npm run ab -- set viewport 390 844`
 
 ## Viewport sizes to test
 
@@ -87,4 +87,16 @@ rows 6–9 (filter bar) are critical path.
 ```
 npm run -w apps/cockpit test -- src/routes/mobile-shell.test.tsx
 npm run -w apps/cockpit test -- src/components/cockpit/operations-map/mobile-map-layout.test.tsx
+```
+
+## Agent-browser evidence flow
+
+Use this flow when the checklist needs repeatable evidence on a Windows host:
+
+```bash
+npm run ab -- doctor
+npm run ab -- open http://cockpit.localhost:1355 --headed --viewport 390x844
+npm run ab -- snapshot -i
+npm run ab -- screenshot ./qa-artifacts/manual-evidence/mobile-390.png
+npm run ab -- close
 ```

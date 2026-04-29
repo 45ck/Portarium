@@ -19,6 +19,11 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const SCRIPT_FILE = fileURLToPath(import.meta.url);
+const SCRIPT_DIR = path.dirname(SCRIPT_FILE);
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 
 // ---------------------------------------------------------------------------
 // Daemon discovery (must match daemon.js logic)
@@ -35,9 +40,9 @@ function getSocketDir() {
   return process.env.AGENT_BROWSER_SOCKET_DIR ?? getAppDir();
 }
 
-const SESSION = process.env.AGENT_BROWSER_SESSION || 'default';
+export const SESSION = process.env.AGENT_BROWSER_SESSION || 'default';
 
-function portForSession(session) {
+export function portForSession(session) {
   let hash = 0;
   for (let i = 0; i < session.length; i++) {
     hash = (hash << 5) - hash + session.charCodeAt(i);
@@ -104,31 +109,129 @@ async function probeDaemon(timeoutMs = 1200) {
   });
 }
 
-/** Resolve daemon.js from the globally-installed agent-browser package. */
-function findDaemonJs() {
-  // Try the global npm prefix first
-  const candidates = [];
-  const npmGlobal = process.env.APPDATA
-    ? path.join(process.env.APPDATA, 'npm', 'node_modules', 'agent-browser', 'dist', 'daemon.js')
-    : null;
-  if (npmGlobal) candidates.push(npmGlobal);
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
 
-  // Also try relative to this script (in case agent-browser was installed locally)
-  candidates.push(path.resolve('node_modules', 'agent-browser', 'dist', 'daemon.js'));
+function existingFile(candidate) {
+  if (!candidate) return null;
+  const resolved = path.resolve(candidate);
+  return fs.existsSync(resolved) ? resolved : null;
+}
 
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+function firstExisting(candidates) {
+  for (const candidate of unique(candidates)) {
+    const found = existingFile(candidate);
+    if (found) return found;
   }
   return null;
 }
 
+function npmGlobalRoots(env = process.env) {
+  return unique([
+    env.APPDATA ? path.join(env.APPDATA, 'npm', 'node_modules') : null,
+    env.npm_config_prefix ? path.join(env.npm_config_prefix, 'node_modules') : null,
+    env.ProgramFiles ? path.join(env.ProgramFiles, 'nodejs', 'node_modules') : null,
+    env['ProgramFiles(x86)'] ? path.join(env['ProgramFiles(x86)'], 'nodejs', 'node_modules') : null,
+  ]);
+}
+
+export function daemonCandidates({ env = process.env, cwd = process.cwd() } = {}) {
+  const packagePath = path.join('agent-browser', 'dist', 'daemon.js');
+  return unique([
+    env.AGENT_BROWSER_DAEMON_JS,
+    path.join(REPO_ROOT, 'node_modules', packagePath),
+    path.join(cwd, 'node_modules', packagePath),
+    ...npmGlobalRoots(env).map((root) => path.join(root, packagePath)),
+  ]);
+}
+
+/** Resolve daemon.js from an override, local package, or global npm package. */
+export function findDaemonJs(options = {}) {
+  return firstExisting(daemonCandidates(options));
+}
+
+export function browserExecutableCandidates({ env = process.env } = {}) {
+  const candidates = [
+    env.AGENT_BROWSER_CHROME_EXECUTABLE,
+    env.CHROME_PATH,
+    env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+  ];
+
+  if (process.platform === 'win32') {
+    candidates.push(
+      env.LOCALAPPDATA
+        ? path.join(env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe')
+        : null,
+      env.ProgramFiles
+        ? path.join(env.ProgramFiles, 'Google', 'Chrome', 'Application', 'chrome.exe')
+        : null,
+      env['ProgramFiles(x86)']
+        ? path.join(env['ProgramFiles(x86)'], 'Google', 'Chrome', 'Application', 'chrome.exe')
+        : null,
+      env.LOCALAPPDATA
+        ? path.join(env.LOCALAPPDATA, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+        : null,
+      env.ProgramFiles
+        ? path.join(env.ProgramFiles, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+        : null,
+      env['ProgramFiles(x86)']
+        ? path.join(env['ProgramFiles(x86)'], 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+        : null,
+    );
+  } else if (process.platform === 'darwin') {
+    candidates.push(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    );
+  } else {
+    candidates.push(
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/microsoft-edge',
+    );
+  }
+
+  return unique(candidates);
+}
+
+export function findBrowserExecutable(options = {}) {
+  return firstExisting(browserExecutableCandidates(options));
+}
+
+export function applyLaunchDefaults(cmd) {
+  if (cmd.action !== 'launch') return cmd;
+  if (cmd.executablePath || (cmd.browser && cmd.browser !== 'chromium')) return cmd;
+
+  const executablePath = findBrowserExecutable();
+  return executablePath ? { ...cmd, executablePath } : cmd;
+}
+
+function missingDaemonMessage() {
+  const candidates = daemonCandidates()
+    .map((candidate) => `  - ${candidate}`)
+    .join('\n');
+  return [
+    'Error: cannot find agent-browser daemon.js',
+    '',
+    'Install agent-browser globally or point the wrapper at daemon.js:',
+    '  npm install -g agent-browser',
+    '  $env:AGENT_BROWSER_DAEMON_JS="C:\\path\\to\\agent-browser\\dist\\daemon.js"',
+    '',
+    'Checked:',
+    candidates,
+  ].join('\n');
+}
+
 async function ensureDaemon() {
-  if (isDaemonRunning()) return;
   if (await probeDaemon()) return;
 
   const daemonJs = findDaemonJs();
   if (!daemonJs) {
-    console.error('Error: cannot find agent-browser daemon.js');
+    console.error(missingDaemonMessage());
     process.exit(1);
   }
 
@@ -143,10 +246,10 @@ async function ensureDaemon() {
   });
   child.unref();
 
-  // Wait for PID file (up to 8 s)
+  // Wait for the TCP protocol, not just the PID file. On Windows the daemon can
+  // write its PID before the session port accepts connections.
   for (let i = 0; i < 80; i++) {
     await new Promise((r) => setTimeout(r, 100));
-    if (isDaemonRunning()) return;
     if (await probeDaemon(200)) return;
   }
   console.error('Error: daemon did not start in time');
@@ -222,9 +325,22 @@ function parseArgs(argv) {
       const url = positional()[0];
       if (!url) return usage('open <url>');
       const headless = !flag('--headed');
+      const executablePath = flagVal('--executable-path') ?? flagVal('--chrome-path') ?? undefined;
+      const browser = flagVal('--browser') ?? undefined;
+      const viewportRaw = flagVal('--viewport');
+      const viewportMatch = viewportRaw ? viewportRaw.match(/^(\d+)x(\d+)$/) : null;
+      const width = parseInt(flagVal('--width') ?? viewportMatch?.[1] ?? '1280', 10);
+      const height = parseInt(flagVal('--height') ?? viewportMatch?.[2] ?? '720', 10);
       // Send launch + navigate
       return [
-        { id: id(), action: 'launch', headless, viewport: { width: 1280, height: 720 } },
+        {
+          id: id(),
+          action: 'launch',
+          headless,
+          viewport: { width, height },
+          executablePath,
+          browser,
+        },
         {
           id: id(),
           action: 'navigate',
@@ -672,6 +788,9 @@ function parseArgs(argv) {
       break; // process.exit() above ensures no fallthrough; break satisfies lint
     }
 
+    case 'doctor':
+      return { id: id(), action: 'doctor', json: flag('--json') };
+
     // --- Diff ---
     case 'diff': {
       const p = positional();
@@ -725,6 +844,38 @@ function parseArgs(argv) {
 function usage(msg) {
   console.error(`Usage: node scripts/ab.mjs ${msg}`);
   process.exit(1);
+}
+
+async function runDoctor({ json = false } = {}) {
+  const daemonJs = findDaemonJs();
+  const browserExecutable = findBrowserExecutable();
+  const diagnostics = {
+    session: SESSION,
+    socketDir: getSocketDir(),
+    port: portForSession(SESSION),
+    pidFile: getPidFile(),
+    daemonJs,
+    browserExecutable,
+    daemonRunning: isDaemonRunning(),
+    daemonReachable: await probeDaemon(300),
+    platform: process.platform,
+  };
+
+  if (json) {
+    console.log(JSON.stringify(diagnostics, null, 2));
+  } else {
+    console.log(`session: ${diagnostics.session}`);
+    console.log(`socketDir: ${diagnostics.socketDir}`);
+    console.log(`port: ${diagnostics.port}`);
+    console.log(`pidFile: ${diagnostics.pidFile}`);
+    console.log(`daemonJs: ${diagnostics.daemonJs ?? '(missing)'}`);
+    console.log(`browserExecutable: ${diagnostics.browserExecutable ?? '(Playwright default)'}`);
+    console.log(`daemonRunning: ${diagnostics.daemonRunning}`);
+    console.log(`daemonReachable: ${diagnostics.daemonReachable}`);
+    console.log(`platform: ${diagnostics.platform}`);
+  }
+
+  if (!daemonJs) process.exit(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -846,31 +997,46 @@ function formatOutput(resp) {
 // Main
 // ---------------------------------------------------------------------------
 
-const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.log('Usage: node scripts/ab.mjs <command> [args...]');
-  console.log('Wrapper for agent-browser that bypasses the Rust binary (AppLocker).');
-  console.log('');
-  console.log('Commands: open, snapshot, click, fill, type, press, screenshot,');
-  console.log('          get, wait, close, set, tab, find, eval, console, errors, ...');
-  process.exit(0);
-}
+async function main(args) {
+  if (args.length === 0) {
+    console.log('Usage: node scripts/ab.mjs <command> [args...]');
+    console.log('Wrapper for agent-browser that bypasses the Rust binary (AppLocker).');
+    console.log('');
+    console.log('Commands: open, snapshot, click, fill, type, press, screenshot,');
+    console.log('          get, wait, close, set, tab, find, eval, console, errors, ...');
+    process.exit(0);
+  }
 
-const cmds = parseArgs(args);
-const cmdList = Array.isArray(cmds) ? cmds : [cmds];
+  const cmds = parseArgs(args);
+  const cmdList = Array.isArray(cmds) ? cmds : [cmds];
 
-await ensureDaemon();
+  if (cmdList.length === 1 && cmdList[0].action === 'doctor') {
+    await runDoctor({ json: cmdList[0].json === true });
+    return;
+  }
 
-for (const cmd of cmdList) {
-  // Strip undefined values
-  const clean = Object.fromEntries(Object.entries(cmd).filter(([, v]) => v !== undefined));
-  try {
-    const resp = await sendCommand(clean);
-    formatOutput(resp);
-  } catch (err) {
-    // If first command was launch and it failed (already launched), continue
-    if (cmd.action === 'launch' && cmdList.length > 1) continue;
-    console.error(`Error: ${err.message}`);
-    process.exit(1);
+  await ensureDaemon();
+
+  for (const cmd of cmdList) {
+    // Strip undefined values
+    const clean = Object.fromEntries(
+      Object.entries(applyLaunchDefaults(cmd)).filter(([, v]) => v !== undefined),
+    );
+    try {
+      const resp = await sendCommand(clean);
+      formatOutput(resp);
+    } catch (err) {
+      // If first command was launch and it failed (already launched), continue
+      if (cmd.action === 'launch' && cmdList.length > 1) continue;
+      console.error(`Error: ${err.message}`);
+      process.exit(1);
+    }
   }
 }
+
+if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_FILE) {
+  const args = process.argv.slice(2);
+  await main(args);
+}
+
+export { parseArgs, main };
