@@ -100,14 +100,11 @@ export class PortariumClient {
         };
       }
 
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) {
-        return {
-          status: 'error',
-          reason: `Portarium returned unexpected content-type: ${contentType || '(none)'}`,
-        };
+      const json = await readJsonObject(response, 'proposal response');
+      if (!json.ok) {
+        return { status: 'error', reason: json.reason };
       }
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = json.body;
       return parseProposalResponse(body);
     } catch (error) {
       return {
@@ -131,14 +128,11 @@ export class PortariumClient {
         return { status: 'error', reason: `HTTP ${response.status} polling approval` };
       }
 
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) {
-        return {
-          status: 'error',
-          reason: `Portarium returned unexpected content-type while polling: ${contentType || '(none)'}`,
-        };
+      const json = await readJsonObject(response, 'approval polling response');
+      if (!json.ok) {
+        return { status: 'error', reason: json.reason };
       }
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = json.body;
       return parseApprovalStatus(body);
     } catch (error) {
       return {
@@ -158,7 +152,9 @@ export class PortariumClient {
         signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) return null;
-      const body = (await response.json()) as Record<string, unknown>;
+      const json = await readJsonObject(response, 'run status response');
+      if (!json.ok) return null;
+      const body = json.body;
       return {
         runId: String(body.runId ?? body.id ?? runId),
         stage: String(body.stage ?? body.status ?? 'unknown'),
@@ -180,7 +176,9 @@ export class PortariumClient {
         signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) return [];
-      const body = (await response.json()) as Record<string, unknown>;
+      const json = await readJsonObject(response, 'approval list response');
+      if (!json.ok) return [];
+      const body = json.body;
       const items = Array.isArray(body.items) ? body.items : [];
       return items.map((item: Record<string, unknown>) => ({
         approvalId: String(item.id ?? item.approvalId ?? ''),
@@ -232,7 +230,9 @@ export class PortariumClient {
         signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) return null;
-      const body = (await response.json()) as Record<string, unknown>;
+      const json = await readJsonObject(response, 'capability lookup response');
+      if (!json.ok) return null;
+      const body = json.body;
       return {
         capabilityId: String(body.capabilityId ?? toolName),
         requiredTier: String(body.requiredTier ?? 'HumanApprove'),
@@ -249,6 +249,39 @@ export class PortariumClient {
       authorization: `Bearer ${this.#config.bearerToken}`,
       'x-portarium-tenant-id': this.#config.tenantId,
       'x-portarium-workspace-id': this.#config.workspaceId,
+    };
+  }
+}
+
+type JsonObjectReadResult =
+  | { readonly ok: true; readonly body: Record<string, unknown> }
+  | { readonly ok: false; readonly reason: string };
+
+async function readJsonObject(
+  response: Pick<Response, 'headers' | 'json'>,
+  context: string,
+): Promise<JsonObjectReadResult> {
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.trim().toLowerCase().startsWith('application/json')) {
+    return {
+      ok: false,
+      reason: `Portarium returned unexpected content-type for ${context}: ${contentType || '(none)'}`,
+    };
+  }
+
+  try {
+    const body = (await response.json()) as unknown;
+    if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+      return {
+        ok: false,
+        reason: `Portarium returned non-object JSON for ${context}`,
+      };
+    }
+    return { ok: true, body: body as Record<string, unknown> };
+  } catch {
+    return {
+      ok: false,
+      reason: `Portarium returned invalid JSON for ${context}`,
     };
   }
 }

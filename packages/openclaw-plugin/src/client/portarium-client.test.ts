@@ -24,6 +24,17 @@ function mockFetch(
   })) as unknown as typeof fetch;
 }
 
+function mockInvalidJsonFetch(contentType = 'application/json'): typeof fetch {
+  return (async () => ({
+    ok: true,
+    status: 200,
+    headers: { get: (name: string) => (name === 'content-type' ? contentType : null) },
+    json: async () => {
+      throw new SyntaxError('Unexpected token <');
+    },
+  })) as unknown as typeof fetch;
+}
+
 describe('PortariumClient', () => {
   describe('proposeAction', () => {
     it('returns allowed when decision is Allow', async () => {
@@ -125,6 +136,32 @@ describe('PortariumClient', () => {
       });
       expect(result).toMatchObject({ status: 'error' });
       expect((result as { reason: string }).reason).toContain('text/html');
+    });
+
+    it('accepts application/json responses with charset parameters', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch({ decision: 'Allow' }, 200, 'application/json; charset=utf-8'),
+      );
+      const result = await client.proposeAction({
+        toolName: 'bash',
+        parameters: {},
+        sessionKey: 'sess-1',
+      });
+      expect(result).toEqual({ status: 'allowed' });
+    });
+
+    it('returns error when JSON parsing fails', async () => {
+      const client = new PortariumClient(makeConfig(), mockInvalidJsonFetch());
+      const result = await client.proposeAction({
+        toolName: 'bash',
+        parameters: {},
+        sessionKey: 'sess-1',
+      });
+      expect(result).toEqual({
+        status: 'error',
+        reason: 'Portarium returned invalid JSON for proposal response',
+      });
     });
 
     it('returns error on network failure', async () => {
@@ -325,6 +362,14 @@ describe('PortariumClient', () => {
       expect(await client.getRunStatus('r-1')).toBeNull();
     });
 
+    it('returns null when response content-type is not application/json', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch('<html>Login</html>', 200, 'text/html'),
+      );
+      expect(await client.getRunStatus('r-1')).toBeNull();
+    });
+
     it('returns null on network error', async () => {
       const failFetch = (() => {
         throw new Error('fail');
@@ -362,6 +407,14 @@ describe('PortariumClient', () => {
 
     it('returns empty array on HTTP error', async () => {
       const client = new PortariumClient(makeConfig(), mockFetch({}, 500));
+      expect(await client.listPendingApprovals()).toEqual([]);
+    });
+
+    it('returns empty array when response content-type is not application/json', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch('<html>Login</html>', 200, 'text/html'),
+      );
       expect(await client.listPendingApprovals()).toEqual([]);
     });
 
@@ -405,6 +458,14 @@ describe('PortariumClient', () => {
 
     it('returns null on HTTP error', async () => {
       const client = new PortariumClient(makeConfig(), mockFetch({}, 404));
+      expect(await client.lookupCapability('unknown')).toBeNull();
+    });
+
+    it('returns null when response content-type is not application/json', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch('<html>Login</html>', 200, 'text/html'),
+      );
       expect(await client.lookupCapability('unknown')).toBeNull();
     });
 
