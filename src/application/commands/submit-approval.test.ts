@@ -1,10 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TenantId, UserId } from '../../domain/primitives/index.js';
+import {
+  AgentId,
+  CorrelationId,
+  EvidenceId,
+  PolicyId,
+  ProposalId,
+  TenantId,
+  UserId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { toAppContext } from '../common/context.js';
 import { APP_ACTIONS } from '../common/actions.js';
 import {
+  type AgentActionProposalStore,
   type ApprovalStore,
   type AuthorizationPort,
   type Clock,
@@ -27,6 +38,59 @@ const PENDING_APPROVAL = parseApprovalV1({
   requestedByUserId: 'user-2',
   status: 'Pending',
 });
+
+const AGENT_ACTION_APPROVAL = parseApprovalV1({
+  schemaVersion: 1,
+  approvalId: 'approval-agent-1',
+  workspaceId: 'ws-1',
+  runId: 'proposal-1',
+  planId: 'proposal-1',
+  prompt: 'Approve agent action.',
+  requestedAtIso: '2026-02-17T00:00:00.000Z',
+  requestedByUserId: 'user-2',
+  status: 'Pending',
+});
+
+function makeAgentActionProposal(
+  overrides: Partial<AgentActionProposalV1> = {},
+): AgentActionProposalV1 {
+  return {
+    schemaVersion: 1,
+    proposalId: ProposalId('proposal-1'),
+    workspaceId: WorkspaceId('ws-1'),
+    agentId: AgentId('agent-1'),
+    actionKind: 'invoke-tool',
+    toolName: 'write-record',
+    executionTier: 'HumanApprove',
+    toolClassification: {
+      toolName: 'write-record',
+      category: 'Mutation',
+      minimumTier: 'HumanApprove',
+      rationale: 'Writes external state.',
+    },
+    policyDecision: 'RequireApproval',
+    policyIds: [PolicyId('policy-1')],
+    decision: 'NeedsApproval',
+    approvalId: AGENT_ACTION_APPROVAL.approvalId,
+    rationale: 'Needs operator review.',
+    requestedByUserId: UserId('user-2'),
+    correlationId: CorrelationId('corr-proposal-1'),
+    proposedAtIso: '2026-02-17T00:00:00.000Z',
+    evidenceId: EvidenceId('evidence-1'),
+    ...overrides,
+  };
+}
+
+function makeAgentActionProposalStore(
+  proposal: AgentActionProposalV1 | null,
+): AgentActionProposalStore {
+  return {
+    getProposalById: vi.fn(async () => proposal),
+    getProposalByApprovalId: vi.fn(async () => proposal),
+    getProposalByIdempotencyKey: vi.fn(async () => null),
+    saveProposal: vi.fn(async () => undefined),
+  };
+}
 
 describe('submitApproval', () => {
   let authorization: AuthorizationPort;
@@ -465,6 +529,113 @@ describe('submitApproval', () => {
     if (result.ok) throw new Error('Expected conflict response.');
     expect(result.error.kind).toBe('Conflict');
     expect(result.error.message).toMatch(/already decided/i);
+  });
+
+  it('rejects orphan agent-action approvals when the linked proposal is missing', async () => {
+    approvalStore.getApprovalById = vi.fn(async () => AGENT_ACTION_APPROVAL);
+    const agentActionProposalStore = makeAgentActionProposalStore(null);
+
+    const result = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        agentActionProposalStore,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-agent-1',
+        decision: 'Approved',
+        rationale: 'Looks good.',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toMatch(/agent action proposal/i);
+    expect(agentActionProposalStore.getProposalById).toHaveBeenCalled();
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('rejects agent-action approvals whose proposal link does not match the approval', async () => {
+    approvalStore.getApprovalById = vi.fn(async () => AGENT_ACTION_APPROVAL);
+    const agentActionProposalStore = makeAgentActionProposalStore(
+      makeAgentActionProposal({ proposalId: ProposalId('proposal-other') }),
+    );
+
+    const result = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        agentActionProposalStore,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-agent-1',
+        decision: 'Approved',
+        rationale: 'Looks good.',
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict response.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('allows agent-action approvals when the linked proposal matches', async () => {
+    approvalStore.getApprovalById = vi.fn(async () => AGENT_ACTION_APPROVAL);
+    const agentActionProposalStore = makeAgentActionProposalStore(makeAgentActionProposal());
+
+    const result = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        agentActionProposalStore,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-agent-1',
+        decision: 'Approved',
+        rationale: 'Looks good.',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
   });
 
   it('happy path: Denied decision emits ApprovalDenied event', async () => {

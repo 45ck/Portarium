@@ -43,6 +43,9 @@ When the proposal decision is `NeedsApproval`, a human reviewer must decide. The
 
 - The proposal creates an `ApprovalV1` record with status `Pending`.
 - A reviewer calls `submitApproval` with decision `Approved` or `Denied`.
+- For agent-action approvals, `submitApproval` verifies that the linked
+  `AgentActionProposalV1` exists and that its `proposalId`, `approvalId`, and
+  `workspaceId` match the approval before accepting a decision.
 - Unconditional maker-checker: the deciding user cannot be the requesting user.
 - SoD constraints from workspace policies may impose additional restrictions.
 - Evidence is recorded for every approval decision.
@@ -193,6 +196,7 @@ Aggregate in `src/domain/machines/`:
 ### AgentActionProposalStore Port
 
 - `getProposalById(tenantId, proposalId)`: returns `AgentActionProposalV1 | null`
+- `getProposalByApprovalId(tenantId, approvalId)`: returns `AgentActionProposalV1 | null`
 - `saveProposal(tenantId, proposal)`: persists or upserts the proposal
 
 ## Idempotency Semantics
@@ -210,6 +214,7 @@ When the caller does not supply an `idempotencyKey`, the system auto-generates o
 - **Database layer**: A partial UNIQUE index `uk_agent_action_proposals_idempotency` on `(tenant_id, workspace_id, idempotency_key) WHERE idempotency_key IS NOT NULL` prevents concurrent inserts from creating duplicate rows.
 - **In-memory store**: First-writer-wins semantics -- if a proposal with the same idempotency key already exists for the workspace, the duplicate is silently discarded.
 - **Application layer**: After persisting a proposal, the command re-reads the store to detect race losers. If a different proposal won the write, the loser returns the winner's output, ensuring both concurrent callers receive the same `proposalId` and `approvalId`.
+- **Approval decision layer**: `submitApproval` re-validates the approval-to-proposal link before recording any decision. Orphaned approvals left behind by a losing concurrent writer are rejected and cannot unblock or pollute the approval decision trail.
 
 ### Behaviour Guarantees
 
