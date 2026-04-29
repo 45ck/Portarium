@@ -3,12 +3,18 @@
  * Matches the configSchema in openclaw.plugin.json.
  */
 
-/** Tools that are always allowed without governance — hard-coded to Portarium introspection only. */
-const PERMITTED_BYPASS_TOOLS: ReadonlySet<string> = new Set([
+/** Tools that are always allowed without governance - hard-coded to Portarium introspection only. */
+export const PERMITTED_BYPASS_TOOL_NAMES = [
   'portarium_get_run',
   'portarium_list_approvals',
   'portarium_capability_lookup',
-]);
+] as const;
+
+const PERMITTED_BYPASS_TOOLS: ReadonlySet<string> = new Set(PERMITTED_BYPASS_TOOL_NAMES);
+
+export function isPermittedBypassToolName(toolName: string): boolean {
+  return PERMITTED_BYPASS_TOOLS.has(toolName);
+}
 
 export interface PortariumPluginConfig {
   readonly portariumUrl: string;
@@ -90,18 +96,24 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
   }
 
   // bypassToolNames: only allow the hard-coded Portarium introspection tools.
-  // Any value outside the permitted set is silently dropped with a warning.
+  // Any value outside the permitted set is dropped with a visible warning.
   let bypassToolNames: readonly string[] = [...PERMITTED_BYPASS_TOOLS];
   if (Array.isArray(raw.bypassToolNames)) {
-    const requested = raw.bypassToolNames as string[];
-    const rejected = requested.filter((t) => !PERMITTED_BYPASS_TOOLS.has(t));
+    const requested = raw.bypassToolNames;
+    const rejected = requested.filter(
+      (toolName): toolName is Exclude<unknown, string> =>
+        typeof toolName !== 'string' || !isPermittedBypassToolName(toolName),
+    );
     if (rejected.length > 0) {
       console.warn(
-        `[portarium-plugin] config.bypassToolNames contains tools outside the permitted introspection set — ignoring: ${rejected.join(', ')}. ` +
-          `Only ${[...PERMITTED_BYPASS_TOOLS].join(', ')} may bypass governance.`,
+        `[portarium-plugin] config.bypassToolNames contains entries outside the permitted introspection set; ignoring: ${rejected.map(formatBypassToolNameForLog).join(', ')}. ` +
+          `Only ${PERMITTED_BYPASS_TOOL_NAMES.join(', ')} may bypass governance.`,
       );
     }
-    const allowed = requested.filter((t) => PERMITTED_BYPASS_TOOLS.has(t));
+    const allowed = requested.filter(
+      (toolName): toolName is string =>
+        typeof toolName === 'string' && isPermittedBypassToolName(toolName),
+    );
     bypassToolNames = allowed.length > 0 ? allowed : [...PERMITTED_BYPASS_TOOLS];
   }
 
@@ -129,4 +141,11 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
         ? raw.defaultExecutionTier
         : DEFAULT_CONFIG.defaultExecutionTier,
   };
+}
+
+function formatBypassToolNameForLog(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.replace(/[\r\n\0]/g, '');
+  }
+  return JSON.stringify(value) ?? String(value);
 }

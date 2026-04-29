@@ -14,6 +14,8 @@ function makeConfig(overrides?: Partial<PortariumPluginConfig>): PortariumPlugin
     approvalTimeoutMs: 86_400_000,
     pollIntervalMs: 3_000,
     bypassToolNames: ['portarium_get_run', 'portarium_list_approvals'],
+    defaultPolicyIds: ['default-governance'],
+    defaultExecutionTier: 'HumanApprove',
     ...overrides,
   };
 }
@@ -28,7 +30,7 @@ function makeLogger() {
 function buildHook(client: PortariumClient, poller: ApprovalPoller, config: PortariumPluginConfig) {
   type HookHandler = (
     event: { toolName: string; params: Record<string, unknown>; runId?: string },
-    ctx: { sessionKey?: string; runId?: string },
+    ctx: { sessionKey?: string; agentId?: string; runId?: string },
   ) => Promise<{ block?: boolean; blockReason?: string } | void>;
 
   let capturedHandler: HookHandler | undefined;
@@ -57,8 +59,12 @@ function makeEvent(
   };
 }
 
-function makeCtx(overrides?: { sessionKey?: string; runId?: string }) {
-  return { sessionKey: overrides?.sessionKey, runId: overrides?.runId };
+function makeCtx(overrides?: { sessionKey?: string; agentId?: string; runId?: string }) {
+  return {
+    sessionKey: overrides?.sessionKey,
+    agentId: overrides?.agentId,
+    runId: overrides?.runId,
+  };
 }
 
 describe('registerBeforeToolCallHook', () => {
@@ -73,10 +79,18 @@ describe('registerBeforeToolCallHook', () => {
     it('skips governance entirely for tools in bypassToolNames', async () => {
       const client = { proposeAction: vi.fn() } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
-      const { handler } = buildHook(client, poller, makeConfig());
-      const result = await handler(makeEvent({ toolName: 'portarium_get_run' }), makeCtx());
+      const { handler, logger } = buildHook(client, poller, makeConfig());
+      const result = await handler(
+        makeEvent({ toolName: 'portarium_get_run' }),
+        makeCtx({ sessionKey: 'agent:main:main', runId: 'run-123', agentId: 'agent-1' }),
+      );
       expect(client.proposeAction).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('[portarium][audit] Governance bypassed'),
+      );
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('portarium_get_run'));
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('runId=run-123'));
     });
 
     it('governs tools not in bypassToolNames', async () => {
@@ -87,6 +101,26 @@ describe('registerBeforeToolCallHook', () => {
       const { handler } = buildHook(client, poller, makeConfig());
       await handler(makeEvent({ toolName: 'bash_exec' }), makeCtx());
       expect(client.proposeAction).toHaveBeenCalledOnce();
+    });
+
+    it('does not bypass normal tools even when config is poisoned with their names', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(
+        client,
+        poller,
+        makeConfig({ bypassToolNames: ['bash_exec', 'portarium_get_run'] }),
+      );
+
+      await handler(makeEvent({ toolName: 'bash_exec' }), makeCtx());
+
+      expect(client.proposeAction).toHaveBeenCalledOnce();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Ignoring configured bypassToolNames outside the hardcoded'),
+      );
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('bash_exec'));
     });
   });
 

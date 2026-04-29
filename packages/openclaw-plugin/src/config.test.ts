@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { resolveConfig, DEFAULT_CONFIG } from './config.js';
 
 describe('resolveConfig', () => {
@@ -7,6 +7,10 @@ describe('resolveConfig', () => {
     workspaceId: 'ws-1',
     bearerToken: 'tok-1',
   };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('resolves with defaults for minimal valid input', () => {
     const config = resolveConfig(validRaw);
@@ -32,8 +36,7 @@ describe('resolveConfig', () => {
       failClosed: false,
       approvalTimeoutMs: 1000,
       pollIntervalMs: 500,
-      // Only permitted introspection tools are accepted in bypassToolNames;
-      // arbitrary tool names are silently dropped (security: bead-0979)
+      // Only permitted introspection tools are accepted in bypassToolNames.
       bypassToolNames: ['portarium_get_run'],
     });
     expect(config.tenantId).toBe('custom-tenant');
@@ -43,9 +46,30 @@ describe('resolveConfig', () => {
     expect(config.bypassToolNames).toEqual(['portarium_get_run']);
   });
 
-  it('silently drops bypassToolNames entries outside the permitted introspection set', () => {
+  it('drops bypassToolNames entries outside the permitted introspection set with diagnostics', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const config = resolveConfig({
+      ...validRaw,
+      bypassToolNames: ['portarium_get_run', 'write_file', 'bash_exec'],
+    });
+
+    expect(config.bypassToolNames).toEqual(['portarium_get_run']);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('config.bypassToolNames contains entries outside the permitted'),
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('write_file, bash_exec'));
+  });
+
+  it('does not retain malicious bypassToolNames that target normal tools', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
     const config = resolveConfig({ ...validRaw, bypassToolNames: ['my_tool', 'send_email'] });
+
     expect(config.bypassToolNames).toEqual(DEFAULT_CONFIG.bypassToolNames);
+    expect(config.bypassToolNames).not.toContain('my_tool');
+    expect(config.bypassToolNames).not.toContain('send_email');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Only portarium_get_run'));
   });
 
   it('throws when approvalTimeoutMs is zero or negative', () => {
