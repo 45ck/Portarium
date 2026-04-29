@@ -249,8 +249,10 @@ const PAGE_CASES = [
   },
   { path: '/workflows/builder', heading: 'Workflow Builder' },
   { path: '/approvals', heading: 'Approvals' },
-  { path: '/approvals/apr-3001', heading: 'Approval Request' },
+  { path: '/approvals/apr-3001', heading: 'Approvals' },
   { path: '/evidence', heading: 'Evidence' },
+  { path: '/engineering/beads', heading: 'Engineering Cockpit' },
+  { path: '/engineering/beads/wi-1001', heading: 'Engineering Cockpit' },
   { path: '/workforce', heading: 'Workforce' },
   { path: '/workforce/wfm-001', heading: 'Dana Approver' },
   { path: '/workforce/queues', heading: 'Queues' },
@@ -290,6 +292,7 @@ beforeAll(() => {
     }));
   }
   vi.stubGlobal('localStorage', createMemoryStorage());
+  vi.stubGlobal('scrollTo', vi.fn());
   if (typeof ResizeObserver === 'undefined') {
     class ResizeObserverMock {
       observe() {}

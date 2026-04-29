@@ -44,6 +44,7 @@ import {
   GitBranch,
   Map,
   Users,
+  Sliders,
 } from 'lucide-react';
 import type { PersonaId } from '@/stores/ui-store';
 
@@ -106,6 +107,28 @@ const NAV_SECTIONS: NavSectionDef[] = [
         label: 'Search',
         to: '/search',
         icon: <Search className="h-4 w-4" />,
+      },
+    ],
+  },
+  {
+    label: 'Engineering',
+    items: [
+      {
+        label: 'Beads',
+        to: '/engineering/beads',
+        icon: <GitBranch className="h-4 w-4" />,
+      },
+      {
+        label: 'Mission Control',
+        to: '/engineering/mission-control',
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        comingSoon: true,
+      },
+      {
+        label: 'Autonomy',
+        to: '/engineering/autonomy',
+        icon: <Sliders className="h-4 w-4" />,
+        comingSoon: true,
       },
     ],
   },

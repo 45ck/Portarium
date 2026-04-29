@@ -7,6 +7,8 @@ import type { EvidenceCategory, HumanTaskStatus } from '@portarium/cockpit-types
 import { EvidenceCategoryBadge } from './evidence-category-badge';
 import { ExecutionTierBadge } from './execution-tier-badge';
 import { HumanTaskStatusBadge } from './human-task-status-badge';
+import { BlastRadiusBadge } from './blast-radius-badge';
+import { PolicyTierBadge } from './policy-tier-badge';
 
 describe('EvidenceCategoryBadge', () => {
   afterEach(() => {
@@ -57,6 +59,41 @@ describe('ExecutionTierBadge', () => {
       ManualOnly: 'Manual Only',
     };
     expect(screen.getByText(expectedLabels[tier])).toBeTruthy();
+  });
+});
+
+describe('PolicyTierBadge', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const tiers: Array<'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly'> = [
+    'Auto',
+    'Assisted',
+    'HumanApprove',
+    'ManualOnly',
+  ];
+
+  it.each(tiers)('renders label for policy tier %s', (tier) => {
+    render(<PolicyTierBadge tier={tier} />);
+    const expectedLabels = {
+      Auto: 'AUTO',
+      Assisted: 'ASSISTED',
+      HumanApprove: 'HUMAN-APPROVE',
+      ManualOnly: 'MANUAL-ONLY',
+    };
+    expect(screen.getByText(expectedLabels[tier])).toBeTruthy();
+  });
+});
+
+describe('BlastRadiusBadge', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it.each(['low', 'medium', 'high', 'critical'] as const)('renders label for %s blast', (level) => {
+    render(<BlastRadiusBadge level={level} />);
+    expect(screen.getByText(level)).toBeTruthy();
   });
 });
 
