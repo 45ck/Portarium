@@ -220,6 +220,60 @@ const approvalStore = new InMemoryApprovalStore();
 /** @type {Map<string, { toolName: string; parameters: unknown }>} */
 const toolContextByApprovalId = new Map();
 
+/** Connected SSE clients for demo approval lifecycle events. */
+/** @type {Set<import('http').ServerResponse>} */
+const eventStreamClients = new Set();
+
+/**
+ * Broadcast a domain event using the same Server-Sent Event shape Cockpit
+ * consumes from the control plane.
+ * @param {{ type?: string; [key: string]: unknown }} event
+ */
+function publishDemoEvent(event) {
+  const eventType = typeof event.type === 'string' ? event.type : 'com.portarium.event.Unknown';
+  const payload = `event: ${eventType}\nid: ${randomUUID()}\ndata: ${JSON.stringify(event)}\n\n`;
+  for (const client of eventStreamClients) {
+    if (client.writableEnded) {
+      eventStreamClients.delete(client);
+      continue;
+    }
+    client.write(payload);
+  }
+}
+
+/**
+ * @param {import('http').IncomingMessage} req
+ * @param {import('http').ServerResponse} res
+ */
+function openEventStream(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.write(': connected\n\n');
+  eventStreamClients.add(res);
+
+  const heartbeat = setInterval(() => {
+    if (res.writableEnded) {
+      clearInterval(heartbeat);
+      eventStreamClients.delete(res);
+      return;
+    }
+    res.write(': heartbeat\n\n');
+  }, 30_000);
+
+  const cleanup = () => {
+    clearInterval(heartbeat);
+    eventStreamClients.delete(res);
+    if (!res.writableEnded) res.end();
+  };
+
+  req.once('close', cleanup);
+  res.once('close', cleanup);
+}
+
 const DEMO_TENANT_ID = 'ws-proxy-demo';
 const DEMO_WORKSPACE_ID = 'ws-proxy-demo';
 const AGENT_PRINCIPAL = 'user-proxy-agent';
@@ -256,6 +310,7 @@ function makeDomainDeps() {
     eventPublisher: {
       publish: async (event) => {
         console.log(`[portarium-proxy] Domain event: ${event.type}`);
+        publishDemoEvent(event);
       },
     },
   };
@@ -411,6 +466,16 @@ async function handleRequest(req, res, port) {
       port,
       pendingApprovals: pendingPage.items.length,
     });
+    return;
+  }
+
+  // GET /events:stream or /v1/workspaces/:workspaceId/events:stream — demo SSE stream
+  if (
+    req.method === 'GET' &&
+    (url.pathname === '/events:stream' ||
+      /^\/v1\/workspaces\/[^/]+\/events:stream$/.test(url.pathname))
+  ) {
+    openEventStream(req, res);
     return;
   }
 
@@ -853,7 +918,7 @@ export function startPolicyProxy(port = 9999) {
         );
       }
       console.log(
-        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  POST /approvals/:id/execute  GET /approvals/ui`,
+        `[portarium-proxy] Routes: GET /health  GET /tools  POST /tools/invoke  GET /approvals  GET /approvals/:id  POST /approvals/:id/decide  POST /approvals/:id/execute  GET /events:stream  GET /approvals/ui`,
       );
       resolve({
         url,
