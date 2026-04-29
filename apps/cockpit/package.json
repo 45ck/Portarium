@@ -7,7 +7,7 @@
     "dev:e2e": "vite --port 5173 --strictPort",
     "build": "tsc -b tsconfig.app.json && vite build",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "node scripts/clean-storybook-static.mjs && storybook build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --config vitest.coverage.config.ts",
     "test:watch": "vitest"
