@@ -15,6 +15,9 @@ import type { PortariumPluginConfig } from '../config.js';
 import type { PortariumClient } from '../client/portarium-client.js';
 import type { ApprovalPoller } from '../services/approval-poller.js';
 
+const MAX_SESSION_KEY_LENGTH = 128;
+const SAFE_SESSION_KEY_PATTERN = /^[A-Za-z0-9._:@-]+$/;
+
 /** Slice of OpenClaw plugin API used by this hook. */
 interface HookApi {
   on(
@@ -53,8 +56,8 @@ export function registerBeforeToolCallHook(
 
         // Bypass governance only for hard-coded Portarium introspection tools.
         if (bypassToolNames.has(toolName)) {
-          const runId = ctx.runId ?? event.runId ?? 'none';
-          const agentId = ctx.agentId ?? 'unknown';
+          const runId = formatIdentityForLog(ctx.runId ?? event.runId ?? 'none');
+          const agentId = formatIdentityForLog(ctx.agentId ?? 'unknown');
           logger.info(
             `[portarium][audit] Governance bypassed for Portarium introspection tool: ${formatToolNameForLog(toolName)} (sessionKey=${sessionKey}, runId=${runId}, agentId=${agentId})`,
           );
@@ -129,11 +132,24 @@ export function registerBeforeToolCallHook(
 
 function resolveSessionKey(sessionKey: string | undefined, workspaceId: string): string {
   // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace.
-  // Sanitize: strip control characters and truncate to 128 chars to prevent header injection.
   const rawKey = sessionKey ?? `portarium:${workspaceId}`;
-  return rawKey.replace(/[\r\n\0]/g, '').slice(0, 128);
+  if (!rawKey || rawKey.length > MAX_SESSION_KEY_LENGTH) {
+    throw new Error(
+      `[portarium] Invalid sessionKey: must be 1-${MAX_SESSION_KEY_LENGTH} safe identifier characters`,
+    );
+  }
+  if (!SAFE_SESSION_KEY_PATTERN.test(rawKey)) {
+    throw new Error(
+      '[portarium] Invalid sessionKey: only letters, numbers, dot, underscore, colon, at-sign, and hyphen are allowed',
+    );
+  }
+  return rawKey;
 }
 
 function formatToolNameForLog(toolName: string): string {
   return toolName.replace(/[\r\n\0]/g, '');
+}
+
+function formatIdentityForLog(value: string): string {
+  return value.replace(/[\r\n\0]/g, '').slice(0, MAX_SESSION_KEY_LENGTH);
 }

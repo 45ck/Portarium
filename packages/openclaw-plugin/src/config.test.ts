@@ -79,6 +79,23 @@ describe('resolveConfig', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.tenantId contained'));
   });
 
+  it('rejects header-backed config values that sanitize to empty', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    expect(() => resolveConfig({ ...validRaw, workspaceId: '\r\n\0' })).toThrow(
+      'config.workspaceId must not be empty after CRLF/NUL sanitization',
+    );
+    expect(() => resolveConfig({ ...validRaw, bearerToken: '\r\n\0' })).toThrow(
+      'config.bearerToken must not be empty after CRLF/NUL sanitization',
+    );
+    expect(() => resolveConfig({ ...validRaw, tenantId: '\r\n\0' })).toThrow(
+      'config.tenantId must not be empty after CRLF/NUL sanitization',
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.workspaceId contained'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.bearerToken contained'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.tenantId contained'));
+  });
+
   it('logs non-string and control-character bypass entries without retaining them', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
