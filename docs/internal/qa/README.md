@@ -37,14 +37,21 @@ npm run -w apps/cockpit test
 npm run ci:pr
 ```
 
-## Exploratory test scripts
+## Browser QA
 
-For scripted browser-based exploration, use `agent-browser`:
+Use the Node wrapper for scripted browser-based exploration. This avoids the
+unsigned Rust CLI path that can be blocked by AppLocker on Windows Enterprise.
 
 ```bash
-# Launch cockpit and take a snapshot of interactive elements
-npm run ab -- open http://localhost:5173 --headed
+# Check daemon and browser discovery before starting a manual run
+npm run ab -- doctor
+
+# Launch Cockpit and take a snapshot of interactive elements
+npm run ab -- open http://cockpit.localhost:1355 --headed
 npm run ab -- snapshot -i
+
+# Resize to a mobile approval-review viewport
+npm run ab -- set viewport 390 844
 
 # Capture a screenshot for evidence
 npm run ab -- screenshot ./qa-artifacts/manual-evidence/smoke-$(date +%Y%m%d).png
@@ -52,3 +59,17 @@ npm run ab -- screenshot ./qa-artifacts/manual-evidence/smoke-$(date +%Y%m%d).pn
 # Close browser
 npm run ab -- close
 ```
+
+### Windows host prerequisites
+
+- Install `agent-browser` globally, or set
+  `AGENT_BROWSER_DAEMON_JS` to the package `dist/daemon.js` file.
+- Install Google Chrome or Microsoft Edge. The wrapper discovers common Windows
+  install locations and also accepts `AGENT_BROWSER_CHROME_EXECUTABLE`,
+  `CHROME_PATH`, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`, or
+  `npm run ab -- open <url> --chrome-path <path>`.
+- Use a unique session when running in parallel:
+  `AGENT_BROWSER_SESSION=mytest npm run ab -- open http://cockpit.localhost:1355 --headed`.
+- Run `npm run ab -- doctor --json` when a host cannot launch a browser; it
+  prints the daemon path, socket directory, session port, and browser executable
+  the wrapper will use.
