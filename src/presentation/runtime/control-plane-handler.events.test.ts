@@ -200,3 +200,78 @@ describe('GET /v1/workspaces/:workspaceId/events:stream', () => {
     expect(received).toContain('evt-sentinel');
   });
 });
+
+describe('GET /v1/workspaces/:workspaceId/beads/:beadId/events', () => {
+  it('streams only events associated with the requested bead', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const base = await startWith(makeDeps({ eventStream: broadcast }));
+
+    const ac = new AbortController();
+    let received: string;
+    try {
+      const res = await fetch(`${base}/v1/workspaces/ws-test/beads/bead-0975/events`, {
+        headers: { authorization: 'Bearer test-token' },
+        signal: ac.signal,
+      });
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/event-stream');
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      broadcast.publish({
+        type: 'com.portarium.approval.ApprovalRequested',
+        id: 'evt-other-bead',
+        workspaceId: 'ws-test',
+        time: '2026-01-01T00:00:00.000Z',
+        data: { beadId: 'bead-other', approvalId: 'approval-other' },
+      });
+      broadcast.publish({
+        type: 'com.portarium.approval.ApprovalRequested',
+        id: 'evt-matching-bead',
+        workspaceId: 'ws-test',
+        time: '2026-01-01T00:00:00.000Z',
+        data: { beadId: 'bead-0975', approvalId: 'approval-0975' },
+      });
+
+      received = await readSseUntil(res.body!, (t) => t.includes('evt-matching-bead'));
+    } finally {
+      ac.abort();
+    }
+
+    expect(received).not.toContain('evt-other-bead');
+    expect(received).toContain('event: com.portarium.approval.ApprovalRequested');
+    expect(received).toContain('evt-matching-bead');
+    expect(received).toContain('"approvalId":"approval-0975"');
+  });
+
+  it('matches bead ids nested in event metadata or parameters', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const base = await startWith(makeDeps({ eventStream: broadcast }));
+
+    const ac = new AbortController();
+    let received: string;
+    try {
+      const res = await fetch(`${base}/v1/workspaces/ws-test/beads/bead-nested/events`, {
+        headers: { authorization: 'Bearer test-token' },
+        signal: ac.signal,
+      });
+
+      await new Promise((r) => setTimeout(r, 20));
+
+      broadcast.publish({
+        type: 'com.portarium.agent.ToolCallStarted',
+        id: 'evt-nested-bead',
+        workspaceId: 'ws-test',
+        time: '2026-01-01T00:00:00.000Z',
+        data: { parameters: { metadata: { beadId: 'bead-nested' } }, toolName: 'shell:exec' },
+      });
+
+      received = await readSseUntil(res.body!, (t) => t.includes('evt-nested-bead'));
+    } finally {
+      ac.abort();
+    }
+
+    expect(received).toContain('evt-nested-bead');
+    expect(received).toContain('"toolName":"shell:exec"');
+  });
+});

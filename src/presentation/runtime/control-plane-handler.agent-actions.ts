@@ -72,6 +72,22 @@ function proposeErrorToProblem(error: ProposeAgentActionError, instance: string)
   }
 }
 
+function stringFromRecord(record: Record<string, unknown>, key: string): string | undefined {
+  const value = record[key];
+  return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+function extractBeadId(parameters: Record<string, unknown> | undefined): string | undefined {
+  if (!parameters) return undefined;
+  const direct = stringFromRecord(parameters, 'beadId');
+  if (direct) return direct;
+  const metadata = parameters['metadata'];
+  if (metadata && typeof metadata === 'object') {
+    return stringFromRecord(metadata as Record<string, unknown>, 'beadId');
+  }
+  return undefined;
+}
+
 export async function handleProposeAgentAction(args: AgentActionArgs): Promise<void> {
   const { deps, req, res, correlationId, pathname, traceContext, workspaceId } = args;
 
@@ -234,6 +250,29 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     }
     respondProblem(res, proposeErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
+  }
+
+  if (result.value.decision === 'NeedsApproval' && deps.eventStream) {
+    const parameters = input.parameters;
+    const beadId = extractBeadId(parameters);
+    deps.eventStream.publish({
+      type: 'com.portarium.approval.ApprovalRequested',
+      id: crypto.randomUUID(),
+      workspaceId,
+      time: new Date().toISOString(),
+      data: {
+        ...result.value,
+        agentId: input.agentId,
+        actionKind: input.actionKind,
+        toolName: input.toolName,
+        executionTier: input.executionTier,
+        policyIds: input.policyIds,
+        rationale: input.rationale,
+        ...(input.machineId ? { machineId: input.machineId } : {}),
+        ...(parameters ? { parameters } : {}),
+        ...(beadId ? { beadId } : {}),
+      },
+    });
   }
 
   proposalsTotal.inc({ decision: result.value.decision, workspaceId });

@@ -56,7 +56,7 @@ import {
   handleListMapLayers,
   handleLocationEventsStream,
 } from './control-plane-handler.location.js';
-import { handleEventsStream } from './control-plane-handler.events.js';
+import { handleBeadEventsStream, handleEventsStream } from './control-plane-handler.events.js';
 import {
   handleGraphQuery,
   handleListDerivedArtifacts,
@@ -634,6 +634,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/events:stream', async (c) => {
     const ctx = c.get('ctx');
     await handleEventsStream({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/beads/:beadId/events   (bead-scoped SSE stream)
+  app.get('/v1/workspaces/:workspaceId/beads/:beadId/events', async (c) => {
+    const ctx = c.get('ctx');
+    await handleBeadEventsStream({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      beadId: c.req.param('beadId'),
+    });
     return c.body(null);
   });
 

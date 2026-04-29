@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
+import type { WorkspaceStreamEvent } from '../../application/ports/event-stream.js';
 import { HashSha256 } from '../../domain/primitives/index.js';
 import { parsePolicyV1 } from '../../domain/policy/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
@@ -249,6 +250,54 @@ describe('POST /agent-actions:propose — decision branches', () => {
     expect(typeof body.approvalId).toBe('string');
     expect(body.proposalId).toBeDefined();
     expect(savedApprovals.length).toBe(1);
+  });
+
+  it('publishes ApprovalRequested to the live workspace event stream', async () => {
+    const published: WorkspaceStreamEvent[] = [];
+    await startWithDeps({
+      ...makeDeps(),
+      eventStream: {
+        publish: (event) => {
+          published.push(event);
+        },
+        subscribe: () => () => undefined,
+      },
+    });
+
+    const res = await fetch(proposeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        agentId: 'agent-sender',
+        machineId: 'machine-phone-review',
+        actionKind: 'comms:sendEmail',
+        toolName: 'email:send',
+        executionTier: 'HumanApprove',
+        policyIds: ['pol-contract-1'],
+        rationale: 'Mutation tool requires approval.',
+        parameters: { beadId: 'bead-0975', subject: 'Status update' },
+      }),
+    });
+
+    expect(res.status).toBe(202);
+    const body = (await res.json()) as {
+      approvalId: string;
+      proposalId: string;
+    };
+    expect(published).toHaveLength(1);
+    expect(published[0]).toMatchObject({
+      type: 'com.portarium.approval.ApprovalRequested',
+      workspaceId: WORKSPACE_ID,
+      data: {
+        approvalId: body.approvalId,
+        proposalId: body.proposalId,
+        beadId: 'bead-0975',
+        agentId: 'agent-sender',
+        machineId: 'machine-phone-review',
+        toolName: 'email:send',
+        executionTier: 'HumanApprove',
+      },
+    });
   });
 
   it('returns 403 Forbidden for Dangerous tool', async () => {
