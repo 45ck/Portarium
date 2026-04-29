@@ -76,6 +76,33 @@ let allPassed = true;
 const summaryExperiments = {};
 const proposeRtts = [];
 
+function failMissingApprovalId(result, propose, filename, summaryKey) {
+  if (propose.json.approvalId) return false;
+
+  const proposeRttMs = ms(result.timestamps.t1_propose_sent, result.timestamps.t2_propose_response);
+  const failReason = `propose did not return approvalId (HTTP ${propose.status}, decision=${propose.json.decision})`;
+
+  result.assertions.push({
+    label: 'propose response includes approvalId before approval follow-up',
+    passed: false,
+    detail: failReason,
+  });
+  result.derived = { ...result.derived, propose_rtt_ms: proposeRttMs };
+  result.failReason = failReason;
+  result.outcome = 'FAILED';
+  allPassed = false;
+  proposeRtts.push(proposeRttMs);
+  summaryExperiments[summaryKey] = {
+    propose_rtt_ms: proposeRttMs,
+    outcome: result.outcome,
+    failReason,
+  };
+
+  console.error(`  failed: ${failReason}`);
+  writeResult(filename, result);
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Experiment A: Approval flow with timing
 // ---------------------------------------------------------------------------
@@ -119,10 +146,7 @@ async function experimentA() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
-  // Bail out early if we didn't get an approvalId — subsequent steps would query /approvals/undefined
-  if (!approvalId) {
-    result.outcome = 'FAILED';
-    result.failReason = `propose did not return approvalId (HTTP ${propose.status}, decision=${propose.json.decision})`;
+  if (failMissingApprovalId(result, propose, 'exp-A-approval-timed.json', 'A_approval')) {
     return result;
   }
 
@@ -275,6 +299,10 @@ async function experimentB() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'exp-B-denial-timed.json', 'B_denial')) {
+    return result;
+  }
+
   // Initial poll
   result.timestamps.t3_initial_poll = now();
   const initialPoll = await api('GET', `/approvals/${approvalId}`);
@@ -413,6 +441,10 @@ async function experimentC() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'exp-C-maker-checker-timed.json', 'C_maker_checker')) {
+    return result;
+  }
+
   // Self-approve attempt (same agent token — should be 403)
   result.timestamps.t3_self_approve_sent = now();
   const selfApprove = await api(
@@ -435,9 +467,33 @@ async function experimentC() {
   // If self-approve returned 200, the experiment has already recorded a governance failure;
   // running operator-approve on top would produce a misleadingly mixed outcome.
   if (selfApprove.status !== 403) {
+    const proposeRttMs = ms(
+      result.timestamps.t1_propose_sent,
+      result.timestamps.t2_propose_response,
+    );
     result.outcome = 'FAILED';
     result.failReason = `Maker-checker NOT enforced: self-approve returned HTTP ${selfApprove.status} instead of 403`;
     result.timestamps.t7_experiment_end = now();
+    result.derived = {
+      propose_rtt_ms: proposeRttMs,
+      enforcement_latency_ms: ms(
+        result.timestamps.t3_self_approve_sent,
+        result.timestamps.t4_self_approve_response,
+      ),
+      total_governance_duration_ms: ms(
+        result.timestamps.t0_experiment_start,
+        result.timestamps.t7_experiment_end,
+      ),
+    };
+    allPassed = false;
+    proposeRtts.push(proposeRttMs);
+    summaryExperiments.C_maker_checker = {
+      enforcement_latency_ms: result.derived.enforcement_latency_ms,
+      propose_rtt_ms: proposeRttMs,
+      outcome: result.outcome,
+      failReason: result.failReason,
+    };
+    writeResult('exp-C-maker-checker-timed.json', result);
     return result;
   }
 
@@ -538,6 +594,10 @@ async function experimentD() {
     passed: propose.status === 202 && propose.json.decision === 'NeedsApproval',
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
+
+  if (failMissingApprovalId(result, propose, 'exp-D-polling-delay-timed.json', 'D_polling_delay')) {
+    return result;
+  }
 
   // Wait 8 seconds, polling every 2 seconds (4 polls while pending)
   console.log('  waiting 8s with 4 manual polls (every 2s)...');

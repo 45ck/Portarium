@@ -77,6 +77,40 @@ let allPassed = true;
 const proposeRtts = [];
 const scenarioSummaries = [];
 
+function failMissingApprovalId(result, propose, filename, scenarioNumber) {
+  if (propose.json.approvalId) return false;
+
+  const proposeRttMs = result.timeline.t2_propose_response_ms;
+  const failReason = `propose did not return approvalId (HTTP ${propose.status}, decision=${propose.json.decision})`;
+
+  result.assertions.push({
+    label: 'propose response includes approvalId before approval follow-up',
+    passed: false,
+    detail: failReason,
+  });
+  result.failReason = failReason;
+  result.outcome = 'FAILED';
+  result.timeline.t6_agent_unblocked = now();
+  result.timeline.total_blocked_ms = ms(
+    result.timeline.t1_propose_sent,
+    result.timeline.t6_agent_unblocked,
+  );
+
+  allPassed = false;
+  proposeRtts.push(proposeRttMs);
+  scenarioSummaries.push({
+    scenario: scenarioNumber,
+    outcome: result.outcome,
+    propose_rtt_ms: proposeRttMs,
+    total_blocked_ms: result.timeline.total_blocked_ms,
+    failReason,
+  });
+
+  console.error(`    failed: ${failReason}`);
+  writeResult(filename, result);
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Scenario 1: Auto-Approved Read (no human needed)
 // ---------------------------------------------------------------------------
@@ -226,6 +260,10 @@ async function scenario2() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'scenario-2-email-approval.json', 2)) {
+    return;
+  }
+
   // Initial poll
   const pollTs = now();
   const initialPoll = await api('GET', `/approvals/${approvalId}`);
@@ -363,6 +401,10 @@ async function scenario3() {
     passed: propose.status === 202 && propose.json.decision === 'NeedsApproval',
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
+
+  if (failMissingApprovalId(result, propose, 'scenario-3-trade-execution.json', 3)) {
+    return;
+  }
 
   // Poll during deliberation (every ~1.5s for 5s)
   result.timeline.t3_approval_status = 'Pending';
@@ -524,6 +566,10 @@ async function scenario4() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'scenario-4-prod-deploy-2am.json', 4)) {
+    return;
+  }
+
   // Initial poll
   const pollTs = now();
   const initialPoll = await api('GET', `/approvals/${approvalId}`);
@@ -657,6 +703,10 @@ async function scenario5() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'scenario-5-bulk-email-denied.json', 5)) {
+    return;
+  }
+
   // Initial poll
   const pollTs = now();
   const initialPoll = await api('GET', `/approvals/${approvalId}`);
@@ -787,6 +837,10 @@ async function scenario6() {
     detail: `HTTP ${propose.status}, decision=${propose.json.decision}`,
   });
 
+  if (failMissingApprovalId(result, propose, 'scenario-6-gdpr-deletion-maker-checker.json', 6)) {
+    return;
+  }
+
   // STEP A: Self-approval attempt (same agent token) -- should be blocked
   result.maker_checker.t3_self_approve_sent = now();
   const selfApprove = await api(
@@ -813,6 +867,29 @@ async function scenario6() {
     passed: selfApprove.status === 403,
     detail: `HTTP ${selfApprove.status}, detail=${result.maker_checker.self_approve_detail}`,
   });
+
+  if (selfApprove.status !== 403) {
+    result.failReason = `Maker-checker NOT enforced: self-approve returned HTTP ${selfApprove.status} instead of 403`;
+    result.outcome = 'FAILED';
+    result.timeline.t6_agent_unblocked = now();
+    result.timeline.total_blocked_ms = ms(
+      result.timeline.t1_propose_sent,
+      result.timeline.t6_agent_unblocked,
+    );
+
+    allPassed = false;
+    proposeRtts.push(result.timeline.t2_propose_response_ms);
+    scenarioSummaries.push({
+      scenario: 6,
+      outcome: result.outcome,
+      propose_rtt_ms: result.timeline.t2_propose_response_ms,
+      total_blocked_ms: result.timeline.total_blocked_ms,
+      enforcement_ms: result.maker_checker.enforcement_ms,
+      failReason: result.failReason,
+    });
+    writeResult('scenario-6-gdpr-deletion-maker-checker.json', result);
+    return;
+  }
 
   // STEP B: DPO approves with operator token
   result.maker_checker.t5_operator_approve_sent = now();
