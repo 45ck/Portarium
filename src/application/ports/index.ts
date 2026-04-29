@@ -1,6 +1,7 @@
 export * from './agent-action-proposal-store.js';
 export * from './authorization.js';
 export * from './authentication.js';
+export * from './bead-diff-store.js';
 export * from './clock.js';
 export * from './rate-limit-store.js';
 export * from './workflow-orchestrator.js';

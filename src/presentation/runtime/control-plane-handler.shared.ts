@@ -16,6 +16,7 @@ import type {
   ApprovalStore,
   AuthenticationPort,
   AuthorizationPort,
+  BeadDiffStore,
   EventPublisher,
   EventStreamBroadcast,
   EvidenceLogPort,
@@ -109,6 +110,8 @@ export type ControlPlaneDeps = Readonly<{
   queryCache?: QueryCache;
   /** Optional event-stream broadcast; when absent, the SSE endpoint returns 503. */
   eventStream?: EventStreamBroadcast;
+  /** Optional query store for bead-scoped approval diffs. */
+  beadDiffStore?: BeadDiffStore;
   /** Optional structured logger for 401/403/429 security events. */
   authEventLogger?: AuthEventLogger;
   /** Optional query store for machine/agent registry reads; when absent, registry read routes return 503. */

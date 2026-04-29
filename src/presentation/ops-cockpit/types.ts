@@ -241,6 +241,26 @@ export interface EvidenceEntry {
   hashSha256: string;
 }
 
+export type DiffLineKind = 'context' | 'add' | 'remove';
+
+export interface DiffLine {
+  op: DiffLineKind;
+  content: string;
+  oldLineNumber?: number;
+  newLineNumber?: number;
+}
+
+export interface DiffHunk {
+  hunkId: string;
+  filePath: string;
+  changeType: 'added' | 'modified' | 'deleted';
+  oldStart: number;
+  oldCount: number;
+  newStart: number;
+  newCount: number;
+  lines: DiffLine[];
+}
+
 export type ApprovalStatus =
   | 'Pending'
   | 'Approved'

@@ -313,6 +313,42 @@ export const handlers = [
     return HttpResponse.json(updated);
   }),
 
+  // Bead diff
+  http.get('/v1/workspaces/:wsId/beads/:beadId/diff', ({ params }) => {
+    const beadId = String(params['beadId'] ?? 'bead-demo');
+    return HttpResponse.json([
+      {
+        hunkId: `${beadId}:proposal`,
+        filePath: `issues/${beadId}/proposal.md`,
+        changeType: 'modified',
+        oldStart: 1,
+        oldCount: 2,
+        newStart: 1,
+        newCount: 3,
+        lines: [
+          { op: 'context', oldLineNumber: 1, newLineNumber: 1, content: `# ${beadId}` },
+          { op: 'remove', oldLineNumber: 2, content: 'Status: ready' },
+          { op: 'add', newLineNumber: 2, content: 'Status: awaiting approval' },
+          { op: 'add', newLineNumber: 3, content: 'Review surface: Cockpit diff approval' },
+        ],
+      },
+      {
+        hunkId: `${beadId}:policy`,
+        filePath: `policies/${beadId}.json`,
+        changeType: 'added',
+        oldStart: 0,
+        oldCount: 0,
+        newStart: 1,
+        newCount: 3,
+        lines: [
+          { op: 'add', newLineNumber: 1, content: '{' },
+          { op: 'add', newLineNumber: 2, content: '  "requiresApproval": true' },
+          { op: 'add', newLineNumber: 3, content: '}' },
+        ],
+      },
+    ]);
+  }),
+
   // Plans
   http.get('/v1/workspaces/:wsId/plans/:planId', ({ params }) => {
     const plan = data?.PLANS?.find((p) => p.planId === params['planId']);

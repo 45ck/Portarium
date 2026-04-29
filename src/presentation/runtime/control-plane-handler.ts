@@ -57,6 +57,7 @@ import {
   handleLocationEventsStream,
 } from './control-plane-handler.location.js';
 import { handleBeadEventsStream, handleEventsStream } from './control-plane-handler.events.js';
+import { handleGetBeadDiff } from './control-plane-handler.beads.js';
 import {
   handleGraphQuery,
   handleListDerivedArtifacts,
@@ -641,6 +642,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/beads/:beadId/events', async (c) => {
     const ctx = c.get('ctx');
     await handleBeadEventsStream({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      beadId: c.req.param('beadId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/beads/:beadId/diff   (bead approval diff)
+  app.get('/v1/workspaces/:workspaceId/beads/:beadId/diff', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetBeadDiff({
       ...ctx,
       workspaceId: c.req.param('workspaceId'),
       beadId: c.req.param('beadId'),

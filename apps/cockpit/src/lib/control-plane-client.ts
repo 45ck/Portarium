@@ -3,6 +3,7 @@ import type {
   ApprovalSummary,
   CursorPage,
   DerivedArtifactListResponse,
+  DiffHunk,
   GraphTraversalResult,
   GraphQueryRequest,
   IntentPlanRequest,
@@ -237,6 +238,12 @@ export class ControlPlaneClient {
     if (kind) params.set('kind', kind);
     return this.request(
       `/v1/workspaces/${pathSegment(workspaceId)}/derived-artifacts?${params.toString()}`,
+    );
+  }
+
+  public getBeadDiff(workspaceId: string, beadId: string): Promise<DiffHunk[]> {
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/beads/${pathSegment(beadId)}/diff`,
     );
   }
 

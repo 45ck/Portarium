@@ -411,6 +411,27 @@ paths:
                 description: Server-Sent Events stream containing stream-metadata and location events.
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/beads/{beadId}/diff:
+    get:
+      tags: [Beads]
+      summary: Get bead approval diff hunks
+      operationId: getBeadDiff
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/BeadIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiffHunk'
+        default:
+          $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/location-events:
     get:
       tags: [Location]
@@ -1789,6 +1810,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/WorkItemId'
+    BeadIdPath:
+      name: beadId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/BeadId'
     ApprovalIdPath:
       name: approvalId
       in: path
@@ -2101,6 +2128,12 @@ components:
       type: string
       minLength: 1
       description: Opaque work item identifier
+    BeadId:
+      type: string
+      minLength: 1
+      maxLength: 128
+      pattern: '^[A-Za-z0-9._:-]+$'
+      description: Opaque bead identifier
     ApprovalId:
       type: string
       minLength: 1
@@ -2137,6 +2170,52 @@ components:
       type: string
       minLength: 1
       description: Opaque credential grant identifier
+    DiffLine:
+      type: object
+      additionalProperties: false
+      properties:
+        op:
+          type: string
+          enum: [add, remove, context]
+        content:
+          type: string
+        oldLineNumber:
+          type: integer
+          minimum: 1
+        newLineNumber:
+          type: integer
+          minimum: 1
+      required: [op, content]
+    DiffHunk:
+      type: object
+      additionalProperties: false
+      properties:
+        hunkId:
+          type: string
+          minLength: 1
+        filePath:
+          type: string
+          minLength: 1
+        changeType:
+          type: string
+          enum: [added, modified, deleted]
+        oldStart:
+          type: integer
+          minimum: 0
+        oldCount:
+          type: integer
+          minimum: 0
+        newStart:
+          type: integer
+          minimum: 0
+        newCount:
+          type: integer
+          minimum: 0
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiffLine'
+      required: [hunkId, filePath, changeType, oldStart, oldCount, newStart, newCount, lines]
     WorkforceMemberId:
       type: string
       minLength: 1
