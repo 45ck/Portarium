@@ -118,6 +118,22 @@ describe('buildControlPlaneDeps auth startup gate', () => {
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_ISSUER/);
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_AUDIENCE/);
   });
+
+  it('fails startup when JWKS auth is configured without issuer validation', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['PORTARIUM_JWKS_URI'] = 'https://auth.example.com/.well-known/jwks.json';
+    process.env['PORTARIUM_JWT_AUDIENCE'] = 'portarium-api';
+
+    await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_ISSUER/);
+  });
+
+  it('fails startup when JWKS auth is configured without audience validation', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['PORTARIUM_JWKS_URI'] = 'https://auth.example.com/.well-known/jwks.json';
+    process.env['PORTARIUM_JWT_ISSUER'] = 'https://auth.example.com';
+
+    await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_AUDIENCE/);
+  });
 });
 
 describe('buildInMemoryApprovalStore', () => {
