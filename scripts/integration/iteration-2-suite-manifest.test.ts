@@ -55,7 +55,11 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(manifest.status).toBe('telemetry-ready');
     expect(
       manifest.scenarios
-        .filter((scenario) => scenario.scenarioId !== 'approval-backlog-soak')
+        .filter(
+          (scenario) =>
+            scenario.scenarioId !== 'approval-backlog-soak' &&
+            scenario.scenarioId !== 'micro-saas-agent-stack-v2',
+        )
         .every((scenario) => scenario.status === 'planned'),
     ).toBe(true);
   });
@@ -118,6 +122,19 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(scenario?.status).toBe('runnable-deterministic');
     expect(scenario?.runnerPath).toBe(
       'experiments/iteration-2/scenarios/approval-backlog-soak/run.mjs',
+    );
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+  });
+
+  it('marks micro-saas-agent-stack-v2 as runnable with a checked runner', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'micro-saas-agent-stack-v2',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/run.mjs',
     );
     expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
   });

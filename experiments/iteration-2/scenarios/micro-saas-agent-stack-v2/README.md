@@ -2,7 +2,7 @@
 
 Owner Bead: `bead-1043`
 
-Status: planned.
+Status: runnable deterministic handoff.
 
 ## Scenario
 
@@ -19,3 +19,14 @@ queued work continues.
 - result artifacts include queue-state snapshots before and after operator
   decisions
 - report compares this result to the original micro-SaaS agent stack run
+
+## Run
+
+```bash
+node experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/run.mjs
+```
+
+The script writes `outcome.json`, `queue-metrics.json`,
+`evidence-summary.json`, and `report.md` under this scenario's `results/`
+directory. CI runs the same experiment with a temporary result directory through
+`scripts/integration/scenario-micro-saas-agent-stack-v2.test.ts`.

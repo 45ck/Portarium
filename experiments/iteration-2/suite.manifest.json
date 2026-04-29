@@ -63,8 +63,9 @@
     {
       "scenarioId": "micro-saas-agent-stack-v2",
       "beadId": "bead-1043",
-      "status": "planned",
+      "status": "runnable-deterministic",
       "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/run.mjs",
       "contractPath": "experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/README.md",
       "comparesTo": "micro-saas-agent-stack",
       "validates": [
