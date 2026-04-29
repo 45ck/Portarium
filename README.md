@@ -57,12 +57,12 @@ Agents can think and propose. Rules and approvals decide what actually happens.
 
 ## Before and after Portarium
 
-| Without Portarium                          | With Portarium                                       |
-| ------------------------------------------ | ---------------------------------------------------- |
-| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs   |
-| Safety lives in the prompt                  | Safety is enforced before anything executes          |
-| Approvals are ad hoc or absent              | Approval is a built-in step, not an afterthought     |
-| Logs exist, but the story is fragmented     | Decision, action, and evidence stay linked together  |
+| Without Portarium                           | With Portarium                                          |
+| ------------------------------------------- | ------------------------------------------------------- |
+| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs      |
+| Safety lives in the prompt                  | Safety is enforced before anything executes             |
+| Approvals are ad hoc or absent              | Approval is a built-in step, not an afterthought        |
+| Logs exist, but the story is fragmented     | Decision, action, and evidence stay linked together     |
 | When something goes wrong, good luck        | Every action is reviewable, attributable, and auditable |
 
 Not "perfect autonomy." Safe automation with visible boundaries.
@@ -185,7 +185,7 @@ See scripted demo specs and capture docs at `docs/internal/ui/cockpit/demo-machi
 
 ## Status
 
-Early and actively built. Runtime and contract foundations are in place; some integration and persistence paths are still scaffold-stage.
+Early and actively built. The core control-plane foundations are in place; remaining core work is mostly production hardening, security closeout, release hygiene, and reference UI polish. Several open backlog items are showcase or future-product directions rather than core blockers. See [project scope](docs/project-scope.md).
 
 ## Working with Calvin
 

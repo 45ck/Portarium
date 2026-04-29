@@ -13,7 +13,8 @@ Use this page to pick the shortest path for what you are trying to do.
 1. `README.md`
 2. `docs/getting-started/hello-portarium.md`
 3. `docs/project-overview.md`
-4. `docs/explanation/architecture.md`
+4. `docs/project-scope.md`
+5. `docs/explanation/architecture.md`
 
 ## I Want To Run It Locally
 
@@ -48,6 +49,7 @@ Use this page to pick the shortest path for what you are trying to do.
 - CI and quality gates: `docs/reference/ci-and-quality.md`
 - Versioned schemas and spec sources: `docs/reference/schemas.md`
 - Repo organization and file placement: `docs/reference/repo-organization.md`
+- Core vs future work: `docs/project-scope.md`
 
 ## I Want To Build An Integration
 
