@@ -32,11 +32,13 @@
       "approvalTimeoutMs": {
         "type": "number",
         "description": "Max time to wait for human approval in milliseconds (default: 86400000 = 24h)",
+        "minimum": 60000,
         "default": 86400000
       },
       "pollIntervalMs": {
         "type": "number",
         "description": "How often to poll for approval decisions in milliseconds (default: 3000)",
+        "minimum": 500,
         "default": 3000
       },
       "bypassToolNames": {

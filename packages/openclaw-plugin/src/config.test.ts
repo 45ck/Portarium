@@ -34,14 +34,14 @@ describe('resolveConfig', () => {
       ...validRaw,
       tenantId: 'custom-tenant',
       failClosed: false,
-      approvalTimeoutMs: 1000,
+      approvalTimeoutMs: 60_000,
       pollIntervalMs: 500,
       // Only permitted introspection tools are accepted in bypassToolNames.
       bypassToolNames: ['portarium_get_run'],
     });
     expect(config.tenantId).toBe('custom-tenant');
     expect(config.failClosed).toBe(false);
-    expect(config.approvalTimeoutMs).toBe(1000);
+    expect(config.approvalTimeoutMs).toBe(60_000);
     expect(config.pollIntervalMs).toBe(500);
     expect(config.bypassToolNames).toEqual(['portarium_get_run']);
   });
@@ -104,21 +104,24 @@ describe('resolveConfig', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('Only portarium_get_run'));
   });
 
-  it('throws when approvalTimeoutMs is zero or negative', () => {
+  it('throws when approvalTimeoutMs is below the 60s safety floor', () => {
     expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: 0 })).toThrow(
-      'approvalTimeoutMs must be a finite positive number',
+      'approvalTimeoutMs must be a finite number >= 60000ms',
     );
     expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: -1 })).toThrow(
-      'approvalTimeoutMs must be a finite positive number',
+      'approvalTimeoutMs must be a finite number >= 60000ms',
+    );
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: 59_999 })).toThrow(
+      'approvalTimeoutMs must be a finite number >= 60000ms',
     );
   });
 
   it('throws when approvalTimeoutMs is NaN or Infinity', () => {
     expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: NaN })).toThrow(
-      'approvalTimeoutMs must be a finite positive number',
+      'approvalTimeoutMs must be a finite number >= 60000ms',
     );
     expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: Infinity })).toThrow(
-      'approvalTimeoutMs must be a finite positive number',
+      'approvalTimeoutMs must be a finite number >= 60000ms',
     );
   });
 
@@ -127,6 +130,15 @@ describe('resolveConfig', () => {
       'pollIntervalMs must be a finite number >= 500ms',
     );
     expect(() => resolveConfig({ ...validRaw, pollIntervalMs: 499 })).toThrow(
+      'pollIntervalMs must be a finite number >= 500ms',
+    );
+  });
+
+  it('throws when numeric config fields are not numbers', () => {
+    expect(() => resolveConfig({ ...validRaw, approvalTimeoutMs: '60000' })).toThrow(
+      'approvalTimeoutMs must be a finite number >= 60000ms',
+    );
+    expect(() => resolveConfig({ ...validRaw, pollIntervalMs: '500' })).toThrow(
       'pollIntervalMs must be a finite number >= 500ms',
     );
   });
