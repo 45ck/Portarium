@@ -73,7 +73,7 @@ The experiment runner writes `results/outcome.json` with:
   "experiment": "my-experiment",
   "timestamp": "2026-03-30T12:00:00.000Z",
   "hypothesis": "...",
-  "outcome": "confirmed" | "refuted" | "inconclusive",
+  "outcome": "confirmed" | "refuted" | "inconclusive" | "skipped",
   "duration_ms": 1234,
   "assertions": [
     { "label": "approval created", "passed": true },
@@ -82,3 +82,42 @@ The experiment runner writes `results/outcome.json` with:
   "notes": "..."
 }
 ```
+
+## Live model preflight
+
+Experiments that call real LLM providers must request the runner preflight:
+
+```ts
+await runExperiment({
+  name: 'my-live-model-experiment',
+  liveModelPreflight: true,
+  execute: async (ctx) => {
+    console.log(ctx.liveModelPreflight?.provider);
+  },
+  verify: async () => [],
+});
+```
+
+The preflight is disabled unless `PORTARIUM_EXPERIMENT_LIVE_LLM=true` is set.
+When disabled, or when the selected provider has no credential, the runner writes
+`outcome: "skipped"` and does not call `setup`, `execute`, or `verify`.
+
+Provider selection:
+
+| Provider    | Select with                                | Credential env var                                  | Default model   |
+| ----------- | ------------------------------------------ | --------------------------------------------------- | --------------- |
+| OpenAI      | `PORTARIUM_LIVE_MODEL_PROVIDER=openai`     | `OPENAI_API_KEY`                                    | `gpt-4o`        |
+| OpenRouter  | `PORTARIUM_LIVE_MODEL_PROVIDER=openrouter` | `OPENROUTER_API_KEY`                                | `openai/gpt-4o` |
+| Codex route | `PORTARIUM_LIVE_MODEL_PROVIDER=codex`      | Codex CLI auth, or `CODEX_API_KEY`/`OPENAI_API_KEY` | `codex-cli`     |
+
+If no provider is forced, the runner auto-detects from available credential env
+vars in the order OpenAI, OpenRouter, Codex route. Override the model with
+`PORTARIUM_LIVE_MODEL`, or provider-specific `OPENAI_MODEL`, `OPENROUTER_MODEL`,
+or `CODEX_MODEL`.
+
+The preflight performs one OpenAI-compatible `chat/completions` probe before the
+experiment starts. When the Codex provider is forced and no API-key env var is
+present, it instead performs a read-only `codex exec` probe using local Codex CLI
+auth. The result bundle records provider, model, base URL or CLI route,
+credential source, probe status, and any credential/quota/model availability
+failure. It never writes credential values.
