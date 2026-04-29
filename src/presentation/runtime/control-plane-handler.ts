@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { Hono, type Context } from 'hono';
 
@@ -116,6 +116,23 @@ type RunHandlerArgs = WorkspaceHandlerArgs & Readonly<{ runId: string }>;
 interface HonoEnv {
   Bindings: HonoBindings;
   Variables: { ctx: RequestContext };
+}
+
+function hasValidMetricsBearerToken(
+  authorizationHeader: string | string[] | undefined,
+  expectedToken: string,
+): boolean {
+  if (Array.isArray(authorizationHeader)) return false;
+
+  const prefix = 'Bearer ';
+  if (!authorizationHeader?.startsWith(prefix)) return false;
+
+  const providedToken = authorizationHeader.slice(prefix.length).trim();
+  if (!providedToken) return false;
+
+  const expected = Buffer.from(expectedToken);
+  const provided = Buffer.from(providedToken);
+  return expected.length === provided.length && timingSafeEqual(expected, provided);
 }
 
 // ---------------------------------------------------------------------------
@@ -476,9 +493,7 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       );
       return c.body(null);
     }
-    const authHeader = c.env.incoming.headers.authorization ?? '';
-    const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-    if (provided !== metricsToken) {
+    if (!hasValidMetricsBearerToken(c.env.incoming.headers.authorization, metricsToken)) {
       c.env.outgoing.statusCode = 401;
       c.env.outgoing.setHeader('content-type', 'application/json');
       c.env.outgoing.end(JSON.stringify({ error: 'Invalid metrics token' }));
