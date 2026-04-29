@@ -5,6 +5,8 @@
 Define the expected behaviour for the first public-facing Portarium presentation reference client (web cockpit).  
 The cockpit remains a read/write client of the Control Plane and must preserve contract fidelity.
 
+The primary product job is anywhere approval and supervision: a user can leave an agent running, understand what it is capable of, and approve, reject, or inspect decisions that require human judgement from a phone-sized web UI.
+
 ## Scope
 
 - Contract-driven data acquisition and command orchestration for `Workspace`, `Work Item`, `Plan`, `Run`, `Approval`, and `Evidence Log`.
@@ -77,6 +79,14 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 - Decision errors must include actionable information and retain the operation `instance`.
 - The UI must show policy context alongside effect summaries before submission.
 - Decision submission controls must be role-gated to approvers; non-approver personas see read-only approval context.
+- Phone-sized views must keep approve, deny, request-changes, and rationale controls reachable without horizontal scrolling.
+- Approval notifications and deep links should land on the focused approval card when an approval ID is available.
+
+### R4a Agent supervision workflow
+
+- Cockpit must expose what an agent or machine is allowed to do before the user approves an action.
+- Running-agent views must connect capability, current run state, pending approvals, and evidence so a user can decide whether to let the agent continue.
+- Mobile views must prioritize pending human decisions over broad monitoring or showcase surfaces.
 
 ### R5 System states
 
@@ -150,6 +160,7 @@ For each primary screen, show dedicated state components for:
 - Run detail and approval surfaces tolerate missing optional fields.
 - Mutations remain resilient to duplicates when idempotency keys are reused.
 - Audit path (`Evidence Log`, decision details, instance IDs) is visible without internal backend navigation.
+- A phone-sized approver can review a pending agent decision, understand capability and risk context, approve or reject it, and see the decision reflected without switching to desktop.
 
 ## Traceability links
 

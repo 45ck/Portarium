@@ -1,10 +1,12 @@
-# Hello Portarium — Quickstart Guide
+# Hello Portarium - Quickstart Guide
 
-Run Portarium locally in under 30 minutes and validate a governed flow path.
+Run Portarium locally in under 30 minutes and validate the core governed-agent flow.
+
+This is the smoke quickstart. It proves the stack can start and a governed path can run. For the guided tutorial with more explanation, continue to [Hello Governed Workflow](../tutorials/hello-governed-workflow.md).
 
 ## Prerequisites
 
-- **Node.js** ≥ 22 (`node --version`)
+- **Node.js** `^20.19.0` or `>=22.12.0` (`node --version`)
 - **Docker Compose** ≥ 2.x (`docker compose version`)
 - **Git** ≥ 2.x
 

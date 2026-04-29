@@ -89,13 +89,13 @@ Not a replacement for your AI. The safety layer on top of it. Works with any age
 
 ## Before and after
 
-| Without Portarium | With Portarium |
-|---|---|
-| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs |
-| Safety lives in the prompt | Safety is enforced before anything executes |
-| Approvals are ad hoc or absent | Approval is a built-in step, not an afterthought |
-| Logs exist, but the story is fragmented | Decision, action, and evidence stay linked together |
-| When something goes wrong, good luck | Every action is reviewable, attributable, and auditable |
+| Without Portarium                           | With Portarium                                          |
+| ------------------------------------------- | ------------------------------------------------------- |
+| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs      |
+| Safety lives in the prompt                  | Safety is enforced before anything executes             |
+| Approvals are ad hoc or absent              | Approval is a built-in step, not an afterthought        |
+| Logs exist, but the story is fragmented     | Decision, action, and evidence stay linked together     |
+| When something goes wrong, good luck        | Every action is reviewable, attributable, and auditable |
 
 ---
 

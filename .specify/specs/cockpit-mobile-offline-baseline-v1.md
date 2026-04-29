@@ -10,6 +10,7 @@ Add baseline offline support for mobile cockpit usage:
 - Explicit stale/offline UX with last-sync metadata.
 - Safe offline mutation outbox for approval decisions with replay on reconnect.
 - Mobile-tuned retry/backoff for transient network transitions.
+- Push/deep-link readiness for pending approval review when a user is away from desktop.
 
 ## Behavioral Contract
 
@@ -38,8 +39,15 @@ Add baseline offline support for mobile cockpit usage:
 
 - Core list queries use offline-first network mode with bounded exponential retry delay.
 
+5. Approval notification and deep-link readiness
+
+- Push registration, when enabled, must route pending approval notifications to the focused approval view.
+- Notification click handling must preserve workspace and approval identity.
+- If realtime approval events degrade, the UI must show stale state and fall back to polling.
+
 ## Validation
 
 - Unit tests cover offline cache envelope behavior.
 - Unit tests cover outbox dedupe and replay semantics including conflict handling.
+- Tests or QA evidence cover approval deep-linking and mobile offline/reconnect review.
 - `npm run ci:pr` passes.

@@ -238,15 +238,11 @@ describe('SchemaMigrator', () => {
     ]);
 
     // Tenant-scoped migration v2 on workspace-a should be applied
-    const v2a = entries.find(
-      (e) => e.version === 2 && e.target === 'workspace-a',
-    );
+    const v2a = entries.find((e) => e.version === 2 && e.target === 'workspace-a');
     expect(v2a?.status).toBe('applied');
 
     // Tenant-scoped migration v2 on workspace-b should be pending
-    const v2b = entries.find(
-      (e) => e.version === 2 && e.target === 'workspace-b',
-    );
+    const v2b = entries.find((e) => e.version === 2 && e.target === 'workspace-b');
     expect(v2b?.status).toBe('pending');
   });
 });

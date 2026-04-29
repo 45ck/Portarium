@@ -258,7 +258,9 @@ export class SchemaMigrator {
   ): Promise<readonly MigrationStatusEntry[]> {
     this.validateRegistry(migrations);
     const sorted = [...migrations].sort(compareMigration);
-    const normalizedTenants = [...new Set(tenants.map((t) => t.trim()).filter((t) => t.length > 0))].sort();
+    const normalizedTenants = [
+      ...new Set(tenants.map((t) => t.trim()).filter((t) => t.length > 0)),
+    ].sort();
 
     const entries: MigrationStatusEntry[] = [];
 

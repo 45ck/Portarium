@@ -8,206 +8,166 @@
   </picture>
 </p>
 
-**Let AI do the work. Keep humans in control.**
-
-Portarium is an open-source safety and approval layer for AI workers. AI can draft, suggest, and prepare actions — but Portarium checks the rules, asks a human when needed, and keeps a full record of what happened.
+**Let AI agents do real work. Keep humans, policy, and evidence in control.**
 
 [![CI (PR)](https://github.com/45ck/Portarium/actions/workflows/ci.yml/badge.svg)](https://github.com/45ck/Portarium/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/45ck/Portarium/branch/main/graph/badge.svg)](https://codecov.io/gh/45ck/Portarium)
 [![Storybook](https://github.com/45ck/Portarium/actions/workflows/chromatic.yml/badge.svg)](https://github.com/45ck/Portarium)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Why this exists
+Portarium is an open-source control plane for AI agents. Agents propose tool actions. Portarium checks policy, asks for human approval when needed, executes through controlled adapters, and records evidence so every decision can be tested, reviewed, and audited.
 
-AI agents can plan, draft, and call tools. The hard part is production reality:
+The practical goal is simple: you should be able to leave an agent working, know what it is allowed to do, and review the decisions that need you from a phone or web app without digging through logs.
 
-- who allowed this action?
-- what rules were applied?
-- what evidence existed at the time?
-- what can be replayed, audited, or rolled back?
+## Why It Exists
 
-Most agent demos skip these questions. When they hit production, approvals are bolted on after the fact, evidence is fragmented, and nobody can explain who approved what or why.
+Most agent demos let the agent call tools directly. That is fine for a prototype, but production teams need clear answers:
 
-Portarium closes that gap. It sits between AI and the systems AI wants to touch. The AI can still propose. Portarium decides whether the action is allowed, needs approval, or must be blocked — then keeps the paper trail.
+- Was this action allowed by policy?
+- Did it need human approval?
+- Who approved or denied it?
+- What evidence existed at the time?
+- What actually executed?
+- Can we prove the safe, denied, retry, and isolation paths still work?
 
-## What Portarium does
+Portarium is built around that governance loop.
 
-- **Checks the rules** before AI is allowed to actually do anything
-- **Risky actions still need human sign-off** — approval is built into the execution path, not bolted on
-- **Everything is tracked** — you can always see what AI tried to do, what was approved, and what changed
-- **Works with existing tools** — your current business software stays the system of record
-- **Gradual trust** — start with full human oversight, widen autonomy as confidence grows
+## The Core Loop
 
-Portarium is not the agent. It is the layer that makes agents safe enough to trust with real work.
+```text
+Agent proposes action
+        |
+        v
+Portarium checks policy
+        |
+        +--> allow and execute
+        +--> ask for human approval
+        +--> deny or block
+        |
+        v
+Evidence, result, and timeline are recorded
+```
 
-## How it works
+The core product is successful when automated tests prove that agents can route actions through this loop and Portarium enforces the expected behavior.
 
-<p align="center">
-  <img src="docs/diagrams/generated/09_isometric_minimal_fusion_textonly_v3_user_left.jpg" alt="Portarium Architecture Overview" />
-</p>
+## What You Get
 
-Portarium sits between people, AI agents, and the systems those agents want to touch:
+- **Policy gates for agents**: `Auto`, `Assisted`, `Human-approve`, and `Manual-only`
+- **Human approval flow**: rich context before risky actions run
+- **Mobile-friendly review**: approve or reject agent decisions from the Cockpit reference UI
+- **Evidence trail**: proposed action, decision, execution result, and audit record stay linked
+- **Controlled execution**: adapters and action runners call external systems instead of agents using unchecked credentials
+- **SDK and API**: agents, plugins, and tools can integrate through stable interfaces
+- **Reference Cockpit UI**: operator screens for approvals, policies, runs, and evidence
+- **Repeatable tests**: scenarios cover allowed, approval-required, denied, blocked, retry, and isolation paths
 
-1. **AI proposes an action** — "send this email," "update this record," "deploy this change."
-2. **Portarium checks the rules** — is this allowed? Is it risky? Does it need a human?
-3. **Safe actions proceed automatically.** Risky actions wait for human approval. Dangerous actions are blocked.
-4. **Approved work executes** through connectors to existing business systems.
-5. **Everything is recorded** — the decision, the evidence, and the outcome, linked together for review.
-
-Agents can think and propose. Rules and approvals decide what actually happens.
-
-## Before and after Portarium
-
-| Without Portarium                           | With Portarium                                          |
-| ------------------------------------------- | ------------------------------------------------------- |
-| AI calls tools directly — hope for the best | AI submits intent; rules decide what actually runs      |
-| Safety lives in the prompt                  | Safety is enforced before anything executes             |
-| Approvals are ad hoc or absent              | Approval is a built-in step, not an afterthought        |
-| Logs exist, but the story is fragmented     | Decision, action, and evidence stay linked together     |
-| When something goes wrong, good luck        | Every action is reviewable, attributable, and auditable |
-
-Not "perfect autonomy." Safe automation with visible boundaries.
-
-## OpenClaw integration
-
-OpenClaw is the AI worker. Portarium is the safety layer.
-
-1. OpenClaw picks up a task or proposes an action.
-2. Portarium checks the rules and assesses risk.
-3. Low-risk work proceeds automatically.
-4. Higher-risk work pauses for human approval.
-5. Results, evidence, and decisions are returned to both the AI and the human operator.
-
-OpenClaw shows that real business workflows can be automated. Portarium shows they can still be governed, reviewed, and constrained.
-
-If you are building with AI agents, Portarium is the layer that keeps "helpful automation" from turning into "untraceable side effects."
-
-## Feature showcase
-
-### Approvals UX v2 (Cockpit)
+## Architecture
 
 <p align="center">
-  <img src="docs/internal/ui/cockpit/media/approvals-v2-showcase.gif" alt="Approvals UX v2 showcase: pending queue, triage panel, and approval detail" />
+  <img src="docs/diagrams/generated/09_isometric_minimal_fusion_textonly_v3_user_left.jpg" alt="Portarium architecture overview" />
 </p>
 
-Review pending AI actions, see why they need approval, decide yes or no, and keep the paper trail — all in one place.
+Portarium sits between agents and the systems they want to touch:
 
-### OpenClaw approvals on mobile
+1. An agent proposes an action through the SDK, plugin, or HTTP API.
+2. Portarium classifies the action using policy, risk, workspace, identity, and capability context.
+3. Safe actions can run. Risky actions wait for approval. Blocked actions do not run.
+4. Approved actions execute through a controlled runner or adapter.
+5. The decision, evidence, and result are recorded for review and testing.
+
+## Showcase
+
+### Cockpit Approvals
+
+<p align="center">
+  <img src="docs/internal/ui/cockpit/media/approvals-v2-showcase.gif" alt="Cockpit approvals queue and approval detail" />
+</p>
+
+### OpenClaw Mobile Approval
 
 <p align="center">
   <a href="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4">
-    <img src="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif" alt="iPhone-style approval flow for OpenClaw actions: briefing first, policy-aware review, approve or deny decisions" width="320" />
+    <img src="docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.gif" alt="Mobile approval flow for OpenClaw actions" width="320" />
   </a>
 </p>
 
-AI can propose work, but the rules decide what is auto-approved, what needs a human, and what is blocked entirely.
-
-- MP4 showcase: [openclaw-tinder-approvals-iphone.mp4](docs/internal/ui/cockpit/media/openclaw-tinder-approvals-iphone.mp4)
-- Generation command: `npm run cockpit:demo:openclaw:iphone`
-- Desktop OpenClaw clips: `npm run cockpit:demo:openclaw:clips`
-
-### OpenClaw governance clips (desktop)
+### Destructive Action Blocked
 
 <p align="center">
-  <img src="docs/internal/ui/cockpit/media/openclaw-destructive-blocked-desktop.gif" alt="Desktop OpenClaw governance clip: destructive delete-all-emails action is denied by policy" />
+  <img src="docs/internal/ui/cockpit/media/openclaw-destructive-blocked-desktop.gif" alt="Desktop governance clip showing a destructive action blocked by policy" />
 </p>
 
-- Heartbeat Watchtower: [openclaw-heartbeat-watchtower-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-heartbeat-watchtower-desktop.mp4)
-- Destructive action blocked: [openclaw-destructive-blocked-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-destructive-blocked-desktop.mp4)
-- Cron and sub-agent governance: [openclaw-cron-subagent-desktop.mp4](docs/internal/ui/cockpit/media/openclaw-cron-subagent-desktop.mp4)
-
-## What you get
-
-- **Gradual trust levels**: `Auto`, `Assisted`, `Human-approve`, `Manual-only` — start strict, widen as confidence grows
-- **Built-in approvals** — risky actions wait for a human, not a prayer
-- **Full paper trail** — every action, decision, and outcome is recorded and reviewable
-- **Works with your existing tools** — Portarium connects to business systems without replacing them
-- **Sits above any agent** — not a replacement for your AI, but the safety layer on top of it
+More demo commands and media live in [docs/how-to/run-cockpit-demos-locally.md](docs/how-to/run-cockpit-demos-locally.md).
 
 ## Quickstart
 
-Prerequisites: Node.js `>=22`, Docker + Docker Compose, npm
+Prerequisites:
+
+- Node.js `^20.19.0` or `>=22.12.0`
+- Docker and Docker Compose
+- Git
 
 ```bash
+git clone https://github.com/45ck/Portarium.git
+cd Portarium
 npm ci
-# Start infrastructure (choose the profiles you need):
-#   baseline  — Postgres only (unit tests + migrations)
-#   runtime   — + Temporal + MinIO evidence store
-#   auth      — + HashiCorp Vault
-#   tools     — + OTel Collector + Tempo + Grafana
-COMPOSE_PROFILES=baseline,runtime,auth docker compose up -d
-PORTARIUM_USE_POSTGRES_STORES=true PORTARIUM_DATABASE_URL=postgresql://portarium:portarium@localhost:5432/portarium \
-npx tsx src/presentation/runtime/control-plane.ts
-```
-
-> **Store configuration required.** The control plane will refuse to start unless either:
->
-> - `PORTARIUM_USE_POSTGRES_STORES=true` + `PORTARIUM_DATABASE_URL` is set (real Postgres), or
-> - `DEV_STUB_STORES=true` + `NODE_ENV=development` or `test` (in-memory stubs for local iteration only — data does not persist).
->
-> Setting neither will produce a FATAL startup error. This prevents silently deploying a non-functional system.
-
-In another terminal:
-
-```bash
-PORTARIUM_ENABLE_TEMPORAL_WORKER=true npx tsx src/presentation/runtime/worker.ts
-```
-
-Health checks:
-
-```bash
+npm run dev:all
+npm run dev:seed
 curl -s http://localhost:8080/healthz
-curl -s http://localhost:8081/healthz
 ```
 
-## Docs
+Run the quickest governed-flow check:
 
-- If you only read one page next: `docs/index.md`
-- Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
-- Run the local stack: `docs/getting-started/local-dev.md`
-- Understand the architecture: `docs/explanation/architecture.md`
-- Agent traffic controller model: `docs/explanation/agent-traffic-controller.md`
-- API contract (OpenAPI): `docs/spec/openapi/portarium-control-plane.v1.yaml`
-- HTTP API reference: `docs/reference/http-api.md`
-- Integration model: `docs/explanation/ports-and-adapters.md`
-- Contribution flow: `CONTRIBUTING.md`
+```bash
+npm run smoke:governed-run
+```
+
+For the guided path, use [Hello Portarium](docs/getting-started/hello-portarium.md).
+
+## Documentation
+
+Start here: [docs/index.md](docs/index.md)
+
+If you only read one page next: `docs/index.md`
+
+Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
+
+| Need                         | Go to                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Understand the product       | [Project overview](docs/project-overview.md)                             |
+| Know what is core vs future  | [Project scope](docs/project-scope.md)                                   |
+| Run locally                  | [Local development](docs/getting-started/local-dev.md)                   |
+| Test the governance loop     | [Hello governed workflow](docs/tutorials/hello-governed-workflow.md)     |
+| Trace evidence               | [Evidence trace tutorial](docs/tutorials/evidence-trace.md)              |
+| Understand the architecture  | [Architecture](docs/explanation/architecture.md)                         |
+| Integrate an agent or system | [Agent traffic controller](docs/explanation/agent-traffic-controller.md) |
+| Use the HTTP API             | [HTTP API reference](docs/reference/http-api.md)                         |
+| See changes                  | [Changelog](docs/changelog.md)                                           |
+| Contribute                   | [CONTRIBUTING.md](CONTRIBUTING.md)                                       |
+| Get support                  | [SUPPORT.md](SUPPORT.md)                                                 |
+| Report security issues       | [SECURITY.md](SECURITY.md)                                               |
+
+## Project Status
+
+Portarium is early and actively built. The core control-plane foundations are present: domain contracts, approval flows, policy tiers, evidence, OpenClaw/plugin integration, SDK surfaces, Cockpit reference UI, tests, migrations, and production scaffolding.
+
+Remaining core work is mostly production hardening, security closeout, release hygiene, mobile-friendly Cockpit approval review, and keeping the tested agent-governance loop reliable. Larger demos, Growth Studio, mission-control UI, prompt-language experiments, and pilot research are future work, not core blockers.
+
+See [project scope](docs/project-scope.md) and [roadmap](docs/roadmap.md).
+
+## Contributing
+
+Portarium is MIT-licensed open source. Contributions are welcome when they make the tested agent-governance loop safer, clearer, easier to run, or easier to verify.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 
 ## Community
 
-- Questions and usage help: [GitHub Discussions](https://github.com/45ck/Portarium/discussions)
-- Bug reports and feature proposals: [GitHub Issues](https://github.com/45ck/Portarium/issues/new/choose)
+- Questions and ideas: [GitHub Discussions](https://github.com/45ck/Portarium/discussions)
+- Bugs and feature requests: [GitHub Issues](https://github.com/45ck/Portarium/issues/new/choose)
 - Security reports: [GitHub Security Advisories](https://github.com/45ck/Portarium/security/advisories/new)
-
-## Cockpit Showcase
-
-![Approvals v2 demo showcase](docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif)
-
-See scripted demo specs and capture docs at `docs/internal/ui/cockpit/demo-machine/README.md`.
-
-## Status
-
-Early and actively built. The core control-plane foundations are in place; remaining core work is mostly production hardening, security closeout, release hygiene, and reference UI polish. Several open backlog items are showcase or future-product directions rather than core blockers. See [project scope](docs/project-scope.md).
-
-## Working with Calvin
-
-Portarium is the architecture Calvin uses for governed AI consulting: not "replace your team with agents," but "make AI safe enough to trust with real business work."
-
-If you are exploring AI automation with proper safety, approvals, and accountability, start with the docs here and then reach out through Calvin Kennedy's consulting page.
-
-## Discoverability topics
-
-Use these repository topics for GitHub discoverability:
-
-- `control-plane`
-- `ai-governance`
-- `agent-safety`
-- `human-in-the-loop`
-- `policy-engine`
-- `approval-workflows`
-- `openclaw`
-- `robotics-governance`
-- `enterprise-security`
-- `risk-controls`
+- Support guide: [SUPPORT.md](SUPPORT.md)
 
 ## License
 
-Released under the MIT License. See `LICENSE`.
+Released under the [MIT License](LICENSE).

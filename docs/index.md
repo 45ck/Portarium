@@ -1,71 +1,82 @@
-# Docs: Start Here
+# Portarium Docs
 
-Use this page to pick the shortest path for what you are trying to do.
+This is the documentation map for Portarium. Start with the shortest path for what you need.
+
+## New To Portarium
+
+1. [README](../README.md) - short product explanation
+2. [Project overview](project-overview.md) - what Portarium is and is not
+3. [Project scope](project-scope.md) - core product vs future work
+4. [Glossary](glossary.md) - project vocabulary
+5. [Competitive positioning](positioning/competitive-positioning.md) - how Portarium differs from alternatives
+6. [Architecture](explanation/architecture.md) - system design
+7. [Agent traffic controller](explanation/agent-traffic-controller.md) - how agents route actions through governance
 
 ## First 30 Minutes
 
-1. Run the local stack: `docs/getting-started/hello-portarium.md`
-2. Execute one governed flow: `docs/tutorials/hello-governed-workflow.md`
-3. Inspect architecture and contract: `docs/explanation/architecture.md` and `docs/spec/openapi/portarium-control-plane.v1.yaml`
+These docs focus on the core tested governance loop.
 
-## I Want To Evaluate Portarium
+1. `docs/getting-started/hello-portarium.md` - fastest local validation
+2. `docs/tutorials/hello-governed-workflow.md` - guided end-to-end flow
+3. [Evidence trace](tutorials/evidence-trace.md) - inspect evidence from a governed action
+4. [Quality gates](how-to/run-quality-gates.md) - local verification commands
+5. [CI and quality reference](reference/ci-and-quality.md) - what the gates cover
+6. [Scenario traceability](internal/governance/scenario-traceability-matrix.md) - internal test coverage mapping
 
-1. `README.md`
-2. `docs/getting-started/hello-portarium.md`
-3. `docs/project-overview.md`
-4. `docs/project-scope.md`
-5. `docs/explanation/architecture.md`
+## Run It Locally
 
-## I Want To Run It Locally
+1. [Local development](getting-started/local-dev.md)
+2. [Runtime and environment variables](reference/runtime-and-env.md)
+3. [First-run local integrations](how-to/first-run-local-integrations.md)
+4. [Cockpit demos locally](how-to/run-cockpit-demos-locally.md)
 
-1. `docs/getting-started/local-dev.md`
-2. `docs/reference/runtime-and-env.md`
-3. `docs/reference/http-api.md`
+## Build With Portarium
 
-## I Want To Learn Portarium (Tutorial)
+1. [HTTP API reference](reference/http-api.md)
+2. [OpenAPI contract](spec/openapi/portarium-control-plane.v1.yaml)
+3. [SDK integration patterns](sdk/integration-patterns.md)
+4. [Ports and adapters](explanation/ports-and-adapters.md)
+5. [Integration ladder](integration/integration-ladder.md)
+6. [Integration demo walkthrough](integration/demo-walkthrough.md)
+7. [Generate integration scaffolds](how-to/generate-integration-scaffolds.md)
 
-1. `docs/tutorials/hello-governed-workflow.md` — 15-minute end-to-end tutorial
-2. `docs/onboarding/dev-track.md` — Developer onboarding track
-3. `docs/onboarding/sre-track.md` — SRE / Platform onboarding track
-4. `docs/onboarding/secops-track.md` — SecOps / Compliance onboarding track
+## Operate And Secure It
 
-## I Want To Contribute Code
+1. [Security policy](../SECURITY.md)
+2. [Support](../SUPPORT.md)
+3. [Security baseline gates](how-to/security-baseline-gates.md)
+4. [Supply-chain guardrails](how-to/supply-chain-guardrails.md)
+5. [Runtime and env vars](reference/runtime-and-env.md)
+6. [Compliance docs](compliance/vector-graph-embedding-license-gate.md)
 
-1. `docs/getting-started/contributor-onboarding.md`
-2. `docs/getting-started/dev-workflow.md`
-3. `docs/how-to/run-quality-gates.md`
-4. `docs/glossary.md`
-5. `docs/development-start-here.md`
-6. `docs/internal/governance/execution-order-runbook.md`
-7. `docs/internal/governance/failing-cycle-rollback-runbook.md`
-8. `docs/internal/governance/bead-acceptance-scorecard.md`
-9. `docs/internal/governance/stop-loss-thresholds.md`
-10. `docs/internal/governance/bead-stop-loss-thresholds.md`
+## Contribute
 
-## I Want Contracts and Technical Facts
+1. [Contributing](../CONTRIBUTING.md)
+2. [Code of conduct](../CODE_OF_CONDUCT.md)
+3. [Contributor onboarding](getting-started/contributor-onboarding.md)
+4. [Development workflow](getting-started/dev-workflow.md)
+5. [Repo organization](reference/repo-organization.md)
+6. [Developer onboarding track](onboarding/dev-track.md)
+7. [SRE onboarding track](onboarding/sre-track.md)
+8. [SecOps onboarding track](onboarding/secops-track.md)
+9. [Glossary](glossary.md)
 
-- HTTP API: `docs/reference/http-api.md`
-- Runtime and env vars: `docs/reference/runtime-and-env.md`
-- CI and quality gates: `docs/reference/ci-and-quality.md`
-- Versioned schemas and spec sources: `docs/reference/schemas.md`
-- Repo organization and file placement: `docs/reference/repo-organization.md`
-- Core vs future work: `docs/project-scope.md`
+## Product Direction
 
-## I Want To Build An Integration
+1. [Roadmap](roadmap.md)
+2. [Project scope](project-scope.md)
+3. [Competitive positioning](positioning/competitive-positioning.md)
+4. [Dual-voice guide](positioning/dual-voice-guide.md)
 
-1. `docs/integration/integration-ladder.md` — maturity levels (L0–L3) and acceptance gates
-2. `docs/integration/demo-walkthrough.md` — step-by-step local demo against a live stack
-3. `docs/how-to/generate-integration-scaffolds.md` — scaffold a new adapter from CLI
-4. `docs/how-to/first-run-local-integrations.md` — Keycloak, OpenFGA, Odoo, OpenClaw setup
+## Reference
 
-## I Want Architecture Rationale
+- [Schemas](reference/schemas.md)
+- [Domain model](domain/README.md)
+- [Canonical objects](domain/canonical-objects.md)
+- [ADR index](explanation/adr-index.md)
+- [FAQ](faq.md)
+- [Changelog](changelog.md)
 
-- System architecture: `docs/explanation/architecture.md`
-- Agent traffic controller model: `docs/explanation/agent-traffic-controller.md`
-- Ports and Adapters model: `docs/explanation/ports-and-adapters.md`
-- ADR navigation: `docs/explanation/adr-index.md`
-- UI/design direction: `docs/explanation/design-system.md`
+## Internal Maintainer Docs
 
-## Maintainer/Internal Docs
-
-- Internal docs index: `docs/internal/index.md`
+Internal planning, reviews, runbooks, and Beads governance live under [docs/internal](internal/index.md). They are useful for maintainers, but new users should start with the public docs above.

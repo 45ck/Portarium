@@ -1,24 +1,108 @@
-# Portarium -- Project Overview
+# Portarium Project Overview
 
-> **Portarium** is the product name. **VAOP** (Vertical Autonomous Operations Provider) is the internal architecture acronym. See ADR-036.
+Portarium is an open-source control plane for governed AI agents.
 
-**What this is**
-Portarium is an open-source, multi-tenant **control plane** for running non-core business operations with discipline: it orchestrates durable workflows, enforces policy and approvals, centralises credentials and RBAC, and records immutable audit/evidence -- while integrating existing ERP/CRM/helpdesk/marketing tools as **Systems of Record** via adapters and composing "machines" that produce business artifacts.
+Agents can plan and propose actions, but Portarium decides what is allowed to run, what needs human approval, what must be blocked, and what evidence must be recorded.
 
-**Value proposition**
-Portarium converts "business intent" into **repeatable, governable, testable execution** across tools and AI: every action is tiered by risk (Auto/Assisted/Human-approve/Manual-only), every run is observable and retryable, and every outcome is defensible through a tamper-evident evidence trail -- giving operators a unified Ops Shell for approvals, runs, connectors, and policies without rebuilding the underlying business apps.
+## One-Sentence Version
 
-**How it works (one paragraph)**
-Work is executed as **imperative durable runbooks** (Temporal by default) that call standardised **ports**; tenant-specific **adapters** implement those ports against vendor systems behind an anti-corruption layer, and each adapter publishes a capability matrix so policy can decide what is safe to do automatically. **Machines** remain separate, interchangeable producers of artifacts (content/specs/video/etc.) wrapped to a common interface, and Portarium coordinates the full loop: propose -> plan -> approve (if required) -> execute -> log evidence (planned vs verified effects) -> link external objects.
+Portarium lets teams give AI agents real tools without giving them unchecked power.
 
-**What Portarium is not (v1)**
-Portarium does not rebuild ERP/CRM/helpdesk/project management or attempt a mega "single UI for everything"; those remain authoritative SoRs and are integrated rather than replaced. Portarium is the enforcement + governance + run history layer; SoRs are still opened for configuration, deep investigation, and exceptions.
+In practical terms: leave an agent running, know what it is capable of, and handle the decisions that need you from a phone or web app.
 
-**Non-negotiables (read this before details)**
-Approvals are native (queues, SLAs, comments, Plan objects with typed diffs), audit/evidence is **tamper-evident with retention management**, tenancy isolation and RBAC are first-class, adapters must meet a local testing bar (mock + record/replay + contract tests), SoD constraints are policy primitives, and the core remains permissively licensed with careful avoidance of restrictive dependencies.
+## What Portarium Does
 
-**Adoption posture**
-Portarium is **API-first**: the dashboard is a reference client, not the product; external teams can build their own UIs and automations via stable Commands/Queries and a CloudEvents event stream, while Portarium remains the enforcement and truth layer. Observability is standardised via OpenTelemetry.
+Portarium sits between agent runtimes and the systems those agents want to touch.
 
-**Deployment model**
-Portarium ships as an API server + database + evidence store. Local development uses `npm run dev:all && npm run dev:seed` to start a fully seeded Docker Compose stack (Postgres, Temporal, MinIO, Vault, API, worker) in one step. Git is the source of truth for definitions (runbooks, policies, manifests); the Portarium database is the source of truth for runtime state (runs, approvals, evidence). Execution runs on distributed workers reporting back to the control plane.
+It provides:
+
+- policy checks before tool actions run
+- execution tiers for safe, assisted, approval-required, and manual-only work
+- approval queues for risky actions
+- mobile-friendly Cockpit review for approving or rejecting agent decisions
+- controlled execution through adapters and action runners
+- evidence records for proposals, decisions, results, and audit trails
+- workspace isolation, RBAC, auth boundaries, and startup gates
+- SDK and HTTP API surfaces for agents, plugins, and external tools
+- Cockpit as a reference operator UI
+
+## The Core Agent Governance Loop
+
+The core product is a loop that can be tested repeatedly:
+
+1. An agent proposes a tool action.
+2. Portarium evaluates policy and classifies the action.
+3. Safe actions proceed.
+4. Risky actions wait for human approval.
+5. Blocked actions do not run.
+6. Approved actions execute through a controlled boundary.
+7. Evidence and results are recorded.
+8. Tests prove the behavior still works.
+
+This loop is the product center. Example business workflows are valuable, but they are not the core unless they prove or harden this loop.
+
+## What Is Already Present
+
+- Domain models and contracts for Workspaces, Runs, Approvals, Policies, Evidence, Work Items, and agent action proposals.
+- Approval and agent-action flows with tests.
+- OpenClaw/plugin integration for governed tool calls.
+- Cockpit reference UI for approval and operator workflows.
+- Postgres stores, migrations, health checks, rate limiting, metrics, and deployment scaffolding.
+- TypeScript SDK coverage for the control-plane API.
+- Scenario tests for core governance behavior.
+
+## Local Validation
+
+The canonical local path is:
+
+```bash
+npm run dev:all
+npm run dev:seed
+npm run smoke:governed-run
+```
+
+Use this to prove the control plane, seeded demo data, and governed agent-action smoke path are working together.
+
+## What Remains Core
+
+The remaining core work should stay narrow:
+
+- fail-closed behavior for missing dependencies or failed governance hooks
+- security hardening around plugin config, headers, metrics, ownership checks, JWT config, error details, and rate limiting
+- SDK publishing and release hygiene
+- migration runner closeout
+- green `npm run ci:pr`
+- clear Cockpit reference flows for approvals, policies, runs, evidence, and mobile decision review
+
+## What Is Future Work
+
+The following are useful, but they should not be confused with core completion:
+
+- Growth Studio and business-loop demos
+- mission-control UI experiments
+- prompt-language exploration
+- pilot-readiness studies
+- advanced delegated autonomy research
+- demo-machine, media, and showcase tooling
+
+See [project scope](project-scope.md) and [roadmap](roadmap.md).
+
+## What Portarium Is Not
+
+Portarium is not:
+
+- a replacement for your CRM, ERP, helpdesk, or project-management system
+- an agent runtime
+- a generic workflow builder for every possible business process
+- a promise of full autonomy
+
+Portarium is the governance, approval, execution-boundary, and evidence layer above agents and existing systems.
+
+## Main Docs
+
+- [Docs index](index.md)
+- [Project scope](project-scope.md)
+- [Architecture](explanation/architecture.md)
+- [Agent traffic controller](explanation/agent-traffic-controller.md)
+- [Hello Portarium](getting-started/hello-portarium.md)
+- [HTTP API reference](reference/http-api.md)

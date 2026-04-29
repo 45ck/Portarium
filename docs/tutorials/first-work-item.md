@@ -1,4 +1,6 @@
-# Tutorial: First Work Item
+# Tutorial: First Work Item (Scaffold/Auth Check)
+
+This tutorial is mainly useful for contributors checking scaffold and auth behavior. New users should start with [Hello Portarium](../getting-started/hello-portarium.md) or [Hello Governed Workflow](hello-governed-workflow.md).
 
 ## Outcome
 

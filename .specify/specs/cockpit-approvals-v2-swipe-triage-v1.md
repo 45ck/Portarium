@@ -4,6 +4,8 @@
 
 Define the v2 approval experience in Cockpit as a card-first triage flow with swipe and keyboard decision controls, plus explicit release quality bars.
 
+This is a core Portarium path: mobile approval review is how a user can safely leave an agent running while still controlling decisions that require human judgement.
+
 ## Scope
 
 - Approvals route interaction model for triage-mode review and decision submission.
@@ -60,6 +62,14 @@ Define the v2 approval experience in Cockpit as a card-first triage flow with sw
 - Focus order must remain deterministic across card changes and rationale modal/panel state.
 - Decision controls must include accessible labels and not rely on color alone.
 - Mobile viewport must keep core decision controls visible without horizontal scrolling.
+- Mobile viewport tests must cover at least 320px, 375px, and 414px widths.
+- Swipe tests must cover approve threshold, deny threshold, below-threshold cancellation, blocked approval attempts, deny-without-rationale validation, and reduced-motion behavior.
+
+### R6 Anywhere review expectations
+
+- Approval cards must show enough agent, capability, policy, effect, and evidence context to decide without opening a desktop view.
+- Deep links that include an approval ID must focus that approval in the triage flow.
+- Offline decision attempts must queue safely and make replay state visible when connectivity returns.
 
 ## Acceptance criteria
 
@@ -68,6 +78,7 @@ Define the v2 approval experience in Cockpit as a card-first triage flow with sw
 3. Reduced-motion setting removes swipe/transition animations while preserving decision behaviour.
 4. Queue progress and empty/completion state render correctly from fixture data.
 5. Review evidence includes UX quality checks and implementation traceability for the triage surface.
+6. Phone-sized automated or manual evidence proves approve/reject review works at 320px, 375px, and 414px widths.
 
 ## Traceability links
 
@@ -75,5 +86,7 @@ Define the v2 approval experience in Cockpit as a card-first triage flow with sw
 - `apps/cockpit/src/components/cockpit/approval-triage-card.tsx`
 - `apps/cockpit/src/components/cockpit/approval-triage-deck.tsx`
 - `apps/cockpit/src/components/cockpit/triage-complete-state.tsx`
+- `apps/cockpit/src/routes/approvals/approvals-triage.test.tsx`
+- `apps/cockpit/src/lib/approval-decision-outbox.ts`
 - `apps/cockpit/src/index.css`
 - `docs/internal/adr/0077-framer-motion-gesture-animation-layer.md`

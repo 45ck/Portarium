@@ -16,26 +16,26 @@ The first thing someone reads should make sense to a business owner. The archite
 
 Use this when writing any user-facing docs. Left column is what engineers say internally. Right column is what goes in READMEs, landing pages, and introductory docs.
 
-| Internal / technical | Public / plain English |
-|---|---|
-| Policy evaluation | Checks the rules |
-| Policy evaluation before side effects | Checks the rules before AI is allowed to do anything |
-| Evidence capture | Keeps a record / paper trail |
-| Evidence-first operation history | Full paper trail for every action |
-| Approval workflows for human-in-the-loop execution | Risky actions still need human sign-off |
-| Blast radius | How risky the action is |
-| Systems of record | Your existing tools / business software |
-| Connectors / ports and adapters | Works with the tools you already use |
-| Governed execution | Safe automation / AI that follows the rules |
-| Governed execution tiers | Trust levels (from fully manual to fully automatic) |
-| Control plane | Safety layer |
-| Orchestration and state transitions | Manages the flow of work |
-| Workspace-scoped operations | Keeps projects separate |
-| Immutable evidence | Records that cannot be changed after the fact |
-| Execution mediation | Decides what is allowed to run |
-| Domain events | Activity log / notifications |
-| Branded primitives | (omit — internal implementation detail) |
-| Ports and adapters | (omit from normie docs — say "connects to your tools") |
+| Internal / technical                               | Public / plain English                                 |
+| -------------------------------------------------- | ------------------------------------------------------ |
+| Policy evaluation                                  | Checks the rules                                       |
+| Policy evaluation before side effects              | Checks the rules before AI is allowed to do anything   |
+| Evidence capture                                   | Keeps a record / paper trail                           |
+| Evidence-first operation history                   | Full paper trail for every action                      |
+| Approval workflows for human-in-the-loop execution | Risky actions still need human sign-off                |
+| Blast radius                                       | How risky the action is                                |
+| Systems of record                                  | Your existing tools / business software                |
+| Connectors / ports and adapters                    | Works with the tools you already use                   |
+| Governed execution                                 | Safe automation / AI that follows the rules            |
+| Governed execution tiers                           | Trust levels (from fully manual to fully automatic)    |
+| Control plane                                      | Safety layer                                           |
+| Orchestration and state transitions                | Manages the flow of work                               |
+| Workspace-scoped operations                        | Keeps projects separate                                |
+| Immutable evidence                                 | Records that cannot be changed after the fact          |
+| Execution mediation                                | Decides what is allowed to run                         |
+| Domain events                                      | Activity log / notifications                           |
+| Branded primitives                                 | (omit — internal implementation detail)                |
+| Ports and adapters                                 | (omit from normie docs — say "connects to your tools") |
 
 ---
 
@@ -46,6 +46,7 @@ Use this when writing any user-facing docs. Left column is what engineers say in
 **Audience**: Anyone. Business owners, managers, compliance, curious developers.
 
 **Rules**:
+
 - No jargon in the first three paragraphs
 - Lead with the job Portarium does, not the mechanism
 - Use concrete examples ("send this email," "update this record")
@@ -54,6 +55,7 @@ Use this when writing any user-facing docs. Left column is what engineers say in
 - Link to Layer 2 for technical depth
 
 **Example opening**:
+
 > Portarium is an open-source safety and approval layer for AI agents. AI can draft, suggest, and prepare actions — but Portarium checks the rules, asks a human when needed, and keeps a full record of what happened.
 
 ### Layer 2: Explanation docs
@@ -61,6 +63,7 @@ Use this when writing any user-facing docs. Left column is what engineers say in
 **Audience**: Developers evaluating Portarium. Technical decision-makers.
 
 **Rules**:
+
 - Can use technical terms but define them on first use
 - Architecture diagrams with technical labels are fine
 - Reference domain model, API contracts, execution tiers by name
@@ -68,6 +71,7 @@ Use this when writing any user-facing docs. Left column is what engineers say in
 - Link to Layer 3 for implementation details
 
 **Example opening**:
+
 > Portarium evaluates policy before any agent action reaches a target system. The control plane receives typed action proposals, evaluates them against workspace-scoped policy rules, and routes them through one of four execution tiers...
 
 ### Layer 3: Reference / API / internal docs
@@ -75,30 +79,32 @@ Use this when writing any user-facing docs. Left column is what engineers say in
 **Audience**: Engineers building on or contributing to Portarium.
 
 **Rules**:
+
 - Full technical precision
 - Domain terms from the glossary used without translation
 - Code examples, OpenAPI specs, type signatures
 - No need to simplify — this audience chose to be here
 
 **Example opening**:
+
 > The `ApprovalGate` aggregate manages the lifecycle of a single approval decision. It receives `ApprovalRequested` domain events and transitions through `pending`, `approved`, `denied`, or `expired` states...
 
 ---
 
 ## Section-by-section guide for README
 
-| Section | Voice | Notes |
-|---|---|---|
-| Hero / tagline | Plain English | "Let AI do the work. Keep humans in control." |
-| Why this exists | Plain English | Frame as questions normies ask (who allowed this?) |
-| What Portarium does | Plain English | Bullet list using translation table |
-| How it works | Plain English with bold steps | Concrete examples, numbered flow |
-| Before and after | Plain English | Table with relatable "without" column |
-| Feature showcase | Minimal captions | Let the GIFs speak; one plain sentence each |
-| What you get | Lightly technical | Can name execution tiers but explain them |
-| Quickstart | Technical | Developers only; commands and config |
-| Docs links | Neutral | Just navigation |
-| Community | Neutral | Links |
+| Section             | Voice                         | Notes                                              |
+| ------------------- | ----------------------------- | -------------------------------------------------- |
+| Hero / tagline      | Plain English                 | "Let AI do the work. Keep humans in control."      |
+| Why this exists     | Plain English                 | Frame as questions normies ask (who allowed this?) |
+| What Portarium does | Plain English                 | Bullet list using translation table                |
+| How it works        | Plain English with bold steps | Concrete examples, numbered flow                   |
+| Before and after    | Plain English                 | Table with relatable "without" column              |
+| Feature showcase    | Minimal captions              | Let the GIFs speak; one plain sentence each        |
+| What you get        | Lightly technical             | Can name execution tiers but explain them          |
+| Quickstart          | Technical                     | Developers only; commands and config               |
+| Docs links          | Neutral                       | Just navigation                                    |
+| Community           | Neutral                       | Links                                              |
 
 ---
 

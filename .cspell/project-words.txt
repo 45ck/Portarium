@@ -21,6 +21,10 @@
 # Floating-point algorithm names (RFC 8785 / canonical-json docs)
 # General English (US spelling)
 # General terms used in docs
+normie
+normies
+subheadline
+Workato
 # Git / docs terms (pre-existing in review docs)
 # Git / OpenAPI jargon
 # Git/review one-liners

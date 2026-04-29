@@ -15,7 +15,7 @@ The core product is:
 - Tenant/workspace isolation, RBAC, auth boundaries, and production startup gates.
 - Adapter/port architecture so existing Systems of Record remain authoritative.
 - SDK and integration surface so agents and external tools can call Portarium.
-- Cockpit as a reference operator UI for approvals, policies, runs, and evidence.
+- Cockpit as a reference operator UI for approvals, policies, runs, evidence, and mobile-friendly decision review.
 
 ## Core Success Bar
 
@@ -24,7 +24,7 @@ The minimum credible product is not a large library of example businesses. It is
 1. An agent proposes an action through the SDK, plugin, or HTTP API.
 2. Portarium classifies the action by policy and execution tier.
 3. Safe actions can proceed; gated actions create an approval; blocked actions do not run.
-4. A human can approve or deny with enough context to make the decision.
+4. A human can approve or deny with enough context to make the decision, including from a phone-sized web UI.
 5. Approved actions execute through a controlled runner or adapter.
 6. The decision, evidence, and result are recorded and queryable.
 7. Automated tests prove the allowed, approval-required, denied, blocked, retry, and isolation paths.
@@ -47,7 +47,7 @@ The remaining core work should stay focused on production readiness:
 - Fix fail-closed paths where missing dependencies or failed hooks could otherwise permit unsafe behavior.
 - Close security hardening gaps around plugin config, headers, metrics, ownership checks, error details, JWT requirements, and rate limiting.
 - Finish release hygiene: SDK publishing, migration runner closeout, gate baseline, and green `npm run ci:pr`.
-- Keep Cockpit focused on the reference flows required to test and operate approvals, policies, runs, and evidence.
+- Keep Cockpit focused on the reference flows required to test and operate approvals, policies, runs, evidence, and anywhere/phone-sized approval review.
 
 ## Future Work
 

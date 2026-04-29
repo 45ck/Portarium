@@ -1,6 +1,8 @@
 # Tutorial: Hello Governed Workflow
 
-**Time:** ~15 minutes | **Prerequisites:** Node.js ≥ 22, Docker + Docker Compose
+**Time:** ~15 minutes | **Prerequisites:** Node.js `^20.19.0` or `>=22.12.0`, Docker + Docker Compose
+
+This is the guided tutorial. If you only want the shortest smoke check, start with [Hello Portarium](../getting-started/hello-portarium.md).
 
 By the end of this tutorial you will have triggered a governed workflow run
 through the Portarium control plane, observed the approval gate, confirmed an
