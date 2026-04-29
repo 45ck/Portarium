@@ -119,6 +119,8 @@ interface HonoEnv {
   Variables: { ctx: RequestContext };
 }
 
+const MALFORMED_WORKSPACE_RATE_LIMIT_ID = '__malformed_workspace__';
+
 function hasValidMetricsBearerToken(
   authorizationHeader: string | string[] | undefined,
   expectedToken: string,
@@ -543,19 +545,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       return;
     }
 
-    const rawId = decodeURIComponent(/^\/v1\/workspaces\/([^/]+)/.exec(pathname)?.[1] ?? '').trim();
-    if (!rawId) {
-      await next();
-      return;
-    }
+    const encodedWorkspaceId = /^\/v1\/workspaces\/([^/]*)/.exec(pathname)?.[1] ?? '';
+    const rawId = decodeURIComponent(encodedWorkspaceId).trim();
+    const rateLimitId = rawId || MALFORMED_WORKSPACE_RATE_LIMIT_ID;
 
-    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId(rawId) };
+    const scope: RateLimitScope = { kind: 'Tenant', tenantId: TenantId(rateLimitId) };
     const result = await checkRateLimit({ rateLimitStore: d.rateLimitStore }, scope);
 
     if (!result.allowed) {
-      rateLimitHitsTotal.inc({ workspaceId: rawId });
+      rateLimitHitsTotal.inc({ workspaceId: rateLimitId });
       d.authEventLogger?.logRateLimitExceeded({
-        workspaceId: rawId,
+        workspaceId: rateLimitId,
         path: pathname,
         retryAfterSeconds: result.retryAfterSeconds,
       });

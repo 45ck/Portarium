@@ -38,6 +38,7 @@
 
 - `RATE_LIMIT_STORE` — `redis` to use Redis-backed distributed rate limiting (default: `memory`)
 - `REDIS_URL` — Redis connection URL (required when `RATE_LIMIT_STORE=redis`)
+- Workspace API requests with an empty workspace segment, such as `/v1/workspaces//...`, are counted against the shared malformed-workspace rate-limit scope before routing.
 
 ## Worker env
 
