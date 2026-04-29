@@ -108,6 +108,30 @@ describe('registerBeforeToolCallHook', () => {
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('agentId=unknown'));
     });
 
+    it('sanitizes bypass audit identity fields before logging', async () => {
+      const client = { proposeAction: vi.fn() } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(client, poller, makeConfig());
+
+      await handler(
+        makeEvent({ toolName: 'portarium_get_run', runId: 'event-run\r\nx-evil: 1' }),
+        makeCtx({
+          sessionKey: 'agent:main:main',
+          runId: 'ctx-run\r\nx-evil: 1',
+          agentId: 'agent-1\r\nx-evil: 1',
+        }),
+      );
+
+      const auditLog = vi
+        .mocked(logger.info)
+        .mock.calls.map(([message]) => message)
+        .find((message) => message.includes('Governance bypassed'));
+      expect(auditLog).toContain('runId=ctx-runx-evil: 1');
+      expect(auditLog).toContain('agentId=agent-1x-evil: 1');
+      expect(auditLog).not.toContain('\r');
+      expect(auditLog).not.toContain('\n');
+    });
+
     it('governs tools not in bypassToolNames', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
@@ -319,22 +343,53 @@ describe('registerBeforeToolCallHook', () => {
       );
     });
 
-    it('strips control characters and truncates ctx.sessionKey before proposing', async () => {
+    it('blocks ctx.sessionKey containing control characters before proposing', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(client, poller, makeConfig());
+
+      const result = (await handler(makeEvent(), makeCtx({ sessionKey: 'agent:\r\nmain' }))) as {
+        block: boolean;
+        blockReason: string;
+      };
+
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('hook failed');
+      expect(client.proposeAction).not.toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Invalid sessionKey'));
+    });
+
+    it('blocks ctx.sessionKey with unsupported characters before proposing', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
       } as unknown as PortariumClient;
       const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
       const { handler } = buildHook(client, poller, makeConfig());
-      const longSessionKey = `agent:\r\n${'x'.repeat(200)}`;
 
-      await handler(makeEvent(), makeCtx({ sessionKey: longSessionKey }));
-
-      const proposed = vi.mocked(client.proposeAction).mock.calls[0]?.[0] as {
-        sessionKey: string;
+      const result = (await handler(makeEvent(), makeCtx({ sessionKey: 'agent:<script>' }))) as {
+        block: boolean;
       };
-      expect(proposed.sessionKey).not.toContain('\r');
-      expect(proposed.sessionKey).not.toContain('\n');
-      expect(proposed.sessionKey).toHaveLength(128);
+
+      expect(result.block).toBe(true);
+      expect(client.proposeAction).not.toHaveBeenCalled();
+    });
+
+    it('blocks overlong ctx.sessionKey before proposing', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler } = buildHook(client, poller, makeConfig());
+      const longSessionKey = `agent:${'x'.repeat(200)}`;
+
+      const result = (await handler(makeEvent(), makeCtx({ sessionKey: longSessionKey }))) as {
+        block: boolean;
+      };
+
+      expect(result.block).toBe(true);
+      expect(client.proposeAction).not.toHaveBeenCalled();
     });
   });
 

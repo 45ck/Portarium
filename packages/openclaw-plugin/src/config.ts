@@ -60,6 +60,11 @@ function sanitizeHeaderValue(value: string, field: string): string {
       `[portarium-plugin] config.${field} contained CRLF/NUL characters — stripped for safety`,
     );
   }
+  if (!sanitized.trim()) {
+    throw new Error(
+      `[portarium-plugin] config.${field} must not be empty after CRLF/NUL sanitization`,
+    );
+  }
   return sanitized;
 }
 
