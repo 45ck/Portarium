@@ -58,6 +58,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
         .filter(
           (scenario) =>
             scenario.scenarioId !== 'growth-studio-openclaw-live-v2' &&
+            scenario.scenarioId !== 'openclaw-concurrent-sessions' &&
             scenario.scenarioId !== 'approval-backlog-soak' &&
             scenario.scenarioId !== 'micro-saas-agent-stack-v2',
         )
@@ -149,6 +150,19 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(scenario?.status).toBe('runnable-deterministic');
     expect(scenario?.runnerPath).toBe(
       'experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs',
+    );
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+  });
+
+  it('marks openclaw-concurrent-sessions as runnable with a checked runner', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'openclaw-concurrent-sessions',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs',
     );
     expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
   });

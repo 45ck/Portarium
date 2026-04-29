@@ -45,7 +45,7 @@ belong to the dependent implementation Beads.
 | -------------------------------- | ----------- | ---------------------- |
 | `growth-studio-openclaw-live-v2` | `bead-1042` | Runnable deterministic |
 | `micro-saas-agent-stack-v2`      | `bead-1043` | Runnable deterministic |
-| `openclaw-concurrent-sessions`   | `bead-1044` | Planned                |
+| `openclaw-concurrent-sessions`   | `bead-1044` | Runnable deterministic |
 | `approval-backlog-soak`          | `bead-1045` | Runnable deterministic |
 
 ## Result Layout
