@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { ITERATION2_REQUIRED_METRIC_NAMES } from '../../experiments/shared/iteration2-telemetry.js';
+
 type Iteration2Manifest = Readonly<{
   schemaVersion: number;
   suiteId: string;
@@ -15,6 +17,12 @@ type Iteration2Manifest = Readonly<{
     resultRoot: string;
     attemptDirectoryPattern: string;
     requiredArtifacts: readonly string[];
+  }>;
+  telemetryPack: Readonly<{
+    beadId: string;
+    helperPath: string;
+    typeDefinitionsPath: string;
+    writesArtifacts: readonly string[];
   }>;
   requiredMetricNames: readonly string[];
   scenarios: readonly Readonly<{
@@ -43,7 +51,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(manifest.suiteId).toBe('iteration-2-governed-business-scale');
     expect(manifest.iteration).toBe(2);
     expect(manifest.beadId).toBe('bead-1040');
-    expect(manifest.status).toBe('planned');
+    expect(manifest.status).toBe('telemetry-ready');
     expect(manifest.scenarios.every((scenario) => scenario.status === 'planned')).toBe(true);
   });
 
@@ -66,32 +74,23 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     ]);
   });
 
-  it('pins the shared metrics required by the dependent telemetry pack', () => {
+  it('pins the shared metrics implemented by the telemetry pack', () => {
     const manifest = readManifest();
 
     expect(new Set(manifest.requiredMetricNames)).toEqual(
-      new Set([
-        'approval_count_by_tier',
-        'approval_count_by_session',
-        'pending_age_ms_p50',
-        'pending_age_ms_p95',
-        'pending_age_ms_max',
-        'resume_latency_ms',
-        'blocked_duration_ms',
-        'queue_depth_over_time',
-        'denial_count',
-        'request_changes_count',
-        'escalation_count',
-        'expiry_count',
-        'duplicate_execution_count',
-        'evidence_completeness_count',
-        'restart_count',
-        'successful_resume_count',
-      ]),
+      new Set(ITERATION2_REQUIRED_METRIC_NAMES),
     );
+    expect(manifest.telemetryPack).toEqual({
+      beadId: 'bead-1041',
+      helperPath: 'experiments/shared/iteration2-telemetry.js',
+      typeDefinitionsPath: 'experiments/shared/iteration2-telemetry.ts',
+      writesArtifacts: ['queue-metrics.json', 'evidence-summary.json', 'report.md'],
+    });
+    expect(existsSync(join(repoRoot, manifest.telemetryPack.helperPath))).toBe(true);
+    expect(existsSync(join(repoRoot, manifest.telemetryPack.typeDefinitionsPath))).toBe(true);
   });
 
-  it('defines every dependent scenario contract and leaves it blocked on telemetry', () => {
+  it('defines every dependent scenario contract', () => {
     const manifest = readManifest();
     const scenarioByBead = new Map(
       manifest.scenarios.map((scenario) => [scenario.beadId, scenario]),
@@ -100,7 +99,6 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     for (const beadId of ['bead-1042', 'bead-1043', 'bead-1044', 'bead-1045']) {
       const scenario = scenarioByBead.get(beadId);
       expect(scenario).toBeDefined();
-      expect(scenario?.blockedBy).toContain('bead-1041');
       expect(scenario?.validates.length).toBeGreaterThanOrEqual(4);
       expect(existsSync(join(repoRoot, scenario?.contractPath ?? 'missing'))).toBe(true);
     }

@@ -84,6 +84,12 @@ append-only result layout. The scaffold is intentionally separate from the live
 scenario implementations so dependent Beads can add each runnable experiment
 without changing earlier evidence.
 
+Use `experiments/shared/iteration2-telemetry.js` from Iteration 2 runners to
+record queue depth, approval timing, resume latency, duplicate execution,
+restart, and evidence completeness metrics. The helper writes
+`queue-metrics.json`, `evidence-summary.json`, and a short `report.md` into the
+attempt directory.
+
 ## Result capture format
 
 The experiment runner writes `results/outcome.json` with:

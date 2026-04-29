@@ -3,7 +3,7 @@
   "suiteId": "iteration-2-governed-business-scale",
   "iteration": 2,
   "beadId": "bead-1040",
-  "status": "planned",
+  "status": "telemetry-ready",
   "purpose": "Second-wave governed experiments for delayed approvals, operator handoff, concurrent sessions, queue pressure, and evidence completeness.",
   "immutablePredecessors": [
     "experiments/exp-A-transparency",
@@ -20,6 +20,12 @@
       "queue-metrics.json",
       "report.md"
     ]
+  },
+  "telemetryPack": {
+    "beadId": "bead-1041",
+    "helperPath": "experiments/shared/iteration2-telemetry.js",
+    "typeDefinitionsPath": "experiments/shared/iteration2-telemetry.ts",
+    "writesArtifacts": ["queue-metrics.json", "evidence-summary.json", "report.md"]
   },
   "requiredMetricNames": [
     "approval_count_by_tier",
@@ -44,7 +50,7 @@
       "scenarioId": "growth-studio-openclaw-live-v2",
       "beadId": "bead-1042",
       "status": "planned",
-      "blockedBy": ["bead-1041", "bead-1037"],
+      "blockedBy": ["bead-1037"],
       "contractPath": "experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/README.md",
       "comparesTo": "growth-studio-openclaw-live",
       "validates": [
@@ -58,7 +64,7 @@
       "scenarioId": "micro-saas-agent-stack-v2",
       "beadId": "bead-1043",
       "status": "planned",
-      "blockedBy": ["bead-1041"],
+      "blockedBy": [],
       "contractPath": "experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/README.md",
       "comparesTo": "micro-saas-agent-stack",
       "validates": [
@@ -72,7 +78,7 @@
       "scenarioId": "openclaw-concurrent-sessions",
       "beadId": "bead-1044",
       "status": "planned",
-      "blockedBy": ["bead-1041", "bead-1037"],
+      "blockedBy": ["bead-1037"],
       "contractPath": "experiments/iteration-2/scenarios/openclaw-concurrent-sessions/README.md",
       "comparesTo": "exp-A-transparency",
       "validates": [
@@ -86,7 +92,7 @@
       "scenarioId": "approval-backlog-soak",
       "beadId": "bead-1045",
       "status": "planned",
-      "blockedBy": ["bead-1041"],
+      "blockedBy": [],
       "contractPath": "experiments/iteration-2/scenarios/approval-backlog-soak/README.md",
       "comparesTo": "scenario-observability-pack",
       "validates": [

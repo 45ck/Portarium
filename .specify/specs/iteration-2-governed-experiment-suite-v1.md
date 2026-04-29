@@ -21,8 +21,27 @@ have completed.
    `live-model-experiment-preflight-v1`.
 7. Every completed scenario report must reference queue, timing, resume,
    duplicate-execution, and evidence-completeness metrics by the manifest names.
-8. Planned scenarios remain marked `planned` until their owner Beads add runnable
-   experiment scripts and result reports.
+8. The shared telemetry helper must write `queue-metrics.json`,
+   `evidence-summary.json`, and `report.md` for each attempt.
+9. Threshold checks must produce explicit pass/fail assertions that can be used
+   by experiment `verify` steps.
+10. Planned scenarios remain marked `planned` until their owner Beads add runnable
+    experiment scripts and result reports.
+
+## Telemetry Helper
+
+The reusable helper lives at `experiments/shared/iteration2-telemetry.js` with
+TypeScript definitions in `experiments/shared/iteration2-telemetry.ts`.
+
+It records:
+
+- approval requested and decided events
+- queue depth samples
+- blocked session durations
+- resume latency after approval decisions
+- duplicate execution keys
+- evidence artifact presence
+- restart and successful resume counts
 
 ## Required Scenario Set
 

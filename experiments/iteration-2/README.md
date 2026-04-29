@@ -30,6 +30,11 @@ The suite is defined by `suite.manifest.json`. Every Iteration 2 experiment must
 - mark live LLM/provider runs as skipped or inconclusive when the preflight is
   not ready
 
+The shared telemetry helper lives at
+`experiments/shared/iteration2-telemetry.js`. Runners should create one collector
+per attempt, record approval/queue/resume/evidence events during the scenario,
+and call `writeArtifacts()` before returning the final outcome.
+
 ## Scenario Directories
 
 The directories under `scenarios/` are placeholders for planned scenario
@@ -63,6 +68,6 @@ be repeated, create a new attempt directory and compare it with the earlier one.
 
 ## What Remains
 
-The suite scaffold closes only the planning and versioning work. The concrete
-telemetry helper, live experiments, and reports remain in `bead-1041` through
+The suite scaffold and telemetry helper close the planning and shared metrics
+work. The concrete live experiments and reports remain in `bead-1042` through
 `bead-1045`.
