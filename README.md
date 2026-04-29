@@ -138,6 +138,7 @@ Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
 | Know what is core vs future  | [Project scope](docs/project-scope.md)                                   |
 | Run locally                  | [Local development](docs/getting-started/local-dev.md)                   |
 | Test the governance loop     | [Hello governed workflow](docs/tutorials/hello-governed-workflow.md)     |
+| Run the core eval            | [Core governance eval](docs/how-to/run-core-governance-eval.md)          |
 | Trace evidence               | [Evidence trace tutorial](docs/tutorials/evidence-trace.md)              |
 | Understand the architecture  | [Architecture](docs/explanation/architecture.md)                         |
 | Integrate an agent or system | [Agent traffic controller](docs/explanation/agent-traffic-controller.md) |
