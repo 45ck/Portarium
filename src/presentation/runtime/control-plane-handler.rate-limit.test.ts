@@ -10,6 +10,7 @@ import { startHealthServer } from './health-server.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 
 const WORKSPACE_ID = 'workspace-rl-test';
+const MALFORMED_WORKSPACE_RATE_LIMIT_ID = '__malformed_workspace__';
 
 let handle: HealthServerHandle | undefined;
 let store: InMemoryRateLimitStore;
@@ -170,6 +171,45 @@ describe('control-plane rate limiting', () => {
     // Route not found, but NOT rate-limited.
     expect(res.status).toBe(404);
     expect(res.headers.get('Retry-After')).toBeNull();
+  });
+
+  it('rate-limits requests with an empty workspace segment using the malformed-workspace scope', async () => {
+    await startWith(makeDeps(100));
+    const scope = {
+      kind: 'Tenant' as const,
+      tenantId: TenantId(MALFORMED_WORKSPACE_RATE_LIMIT_ID),
+    };
+    store.setRules(scope, [{ schemaVersion: 1, scope, window: 'PerMinute', maxRequests: 1 }]);
+    const url = `http://${handle!.host}:${handle!.port}/v1/workspaces//workforce`;
+
+    const first = await fetch(url);
+    expect(first.status).toBe(404);
+    expect(first.headers.get('Retry-After')).toBeNull();
+
+    const second = await fetch(url);
+    expect(second.status).toBe(429);
+    expect(second.headers.get('Retry-After')).toMatch(/^\d+$/);
+    const body = (await second.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/rate-limit-exceeded/);
+    expect(body.status).toBe(429);
+  });
+
+  it('rate-limits requests with a whitespace-only encoded workspace segment', async () => {
+    await startWith(makeDeps(100));
+    const scope = {
+      kind: 'Tenant' as const,
+      tenantId: TenantId(MALFORMED_WORKSPACE_RATE_LIMIT_ID),
+    };
+    store.setRules(scope, [{ schemaVersion: 1, scope, window: 'PerMinute', maxRequests: 1 }]);
+    const url = `http://${handle!.host}:${handle!.port}/v1/workspaces/%20`;
+
+    const first = await fetch(url);
+    expect(first.status).toBe(422);
+    expect(first.headers.get('Retry-After')).toBeNull();
+
+    const second = await fetch(url);
+    expect(second.status).toBe(429);
+    expect(second.headers.get('Retry-After')).toMatch(/^\d+$/);
   });
 
   it('does not apply rate limit when no rateLimitStore is provided', async () => {
