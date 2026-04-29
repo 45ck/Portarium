@@ -10,6 +10,7 @@
  *   { block: true }    → terminal block — lower-priority hooks are skipped
  *   { blockReason }    → block with human-readable reason logged by OpenClaw
  */
+import { isPermittedBypassToolName } from '../config.js';
 import type { PortariumPluginConfig } from '../config.js';
 import type { PortariumClient } from '../client/portarium-client.js';
 import type { ApprovalPoller } from '../services/approval-poller.js';
@@ -33,20 +34,31 @@ export function registerBeforeToolCallHook(
   config: PortariumPluginConfig,
   logger: { info(msg: string): void; warn(msg: string): void; error(msg: string): void },
 ): void {
+  const rejectedBypassToolNames = config.bypassToolNames.filter(
+    (toolName) => !isPermittedBypassToolName(toolName),
+  );
+  if (rejectedBypassToolNames.length > 0) {
+    logger.warn(
+      `[portarium][audit] Ignoring configured bypassToolNames outside the hardcoded Portarium introspection allowlist: ${rejectedBypassToolNames.map(formatToolNameForLog).join(', ')}`,
+    );
+  }
+  const bypassToolNames = new Set(config.bypassToolNames.filter(isPermittedBypassToolName));
+
   api.on(
     'before_tool_call',
     async (event, ctx) => {
       const { toolName, params } = event;
+      const sessionKey = resolveSessionKey(ctx.sessionKey, config.workspaceId);
 
-      // Bypass governance for explicit Portarium introspection tools
-      if (config.bypassToolNames.includes(toolName)) {
+      // Bypass governance only for hard-coded Portarium introspection tools.
+      if (bypassToolNames.has(toolName)) {
+        const runId = ctx.runId ?? event.runId ?? 'none';
+        const agentId = ctx.agentId ?? 'unknown';
+        logger.info(
+          `[portarium][audit] Governance bypassed for Portarium introspection tool: ${formatToolNameForLog(toolName)} (sessionKey=${sessionKey}, runId=${runId}, agentId=${agentId})`,
+        );
         return;
       }
-
-      // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace.
-      // Sanitize: strip control characters and truncate to 128 chars to prevent header injection.
-      const rawKey = ctx.sessionKey ?? `portarium:${config.workspaceId}`;
-      const sessionKey = rawKey.replace(/[\r\n\0]/g, '').slice(0, 128);
 
       logger.info(`[portarium] Governing tool call: ${toolName}`);
 
@@ -103,4 +115,15 @@ export function registerBeforeToolCallHook(
     },
     { priority: 1000 },
   );
+}
+
+function resolveSessionKey(sessionKey: string | undefined, workspaceId: string): string {
+  // sessionKey is provided by OpenClaw (e.g. "agent:main:main"); fall back to workspace.
+  // Sanitize: strip control characters and truncate to 128 chars to prevent header injection.
+  const rawKey = sessionKey ?? `portarium:${workspaceId}`;
+  return rawKey.replace(/[\r\n\0]/g, '').slice(0, 128);
+}
+
+function formatToolNameForLog(toolName: string): string {
+  return toolName.replace(/[\r\n\0]/g, '');
 }
