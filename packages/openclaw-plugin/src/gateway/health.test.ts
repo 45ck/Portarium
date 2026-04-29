@@ -50,29 +50,34 @@ describe('portarium.status gateway method', () => {
 
     const result = await handler({});
     expect(result).toEqual({
-      status: 'connected',
+      ok: true,
+      status: 200,
       portariumUrl: 'https://portarium.test',
       workspaceId: 'ws-test',
-      failClosed: true,
     });
   });
 
-  it('returns unreachable when listPendingApprovals throws', async () => {
+  it('returns ping failure when client reports unreachable', async () => {
     const config = makeConfig();
     const client = new PortariumClient(config, mockFetch({ items: [] }));
-    vi.spyOn(client, 'listPendingApprovals').mockRejectedValueOnce(new Error('ECONNREFUSED'));
+    vi.spyOn(client, 'ping').mockResolvedValueOnce({
+      ok: false,
+      error: 'ECONNREFUSED',
+      portariumUrl: 'https://portarium.test',
+      workspaceId: 'ws-test',
+    });
     const { handler } = captureRegistration(client, config);
 
     const result = await handler({});
     expect(result).toEqual({
-      status: 'unreachable',
+      ok: false,
+      error: 'ECONNREFUSED',
       portariumUrl: 'https://portarium.test',
       workspaceId: 'ws-test',
-      failClosed: true,
     });
   });
 
-  it('returns connected even when fetch fails (client catches internally)', async () => {
+  it('uses the client ping path so injected fetch failures are reported', async () => {
     const config = makeConfig();
     const failFetch = (async () => {
       throw new Error('ECONNREFUSED');
@@ -81,12 +86,11 @@ describe('portarium.status gateway method', () => {
     const { handler } = captureRegistration(client, config);
 
     const result = await handler({});
-    // Client catches the error internally and returns [], so health reports connected
     expect(result).toEqual({
-      status: 'connected',
+      ok: false,
+      error: 'ECONNREFUSED',
       portariumUrl: 'https://portarium.test',
       workspaceId: 'ws-test',
-      failClosed: true,
     });
   });
 });
