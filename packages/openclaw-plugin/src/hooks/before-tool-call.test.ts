@@ -93,6 +93,21 @@ describe('registerBeforeToolCallHook', () => {
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('runId=run-123'));
     });
 
+    it('logs bypasses with event run fallback and unknown agent when ctx omits them', async () => {
+      const client = { proposeAction: vi.fn() } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(client, poller, makeConfig());
+
+      await handler(
+        makeEvent({ toolName: 'portarium_get_run', runId: 'event-run-123' }),
+        makeCtx(),
+      );
+
+      expect(client.proposeAction).not.toHaveBeenCalled();
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('runId=event-run-123'));
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('agentId=unknown'));
+    });
+
     it('governs tools not in bypassToolNames', async () => {
       const client = {
         proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
@@ -121,6 +136,21 @@ describe('registerBeforeToolCallHook', () => {
         expect.stringContaining('Ignoring configured bypassToolNames outside the hardcoded'),
       );
       expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('bash_exec'));
+    });
+
+    it('sanitizes poisoned bypass tool names before audit logging', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { logger } = buildHook(
+        client,
+        poller,
+        makeConfig({ bypassToolNames: ['bash_exec\r\nx-evil: 1', 'portarium_get_run'] }),
+      );
+
+      expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('bash_execx-evil: 1'));
+      expect(logger.warn).not.toHaveBeenCalledWith(expect.stringContaining('\r\n'));
     });
   });
 
@@ -247,6 +277,24 @@ describe('registerBeforeToolCallHook', () => {
       expect(client.proposeAction).toHaveBeenCalledWith(
         expect.objectContaining({ sessionKey: 'portarium:my-ws' }),
       );
+    });
+
+    it('strips control characters and truncates ctx.sessionKey before proposing', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({ status: 'allowed' }),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler } = buildHook(client, poller, makeConfig());
+      const longSessionKey = `agent:\r\n${'x'.repeat(200)}`;
+
+      await handler(makeEvent(), makeCtx({ sessionKey: longSessionKey }));
+
+      const proposed = vi.mocked(client.proposeAction).mock.calls[0]?.[0] as {
+        sessionKey: string;
+      };
+      expect(proposed.sessionKey).not.toContain('\r');
+      expect(proposed.sessionKey).not.toContain('\n');
+      expect(proposed.sessionKey).toHaveLength(128);
     });
   });
 

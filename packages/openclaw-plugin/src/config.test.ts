@@ -61,6 +61,38 @@ describe('resolveConfig', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('write_file, bash_exec'));
   });
 
+  it('sanitizes header-backed config values before they reach HTTP requests', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const config = resolveConfig({
+      ...validRaw,
+      workspaceId: 'ws-1\r\nx-evil: 1',
+      bearerToken: 'tok-1\0\r\nx-evil: 1',
+      tenantId: 'tenant-1\nx-evil: 1',
+    });
+
+    expect(config.workspaceId).toBe('ws-1x-evil: 1');
+    expect(config.bearerToken).toBe('tok-1x-evil: 1');
+    expect(config.tenantId).toBe('tenant-1x-evil: 1');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.workspaceId contained'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.bearerToken contained'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('config.tenantId contained'));
+  });
+
+  it('logs non-string and control-character bypass entries without retaining them', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const config = resolveConfig({
+      ...validRaw,
+      bypassToolNames: ['portarium_get_run', 'write_file\r\nx-evil: 1', 42, null],
+    });
+
+    expect(config.bypassToolNames).toEqual(['portarium_get_run']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('write_filex-evil: 1'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('42'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('null'));
+  });
+
   it('does not retain malicious bypassToolNames that target normal tools', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 

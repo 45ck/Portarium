@@ -24,6 +24,7 @@ describe('Experiment C approval lifecycle script', () => {
     const resultsDir = mkdtempSync(join(tmpdir(), 'portarium-exp-c-'));
     tempDirs.push(resultsDir);
 
+    // @ts-expect-error The experiment runner is a checked .mjs script.
     const mod = await import('../../experiments/exp-C-approval-lifecycle/run.mjs');
     const outcome = await mod.runExperimentC({
       resultsDir,
@@ -38,13 +39,13 @@ describe('Experiment C approval lifecycle script', () => {
     );
 
     const trace = outcome.trace as Record<string, any>;
-    expect(trace.proposal.body.toolName).toBe('write:file');
-    expect(trace.approvalList.pendingApproval.toolName).toBe('write:file');
-    expect(trace.execution.body.approvedByHuman).toBe(true);
-    expect(trace.run.body.status).toBe('Succeeded');
+    expect(trace['proposal'].body.toolName).toBe('write:file');
+    expect(trace['approvalList'].pendingApproval.toolName).toBe('write:file');
+    expect(trace['execution'].body.approvedByHuman).toBe(true);
+    expect(trace['run'].body.status).toBe('Succeeded');
 
     const categories = new Set(
-      trace.evidence.body.evidence.map((entry: { category: string }) => entry.category),
+      trace['evidence'].body.evidence.map((entry: { category: string }) => entry.category),
     );
     expect(categories).toEqual(new Set(['Plan', 'Approval', 'Action', 'System']));
   });

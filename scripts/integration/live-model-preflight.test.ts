@@ -25,7 +25,7 @@ describe('live model experiment preflight', () => {
   });
 
   it('auto-detects OpenAI credentials and records provider metadata without the secret', async () => {
-    const calls: { input: string | URL; init?: RequestInit }[] = [];
+    const calls: { input: Parameters<typeof fetch>[0]; init: RequestInit | undefined }[] = [];
     const fetchImpl: typeof fetch = async (input, init) => {
       calls.push({ input, init });
       return new Response(JSON.stringify({ id: 'cmpl-preflight' }), { status: 200 });
