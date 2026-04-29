@@ -251,6 +251,34 @@ describe('PortariumClient', () => {
       expect(result).toEqual({ status: 'expired' });
     });
 
+    it('returns executed status', async () => {
+      const client = new PortariumClient(makeConfig(), mockFetch({ status: 'Executed' }));
+      const result = await client.pollApproval('appr-1');
+      expect(result).toEqual({ status: 'executed' });
+    });
+
+    it('returns request_changes status with reason', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch({ status: 'RequestChanges', rationale: 'Needs clearer evidence' }),
+      );
+      const result = await client.pollApproval('appr-1');
+      expect(result).toEqual({
+        status: 'request_changes',
+        reason: 'Needs clearer evidence',
+      });
+    });
+
+    it('returns error when polling response content-type is not application/json', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch('<html>Login</html>', 200, 'text/html'),
+      );
+      const result = await client.pollApproval('appr-1');
+      expect(result).toMatchObject({ status: 'error' });
+      expect((result as { reason: string }).reason).toContain('text/html');
+    });
+
     it('returns error on HTTP failure', async () => {
       const client = new PortariumClient(makeConfig(), mockFetch({}, 503));
       const result = await client.pollApproval('appr-1');

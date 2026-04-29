@@ -33,6 +33,7 @@ export type ApprovalPollResult =
   | { readonly status: 'pending' }
   | { readonly status: 'expired' }
   | { readonly status: 'executed' }
+  | { readonly status: 'request_changes'; readonly reason: string }
   | { readonly status: 'error'; readonly reason: string };
 
 export interface RunStatus {
@@ -308,6 +309,12 @@ function parseApprovalStatus(body: Record<string, unknown>): ApprovalPollResult 
     };
   if (status === 'expired') return { status: 'expired' };
   if (status === 'executed') return { status: 'executed' };
+  if (status === 'requestchanges' || status === 'request_changes') {
+    return {
+      status: 'request_changes',
+      reason: String(body.reason ?? body.rationale ?? 'Operator requested changes'),
+    };
+  }
   if (status === 'pending') return { status: 'pending' };
   return { status: 'error', reason: `Unknown approval status: ${String(body.status)}` };
 }
