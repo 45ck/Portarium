@@ -9,71 +9,26 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  runLiveModelPreflight,
-  type LiveModelPreflightOptions,
-  type LiveModelPreflightResult,
-} from './live-model-preflight.js';
+import { runLiveModelPreflight } from './live-model-preflight.js';
 
-export interface ExperimentContext {
-  /** Experiment name (kebab-case). */
-  readonly name: string;
-  /** Absolute path to the experiment's results/ directory. */
-  readonly resultsDir: string;
-  /** Live model provider preflight result, when the experiment requests one. */
-  readonly liveModelPreflight?: LiveModelPreflightResult;
-  /** Mutable bag for passing state between lifecycle phases. */
-  readonly state: Record<string, unknown>;
-}
-
-export interface AssertionResult {
-  readonly label: string;
-  readonly passed: boolean;
-  readonly detail?: string;
-}
-
-export interface ExperimentOutcome {
-  readonly experiment: string;
-  readonly timestamp: string;
-  readonly outcome: 'confirmed' | 'refuted' | 'inconclusive' | 'skipped';
-  readonly duration_ms: number;
-  readonly assertions: readonly AssertionResult[];
-  readonly liveModelPreflight?: LiveModelPreflightResult;
-  readonly notes?: string;
-  readonly skipReason?: string;
-  readonly error?: string;
-}
-
-export interface ExperimentDefinition {
-  readonly name: string;
-  readonly hypothesis?: string;
-  readonly resultsDir?: string;
-  readonly liveModelPreflight?: true | LiveModelPreflightOptions;
-
-  setup?(ctx: ExperimentContext): Promise<void>;
-  execute(ctx: ExperimentContext): Promise<void>;
-  verify(ctx: ExperimentContext): Promise<readonly AssertionResult[]>;
-  teardown?(ctx: ExperimentContext): Promise<void>;
-}
-
-export async function runExperiment(definition: ExperimentDefinition): Promise<ExperimentOutcome> {
+export async function runExperiment(definition) {
   const resultsDir =
     definition.resultsDir ??
     join(dirname(fileURLToPath(import.meta.url)), '..', definition.name, 'results');
 
   mkdirSync(resultsDir, { recursive: true });
 
-  let ctx: ExperimentContext = {
+  let ctx = {
     name: definition.name,
     resultsDir,
     state: {},
   };
 
   const start = Date.now();
-  let assertions: readonly AssertionResult[] = [];
-  let errorMessage: string | undefined;
-  let skipReason: string | undefined;
-  let liveModelPreflight: LiveModelPreflightResult | undefined;
+  let assertions = [];
+  let errorMessage;
+  let skipReason;
+  let liveModelPreflight;
 
   try {
     if (definition.liveModelPreflight) {
@@ -102,7 +57,7 @@ export async function runExperiment(definition: ExperimentDefinition): Promise<E
       await definition.execute(ctx);
       assertions = await definition.verify(ctx);
     }
-  } catch (err: unknown) {
+  } catch (err) {
     errorMessage = err instanceof Error ? err.message : String(err);
   } finally {
     try {
@@ -116,7 +71,7 @@ export async function runExperiment(definition: ExperimentDefinition): Promise<E
 
   const duration_ms = Date.now() - start;
   const allPassed = assertions.length > 0 && assertions.every((a) => a.passed);
-  const outcome: ExperimentOutcome['outcome'] = skipReason
+  const outcome = skipReason
     ? 'skipped'
     : errorMessage
       ? 'inconclusive'
@@ -124,7 +79,7 @@ export async function runExperiment(definition: ExperimentDefinition): Promise<E
         ? 'confirmed'
         : 'refuted';
 
-  const result: ExperimentOutcome = {
+  const result = {
     experiment: definition.name,
     timestamp: new Date().toISOString(),
     outcome,
@@ -144,6 +99,6 @@ export async function runExperiment(definition: ExperimentDefinition): Promise<E
 /**
  * Helper to create an assertion result.
  */
-export function assert(label: string, passed: boolean, detail?: string): AssertionResult {
+export function assert(label, passed, detail) {
   return { label, passed, ...(detail ? { detail } : {}) };
 }
