@@ -26,4 +26,9 @@ describe('approval navigation targets', () => {
   it('ignores links that do not identify an approval', () => {
     expect(parseApprovalNavigationTarget('/runs/run-1', 'https://app.test')).toBeNull();
   });
+
+  it('ignores malformed encoded approval paths without throwing', () => {
+    expect(() => parseApprovalNavigationTarget('/approvals/%', 'https://app.test')).not.toThrow();
+    expect(parseApprovalNavigationTarget('/approvals/%', 'https://app.test')).toBeNull();
+  });
 });

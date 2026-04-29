@@ -51,21 +51,29 @@ const VAPID_PUBLIC_KEY = import.meta.env['VITE_VAPID_PUBLIC_KEY'] as string | un
 
 const DEVICE_TOKEN_ENDPOINT = '/api/notifications/device-tokens';
 
+function payloadString(
+  payload: Record<string, unknown> | undefined,
+  key: string,
+): string | undefined {
+  const value = payload?.[key];
+  return typeof value === 'string' ? value.trim() : undefined;
+}
+
 export function getNotificationTargetUrl(
-  payload: Record<string, string | undefined> | undefined,
+  payload: Record<string, unknown> | undefined,
   origin = typeof window === 'undefined' ? 'https://portarium.io' : window.location.origin,
 ): string {
-  const explicitUrl = payload?.['url']?.trim();
+  const explicitUrl = payloadString(payload, 'url');
   if (explicitUrl) {
     try {
       const url = new URL(explicitUrl, origin);
       if (url.origin === origin) return `${url.pathname}${url.search}${url.hash}`;
     } catch {
-      if (explicitUrl.startsWith('/')) return explicitUrl;
+      if (explicitUrl.startsWith('/') && !explicitUrl.startsWith('//')) return explicitUrl;
     }
   }
 
-  const approvalId = payload?.['approvalId']?.trim();
+  const approvalId = payloadString(payload, 'approvalId');
   if (approvalId) {
     const search = new URLSearchParams({
       focus: approvalId,
@@ -251,7 +259,7 @@ export async function onForegroundNotification(
 }
 
 export async function onNotificationActionPerformed(
-  handler: (payload: Record<string, string>) => void,
+  handler: (payload: Record<string, unknown>) => void,
 ): Promise<() => void> {
   if (!isNative())
     return () => {

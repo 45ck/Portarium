@@ -14,15 +14,23 @@ function parseUrl(input: string, baseOrigin: string): URL | null {
   }
 }
 
+function decodePathSegment(value: string): string | null {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return null;
+  }
+}
+
 function approvalIdFromPath(url: URL): string | null {
   if (url.protocol === 'portarium:' && url.hostname === 'approvals') {
-    return decodeURIComponent(url.pathname.replace(/^\/+/, '').split('/')[0] ?? '').trim() || null;
+    return decodePathSegment(url.pathname.replace(/^\/+/, '').split('/')[0] ?? '')?.trim() || null;
   }
 
   const parts = url.pathname.split('/').filter(Boolean);
   const approvalsIndex = parts.indexOf('approvals');
   if (approvalsIndex === -1) return null;
-  return decodeURIComponent(parts[approvalsIndex + 1] ?? '').trim() || null;
+  return decodePathSegment(parts[approvalsIndex + 1] ?? '')?.trim() || null;
 }
 
 export function parseApprovalNavigationTarget(
