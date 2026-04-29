@@ -54,3 +54,18 @@ Failure handling:
 | `skipped`        | `outcome: "skipped"` for missing credentials                                                                                            |
 | `failed`         | `outcome: "inconclusive"` for rejected credentials, quota/rate limits, missing models, network errors, or unexpected provider responses |
 | `ready`          | The experiment proceeds to setup, execute, and verify                                                                                   |
+
+## Iteration 2 Suite
+
+Second-wave business-scale experiments are defined in
+`experiments/iteration-2/suite.manifest.json`. These runs must keep prior
+experiment bundles immutable and write each attempt to a new directory under:
+
+```text
+experiments/iteration-2/results/<scenario-id>/<attempt-id>/
+```
+
+Each completed attempt should include `outcome.json`, `evidence-summary.json`,
+`queue-metrics.json`, and `report.md`. Live LLM-backed scenarios still use the
+same preflight gate above; missing credentials should skip the attempt rather
+than producing partial evidence.

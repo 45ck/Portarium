@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "iteration-2-governed-business-scale",
+  "iteration": 2,
+  "beadId": "bead-1040",
+  "status": "planned",
+  "purpose": "Second-wave governed experiments for delayed approvals, operator handoff, concurrent sessions, queue pressure, and evidence completeness.",
+  "immutablePredecessors": [
+    "experiments/exp-A-transparency",
+    "experiments/exp-B-fail-closed",
+    "experiments/exp-C-approval-lifecycle"
+  ],
+  "resultPolicy": {
+    "appendOnly": true,
+    "resultRoot": "experiments/iteration-2/results",
+    "attemptDirectoryPattern": "<scenario-id>/<attempt-id>",
+    "requiredArtifacts": [
+      "outcome.json",
+      "evidence-summary.json",
+      "queue-metrics.json",
+      "report.md"
+    ]
+  },
+  "requiredMetricNames": [
+    "approval_count_by_tier",
+    "approval_count_by_session",
+    "pending_age_ms_p50",
+    "pending_age_ms_p95",
+    "pending_age_ms_max",
+    "resume_latency_ms",
+    "blocked_duration_ms",
+    "queue_depth_over_time",
+    "denial_count",
+    "request_changes_count",
+    "escalation_count",
+    "expiry_count",
+    "duplicate_execution_count",
+    "evidence_completeness_count",
+    "restart_count",
+    "successful_resume_count"
+  ],
+  "scenarios": [
+    {
+      "scenarioId": "growth-studio-openclaw-live-v2",
+      "beadId": "bead-1042",
+      "status": "planned",
+      "blockedBy": ["bead-1041", "bead-1037"],
+      "contractPath": "experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/README.md",
+      "comparesTo": "growth-studio-openclaw-live",
+      "validates": [
+        "overnight approvals",
+        "delayed resume",
+        "exactly-once execution after approval",
+        "continuous evidence chain"
+      ]
+    },
+    {
+      "scenarioId": "micro-saas-agent-stack-v2",
+      "beadId": "bead-1043",
+      "status": "planned",
+      "blockedBy": ["bead-1041"],
+      "contractPath": "experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/README.md",
+      "comparesTo": "micro-saas-agent-stack",
+      "validates": [
+        "operator team handoff",
+        "separation of duties",
+        "out-of-order decisions",
+        "queue isolation after denial"
+      ]
+    },
+    {
+      "scenarioId": "openclaw-concurrent-sessions",
+      "beadId": "bead-1044",
+      "status": "planned",
+      "blockedBy": ["bead-1041", "bead-1037"],
+      "contractPath": "experiments/iteration-2/scenarios/openclaw-concurrent-sessions/README.md",
+      "comparesTo": "exp-A-transparency",
+      "validates": [
+        "multiple simultaneous governed sessions",
+        "session-scoped approvals",
+        "mixed-order decisions",
+        "concurrency latency"
+      ]
+    },
+    {
+      "scenarioId": "approval-backlog-soak",
+      "beadId": "bead-1045",
+      "status": "planned",
+      "blockedBy": ["bead-1041"],
+      "contractPath": "experiments/iteration-2/scenarios/approval-backlog-soak/README.md",
+      "comparesTo": "scenario-observability-pack",
+      "validates": [
+        "approval backlog pressure",
+        "escalation independence",
+        "expiry independence",
+        "queue degradation signals"
+      ]
+    }
+  ]
+}

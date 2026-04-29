@@ -37,7 +37,7 @@ Substantial core functionality is already present:
 
 - Domain models, parsers, contracts, and tests exist for the main governance objects.
 - Approval and agent-action flows are implemented and covered by tests.
-- OpenClaw/plugin integration exists for governed tool calls.
+- An example OpenClaw/plugin integration exists for governed tool calls.
 - Cockpit has working operator and approval surfaces.
 - Postgres stores, migrations, health checks, rate limiting, metrics, and deployment scaffolding exist.
 - TypeScript SDK coverage has been expanded.
@@ -63,7 +63,7 @@ The mission-control-ui research, theme convergence, three-panel engineering shel
 
 ### Prompt-Language Workflows
 
-Prompt-language exploration for governed coding workflows is an experimental future layer. It should remain separate until the core governance model is stable and the Growth Studio evidence gate proves the need.
+Prompt-language exploration for governed coding workflows is an experimental future layer. It should remain separate until the core governance model is stable and there is clear evidence of need.
 
 ### Pilot And Operator Research
 

@@ -54,7 +54,7 @@ The core product is successful when automated tests prove that agents can route 
 
 - **Policy gates for agents**: `Auto`, `Assisted`, `Human-approve`, and `Manual-only`
 - **Human approval flow**: rich context before risky actions run
-- **Mobile-friendly review**: approve or reject agent decisions from the Cockpit reference UI
+- **Mobile-friendly review path**: approve or reject agent decisions from the Cockpit reference UI; hardening and polish continue
 - **Evidence trail**: proposed action, decision, execution result, and audit record stay linked
 - **Controlled execution**: adapters and action runners call external systems instead of agents using unchecked credentials
 - **SDK and API**: agents, plugins, and tools can integrate through stable interfaces
@@ -75,7 +75,11 @@ Portarium sits between agents and the systems they want to touch:
 4. Approved actions execute through a controlled runner or adapter.
 5. The decision, evidence, and result are recorded for review and testing.
 
-## Showcase
+## Governed Action Examples
+
+These examples demonstrate the core governance loop. They are not required
+components of Portarium, and the business showcase ideas behind them are tracked
+as future work unless promoted into release specs.
 
 ### Cockpit Approvals
 
@@ -152,7 +156,7 @@ Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
 
 Portarium is early and actively built. The core control-plane foundations are present: domain contracts, approval flows, policy tiers, evidence, OpenClaw/plugin integration, SDK surfaces, Cockpit reference UI, tests, migrations, and production scaffolding.
 
-Remaining core work is mostly production hardening, security closeout, release hygiene, mobile-friendly Cockpit approval review, and keeping the tested agent-governance loop reliable. Larger demos, Growth Studio, mission-control UI, prompt-language experiments, and pilot research are future work, not core blockers.
+Remaining core work is mostly production hardening, security closeout, release hygiene, mobile Cockpit approval polish, live/eval proof, and keeping the tested agent-governance loop reliable. Larger demos, Growth Studio, mission-control UI, prompt-language experiments, and pilot research are future work, not core blockers.
 
 See [project scope](docs/project-scope.md) and [roadmap](docs/roadmap.md).
 

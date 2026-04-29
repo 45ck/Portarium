@@ -6,6 +6,15 @@ Live validation scripts that test Portarium's governance pipeline end-to-end.
 
 This workspace provides a structured environment for running experiments against a live (or emulated) Portarium instance. Each experiment validates a specific hypothesis about system behaviour -- agent action governance, approval flows, policy enforcement, evidence integrity, etc.
 
+## Core vs Future Work
+
+Experiments validate hypotheses about the core governance loop. They are not
+automatically product surface or release scope. A scenario becomes core only when
+it proves that Portarium can safely govern agent Actions, approvals, policy,
+evidence, or controlled execution in a way the release depends on. Business
+showcases, media generation, Growth Studio, and other demos remain future work
+unless they are promoted into specs and tested release gates.
+
 ## Directory structure
 
 ```
@@ -18,6 +27,7 @@ experiments/
     results/           Output artefacts (logs, screenshots, JSON snapshots)
       .gitkeep
   <experiment-name>/   Each experiment lives in its own directory
+  iteration-2/         Versioned suite contract for the second governed wave
 ```
 
 ## Creating an experiment
@@ -63,6 +73,16 @@ experiments/
 - Do not import from `src/` directly -- use the Portarium SDK or HTTP API.
 - Results in `results/` are gitignored except `.gitkeep`.
 - Tag experiments with the bead that created them in `hypothesis.md`.
+- Never overwrite a completed result bundle. For reruns or second attempts, use a
+  new versioned attempt directory and compare it with the earlier run.
+
+## Versioned Suites
+
+Iteration 2 lives under `experiments/iteration-2/`. Its manifest defines the
+required scenarios, metric names, immutable predecessor directories, and
+append-only result layout. The scaffold is intentionally separate from the live
+scenario implementations so dependent Beads can add each runnable experiment
+without changing earlier evidence.
 
 ## Result capture format
 

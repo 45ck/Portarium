@@ -1,0 +1,53 @@
+# Iteration 2 Governed Experiment Suite v1
+
+## Scope
+
+The Iteration 2 suite defines how Portarium validates longer-running governed
+agent work after the initial live OpenClaw loop. It covers experiment planning,
+versioning, metric names, and result evidence. It does not claim the live runs
+have completed.
+
+## Requirements
+
+1. Iteration 1 experiment directories and result bundles are immutable.
+2. Iteration 2 has a suite manifest at
+   `experiments/iteration-2/suite.manifest.json`.
+3. Every planned Iteration 2 scenario has a stable `scenarioId`, owner Bead, and
+   scenario contract document.
+4. Every rerun writes to a new attempt directory under
+   `experiments/iteration-2/results/<scenario-id>/<attempt-id>/`.
+5. Attempts must not overwrite previous results.
+6. Live LLM or provider-backed runs must use the live model preflight from
+   `live-model-experiment-preflight-v1`.
+7. Every completed scenario report must reference queue, timing, resume,
+   duplicate-execution, and evidence-completeness metrics by the manifest names.
+8. Planned scenarios remain marked `planned` until their owner Beads add runnable
+   experiment scripts and result reports.
+
+## Required Scenario Set
+
+| Scenario                         | Owner Bead  | Purpose                                  |
+| -------------------------------- | ----------- | ---------------------------------------- |
+| `growth-studio-openclaw-live-v2` | `bead-1042` | delayed approval and exact resume        |
+| `micro-saas-agent-stack-v2`      | `bead-1043` | team handoff and out-of-order decisions  |
+| `openclaw-concurrent-sessions`   | `bead-1044` | concurrent governed sessions             |
+| `approval-backlog-soak`          | `bead-1045` | backlog pressure, escalation, and expiry |
+
+## Required Metric Names
+
+- `approval_count_by_tier`
+- `approval_count_by_session`
+- `pending_age_ms_p50`
+- `pending_age_ms_p95`
+- `pending_age_ms_max`
+- `resume_latency_ms`
+- `blocked_duration_ms`
+- `queue_depth_over_time`
+- `denial_count`
+- `request_changes_count`
+- `escalation_count`
+- `expiry_count`
+- `duplicate_execution_count`
+- `evidence_completeness_count`
+- `restart_count`
+- `successful_resume_count`

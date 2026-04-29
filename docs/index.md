@@ -22,7 +22,7 @@ These docs focus on the core tested governance loop.
 4. [Evidence trace](tutorials/evidence-trace.md) - inspect evidence from a governed action
 5. [Quality gates](how-to/run-quality-gates.md) - local verification commands
 6. [CI and quality reference](reference/ci-and-quality.md) - what the gates cover
-7. [Scenario traceability](internal/governance/scenario-traceability-matrix.md) - internal test coverage mapping
+7. [Scenario traceability](internal/governance/scenario-traceability-matrix.md) - maintainer-only test coverage mapping
 
 ## Run It Locally
 
