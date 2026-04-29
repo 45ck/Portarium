@@ -57,6 +57,9 @@ interface ApprovalsSearch extends PolicyStudioReturnSearch {
 function ApprovalsPage() {
   const search = Route.useSearch();
   const policyLinkedMode = search.from === 'policy-studio';
+  const singleCaseApprovalId =
+    search.from === 'notification' && search.focus ? search.focus : undefined;
+  const singleCaseMode = singleCaseApprovalId !== undefined;
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
@@ -142,20 +145,32 @@ function ApprovalsPage() {
     changesRequested: 0,
     skipped: 0,
   });
+  const [singleCaseResult, setSingleCaseResult] = useState<TriageAction | null>(null);
 
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const pendingActionRef = useRef<PendingAction | null>(null);
   pendingActionRef.current = pendingAction;
 
-  const triageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
+  const singleCaseApproval = singleCaseApprovalId
+    ? (items.find((approval) => approval.approvalId === singleCaseApprovalId) ?? null)
+    : null;
+  const singleCasePendingApproval =
+    singleCaseApproval?.status === 'Pending' ? singleCaseApproval : null;
+  const genericTriageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
+  const triageQueue = singleCaseMode
+    ? singleCasePendingApproval && !triageSkipped.has(singleCasePendingApproval.approvalId)
+      ? [singleCasePendingApproval]
+      : []
+    : genericTriageQueue;
   const [selectedApprovalId, setSelectedApprovalId] = useState<string | null>(search.focus ?? null);
 
-  const currentApproval =
-    (selectedApprovalId
-      ? triageQueue.find((approval) => approval.approvalId === selectedApprovalId)
-      : null) ??
-    triageQueue[0] ??
-    null;
+  const currentApproval = singleCaseMode
+    ? (triageQueue[0] ?? null)
+    : ((selectedApprovalId
+        ? triageQueue.find((approval) => approval.approvalId === selectedApprovalId)
+        : null) ??
+      triageQueue[0] ??
+      null);
   const focusedApproval = search.focus
     ? (items.find((approval) => approval.approvalId === search.focus) ?? null)
     : currentApproval;
@@ -190,6 +205,10 @@ function ApprovalsPage() {
   );
 
   useEffect(() => {
+    if (singleCaseMode) {
+      setSelectedApprovalId(singleCasePendingApproval?.approvalId ?? null);
+      return;
+    }
     if (triageQueue.length === 0) {
       setSelectedApprovalId(null);
       return;
@@ -197,14 +216,19 @@ function ApprovalsPage() {
     if (!selectedApprovalId || !triageQueue.some((a) => a.approvalId === selectedApprovalId)) {
       setSelectedApprovalId(triageQueue[0]!.approvalId);
     }
-  }, [triageQueue, selectedApprovalId]);
+  }, [singleCaseMode, singleCasePendingApproval?.approvalId, triageQueue, selectedApprovalId]);
 
   useEffect(() => {
+    setSingleCaseResult(null);
+  }, [singleCaseApprovalId]);
+
+  useEffect(() => {
+    if (singleCaseMode) return;
     if (!search.focus) return;
     if (triageQueue.some((approval) => approval.approvalId === search.focus)) {
       setSelectedApprovalId(search.focus);
     }
-  }, [search.focus, triageQueue]);
+  }, [search.focus, singleCaseMode, triageQueue]);
 
   const currentIndex = currentApproval
     ? Math.max(
@@ -212,6 +236,8 @@ function ApprovalsPage() {
         pendingItems.findIndex((a) => a.approvalId === currentApproval.approvalId),
       )
     : 0;
+  const displayIndex = singleCaseMode ? 0 : currentIndex;
+  const displayTotal = singleCaseMode ? triageQueue.length : pendingItems.length;
 
   function handleTriageAction(approvalId: string, action: TriageAction, rationale: string) {
     if (pendingActionRef.current) {
@@ -221,7 +247,7 @@ function ApprovalsPage() {
       setPendingAction(null);
     }
 
-    setActionHistory((prev) => ({ ...prev, [currentIndex]: action }));
+    setActionHistory((prev) => ({ ...prev, [displayIndex]: action }));
     setSessionStats((prev) => ({
       total: prev.total + 1,
       approved: prev.approved + (action === 'Approved' ? 1 : 0),
@@ -236,10 +262,13 @@ function ApprovalsPage() {
     // outgoing item — and also handles the initial null selectedApprovalId.
     const queueIds = triageQueue.map((item) => item.approvalId);
     const idx = queueIds.indexOf(approvalId);
-    const nextId = queueIds[idx + 1] ?? queueIds[idx - 1] ?? null;
+    const nextId = singleCaseMode ? null : (queueIds[idx + 1] ?? queueIds[idx - 1] ?? null);
 
     setTriageSkipped((prev) => new Set([...prev, approvalId]));
     setSelectedApprovalId(nextId);
+    if (singleCaseMode && approvalId === singleCaseApprovalId) {
+      setSingleCaseResult(action);
+    }
 
     if (action === 'Skip') return;
 
@@ -259,7 +288,7 @@ function ApprovalsPage() {
       rationale,
       toastId,
       timerId,
-      queueIndex: currentIndex,
+      queueIndex: displayIndex,
     };
     setPendingAction(pa);
 
@@ -280,6 +309,9 @@ function ApprovalsPage() {
     clearTimeout(target.timerId);
     toast.dismiss(target.toastId);
     setPendingAction(null);
+    if (singleCaseMode && target.approvalId === singleCaseApprovalId) {
+      setSingleCaseResult(null);
+    }
 
     setTriageSkipped((prev) => {
       const next = new Set(prev);
@@ -328,6 +360,107 @@ function ApprovalsPage() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       />
+    );
+  } else if (singleCaseMode && !singleCaseApproval) {
+    triageChild = (
+      <motion.div
+        key="single-missing"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.25 }}
+      >
+        <EmptyState
+          title="Approval not found"
+          description={`Approval ${singleCaseApprovalId} is not available in this workspace. It may have been removed, expired, or opened from an outdated link.`}
+          icon={<AlertCircle className="h-12 w-12" />}
+          action={
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/approvals">Open approval queue</Link>
+            </Button>
+          }
+        />
+      </motion.div>
+    );
+  } else if (singleCaseMode && singleCaseApproval?.status !== 'Pending') {
+    triageChild = (
+      <motion.div
+        key="single-decided"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.25 }}
+      >
+        <EmptyState
+          title="Approval already decided"
+          description={`Approval ${singleCaseApproval.approvalId} is ${singleCaseApproval.status}. This deep link will not advance to another queued approval.`}
+          icon={<CheckSquare className="h-12 w-12" />}
+          action={
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/approvals">Open approval queue</Link>
+            </Button>
+          }
+        />
+      </motion.div>
+    );
+  } else if (singleCaseMode && singleCaseResult) {
+    const isSkip = singleCaseResult === 'Skip';
+    const title = isSkip ? 'Approval skipped' : 'Approval handled';
+    const description = isSkip
+      ? `Approval ${singleCaseApprovalId} was skipped. This focused review is complete and will not advance to another queued approval.`
+      : `Decision ${singleCaseResult} was recorded for ${singleCaseApprovalId}. This focused review is complete and will not advance to another queued approval.`;
+    triageChild = (
+      <motion.div
+        key="single-complete"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.25 }}
+      >
+        <EmptyState
+          title={title}
+          description={description}
+          icon={<CheckSquare className="h-12 w-12" />}
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              {pendingAction ? (
+                <Button variant="outline" size="sm" onClick={() => handleUndo()}>
+                  Undo decision
+                </Button>
+              ) : null}
+              {isSkip ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (singleCaseApprovalId) {
+                      setTriageSkipped((prev) => {
+                        const next = new Set(prev);
+                        next.delete(singleCaseApprovalId);
+                        return next;
+                      });
+                      setSelectedApprovalId(singleCaseApprovalId);
+                      setSingleCaseResult(null);
+                      setSessionStats({
+                        total: 0,
+                        approved: 0,
+                        denied: 0,
+                        changesRequested: 0,
+                        skipped: 0,
+                      });
+                    }
+                  }}
+                >
+                  Review this approval
+                </Button>
+              ) : null}
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/approvals">Open approval queue</Link>
+              </Button>
+            </div>
+          }
+        />
+      </motion.div>
     );
   } else if (!currentApproval || triageQueue.length === 0) {
     triageChild =
@@ -403,8 +536,8 @@ function ApprovalsPage() {
         <ApprovalTriageDeck
           key={currentApproval.approvalId}
           approval={currentApproval}
-          index={currentIndex}
-          total={pendingItems.length}
+          index={displayIndex}
+          total={displayTotal}
           hasMore={triageQueue.length > 1}
           onAction={handleTriageAction}
           loading={isFlushing}
@@ -451,13 +584,36 @@ function ApprovalsPage() {
     );
   }
 
+  const notificationPendingCount = singleCaseMode ? triageQueue.length : pendingItems.length;
   const showNotification =
-    search.from === 'notification' || (!policyLinkedMode && pendingItems.length > 0);
+    notificationPendingCount > 0 &&
+    (search.from === 'notification' ||
+      (!policyLinkedMode && !singleCaseMode && pendingItems.length > 0));
   const showOfflineSyncBanner = !policyLinkedMode || offlineMeta.isOffline || pendingCount > 0;
 
   return (
     <div className="p-6 space-y-4">
-      {showNotification && <NotificationBanner pendingCount={pendingItems.length} />}
+      {singleCaseMode ? (
+        <motion.div
+          className="rounded-lg border border-primary/30 bg-primary/5 p-4"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="space-y-1">
+            <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+              Focused approval review
+            </div>
+            <div className="text-sm font-medium">
+              {singleCaseApprovalId ? `Reviewing ${singleCaseApprovalId}` : 'Reviewing approval'}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              This mobile link reviews one Approval only. Finishing it will not advance to another
+              item in the queue.
+            </p>
+          </div>
+        </motion.div>
+      ) : null}
+      {showNotification ? <NotificationBanner pendingCount={notificationPendingCount} /> : null}
       {search.from === 'policy-studio' ? (
         <motion.div
           className="rounded-lg border border-primary/30 bg-primary/5 p-4"
@@ -487,11 +643,13 @@ function ApprovalsPage() {
         </motion.div>
       ) : null}
       <PageHeader
-        title="Approvals"
+        title={singleCaseMode ? 'Approval Review' : 'Approvals'}
         description={
-          policyLinkedMode
-            ? 'Focused review for the live case that led to the staged Policy draft.'
-            : undefined
+          singleCaseMode
+            ? 'Single-case review opened from a notification or deep link.'
+            : policyLinkedMode
+              ? 'Focused review for the live case that led to the staged Policy draft.'
+              : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
       />
@@ -503,7 +661,7 @@ function ApprovalsPage() {
           pendingOutboxCount={pendingCount}
         />
       ) : null}
-      {showDemo && !policyLinkedMode && (
+      {showDemo && !policyLinkedMode && !singleCaseMode && (
         <motion.div
           className="flex items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 px-3 py-2"
           initial={{ opacity: 0, height: 0 }}
@@ -533,10 +691,12 @@ function ApprovalsPage() {
       {currentApproval && triageQueue.length > 0 ? (
         <div
           className={
-            policyLinkedMode ? 'grid gap-4' : 'grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]'
+            policyLinkedMode || singleCaseMode
+              ? 'grid gap-4'
+              : 'grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]'
           }
         >
-          {!policyLinkedMode ? (
+          {!policyLinkedMode && !singleCaseMode ? (
             <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
               <ApprovalListPanel
                 items={triageQueue}

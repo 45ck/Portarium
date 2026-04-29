@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
@@ -251,10 +251,116 @@ describe('Approvals triage page', () => {
       `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
     );
 
+    expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
     expect(await screen.findByText(/waiting for your approval/i)).toBeTruthy();
-    expect(await screen.findByText(`2 of ${ALL_PENDING.length} pending`)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     const matchingPrompts = await screen.findAllByText(focused.prompt, { exact: false });
     expect(matchingPrompts.length).toBeGreaterThan(0);
+  });
+
+  it('opens direct approval links as a single-case notification review', async () => {
+    const focused = ALL_PENDING[1]!;
+
+    await renderApprovalsRoute(`/approvals/${encodeURIComponent(focused.approvalId)}`);
+
+    expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+  });
+
+  it('does not advance to another approval after skipping a notification deep link', async () => {
+    const firstPending = ALL_PENDING[0]!;
+    const focused = ALL_PENDING[1]!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+
+    await userEvent.click(screen.getByRole('button', { name: /skip/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/approval skipped/i)).toBeTruthy();
+      },
+      { timeout: 2000 },
+    );
+    expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+    expect(screen.queryByText(firstPending.prompt, { exact: false })).toBeNull();
+  });
+
+  it.each([
+    {
+      label: 'approving',
+      action: async () => {
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
+      },
+    },
+    {
+      label: 'denying',
+      action: async () => {
+        await userEvent.type(screen.getByLabelText(/decision rationale/i), 'Reject risky spend');
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /deny/i }));
+      },
+    },
+    {
+      label: 'requesting changes',
+      action: async () => {
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /changes/i }));
+        fireEvent.change(
+          screen.getByPlaceholderText(/describe what the requestor needs to update/i),
+          { target: { value: 'Attach updated approval evidence' } },
+        );
+        await userEvent.click(screen.getByRole('button', { name: /submit request for changes/i }));
+      },
+    },
+  ])(
+    'does not advance to another approval after $label a notification deep link',
+    async ({ action }) => {
+      const firstPending = ALL_PENDING[0]!;
+      const focused = ALL_PENDING[1]!;
+
+      await renderApprovalsRoute(
+        `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+      );
+
+      expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+
+      await action();
+
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/approval handled/i)).toBeTruthy();
+        },
+        { timeout: 2000 },
+      );
+      expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+      expect(screen.queryByText(firstPending.prompt, { exact: false })).toBeNull();
+    },
+  );
+
+  it('shows an explicit already-decided state for notification deep links', async () => {
+    const decided = APPROVALS.find((a) => a.status === 'Approved')!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(decided.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/approval already decided/i)).toBeTruthy();
+    expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^approve$/i })).toBeNull();
+  });
+
+  it('shows an explicit not-found state for stale notification deep links', async () => {
+    await renderApprovalsRoute('/approvals?focus=apr-missing&from=notification');
+
+    expect(await screen.findByText(/approval not found/i)).toBeTruthy();
+    expect(screen.getByText(/outdated link/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^approve$/i })).toBeNull();
   });
 
   it('disables Approve button when SoD state is blocked-self', async () => {
