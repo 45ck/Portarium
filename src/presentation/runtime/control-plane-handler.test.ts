@@ -133,9 +133,11 @@ describe('createControlPlaneHandler', () => {
     );
     const res = await fetch(`http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1`);
     expect(res.status).toBe(500);
-    const body = (await res.json()) as { type: string; status: number };
+    const body = (await res.json()) as { type: string; status: number; detail: string };
     expect(body.type).toMatch(/internal/);
     expect(body.status).toBe(500);
+    expect(body.detail).not.toContain('boom');
+    expect(body.detail).toMatch(/correlation ID/i);
   });
 
   it('lists workforce members with contract query filters', async () => {

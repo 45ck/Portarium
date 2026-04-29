@@ -253,6 +253,28 @@ describe('POST /agent-actions/:approvalId/execute — wrong approval status', ()
   });
 });
 
+describe('POST /agent-actions/:approvalId/execute — dependency failure hygiene', () => {
+  it('does not leak internal dependency errors in 503 detail', async () => {
+    await startWith({
+      unitOfWork: {
+        execute: async () => {
+          throw new Error('postgres://internal-db:5432 public.agent_action_events insert failed');
+        },
+      },
+    });
+    const res = await fetch(executeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
+    });
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/correlation ID/i);
+    expect(body.detail).not.toContain('postgres://internal-db');
+    expect(body.detail).not.toContain('agent_action_events');
+  });
+});
+
 describe('POST /agent-actions/:approvalId/execute — success', () => {
   it('returns 200 with executionId when action runner succeeds', async () => {
     await startWith();
