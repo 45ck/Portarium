@@ -169,6 +169,25 @@ describe('executeApprovedAgentAction', () => {
     expect(result.error.kind).toBe('Conflict');
   });
 
+  it('returns Forbidden when the executor is the same user who approved the action', async () => {
+    const result = await executeApprovedAgentAction(
+      makeDeps(),
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'approver-1',
+        correlationId: 'corr-exec-1',
+        roles: ['admin', 'operator', 'approver'],
+      }),
+      makeInput(),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected maker-checker forbidden.');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/maker-checker/i);
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+  });
+
   it('returns ValidationFailed for empty workspaceId', async () => {
     const result = await executeApprovedAgentAction(makeDeps(), makeCtx(), {
       ...makeInput(),
