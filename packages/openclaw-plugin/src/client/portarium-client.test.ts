@@ -446,6 +446,53 @@ describe('PortariumClient', () => {
     });
   });
 
+  describe('ping', () => {
+    it('uses injected fetch instead of global fetch', async () => {
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = (async () => {
+        throw new Error('global fetch should not be called');
+      }) as unknown as typeof fetch;
+
+      try {
+        let capturedUrl = '';
+        let capturedHeaders: Record<string, string> = {};
+        const spyFetch = (async (url: string, init: RequestInit) => {
+          capturedUrl = url;
+          capturedHeaders = init.headers as Record<string, string>;
+          return { ok: true, status: 204 };
+        }) as unknown as typeof fetch;
+
+        const client = new PortariumClient(makeConfig(), spyFetch);
+        const result = await client.ping();
+
+        expect(result).toEqual({
+          ok: true,
+          status: 204,
+          portariumUrl: 'https://portarium.test',
+          workspaceId: 'ws-test',
+        });
+        expect(capturedUrl).toBe('https://portarium.test/health');
+        expect(capturedHeaders.authorization).toBe('Bearer tok-test');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    it('returns a failure result when injected fetch throws', async () => {
+      const failFetch = (async () => {
+        throw new Error('ECONNREFUSED');
+      }) as unknown as typeof fetch;
+      const client = new PortariumClient(makeConfig(), failFetch);
+
+      expect(await client.ping()).toEqual({
+        ok: false,
+        error: 'ECONNREFUSED',
+        portariumUrl: 'https://portarium.test',
+        workspaceId: 'ws-test',
+      });
+    });
+  });
+
   describe('lookupCapability', () => {
     it('returns capability info on success', async () => {
       const client = new PortariumClient(

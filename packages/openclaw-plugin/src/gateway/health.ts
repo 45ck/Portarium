@@ -16,25 +16,9 @@ type RegisterGatewayMethodFn = (
 export function registerHealthMethod(
   registerGatewayMethod: RegisterGatewayMethodFn,
   client: PortariumClient,
-  config: PortariumPluginConfig,
+  _config: PortariumPluginConfig,
 ): void {
   registerGatewayMethod('portarium.status', async () => {
-    // Probe Portarium by listing approvals (lightweight read)
-    try {
-      await client.listPendingApprovals();
-      return {
-        status: 'connected',
-        portariumUrl: config.portariumUrl,
-        workspaceId: config.workspaceId,
-        failClosed: config.failClosed,
-      };
-    } catch {
-      return {
-        status: 'unreachable',
-        portariumUrl: config.portariumUrl,
-        workspaceId: config.workspaceId,
-        failClosed: config.failClosed,
-      };
-    }
+    return client.ping();
   });
 }
