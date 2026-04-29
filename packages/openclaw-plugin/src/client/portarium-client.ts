@@ -167,7 +167,7 @@ export class PortariumClient {
   }
 
   public async listPendingApprovals(): Promise<ApprovalSummary[]> {
-    const url = `${this.#config.portariumUrl}/v1/workspaces/${encodeURIComponent(this.#config.workspaceId)}/approvals?status=pending`;
+    const url = `${this.#config.portariumUrl}/v1/workspaces/${encodeURIComponent(this.#config.workspaceId)}/approvals?status=Pending`;
 
     try {
       const response = await this.#fetchImpl(url, {
@@ -183,7 +183,7 @@ export class PortariumClient {
       return items.map((item: Record<string, unknown>) => ({
         approvalId: String(item.id ?? item.approvalId ?? ''),
         toolName: String(item.toolName ?? item.capability ?? 'unknown'),
-        status: (item.status as ApprovalSummary['status']) ?? 'pending',
+        status: parseApprovalSummaryStatus(item.status),
         createdAt: String(item.createdAt ?? ''),
       }));
     } catch {
@@ -350,4 +350,13 @@ function parseApprovalStatus(body: Record<string, unknown>): ApprovalPollResult 
   }
   if (status === 'pending') return { status: 'pending' };
   return { status: 'error', reason: `Unknown approval status: ${String(body.status)}` };
+}
+
+function parseApprovalSummaryStatus(status: unknown): ApprovalSummary['status'] {
+  const normalized = String(status ?? 'pending').toLowerCase();
+
+  if (normalized === 'approved') return 'approved';
+  if (normalized === 'denied') return 'denied';
+  if (normalized === 'expired') return 'expired';
+  return 'pending';
 }

@@ -396,12 +396,35 @@ describe('PortariumClient', () => {
       const client = new PortariumClient(
         makeConfig(),
         mockFetch({
-          items: [{ id: 'a1', toolName: 'bash', status: 'pending', createdAt: '2026-01-01' }],
+          items: [{ id: 'a1', toolName: 'bash', status: 'Pending', createdAt: '2026-01-01' }],
         }),
       );
       const result = await client.listPendingApprovals();
       expect(result).toEqual([
         { approvalId: 'a1', toolName: 'bash', status: 'pending', createdAt: '2026-01-01' },
+      ]);
+    });
+
+    it('normalizes PascalCase approval summary statuses', async () => {
+      const client = new PortariumClient(
+        makeConfig(),
+        mockFetch({
+          items: [
+            { id: 'a1', status: 'Pending' },
+            { id: 'a2', status: 'Approved' },
+            { id: 'a3', status: 'Denied' },
+            { id: 'a4', status: 'Expired' },
+          ],
+        }),
+      );
+
+      const result = await client.listPendingApprovals();
+
+      expect(result.map((approval) => approval.status)).toEqual([
+        'pending',
+        'approved',
+        'denied',
+        'expired',
       ]);
     });
 
@@ -431,7 +454,7 @@ describe('PortariumClient', () => {
       expect(await client.listPendingApprovals()).toEqual([]);
     });
 
-    it('sends correct URL with status=pending query', async () => {
+    it('sends correct URL with status=Pending query', async () => {
       let capturedUrl = '';
       const spyFetch = (async (url: string) => {
         capturedUrl = url;
@@ -441,7 +464,7 @@ describe('PortariumClient', () => {
       const client = new PortariumClient(makeConfig(), spyFetch);
       await client.listPendingApprovals();
       expect(capturedUrl).toBe(
-        'https://portarium.test/v1/workspaces/ws-test/approvals?status=pending',
+        'https://portarium.test/v1/workspaces/ws-test/approvals?status=Pending',
       );
     });
   });
