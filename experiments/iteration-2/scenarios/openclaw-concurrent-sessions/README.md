@@ -2,7 +2,7 @@
 
 Owner Bead: `bead-1044`
 
-Status: planned.
+Status: runnable deterministic concurrency.
 
 ## Scenario
 
@@ -17,3 +17,14 @@ in mixed order across active sessions.
 - throughput and latency are recorded for the selected concurrency level
 - duplicate execution count is zero when approvals resolve near-simultaneously
 - final report states tested concurrency level and observed bottlenecks
+
+## Run
+
+```bash
+node experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs
+```
+
+The default runner uses four deterministic concurrent sessions. It writes
+`outcome.json`, `queue-metrics.json`, `evidence-summary.json`, and `report.md`,
+and records mixed-order decisions, per-session Evidence Artifact chains, output
+bundle paths, throughput, and observed bottlenecks.

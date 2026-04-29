@@ -79,8 +79,9 @@
     {
       "scenarioId": "openclaw-concurrent-sessions",
       "beadId": "bead-1044",
-      "status": "planned",
-      "blockedBy": ["bead-1037"],
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs",
       "contractPath": "experiments/iteration-2/scenarios/openclaw-concurrent-sessions/README.md",
       "comparesTo": "exp-A-transparency",
       "validates": [
