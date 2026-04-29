@@ -106,6 +106,8 @@ function makeDeps(
     roles?: readonly ('admin' | 'operator' | 'approver' | 'auditor')[];
     eventStream?: InMemoryEventStreamBroadcast;
     agentActionProposal?: AgentActionProposalV1 | null;
+    authorization?: ControlPlaneDeps['authorization'];
+    approvalQueryStore?: ControlPlaneDeps['approvalQueryStore'];
   } = {},
 ): ControlPlaneDeps {
   const store = new Map<string, ApprovalV1>();
@@ -116,7 +118,7 @@ function makeDeps(
     authentication: {
       authenticateBearerToken: async () => ok(makeCtx(overrides.roles ?? ['operator'])),
     },
-    authorization: { isAllowed: async () => true },
+    authorization: overrides.authorization ?? { isAllowed: async () => true },
     workspaceStore: {
       getWorkspaceById: async () => null,
       getWorkspaceByName: async () => null,
@@ -132,7 +134,7 @@ function makeDeps(
         store.set(String(approval.approvalId), approval);
       },
     },
-    approvalQueryStore: {
+    approvalQueryStore: overrides.approvalQueryStore ?? {
       listApprovals: async () => ({ items: [...store.values()] }),
     },
     ...(overrides.agentActionProposal !== undefined
@@ -159,8 +161,8 @@ async function startWith(overrides: Parameters<typeof makeDeps>[0] = {}): Promis
 }
 
 const BASE = 'http://127.0.0.1';
-function listUrl(): string {
-  return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals`;
+function listUrl(query = ''): string {
+  return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals${query}`;
 }
 function getUrl(id = APPROVAL_ID): string {
   return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals/${id}`;
@@ -189,6 +191,57 @@ describe('GET /approvals — list', () => {
     const body = (await res.json()) as { items: unknown[] };
     expect(body.items).toHaveLength(1);
   });
+
+  it('returns 422 before list use-case when status is not a known approval status', async () => {
+    let authorizationCalled = false;
+    await startWith({
+      authorization: {
+        isAllowed: async () => {
+          authorizationCalled = true;
+          return true;
+        },
+      },
+      approvalQueryStore: {
+        listApprovals: async () => {
+          throw new Error('approval query store should not be called');
+        },
+      },
+    });
+
+    const res = await fetch(listUrl('?status=Done'));
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { type: string; detail: string };
+    expect(body.type).toMatch(/validation-failed/);
+    expect(body.detail).toContain('status must be one of');
+    expect(authorizationCalled).toBe(false);
+  });
+
+  it.each(['0', '-1', '10x', '', '1.5'])(
+    'returns 422 before list use-case when limit=%s is not a positive integer',
+    async (limit) => {
+      let authorizationCalled = false;
+      await startWith({
+        authorization: {
+          isAllowed: async () => {
+            authorizationCalled = true;
+            return true;
+          },
+        },
+        approvalQueryStore: {
+          listApprovals: async () => {
+            throw new Error('approval query store should not be called');
+          },
+        },
+      });
+
+      const res = await fetch(listUrl(`?limit=${encodeURIComponent(limit)}`));
+      expect(res.status).toBe(422);
+      const body = (await res.json()) as { type: string; detail: string };
+      expect(body.type).toMatch(/validation-failed/);
+      expect(body.detail).toBe('limit must be a positive integer.');
+      expect(authorizationCalled).toBe(false);
+    },
+  );
 });
 
 // ---------------------------------------------------------------------------

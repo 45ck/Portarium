@@ -32,6 +32,42 @@ import {
   respondProblem,
 } from './control-plane-handler.shared.js';
 
+const APPROVAL_STATUS_QUERY_VALUES = [
+  'Pending',
+  'Approved',
+  'Denied',
+  'Executed',
+  'Expired',
+  'RequestChanges',
+] as const;
+
+function isApprovalStatusQueryValue(value: string): value is ApprovalStatus {
+  return APPROVAL_STATUS_QUERY_VALUES.includes(
+    value as (typeof APPROVAL_STATUS_QUERY_VALUES)[number],
+  );
+}
+
+function validateApprovalStatusQueryValue(
+  value: string | null,
+): ApprovalStatus | undefined | { readonly error: string } {
+  if (value === null) return undefined;
+  if (isApprovalStatusQueryValue(value)) return value;
+  return {
+    error: `status must be one of: ${APPROVAL_STATUS_QUERY_VALUES.join(', ')}.`,
+  };
+}
+
+function validatePositiveIntegerQueryValue(
+  value: string | null,
+  field: string,
+): number | undefined | { readonly error: string } {
+  if (value === null) return undefined;
+  if (!/^[1-9]\d*$/.test(value)) {
+    return { error: `${field} must be a positive integer.` };
+  }
+  return Number.parseInt(value, 10);
+}
+
 // ---------------------------------------------------------------------------
 // Handler argument types
 // ---------------------------------------------------------------------------
@@ -173,9 +209,27 @@ export async function handleListApprovals(args: ApprovalHandlerArgs): Promise<vo
   }
 
   const url = new URL(req.url ?? '/', 'http://localhost');
-  const status = (url.searchParams.get('status') ?? undefined) as ApprovalStatus | undefined;
-  const limitRaw = url.searchParams.get('limit');
-  const limit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+  const status = validateApprovalStatusQueryValue(url.searchParams.get('status'));
+  if (typeof status === 'object') {
+    respondProblem(
+      res,
+      problemFromError({ kind: 'ValidationFailed', message: status.error }, pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const limit = validatePositiveIntegerQueryValue(url.searchParams.get('limit'), 'limit');
+  if (typeof limit === 'object') {
+    respondProblem(
+      res,
+      problemFromError({ kind: 'ValidationFailed', message: limit.error }, pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
 
   const result = await listApprovals(
     { authorization: deps.authorization, approvalStore: deps.approvalQueryStore },

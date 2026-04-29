@@ -427,7 +427,11 @@ describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
   });
 
   it('fail-closed proxy opens circuit after consecutive upstream failures', async () => {
-    const fetchImpl = failingFetch();
+    let upstreamCalls = 0;
+    const fetchImpl = (async (...args: Parameters<typeof fetch>) => {
+      upstreamCalls++;
+      return failingFetch()(...args);
+    }) as typeof fetch;
     const sidecar = buildSidecarProxy(fetchImpl);
     const failClosed = new FailClosedProxy(sidecar, {
       failureThreshold: 3,
@@ -457,9 +461,10 @@ describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
     const blockedElapsed = performance.now() - blockedStart;
 
     expect(blocked.status).toBe(503);
+    expect(upstreamCalls).toBe(3);
     // Circuit-open response should be near-instant (no upstream call), but
-    // single-call timing on Windows/worktrees can jitter a few milliseconds.
-    expect(blockedElapsed).toBeLessThan(10);
+    // single-call timing on Windows/worktrees can jitter under load.
+    expect(blockedElapsed).toBeLessThan(25);
   });
 
   it('fail-closed proxy recovers after recovery window and successful probe', async () => {
