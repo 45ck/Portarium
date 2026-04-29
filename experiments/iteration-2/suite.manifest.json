@@ -49,8 +49,9 @@
     {
       "scenarioId": "growth-studio-openclaw-live-v2",
       "beadId": "bead-1042",
-      "status": "planned",
-      "blockedBy": ["bead-1037"],
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs",
       "contractPath": "experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/README.md",
       "comparesTo": "growth-studio-openclaw-live",
       "validates": [

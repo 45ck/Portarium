@@ -2,7 +2,7 @@
 
 Owner Bead: `bead-1042`
 
-Status: planned.
+Status: runnable deterministic replay.
 
 ## Scenario
 
@@ -22,3 +22,15 @@ resume the blocked step exactly once without replaying prior writes.
 - duplicate execution count is zero
 - evidence chain is continuous before wait, during wait, and after resume
 - report compares this result to the original Growth Studio live run
+
+## Run
+
+```bash
+node experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs
+```
+
+The default runner is deterministic and does not require live LLM credentials.
+It models the two required variants (`live-wait` and `restart-resume`) and writes
+`outcome.json`, `queue-metrics.json`, `evidence-summary.json`, and `report.md`.
+Live provider-backed reruns should use the same result contract and append a new
+attempt directory instead of overwriting this deterministic baseline.

@@ -41,12 +41,12 @@ The directories under `scenarios/` are placeholders for planned scenario
 contracts. They intentionally do not include runnable `run.mjs` files yet; those
 belong to the dependent implementation Beads.
 
-| Scenario                         | Owner Bead  | Status  |
-| -------------------------------- | ----------- | ------- |
-| `growth-studio-openclaw-live-v2` | `bead-1042` | Planned |
-| `micro-saas-agent-stack-v2`      | `bead-1043` | Planned |
-| `openclaw-concurrent-sessions`   | `bead-1044` | Planned |
-| `approval-backlog-soak`          | `bead-1045` | Planned |
+| Scenario                         | Owner Bead  | Status                 |
+| -------------------------------- | ----------- | ---------------------- |
+| `growth-studio-openclaw-live-v2` | `bead-1042` | Runnable deterministic |
+| `micro-saas-agent-stack-v2`      | `bead-1043` | Runnable deterministic |
+| `openclaw-concurrent-sessions`   | `bead-1044` | Planned                |
+| `approval-backlog-soak`          | `bead-1045` | Runnable deterministic |
 
 ## Result Layout
 
