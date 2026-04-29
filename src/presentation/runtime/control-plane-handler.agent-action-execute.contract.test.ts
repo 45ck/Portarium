@@ -3,14 +3,21 @@
  *
  * POST /v1/workspaces/:workspaceId/agent-actions/:approvalId/execute
  *
- * Verifies body validation, missing deps (501), auth rejection, approval not
+ * Verifies body validation, missing deps (503), auth rejection, approval not
  * found (404), approval not approved (409), and success (200) branches.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
-import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
+import {
+  ApprovalId,
+  HashSha256,
+  PlanId,
+  RunId,
+  UserId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type { ApprovalDecidedV1, ApprovalPendingV1 } from '../../domain/approvals/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
@@ -103,7 +110,7 @@ function executeUrl(approvalId = APPROVAL_ID): string {
 // ---------------------------------------------------------------------------
 
 describe('POST /agent-actions/:approvalId/execute — missing deps', () => {
-  it('returns 501 when approvalStore is not wired', async () => {
+  it('returns 503 when approvalStore is not wired', async () => {
     const deps = makeDeps();
     // Use a fresh deps object without approvalStore to avoid exactOptionalPropertyTypes issues
     const { approvalStore: _removed, ...depsWithoutApprovalStore } = deps;
@@ -118,24 +125,57 @@ describe('POST /agent-actions/:approvalId/execute — missing deps', () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
     });
-    expect(res.status).toBe(501);
+    expect(res.status).toBe(503);
   });
 
-  it('returns 501 when actionRunner is not wired', async () => {
+  it('returns 503 and records GovernanceBypassed evidence when actionRunner is not wired', async () => {
+    const evidenceEntries: Record<string, unknown>[] = [];
     const deps = makeDeps();
     const { actionRunner: _removed, ...depsWithoutActionRunner } = deps;
     handle = await startHealthServer({
       role: 'control-plane',
       host: '127.0.0.1',
       port: 0,
-      handler: createControlPlaneHandler(depsWithoutActionRunner),
+      handler: createControlPlaneHandler({
+        ...depsWithoutActionRunner,
+        evidenceLog: {
+          appendEntry: async (_tenantId, entry) => {
+            evidenceEntries.push(entry as unknown as Record<string, unknown>);
+            return {
+              ...entry,
+              previousHash: HashSha256(''),
+              hashSha256: HashSha256('hash-execute-contract'),
+            };
+          },
+        },
+      }),
     });
     const res = await fetch(executeUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
     });
-    expect(res.status).toBe(501);
+    expect(res.status).toBe(503);
+    expect(evidenceEntries).toHaveLength(1);
+    expect(evidenceEntries[0]?.['category']).toBe('System');
+    expect(evidenceEntries[0]?.['summary']).toMatch(/GovernanceBypassed/);
+  });
+
+  it('returns 503 when eventPublisher is not wired', async () => {
+    const deps = makeDeps();
+    const { eventPublisher: _removed, ...depsWithoutEventPublisher } = deps;
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(depsWithoutEventPublisher),
+    });
+    const res = await fetch(executeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
+    });
+    expect(res.status).toBe(503);
   });
 });
 

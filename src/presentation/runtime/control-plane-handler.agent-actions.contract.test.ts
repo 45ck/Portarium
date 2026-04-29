@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
+import { HashSha256 } from '../../domain/primitives/index.js';
 import { parsePolicyV1 } from '../../domain/policy/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
@@ -80,18 +81,35 @@ function makeDeps(
         savedApprovals.push(approval);
       },
     },
+    unitOfWork: {
+      execute: async (fn) => fn(),
+    },
+    eventPublisher: {
+      publish: async () => undefined,
+    },
+    evidenceLog: {
+      appendEntry: async (_tenantId, entry) => ({
+        ...entry,
+        previousHash: HashSha256(''),
+        hashSha256: HashSha256('hash-contract'),
+      }),
+    },
   };
+}
+
+async function startWithDeps(deps: ControlPlaneDeps): Promise<void> {
+  handle = await startHealthServer({
+    role: 'control-plane',
+    host: '127.0.0.1',
+    port: 0,
+    handler: createControlPlaneHandler(deps),
+  });
 }
 
 async function startWith(
   roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator'],
 ): Promise<void> {
-  handle = await startHealthServer({
-    role: 'control-plane',
-    host: '127.0.0.1',
-    port: 0,
-    handler: createControlPlaneHandler(makeDeps(roles)),
-  });
+  await startWithDeps(makeDeps(roles));
 }
 
 const BASE = 'http://127.0.0.1';
@@ -102,6 +120,35 @@ function proposeUrl(): string {
 // ---------------------------------------------------------------------------
 // POST /v1/workspaces/:workspaceId/agent-actions:propose
 // ---------------------------------------------------------------------------
+
+describe('POST /agent-actions:propose — missing governance deps', () => {
+  it.each([['policyStore'], ['approvalStore'], ['eventPublisher'], ['evidenceLog']] as const)(
+    'returns 503 when %s is not wired',
+    async (dependencyName) => {
+      const deps = makeDeps();
+      const { [dependencyName]: _removed, ...depsWithoutDependency } = deps;
+      await startWithDeps(depsWithoutDependency);
+
+      const res = await fetch(proposeUrl(), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          agentId: 'agent-reader',
+          actionKind: 'comms:listEmails',
+          toolName: 'email:list',
+          executionTier: 'Auto',
+          policyIds: ['pol-contract-1'],
+          rationale: 'Read-only tool.',
+        }),
+      });
+
+      expect(res.status).toBe(503);
+      const body = (await res.json()) as { type: string; detail: string };
+      expect(body.type).toMatch(/service-unavailable/);
+      expect(body.detail).toContain(dependencyName);
+    },
+  );
+});
 
 describe('POST /agent-actions:propose — body validation', () => {
   it('returns 400 when body is not valid JSON', async () => {

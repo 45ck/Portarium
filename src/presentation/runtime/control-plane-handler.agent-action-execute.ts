@@ -13,6 +13,13 @@ import {
   type ExecuteApprovedAgentActionDeps,
   type ExecuteApprovedAgentActionError,
 } from '../../application/commands/execute-approved-agent-action.js';
+import {
+  ApprovalId,
+  CorrelationId,
+  EvidenceId,
+  TenantId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import { actionExecutionsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
@@ -62,12 +69,44 @@ function executeErrorToProblem(
       };
     case 'DependencyFailure':
       return {
-        type: 'https://portarium.dev/problems/dependency-failure',
-        title: 'Bad Gateway',
-        status: 502,
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
         detail: error.message,
         instance,
       };
+  }
+}
+
+function serviceUnavailableProblem(detail: string, instance: string): ProblemDetails {
+  return {
+    type: 'https://portarium.dev/problems/service-unavailable',
+    title: 'Service Unavailable',
+    status: 503,
+    detail,
+    instance,
+  };
+}
+
+async function recordGovernanceBypassedEvidence(args: ExecuteAgentActionArgs): Promise<void> {
+  const { deps, correlationId, workspaceId, approvalId } = args;
+  if (!deps.evidenceLog) return;
+
+  try {
+    await deps.evidenceLog.appendEntry(TenantId(workspaceId), {
+      schemaVersion: 1,
+      evidenceId: EvidenceId(crypto.randomUUID()),
+      workspaceId: WorkspaceId(workspaceId),
+      correlationId: CorrelationId(correlationId),
+      occurredAtIso: new Date().toISOString(),
+      category: 'System',
+      summary:
+        'GovernanceBypassed: approved agent action execution blocked because actionRunner is not configured.',
+      actor: { kind: 'System' },
+      links: { approvalId: ApprovalId(approvalId) },
+    });
+  } catch {
+    // Do not hide the primary fail-closed response if audit recording also fails.
   }
 }
 
@@ -94,13 +133,7 @@ export async function handleExecuteApprovedAgentAction(
   if (!deps.approvalStore) {
     respondProblem(
       res,
-      {
-        type: 'https://portarium.dev/problems/not-implemented',
-        title: 'Not Implemented',
-        status: 501,
-        detail: 'Approval store is not available in this configuration.',
-        instance: pathname,
-      },
+      serviceUnavailableProblem('Approval store is not available in this configuration.', pathname),
       correlationId,
       traceContext,
     );
@@ -108,15 +141,23 @@ export async function handleExecuteApprovedAgentAction(
   }
 
   if (!deps.actionRunner) {
+    await recordGovernanceBypassedEvidence(args);
     respondProblem(
       res,
-      {
-        type: 'https://portarium.dev/problems/not-implemented',
-        title: 'Not Implemented',
-        status: 501,
-        detail: 'Action runner is not available in this configuration.',
-        instance: pathname,
-      },
+      serviceUnavailableProblem('Action runner is not available in this configuration.', pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!deps.eventPublisher) {
+    respondProblem(
+      res,
+      serviceUnavailableProblem(
+        'Event publisher is not available in this configuration.',
+        pathname,
+      ),
       correlationId,
       traceContext,
     );
@@ -191,11 +232,7 @@ export async function handleExecuteApprovedAgentAction(
     idGenerator: { generateId: () => crypto.randomUUID() },
     approvalStore: deps.approvalStore,
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
-    eventPublisher: deps.eventPublisher ?? {
-      publish: async () => {
-        /* noop stub */
-      },
-    },
+    eventPublisher: deps.eventPublisher,
     actionRunner: deps.actionRunner,
     ...(deps.evidenceLog ? { evidenceLog: deps.evidenceLog } : {}),
   };

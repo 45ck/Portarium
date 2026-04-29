@@ -4,6 +4,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+import { APP_ACTIONS } from '../../application/common/actions.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import {
   proposeAgentAction,
@@ -11,14 +12,13 @@ import {
   type ProposeAgentActionError,
   type ProposeAgentActionInput,
 } from '../../application/commands/propose-agent-action.js';
-import { HashSha256 } from '../../domain/primitives/index.js';
 import {
   proposalsTotal,
   policyEvaluationDuration,
 } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
-  type QueryError,
+  type ProblemDetails,
   authenticate,
   problemFromError,
   readJsonBody,
@@ -36,23 +36,36 @@ type AgentActionArgs = Readonly<{
   workspaceId: string;
 }>;
 
-function toQueryError(error: ProposeAgentActionError): QueryError {
+function serviceUnavailableProblem(detail: string, instance: string): ProblemDetails {
+  return {
+    type: 'https://portarium.dev/problems/service-unavailable',
+    title: 'Service Unavailable',
+    status: 503,
+    detail,
+    instance,
+  };
+}
+
+function missingGovernanceDependencyProblem(
+  dependencyName: string,
+  instance: string,
+): ProblemDetails {
+  return serviceUnavailableProblem(
+    `Agent action governance is unavailable: ${dependencyName} is not configured.`,
+    instance,
+  );
+}
+
+function proposeErrorToProblem(error: ProposeAgentActionError, instance: string): ProblemDetails {
   switch (error.kind) {
     case 'Forbidden':
     case 'ValidationFailed':
     case 'NotFound':
-      return error;
+      return problemFromError(error, instance);
     case 'Conflict':
-      return {
-        kind: 'ValidationFailed',
-        message: error.message,
-      };
+      return problemFromError({ kind: 'ValidationFailed', message: error.message }, instance);
     case 'DependencyFailure':
-      return {
-        kind: 'NotFound',
-        resource: 'dependency',
-        message: error.message,
-      };
+      return serviceUnavailableProblem(error.message, instance);
   }
 }
 
@@ -116,37 +129,73 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
 
   const record = bodyResult.value as Record<string, unknown>;
 
-  // Build command deps from the real ControlPlaneDeps, falling back to
-  // minimal in-memory stubs only for deps not yet wired in bootstrap.
+  const allowed = await deps.authorization.isAllowed(auth.ctx, APP_ACTIONS.agentActionPropose);
+  if (!allowed) {
+    respondProblem(
+      res,
+      problemFromError(
+        {
+          kind: 'Forbidden',
+          action: APP_ACTIONS.agentActionPropose,
+          message: 'Caller is not permitted to propose agent actions.',
+        },
+        pathname,
+      ),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!deps.policyStore) {
+    respondProblem(
+      res,
+      missingGovernanceDependencyProblem('policyStore', pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!deps.approvalStore) {
+    respondProblem(
+      res,
+      missingGovernanceDependencyProblem('approvalStore', pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!deps.eventPublisher) {
+    respondProblem(
+      res,
+      missingGovernanceDependencyProblem('eventPublisher', pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!deps.evidenceLog) {
+    respondProblem(
+      res,
+      missingGovernanceDependencyProblem('evidenceLog', pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
   const commandDeps: ProposeAgentActionDeps = {
     authorization: deps.authorization,
     clock: { nowIso: () => new Date().toISOString() },
     idGenerator: { generateId: () => crypto.randomUUID() },
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
-    policyStore: deps.policyStore ?? {
-      getPolicyById: async () => null,
-      savePolicy: async () => {
-        /* noop stub */
-      },
-    },
-    approvalStore: deps.approvalStore ?? {
-      getApprovalById: async () => null,
-      saveApproval: async () => {
-        /* noop stub */
-      },
-    },
-    eventPublisher: deps.eventPublisher ?? {
-      publish: async () => {
-        /* noop stub */
-      },
-    },
-    evidenceLog: deps.evidenceLog ?? {
-      appendEntry: async (_tenantId, entry) => ({
-        ...entry,
-        previousHash: HashSha256(''),
-        hashSha256: HashSha256(''),
-      }),
-    },
+    policyStore: deps.policyStore,
+    approvalStore: deps.approvalStore,
+    eventPublisher: deps.eventPublisher,
+    evidenceLog: deps.evidenceLog,
   };
 
   const input: ProposeAgentActionInput = {
@@ -174,12 +223,7 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
 
   if (!result.ok) {
     proposalsTotal.inc({ decision: 'error', workspaceId });
-    respondProblem(
-      res,
-      problemFromError(toQueryError(result.error), pathname),
-      correlationId,
-      traceContext,
-    );
+    respondProblem(res, proposeErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }
 
