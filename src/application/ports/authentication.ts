@@ -9,6 +9,8 @@ export type AuthenticateBearerTokenInput = Readonly<{
   tracestate?: string;
   /** When present, enforce that the token's workspaceId matches this expected workspace. */
   expectedWorkspaceId?: string;
+  /** When true, reject authentication unless expectedWorkspaceId is present and non-empty. */
+  requireExpectedWorkspaceId?: boolean;
 }>;
 
 export interface AuthenticationPort {

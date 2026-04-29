@@ -252,6 +252,46 @@ describe('registerBeforeToolCallHook', () => {
       const result = await handler(makeEvent(), makeCtx());
       expect(result).toBeUndefined();
     });
+
+    it('blocks when proposeAction throws, even when failClosed=false', async () => {
+      const client = {
+        proposeAction: vi.fn().mockRejectedValue(new Error('client crashed')),
+      } as unknown as PortariumClient;
+      const poller = { waitForDecision: vi.fn() } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(client, poller, makeConfig({ failClosed: false }));
+
+      const result = (await handler(makeEvent(), makeCtx())) as {
+        block: boolean;
+        blockReason: string;
+      };
+
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('hook failed');
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Hook failure'));
+    });
+
+    it('blocks when approval polling throws after an awaiting_approval decision', async () => {
+      const client = {
+        proposeAction: vi.fn().mockResolvedValue({
+          status: 'awaiting_approval',
+          approvalId: 'appr-crash',
+          actionId: 'act-crash',
+        }),
+      } as unknown as PortariumClient;
+      const poller = {
+        waitForDecision: vi.fn().mockRejectedValue(new Error('poller crashed')),
+      } as unknown as ApprovalPoller;
+      const { handler, logger } = buildHook(client, poller, makeConfig());
+
+      const result = (await handler(makeEvent(), makeCtx())) as {
+        block: boolean;
+        blockReason: string;
+      };
+
+      expect(result.block).toBe(true);
+      expect(result.blockReason).toContain('failing closed');
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('poller crashed'));
+    });
   });
 
   describe('sessionKey handling', () => {

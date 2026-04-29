@@ -64,10 +64,17 @@ export class DevTokenAuthentication implements AuthenticationPort {
       return Promise.resolve(err({ kind: 'Unauthorized', message: 'Invalid dev token.' }));
     }
 
-    if (
-      input.expectedWorkspaceId !== undefined &&
-      input.expectedWorkspaceId !== this.#workspaceId
-    ) {
+    const expectedWorkspaceId = input.expectedWorkspaceId?.trim();
+    if (input.requireExpectedWorkspaceId && !expectedWorkspaceId) {
+      return Promise.resolve(
+        err({
+          kind: 'Unauthorized',
+          message: 'Workspace-bound authentication requires expectedWorkspaceId.',
+        }),
+      );
+    }
+
+    if (expectedWorkspaceId !== undefined && expectedWorkspaceId !== this.#workspaceId) {
       return Promise.resolve(err({ kind: 'Unauthorized', message: 'Workspace scope mismatch.' }));
     }
 

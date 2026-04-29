@@ -1,6 +1,5 @@
 import { Redis } from 'ioredis';
 
-import { err } from '../../application/common/result.js';
 import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace-rbac-authorization.js';
 import type {
   ApprovalQueryStore,
@@ -101,8 +100,12 @@ function tryBuildJoseAuthentication(): AuthenticationPort | null {
   const issuer = process.env['PORTARIUM_JWT_ISSUER']?.trim();
   const audience = process.env['PORTARIUM_JWT_AUDIENCE']?.trim();
 
-  for (const warning of getJoseAuthConfigWarnings()) {
-    process.stderr.write(warning + '\n');
+  const warnings = getJoseAuthConfigWarnings();
+  if (warnings.length > 0) {
+    throw new Error(
+      '[portarium] FATAL: JWKS authentication requires issuer and audience validation. ' +
+        warnings.join(' '),
+    );
   }
 
   return new JoseJwtAuthentication({
@@ -167,17 +170,16 @@ function tryBuildDevAuthentication(): AuthenticationPort | null {
 }
 
 function buildAuthentication(): AuthenticationPort {
-  return (
-    tryBuildJoseAuthentication() ??
-    tryBuildDevAuthentication() ?? {
-      authenticateBearerToken: ({ correlationId }) =>
-        Promise.resolve(
-          err({
-            kind: 'Unauthorized',
-            message: `Authentication not configured. (${correlationId})`,
-          }),
-        ),
-    }
+  const joseAuthentication = tryBuildJoseAuthentication();
+  if (joseAuthentication) return joseAuthentication;
+
+  const devAuthentication = tryBuildDevAuthentication();
+  if (devAuthentication) return devAuthentication;
+
+  throw new Error(
+    '[portarium] FATAL: Authentication is not configured. ' +
+      'Set PORTARIUM_JWKS_URI, PORTARIUM_JWT_ISSUER, and PORTARIUM_JWT_AUDIENCE, ' +
+      'or set ENABLE_DEV_AUTH=true with PORTARIUM_DEV_TOKEN and PORTARIUM_DEV_WORKSPACE_ID in development/test only.',
   );
 }
 

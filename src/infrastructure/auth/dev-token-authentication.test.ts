@@ -134,5 +134,18 @@ describe('DevTokenAuthentication', () => {
       });
       expect(result.ok).toBe(true);
     });
+
+    it('rejects mutation-tier authentication when expectedWorkspaceId is omitted', async () => {
+      const auth = makeAuth();
+      const result = await auth.authenticateBearerToken({
+        authorizationHeader: `Bearer ${VALID_TOKEN}`,
+        correlationId: 'corr-1',
+        requireExpectedWorkspaceId: true,
+      });
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error('Expected unauthorized');
+      expect(result.error.kind).toBe('Unauthorized');
+      expect(result.error.message).toMatch(/expectedWorkspaceId/);
+    });
   });
 });
