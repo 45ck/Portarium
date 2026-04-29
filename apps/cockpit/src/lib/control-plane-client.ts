@@ -5,6 +5,8 @@ import type {
   DerivedArtifactListResponse,
   GraphTraversalResult,
   GraphQueryRequest,
+  IntentPlanRequest,
+  IntentPlanResponse,
   RetrievalSearchRequest,
   RetrievalSearchResponse,
   RunSummary,
@@ -142,6 +144,13 @@ export class ControlPlaneClient {
     body: { workflowId: string; parameters?: Record<string, unknown> },
   ): Promise<RunSummary> {
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  public planIntent(workspaceId: string, body: IntentPlanRequest): Promise<IntentPlanResponse> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/intents:plan`, {
       method: 'POST',
       body: JSON.stringify(body),
     });

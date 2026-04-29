@@ -29,6 +29,7 @@ import { CommandPalette } from '@/components/cockpit/command-palette';
 import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
+import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
 import { Toaster } from 'sonner';
 import {
   LayoutDashboard,
@@ -297,6 +298,8 @@ function RootLayout() {
     setActivePersona,
     startRunOpen,
     setStartRunOpen,
+    intentPlannerOpen,
+    setIntentPlannerOpen,
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
@@ -574,6 +577,7 @@ function RootLayout() {
 
         {/* Global overlays */}
         <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
+        <IntentPlanSheet open={intentPlannerOpen} onOpenChange={setIntentPlannerOpen} />
         <CommandPalette />
         <KeyboardCheatsheet />
         <Toaster position="bottom-right" />

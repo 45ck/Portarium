@@ -8,6 +8,8 @@ import type {
   CreateCredentialGrantRequest,
   CredentialGrantV1,
   HumanTaskSummary,
+  IntentPlanRequest,
+  IntentPlanResponse,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
   WorkflowSummary,
@@ -219,6 +221,69 @@ export const handlers = [
     });
 
     return HttpResponse.json(merged);
+  }),
+
+  // Intent planning
+  http.post('/v1/workspaces/:wsId/intents:plan', async ({ request, params }) => {
+    const body = (await request.json()) as IntentPlanRequest;
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    const normalizedGoal = body.triggerText.replace(/\s+/g, ' ').trim();
+    const proposalId = `proposal-${Date.now()}`;
+    const effectId = `effect-${proposalId}`;
+    const result: IntentPlanResponse = {
+      intent: {
+        schemaVersion: 1,
+        intentId: `intent-${Date.now()}`,
+        workspaceId: wsId,
+        createdAtIso: new Date().toISOString(),
+        createdByUserId: 'user-001',
+        source: body.source ?? 'Human',
+        prompt: body.triggerText,
+        normalizedGoal,
+        constraints: body.constraints ?? [],
+      },
+      plan: {
+        schemaVersion: 1,
+        planId: `plan-${proposalId}`,
+        workspaceId: wsId,
+        createdAtIso: new Date().toISOString(),
+        createdByUserId: 'user-001',
+        plannedEffects: [
+          {
+            effectId,
+            operation: 'Create',
+            target: {
+              sorName: 'Portarium',
+              portFamily: 'ProjectsWorkMgmt',
+              externalId: proposalId,
+              externalType: 'BeadProposal',
+              displayLabel: normalizedGoal,
+            },
+            summary: normalizedGoal,
+          },
+        ],
+      },
+      proposals: [
+        {
+          schemaVersion: 1,
+          proposalId,
+          title: normalizedGoal,
+          body: `Implement this operator intent: ${normalizedGoal}.`,
+          executionTier: 'HumanApprove',
+          specRef:
+            'docs/internal/engineering-layer/build-plan.md#phase-7--intent-trigger-full-loop',
+          dependsOnProposalIds: [],
+          plannedEffectIds: [effectId],
+        },
+      ],
+      artifact: {
+        schemaVersion: 1,
+        artifactId: `plan-artifact-${proposalId}`,
+        title: `Plan: ${normalizedGoal}`,
+        markdown: `# Plan: "${normalizedGoal}"\n\nDecomposed into 1 bead proposal by BeadPlanner.\n\n## Beads\n\n1. ${normalizedGoal} [HumanApprove]\n\n## Confirmation\n\nHuman approval is required before any worktree is created.`,
+      },
+    };
+    return HttpResponse.json(result);
   }),
 
   // Approvals

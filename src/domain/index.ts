@@ -4,6 +4,7 @@ export * from './workspaces/index.js';
 export * from './users/index.js';
 export * from './policy/index.js';
 export * from './plan/index.js';
+export * from './beads/index.js';
 export * from './evidence/index.js';
 export * from './approvals/index.js';
 export * from './runs/index.js';
