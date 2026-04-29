@@ -379,6 +379,9 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
         /* noop stub */
       },
     },
+    ...(deps.agentActionProposalStore
+      ? { agentActionProposalStore: deps.agentActionProposalStore }
+      : {}),
   };
 
   const input: Parameters<typeof submitApproval>[2] = {

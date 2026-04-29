@@ -2,6 +2,7 @@ import {
   ApprovalId,
   EvidenceId,
   EventId,
+  ProposalId,
   UserId,
   WorkspaceId,
   type ApprovalDecision,
@@ -38,6 +39,7 @@ import type {
   Clock,
   EventPublisher,
   EvidenceLogPort,
+  AgentActionProposalStore,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
@@ -86,6 +88,7 @@ export interface SubmitApprovalDeps {
   unitOfWork: UnitOfWork;
   eventPublisher: EventPublisher;
   evidenceLog?: EvidenceLogPort;
+  agentActionProposalStore?: AgentActionProposalStore;
 }
 
 type ParsedIds = Readonly<{
@@ -288,6 +291,59 @@ function guardSodConstraints(
   });
 }
 
+function agentActionLinkConflict(approvalId: ApprovalIdType): Err<SubmitApprovalError> {
+  return err({
+    kind: 'Conflict',
+    message: `Approval ${String(approvalId)} is not linked to a persisted agent action proposal.`,
+  });
+}
+
+async function guardLinkedAgentActionProposal(
+  deps: SubmitApprovalDeps,
+  ctx: AppContext,
+  approval: ApprovalPendingV1,
+): Promise<Err<SubmitApprovalError> | null> {
+  const store = deps.agentActionProposalStore;
+  if (!store) return null;
+
+  try {
+    const byApprovalId = await store.getProposalByApprovalId(ctx.tenantId, approval.approvalId);
+    if (byApprovalId) {
+      const proposalId = String(byApprovalId.proposalId);
+      if (
+        String(byApprovalId.workspaceId) !== String(approval.workspaceId) ||
+        String(byApprovalId.approvalId ?? '') !== String(approval.approvalId) ||
+        proposalId !== String(approval.runId) ||
+        proposalId !== String(approval.planId)
+      ) {
+        return agentActionLinkConflict(approval.approvalId);
+      }
+      return null;
+    }
+
+    if (String(approval.runId) !== String(approval.planId)) return null;
+
+    const byProposalId = await store.getProposalById(
+      ctx.tenantId,
+      ProposalId(String(approval.runId)),
+    );
+    if (
+      !byProposalId ||
+      String(byProposalId.workspaceId) !== String(approval.workspaceId) ||
+      String(byProposalId.approvalId ?? '') !== String(approval.approvalId)
+    ) {
+      return agentActionLinkConflict(approval.approvalId);
+    }
+    return null;
+  } catch (error) {
+    return err({
+      kind: 'DependencyFailure',
+      message:
+        error instanceof Error ? error.message : 'Failed to verify linked agent action proposal.',
+    });
+  }
+}
+
 function buildDecidedApproval(
   current: ReturnType<typeof parseApprovalV1>,
   input: SubmitApprovalInput,
@@ -422,9 +478,13 @@ export async function submitApproval(
   const parseResult = parseExistingApproval(existing);
   if (!parseResult.ok) return parseResult;
   const current = parseResult.value;
+  const pending = current as ApprovalPendingV1;
 
   const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
   if (stateError) return stateError;
+
+  const linkedProposalError = await guardLinkedAgentActionProposal(deps, ctx, pending);
+  if (linkedProposalError) return linkedProposalError;
 
   // Unconditional maker-checker: the deciding user must never be the requesting user.
   if (ctx.principalId.toString() === current.requestedByUserId.toString()) {
@@ -438,7 +498,7 @@ export async function submitApproval(
 
   // current.status === 'Pending' is guaranteed after guardPendingState
   const sodError = guardSodConstraints(
-    current as ApprovalPendingV1,
+    pending,
     ctx.principalId.toString(),
     input.sodConstraints,
     input.previousApproverIds,

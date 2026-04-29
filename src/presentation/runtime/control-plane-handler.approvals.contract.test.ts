@@ -9,8 +9,20 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
-import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
+import {
+  AgentId,
+  ApprovalId,
+  CorrelationId,
+  EvidenceId,
+  PlanId,
+  PolicyId,
+  ProposalId,
+  RunId,
+  UserId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type { ApprovalPendingV1, ApprovalV1 } from '../../domain/approvals/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
 import type { WorkspaceStreamEvent } from '../../application/ports/event-stream.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
@@ -40,6 +52,45 @@ const PENDING_APPROVAL: ApprovalPendingV1 = {
   status: 'Pending',
 };
 
+const AGENT_ACTION_APPROVAL: ApprovalPendingV1 = {
+  schemaVersion: 1,
+  approvalId: ApprovalId('approval-agent-contract-1'),
+  workspaceId: WorkspaceId(WORKSPACE_ID),
+  runId: RunId('proposal-contract-1'),
+  planId: PlanId('proposal-contract-1'),
+  prompt: 'Approve this agent action.',
+  requestedAtIso: '2026-03-01T00:00:00.000Z',
+  requestedByUserId: UserId('requester-1'),
+  status: 'Pending',
+};
+
+function makeAgentActionProposal(): AgentActionProposalV1 {
+  return {
+    schemaVersion: 1,
+    proposalId: ProposalId('proposal-contract-1'),
+    workspaceId: WorkspaceId(WORKSPACE_ID),
+    agentId: AgentId('agent-contract-1'),
+    actionKind: 'invoke-tool',
+    toolName: 'write-record',
+    executionTier: 'HumanApprove',
+    toolClassification: {
+      toolName: 'write-record',
+      category: 'Mutation',
+      minimumTier: 'HumanApprove',
+      rationale: 'Writes external state.',
+    },
+    policyDecision: 'RequireApproval',
+    policyIds: [PolicyId('policy-contract-1')],
+    decision: 'NeedsApproval',
+    approvalId: AGENT_ACTION_APPROVAL.approvalId,
+    rationale: 'Needs operator review.',
+    requestedByUserId: UserId('requester-1'),
+    correlationId: CorrelationId('corr-proposal-contract'),
+    proposedAtIso: '2026-03-01T00:00:00.000Z',
+    evidenceId: EvidenceId('evidence-contract-1'),
+  };
+}
+
 function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['operator']) {
   return toAppContext({
     tenantId: WORKSPACE_ID,
@@ -54,6 +105,7 @@ function makeDeps(
     approvals?: ApprovalV1[];
     roles?: readonly ('admin' | 'operator' | 'approver' | 'auditor')[];
     eventStream?: InMemoryEventStreamBroadcast;
+    agentActionProposal?: AgentActionProposalV1 | null;
   } = {},
 ): ControlPlaneDeps {
   const store = new Map<string, ApprovalV1>();
@@ -83,6 +135,16 @@ function makeDeps(
     approvalQueryStore: {
       listApprovals: async () => ({ items: [...store.values()] }),
     },
+    ...(overrides.agentActionProposal !== undefined
+      ? {
+          agentActionProposalStore: {
+            getProposalById: async () => overrides.agentActionProposal ?? null,
+            getProposalByApprovalId: async () => overrides.agentActionProposal ?? null,
+            getProposalByIdempotencyKey: async () => null,
+            saveProposal: async () => undefined,
+          },
+        }
+      : {}),
     ...(overrides.eventStream ? { eventStream: overrides.eventStream } : {}),
   };
 }
@@ -276,6 +338,46 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(second.status).toBe(409);
     const body = (await second.json()) as { type: string };
     expect(body.type).toMatch(/conflict/);
+  });
+
+  it('returns 409 and does not broadcast when an agent-action approval has no linked proposal', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+
+    await startWith({
+      approvals: [AGENT_ACTION_APPROVAL],
+      agentActionProposal: null,
+      eventStream: broadcast,
+    });
+
+    const res = await fetch(decideUrl('approval-agent-contract-1'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    });
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { type: string; detail: string };
+    expect(body.type).toMatch(/conflict/);
+    expect(body.detail).toMatch(/agent action proposal/i);
+    expect(events).toEqual([]);
+  });
+
+  it('returns 200 when an agent-action approval has a matching linked proposal', async () => {
+    await startWith({
+      approvals: [AGENT_ACTION_APPROVAL],
+      agentActionProposal: makeAgentActionProposal(),
+    });
+
+    const res = await fetch(decideUrl('approval-agent-contract-1'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { approvalId: string; status: string };
+    expect(body.approvalId).toBe('approval-agent-contract-1');
+    expect(body.status).toBe('Approved');
   });
 
   it('does not leak internal dependency errors in 502 detail', async () => {
