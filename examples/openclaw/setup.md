@@ -34,6 +34,11 @@ model API key.
 
 Create an isolated OpenClaw profile so experiments do not touch your real OpenClaw config:
 
+> **Safety warning:** keep `failClosed` set to `true` for production, shared environments, and
+> demos. `failClosed:false` is only for local development when you intentionally accept that an
+> unreachable Portarium control plane means tools are no longer governed. The plugin rejects
+> `failClosed:false` unless `NODE_ENV` is `development` or `test`.
+
 **File:** `~/.openclaw-portarium-dev/openclaw.json`
 
 ```json

@@ -13,6 +13,7 @@ export const PERMITTED_BYPASS_TOOL_NAMES = [
 const PERMITTED_BYPASS_TOOLS: ReadonlySet<string> = new Set(PERMITTED_BYPASS_TOOL_NAMES);
 const MIN_APPROVAL_TIMEOUT_MS = 60_000;
 const MIN_POLL_INTERVAL_MS = 500;
+const FAIL_OPEN_ALLOWED_NODE_ENVS = new Set(['development', 'test']);
 
 export function isPermittedBypassToolName(toolName: string): boolean {
   return PERMITTED_BYPASS_TOOLS.has(toolName);
@@ -142,13 +143,15 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
     typeof raw.tenantId === 'string' ? raw.tenantId : DEFAULT_CONFIG.tenantId,
     'tenantId',
   );
+  const failClosed = raw.failClosed !== false;
+  assertFailClosedIsProductionSafe(failClosed);
 
   return {
     portariumUrl: raw.portariumUrl.replace(/\/+$/, ''),
     workspaceId,
     bearerToken,
     tenantId,
-    failClosed: raw.failClosed !== false,
+    failClosed,
     approvalTimeoutMs,
     pollIntervalMs,
     bypassToolNames,
@@ -167,4 +170,22 @@ function formatBypassToolNameForLog(value: unknown): string {
     return value.replace(/[\r\n\0]/g, '');
   }
   return JSON.stringify(value) ?? String(value);
+}
+
+function assertFailClosedIsProductionSafe(failClosed: boolean): void {
+  if (failClosed) return;
+
+  const nodeEnv = readNodeEnv();
+  if (!FAIL_OPEN_ALLOWED_NODE_ENVS.has(nodeEnv ?? '')) {
+    throw new Error(
+      '[portarium-plugin] config.failClosed=false is allowed only when NODE_ENV is development or test. Keep failClosed=true for production and shared deployments.',
+    );
+  }
+}
+
+function readNodeEnv(): string | undefined {
+  const globalWithProcess = globalThis as typeof globalThis & {
+    process?: { env?: Record<string, string | undefined> };
+  };
+  return globalWithProcess.process?.env?.NODE_ENV;
 }
