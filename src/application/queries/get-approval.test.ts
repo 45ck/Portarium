@@ -17,6 +17,18 @@ const APPROVAL = parseApprovalV1({
   requestedByUserId: 'user-1',
 });
 
+const OTHER_WORKSPACE_APPROVAL = parseApprovalV1({
+  schemaVersion: 1,
+  approvalId: 'approval-1',
+  workspaceId: 'ws-2',
+  runId: 'run-1',
+  planId: 'plan-1',
+  prompt: 'Approve change',
+  status: 'Pending',
+  requestedAtIso: '2026-02-20T00:00:00.000Z',
+  requestedByUserId: 'user-1',
+});
+
 describe('getApproval', () => {
   it('returns approval when present', async () => {
     const authorization: AuthorizationPort = {
@@ -91,5 +103,31 @@ describe('getApproval', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.kind).toBe('Forbidden');
+  });
+
+  it('returns forbidden when the store returns an approval from another workspace', async () => {
+    const authorization: AuthorizationPort = {
+      isAllowed: vi.fn(async () => true),
+    };
+    const approvalStore: ApprovalStore = {
+      getApprovalById: vi.fn(async () => OTHER_WORKSPACE_APPROVAL),
+      saveApproval: vi.fn(async () => undefined),
+    };
+
+    const result = await getApproval(
+      { authorization, approvalStore },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-2',
+        correlationId: 'cor-1',
+        roles: ['approver'],
+      }),
+      { workspaceId: 'ws-1', approvalId: 'approval-1' },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toMatch(/requested workspace/i);
   });
 });

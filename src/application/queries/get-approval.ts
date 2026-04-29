@@ -69,6 +69,13 @@ export async function getApproval(
       message: `Approval ${input.approvalId} not found.`,
     });
   }
+  if (String(approval.workspaceId) !== String(workspaceId)) {
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.approvalRead,
+      message: 'Approval does not belong to the requested workspace.',
+    });
+  }
 
   return ok(approval);
 }
