@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { parseApprovalV1 } from '../../domain/approvals/index.js';
+import { ApprovalId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import {
+  buildInMemoryApprovalStore,
   buildControlPlaneDeps,
   getJoseAuthConfigWarnings,
 } from './control-plane-handler.bootstrap.js';
@@ -114,5 +117,54 @@ describe('buildControlPlaneDeps auth startup gate', () => {
 
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_ISSUER/);
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_AUDIENCE/);
+  });
+});
+
+describe('buildInMemoryApprovalStore', () => {
+  it('scopes getApprovalById and listApprovals by tenant and workspace', async () => {
+    const store = buildInMemoryApprovalStore();
+    const approval = (workspaceId: string, runId: string) =>
+      parseApprovalV1({
+        schemaVersion: 1,
+        approvalId: 'approval-shared-id',
+        workspaceId,
+        runId,
+        planId: 'plan-1',
+        prompt: 'Approve governed action',
+        status: 'Pending',
+        requestedAtIso: '2026-02-20T00:00:00.000Z',
+        requestedByUserId: 'user-1',
+      });
+
+    await store.saveApproval(TenantId('tenant-a'), approval('ws-a', 'run-a'));
+    await store.saveApproval(TenantId('tenant-a'), approval('ws-b', 'run-b'));
+    await store.saveApproval(TenantId('tenant-b'), approval('ws-a', 'run-c'));
+
+    await expect(
+      store.getApprovalById(
+        TenantId('tenant-a'),
+        WorkspaceId('ws-a'),
+        ApprovalId('approval-shared-id'),
+      ),
+    ).resolves.toMatchObject({ workspaceId: 'ws-a', runId: 'run-a' });
+    await expect(
+      store.getApprovalById(
+        TenantId('tenant-a'),
+        WorkspaceId('ws-c'),
+        ApprovalId('approval-shared-id'),
+      ),
+    ).resolves.toBeNull();
+
+    const tenantAWorkspaceA = await store.listApprovals(TenantId('tenant-a'), WorkspaceId('ws-a'), {
+      limit: 10,
+    });
+    expect(tenantAWorkspaceA.items).toHaveLength(1);
+    expect(tenantAWorkspaceA.items[0]?.runId).toBe('run-a');
+
+    const tenantBWorkspaceA = await store.listApprovals(TenantId('tenant-b'), WorkspaceId('ws-a'), {
+      limit: 10,
+    });
+    expect(tenantBWorkspaceA.items).toHaveLength(1);
+    expect(tenantBWorkspaceA.items[0]?.runId).toBe('run-c');
   });
 });

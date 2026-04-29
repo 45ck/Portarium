@@ -305,16 +305,34 @@ function buildQueryCache(): QueryCache {
   return new InMemoryQueryCache();
 }
 
-function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore {
-  const store = new Map<string, import('../../domain/approvals/index.js').ApprovalV1>();
+export function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore {
+  const store = new Map<
+    string,
+    {
+      readonly tenantId: string;
+      readonly approval: import('../../domain/approvals/index.js').ApprovalV1;
+    }
+  >();
+  const key = (tenantId: unknown, workspaceId: unknown, approvalId: unknown) =>
+    `${String(tenantId)}\u0000${String(workspaceId)}\u0000${String(approvalId)}`;
+
   return {
-    getApprovalById: async (_tenantId, _workspaceId, approvalId) =>
-      store.get(String(approvalId)) ?? null,
-    saveApproval: async (_tenantId, approval) => {
-      store.set(String(approval.approvalId), approval);
+    getApprovalById: async (tenantId, workspaceId, approvalId) =>
+      store.get(key(tenantId, workspaceId, approvalId))?.approval ?? null,
+    saveApproval: async (tenantId, approval) => {
+      store.set(key(tenantId, approval.workspaceId, approval.approvalId), {
+        tenantId: String(tenantId),
+        approval,
+      });
     },
-    listApprovals: async (_tenantId, _workspaceId, filter) => {
-      let items = [...store.values()];
+    listApprovals: async (tenantId, workspaceId, filter) => {
+      let items = [...store.values()]
+        .filter(
+          (entry) =>
+            entry.tenantId === String(tenantId) &&
+            String(entry.approval.workspaceId) === String(workspaceId),
+        )
+        .map((entry) => entry.approval);
       if (filter.status) items = items.filter((a) => a.status === filter.status);
       if (filter.runId) items = items.filter((a) => String(a.runId) === String(filter.runId));
       if (filter.planId) items = items.filter((a) => String(a.planId) === String(filter.planId));
