@@ -21,8 +21,10 @@ import {
   type SubmitApprovalError,
 } from '../../application/commands/submit-approval.js';
 import { approvalDecisionsTotal } from '../../infrastructure/observability/prometheus-registry.js';
+import type { PortariumLogger } from '../../infrastructure/observability/logger.js';
 import {
   type ControlPlaneDeps,
+  GENERIC_DEPENDENCY_FAILURE_DETAIL,
   authenticate,
   problemFromError,
   readJsonBody,
@@ -42,6 +44,7 @@ type ApprovalHandlerArgs = Readonly<{
   pathname: string;
   traceContext: TraceContext;
   workspaceId: string;
+  log?: PortariumLogger;
 }>;
 
 type ApprovalItemArgs = ApprovalHandlerArgs & Readonly<{ approvalId: string }>;
@@ -74,7 +77,7 @@ function submitErrorToProblem(
         type: 'https://portarium.dev/problems/dependency-failure',
         title: 'Bad Gateway',
         status: 502,
-        detail: error.message,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
         instance,
       };
   }
@@ -399,6 +402,13 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
 
   if (!result.ok) {
     approvalDecisionsTotal.inc({ status: 'error', workspaceId });
+    if (result.error.kind === 'DependencyFailure') {
+      args.log?.error('Approval decision dependency failure', {
+        approvalId,
+        workspaceId,
+        error: result.error.message,
+      });
+    }
     respondProblem(res, submitErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }

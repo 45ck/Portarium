@@ -196,6 +196,34 @@ describe('POST /agent-actions:propose — decision branches', () => {
     expect(body.proposalId).toBeDefined();
   });
 
+  it('does not leak internal dependency errors in 503 detail', async () => {
+    await startWithDeps({
+      ...makeDeps(),
+      unitOfWork: {
+        execute: async () => {
+          throw new Error('postgres://policy-db.internal:5432 evidence_log insert failed');
+        },
+      },
+    });
+    const res = await fetch(proposeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        agentId: 'agent-reader',
+        actionKind: 'comms:listEmails',
+        toolName: 'email:list',
+        executionTier: 'Auto',
+        policyIds: ['pol-contract-1'],
+        rationale: 'Read-only tool.',
+      }),
+    });
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/correlation ID/i);
+    expect(body.detail).not.toContain('policy-db.internal');
+    expect(body.detail).not.toContain('evidence_log');
+  });
+
   it('returns 202 NeedsApproval for Mutation tool with approvalId', async () => {
     await startWith();
     const res = await fetch(proposeUrl(), {

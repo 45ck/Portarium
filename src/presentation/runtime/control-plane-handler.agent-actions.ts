@@ -18,6 +18,7 @@ import {
 } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
+  GENERIC_DEPENDENCY_FAILURE_DETAIL,
   type ProblemDetails,
   authenticate,
   problemFromError,
@@ -25,6 +26,7 @@ import {
   respondJson,
   respondProblem,
 } from './control-plane-handler.shared.js';
+import type { PortariumLogger } from '../../infrastructure/observability/logger.js';
 
 type AgentActionArgs = Readonly<{
   deps: ControlPlaneDeps;
@@ -34,6 +36,7 @@ type AgentActionArgs = Readonly<{
   pathname: string;
   traceContext: TraceContext;
   workspaceId: string;
+  log?: PortariumLogger;
 }>;
 
 function serviceUnavailableProblem(detail: string, instance: string): ProblemDetails {
@@ -65,7 +68,7 @@ function proposeErrorToProblem(error: ProposeAgentActionError, instance: string)
     case 'Conflict':
       return problemFromError({ kind: 'ValidationFailed', message: error.message }, instance);
     case 'DependencyFailure':
-      return serviceUnavailableProblem(error.message, instance);
+      return serviceUnavailableProblem(GENERIC_DEPENDENCY_FAILURE_DETAIL, instance);
   }
 }
 
@@ -223,6 +226,12 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
 
   if (!result.ok) {
     proposalsTotal.inc({ decision: 'error', workspaceId });
+    if (result.error.kind === 'DependencyFailure') {
+      args.log?.error('Agent action proposal dependency failure', {
+        workspaceId,
+        error: result.error.message,
+      });
+    }
     respondProblem(res, proposeErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }

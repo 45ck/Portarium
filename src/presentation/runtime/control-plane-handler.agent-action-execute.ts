@@ -23,6 +23,7 @@ import {
 import { actionExecutionsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
+  GENERIC_DEPENDENCY_FAILURE_DETAIL,
   type ProblemDetails,
   authenticate,
   problemFromError,
@@ -30,6 +31,7 @@ import {
   respondJson,
   respondProblem,
 } from './control-plane-handler.shared.js';
+import type { PortariumLogger } from '../../infrastructure/observability/logger.js';
 
 // ---------------------------------------------------------------------------
 // Handler argument type
@@ -44,6 +46,7 @@ type ExecuteAgentActionArgs = Readonly<{
   traceContext: TraceContext;
   workspaceId: string;
   approvalId: string;
+  log?: PortariumLogger;
 }>;
 
 // ---------------------------------------------------------------------------
@@ -72,7 +75,7 @@ function executeErrorToProblem(
         type: 'https://portarium.dev/problems/service-unavailable',
         title: 'Service Unavailable',
         status: 503,
-        detail: error.message,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
         instance,
       };
   }
@@ -251,6 +254,13 @@ export async function handleExecuteApprovedAgentAction(
 
   if (!result.ok) {
     actionExecutionsTotal.inc({ status: 'error', workspaceId });
+    if (result.error.kind === 'DependencyFailure') {
+      args.log?.error('Agent action execution dependency failure', {
+        approvalId,
+        workspaceId,
+        error: result.error.message,
+      });
+    }
     respondProblem(res, executeErrorToProblem(result.error, pathname), correlationId, traceContext);
     return;
   }

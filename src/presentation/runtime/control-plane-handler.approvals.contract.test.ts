@@ -278,6 +278,33 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(body.type).toMatch(/conflict/);
   });
 
+  it('does not leak internal dependency errors in 502 detail', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ approvals: [PENDING_APPROVAL] }),
+        unitOfWork: {
+          execute: async () => {
+            throw new Error('database host db.internal.local table approvals write failed');
+          },
+        },
+      }),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    });
+    expect(res.status).toBe(502);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/correlation ID/i);
+    expect(body.detail).not.toContain('db.internal.local');
+    expect(body.detail).not.toContain('approvals write failed');
+  });
+
   it('returns 422 when previousApproverIds is malformed', async () => {
     await startWith({ approvals: [PENDING_APPROVAL] });
     const res = await fetch(decideUrl(), {

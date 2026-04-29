@@ -24,6 +24,7 @@ import { createLogger } from '../../infrastructure/observability/logger.js';
 import { createRequestLogger } from '../../infrastructure/observability/request-logger.js';
 import {
   PayloadTooLargeError,
+  GENERIC_INTERNAL_ERROR_DETAIL,
   assertReadAccess,
   authenticate,
   checkIfMatch,
@@ -981,13 +982,18 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     const correlationId = ctx?.correlationId ?? randomUUID();
     const traceContext = ctx?.traceContext ?? normalizeTraceContext(c.env.incoming);
     const pathname = ctx?.pathname ?? c.req.path;
+    (ctx?.log ?? rootLog).error('Unhandled control-plane request error', {
+      correlationId,
+      path: pathname,
+      error: error instanceof Error ? error.message : String(error),
+    });
     respondProblem(
       c.env.outgoing,
       {
         type: 'https://portarium.dev/problems/internal',
         title: 'Internal Server Error',
         status: 500,
-        detail: error instanceof Error ? error.message : 'Unhandled error.',
+        detail: GENERIC_INTERNAL_ERROR_DETAIL,
         instance: pathname,
       },
       correlationId,
@@ -1030,6 +1036,11 @@ export function createControlPlaneHandler(deps: ControlPlaneDeps): RequestHandle
         if (!res.writableEnded) {
           const correlationId = randomUUID();
           const traceContext = normalizeTraceContext(req);
+          rootLog.error('Unhandled control-plane fetch error', {
+            correlationId,
+            path: req.url ?? '/',
+            error: error instanceof Error ? error.message : String(error),
+          });
 
           // Body size limit exceeded — 413 Payload Too Large.
           if (error instanceof PayloadTooLargeError) {
@@ -1055,7 +1066,7 @@ export function createControlPlaneHandler(deps: ControlPlaneDeps): RequestHandle
               type: 'https://portarium.dev/problems/internal',
               title: 'Internal Server Error',
               status: 500,
-              detail: error instanceof Error ? error.message : 'Unhandled error.',
+              detail: GENERIC_INTERNAL_ERROR_DETAIL,
               instance: req.url ?? '/',
             },
             correlationId,

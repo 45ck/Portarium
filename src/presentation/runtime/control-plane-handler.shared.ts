@@ -67,6 +67,12 @@ export const PROBLEM_TYPES = {
   unsupportedMediaType: 'https://portarium.dev/problems/unsupported-media-type',
 } as const;
 
+export const GENERIC_INTERNAL_ERROR_DETAIL =
+  'An internal server error occurred. Use the correlation ID when contacting support.';
+
+export const GENERIC_DEPENDENCY_FAILURE_DETAIL =
+  'A required dependency is temporarily unavailable. Use the correlation ID when contacting support.';
+
 // ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------
