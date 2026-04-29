@@ -105,4 +105,25 @@ describe('ControlPlaneClient', () => {
   it('exports a singleton client for hooks/routes', () => {
     expect(controlPlaneClient).toBeInstanceOf(ControlPlaneClient);
   });
+
+  it('URL-encodes workspace and resource path segments', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ approvalId: 'ap/1', status: 'Pending' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.getApproval('workspace with spaces', 'ap/1');
+
+    const [url] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(
+      'https://api.example.test/v1/workspaces/workspace%20with%20spaces/approvals/ap%2F1',
+    );
+  });
 });

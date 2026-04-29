@@ -2,6 +2,8 @@ import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import { CockpitApiError } from '@/lib/control-plane-client';
 
 const STORAGE_PREFIX = 'portarium:cockpit:approval-outbox:v1';
+const MAX_ATTEMPTS = 5;
+const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface QueueStorageEntry {
   idempotencyKey: string;
@@ -119,6 +121,11 @@ function nextAttemptAt(now: Date, attemptCount: number): string {
   return new Date(now.getTime() + delayMs).toISOString();
 }
 
+function isExpired(entry: QueueStorageEntry, now: Date): boolean {
+  const queuedAt = new Date(entry.queuedAtIso).getTime();
+  return Number.isFinite(queuedAt) && now.getTime() - queuedAt > MAX_AGE_MS;
+}
+
 export function listApprovalDecisionOutbox(workspaceId: string): QueueStorageEntry[] {
   return readQueue(workspaceId);
 }
@@ -165,6 +172,11 @@ export async function drainApprovalDecisionOutbox(options: DrainOptions): Promis
   const nextQueue: QueueStorageEntry[] = [];
 
   for (const entry of queue) {
+    if (isExpired(entry, now) || entry.attemptCount >= MAX_ATTEMPTS) {
+      dropped += 1;
+      continue;
+    }
+
     if (new Date(entry.nextAttemptAtIso).getTime() > now.getTime()) {
       nextQueue.push(entry);
       continue;

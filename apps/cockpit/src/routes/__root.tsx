@@ -9,7 +9,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useApprovals } from '@/hooks/queries/use-approvals';
+import { useApprovalEventStream } from '@/hooks/queries/use-approval-event-stream';
 import { useUIStore } from '@/stores/ui-store';
+import { parseApprovalNavigationTarget } from '@/lib/approval-navigation';
+import { getNotificationTargetUrl, onNotificationActionPerformed } from '@/lib/push-notifications';
 import { cn } from '@/lib/utils';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ErrorBoundary } from '@/components/cockpit/error-boundary';
@@ -273,6 +276,12 @@ function InboxBadge({ wsId }: { wsId: string }) {
   );
 }
 
+function ApprovalEventStreamSubscriber() {
+  const wsId = useUIStore((s) => s.activeWorkspaceId);
+  useApprovalEventStream(wsId);
+  return null;
+}
+
 function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
@@ -299,14 +308,28 @@ function RootLayout() {
     void initAuth();
   }, [initAuth]);
 
-  // Register native deep-link handler for OIDC callbacks.
+  // Register native deep-link handler for OIDC callbacks and approval links.
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    void setupDeepLinkAuthHandler().then((fn) => {
+    void setupDeepLinkAuthHandler((target) => {
+      void navigate(target);
+    }).then((fn) => {
       cleanup = fn;
     });
     return () => cleanup?.();
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    void onNotificationActionPerformed((payload) => {
+      const targetUrl = getNotificationTargetUrl(payload);
+      const target = parseApprovalNavigationTarget(targetUrl);
+      if (target) void navigate(target);
+    }).then((fn) => {
+      cleanup = fn;
+    });
+    return () => cleanup?.();
+  }, [navigate]);
 
   // Redirect to login when unauthenticated (OIDC configured, no dev token).
   useEffect(() => {
@@ -383,6 +406,7 @@ function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ApprovalEventStreamSubscriber />
       <TooltipProvider>
         <div className="flex h-screen bg-background text-foreground">
           <a

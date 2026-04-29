@@ -67,6 +67,14 @@ describe('useApprovalEventStream', () => {
     expect(MockEventSource.instances[0]!.url).toBe('/v1/workspaces/ws-1/events:stream');
   });
 
+  it('URL-encodes workspace identifiers in the SSE endpoint', () => {
+    renderHook(() => useApprovalEventStream('workspace with spaces'), { wrapper });
+
+    expect(MockEventSource.instances[0]!.url).toBe(
+      '/v1/workspaces/workspace%20with%20spaces/events:stream',
+    );
+  });
+
   it('listens for approval event types', () => {
     renderHook(() => useApprovalEventStream('ws-1'), { wrapper });
 
@@ -82,6 +90,12 @@ describe('useApprovalEventStream', () => {
     expect(MockEventSource.instances).toHaveLength(0);
   });
 
+  it('does not connect when EventSource is unavailable', () => {
+    vi.stubGlobal('EventSource', undefined);
+    renderHook(() => useApprovalEventStream('ws-1'), { wrapper });
+    expect(MockEventSource.instances).toHaveLength(0);
+  });
+
   it('closes EventSource on unmount', () => {
     const { unmount } = renderHook(() => useApprovalEventStream('ws-1'), { wrapper });
     const es = MockEventSource.instances[0]!;
@@ -91,7 +105,7 @@ describe('useApprovalEventStream', () => {
     expect(es.closed).toBe(true);
   });
 
-  it('invalidates approval queries when an approval event arrives', () => {
+  it('invalidates approval and run queries when an approval event arrives', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const invalidateSpy = vi.spyOn(qc, 'invalidateQueries');
 
@@ -105,5 +119,6 @@ describe('useApprovalEventStream', () => {
     es.emit('com.portarium.approval.ApprovalGranted', { approvalId: 'a-1' });
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['approvals', 'ws-1'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['runs', 'ws-1'] });
   });
 });

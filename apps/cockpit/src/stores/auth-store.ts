@@ -32,6 +32,10 @@ import {
   decodeJwtPayload,
   OidcError,
 } from '@/lib/oidc-client';
+import {
+  parseApprovalNavigationTarget,
+  type ApprovalNavigationTarget,
+} from '@/lib/approval-navigation';
 
 // ---------------------------------------------------------------------------
 // Token storage keys
@@ -231,11 +235,20 @@ const OIDC_DEEP_LINK_PREFIXES = ['portarium://auth/callback', 'https://portarium
  * Register a deep link listener that handles OIDC callbacks on native.
  * Returns a cleanup function — call it when unmounting the root layout.
  */
-export async function setupDeepLinkAuthHandler(): Promise<() => void> {
+export async function setupDeepLinkAuthHandler(
+  onApprovalLink?: (target: ApprovalNavigationTarget) => void,
+): Promise<() => void> {
   const cleanup = await onDeepLink((url: string) => {
     const isCallback = OIDC_DEEP_LINK_PREFIXES.some((prefix) => url.startsWith(prefix));
-    if (!isCallback) return;
-    void useAuthStore.getState().handleCallback(url);
+    if (isCallback) {
+      void useAuthStore.getState().handleCallback(url);
+      return;
+    }
+
+    const approvalTarget = parseApprovalNavigationTarget(url);
+    if (approvalTarget) {
+      onApprovalLink?.(approvalTarget);
+    }
   });
   return cleanup;
 }

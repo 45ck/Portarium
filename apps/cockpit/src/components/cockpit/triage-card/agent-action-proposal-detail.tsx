@@ -18,12 +18,31 @@ const CATEGORY_STYLE: Record<
 
 const TIER_STYLE: Record<
   string,
-  { variant: 'secondary' | 'outline' | 'warning' | 'destructive'; label: string }
+  {
+    variant: 'secondary' | 'outline' | 'warning' | 'destructive';
+    label: string;
+    guidance: string;
+  }
 > = {
-  Auto: { variant: 'secondary', label: 'Auto' },
-  Assisted: { variant: 'outline', label: 'Assisted' },
-  HumanApprove: { variant: 'warning', label: 'Human Approve' },
-  ManualOnly: { variant: 'destructive', label: 'Manual Only' },
+  Auto: { variant: 'secondary', label: 'Auto', guidance: 'Policy normally allows this action.' },
+  Assisted: { variant: 'outline', label: 'Assisted', guidance: 'Review the plan and evidence.' },
+  HumanApprove: {
+    variant: 'warning',
+    label: 'Human Approve',
+    guidance: 'Confirm the agent, tool, machine, and intended change before approving.',
+  },
+  ManualOnly: {
+    variant: 'destructive',
+    label: 'Manual Only',
+    guidance: 'Do not approve unless the manual handoff is explicitly intentional.',
+  },
+};
+
+const CATEGORY_GUIDANCE: Record<string, string> = {
+  ReadOnly: 'Read-only tools should not change external systems.',
+  Mutation: 'Mutation tools will change a connected system or artifact.',
+  Dangerous: 'Dangerous tools can create broad or hard-to-reverse impact.',
+  Unknown: 'Unknown tools need extra scrutiny before approval.',
 };
 
 // ---------------------------------------------------------------------------
@@ -97,6 +116,16 @@ export function AgentActionProposalDetail({ proposal }: AgentActionProposalDetai
             </span>
           </>
         )}
+      </div>
+
+      <div className="rounded-md border border-border bg-background/70 px-3 py-2 space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Approval focus
+        </p>
+        <p className="text-[11px] leading-relaxed">{tierStyle.guidance}</p>
+        <p className="text-[11px] leading-relaxed">
+          {CATEGORY_GUIDANCE[proposal.toolCategory] ?? CATEGORY_GUIDANCE['Unknown']}
+        </p>
       </div>
     </div>
   );

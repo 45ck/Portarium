@@ -27,6 +27,7 @@ export function useApprovalEventStream(wsId: string): void {
 
   useEffect(() => {
     if (!wsId) return;
+    if (typeof EventSource === 'undefined') return;
 
     let es: EventSource | null = null;
     let disposed = false;
@@ -34,12 +35,13 @@ export function useApprovalEventStream(wsId: string): void {
     function connect() {
       if (disposed) return;
 
-      const url = `/v1/workspaces/${wsId}/events:stream`;
+      const url = `/v1/workspaces/${encodeURIComponent(wsId)}/events:stream`;
       es = new EventSource(url);
 
       for (const eventType of APPROVAL_EVENT_TYPES) {
         es.addEventListener(eventType, () => {
-          qc.invalidateQueries({ queryKey: ['approvals', wsId] });
+          void qc.invalidateQueries({ queryKey: ['approvals', wsId] });
+          void qc.invalidateQueries({ queryKey: ['runs', wsId] });
         });
       }
 

@@ -51,6 +51,32 @@ const VAPID_PUBLIC_KEY = import.meta.env['VITE_VAPID_PUBLIC_KEY'] as string | un
 
 const DEVICE_TOKEN_ENDPOINT = '/api/notifications/device-tokens';
 
+export function getNotificationTargetUrl(
+  payload: Record<string, string | undefined> | undefined,
+  origin = typeof window === 'undefined' ? 'https://portarium.io' : window.location.origin,
+): string {
+  const explicitUrl = payload?.['url']?.trim();
+  if (explicitUrl) {
+    try {
+      const url = new URL(explicitUrl, origin);
+      if (url.origin === origin) return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      if (explicitUrl.startsWith('/')) return explicitUrl;
+    }
+  }
+
+  const approvalId = payload?.['approvalId']?.trim();
+  if (approvalId) {
+    const search = new URLSearchParams({
+      focus: approvalId,
+      from: 'notification',
+    });
+    return `/approvals?${search.toString()}`;
+  }
+
+  return '/';
+}
+
 // ── Permission request ────────────────────────────────────────────────────────
 
 /**
@@ -212,6 +238,35 @@ export async function onForegroundNotification(
           data: notification.data as Record<string, string> | undefined,
           tag: notification.id as string | undefined,
         });
+      },
+    );
+    return () => {
+      void (listener as { remove(): Promise<void> }).remove();
+    };
+  } catch {
+    return () => {
+      /* no-op */
+    };
+  }
+}
+
+export async function onNotificationActionPerformed(
+  handler: (payload: Record<string, string>) => void,
+): Promise<() => void> {
+  if (!isNative())
+    return () => {
+      /* no-op */
+    };
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { PushNotifications } = (await import('@capacitor/push-notifications')) as any;
+    const listener = await PushNotifications.addListener(
+      'pushNotificationActionPerformed',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (event: any) => {
+        const data = event.notification?.data ?? event.data ?? {};
+        handler(data as Record<string, string>);
       },
     );
     return () => {

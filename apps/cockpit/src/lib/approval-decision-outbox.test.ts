@@ -92,4 +92,26 @@ describe('approval decision outbox', () => {
     expect(result).toEqual({ processed: 1, delivered: 0, requeued: 1, dropped: 0 });
     expect(queued?.attemptCount).toBe(1);
   });
+
+  it('drops stale queued decisions instead of replaying old approvals', async () => {
+    enqueueApprovalDecisionOutbox(
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'ap-1',
+        decision: { decision: 'Approved', rationale: 'safe' },
+      },
+      { now: new Date('2026-02-01T00:00:00.000Z') },
+    );
+
+    const sendDecision = vi.fn(async () => {});
+    const result = await drainApprovalDecisionOutbox({
+      workspaceId: 'ws-1',
+      now: new Date('2026-02-10T00:00:00.000Z'),
+      sendDecision,
+    });
+
+    expect(result).toEqual({ processed: 0, delivered: 0, requeued: 0, dropped: 1 });
+    expect(sendDecision).not.toHaveBeenCalled();
+    expect(listApprovalDecisionOutbox('ws-1')).toHaveLength(0);
+  });
 });

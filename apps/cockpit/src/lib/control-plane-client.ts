@@ -83,6 +83,10 @@ function defaultGetBearerToken(): string | undefined {
   );
 }
 
+function pathSegment(value: string): string {
+  return encodeURIComponent(value);
+}
+
 export class ControlPlaneClient {
   private readonly baseUrl: string;
   private readonly getBearerToken?: () => string | undefined;
@@ -96,11 +100,13 @@ export class ControlPlaneClient {
   }
 
   public listApprovals(workspaceId: string): Promise<CursorPage<ApprovalSummary>> {
-    return this.request(`/v1/workspaces/${workspaceId}/approvals`);
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/approvals`);
   }
 
   public getApproval(workspaceId: string, approvalId: string): Promise<ApprovalSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/approvals/${approvalId}`);
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/approvals/${pathSegment(approvalId)}`,
+    );
   }
 
   public decideApproval(
@@ -113,41 +119,49 @@ export class ControlPlaneClient {
     if (options.idempotencyKey) {
       headers.set('Idempotency-Key', options.idempotencyKey);
     }
-    return this.request(`/v1/workspaces/${workspaceId}/approvals/${approvalId}/decide`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/approvals/${pathSegment(approvalId)}/decide`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      },
+    );
   }
 
   public listRuns(workspaceId: string): Promise<CursorPage<RunSummary>> {
-    return this.request(`/v1/workspaces/${workspaceId}/runs`);
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs`);
   }
 
   public getRun(workspaceId: string, runId: string): Promise<RunSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/runs/${runId}`);
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs/${pathSegment(runId)}`);
   }
 
   public startRun(
     workspaceId: string,
     body: { workflowId: string; parameters?: Record<string, unknown> },
   ): Promise<RunSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/runs`, {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs`, {
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
   public cancelRun(workspaceId: string, runId: string): Promise<RunSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/runs/${runId}/cancel`, { method: 'POST' });
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/runs/${pathSegment(runId)}/cancel`,
+      { method: 'POST' },
+    );
   }
 
   public listWorkItems(workspaceId: string): Promise<CursorPage<WorkItemSummary>> {
-    return this.request(`/v1/workspaces/${workspaceId}/work-items`);
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/work-items`);
   }
 
   public getWorkItem(workspaceId: string, workItemId: string): Promise<WorkItemSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/work-items/${workItemId}`);
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/work-items/${pathSegment(workItemId)}`,
+    );
   }
 
   public updateWorkItem(
@@ -155,18 +169,23 @@ export class ControlPlaneClient {
     workItemId: string,
     body: UpdateWorkItemCommand,
   ): Promise<WorkItemSummary> {
-    return this.request(`/v1/workspaces/${workspaceId}/work-items/${workItemId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    });
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/work-items/${pathSegment(workItemId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      },
+    );
   }
 
   public listWorkflows(workspaceId: string): Promise<CursorPage<WorkflowSummary>> {
-    return this.request(`/v1/workspaces/${workspaceId}/workflows`);
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/workflows`);
   }
 
   public getWorkflow(workspaceId: string, workflowId: string): Promise<WorkflowDetail> {
-    return this.request(`/v1/workspaces/${workspaceId}/workflows/${workflowId}`);
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/workflows/${pathSegment(workflowId)}`,
+    );
   }
 
   public updateWorkflow(
@@ -174,24 +193,27 @@ export class ControlPlaneClient {
     workflowId: string,
     body: UpdateWorkflowRequest,
   ): Promise<WorkflowDetail> {
-    return this.request(`/v1/workspaces/${workspaceId}/workflows/${workflowId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    });
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/workflows/${pathSegment(workflowId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      },
+    );
   }
 
   public searchRetrieval(
     workspaceId: string,
     body: RetrievalSearchRequest,
   ): Promise<RetrievalSearchResponse> {
-    return this.request(`/v1/workspaces/${workspaceId}/retrieval/search`, {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/retrieval/search`, {
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
   public queryGraph(workspaceId: string, body: GraphQueryRequest): Promise<GraphTraversalResult> {
-    return this.request(`/v1/workspaces/${workspaceId}/graph/query`, {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/graph/query`, {
       method: 'POST',
       body: JSON.stringify(body),
     });
@@ -204,7 +226,9 @@ export class ControlPlaneClient {
   ): Promise<DerivedArtifactListResponse> {
     const params = new URLSearchParams({ runId });
     if (kind) params.set('kind', kind);
-    return this.request(`/v1/workspaces/${workspaceId}/derived-artifacts?${params.toString()}`);
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/derived-artifacts?${params.toString()}`,
+    );
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {

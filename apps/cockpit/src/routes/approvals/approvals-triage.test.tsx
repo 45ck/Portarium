@@ -244,6 +244,19 @@ describe('Approvals triage page', () => {
     );
   });
 
+  it('selects the focused approval when opened from a notification', async () => {
+    const focused = ALL_PENDING[1]!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/waiting for your approval/i)).toBeTruthy();
+    expect(await screen.findByText(`2 of ${ALL_PENDING.length} pending`)).toBeTruthy();
+    const matchingPrompts = await screen.findAllByText(focused.prompt, { exact: false });
+    expect(matchingPrompts.length).toBeGreaterThan(0);
+  });
+
   it('disables Approve button when SoD state is blocked-self', async () => {
     const blockedApproval = APPROVALS.find((a) => a.sodEvaluation?.state === 'blocked-self')!;
     expect(blockedApproval).toBeDefined();
@@ -283,5 +296,22 @@ describe('Approvals triage page', () => {
 
     // "Review N skipped items" button appears since we skipped 1 item.
     expect(screen.getByRole('button', { name: /review.*skipped/i })).toBeTruthy();
+  });
+
+  it('keeps the active approval in place when Deny is clicked without rationale', async () => {
+    const firstPending = ALL_PENDING[0]!;
+    const secondPending = ALL_PENDING[1]!;
+    _mockApprovals = [firstPending, secondPending];
+
+    await renderApprovalsRoute();
+
+    expect(await screen.findAllByText(firstPending.prompt, { exact: false })).toBeTruthy();
+
+    const group = screen.getByRole('group', { name: /make approval decision/i });
+    await userEvent.click(within(group).getByRole('button', { name: /deny/i }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(screen.queryAllByText(firstPending.prompt, { exact: false }).length).toBeGreaterThan(0);
+    expect(_mockSubmitDecision).not.toHaveBeenCalled();
   });
 });

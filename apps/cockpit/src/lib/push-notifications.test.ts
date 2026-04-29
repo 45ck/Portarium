@@ -9,10 +9,12 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
+  getNotificationTargetUrl,
   requestPushPermission,
   registerDeviceToken,
   unregisterDeviceToken,
   onForegroundNotification,
+  onNotificationActionPerformed,
   type PushRegistration,
 } from './push-notifications';
 
@@ -204,6 +206,38 @@ describe('onForegroundNotification (web)', () => {
     // Calling cleanup should not throw
     expect(() => cleanup()).not.toThrow();
     // Handler should NOT have been called
+    expect(handler).not.toHaveBeenCalled();
+  });
+});
+
+describe('notification target URLs', () => {
+  it('builds a focused approvals URL from an approvalId', () => {
+    expect(getNotificationTargetUrl({ approvalId: 'appr-1' }, 'https://cockpit.test')).toBe(
+      '/approvals?focus=appr-1&from=notification',
+    );
+  });
+
+  it('keeps same-origin explicit URLs', () => {
+    expect(
+      getNotificationTargetUrl(
+        { url: 'https://cockpit.test/approvals?focus=appr-2' },
+        'https://cockpit.test',
+      ),
+    ).toBe('/approvals?focus=appr-2');
+  });
+
+  it('falls back for external explicit URLs', () => {
+    expect(
+      getNotificationTargetUrl({ url: 'https://evil.test/phish' }, 'https://cockpit.test'),
+    ).toBe('/');
+  });
+});
+
+describe('onNotificationActionPerformed (web)', () => {
+  it('returns a no-op cleanup function on web', async () => {
+    const handler = vi.fn();
+    const cleanup = await onNotificationActionPerformed(handler);
+    expect(() => cleanup()).not.toThrow();
     expect(handler).not.toHaveBeenCalled();
   });
 });

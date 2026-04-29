@@ -86,8 +86,10 @@ const MORE_SECTIONS = [
     label: 'Config',
     items: [
       { label: 'Agents', to: '/config/agents' },
+      { label: 'Machines', to: '/config/machines' },
       { label: 'Adapters', to: '/config/adapters' },
       { label: 'Credentials', to: '/config/credentials' },
+      { label: 'Policies', to: '/config/policies' },
       { label: 'Settings', to: '/config/settings' },
     ],
   },
@@ -157,7 +159,7 @@ export function MobileBottomNav({
                   )}
                 >
                   {item.icon}
-                  {item.label === 'Inbox' && pendingCount > 0 && (
+                  {(item.label === 'Inbox' || item.label === 'Approvals') && pendingCount > 0 && (
                     <span className="absolute top-1.5 right-1/2 translate-x-4 -translate-y-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center leading-none">
                       {pendingCount > 99 ? '99+' : pendingCount}
                     </span>

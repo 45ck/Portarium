@@ -199,6 +199,13 @@ function ApprovalsPage() {
     }
   }, [triageQueue, selectedApprovalId]);
 
+  useEffect(() => {
+    if (!search.focus) return;
+    if (triageQueue.some((approval) => approval.approvalId === search.focus)) {
+      setSelectedApprovalId(search.focus);
+    }
+  }, [search.focus, triageQueue]);
+
   const currentIndex = currentApproval
     ? Math.max(
         0,

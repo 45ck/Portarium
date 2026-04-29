@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
 import { ApprovalTriageCard, type TriageAction, type DragValidation } from './triage-card';
+import { resolveTriageDragDecision, TRIAGE_COMMIT_PX } from './approval-triage-drag';
 import type {
   ApprovalSummary,
   PlanEffect,
@@ -9,8 +10,6 @@ import type {
   WorkflowSummary,
 } from '@portarium/cockpit-types';
 
-const COMMIT_PX = 120;
-const COMMIT_VELOCITY = 500;
 const DRAG_ELASTIC = 0.2;
 const STAMP_THRESHOLD = 0.3;
 
@@ -75,7 +74,7 @@ export function ApprovalTriageDeck({
   const rotateY = useTransform(x, [-300, 0, 300], [-5, 0, 5]);
 
   // Normalized drag progress -1..1
-  const dragProgress = useTransform(x, [-COMMIT_PX, 0, COMMIT_PX], [-1, 0, 1]);
+  const dragProgress = useTransform(x, [-TRIAGE_COMMIT_PX, 0, TRIAGE_COMMIT_PX], [-1, 0, 1]);
   const dragProgressRef = useRef(0);
   dragProgress.on('change', (v) => {
     dragProgressRef.current = v;
@@ -89,14 +88,22 @@ export function ApprovalTriageDeck({
 
   // Stamp opacity — gated by validation state
   const stampThreshold = compact ? 0.2 : STAMP_THRESHOLD;
-  const rawApproveStampOpacity = useTransform(x, [stampThreshold * COMMIT_PX, COMMIT_PX], [0, 1]);
+  const rawApproveStampOpacity = useTransform(
+    x,
+    [stampThreshold * TRIAGE_COMMIT_PX, TRIAGE_COMMIT_PX],
+    [0, 1],
+  );
   const approveStampOpacity = useTransform(rawApproveStampOpacity, (v) =>
     validationRef.current.canApprove ? v : 0,
   );
   const blockedStampOpacity = useTransform(rawApproveStampOpacity, (v) =>
     validationRef.current.canApprove ? 0 : v,
   );
-  const rawDenyStampOpacity = useTransform(x, [-COMMIT_PX, -stampThreshold * COMMIT_PX], [1, 0]);
+  const rawDenyStampOpacity = useTransform(
+    x,
+    [-TRIAGE_COMMIT_PX, -stampThreshold * TRIAGE_COMMIT_PX],
+    [1, 0],
+  );
   const denyStampOpacity = useTransform(rawDenyStampOpacity, (v) =>
     validationRef.current.canDeny ? v : 0,
   );
@@ -104,8 +111,8 @@ export function ApprovalTriageDeck({
   // Directional tint background
   const tintBackground = useTransform(x, (latest) =>
     latest > 0
-      ? `linear-gradient(100deg, rgba(34,197,94,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`
-      : `linear-gradient(260deg, rgba(239,68,68,${Math.min((Math.abs(latest) / (COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`,
+      ? `linear-gradient(100deg, rgba(34,197,94,${Math.min((Math.abs(latest) / (TRIAGE_COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`
+      : `linear-gradient(260deg, rgba(239,68,68,${Math.min((Math.abs(latest) / (TRIAGE_COMMIT_PX * 2)) * 0.12, 0.12)}) 0%, transparent 60%)`,
   );
 
   const isDraggingRef = useRef(false);
@@ -143,37 +150,28 @@ export function ApprovalTriageDeck({
   const handleDragEnd = useCallback(
     (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
       isDraggingRef.current = false;
-      const committed =
-        Math.abs(info.offset.x) >= COMMIT_PX || Math.abs(info.velocity.x) >= COMMIT_VELOCITY;
+      const decision = resolveTriageDragDecision({
+        offsetX: info.offset.x,
+        velocityX: info.velocity.x,
+        ...validationRef.current,
+      });
 
-      if (!committed) {
+      if (decision.kind === 'snap-back') {
         animate(x, 0, SPRING_SNAP);
         return;
       }
 
-      const dir = info.offset.x > 0 ? 1 : -1;
-      const action: TriageAction = dir > 0 ? 'Approved' : 'Denied';
-
-      // Validation gate — reject drag if action is blocked
-      const validation = validationRef.current;
-      if (action === 'Approved' && !validation.canApprove) {
-        rejectDrag('approve');
-        return;
-      }
-      if (action === 'Denied' && !validation.canDeny) {
-        rejectDrag('deny');
+      if (decision.kind === 'reject') {
+        rejectDrag(decision.reason);
         return;
       }
 
       // Fly off screen then fire action
-      animate(x, dir * window.innerWidth, SPRING_EXIT);
+      animate(x, decision.direction * window.innerWidth, SPRING_EXIT);
       if (navigator?.vibrate) navigator.vibrate(50);
 
       // Fire after a beat so the fly-off is visible
-      setTimeout(
-        () => onAction(approval.approvalId, action, validationRef.current.currentRationale),
-        150,
-      );
+      setTimeout(() => onAction(approval.approvalId, decision.action, decision.rationale), 150);
     },
     [x, onAction, approval.approvalId, rejectDrag],
   );

@@ -2,13 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import type { MachineV1 } from '@portarium/cockpit-types';
 
 async function fetchMachines(wsId: string): Promise<{ items: MachineV1[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/machines`);
+  const res = await fetch(`/v1/workspaces/${encodeURIComponent(wsId)}/machines`);
   if (!res.ok) throw new Error('Failed to fetch machines');
   return res.json() as Promise<{ items: MachineV1[] }>;
 }
 
 async function fetchMachine(wsId: string, machineId: string): Promise<MachineV1> {
-  const res = await fetch(`/v1/workspaces/${wsId}/machines/${machineId}`);
+  const res = await fetch(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/machines/${encodeURIComponent(machineId)}`,
+  );
   if (!res.ok) throw new Error('Failed to fetch machine');
   return res.json() as Promise<MachineV1>;
 }

@@ -5,7 +5,7 @@
  *   - App shell (HTML, critical JS/CSS): Cache-first with network fallback.
  *   - API reads for hot endpoints (approvals, work-items, runs): Network-first,
  *     stale-while-revalidate with 5 s timeout.
- *   - Other API calls (/api/**): Network-only.
+ *   - Other API calls (/api/**, /v1/**): Network-only.
  *   - Static assets (icons, fonts): Cache-first (long-lived).
  *
  * Update strategy:
@@ -22,7 +22,7 @@ const API_CACHE = `${VERSION}-api`;
 const ASSETS_CACHE = `${VERSION}-assets`;
 
 // Regex matching API read endpoints we selectively cache for offline resilience
-const SELECTED_READ_ENDPOINTS = /\/api\/[^/]+\/(approvals|work-items|runs)(\/|$|\?)/;
+const SELECTED_READ_ENDPOINTS = /\/v1\/workspaces\/[^/]+\/(approvals|work-items|runs)(\/|$|\?)/;
 
 // App shell — precached on install
 const APP_SHELL_URLS = ['/', '/index.html'];
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Other API calls: network-only (no stale data for mutations)
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/v1/')) {
     return; // Let the browser handle it
   }
 
@@ -122,12 +122,24 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const targetUrl = event.notification.data?.url ?? '/';
+  const targetUrl = resolveNotificationTargetUrl(event.notification.data);
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      const focused = windowClients.find((c) => c.url === targetUrl && 'focus' in c);
-      if (focused) return focused.focus();
-      return self.clients.openWindow(targetUrl);
+      const target = new URL(targetUrl, self.location.origin);
+      const focused = windowClients.find((c) => {
+        try {
+          return new URL(c.url).origin === self.location.origin && 'focus' in c;
+        } catch {
+          return false;
+        }
+      });
+      if (focused) {
+        if ('navigate' in focused && focused.url !== target.href) {
+          return focused.navigate(target.href).then((client) => client?.focus());
+        }
+        return focused.focus();
+      }
+      return self.clients.openWindow(`${target.pathname}${target.search}${target.hash}`);
     }),
   );
 });
@@ -193,4 +205,20 @@ function isStaticAsset(pathname) {
     pathname.startsWith('/icons/') ||
     /\.(png|jpg|jpeg|svg|ico|woff2?|ttf|otf)$/.test(pathname)
   );
+}
+
+function resolveNotificationTargetUrl(data = {}) {
+  if (typeof data.url === 'string' && data.url.startsWith('/')) {
+    return data.url;
+  }
+
+  if (typeof data.approvalId === 'string' && data.approvalId.trim()) {
+    const search = new URLSearchParams({
+      focus: data.approvalId.trim(),
+      from: 'notification',
+    });
+    return `/approvals?${search.toString()}`;
+  }
+
+  return '/';
 }

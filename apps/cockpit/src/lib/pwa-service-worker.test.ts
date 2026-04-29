@@ -11,7 +11,10 @@ describe('pwa service worker', () => {
     expect(swSource).toContain("event.data?.type === 'SKIP_WAITING'");
     expect(swSource).toContain('self.clients.claim()');
     expect(swSource).toContain('SELECTED_READ_ENDPOINTS');
+    expect(swSource).toContain('\\/v1\\/workspaces');
     expect(swSource).toContain('approvals|work-items|runs');
     expect(swSource).toContain("cache.match('/index.html')");
+    expect(swSource).toContain('resolveNotificationTargetUrl');
+    expect(swSource).toContain("from: 'notification'");
   });
 });

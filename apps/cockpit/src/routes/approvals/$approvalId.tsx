@@ -7,7 +7,7 @@ export const Route = createRoute({
   beforeLoad: ({ params }) => {
     throw redirect({
       to: '/approvals',
-      search: { focus: params.approvalId },
+      search: { focus: params.approvalId, from: 'notification' },
     });
   },
 });

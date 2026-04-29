@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import type { ApprovalSummary } from '@portarium/cockpit-types';
@@ -48,6 +48,7 @@ export function ApprovalListPanel({
 }: ApprovalListPanelProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const selectedButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const filtered = useMemo(() => {
     let result = items;
@@ -65,6 +66,12 @@ export function ApprovalListPanel({
     }
     return result;
   }, [items, statusFilter, search]);
+
+  useEffect(() => {
+    if (typeof selectedButtonRef.current?.scrollIntoView === 'function') {
+      selectedButtonRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [filtered, selectedId]);
 
   return (
     <div className="flex flex-col h-full">
@@ -124,6 +131,8 @@ export function ApprovalListPanel({
                   >
                     <button
                       type="button"
+                      ref={isActive ? selectedButtonRef : null}
+                      aria-current={isActive ? 'true' : undefined}
                       className={cn(
                         'w-full text-left px-3 py-2.5 transition-colors hover:bg-accent/50',
                         isActive && 'bg-accent border-l-2 border-l-primary',

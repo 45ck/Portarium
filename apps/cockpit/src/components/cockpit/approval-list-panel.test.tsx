@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ApprovalSummary } from '@portarium/cockpit-types';
 import { ApprovalListPanel } from './approval-list-panel';
@@ -43,6 +43,10 @@ function renderPanel(items: ApprovalSummary[] = [BASE_APPROVAL_WITH_PROPOSAL]) {
 }
 
 describe('ApprovalListPanel — agentActionProposal metadata display', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   afterEach(() => {
     cleanup();
   });
@@ -108,5 +112,20 @@ describe('ApprovalListPanel — agentActionProposal metadata display', () => {
   it('renders approval prompt', () => {
     renderPanel();
     expect(screen.getByText('Approve deployment to production?')).toBeTruthy();
+  });
+
+  it('marks and scrolls the selected approval row', () => {
+    render(
+      <ApprovalListPanel
+        items={[BASE_APPROVAL_WITH_PROPOSAL]}
+        pendingCount={1}
+        selectedId={BASE_APPROVAL_WITH_PROPOSAL.approvalId}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    const row = screen.getByRole('button', { name: /approve deployment/i });
+    expect(row.getAttribute('aria-current')).toBe('true');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 });

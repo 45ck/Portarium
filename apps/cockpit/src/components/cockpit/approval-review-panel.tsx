@@ -28,6 +28,7 @@ import type {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { AgentActionContextPanel } from '@/components/cockpit/agent-action-context-panel';
 import { cn } from '@/lib/utils';
 import {
   Link2,
@@ -405,6 +406,15 @@ export function ApprovalReviewPanel({
           )}
         </div>
       </div>
+
+      {approval.agentActionProposal && (
+        <div className="shrink-0 border-b border-border bg-background px-6 py-4">
+          <AgentActionContextPanel
+            proposal={approval.agentActionProposal}
+            policyRule={approval.policyRule}
+          />
+        </div>
+      )}
 
       {/* Tab bar */}
       <div className="flex border-b border-border shrink-0" role="tablist">

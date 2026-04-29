@@ -3,8 +3,9 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Cpu, Code2, Sparkles, ArrowRight, Workflow } from 'lucide-react';
 import type { TriageModeProps } from './index';
-import type { AgentV1 } from '@portarium/cockpit-types';
+import type { AgentV1, MachineV1 } from '@portarium/cockpit-types';
 import { useAgents } from '@/hooks/queries/use-agents';
+import { useMachines } from '@/hooks/queries/use-machines';
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
 import { opColors } from '@/components/cockpit/lib/effect-colors';
 
@@ -40,6 +41,14 @@ function AgentCard({ agent }: { agent: AgentV1 }) {
           Model: <span className="font-mono">{agent.modelId}</span>
         </div>
       )}
+      {agent.policyTier && (
+        <div className="text-[11px] text-muted-foreground">
+          Policy tier:{' '}
+          <Badge variant="secondary" className="text-[9px] h-4 px-1">
+            {agent.policyTier}
+          </Badge>
+        </div>
+      )}
       <div className="flex flex-wrap gap-1">
         {agent.allowedCapabilities.map((cap) => (
           <AgentCapabilityBadge key={cap} capability={cap} />
@@ -55,16 +64,61 @@ function AgentCard({ agent }: { agent: AgentV1 }) {
   );
 }
 
+function MachineCard({ machine }: { machine: MachineV1 }) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2.5 space-y-1.5">
+      <div className="flex items-center gap-2">
+        <Cpu className="h-4 w-4 shrink-0 text-teal-500" />
+        <span className="font-medium text-xs flex-1 truncate">{machine.hostname}</span>
+        <Badge variant="outline" className="text-[9px] h-4 px-1.5 shrink-0">
+          {machine.status}
+        </Badge>
+      </div>
+      <div className="text-[11px] text-muted-foreground">
+        Machine: <span className="font-mono">{machine.machineId}</span>
+      </div>
+      {machine.lastHeartbeatAtIso && (
+        <div className="text-[11px] text-muted-foreground">
+          Last heartbeat: {new Date(machine.lastHeartbeatAtIso).toLocaleString()}
+        </div>
+      )}
+      {(machine.allowedCapabilities ?? []).length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {machine.allowedCapabilities!.map((cap) => (
+            <AgentCapabilityBadge key={cap} capability={cap} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: TriageModeProps) {
   const wsId = approval.workspaceId;
-  const agentIds = useMemo(() => run?.agentIds ?? [], [run]);
+  const agentIds = useMemo(() => {
+    const ids = new Set(run?.agentIds ?? []);
+    if (approval.agentActionProposal?.agentId) ids.add(approval.agentActionProposal.agentId);
+    return Array.from(ids);
+  }, [approval.agentActionProposal?.agentId, run]);
 
   const { data: agentsData } = useAgents(wsId);
+  const { data: machinesData } = useMachines(wsId);
 
   const agents = useMemo(() => {
     if (!agentsData?.items || agentIds.length === 0) return [];
     return agentsData.items.filter((a) => agentIds.includes(a.agentId));
   }, [agentsData, agentIds]);
+
+  const machines = useMemo(() => {
+    if (!machinesData?.items) return [];
+    const machineIds = new Set<string>();
+    if (approval.agentActionProposal?.machineId)
+      machineIds.add(approval.agentActionProposal.machineId);
+    for (const agent of agents) {
+      if (agent.machineId) machineIds.add(agent.machineId);
+    }
+    return machinesData.items.filter((m) => machineIds.has(m.machineId));
+  }, [agents, approval.agentActionProposal?.machineId, machinesData]);
 
   // Find which action we're currently on based on run status
   const currentActionIndex = useMemo(() => {
@@ -76,7 +130,7 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
     return -1;
   }, [workflow, run]);
 
-  if (agents.length === 0) {
+  if (agents.length === 0 && machines.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-muted/10 px-4 py-8 text-center">
         <Bot className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
@@ -90,17 +144,31 @@ export function AgentOverviewMode({ approval, plannedEffects, run, workflow }: T
 
   return (
     <div className="space-y-4">
-      {/* Agents Involved */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-          Agents Involved
-        </p>
-        <div className="space-y-2">
-          {agents.map((agent) => (
-            <AgentCard key={agent.agentId} agent={agent} />
-          ))}
+      {agents.length > 0 && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            Agents Involved
+          </p>
+          <div className="space-y-2">
+            {agents.map((agent) => (
+              <AgentCard key={agent.agentId} agent={agent} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {machines.length > 0 && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+            Machines Involved
+          </p>
+          <div className="space-y-2">
+            {machines.map((machine) => (
+              <MachineCard key={machine.machineId} machine={machine} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Workflow Pipeline */}
       {workflow && workflow.actions.length > 0 && (

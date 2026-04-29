@@ -58,10 +58,18 @@ describe('TriageDecisionArea', () => {
 
   it('calls onDenyAttempted when denying without rationale', async () => {
     const onDenyAttempted = vi.fn();
+    const onAction = vi.fn();
     const user = userEvent.setup();
-    render(<TriageDecisionArea {...defaultProps} onDenyAttempted={onDenyAttempted} />);
+    render(
+      <TriageDecisionArea
+        {...defaultProps}
+        onAction={onAction}
+        onDenyAttempted={onDenyAttempted}
+      />,
+    );
     await user.click(screen.getByTitle('Deny (D)'));
     expect(onDenyAttempted).toHaveBeenCalledOnce();
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it('calls onAction(Denied) when denying with rationale', async () => {

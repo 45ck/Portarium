@@ -108,6 +108,30 @@ describe('ApprovalReviewPanel — rendering', () => {
 
     expect(screen.getByTestId('approval-review-panel')).toBeTruthy();
   });
+
+  it('renders agent action context when proposal metadata is present', () => {
+    const onDecide = vi.fn();
+    render(
+      <ApprovalReviewPanel
+        approval={makeApproval({
+          agentActionProposal: {
+            proposalId: 'proposal-1',
+            agentId: 'agent-1',
+            machineId: 'machine-1',
+            toolName: 'write:file',
+            toolCategory: 'Mutation',
+            blastRadiusTier: 'HumanApprove',
+            rationale: 'Needs human approval before writing.',
+          },
+        })}
+        onDecide={onDecide}
+      />,
+    );
+
+    expect(screen.getByText('Agent Action Context')).toBeTruthy();
+    expect(screen.getByText('write:file')).toBeTruthy();
+    expect(screen.getByText('machine-1')).toBeTruthy();
+  });
 });
 
 // ---------------------------------------------------------------------------

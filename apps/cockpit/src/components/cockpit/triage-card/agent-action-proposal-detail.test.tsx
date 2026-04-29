@@ -89,4 +89,11 @@ describe('AgentActionProposalDetail', () => {
     render(<AgentActionProposalDetail proposal={proposal} />);
     expect(screen.getByText('Auto')).toBeTruthy();
   });
+
+  it('renders approval focus guidance for human review', () => {
+    render(<AgentActionProposalDetail proposal={BASE_PROPOSAL} />);
+    expect(screen.getByText('Approval focus')).toBeTruthy();
+    expect(screen.getByText(/Confirm the agent, tool, machine, and intended change/i)).toBeTruthy();
+    expect(screen.getByText(/Mutation tools will change/i)).toBeTruthy();
+  });
 });

@@ -2,13 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import type { AgentV1 } from '@portarium/cockpit-types';
 
 async function fetchAgents(wsId: string): Promise<{ items: AgentV1[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/agents`);
+  const res = await fetch(`/v1/workspaces/${encodeURIComponent(wsId)}/agents`);
   if (!res.ok) throw new Error('Failed to fetch agents');
   return res.json() as Promise<{ items: AgentV1[] }>;
 }
 
 async function fetchAgent(wsId: string, agentId: string): Promise<AgentV1> {
-  const res = await fetch(`/v1/workspaces/${wsId}/agents/${agentId}`);
+  const res = await fetch(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/agents/${encodeURIComponent(agentId)}`,
+  );
   if (!res.ok) throw new Error('Failed to fetch agent');
   return res.json() as Promise<AgentV1>;
 }
