@@ -2,6 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { resolveConfig, DEFAULT_CONFIG } from './config.js';
 
 describe('resolveConfig', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
   const validRaw = {
     portariumUrl: 'https://portarium.test',
     workspaceId: 'ws-1',
@@ -10,6 +11,7 @@ describe('resolveConfig', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    process.env.NODE_ENV = originalNodeEnv;
   });
 
   it('resolves with defaults for minimal valid input', () => {
@@ -30,6 +32,8 @@ describe('resolveConfig', () => {
   });
 
   it('allows overriding optional fields', () => {
+    process.env.NODE_ENV = 'development';
+
     const config = resolveConfig({
       ...validRaw,
       tenantId: 'custom-tenant',
@@ -44,6 +48,22 @@ describe('resolveConfig', () => {
     expect(config.approvalTimeoutMs).toBe(60_000);
     expect(config.pollIntervalMs).toBe(500);
     expect(config.bypassToolNames).toEqual(['portarium_get_run']);
+  });
+
+  it('rejects failClosed=false outside development or test environments', () => {
+    process.env.NODE_ENV = 'production';
+
+    expect(() => resolveConfig({ ...validRaw, failClosed: false })).toThrow(
+      'config.failClosed=false is allowed only when NODE_ENV is development or test',
+    );
+  });
+
+  it('allows failClosed=false in tests for deterministic fail-open regression coverage', () => {
+    process.env.NODE_ENV = 'test';
+
+    const config = resolveConfig({ ...validRaw, failClosed: false });
+
+    expect(config.failClosed).toBe(false);
   });
 
   it('drops bypassToolNames entries outside the permitted introspection set with diagnostics', () => {
