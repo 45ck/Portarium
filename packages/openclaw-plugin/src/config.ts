@@ -11,6 +11,8 @@ export const PERMITTED_BYPASS_TOOL_NAMES = [
 ] as const;
 
 const PERMITTED_BYPASS_TOOLS: ReadonlySet<string> = new Set(PERMITTED_BYPASS_TOOL_NAMES);
+const MIN_APPROVAL_TIMEOUT_MS = 60_000;
+const MIN_POLL_INTERVAL_MS = 500;
 
 export function isPermittedBypassToolName(toolName: string): boolean {
   return PERMITTED_BYPASS_TOOLS.has(toolName);
@@ -61,6 +63,20 @@ function sanitizeHeaderValue(value: string, field: string): string {
   return sanitized;
 }
 
+function resolveFiniteNumberAtLeast(
+  value: unknown,
+  field: 'approvalTimeoutMs' | 'pollIntervalMs',
+  minimum: number,
+  safetyReason: string,
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < minimum) {
+    throw new Error(
+      `[portarium-plugin] config.${field} must be a finite number >= ${minimum}ms ${safetyReason}`,
+    );
+  }
+  return value;
+}
+
 export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConfig {
   if (typeof raw.portariumUrl !== 'string' || !raw.portariumUrl) {
     throw new Error('[portarium-plugin] config.portariumUrl is required');
@@ -75,24 +91,22 @@ export function resolveConfig(raw: Record<string, unknown>): PortariumPluginConf
   // Validate numeric fields: must be finite and positive
   let approvalTimeoutMs = DEFAULT_CONFIG.approvalTimeoutMs;
   if (raw.approvalTimeoutMs !== undefined) {
-    const v = raw.approvalTimeoutMs;
-    if (!Number.isFinite(v) || (v as number) <= 0) {
-      throw new Error(
-        '[portarium-plugin] config.approvalTimeoutMs must be a finite positive number',
-      );
-    }
-    approvalTimeoutMs = v as number;
+    approvalTimeoutMs = resolveFiniteNumberAtLeast(
+      raw.approvalTimeoutMs,
+      'approvalTimeoutMs',
+      MIN_APPROVAL_TIMEOUT_MS,
+      'to prevent instant-deny approval waits',
+    );
   }
 
   let pollIntervalMs = DEFAULT_CONFIG.pollIntervalMs;
   if (raw.pollIntervalMs !== undefined) {
-    const v = raw.pollIntervalMs;
-    if (!Number.isFinite(v) || (v as number) < 500) {
-      throw new Error(
-        '[portarium-plugin] config.pollIntervalMs must be a finite number >= 500ms to prevent spin-loops',
-      );
-    }
-    pollIntervalMs = v as number;
+    pollIntervalMs = resolveFiniteNumberAtLeast(
+      raw.pollIntervalMs,
+      'pollIntervalMs',
+      MIN_POLL_INTERVAL_MS,
+      'to prevent spin-loops',
+    );
   }
 
   // bypassToolNames: only allow the hard-coded Portarium introspection tools.
