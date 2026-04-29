@@ -10,6 +10,7 @@ export type WaitForDecisionResult =
 
 /** Maximum consecutive poll errors before aborting the wait. */
 const MAX_CONSECUTIVE_ERRORS = 10;
+const MAX_ERROR_BACKOFF_MS = 30_000;
 
 export class ApprovalPoller {
   readonly #client: PortariumClient;
@@ -44,6 +45,10 @@ export class ApprovalPoller {
         return { approved: false, reason: 'Approval expired before a decision was made' };
       }
 
+      if (result.status === 'request_changes') {
+        return { approved: false, reason: result.reason };
+      }
+
       // 'executed' is a terminal state — action was already executed downstream
       if (result.status === 'executed') {
         return { approved: true };
@@ -69,8 +74,8 @@ export class ApprovalPoller {
         consecutiveErrors = 0;
       }
 
-      // status === 'pending' — keep waiting
-      await sleep(this.#config.pollIntervalMs);
+      // status === 'pending' — keep waiting. Error responses back off to avoid tight retry loops.
+      await sleep(resolvePollDelayMs(this.#config.pollIntervalMs, consecutiveErrors));
     }
 
     return {
@@ -82,4 +87,10 @@ export class ApprovalPoller {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function resolvePollDelayMs(baseIntervalMs: number, consecutiveErrors: number): number {
+  if (consecutiveErrors <= 0) return baseIntervalMs;
+  const multiplier = 2 ** Math.min(consecutiveErrors - 1, 4);
+  return Math.min(baseIntervalMs * multiplier, MAX_ERROR_BACKOFF_MS);
 }
