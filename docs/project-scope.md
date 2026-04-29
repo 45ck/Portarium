@@ -4,7 +4,9 @@ This page separates the core Portarium product from adjacent experiments and fut
 
 ## Core Product
 
-Portarium is the governance layer between AI workers and real systems. The core product is:
+Portarium is the governance layer between AI workers and real systems. The core product succeeds when agents can propose real tool actions, Portarium can govern those actions, and the repo can prove the behavior with repeatable tests.
+
+The core product is:
 
 - Control-plane API for Workspaces, Runs, Approvals, Policies, Evidence, Work Items, and agent action proposals.
 - Policy enforcement with execution tiers: `Auto`, `Assisted`, `Human-approve`, and `Manual-only`.
@@ -14,6 +16,20 @@ Portarium is the governance layer between AI workers and real systems. The core 
 - Adapter/port architecture so existing Systems of Record remain authoritative.
 - SDK and integration surface so agents and external tools can call Portarium.
 - Cockpit as a reference operator UI for approvals, policies, runs, and evidence.
+
+## Core Success Bar
+
+The minimum credible product is not a large library of example businesses. It is a small, reliable governance loop:
+
+1. An agent proposes an action through the SDK, plugin, or HTTP API.
+2. Portarium classifies the action by policy and execution tier.
+3. Safe actions can proceed; gated actions create an approval; blocked actions do not run.
+4. A human can approve or deny with enough context to make the decision.
+5. Approved actions execute through a controlled runner or adapter.
+6. The decision, evidence, and result are recorded and queryable.
+7. Automated tests prove the allowed, approval-required, denied, blocked, retry, and isolation paths.
+
+Anything outside that loop is only core if it makes the loop safer, more reliable, or easier to verify.
 
 ## Core Status
 
@@ -31,7 +47,7 @@ The remaining core work should stay focused on production readiness:
 - Fix fail-closed paths where missing dependencies or failed hooks could otherwise permit unsafe behavior.
 - Close security hardening gaps around plugin config, headers, metrics, ownership checks, error details, JWT requirements, and rate limiting.
 - Finish release hygiene: SDK publishing, migration runner closeout, gate baseline, and green `npm run ci:pr`.
-- Keep Cockpit focused on the reference flows required to operate approvals, policies, runs, and evidence.
+- Keep Cockpit focused on the reference flows required to test and operate approvals, policies, runs, and evidence.
 
 ## Future Work
 
@@ -65,4 +81,6 @@ Demo-machine integration, weekly autonomy digests, multi-project showcases, and 
 
 A backlog item is core if Portarium would be unsafe, unable to run, or unauditable without it.
 
-A backlog item is future work if it makes Portarium more impressive, broader, easier to sell, easier to operate at scale, or useful for a specific showcase, but the governance control plane still works without it.
+A backlog item is also core if it is required to prove the agent governance loop works in automated tests.
+
+A backlog item is future work if it makes Portarium more impressive, broader, easier to sell, easier to operate at scale, or useful for a specific showcase, but the tested agent governance loop still works without it.
