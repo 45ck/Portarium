@@ -35,6 +35,7 @@ interface UIStore {
   sidebarCollapsed: boolean;
   commandPaletteOpen: boolean;
   startRunOpen: boolean;
+  intentPlannerOpen: boolean;
   activeWorkspaceId: string;
   activeDataset: DatasetId;
   activePersona: PersonaId;
@@ -43,6 +44,7 @@ interface UIStore {
   setSidebarCollapsed: (v: boolean) => void;
   setCommandPaletteOpen: (v: boolean) => void;
   setStartRunOpen: (v: boolean) => void;
+  setIntentPlannerOpen: (v: boolean) => void;
   setActiveDataset: (id: DatasetId) => void;
   setActiveWorkspaceId: (id: string) => void;
   setActivePersona: (persona: PersonaId) => void;
@@ -91,6 +93,7 @@ export const useUIStore = create<UIStore>((set) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
   startRunOpen: false,
+  intentPlannerOpen: false,
   activeWorkspaceId: DATASET_WORKSPACE_MAP[readStoredDataset()],
   activeDataset: readStoredDataset(),
   activePersona: 'Operator',
@@ -99,6 +102,7 @@ export const useUIStore = create<UIStore>((set) => ({
   setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
   setCommandPaletteOpen: (v) => set({ commandPaletteOpen: v }),
   setStartRunOpen: (v) => set({ startRunOpen: v }),
+  setIntentPlannerOpen: (v) => set({ intentPlannerOpen: v }),
   setActiveDataset: (id) => {
     localStorage.setItem(DATASET_STORAGE_KEY, id);
     window.location.reload();

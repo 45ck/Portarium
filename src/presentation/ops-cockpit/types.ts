@@ -39,6 +39,51 @@ export interface PlanSection {
   effects: PlanEffect[];
 }
 
+export type IntentTriggerSource = 'Human' | 'Ops' | 'Agent';
+
+export interface ProjectIntent {
+  schemaVersion: 1;
+  intentId: string;
+  workspaceId: string;
+  createdAtIso: string;
+  createdByUserId: string;
+  source: IntentTriggerSource;
+  prompt: string;
+  normalizedGoal: string;
+  constraints: string[];
+}
+
+export interface BeadProposal {
+  schemaVersion: 1;
+  proposalId: string;
+  title: string;
+  body: string;
+  executionTier: RunSummary['executionTier'];
+  specRef: string;
+  dependsOnProposalIds: string[];
+  plannedEffectIds: string[];
+}
+
+export interface PlanArtifact {
+  schemaVersion: 1;
+  artifactId: string;
+  title: string;
+  markdown: string;
+}
+
+export interface IntentPlanRequest {
+  triggerText: string;
+  source?: IntentTriggerSource;
+  constraints?: string[];
+}
+
+export interface IntentPlanResponse {
+  intent: ProjectIntent;
+  plan: Plan;
+  proposals: BeadProposal[];
+  artifact: PlanArtifact;
+}
+
 export type RunStatus =
   | 'Pending'
   | 'Running'

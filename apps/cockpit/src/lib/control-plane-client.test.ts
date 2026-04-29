@@ -106,6 +106,41 @@ describe('ControlPlaneClient', () => {
     expect(controlPlaneClient).toBeInstanceOf(ControlPlaneClient);
   });
 
+  it('posts natural language intents to the plan endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            intent: { intentId: 'intent-1' },
+            plan: { planId: 'plan-1' },
+            proposals: [],
+            artifact: { markdown: '# Plan' },
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.planIntent('ws-1', {
+      triggerText: 'Build approval queue summary',
+      source: 'Human',
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/intents:plan');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({
+      triggerText: 'Build approval queue summary',
+      source: 'Human',
+    });
+  });
+
   it('URL-encodes workspace and resource path segments', async () => {
     const fetchImpl = vi.fn(
       async () =>

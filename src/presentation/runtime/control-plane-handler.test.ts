@@ -125,6 +125,37 @@ describe('createControlPlaneHandler', () => {
     expect(body.status).toBe(403);
   });
 
+  it('plans a natural language intent without creating worktrees', async () => {
+    await startWith(
+      makeDeps({
+        clock: () => new Date('2026-04-29T00:00:00.000Z'),
+      }),
+    );
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/ws-1/intents:plan`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          triggerText: 'Add approval queue summary; add mobile tests',
+          constraints: ['Do not create worktrees before approval'],
+        }),
+      },
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      intent: { normalizedGoal: string };
+      proposals: { executionTier: string; specRef: string }[];
+      artifact: { markdown: string };
+    };
+    expect(body.intent.normalizedGoal).toBe('Add approval queue summary; add mobile tests');
+    expect(body.proposals).toHaveLength(2);
+    expect(body.proposals[0]?.executionTier).toBe('HumanApprove');
+    expect(body.proposals[0]?.specRef).toContain('build-plan.md');
+    expect(body.artifact.markdown).toContain('before any worktree is created');
+  });
+
   it('returns 500 Problem Details when a dependency throws', async () => {
     await startWith(
       makeDeps({

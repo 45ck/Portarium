@@ -76,6 +76,7 @@ import {
 } from './control-plane-handler.workforce.js';
 import { handleProposeAgentAction } from './control-plane-handler.agent-actions.js';
 import { handleExecuteApprovedAgentAction } from './control-plane-handler.agent-action-execute.js';
+import { handlePlanIntent } from './control-plane-handler.intents.js';
 import {
   handleDecideApproval,
   handleGetApproval,
@@ -935,6 +936,13 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.post('/v1/workspaces/:workspaceId/agent-actions:propose', async (c: Context<HonoEnv>) => {
     const ctx = c.get('ctx');
     await handleProposeAgentAction({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/intents:plan
+  app.post('/v1/workspaces/:workspaceId/intents:plan', async (c: Context<HonoEnv>) => {
+    const ctx = c.get('ctx');
+    await handlePlanIntent({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

@@ -25,6 +25,7 @@ import {
   Palette,
   PanelLeft,
   Database,
+  GitBranchPlus,
 } from 'lucide-react';
 
 interface CommandItemDef {
@@ -177,6 +178,14 @@ function CommandPalette() {
       onSelect: () => {
         setCommandPaletteOpen(false);
         useUIStore.getState().setStartRunOpen(true);
+      },
+    },
+    {
+      label: 'Plan New Beads',
+      icon: <GitBranchPlus className="h-4 w-4" />,
+      onSelect: () => {
+        setCommandPaletteOpen(false);
+        useUIStore.getState().setIntentPlannerOpen(true);
       },
     },
     {
