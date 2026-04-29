@@ -2,7 +2,7 @@
 
 Owner Bead: `bead-1045`
 
-Status: planned.
+Status: runnable deterministic soak.
 
 ## Scenario
 
@@ -18,3 +18,14 @@ enough to observe queue depth, scheduler behavior, and degradation signals.
 - runtime memory, error rate, and backlog metrics are captured for the soak
   window
 - report distinguishes product defects from environment or host limits
+
+## Run
+
+```bash
+node experiments/iteration-2/scenarios/approval-backlog-soak/run.mjs
+```
+
+The script writes `outcome.json`, `queue-metrics.json`,
+`evidence-summary.json`, and `report.md` under this scenario's `results/`
+directory. CI runs the same experiment with a temporary result directory through
+`scripts/integration/scenario-approval-backlog-soak.test.ts`.

@@ -30,6 +30,7 @@ type Iteration2Manifest = Readonly<{
     beadId: string;
     status: string;
     blockedBy: readonly string[];
+    runnerPath?: string;
     contractPath: string;
     comparesTo: string;
     validates: readonly string[];
@@ -52,7 +53,11 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(manifest.iteration).toBe(2);
     expect(manifest.beadId).toBe('bead-1040');
     expect(manifest.status).toBe('telemetry-ready');
-    expect(manifest.scenarios.every((scenario) => scenario.status === 'planned')).toBe(true);
+    expect(
+      manifest.scenarios
+        .filter((scenario) => scenario.scenarioId !== 'approval-backlog-soak')
+        .every((scenario) => scenario.status === 'planned'),
+    ).toBe(true);
   });
 
   it('keeps prior experiment bundles immutable and writes v2 attempts append-only', () => {
@@ -102,5 +107,18 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       expect(scenario?.validates.length).toBeGreaterThanOrEqual(4);
       expect(existsSync(join(repoRoot, scenario?.contractPath ?? 'missing'))).toBe(true);
     }
+  });
+
+  it('marks approval-backlog-soak as runnable with a checked runner', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'approval-backlog-soak',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/approval-backlog-soak/run.mjs',
+    );
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
   });
 });
