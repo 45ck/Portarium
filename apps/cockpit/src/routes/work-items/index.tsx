@@ -9,6 +9,7 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { FilterBar } from '@/components/cockpit/filter-bar';
 import { DataTable } from '@/components/cockpit/data-table';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RotateCcw } from 'lucide-react';
@@ -115,6 +116,7 @@ function WorkItemsPage() {
         <PageHeader
           title="Work Items"
           icon={<EntityIcon entityType="work-item" size="md" decorative />}
+          status={<FreshnessBadge offlineMeta={offlineMeta} />}
         />
         <OfflineSyncBanner
           isOffline={offlineMeta.isOffline}
@@ -141,6 +143,7 @@ function WorkItemsPage() {
       <PageHeader
         title="Work Items"
         icon={<EntityIcon entityType="work-item" size="md" decorative />}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
       <OfflineSyncBanner
         isOffline={offlineMeta.isOffline}

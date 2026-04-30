@@ -15,6 +15,7 @@ import {
 import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
 import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
@@ -167,10 +168,22 @@ function BlockedRunRow({ run, onClick }: { run: RunSummary; onClick: () => void 
 function InboxPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
-  const { data: approvalsData, isLoading: approvalsLoading } = useApprovals(wsId);
-  const { data: runsData, isLoading: runsLoading } = useRuns(wsId);
-  const { data: evidenceData, isLoading: evidenceLoading } = useEvidence(wsId);
-  const { data: humanTasksData, isLoading: humanTasksLoading } = useHumanTasks(wsId);
+  const {
+    data: approvalsData,
+    isLoading: approvalsLoading,
+    offlineMeta: approvalsOfflineMeta,
+  } = useApprovals(wsId);
+  const { data: runsData, isLoading: runsLoading, offlineMeta: runsOfflineMeta } = useRuns(wsId);
+  const {
+    data: evidenceData,
+    isLoading: evidenceLoading,
+    offlineMeta: evidenceOfflineMeta,
+  } = useEvidence(wsId);
+  const {
+    data: humanTasksData,
+    isLoading: humanTasksLoading,
+    offlineMeta: humanTasksOfflineMeta,
+  } = useHumanTasks(wsId);
   const { data: membersData } = useWorkforceMembers(wsId);
   const adapters = useAdapters(wsId);
   const adapterItems = adapters.data?.items ?? [];
@@ -218,6 +231,14 @@ function InboxPage() {
         title="Inbox"
         description="Your workspace triage surface — approvals, human tasks, blocked runs, and policy alerts"
         icon={<EntityIcon entityType="queue" size="md" decorative />}
+        status={
+          <>
+            <FreshnessBadge sourceLabel="Approvals" offlineMeta={approvalsOfflineMeta} />
+            <FreshnessBadge sourceLabel="Runs" offlineMeta={runsOfflineMeta} />
+            <FreshnessBadge sourceLabel="Human Tasks" offlineMeta={humanTasksOfflineMeta} />
+            <FreshnessBadge sourceLabel="Evidence" offlineMeta={evidenceOfflineMeta} />
+          </>
+        }
       />
 
       <SystemStateBanner state={workspaceState} />

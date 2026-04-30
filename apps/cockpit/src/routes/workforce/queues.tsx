@@ -3,6 +3,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useWorkforceQueues } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,13 @@ const strategyVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
 
 function WorkforceQueuesPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data: queuesData, isLoading: queuesLoading, isError, refetch } = useWorkforceQueues(wsId);
+  const {
+    data: queuesData,
+    isLoading: queuesLoading,
+    isError,
+    refetch,
+    offlineMeta,
+  } = useWorkforceQueues(wsId);
 
   const queues = queuesData?.items ?? [];
 
@@ -73,6 +80,7 @@ function WorkforceQueuesPage() {
           title="Queues"
           description="Workforce routing queues"
           icon={<EntityIcon entityType="queue" size="md" decorative />}
+          status={<FreshnessBadge offlineMeta={offlineMeta} />}
         />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
@@ -95,6 +103,7 @@ function WorkforceQueuesPage() {
         title="Queues"
         description="Workforce routing queues"
         icon={<EntityIcon entityType="queue" size="md" decorative />}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={queuesLoading} />}
       />
 
       <DataTable

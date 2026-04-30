@@ -28,6 +28,7 @@ import { MOCK_USERS, type UserSummary } from './fixtures/users';
 import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from './fixtures/policies';
 import { MOCK_GATEWAYS } from './fixtures/gateways';
 import { DEFAULT_PACK_UI_RUNTIME, DEMO_PACK_UI_RUNTIME } from './fixtures/pack-ui-runtime';
+import { resolveStoredDataset } from '@/lib/cockpit-runtime';
 
 // ---------------------------------------------------------------------------
 // Mutable dataset reference — replaced at bootstrap via loadActiveDataset()
@@ -51,8 +52,7 @@ let workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
 
 export async function loadActiveDataset(): Promise<void> {
   const { DATASETS } = await import('./fixtures/index');
-  const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
-  const stored = envPreferred || localStorage.getItem('portarium-dataset') || 'meridian-demo';
+  const stored = resolveStoredDataset(import.meta.env, localStorage);
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const entry = (DATASETS.find((d) => d.id === stored) ?? DATASETS[0])!;
   data = await entry.load();

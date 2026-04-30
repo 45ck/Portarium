@@ -183,12 +183,14 @@ describe('cockpit mobile shell', () => {
     await renderRoute('/runs');
 
     expect(await screen.findByRole('heading', { name: 'Runs' })).toBeTruthy();
+    expect(screen.getAllByText('Demo').length).toBeGreaterThan(0);
     expect(screen.queryByLabelText('Primary navigation')).toBeNull();
     expect(screen.getByRole('button', { name: 'Open more navigation' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
 
     expect(await screen.findByText('Navigation')).toBeTruthy();
+    expect(screen.getAllByText(/fixture data/).length).toBeGreaterThan(0);
     expect(screen.getByLabelText('Mobile persona')).toBeTruthy();
     expect(screen.getByLabelText('Mobile workspace')).toBeTruthy();
   });

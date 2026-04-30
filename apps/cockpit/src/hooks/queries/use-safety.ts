@@ -1,51 +1,71 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { SafetyConstraint, ApprovalThreshold, EStopAuditEntry } from '@/types/robotics';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchConstraints(wsId: string): Promise<{ items: SafetyConstraint[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/constraints`);
-  if (!res.ok) throw new Error('Failed to fetch constraints');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/safety/constraints`,
+    undefined,
+    'Failed to fetch constraints',
+  );
 }
 
 async function fetchThresholds(wsId: string): Promise<{ items: ApprovalThreshold[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/thresholds`);
-  if (!res.ok) throw new Error('Failed to fetch thresholds');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/safety/thresholds`,
+    undefined,
+    'Failed to fetch thresholds',
+  );
 }
 
 async function fetchEStopLog(wsId: string): Promise<{ items: EStopAuditEntry[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop-log`);
-  if (!res.ok) throw new Error('Failed to fetch E-Stop log');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/safety/estop-log`,
+    undefined,
+    'Failed to fetch E-Stop log',
+  );
 }
 
 async function fetchEstopStatus(wsId: string): Promise<{ active: boolean }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`);
-  if (!res.ok) throw new Error('Failed to fetch E-Stop status');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/safety/estop`,
+    undefined,
+    'Failed to fetch E-Stop status',
+  );
 }
 
 export function useSafetyConstraints(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['safety-constraints', wsId],
+    cacheKey: `safety-constraints:${wsId}`,
     queryFn: () => fetchConstraints(wsId),
+    enabled: Boolean(wsId),
   });
 }
 
 export function useApprovalThresholds(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['approval-thresholds', wsId],
+    cacheKey: `approval-thresholds:${wsId}`,
     queryFn: () => fetchThresholds(wsId),
+    enabled: Boolean(wsId),
   });
 }
 
 export function useEStopLog(wsId: string) {
-  return useQuery({ queryKey: ['estop-log', wsId], queryFn: () => fetchEStopLog(wsId) });
+  return useOfflineQuery({
+    queryKey: ['estop-log', wsId],
+    cacheKey: `estop-log:${wsId}`,
+    queryFn: () => fetchEStopLog(wsId),
+    enabled: Boolean(wsId),
+  });
 }
 
 export function useGlobalEstopStatus(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['estop-status', wsId],
+    cacheKey: `estop-status:${wsId}`,
     queryFn: () => fetchEstopStatus(wsId),
     enabled: Boolean(wsId),
   });

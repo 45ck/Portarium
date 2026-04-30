@@ -194,7 +194,8 @@ describe('Work Items hub', () => {
       (wi1001.links?.evidenceIds?.length ?? 0) +
       (wi1001.links?.externalRefs?.length ?? 0);
     expect(expectedCount).toBeGreaterThan(0);
-    expect(await screen.findByText(String(expectedCount))).toBeTruthy();
+    const visibleCounts = await screen.findAllByText(String(expectedCount));
+    expect(visibleCounts.length).toBeGreaterThan(0);
   });
 
   it('navigates to work item detail when a row is clicked', async () => {

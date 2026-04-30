@@ -16,9 +16,17 @@ interface PageHeaderProps {
   action?: React.ReactNode;
   breadcrumb?: { label: string; to?: string }[];
   icon?: React.ReactNode;
+  status?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, action, breadcrumb, icon }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  description,
+  action,
+  breadcrumb,
+  icon,
+  status,
+}: PageHeaderProps) {
   return (
     <div className="space-y-2">
       {breadcrumb && breadcrumb.length > 0 && (
@@ -53,6 +61,7 @@ export function PageHeader({ title, description, action, breadcrumb, icon }: Pag
             <span>{title}</span>
           </h1>
           {description && <p className="text-xs text-muted-foreground">{description}</p>}
+          {status ? <div className="mt-2 flex flex-wrap gap-2">{status}</div> : null}
         </div>
         {action && <div className="sm:shrink-0">{action}</div>}
       </div>

@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner';
 import { verifyChain } from '@/components/cockpit/triage-modes/lib/chain-verification';
@@ -26,7 +27,7 @@ const EVIDENCE_PAGE_SIZE = 20;
 
 function EvidencePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, isError, refetch } = useEvidence(wsId);
+  const { data, isLoading, isError, refetch, offlineMeta } = useEvidence(wsId);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     category: 'all',
   });
@@ -58,6 +59,7 @@ function EvidencePage() {
         title="Evidence"
         description="Immutable audit trail with hash chain verification"
         icon={<EntityIcon entityType="evidence" size="md" decorative />}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
 
       <ChainIntegrityBanner status={chainStatus} />

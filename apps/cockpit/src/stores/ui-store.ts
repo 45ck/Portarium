@@ -1,19 +1,14 @@
 import { create } from 'zustand';
 import { purgeCockpitTenantData } from '@/lib/cockpit-tenant-data';
-import type { DatasetId } from '@/mocks/fixtures/index';
+import {
+  DATASET_STORAGE_KEY,
+  resolveCockpitRuntime,
+  resolveStoredDataset,
+  workspaceIdForDataset,
+  type DatasetId,
+} from '@/lib/cockpit-runtime';
 
-const DATASET_STORAGE_KEY = 'portarium-dataset';
 const TRIAGE_VIEW_STORAGE_KEY = 'portarium-triage-view';
-
-const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
-  live: import.meta.env.VITE_PORTARIUM_DEFAULT_WORKSPACE_ID ?? 'ws-local-dev',
-  demo: 'ws-demo',
-  'openclaw-demo': 'ws-demo',
-  'meridian-demo': 'ws-meridian',
-  'meridian-full': 'ws-meridian',
-};
-
-const VALID_DATASETS = Object.keys(DATASET_WORKSPACE_MAP) as DatasetId[];
 
 export type PersonaId = 'Operator' | 'Approver' | 'Auditor' | 'Admin';
 
@@ -78,25 +73,18 @@ function readStoredTriageView(): TriageViewMode {
 }
 
 function readStoredDataset(): DatasetId {
-  const envPreferred = (import.meta.env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
-  if (VALID_DATASETS.includes(envPreferred as DatasetId)) {
-    return envPreferred as DatasetId;
-  }
-
-  const stored = localStorage.getItem(DATASET_STORAGE_KEY);
-  if (stored && VALID_DATASETS.includes(stored as DatasetId)) {
-    return stored as DatasetId;
-  }
-  return 'meridian-demo';
+  return resolveStoredDataset(import.meta.env, localStorage);
 }
+
+const initialDataset = readStoredDataset();
 
 export const useUIStore = create<UIStore>((set) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
   startRunOpen: false,
   intentPlannerOpen: false,
-  activeWorkspaceId: DATASET_WORKSPACE_MAP[readStoredDataset()],
-  activeDataset: readStoredDataset(),
+  activeWorkspaceId: workspaceIdForDataset(initialDataset),
+  activeDataset: initialDataset,
   activePersona: 'Operator',
   keyboardCheatsheetOpen: false,
   triageViewMode: readStoredTriageView(),
@@ -105,6 +93,11 @@ export const useUIStore = create<UIStore>((set) => ({
   setStartRunOpen: (v) => set({ startRunOpen: v }),
   setIntentPlannerOpen: (v) => set({ intentPlannerOpen: v }),
   setActiveDataset: (id) => {
+    if (!resolveCockpitRuntime().allowDemoControls) {
+      localStorage.setItem(DATASET_STORAGE_KEY, 'live');
+      set({ activeDataset: 'live', activeWorkspaceId: workspaceIdForDataset('live') });
+      return;
+    }
     localStorage.setItem(DATASET_STORAGE_KEY, id);
     window.location.reload();
   },

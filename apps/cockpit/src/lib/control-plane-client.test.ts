@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CockpitApiError,
   ControlPlaneClient,
@@ -7,6 +7,10 @@ import {
 } from '@/lib/control-plane-client';
 
 describe('ControlPlaneClient', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('uses the decide endpoint and injects bearer auth', async () => {
     const fetchImpl = vi.fn(
       async () =>
@@ -121,6 +125,42 @@ describe('ControlPlaneClient', () => {
     const pending = client.listApprovals('ws-1');
     await vi.runAllTimersAsync();
     await expect(pending).resolves.toEqual({ items: [] });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry mutating requests without an idempotency key', async () => {
+    const fetchImpl = vi.fn(async () => new Response('busy', { status: 503 }));
+    const client = new ControlPlaneClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await expect(client.cancelRun('ws-1', 'run-1')).rejects.toBeInstanceOf(CockpitApiError);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries mutating requests when an idempotency key is provided', async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('busy', { status: 503 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ approvalId: 'ap-1', status: 'Approved' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    const client = new ControlPlaneClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    const pending = client.decideApproval(
+      'ws-1',
+      'ap-1',
+      { decision: 'Approved', rationale: 'Reviewed.' },
+      { idempotencyKey: 'decision-1' },
+    );
+    await vi.runAllTimersAsync();
+    await expect(pending).resolves.toMatchObject({ approvalId: 'ap-1' });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 

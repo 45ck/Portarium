@@ -7,6 +7,7 @@ import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
 import { useAdapters } from '@/hooks/queries/use-adapters';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
 import { KpiRow } from '@/components/cockpit/kpi-row';
@@ -129,6 +130,13 @@ function DashboardPage() {
       <PageHeader
         title="Dashboard"
         icon={<EntityIcon entityType="workflow" size="md" decorative />}
+        status={
+          <>
+            <FreshnessBadge sourceLabel="Runs" offlineMeta={runs.offlineMeta} />
+            <FreshnessBadge sourceLabel="Approvals" offlineMeta={approvals.offlineMeta} />
+            <FreshnessBadge sourceLabel="Work Items" offlineMeta={workItems.offlineMeta} />
+          </>
+        }
         action={
           <Button size="sm" onClick={() => setStartRunOpen(true)}>
             New Run

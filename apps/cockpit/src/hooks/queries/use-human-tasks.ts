@@ -1,15 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   HumanTaskSummary,
   AssignHumanTaskRequest,
   CompleteHumanTaskRequest,
   EscalateHumanTaskRequest,
 } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchHumanTasks(wsId: string): Promise<{ items: HumanTaskSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/human-tasks`);
-  if (!res.ok) throw new Error('Failed to fetch human tasks');
-  return res.json();
+  return fetchJson(`/v1/workspaces/${wsId}/human-tasks`, undefined, 'Failed to fetch human tasks');
 }
 
 async function postAssignHumanTask(
@@ -55,8 +55,9 @@ async function postEscalateHumanTask(
 }
 
 export function useHumanTasks(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['human-tasks', wsId],
+    cacheKey: `human-tasks:${wsId}`,
     queryFn: () => fetchHumanTasks(wsId),
     enabled: Boolean(wsId),
   });

@@ -21,6 +21,7 @@ import {
 } from '@/components/cockpit/triage-complete-state';
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { NotificationBanner } from '@/components/cockpit/notification-banner';
 import { CheckSquare, AlertCircle, RotateCcw, Bell, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import {
   type PolicyStudioReturnSearch,
   validatePolicyStudioReturnSearch,
 } from '@/lib/policy-studio-search';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { APPROVALS as FIXTURE_APPROVALS } from '@/mocks/fixtures/openclaw-demo';
 
 const UNDO_DELAY_MS = 5_000;
@@ -65,69 +67,74 @@ function ApprovalsPage() {
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
   const rawItems = data?.items ?? [];
+  const runtime = resolveCockpitRuntime();
 
   // -- Live-update state (policy event bridge) --
   const [injectedApprovals, setInjectedApprovals] = useState<ApprovalSummary[]>([]);
   const [removedApprovalIds, setRemovedApprovalIds] = useState<Set<string>>(new Set());
   const [relaxFlashId, setRelaxFlashId] = useState<string | null>(null);
 
-  const showDemo = search.demo === true || import.meta.env.DEV;
+  const showDemo = runtime.allowDemoControls && search.demo === true;
   const { triggerTighten, triggerRelax } = useDemoTriggers();
 
   usePolicyUpdates(
-    useCallback((payload: PolicyUpdatePayload) => {
-      if (payload.effect === 'tighten') {
-        // Inject an approval that was previously auto-approved as now needing review
-        const injected = FIXTURE_APPROVALS.find((a) =>
-          payload.affectedApprovalIds.includes(a.approvalId),
-        );
-        if (injected) {
-          const asNewPending: ApprovalSummary = {
-            ...injected,
-            status: 'Pending',
-            decidedAtIso: undefined,
-            decidedByUserId: undefined,
-            rationale: undefined,
-            requestedAtIso: new Date().toISOString(),
-          };
-          setInjectedApprovals((prev) => {
-            if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
-            return [...prev, asNewPending];
+    useCallback(
+      (payload: PolicyUpdatePayload) => {
+        if (!showDemo) return;
+        if (payload.effect === 'tighten') {
+          // Inject an approval that was previously auto-approved as now needing review
+          const injected = FIXTURE_APPROVALS.find((a) =>
+            payload.affectedApprovalIds.includes(a.approvalId),
+          );
+          if (injected) {
+            const asNewPending: ApprovalSummary = {
+              ...injected,
+              status: 'Pending',
+              decidedAtIso: undefined,
+              decidedByUserId: undefined,
+              rationale: undefined,
+              requestedAtIso: new Date().toISOString(),
+            };
+            setInjectedApprovals((prev) => {
+              if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
+              return [...prev, asNewPending];
+            });
+            // Remove from removed set if it was there
+            setRemovedApprovalIds((prev) => {
+              if (!prev.has(asNewPending.approvalId)) return prev;
+              const next = new Set(prev);
+              next.delete(asNewPending.approvalId);
+              return next;
+            });
+          }
+
+          toast(`Policy tightened: ${payload.policyName}`, {
+            description: payload.changeDescription,
+            icon: <Bell className="h-4 w-4 text-orange-500" />,
+            duration: 5_000,
           });
-          // Remove from removed set if it was there
-          setRemovedApprovalIds((prev) => {
-            if (!prev.has(asNewPending.approvalId)) return prev;
-            const next = new Set(prev);
-            next.delete(asNewPending.approvalId);
-            return next;
+        } else {
+          // Relax: remove affected approvals with green flash
+          const targetId = payload.affectedApprovalIds[0];
+          if (targetId) {
+            setRelaxFlashId(targetId);
+            setTimeout(() => {
+              setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
+              setRelaxFlashId(null);
+              // Also remove from injected if it was there
+              setInjectedApprovals((prev) => prev.filter((a) => a.approvalId !== targetId));
+            }, 800);
+          }
+
+          toast(`Policy relaxed: ${payload.policyName}`, {
+            description: payload.changeDescription,
+            icon: <Zap className="h-4 w-4 text-green-500" />,
+            duration: 5_000,
           });
         }
-
-        toast(`Policy tightened: ${payload.policyName}`, {
-          description: payload.changeDescription,
-          icon: <Bell className="h-4 w-4 text-orange-500" />,
-          duration: 5_000,
-        });
-      } else {
-        // Relax: remove affected approvals with green flash
-        const targetId = payload.affectedApprovalIds[0];
-        if (targetId) {
-          setRelaxFlashId(targetId);
-          setTimeout(() => {
-            setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
-            setRelaxFlashId(null);
-            // Also remove from injected if it was there
-            setInjectedApprovals((prev) => prev.filter((a) => a.approvalId !== targetId));
-          }, 800);
-        }
-
-        toast(`Policy relaxed: ${payload.policyName}`, {
-          description: payload.changeDescription,
-          icon: <Zap className="h-4 w-4 text-green-500" />,
-          duration: 5_000,
-        });
-      }
-    }, []),
+      },
+      [showDemo],
+    ),
   );
 
   // Merge injected approvals and filter removed ones
@@ -686,6 +693,7 @@ function ApprovalsPage() {
               : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading || isFlushing} />}
       />
       {showOfflineSyncBanner ? (
         <OfflineSyncBanner
@@ -756,15 +764,17 @@ export const Route = createRoute({
   component: ApprovalsPage,
   validateSearch: (search: Record<string, unknown>): ApprovalsSearch => {
     const policyStudioReturnSearch = validatePolicyStudioReturnSearch(search);
+    const allowDemo = resolveCockpitRuntime().allowDemoControls;
     return {
       focus: typeof search.focus === 'string' ? search.focus : undefined,
       from: typeof search.from === 'string' ? search.from : undefined,
       demo:
-        search.demo === true ||
-        search.demo === 'true' ||
-        search.demo === '"true"' ||
-        search.demo === 1 ||
-        search.demo === '1'
+        allowDemo &&
+        (search.demo === true ||
+          search.demo === 'true' ||
+          search.demo === '"true"' ||
+          search.demo === 1 ||
+          search.demo === '1')
           ? true
           : undefined,
       ...policyStudioReturnSearch,

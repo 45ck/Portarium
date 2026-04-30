@@ -1,4 +1,10 @@
-export type CockpitRuntimeMode = 'demo' | 'dev-live' | 'live';
+import {
+  cockpitFlagEnabled,
+  resolveCockpitRuntime,
+  type CockpitRuntimeMode,
+} from '@/lib/cockpit-runtime';
+
+export type { CockpitRuntimeMode } from '@/lib/cockpit-runtime';
 
 interface CockpitEnvLike {
   readonly DEV?: boolean;
@@ -15,29 +21,17 @@ export interface CockpitDataRetentionPolicy {
   readonly serviceWorkerTenantApiCache: boolean;
 }
 
-function flagEnabled(value: string | boolean | undefined, defaultValue = false): boolean {
-  if (typeof value === 'boolean') return value;
-  if (value === undefined) return defaultValue;
-  const normalized = value.trim().toLowerCase();
-  if (!normalized) return defaultValue;
-  return ['1', 'true', 'yes', 'on'].includes(normalized);
-}
-
-function mockServiceWorkerEnabled(env: CockpitEnvLike): boolean {
-  return flagEnabled(env.VITE_PORTARIUM_ENABLE_MSW, env.DEV === true);
-}
-
 export function getCockpitDataRetentionPolicy(
   env: CockpitEnvLike = import.meta.env,
 ): CockpitDataRetentionPolicy {
-  const demoMode = flagEnabled(env.VITE_DEMO_MODE) || mockServiceWorkerEnabled(env);
-  const allowLiveOfflineCache = flagEnabled(env.VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE);
+  const runtime = resolveCockpitRuntime(env);
+  const allowLiveOfflineCache = cockpitFlagEnabled(env.VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE);
+  const demoMode = runtime.runtimeMode === 'demo';
   const allowOfflineTenantData = demoMode || allowLiveOfflineCache;
-  const runtimeMode: CockpitRuntimeMode = demoMode ? 'demo' : env.DEV ? 'dev-live' : 'live';
 
   return {
-    runtimeMode,
-    usesLiveTenantData: !demoMode,
+    runtimeMode: runtime.runtimeMode,
+    usesLiveTenantData: runtime.usesLiveTenantData,
     allowOfflineTenantData,
     persistTenantQueryCache: allowOfflineTenantData,
     serviceWorkerTenantApiCache: allowOfflineTenantData,

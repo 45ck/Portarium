@@ -396,7 +396,8 @@ export class ControlPlaneClient {
       headers.set('X-Portarium-Request', '1');
     }
     const credentials = init.credentials ?? this.credentials ?? (token ? 'omit' : 'include');
-    const maxRetries = method === 'GET' || method === 'HEAD' ? 3 : 1;
+    const maxRetries =
+      method === 'GET' || method === 'HEAD' ? 3 : headers.has('Idempotency-Key') ? 1 : 0;
     let response: Response;
 
     for (let attempt = 0; ; attempt += 1) {

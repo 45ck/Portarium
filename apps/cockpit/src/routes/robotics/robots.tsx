@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useRobots } from '@/hooks/queries/use-robots';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { RobotStatusBadge } from '@/components/domain/robot-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,7 +81,7 @@ function RobotCard({ robot }: { robot: RobotSummary }) {
 
 function RobotsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useRobots(wsId);
+  const { data, isLoading, offlineMeta } = useRobots(wsId);
   const [classFilter, setClassFilter] = useState<RobotClass | 'All'>('All');
 
   const robots = data?.items ?? [];
@@ -98,6 +99,7 @@ function RobotsPage() {
         title="Robots"
         description="Fleet overview and per-robot controls"
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Robots' }]}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

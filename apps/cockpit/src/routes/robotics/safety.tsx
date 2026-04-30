@@ -13,8 +13,10 @@ import {
   useClearEstop,
 } from '@/hooks/queries/use-safety';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useCockpitDataSourceStatus } from '@/hooks/use-cockpit-data-source-status';
 import {
   Dialog,
   DialogContent,
@@ -64,10 +66,19 @@ function TierBadge({ tier }: { tier: string }) {
 
 function SafetyPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data: constraintsData, isLoading: constraintsLoading } = useSafetyConstraints(wsId);
-  const { data: thresholdsData, isLoading: thresholdsLoading } = useApprovalThresholds(wsId);
-  const { data: logData, isLoading: logLoading } = useEStopLog(wsId);
-  const { data: estopData } = useGlobalEstopStatus(wsId);
+  const {
+    data: constraintsData,
+    isLoading: constraintsLoading,
+    offlineMeta: constraintsOfflineMeta,
+  } = useSafetyConstraints(wsId);
+  const {
+    data: thresholdsData,
+    isLoading: thresholdsLoading,
+    offlineMeta: thresholdsOfflineMeta,
+  } = useApprovalThresholds(wsId);
+  const { data: logData, isLoading: logLoading, offlineMeta: logOfflineMeta } = useEStopLog(wsId);
+  const { data: estopData, offlineMeta: estopOfflineMeta } = useGlobalEstopStatus(wsId);
+  const dataSourceStatus = useCockpitDataSourceStatus();
   const setEstop = useSetEstop(wsId);
   const clearEstop = useClearEstop(wsId);
   const constraints = constraintsData?.items ?? [];
@@ -75,6 +86,10 @@ function SafetyPage() {
   const auditLog = logData?.items ?? [];
 
   const globalEstopActive = estopData?.active ?? false;
+  const liveActionBlocked = !dataSourceStatus.canUseLiveActions;
+  const liveActionReason = liveActionBlocked
+    ? `Live controls disabled: ${dataSourceStatus.label.toLowerCase()} data`
+    : undefined;
   const [showEstopModal, setShowEstopModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearRationale, setClearRationale] = useState('');
@@ -86,14 +101,23 @@ function SafetyPage() {
           title="Safety & E-Stop"
           description="Global safety controls, constraints, and audit trail"
           breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Safety' }]}
+          status={
+            <>
+              <FreshnessBadge sourceLabel="Safety" offlineMeta={constraintsOfflineMeta} />
+              <FreshnessBadge sourceLabel="Thresholds" offlineMeta={thresholdsOfflineMeta} />
+              <FreshnessBadge sourceLabel="E-Stop" offlineMeta={estopOfflineMeta} />
+              <FreshnessBadge sourceLabel="Audit" offlineMeta={logOfflineMeta} />
+            </>
+          }
         />
         <Button
           variant="destructive"
           size="sm"
           className="shrink-0 gap-2 font-semibold"
-          disabled={globalEstopActive}
+          disabled={globalEstopActive || liveActionBlocked}
           onClick={() => setShowEstopModal(true)}
-          aria-label="Activate global E-Stop for all robots"
+          aria-label={liveActionReason ?? 'Activate global E-Stop for all robots'}
+          title={liveActionReason}
         >
           <ShieldAlert className="h-4 w-4" />
           {globalEstopActive ? 'E-Stop Active' : 'Global E-Stop'}
@@ -118,7 +142,9 @@ function SafetyPage() {
               variant="outline"
               size="sm"
               className="ml-auto h-7 text-xs"
+              disabled={liveActionBlocked}
               onClick={() => setShowClearModal(true)}
+              title={liveActionReason}
             >
               Clear E-Stop (admin)
             </Button>
@@ -171,6 +197,8 @@ function SafetyPage() {
                         variant="outline"
                         size="sm"
                         className="h-6 text-xs"
+                        disabled={liveActionBlocked}
+                        title={liveActionReason}
                         aria-label={`Edit constraint for ${sc.site}`}
                       >
                         Edit
@@ -182,7 +210,13 @@ function SafetyPage() {
             </table>
           </div>
         )}
-        <Button variant="outline" size="sm" className="mt-2 h-7 text-xs">
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-2 h-7 text-xs"
+          disabled={liveActionBlocked}
+          title={liveActionReason}
+        >
           + Add Constraint
         </Button>
       </section>

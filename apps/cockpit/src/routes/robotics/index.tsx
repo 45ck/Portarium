@@ -5,6 +5,7 @@ import { useRobots } from '@/hooks/queries/use-robots';
 import { useMissions } from '@/hooks/queries/use-missions';
 import { useRobotLocations } from '@/hooks/queries/use-robot-locations';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, MapPin, Target, ShieldCheck, Radio, Info } from 'lucide-react';
@@ -44,9 +45,9 @@ const ROBOTICS_SECTIONS = [
 
 function RoboticsIndexPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data: robotsData } = useRobots(wsId);
-  const { data: missionsData } = useMissions(wsId);
-  const { data: locData } = useRobotLocations(wsId);
+  const { data: robotsData, offlineMeta: robotsOfflineMeta } = useRobots(wsId);
+  const { data: missionsData, offlineMeta: missionsOfflineMeta } = useMissions(wsId);
+  const { data: locData, offlineMeta: locationsOfflineMeta } = useRobotLocations(wsId);
 
   const robots = robotsData?.items ?? [];
   const missions = missionsData?.items ?? [];
@@ -68,6 +69,13 @@ function RoboticsIndexPage() {
         title="Robotics"
         description="Fleet management, mission control, and safety governance"
         icon={<EntityIcon entityType="robot" size="md" decorative />}
+        status={
+          <>
+            <FreshnessBadge sourceLabel="Robots" offlineMeta={robotsOfflineMeta} />
+            <FreshnessBadge sourceLabel="Missions" offlineMeta={missionsOfflineMeta} />
+            <FreshnessBadge sourceLabel="Telemetry" offlineMeta={locationsOfflineMeta} />
+          </>
+        }
       />
 
       {/* Live stat tiles */}

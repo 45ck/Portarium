@@ -41,6 +41,7 @@ import { Switch } from '@/components/ui/switch';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { emitPolicyUpdate } from '@/lib/policy-event-bridge';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { PolicyLivePreview } from '@/components/cockpit/policy-live-preview';
 import { POLICIES, TOOL_CLASSIFICATIONS, AGENTS, APPROVALS } from '@/mocks/fixtures/openclaw-demo';
 
@@ -576,6 +577,7 @@ function SodSection({
 
 function PolicyDetailPage() {
   const { policyId } = Route.useParams();
+  const runtime = resolveCockpitRuntime();
   const policy = POLICIES.find((p) => p.policyId === policyId);
 
   const [form, setForm] = useState<PolicyFormState | null>(() =>
@@ -604,6 +606,21 @@ function PolicyDetailPage() {
           title="Policy not found"
           description="The governance policy you are looking for does not exist."
         />
+      </div>
+    );
+  }
+
+  if (!runtime.allowDemoControls) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader
+          title={form.name}
+          icon={<EntityIcon entityType="policy" size="md" decorative />}
+          breadcrumb={[{ label: 'Policies', to: '/config/policies' }, { label: form.name }]}
+        />
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Demo policy editing fixtures are disabled while Cockpit is connected to live tenant data.
+        </div>
       </div>
     );
   }
