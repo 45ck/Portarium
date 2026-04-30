@@ -10,6 +10,7 @@ import { CockpitApiError } from '@/lib/control-plane-client';
 const QUERY_CACHE_STORAGE_KEY = 'portarium-cockpit-query-cache-v1';
 const QUERY_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24; // 24h
 const QUERY_CACHE_WRITE_DEBOUNCE_MS = 300;
+const NON_PERSISTED_QUERY_KEY_PREFIXES = new Set(['cockpit-extension-context']);
 
 interface PersistedQueryCache {
   savedAt: number;
@@ -22,8 +23,8 @@ function isBrowserOnline(): boolean {
 }
 
 function getStorage(): Storage | null {
-  if (typeof window === 'undefined') return null;
-  return window.localStorage;
+  if (typeof window !== 'undefined') return window.localStorage;
+  return globalThis.localStorage ?? null;
 }
 
 function shouldRetryQuery(failureCount: number, error: DefaultError): boolean {
@@ -39,6 +40,11 @@ function shouldRetryQuery(failureCount: number, error: DefaultError): boolean {
 
 function retryDelay(attemptIndex: number): number {
   return Math.min(1000 * 2 ** attemptIndex, 15_000);
+}
+
+function shouldPersistQuery(queryKey: readonly unknown[]): boolean {
+  const first = queryKey[0];
+  return typeof first !== 'string' || !NON_PERSISTED_QUERY_KEY_PREFIXES.has(first);
 }
 
 export const queryClient = new QueryClient({
@@ -93,7 +99,9 @@ export function startQueryCachePersistence(
   const persist = () => {
     const payload: PersistedQueryCache = {
       savedAt: Date.now(),
-      cache: dehydrate(client),
+      cache: dehydrate(client, {
+        shouldDehydrateQuery: (query) => shouldPersistQuery(query.queryKey),
+      }),
     };
     storage.setItem(QUERY_CACHE_STORAGE_KEY, JSON.stringify(payload));
   };

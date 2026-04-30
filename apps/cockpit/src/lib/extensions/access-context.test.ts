@@ -69,6 +69,7 @@ describe('cockpit extension access context', () => {
       }),
     ).toEqual({
       activePackIds: ['demo.pack'],
+      quarantinedExtensionIds: [],
       accessContext: {
         persona: 'Operator',
         availablePersonas: ['Operator'],
@@ -82,6 +83,7 @@ describe('cockpit extension access context', () => {
   it('fails closed when server context is unavailable, mismatched, or expired', () => {
     const emptyAccess = {
       activePackIds: [],
+      quarantinedExtensionIds: [],
       accessContext: {
         availablePersonas: [],
         availableCapabilities: [],

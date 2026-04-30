@@ -14,6 +14,7 @@ export function appContextFromWorkspaceAuthClaims(
     traceparent?: string;
     tracestate?: string;
     scopes?: readonly string[];
+    capabilities?: readonly string[];
   }>,
 ): { actor: WorkspaceActor; ctx: AppContext } {
   const actor = parseWorkspaceActorFromClaims(args.claims);
@@ -22,6 +23,7 @@ export function appContextFromWorkspaceAuthClaims(
     principalId: actor.userId.toString(),
     roles: actor.roles,
     scopes: args.scopes ?? [],
+    capabilities: args.capabilities ?? [],
     correlationId: args.correlationId,
     ...(args.traceparent ? { traceparent: args.traceparent } : {}),
     ...(args.tracestate ? { tracestate: args.tracestate } : {}),

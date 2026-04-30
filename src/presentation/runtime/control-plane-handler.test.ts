@@ -16,12 +16,17 @@ afterEach(async () => {
 type Role = 'admin' | 'operator' | 'approver' | 'auditor';
 type HandlerDeps = Parameters<typeof createControlPlaneHandler>[0];
 
-function makeCtx(roles: readonly Role[] = ['admin'], scopes: readonly string[] = []) {
+function makeCtx(
+  roles: readonly Role[] = ['admin'],
+  scopes: readonly string[] = [],
+  capabilities: readonly string[] = [],
+) {
   return toAppContext({
     tenantId: 'tenant-1',
     principalId: 'user-1',
     roles,
     scopes,
+    capabilities,
     correlationId: 'corr-1',
   });
 }
@@ -73,7 +78,7 @@ describe('createControlPlaneHandler', () => {
       makeDeps({
         authentication: {
           authenticateBearerToken: async () =>
-            ok(makeCtx(['operator', 'auditor'], ['extensions.read', 'objects:read'])),
+            ok(makeCtx(['operator', 'auditor'], ['extensions.read'], ['objects:read'])),
         },
         clock: () => new Date('2026-04-30T02:00:00.000Z'),
       }),
@@ -104,8 +109,8 @@ describe('createControlPlaneHandler', () => {
       principalId: 'user-1',
       persona: 'Operator',
       availablePersonas: ['Operator', 'Auditor'],
-      availableCapabilities: ['extensions.read', 'objects:read'],
-      availableApiScopes: ['extensions.read', 'objects:read'],
+      availableCapabilities: ['objects:read'],
+      availableApiScopes: ['extensions.read'],
       activePackIds: [],
       quarantinedExtensionIds: [],
       issuedAtIso: '2026-04-30T02:00:00.000Z',
@@ -113,8 +118,126 @@ describe('createControlPlaneHandler', () => {
     });
   });
 
+  it('returns active and quarantined extension ids from the activation source', async () => {
+    const queries: unknown[] = [];
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['admin'], ['extensions.read'], ['objects:read'])),
+        },
+        cockpitExtensionActivationSource: {
+          getActivationState: async (query) => {
+            queries.push(query);
+            return {
+              activePackIds: ['example.pack', ' example.pack ', 'quarantined.pack'],
+              quarantinedExtensionIds: ['quarantined.extension', ''],
+              availableCapabilities: ['extension.route:read', 'objects:read'],
+              availableApiScopes: ['extensions.read', 'workspace.read'],
+            };
+          },
+        },
+        clock: () => new Date('2026-04-30T02:00:00.000Z'),
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+      {
+        headers: {
+          'x-correlation-id': 'corr-fixed',
+          traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+        },
+      },
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      activePackIds: string[];
+      quarantinedExtensionIds: string[];
+      availableCapabilities: string[];
+      availableApiScopes: string[];
+    };
+    expect(body.activePackIds).toEqual(['example.pack', 'quarantined.pack']);
+    expect(body.quarantinedExtensionIds).toEqual(['quarantined.extension']);
+    expect(body.availableCapabilities).toEqual(['objects:read', 'extension.route:read']);
+    expect(body.availableApiScopes).toEqual(['extensions.read']);
+    expect(queries).toEqual([
+      expect.objectContaining({
+        workspaceId: 'tenant-1',
+        principalId: 'user-1',
+        roles: ['admin'],
+        scopes: ['extensions.read'],
+        correlationId: 'corr-fixed',
+        traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+      }),
+    ]);
+  });
+
+  it('does not expand API scopes beyond the authenticated token', async () => {
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['admin'], ['extensions.read'], ['objects:read'])),
+        },
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => ({
+            activePackIds: ['example.pack'],
+            quarantinedExtensionIds: [],
+            availableCapabilities: [],
+            availableApiScopes: ['approvals.read'],
+          }),
+        },
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { availableApiScopes: string[] };
+    expect(body.availableApiScopes).toEqual([]);
+  });
+
+  it('honors weak and multi-value If-None-Match on cockpit extension context', async () => {
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['operator'], ['extensions.read'], ['objects:read'])),
+        },
+        clock: () => new Date('2026-04-30T02:00:00.000Z'),
+      }),
+    );
+
+    const first = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+    const etag = first.headers.get('ETag');
+    expect(etag).toMatch(/^"[a-f0-9]{12}"$/);
+
+    const second = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+      { headers: { 'If-None-Match': `"other", W/${etag}` } },
+    );
+
+    expect(second.status).toBe(304);
+  });
+
   it('denies cockpit extension context when the requested workspace is outside token scope', async () => {
-    await startWith(makeDeps());
+    let activationSourceCalls = 0;
+    await startWith(
+      makeDeps({
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => {
+            activationSourceCalls += 1;
+            return { activePackIds: ['example.pack'], quarantinedExtensionIds: [] };
+          },
+        },
+      }),
+    );
 
     const res = await fetch(
       `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-2/cockpit/extension-context`,
@@ -124,6 +247,35 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/forbidden/);
     expect(body.status).toBe(403);
+    expect(activationSourceCalls).toBe(0);
+  });
+
+  it('denies cockpit extension context before activation lookup when authentication fails', async () => {
+    let activationSourceCalls = 0;
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
+        },
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => {
+            activationSourceCalls += 1;
+            return { activePackIds: ['example.pack'], quarantinedExtensionIds: [] };
+          },
+        },
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/unauthorized/);
+    expect(body.status).toBe(401);
+    expect(activationSourceCalls).toBe(0);
   });
 
   it('routes GET run to application query and returns Problem Details on unauthorized', async () => {

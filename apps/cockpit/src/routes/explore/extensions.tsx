@@ -5,10 +5,37 @@ import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
+import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
+import {
+  INSTALLED_COCKPIT_EXTENSIONS,
+  INSTALLED_COCKPIT_ROUTE_LOADERS,
+} from '@/lib/extensions/installed';
+import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
 import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
+import { useAuthStore } from '@/stores/auth-store';
+import { useUIStore } from '@/stores/ui-store';
 
 function ExtensionsPage() {
+  const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
+  const activePersona = useUIStore((state) => state.activePersona);
+  const claims = useAuthStore((state) => state.claims);
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const serverAccess = resolveCockpitExtensionServerAccess({
+    workspaceId: activeWorkspaceId,
+    principalId: claims?.sub,
+    persona: activePersona,
+    serverContext: extensionContextQuery.data,
+  });
+  const registry = resolveCockpitExtensionRegistry({
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    activePackIds: serverAccess.activePackIds,
+    quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
+    availableCapabilities: serverAccess.accessContext.availableCapabilities,
+    availableApiScopes: serverAccess.accessContext.availableApiScopes,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
+  });
+
   return (
     <div className="space-y-6 p-6">
       <PageHeader
@@ -18,7 +45,7 @@ function ExtensionsPage() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
-          {DEFAULT_COCKPIT_EXTENSION_REGISTRY.extensions.map((extension) => (
+          {registry.extensions.map((extension) => (
             <ExtensionCard key={extension.manifest.id} extension={extension} />
           ))}
         </div>

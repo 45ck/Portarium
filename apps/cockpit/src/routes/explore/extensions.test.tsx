@@ -5,6 +5,8 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useUIStore } from '@/stores/ui-store';
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -80,6 +82,26 @@ beforeAll(() => {
         }),
       );
     }
+    if (/^\/v1\/workspaces\/[^/]+\/cockpit\/extension-context$/.test(url.pathname)) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            schemaVersion: 1,
+            workspaceId: 'ws-demo',
+            principalId: 'user-1',
+            persona: 'Operator',
+            availablePersonas: ['Operator'],
+            availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+            availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+            activePackIds: ['example.ops-demo'],
+            quarantinedExtensionIds: [],
+            issuedAtIso: '2026-04-30T02:00:00.000Z',
+            expiresAtIso: '2999-04-30T02:05:00.000Z',
+          }),
+          { headers: { 'content-type': 'application/json' } },
+        ),
+      );
+    }
     return Promise.resolve(new Response(JSON.stringify({ error: 'not-found' }), { status: 404 }));
   });
 });
@@ -88,6 +110,33 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  useUIStore.setState({ activePersona: 'Operator', activeWorkspaceId: 'ws-demo' });
+  useAuthStore.setState({
+    status: 'authenticated',
+    token: 'token-1',
+    claims: {
+      sub: 'user-1',
+      workspaceId: 'ws-demo',
+      roles: ['operator'],
+      personas: ['Operator'],
+      capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    },
+    error: null,
+  });
+  queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+    schemaVersion: 1,
+    workspaceId: 'ws-demo',
+    principalId: 'user-1',
+    persona: 'Operator',
+    availablePersonas: ['Operator'],
+    availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+    availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    activePackIds: ['example.ops-demo'],
+    quarantinedExtensionIds: [],
+    issuedAtIso: '2026-04-30T02:00:00.000Z',
+    expiresAtIso: '2999-04-30T02:05:00.000Z',
+  });
 });
 
 afterEach(() => {

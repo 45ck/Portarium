@@ -1,0 +1,135 @@
+// @vitest-environment jsdom
+
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+
+const { mockNavigate, mockUseCockpitExtensionContext, mockResolveCockpitExtensionServerAccess } =
+  vi.hoisted(() => ({
+    mockNavigate: vi.fn(),
+    mockUseCockpitExtensionContext: vi.fn(),
+    mockResolveCockpitExtensionServerAccess: vi.fn(),
+  }));
+
+vi.mock('@/router', () => ({
+  router: {
+    navigate: mockNavigate,
+  },
+}));
+
+vi.mock('@/hooks/use-theme', () => ({
+  useTheme: () => ({
+    theme: 'light',
+    setTheme: vi.fn(),
+    themes: ['light', 'dark'],
+  }),
+}));
+
+vi.mock('@/hooks/queries/use-cockpit-extension-context', () => ({
+  useCockpitExtensionContext: mockUseCockpitExtensionContext,
+}));
+
+vi.mock('@/lib/extensions/access-context', () => ({
+  resolveCockpitExtensionServerAccess: mockResolveCockpitExtensionServerAccess,
+}));
+
+vi.mock('@/components/domain/entity-icon', () => ({
+  EntityIcon: ({ entityType }: { entityType: string }) => <span>{entityType}</span>,
+}));
+
+vi.mock('@/components/ui/command', () => ({
+  CommandDialog: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
+    open ? <div data-testid="command-dialog">{children}</div> : null,
+  CommandInput: ({ placeholder }: { placeholder?: string }) => (
+    <input aria-label={placeholder ?? 'command input'} />
+  ),
+  CommandList: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CommandEmpty: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  CommandGroup: ({ heading, children }: { heading: string; children: React.ReactNode }) => (
+    <section aria-label={heading}>{children}</section>
+  ),
+  CommandItem: ({ onSelect, children }: { onSelect?: () => void; children: React.ReactNode }) => (
+    <button type="button" onClick={onSelect}>
+      {children}
+    </button>
+  ),
+  CommandShortcut: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  CommandSeparator: () => <hr />,
+}));
+
+import { CommandPalette } from '@/components/cockpit/command-palette';
+import { useAuthStore } from '@/stores/auth-store';
+import { useUIStore } from '@/stores/ui-store';
+
+function buildServerAccess(
+  overrides?: Partial<ReturnType<typeof mockResolveCockpitExtensionServerAccess>>,
+) {
+  return {
+    activePackIds: ['example.ops-demo'],
+    quarantinedExtensionIds: [] as string[],
+    accessContext: {
+      availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePersonas: ['Operator'],
+    },
+    ...overrides,
+  };
+}
+
+describe('CommandPalette', () => {
+  beforeEach(() => {
+    cleanup();
+    mockNavigate.mockReset();
+    mockUseCockpitExtensionContext.mockReset();
+    mockResolveCockpitExtensionServerAccess.mockReset();
+
+    useUIStore.setState({
+      commandPaletteOpen: true,
+      activePersona: 'Operator',
+      activeWorkspaceId: 'ws-demo',
+    });
+    useAuthStore.setState({
+      status: 'authenticated',
+      token: 'token-1',
+      claims: {
+        sub: 'user-1',
+        workspaceId: 'ws-demo',
+        roles: ['operator'],
+        personas: ['Operator'],
+        capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+        apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      },
+      error: null,
+    });
+
+    mockUseCockpitExtensionContext.mockReturnValue({ data: { workspaceId: 'ws-demo' } });
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(buildServerAccess());
+  });
+
+  it('renders activated extension commands and navigates to the compiled external route', () => {
+    render(<CommandPalette />);
+
+    expect(mockUseCockpitExtensionContext).toHaveBeenCalledWith('ws-demo', 'user-1');
+
+    const extensionCommand = screen.getByRole('button', { name: /open operations demo/i });
+    expect(extensionCommand).toBeTruthy();
+    expect(screen.getByText('G X')).toBeTruthy();
+
+    fireEvent.click(extensionCommand);
+
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/external/example-ops/overview' });
+    expect(useUIStore.getState().commandPaletteOpen).toBe(false);
+  });
+
+  it('omits commands for quarantined extensions', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        quarantinedExtensionIds: ['example.ops-demo'],
+      }),
+    );
+
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /open operations demo/i })).toBeNull();
+  });
+});

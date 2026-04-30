@@ -21,6 +21,7 @@ import type { UnitOfWork } from '../../application/ports/unit-of-work.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
 import { checkDevAuthEnvGate } from '../../infrastructure/auth/dev-token-env-gate.js';
 import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
+import { buildEnvCockpitExtensionActivationSource } from '../../infrastructure/cockpit/env-cockpit-extension-activation-source.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { InMemoryQueryCache, RedisQueryCache } from '../../infrastructure/caching/index.js';
 import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
@@ -402,6 +403,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const eventPublisher = buildEventPublisher();
   const unitOfWork = buildUnitOfWork();
   const actionRunner = buildActionRunner();
+  const cockpitExtensionActivationSource = buildEnvCockpitExtensionActivationSource();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
@@ -437,6 +439,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       eventPublisher,
       unitOfWork,
       actionRunner,
+      cockpitExtensionActivationSource,
     };
   }
 
@@ -495,5 +498,6 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     eventPublisher,
     unitOfWork,
     actionRunner,
+    cockpitExtensionActivationSource,
   };
 }

@@ -11,18 +11,21 @@ export interface ResolveCockpitExtensionAccessContextInput {
 export interface ResolveCockpitExtensionServerAccessInput {
   serverContext: CockpitExtensionContextResponse | null | undefined;
   workspaceId: string;
+  principalId?: string;
   persona?: string;
   now?: Date;
 }
 
 export interface ResolvedCockpitExtensionServerAccess {
   activePackIds: readonly string[];
+  quarantinedExtensionIds: readonly string[];
   accessContext: CockpitExtensionAccessContext;
   usable: boolean;
 }
 
 const EMPTY_SERVER_ACCESS: ResolvedCockpitExtensionServerAccess = {
   activePackIds: [],
+  quarantinedExtensionIds: [],
   accessContext: {
     availablePersonas: [],
     availableCapabilities: [],
@@ -54,16 +57,19 @@ export function resolveCockpitExtensionAccessContext({
 export function resolveCockpitExtensionServerAccess({
   serverContext,
   workspaceId,
+  principalId,
   persona,
   now = new Date(),
 }: ResolveCockpitExtensionServerAccessInput): ResolvedCockpitExtensionServerAccess {
   if (!serverContext) return EMPTY_SERVER_ACCESS;
   if (serverContext.workspaceId !== workspaceId) return EMPTY_SERVER_ACCESS;
+  if (principalId && serverContext.principalId !== principalId) return EMPTY_SERVER_ACCESS;
   if (isExpired(serverContext.expiresAtIso, now)) return EMPTY_SERVER_ACCESS;
 
   const resolvedPersona = persona ?? serverContext.persona;
   return {
     activePackIds: serverContext.activePackIds,
+    quarantinedExtensionIds: serverContext.quarantinedExtensionIds,
     accessContext: {
       ...(resolvedPersona ? { persona: resolvedPersona } : {}),
       availablePersonas: serverContext.availablePersonas,

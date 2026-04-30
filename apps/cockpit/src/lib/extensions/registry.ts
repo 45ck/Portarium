@@ -23,6 +23,7 @@ const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
 export interface ResolveCockpitExtensionRegistryInput {
   installedExtensions: readonly CockpitExtensionManifest[];
   activePackIds: readonly string[];
+  quarantinedExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   routeLoaders?: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>;
@@ -31,11 +32,13 @@ export interface ResolveCockpitExtensionRegistryInput {
 export function resolveCockpitExtensionRegistry({
   installedExtensions,
   activePackIds,
+  quarantinedExtensionIds = [],
   availableCapabilities,
   availableApiScopes,
   routeLoaders = {},
 }: ResolveCockpitExtensionRegistryInput): ResolvedCockpitExtensionRegistry {
   const activePacks = new Set(activePackIds);
+  const quarantinedExtensions = new Set(quarantinedExtensionIds);
   const accessContext = { availableCapabilities, availableApiScopes };
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
   const extensionDisableReasons = new Map<string, CockpitExtensionDisableReason[]>();
@@ -58,6 +61,16 @@ export function resolveCockpitExtensionRegistry({
   for (const extension of installedExtensions) {
     const active = isExtensionActive(extension, activePacks);
     if (!active) continue;
+
+    if (quarantinedExtensions.has(extension.id)) {
+      extensionDisableReasons.set(extension.id, [
+        {
+          code: 'security-quarantine',
+          message: `Extension "${extension.id}" is quarantined by the workspace activation source.`,
+        },
+      ]);
+      continue;
+    }
 
     const disableReasons = getManifestDisableReasons(extension, accessContext);
     if (disableReasons.length > 0) {
@@ -85,14 +98,17 @@ export function resolveCockpitExtensionRegistry({
     const problems = extensionProblems.get(manifest.id) ?? [];
     const active = isExtensionActive(manifest, activePacks);
     const disableReasons = active ? (extensionDisableReasons.get(manifest.id) ?? []) : [];
+    const quarantined = active && quarantinedExtensions.has(manifest.id);
     return {
       manifest,
       status:
         problems.length > 0
           ? 'invalid'
-          : active && disableReasons.length === 0
-            ? 'enabled'
-            : 'disabled',
+          : quarantined
+            ? 'quarantined'
+            : active && disableReasons.length === 0
+              ? 'enabled'
+              : 'disabled',
       problems,
       disableReasons,
     };

@@ -13,7 +13,7 @@ Cockpit build.
 - Extension package name and pinned version or workspace path.
 - `CockpitExtensionManifest` export.
 - Route module exports for every route declared by the manifest.
-- Pack ID or IDs that activate the extension for a workspace.
+- Workspace-scoped activation grant for the pack ID or IDs.
 - Guard metadata for routes, navigation items, commands, and shortcuts.
 
 ## Package Shape
@@ -44,8 +44,8 @@ runtime. Route loading remains a host decision.
    `apps/cockpit/src/lib/extensions/installed.ts`.
 3. Add one entry to `INSTALLED_COCKPIT_EXTENSION_MODULES` with the manifest and
    route module refs.
-4. Add or source the activating pack ID in `DEFAULT_ACTIVE_EXTENSION_PACK_IDS`
-   for local/demo builds.
+4. Add a workspace-scoped activation grant through
+   `PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`.
 5. Keep every route under `/external/`.
 6. Run the Cockpit extension registry and route-host tests.
 7. Build Cockpit so the lazy route chunks are emitted by the host bundle.
@@ -83,6 +83,35 @@ export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
 Use a neutral package and pack ID in examples and fixtures. Do not encode
 organization, vertical, or vendor-specific names into generic Cockpit extension
 docs.
+
+## Activation Grant
+
+The control plane activates installed extensions from scoped grants. Every
+grant must name at least one `workspaceId`; unscoped and principal-only grants
+are ignored. Use `principalIds`, `roleIncludes`, and `scopeIncludes` only to
+narrow a workspace grant further.
+
+`availableApiScopes` is a visibility filter over the authenticated token's API
+scopes. It cannot grant new API scopes. If a grant lists `approvals.read` but
+the token does not contain `approvals.read`, Cockpit will not expose that API
+scope to extension guard checks.
+
+```json
+[
+  {
+    "workspaceIds": ["ws-local-dev"],
+    "roleIncludes": ["admin"],
+    "scopeIncludes": ["extensions.read"],
+    "activePackIds": ["example.ops-demo"],
+    "availableCapabilities": ["asset:read", "incident:read", "evidence:read"],
+    "availableApiScopes": ["extensions.read", "approvals.read", "evidence.read"]
+  }
+]
+```
+
+Set the JSON as `PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`. Use
+`quarantinedExtensionIds` to suppress a specific installed extension by manifest
+ID without uninstalling its package.
 
 ## Verification
 

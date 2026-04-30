@@ -3,6 +3,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../../application/common/context.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import {
+  EMPTY_COCKPIT_EXTENSION_ACTIVATION_SOURCE,
+  type CockpitExtensionActivationState,
+} from '../../application/ports/cockpit-extension-activation-source.js';
+import {
   type ControlPlaneDeps,
   assertReadAccess,
   assertWorkspaceScope,
@@ -76,7 +80,14 @@ export async function handleGetCockpitExtensionContext(
   }
 
   const issuedAt = deps.clock?.() ?? new Date();
-  const body = buildCockpitExtensionContext(auth.ctx, workspaceId, issuedAt);
+  const activationState = await resolveActivationState({
+    deps,
+    ctx: auth.ctx,
+    workspaceId,
+    correlationId,
+    traceContext,
+  });
+  const body = buildCockpitExtensionContext(auth.ctx, workspaceId, issuedAt, activationState);
   const etag = computeETag(body);
   res.setHeader('ETag', etag);
   if (checkIfNoneMatch(req, etag)) {
@@ -93,9 +104,19 @@ function buildCockpitExtensionContext(
   ctx: AppContext,
   workspaceId: string,
   issuedAt: Date,
+  activationState: CockpitExtensionActivationState,
 ): CockpitExtensionContextResponse {
   const availablePersonas = derivePersonas(ctx);
   const availableScopes = uniqueStrings(ctx.scopes);
+  const availableCapabilities = uniqueStrings([
+    ...(ctx.capabilities ?? []),
+    ...(activationState.availableCapabilities ?? []),
+  ]);
+  const activationApiScopes = activationState.availableApiScopes ?? [];
+  const availableApiScopes =
+    activationApiScopes.length > 0
+      ? intersectStrings(availableScopes, activationApiScopes)
+      : availableScopes;
   const expiresAt = new Date(issuedAt.getTime() + CONTEXT_TTL_MS);
 
   return {
@@ -104,13 +125,35 @@ function buildCockpitExtensionContext(
     principalId: String(ctx.principalId),
     ...(availablePersonas[0] ? { persona: availablePersonas[0] } : {}),
     availablePersonas,
-    availableCapabilities: availableScopes,
-    availableApiScopes: availableScopes,
-    activePackIds: [],
-    quarantinedExtensionIds: [],
+    availableCapabilities,
+    availableApiScopes,
+    activePackIds: normalizeActivationIds(activationState.activePackIds),
+    quarantinedExtensionIds: normalizeActivationIds(activationState.quarantinedExtensionIds),
     issuedAtIso: issuedAt.toISOString(),
     expiresAtIso: expiresAt.toISOString(),
   };
+}
+
+async function resolveActivationState(
+  args: Readonly<{
+    deps: ControlPlaneDeps;
+    ctx: AppContext;
+    workspaceId: string;
+    correlationId: string;
+    traceContext: TraceContext;
+  }>,
+): Promise<CockpitExtensionActivationState> {
+  const { deps, ctx, workspaceId, correlationId, traceContext } = args;
+  const source = deps.cockpitExtensionActivationSource ?? EMPTY_COCKPIT_EXTENSION_ACTIVATION_SOURCE;
+  return source.getActivationState({
+    workspaceId,
+    principalId: String(ctx.principalId),
+    roles: ctx.roles,
+    scopes: ctx.scopes,
+    correlationId,
+    traceparent: traceContext.traceparent,
+    ...(traceContext.tracestate ? { tracestate: traceContext.tracestate } : {}),
+  });
 }
 
 function derivePersonas(ctx: AppContext): readonly string[] {
@@ -122,4 +165,16 @@ function derivePersonas(ctx: AppContext): readonly string[] {
 
 function uniqueStrings(values: readonly string[]): readonly string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function normalizeActivationIds(values: readonly string[]): readonly string[] {
+  return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))];
+}
+
+function intersectStrings(
+  candidates: readonly string[],
+  allowed: readonly string[],
+): readonly string[] {
+  const allowedSet = new Set(allowed);
+  return candidates.filter((candidate) => allowedSet.has(candidate));
 }

@@ -53,3 +53,4 @@ export * from './event-stream.js';
 export * from './machine-query-store.js';
 export * from './openclaw-management-bridge-port.js';
 export * from './approval-scheduler.js';
+export * from './cockpit-extension-activation-source.js';

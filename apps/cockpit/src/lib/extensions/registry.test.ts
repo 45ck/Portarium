@@ -57,6 +57,23 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toHaveLength(1);
   });
 
+  it('keeps quarantined extensions out of routes, navigation, and commands', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      activePackIds: ['example.ops-demo'],
+      quarantinedExtensionIds: [NEUTRAL_OPS_EXTENSION.id],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions[0]?.status).toBe('quarantined');
+    expect(registry.extensions[0]?.disableReasons?.[0]?.code).toBe('security-quarantine');
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('hides installed extensions when pack activation is absent', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION],

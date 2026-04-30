@@ -14,12 +14,16 @@ import { useUIStore } from '@/stores/ui-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { router } from '@/router';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
+import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
+import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import {
-  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+  INSTALLED_COCKPIT_EXTENSIONS,
+  INSTALLED_COCKPIT_ROUTE_LOADERS,
 } from '@/lib/extensions/installed';
-import { selectExtensionCommands } from '@/lib/extensions/registry';
+import {
+  resolveCockpitExtensionRegistry,
+  selectExtensionCommands,
+} from '@/lib/extensions/registry';
 import {
   LayoutDashboard,
   Settings,
@@ -43,18 +47,32 @@ interface CommandItemDef {
   onSelect: () => void;
 }
 
-const extensionRoutePaths = new Map(
-  DEFAULT_COCKPIT_EXTENSION_REGISTRY.routes.map((route) => [route.id, route.path]),
+const extensionRoutePaths: ReadonlyMap<string, string> = new Map(
+  INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) => extension.routes).map((route) => [
+    route.id,
+    route.path,
+  ]),
 );
 
 function CommandPalette() {
-  const { commandPaletteOpen, setCommandPaletteOpen, activePersona } = useUIStore();
+  const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
+    useUIStore();
   const claims = useAuthStore((state) => state.claims);
   const { theme, setTheme, themes } = useTheme();
-  const extensionAccessContext = resolveCockpitExtensionAccessContext({
-    claims,
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const extensionServerAccess = resolveCockpitExtensionServerAccess({
+    workspaceId: activeWorkspaceId,
+    principalId: claims?.sub,
     persona: activePersona,
-    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    serverContext: extensionContextQuery.data,
+  });
+  const extensionRegistry = resolveCockpitExtensionRegistry({
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    activePackIds: extensionServerAccess.activePackIds,
+    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
+    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
+    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
 
   // Global Ctrl+K / Cmd+K hotkey
@@ -76,9 +94,9 @@ function CommandPalette() {
   }
 
   const extensionNavigationItems = selectExtensionCommands(
-    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    extensionRegistry,
     activePersona,
-    extensionAccessContext,
+    extensionServerAccess.accessContext,
   ).reduce<CommandItemDef[]>((items, command) => {
     const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
     if (!routePath || routePath.includes('$')) return items;

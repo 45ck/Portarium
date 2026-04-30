@@ -17,6 +17,7 @@ import type {
   AuthenticationPort,
   AuthorizationPort,
   BeadDiffStore,
+  CockpitExtensionActivationSource,
   EventPublisher,
   EventStreamBroadcast,
   EvidenceLogPort,
@@ -142,6 +143,8 @@ export type ControlPlaneDeps = Readonly<{
   unitOfWork?: UnitOfWork;
   /** Optional action runner for executing approved agent actions. */
   actionRunner?: ActionRunnerPort;
+  /** Optional activation source for workspace-scoped Cockpit extension visibility. */
+  cockpitExtensionActivationSource?: CockpitExtensionActivationSource;
   /** Optional clock override for testing; defaults to () => new Date(). */
   clock?: () => Date;
 }>;
@@ -328,7 +331,13 @@ export function checkIfMatch(
 export function checkIfNoneMatch(req: IncomingMessage, etag: string): boolean {
   const ifNoneMatch = req.headers['if-none-match'];
   if (!ifNoneMatch) return false;
-  return ifNoneMatch === etag || ifNoneMatch === `"${etag}"` || ifNoneMatch === `W/"${etag}"`;
+  const header = Array.isArray(ifNoneMatch) ? ifNoneMatch.join(',') : ifNoneMatch;
+  const current = etag.startsWith('"') ? etag : `"${etag}"`;
+  const weakCurrent = current.startsWith('W/') ? current : `W/${current}`;
+  return header
+    .split(',')
+    .map((value) => value.trim())
+    .some((value) => value === '*' || value === current || value === weakCurrent);
 }
 
 export async function authenticate(

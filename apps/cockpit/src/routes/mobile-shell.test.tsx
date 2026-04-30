@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
@@ -130,6 +130,7 @@ async function renderRoute(path: string) {
 
   render(<RouterProvider router={router} />);
   await router.load();
+  return router;
 }
 
 beforeAll(() => {
@@ -205,6 +206,18 @@ describe('cockpit mobile shell', () => {
     expect(document.getElementById('main-content')?.className.includes('overflow-x-hidden')).toBe(
       true,
     );
+  });
+
+  it('navigates to secondary destinations from the More drawer', async () => {
+    const user = userEvent.setup();
+    const router = await renderRoute('/runs');
+
+    await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Work Items' }));
+    expect(router.state.location.pathname).toBe('/work-items');
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Workflows' }));
+    expect(router.state.location.pathname).toBe('/workflows');
   });
 
   it('keeps workflow builder entry visible on phone viewports', async () => {

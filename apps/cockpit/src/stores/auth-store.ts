@@ -36,6 +36,7 @@ import {
   parseApprovalNavigationTarget,
   type ApprovalNavigationTarget,
 } from '@/lib/approval-navigation';
+import { clearPersistedQueryCache, queryClient } from '@/lib/query-client';
 
 // ---------------------------------------------------------------------------
 // Token storage keys
@@ -105,11 +106,7 @@ function extractClaims(jwt: string): ParsedAuthClaims | null {
       ? (payload.roles as unknown[]).filter((r): r is string => typeof r === 'string')
       : [];
     const personas = readStringClaims(payload, ['personas', 'extensionPersonas', 'persona']);
-    const capabilities = readStringClaims(payload, [
-      'capabilities',
-      'permissions',
-      'extensionCapabilities',
-    ]);
+    const capabilities = readStringClaims(payload, ['capabilities', 'extensionCapabilities']);
     const apiScopes = readStringClaims(payload, ['apiScopes', 'scopes', 'scp', 'scope']);
     const displayName =
       typeof payload.name === 'string'
@@ -163,6 +160,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
         // Token present but claims invalid — clear stale token
         await secureRemove(TOKEN_KEY);
+        clearPersistedQueryCache();
+        queryClient.clear();
       }
       set({ status: 'unauthenticated', token: null, claims: null, error: null });
     } catch {
@@ -179,6 +178,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     set({ status: 'authenticating', error: null });
+    clearPersistedQueryCache();
+    queryClient.clear();
 
     try {
       const session = await prepareLoginSession({ config });
@@ -234,6 +235,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await secureSet(REFRESH_TOKEN_KEY, tokens.refresh_token);
       }
 
+      clearPersistedQueryCache();
+      queryClient.clear();
       set({ status: 'authenticated', token, claims, error: null });
     } catch (err) {
       const message = err instanceof OidcError ? err.message : 'Auth callback failed';
@@ -244,6 +247,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   async logout() {
     await secureRemove(TOKEN_KEY);
     await secureRemove(REFRESH_TOKEN_KEY);
+    clearPersistedQueryCache();
+    queryClient.clear();
     set({ status: 'unauthenticated', token: null, claims: null, error: null });
   },
 

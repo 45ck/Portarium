@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useApprovalEventStream } from '@/hooks/queries/use-approval-event-stream';
+import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { useUIStore } from '@/stores/ui-store';
 import { parseApprovalNavigationTarget } from '@/lib/approval-navigation';
 import { getNotificationTargetUrl, onNotificationActionPerformed } from '@/lib/push-notifications';
@@ -31,11 +32,14 @@ import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
 import {
-  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+  INSTALLED_COCKPIT_EXTENSIONS,
+  INSTALLED_COCKPIT_ROUTE_LOADERS,
 } from '@/lib/extensions/installed';
-import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
-import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
+import {
+  resolveCockpitExtensionRegistry,
+  selectExtensionNavItems,
+} from '@/lib/extensions/registry';
 import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
 import {
@@ -347,7 +351,7 @@ function ApprovalEventStreamSubscriber() {
   return null;
 }
 
-function RootLayout() {
+function RootShell() {
   useTheme();
   useKeyboardShortcuts();
   const isMobile = useIsMobile();
@@ -368,16 +372,26 @@ function RootLayout() {
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
-  const extensionAccessContext = resolveCockpitExtensionAccessContext({
-    claims,
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const extensionServerAccess = resolveCockpitExtensionServerAccess({
+    workspaceId: activeWorkspaceId,
+    principalId: claims?.sub,
     persona: activePersona,
-    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    serverContext: extensionContextQuery.data,
+  });
+  const extensionRegistry = resolveCockpitExtensionRegistry({
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    activePackIds: extensionServerAccess.activePackIds,
+    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
+    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
+    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const extensionNavItems: NavItemDef[] = selectExtensionNavItems(
-    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    extensionRegistry,
     'sidebar',
     activePersona,
-    extensionAccessContext,
+    extensionServerAccess.accessContext,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({
@@ -394,7 +408,9 @@ function RootLayout() {
 
   // Initialize auth state from secure storage on first mount.
   useEffect(() => {
-    void useAuthStore.getState().initialize();
+    if (useAuthStore.getState().status === 'initializing') {
+      void useAuthStore.getState().initialize();
+    }
   }, []);
 
   // Register native deep-link handler for OIDC callbacks and approval links.
@@ -494,7 +510,7 @@ function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <ApprovalEventStreamSubscriber />
       <TooltipProvider>
         <div className="flex h-screen bg-background text-foreground">
@@ -668,6 +684,14 @@ function RootLayout() {
         <KeyboardCheatsheet />
         <Toaster position="bottom-right" />
       </TooltipProvider>
+    </>
+  );
+}
+
+function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootShell />
     </QueryClientProvider>
   );
 }

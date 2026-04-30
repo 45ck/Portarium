@@ -8,10 +8,10 @@ async function fetchCockpitExtensionContext(
   return controlPlaneClient.getCockpitExtensionContext(wsId);
 }
 
-export function useCockpitExtensionContext(wsId: string) {
+export function useCockpitExtensionContext(wsId: string, principalId?: string) {
   return useQuery({
-    queryKey: ['cockpit-extension-context', wsId],
+    queryKey: ['cockpit-extension-context', wsId, principalId ?? 'anonymous'],
     queryFn: () => fetchCockpitExtensionContext(wsId),
-    enabled: Boolean(wsId),
+    enabled: Boolean(wsId && principalId),
   });
 }

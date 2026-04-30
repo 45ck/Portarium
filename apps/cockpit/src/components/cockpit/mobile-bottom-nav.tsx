@@ -19,12 +19,16 @@ import {
 import type { PersonaId } from '@/stores/ui-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
-import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
+import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
+import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import {
-  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+  INSTALLED_COCKPIT_EXTENSIONS,
+  INSTALLED_COCKPIT_ROUTE_LOADERS,
 } from '@/lib/extensions/installed';
-import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import {
+  resolveCockpitExtensionRegistry,
+  selectExtensionNavItems,
+} from '@/lib/extensions/registry';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -140,16 +144,26 @@ export function MobileBottomNav({
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
   const claims = useAuthStore((state) => state.claims);
-  const extensionAccessContext = resolveCockpitExtensionAccessContext({
-    claims,
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const extensionServerAccess = resolveCockpitExtensionServerAccess({
+    workspaceId: activeWorkspaceId,
+    principalId: claims?.sub,
     persona: activePersona,
-    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    serverContext: extensionContextQuery.data,
+  });
+  const extensionRegistry = resolveCockpitExtensionRegistry({
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    activePackIds: extensionServerAccess.activePackIds,
+    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
+    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
+    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const extensionMoreItems = selectExtensionNavItems(
-    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    extensionRegistry,
     'mobile-more',
     activePersona,
-    extensionAccessContext,
+    extensionServerAccess.accessContext,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({ label: item.title, to: item.to }));

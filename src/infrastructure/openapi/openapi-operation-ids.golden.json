@@ -1,6 +1,6 @@
 {
   "openapiSpecPath": "docs/spec/openapi/portarium-control-plane.v1.yaml",
-  "operationCount": 79,
+  "operationCount": 80,
   "operationIds": [
     "addWorkspaceUser",
     "archiveWorkflow",

@@ -24,7 +24,8 @@ Use a compile-time Cockpit extension host for v1.
 - Extension manifests are declarative metadata only.
 - Executable route loaders are registered by the host-owned installed-extension
   catalog, not resolved from manifest strings at runtime.
-- Workspace pack activation decides whether an installed extension is visible.
+- Server-issued workspace pack activation decides whether an installed
+  extension is visible.
 - External routes live under `/external/`.
 - Cockpit mounts external route paths early enough for stable deep links, but
   imports route code only after host-owned activation and guard checks pass.
@@ -48,6 +49,9 @@ guard metadata. The host decision includes:
 
 Client-side persona selection is a UI convenience only. Production
 authorization must be backed by server-provided identity and scopes.
+Capability claims and API scopes are separate inputs: capabilities describe what
+the operator or workspace may see in extension UI, while API scopes describe what
+the Cockpit client may call through Portarium APIs.
 
 ## Browser Egress
 
@@ -111,6 +115,11 @@ The external package install and handoff procedure is documented in
 `docs/how-to/install-cockpit-extension-package.md`. That procedure treats
 `INSTALLED_COCKPIT_EXTENSION_MODULES` as the host-owned import map: manifests
 describe extension metadata, while Cockpit owns every executable route import.
+Workspace activation is resolved by the control plane through
+`PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`; activation grants must be
+workspace-scoped, principal-only grants are ignored, API-scope visibility cannot
+exceed the authenticated token scopes, and quarantines target extension manifest
+IDs.
 
 ## Acceptance Evidence
 
@@ -125,8 +134,8 @@ describe extension metadata, while Cockpit owns every executable route import.
 
 - Route hosting is not complete until direct `/external/` deep links fail closed
   before extension code import.
-- Guarding is not production-ready until server-backed workspace/user scopes are
-  used instead of client-only persona state.
+- Guarding still needs broader end-to-end coverage once real extension packages
+  are installed outside the neutral reference extension.
 - Browser egress is not production-ready until denied origins are enforced and
   tested.
 - SDK graduation waits until the host, activation, guard, install-boundary, and

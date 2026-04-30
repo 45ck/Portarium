@@ -74,6 +74,9 @@ describe('JoseJwtAuthentication', () => {
       workspaceId: 'ws-1',
       roles: ['operator', 'approver'],
       scope: 'run:read run:start',
+      capabilities: ['asset:read', 'asset:read', 'ticket:read'],
+      permissions: ['unrelated:permission'],
+      extensionCapabilities: ['ticket:read', 'evidence:read'],
     })
       .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
       .setSubject('user-1')
@@ -94,6 +97,7 @@ describe('JoseJwtAuthentication', () => {
     expect(result.value.principalId).toBe('user-1');
     expect(result.value.roles).toEqual(['operator', 'approver']);
     expect(result.value.scopes).toEqual(['run:read', 'run:start']);
+    expect(result.value.capabilities).toEqual(['asset:read', 'ticket:read', 'evidence:read']);
     expect(result.value.correlationId).toBe('corr-1');
   });
 

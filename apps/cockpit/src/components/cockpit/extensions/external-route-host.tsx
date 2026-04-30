@@ -7,23 +7,40 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUIStore } from '@/stores/ui-store';
 import { useAuthStore } from '@/stores/auth-store';
-import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
-import { DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT } from '@/lib/extensions/installed';
+import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
+import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
+import {
+  INSTALLED_COCKPIT_EXTENSIONS,
+  INSTALLED_COCKPIT_ROUTE_LOADERS,
+} from '@/lib/extensions/installed';
+import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
 import { resolveExternalRoute, type ExternalRouteResolution } from './external-route-adapter';
 import { HOSTED_EXTERNAL_ROUTE_COMPONENTS } from './external-route-components';
 
 export function ExternalRouteHost({ pathname }: { pathname: string }) {
   const activePersona = useUIStore((state) => state.activePersona);
+  const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
   const claims = useAuthStore((state) => state.claims);
-  const accessContext = resolveCockpitExtensionAccessContext({
-    claims,
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const serverAccess = resolveCockpitExtensionServerAccess({
+    workspaceId: activeWorkspaceId,
+    principalId: claims?.sub,
     persona: activePersona,
-    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    serverContext: extensionContextQuery.data,
+  });
+  const registry = resolveCockpitExtensionRegistry({
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    activePackIds: serverAccess.activePackIds,
+    quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
+    availableCapabilities: serverAccess.accessContext.availableCapabilities,
+    availableApiScopes: serverAccess.accessContext.availableApiScopes,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const resolution = resolveExternalRoute({
     pathname,
-    ...accessContext,
+    ...serverAccess.accessContext,
     persona: activePersona,
+    registry,
     components: HOSTED_EXTERNAL_ROUTE_COMPONENTS,
   });
 

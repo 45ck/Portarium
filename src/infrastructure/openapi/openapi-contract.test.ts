@@ -59,6 +59,7 @@ describe('OpenAPI contract', () => {
     const expectedPaths = [
       '/v1/workspaces',
       '/v1/workspaces/{workspaceId}',
+      '/v1/workspaces/{workspaceId}/cockpit/extension-context',
       '/v1/workspaces/{workspaceId}/users',
       '/v1/workspaces/{workspaceId}/users/{userId}',
       '/v1/workspaces/{workspaceId}/work-items',

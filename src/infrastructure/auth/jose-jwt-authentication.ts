@@ -182,20 +182,38 @@ function validateTrustedIssuer(
 }
 
 function parseScopes(payload: Record<string, unknown>): readonly string[] {
-  const scope = payload['scope'];
-  if (typeof scope === 'string') {
-    return scope
-      .split(' ')
-      .map((s) => s.trim())
-      .filter((s) => s !== '');
+  return readStringClaims(payload, ['scope', 'scopes', 'scp']);
+}
+
+function parseCapabilities(payload: Record<string, unknown>): readonly string[] {
+  return readStringClaims(payload, ['capabilities', 'extensionCapabilities']);
+}
+
+function readStringClaims(
+  payload: Record<string, unknown>,
+  keys: readonly string[],
+): readonly string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  for (const key of keys) {
+    const value = payload[key];
+    const candidates =
+      typeof value === 'string'
+        ? value.split(/\s+/)
+        : Array.isArray(value)
+          ? value.filter((entry): entry is string => typeof entry === 'string')
+          : [];
+
+    for (const candidate of candidates) {
+      const trimmed = candidate.trim();
+      if (trimmed === '' || seen.has(trimmed)) continue;
+      seen.add(trimmed);
+      out.push(trimmed);
+    }
   }
 
-  const scopes = payload['scopes'];
-  if (Array.isArray(scopes) && scopes.every((s) => typeof s === 'string')) {
-    return (scopes as readonly string[]).map((s) => s.trim()).filter((s) => s !== '');
-  }
-
-  return [];
+  return out;
 }
 
 function readWorkspaceId(payload: Record<string, unknown>): string | undefined {
@@ -376,6 +394,7 @@ export class JoseJwtAuthentication implements AuthenticationPort {
       ...(input.traceparent ? { traceparent: input.traceparent } : {}),
       ...(input.tracestate ? { tracestate: input.tracestate } : {}),
       scopes: parseScopes(payload),
+      capabilities: parseCapabilities(payload),
     });
 
     const expectedWorkspaceId = input.expectedWorkspaceId?.trim();
