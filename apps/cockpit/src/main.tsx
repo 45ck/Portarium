@@ -13,6 +13,10 @@ import './index.css';
 
 const FETCH_SHIM_KEY = '__portarium_live_fetch_shim_installed__';
 
+type WindowWithFetchShimFlag = Window & {
+  [FETCH_SHIM_KEY]?: boolean;
+};
+
 function shouldEnableMocks(): boolean {
   if (!import.meta.env.DEV) return false;
   const raw = (import.meta.env.VITE_PORTARIUM_ENABLE_MSW ?? 'true').trim().toLowerCase();
@@ -32,7 +36,8 @@ function readBearerToken(): string | undefined {
 
 function installLiveFetchShim(): void {
   if (typeof window === 'undefined') return;
-  if ((window as Record<string, unknown>)[FETCH_SHIM_KEY] === true) return;
+  const fetchShimWindow = window as WindowWithFetchShimFlag;
+  if (fetchShimWindow[FETCH_SHIM_KEY] === true) return;
 
   const rawBaseUrl = (import.meta.env.VITE_PORTARIUM_API_BASE_URL ?? '').trim();
   if (!rawBaseUrl) return;
@@ -58,7 +63,7 @@ function installLiveFetchShim(): void {
     return nativeFetch(url, { ...init, headers });
   };
 
-  (window as Record<string, unknown>)[FETCH_SHIM_KEY] = true;
+  fetchShimWindow[FETCH_SHIM_KEY] = true;
 }
 
 async function bootstrap() {
@@ -66,8 +71,7 @@ async function bootstrap() {
   const stopPersist = startQueryCachePersistence();
 
   // Mock mode: dev/test only. Production must always hit live APIs.
-  const mocksEnabled = shouldEnableMocks();
-  if (mocksEnabled) {
+  if (import.meta.env.DEV && shouldEnableMocks()) {
     const { worker } = await import('./mocks/browser');
     const { loadActiveDataset } = await import('./mocks/handlers');
     await loadActiveDataset();

@@ -63,9 +63,12 @@ function BeadApprovalPage() {
     );
   }
 
+  const selectedApproval = approval;
   const evidence = (evidenceQuery.data?.items ?? [])
     .filter(
-      (entry) => entry.links?.runId === approval.runId || entry.links?.planId === approval.planId,
+      (entry) =>
+        entry.links?.runId === selectedApproval.runId ||
+        entry.links?.planId === selectedApproval.planId,
     )
     .slice(-3)
     .reverse();
@@ -77,28 +80,31 @@ function BeadApprovalPage() {
     const body: ApprovalDecisionRequest = { decision: nextDecision, rationale };
     await decision.mutateAsync(body);
     toast.success('Decision submitted', {
-      description: `${nextDecision} recorded for ${approval.approvalId}.`,
+      description: `${nextDecision} recorded for ${selectedApproval.approvalId}.`,
     });
   }
 
   return (
     <DiffApprovalSurface
       beadId={beadId}
-      approvalId={approval.approvalId}
+      approvalId={selectedApproval.approvalId}
       policyTier={
-        (approval.policyRule?.tier as 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly') ??
-        'HumanApprove'
+        (selectedApproval.policyRule?.tier as
+          | 'Auto'
+          | 'Assisted'
+          | 'HumanApprove'
+          | 'ManualOnly') ?? 'HumanApprove'
       }
       policyRationale={
-        approval.agentActionProposal?.rationale ??
-        approval.prompt ??
+        selectedApproval.agentActionProposal?.rationale ??
+        selectedApproval.prompt ??
         'This bead has a proposed change that requires operator review.'
       }
-      blastRadius={approval.policyRule?.blastRadius.join(', ') ?? 'Unknown scope'}
-      isIrreversible={approval.policyRule?.irreversibility === 'full'}
+      blastRadius={selectedApproval.policyRule?.blastRadius.join(', ') ?? 'Unknown scope'}
+      isIrreversible={selectedApproval.policyRule?.irreversibility === 'full'}
       hunks={diffQuery.data ?? []}
       recentEvidence={evidence}
-      sodEvaluation={approval.sodEvaluation}
+      sodEvaluation={selectedApproval.sodEvaluation}
       onDecide={onDecide}
       loading={decision.isPending}
     />

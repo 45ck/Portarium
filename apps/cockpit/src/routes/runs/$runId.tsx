@@ -317,7 +317,9 @@ function RunDetailPage() {
               workforceMembers={workforceMembers}
               workforceQueues={workforceQueues}
               loading={submitIntervention.isPending}
-              onSubmit={(request) => submitIntervention.mutateAsync(request)}
+              onSubmit={async (request) => {
+                await submitIntervention.mutateAsync(request);
+              }}
             />
 
             {run.status === 'WaitingForApproval' && pendingApproval && (

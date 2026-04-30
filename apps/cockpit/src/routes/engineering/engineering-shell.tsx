@@ -174,7 +174,7 @@ export function EngineeringShell({ selectedBeadId }: { selectedBeadId?: string }
         </div>
       ) : (
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="min-h-0">
+          <ResizablePanelGroup orientation="horizontal" className="min-h-0">
             <ResizablePanel defaultSize={22} minSize={16} maxSize={32}>
               <BeadNavList beads={beads} selectedBeadId={selectedBeadId} />
             </ResizablePanel>

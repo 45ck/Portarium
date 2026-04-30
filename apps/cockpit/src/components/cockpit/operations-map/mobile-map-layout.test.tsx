@@ -106,6 +106,8 @@ const mockAlerts: SpatialAlert[] = [
     type: 'localization-drop',
     severity: 'critical',
     message: 'Beta Drone lost localization',
+    lat: 47.607,
+    lng: -122.335,
     timestampIso: '2026-02-23T09:56:00Z',
   },
   {
@@ -114,6 +116,8 @@ const mockAlerts: SpatialAlert[] = [
     type: 'geofence-violation',
     severity: 'warning',
     message: 'Alpha Bot exited Loading Dock',
+    lat: 47.6062,
+    lng: -122.3321,
     timestampIso: '2026-02-23T09:58:00Z',
   },
 ];
@@ -257,7 +261,10 @@ describe('MobileMapLayout', () => {
     fireEvent.click(screen.getByLabelText('Toggle map layers'));
     // Click the first "Trails" button we find — the mobile layer panel renders its own
     const trailButtons = screen.getAllByText('Trails');
-    fireEvent.click(trailButtons[0]);
+    const trailButton = trailButtons[0];
+    if (!trailButton) throw new Error('Expected Trails toggle to render');
+
+    fireEvent.click(trailButton);
     expect(onLayersChange).toHaveBeenCalled();
   });
 

@@ -20,11 +20,14 @@ function makeEntry(
           : { kind: 'System' };
 
   return {
+    schemaVersion: 1,
     evidenceId: id,
+    workspaceId: 'workspace-main',
     category,
     summary: `Entry ${id}`,
     actor,
     occurredAtIso: new Date(Date.now() - 60_000).toISOString(),
+    hashSha256: `hash-${id}`,
   };
 }
 

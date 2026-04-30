@@ -44,7 +44,7 @@ function AgentsPage() {
         return (
           <span className="flex items-center gap-2">
             <Icon className={`h-4 w-4 shrink-0 ${cls}`} aria-hidden="true" />
-            <span className="font-medium">{row.name ?? row.displayName ?? row.agentId}</span>
+            <span className="font-medium">{row.name}</span>
           </span>
         );
       },

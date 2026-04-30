@@ -92,6 +92,8 @@ describe('MobileBottomSheet', () => {
     // The close button is the last non-handle button
     // Handle has role="button" + tabIndex, chevron is another, close is last
     const lastButton = buttons[buttons.length - 1];
+    if (!lastButton) throw new Error('Expected close button to render');
+
     fireEvent.click(lastButton);
     expect(onClose).toHaveBeenCalled();
   });

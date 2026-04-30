@@ -260,7 +260,7 @@ function orderedActionNodes(
   while (true) {
     const nextCandidates = (outgoing.get(cursor) ?? [])
       .map((id) => nodeById.get(id))
-      .filter((node): node is WorkflowNode => Boolean(node) && node.type !== 'end')
+      .filter((node): node is WorkflowNode => node !== undefined && node.type !== 'end')
       .sort((a, b) => a.position.y - b.position.y);
     const next = nextCandidates[0];
     if (!next || visited.has(next.id)) break;
@@ -271,7 +271,7 @@ function orderedActionNodes(
 
   const ordered = orderedIds
     .map((id) => nodeById.get(id))
-    .filter((node): node is WorkflowNode => Boolean(node) && isActionNode(node));
+    .filter((node): node is WorkflowNode => node !== undefined && isActionNode(node));
   const remaining = actionNodes
     .filter((node) => !orderedIds.includes(node.id))
     .sort((a, b) => a.position.y - b.position.y);

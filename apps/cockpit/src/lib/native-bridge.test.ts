@@ -175,7 +175,7 @@ describe('onDeepLink (web)', () => {
 
     // Simulate a popstate event
     expect(listeners['popstate']).toHaveLength(1);
-    listeners['popstate'][0](new Event('popstate'));
+    listeners['popstate']?.[0]?.(new Event('popstate'));
 
     expect(handler).toHaveBeenCalledWith('https://app.portarium.io/dashboard');
 

@@ -14,19 +14,24 @@ vi.mock('@xyflow/react', () => ({
   Position: { Top: 'top', Bottom: 'bottom', Left: 'left', Right: 'right' },
 }));
 
-function makeNodeProps(label: string, extra?: Record<string, unknown>) {
+function makeNodeProps(
+  label: string,
+  extra?: Record<string, unknown>,
+): Parameters<typeof ActionNode>[0] {
   return {
     data: { label, ...extra },
     selected: false,
     id: 'node-1',
     type: 'action',
-    xPos: 0,
-    yPos: 0,
     zIndex: 0,
     isConnectable: true,
-    positionAbsolute: { x: 0, y: 0 },
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
     dragging: false,
-  } as Parameters<typeof ActionNode>[0];
+    draggable: true,
+    selectable: true,
+    deletable: true,
+  };
 }
 
 describe('ActionNode', () => {

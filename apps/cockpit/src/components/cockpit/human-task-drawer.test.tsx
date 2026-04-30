@@ -3,7 +3,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { HumanTaskSummary, WorkforceMemberSummary } from '@portarium/cockpit-types';
+import type {
+  HumanTaskSummary,
+  WorkforceCapability,
+  WorkforceMemberSummary,
+} from '@portarium/cockpit-types';
 import { HumanTaskDrawer } from './human-task-drawer';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -12,6 +16,8 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }));
 
+const REVIEW_CAPABILITY: WorkforceCapability = 'operations.approval';
+
 const BASE_TASK: HumanTaskSummary = {
   schemaVersion: 1,
   humanTaskId: 'ht-001',
@@ -19,7 +25,7 @@ const BASE_TASK: HumanTaskSummary = {
   runId: 'run-001',
   stepId: 'step-1',
   description: 'Review quarterly report',
-  requiredCapabilities: ['finance-review'],
+  requiredCapabilities: [REVIEW_CAPABILITY],
   status: 'assigned',
 };
 
@@ -29,10 +35,11 @@ const BASE_MEMBERS: WorkforceMemberSummary[] = [
     workforceMemberId: 'wm-1',
     linkedUserId: 'user-alice',
     displayName: 'Alice',
-    capabilities: ['finance-review'],
+    capabilities: [REVIEW_CAPABILITY],
     availabilityStatus: 'available',
     queueMemberships: [],
     tenantId: 'ws-default',
+    createdAtIso: '2026-01-01T00:00:00.000Z',
   },
 ];
 
@@ -69,7 +76,7 @@ describe('HumanTaskDrawer', () => {
 
   it('renders required capabilities', () => {
     render(<HumanTaskDrawer {...defaultProps} />);
-    expect(screen.getByText('finance-review')).toBeTruthy();
+    expect(screen.getByText(REVIEW_CAPABILITY)).toBeTruthy();
   });
 
   it('renders assignee name when assigneeId matches a member', () => {

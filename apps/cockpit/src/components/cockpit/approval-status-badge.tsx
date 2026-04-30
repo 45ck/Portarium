@@ -29,6 +29,18 @@ const config: Record<
     className: 'bg-success text-success-foreground',
   },
   Denied: { icon: XCircle, label: 'Denied', variant: 'destructive', className: '' },
+  Executed: {
+    icon: CheckCircle2,
+    label: 'Executed',
+    variant: 'default',
+    className: 'bg-success text-success-foreground',
+  },
+  Expired: {
+    icon: Clock,
+    label: 'Expired',
+    variant: 'outline',
+    className: 'border-muted-foreground text-muted-foreground',
+  },
   RequestChanges: {
     icon: RefreshCw,
     label: 'Request Changes',
