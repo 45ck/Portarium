@@ -101,7 +101,7 @@ function createFetchMock(capturedPaths?: string[]) {
     if (/^\/v1\/workspaces\/[^/]+\/work-items$/.test(pathname)) {
       return Promise.resolve(json({ items: [] }));
     }
-    if (/^\/v1\/workspaces\/[^/]+\/workforce\/members$/.test(pathname)) {
+    if (/^\/v1\/workspaces\/[^/]+\/workforce$/.test(pathname)) {
       return Promise.resolve(json({ items: [] }));
     }
     if (/^\/v1\/workspaces\/[^/]+\/workforce\/queues$/.test(pathname)) {

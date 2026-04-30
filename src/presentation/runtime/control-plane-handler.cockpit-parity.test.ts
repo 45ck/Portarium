@@ -12,6 +12,7 @@ import {
   WorkflowId,
   WorkspaceId,
 } from '../../domain/primitives/index.js';
+import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import type { HealthServerHandle } from './health-server.js';
@@ -81,6 +82,7 @@ function makePlan(workspaceId = WORKSPACE_ID) {
 function makeDeps(overrides: Record<string, unknown> = {}): ControlPlaneDeps {
   const workItems = [makeWorkItem(), makeWorkItem(OTHER_WORKSPACE_ID)];
   const plans = [makePlan(), makePlan(OTHER_WORKSPACE_ID)];
+  const evidenceLog = new InMemoryEvidenceLog();
 
   return {
     authentication: {
@@ -98,13 +100,8 @@ function makeDeps(overrides: Record<string, unknown> = {}): ControlPlaneDeps {
       getRunById: vi.fn(async () => null),
       saveRun: vi.fn(async () => undefined),
     },
-    evidenceLog: {
-      appendEntry: vi.fn(async (_tenantId, entry) => ({
-        ...entry,
-        previousHash: 'hash-prev',
-        hashSha256: 'hash-next',
-      })),
-    },
+    evidenceLog,
+    evidenceQueryStore: evidenceLog,
     workItemStore: {
       getWorkItemById: vi.fn(async (_tenantId, workspaceId, workItemId) => {
         return (

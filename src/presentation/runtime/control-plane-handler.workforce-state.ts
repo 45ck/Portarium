@@ -102,6 +102,10 @@ export function listRuntimeHumanTasks(workspaceId: string): HumanTaskRecord[] {
   return runtimeHumanTasks.filter((task) => task.tenantId === workspaceId);
 }
 
+export function listFixtureHumanTasks(workspaceId: string): HumanTaskRecord[] {
+  return HUMAN_TASK_FIXTURE.filter((task) => task.tenantId === workspaceId);
+}
+
 export function updateRuntimeHumanTask(nextTask: HumanTaskRecord): void {
   runtimeHumanTasks = runtimeHumanTasks.map((task) =>
     task.humanTaskId === nextTask.humanTaskId && task.tenantId === nextTask.tenantId

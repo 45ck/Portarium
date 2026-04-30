@@ -17,6 +17,8 @@ const AUTH_ENV_KEYS = [
   'ENABLE_DEV_AUTH',
   'DEV_STUB_STORES',
   'NODE_ENV',
+  'PORTARIUM_USE_POSTGRES_STORES',
+  'PORTARIUM_DATABASE_URL',
 ] as const;
 
 let savedEnv: Partial<Record<(typeof AUTH_ENV_KEYS)[number], string | undefined>> = {};
@@ -133,6 +135,44 @@ describe('buildControlPlaneDeps auth startup gate', () => {
     process.env['PORTARIUM_JWT_ISSUER'] = 'https://auth.example.com';
 
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_AUDIENCE/);
+  });
+});
+
+describe('buildControlPlaneDeps store bootstrap', () => {
+  it('wires workforce, queue, and human-task stores in dev stub mode', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['NODE_ENV'] = 'test';
+    process.env['DEV_STUB_STORES'] = 'true';
+    process.env['ENABLE_DEV_AUTH'] = 'true';
+    process.env['PORTARIUM_DEV_TOKEN'] = 'dev-token';
+    process.env['PORTARIUM_DEV_WORKSPACE_ID'] = 'workspace-1';
+    process.env['PORTARIUM_DEV_USER_ID'] = 'user-1';
+
+    const deps = await buildControlPlaneDeps();
+
+    expect(deps.workforceMemberStore?.listWorkforceMembers).toBeTypeOf('function');
+    expect(deps.workforceQueueStore?.listWorkforceQueues).toBeTypeOf('function');
+    expect(deps.humanTaskStore?.listHumanTasks).toBeTypeOf('function');
+
+    const members = await deps.workforceMemberStore!.listWorkforceMembers!(
+      TenantId('workspace-1'),
+      {
+        workspaceId: 'workspace-1',
+        limit: 10,
+      },
+    );
+    const queues = await deps.workforceQueueStore!.listWorkforceQueues!(TenantId('workspace-1'), {
+      workspaceId: 'workspace-1',
+      limit: 10,
+    });
+    const tasks = await deps.humanTaskStore!.listHumanTasks!(TenantId('workspace-1'), {
+      workspaceId: 'workspace-1',
+      limit: 10,
+    });
+
+    expect(members.items.map((member) => member.workforceMemberId)).toContain('wm-1');
+    expect(queues.items.map((queue) => queue.workforceQueueId)).toContain('queue-finance');
+    expect(tasks.items.map((task) => task.humanTaskId)).toContain('ht-1');
   });
 });
 

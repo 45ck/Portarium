@@ -2,7 +2,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { err, ok } from '../../application/common/result.js';
+import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import {
+  buildInMemoryHumanTaskStore,
+  buildInMemoryWorkforceMemberStore,
+  buildInMemoryWorkforceQueueStore,
+} from './control-plane-handler.bootstrap.js';
 import { InMemoryCockpitWebSessionStore } from './cockpit-web-session.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
@@ -21,10 +27,12 @@ function makeCtx(
   roles: readonly Role[] = ['admin'],
   scopes: readonly string[] = [],
   capabilities: readonly string[] = [],
+  tenantId = 'tenant-1',
+  principalId = 'user-1',
 ) {
   return toAppContext({
-    tenantId: 'tenant-1',
-    principalId: 'user-1',
+    tenantId,
+    principalId,
     roles,
     scopes,
     capabilities,
@@ -33,6 +41,7 @@ function makeCtx(
 }
 
 function makeDeps(overrides: Partial<HandlerDeps> = {}): HandlerDeps {
+  const evidenceLog = new InMemoryEvidenceLog();
   return {
     authentication: {
       authenticateBearerToken: async () => ok(makeCtx()),
@@ -49,6 +58,11 @@ function makeDeps(overrides: Partial<HandlerDeps> = {}): HandlerDeps {
       getRunById: async () => null,
       saveRun: async () => undefined,
     },
+    workforceMemberStore: buildInMemoryWorkforceMemberStore('workspace-1'),
+    workforceQueueStore: buildInMemoryWorkforceQueueStore('workspace-1'),
+    humanTaskStore: buildInMemoryHumanTaskStore('workspace-1'),
+    evidenceLog,
+    evidenceQueryStore: evidenceLog,
     ...overrides,
   };
 }
@@ -491,7 +505,9 @@ describe('createControlPlaneHandler', () => {
   it('lists workforce members with contract query filters', async () => {
     await startWith(
       makeDeps({
-        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+        authentication: {
+          authenticateBearerToken: async () => ok(makeCtx(['operator'], [], [], 'workspace-1')),
+        },
       }),
     );
     const res = await fetch(
@@ -503,10 +519,13 @@ describe('createControlPlaneHandler', () => {
     expect(body.items[0]!.workforceMemberId).toBe('wm-1');
   });
 
-  it('enforces admin-only update for workforce availability patch', async () => {
+  it('denies workforce availability patch from an unlinked operator', async () => {
     await startWith(
       makeDeps({
-        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['operator'], [], [], 'workspace-1', 'user-2')),
+        },
       }),
     );
     const res = await fetch(
@@ -524,7 +543,11 @@ describe('createControlPlaneHandler', () => {
 
   it('allows admin to patch workforce availability', async () => {
     await startWith(
-      makeDeps({ authentication: { authenticateBearerToken: async () => ok(makeCtx(['admin'])) } }),
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () => ok(makeCtx(['admin'], [], [], 'workspace-1')),
+        },
+      }),
     );
     const res = await fetch(
       `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-1/workforce/wm-1/availability`,
@@ -543,7 +566,9 @@ describe('createControlPlaneHandler', () => {
   it('lists human tasks with assignee/status filters', async () => {
     await startWith(
       makeDeps({
-        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+        authentication: {
+          authenticateBearerToken: async () => ok(makeCtx(['operator'], [], [], 'workspace-1')),
+        },
       }),
     );
     const res = await fetch(
@@ -558,7 +583,9 @@ describe('createControlPlaneHandler', () => {
   it('completes human task and emits evidence visible in evidence list', async () => {
     await startWith(
       makeDeps({
-        authentication: { authenticateBearerToken: async () => ok(makeCtx(['operator'])) },
+        authentication: {
+          authenticateBearerToken: async () => ok(makeCtx(['operator'], [], [], 'workspace-1')),
+        },
       }),
     );
     const completeRes = await fetch(

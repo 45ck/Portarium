@@ -1,5 +1,8 @@
 import type {
   HumanTaskStore,
+  ListHumanTasksFilter,
+  ListWorkforceMembersFilter,
+  ListWorkforceQueuesFilter,
   ListWorkItemsFilter,
   WorkItemStore,
   WorkforceMemberStore,
@@ -97,22 +100,67 @@ export class PostgresWorkforceMemberStore implements WorkforceMemberStore {
   public async getWorkforceMemberById(
     tenantId: string,
     workforceMemberId: string,
+    workspaceId?: string,
   ): Promise<WorkforceMemberV1 | null> {
     const payload = await this.#documents.get(
       String(tenantId),
       COLLECTION_WORKFORCE_MEMBERS,
       String(workforceMemberId),
+      workspaceId ? String(workspaceId) : undefined,
     );
     return payload === null ? null : parseWorkforceMemberV1(payload);
   }
 
-  public async listWorkforceMembersByIds(tenantId: string, workforceMemberIds: readonly string[]) {
+  public async listWorkforceMembersByIds(
+    tenantId: string,
+    workforceMemberIds: readonly string[],
+    workspaceId?: string,
+  ) {
     const payloads = await this.#documents.listByIds(
       String(tenantId),
       COLLECTION_WORKFORCE_MEMBERS,
       workforceMemberIds.map(String),
+      workspaceId ? String(workspaceId) : undefined,
     );
     return payloads.map(parseWorkforceMemberV1);
+  }
+
+  public async listWorkforceMembers(
+    tenantId: string,
+    filter: ListWorkforceMembersFilter,
+  ): Promise<WorkforceMemberListPage> {
+    const pageLimit = normalizeLimit(filter.limit);
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(filter.workspaceId),
+      collection: COLLECTION_WORKFORCE_MEMBERS,
+      limit: pageLimit + 1,
+      ...(filter.cursor ? { afterId: filter.cursor } : {}),
+    });
+    const members = payloads
+      .map(parseWorkforceMemberV1)
+      .filter((member) => matchesWorkforceMember(member, filter))
+      .sort((left, right) =>
+        String(left.workforceMemberId).localeCompare(String(right.workforceMemberId)),
+      );
+    const items = members.slice(0, pageLimit);
+    const nextCursor =
+      members.length > pageLimit ? String(items[items.length - 1]?.workforceMemberId) : undefined;
+    return { items, ...(nextCursor ? { nextCursor } : {}) };
+  }
+
+  public saveWorkforceMember(
+    tenantId: string,
+    member: WorkforceMemberV1,
+    workspaceId?: string,
+  ): Promise<void> {
+    return this.#documents.upsert({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId ?? member.tenantId),
+      collection: COLLECTION_WORKFORCE_MEMBERS,
+      documentId: String(member.workforceMemberId),
+      payload: member,
+    });
   }
 }
 
@@ -126,22 +174,47 @@ export class PostgresHumanTaskStore implements HumanTaskStore {
   public async getHumanTaskById(
     tenantId: string,
     humanTaskId: string,
+    workspaceId?: string,
   ): Promise<HumanTaskV1 | null> {
     const payload = await this.#documents.get(
       String(tenantId),
       COLLECTION_HUMAN_TASKS,
       String(humanTaskId),
+      workspaceId ? String(workspaceId) : undefined,
     );
     return payload === null ? null : parseHumanTaskV1(payload);
   }
 
-  public saveHumanTask(tenantId: string, task: HumanTaskV1): Promise<void> {
+  public saveHumanTask(tenantId: string, task: HumanTaskV1, workspaceId?: string): Promise<void> {
     return this.#documents.upsert({
       tenantId: String(tenantId),
+      workspaceId: String(workspaceId ?? tenantId),
       collection: COLLECTION_HUMAN_TASKS,
       documentId: String(task.humanTaskId),
       payload: task,
     });
+  }
+
+  public async listHumanTasks(
+    tenantId: string,
+    filter: ListHumanTasksFilter,
+  ): Promise<HumanTaskListPage> {
+    const pageLimit = normalizeLimit(filter.limit);
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(filter.workspaceId),
+      collection: COLLECTION_HUMAN_TASKS,
+      limit: pageLimit + 1,
+      ...(filter.cursor ? { afterId: filter.cursor } : {}),
+    });
+    const tasks = payloads
+      .map(parseHumanTaskV1)
+      .filter((task) => matchesHumanTask(task, filter))
+      .sort((left, right) => String(left.humanTaskId).localeCompare(String(right.humanTaskId)));
+    const items = tasks.slice(0, pageLimit);
+    const nextCursor =
+      tasks.length > pageLimit ? String(items[items.length - 1]?.humanTaskId) : undefined;
+    return { items, ...(nextCursor ? { nextCursor } : {}) };
   }
 }
 
@@ -152,14 +225,94 @@ export class PostgresWorkforceQueueStore implements WorkforceQueueStore {
     this.#documents = new PostgresJsonDocumentStore(client);
   }
 
-  public async getWorkforceQueueById(tenantId: string, workforceQueueId: string) {
+  public async getWorkforceQueueById(
+    tenantId: string,
+    workforceQueueId: string,
+    workspaceId?: string,
+  ) {
     const payload = await this.#documents.get(
       String(tenantId),
       COLLECTION_WORKFORCE_QUEUES,
       String(workforceQueueId),
+      workspaceId ? String(workspaceId) : undefined,
     );
     return payload === null ? null : parseWorkforceQueueV1(payload);
   }
+
+  public async listWorkforceQueues(
+    tenantId: string,
+    filter: ListWorkforceQueuesFilter,
+  ): Promise<WorkforceQueueListPage> {
+    const pageLimit = normalizeLimit(filter.limit);
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(filter.workspaceId),
+      collection: COLLECTION_WORKFORCE_QUEUES,
+      limit: pageLimit + 1,
+      ...(filter.cursor ? { afterId: filter.cursor } : {}),
+    });
+    const queues = payloads
+      .map(parseWorkforceQueueV1)
+      .filter((queue) => matchesWorkforceQueue(queue, filter))
+      .sort((left, right) =>
+        String(left.workforceQueueId).localeCompare(String(right.workforceQueueId)),
+      );
+    const items = queues.slice(0, pageLimit);
+    const nextCursor =
+      queues.length > pageLimit ? String(items[items.length - 1]?.workforceQueueId) : undefined;
+    return { items, ...(nextCursor ? { nextCursor } : {}) };
+  }
+
+  public saveWorkforceQueue(
+    tenantId: string,
+    queue: ReturnType<typeof parseWorkforceQueueV1>,
+    workspaceId?: string,
+  ): Promise<void> {
+    return this.#documents.upsert({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId ?? queue.tenantId),
+      collection: COLLECTION_WORKFORCE_QUEUES,
+      documentId: String(queue.workforceQueueId),
+      payload: queue,
+    });
+  }
+}
+
+type WorkforceMemberListPage = Awaited<
+  ReturnType<NonNullable<WorkforceMemberStore['listWorkforceMembers']>>
+>;
+type HumanTaskListPage = Awaited<ReturnType<NonNullable<HumanTaskStore['listHumanTasks']>>>;
+type WorkforceQueueListPage = Awaited<
+  ReturnType<NonNullable<WorkforceQueueStore['listWorkforceQueues']>>
+>;
+
+function matchesWorkforceMember(
+  member: WorkforceMemberV1,
+  filter: ListWorkforceMembersFilter,
+): boolean {
+  if (filter.capability && !member.capabilities.includes(filter.capability as never)) return false;
+  if (filter.queueId && !member.queueMemberships.some((id) => String(id) === filter.queueId)) {
+    return false;
+  }
+  if (filter.availability && member.availabilityStatus !== filter.availability) return false;
+  return true;
+}
+
+function matchesHumanTask(task: HumanTaskV1, filter: ListHumanTasksFilter): boolean {
+  if (filter.assigneeId && String(task.assigneeId ?? '') !== filter.assigneeId) return false;
+  if (filter.status && task.status !== filter.status) return false;
+  if (filter.runId && String(task.runId) !== filter.runId) return false;
+  return true;
+}
+
+function matchesWorkforceQueue(
+  queue: ReturnType<typeof parseWorkforceQueueV1>,
+  filter: ListWorkforceQueuesFilter,
+): boolean {
+  if (filter.capability && !queue.requiredCapabilities.includes(filter.capability as never)) {
+    return false;
+  }
+  return true;
 }
 
 function matchesWorkItemFilter(item: WorkItemV1, filter: ListWorkItemsFilter): boolean {

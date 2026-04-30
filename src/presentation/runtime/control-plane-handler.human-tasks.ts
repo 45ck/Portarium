@@ -1,22 +1,22 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 
-import type { EvidenceRecord, HumanTaskRecord } from './control-plane-handler.shared.js';
+import {
+  EvidenceId,
+  WorkforceMemberId,
+  WorkforceQueueId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
+import type { HumanTaskV1 } from '../../domain/workforce/index.js';
 import {
   authenticate,
+  assertWorkspaceScope,
   assertReadAccess,
   hasRole,
-  paginate,
   problemFromError,
   readJsonBody,
   respondJson,
   respondProblem,
 } from './control-plane-handler.shared.js';
-import {
-  appendRuntimeEvidence,
-  listRuntimeEvidence,
-  listRuntimeHumanTasks,
-  updateRuntimeHumanTask,
-} from './control-plane-handler.workforce-state.js';
 import type {
   HandlerArgs,
   HandlerArgsWithHumanTask,
@@ -52,11 +52,40 @@ async function authorize(
   return auth;
 }
 
+function respondStoreUnavailable(
+  args: HandlerArgs | HandlerArgsWithHumanTask,
+  detail: string,
+): void {
+  respondProblem(
+    args.res,
+    {
+      type: 'https://portarium.dev/problems/service-unavailable',
+      title: 'Service Unavailable',
+      status: 503,
+      detail,
+      instance: args.pathname,
+    },
+    args.correlationId,
+    args.traceContext,
+  );
+}
+
 async function authorizeRead(
   args: HandlerArgs | HandlerArgsWithHumanTask,
 ): Promise<AuthSuccess | undefined> {
   const auth = await authorize(args);
   if (!auth) return undefined;
+
+  const scope = assertWorkspaceScope(auth.ctx, args.workspaceId, args.deps.authEventLogger);
+  if (!scope.ok) {
+    respondProblem(
+      args.res,
+      problemFromError(scope.error, args.pathname),
+      args.correlationId,
+      args.traceContext,
+    );
+    return undefined;
+  }
 
   const readAccess = await assertReadAccess(args.deps, auth.ctx);
   if (!readAccess.ok) {
@@ -78,6 +107,16 @@ async function authorizeOperatorWrite(
 ): Promise<AuthSuccess | undefined> {
   const auth = await authorize(args);
   if (!auth) return undefined;
+  const scope = assertWorkspaceScope(auth.ctx, args.workspaceId, args.deps.authEventLogger);
+  if (!scope.ok) {
+    respondProblem(
+      args.res,
+      problemFromError(scope.error, args.pathname),
+      args.correlationId,
+      args.traceContext,
+    );
+    return undefined;
+  }
   if (hasRole(auth.ctx, 'admin') || hasRole(auth.ctx, 'operator')) return auth;
 
   args.deps.authEventLogger?.logForbidden({
@@ -101,10 +140,13 @@ async function authorizeOperatorWrite(
   return undefined;
 }
 
-function findHumanTask(args: HandlerArgsWithHumanTask): HumanTaskRecord | undefined {
-  return listRuntimeHumanTasks(args.workspaceId).find(
-    (entry) => entry.humanTaskId === args.humanTaskId,
-  );
+async function findHumanTask(
+  args: HandlerArgsWithHumanTask,
+  auth: AuthSuccess,
+): Promise<HumanTaskV1 | null> {
+  const store = args.deps.humanTaskStore;
+  if (!store) return null;
+  return store.getHumanTaskById(auth.ctx.tenantId, args.humanTaskId as never, args.workspaceId);
 }
 
 function respondHumanTaskNotFound(args: HandlerArgsWithHumanTask): void {
@@ -122,58 +164,44 @@ function respondHumanTaskNotFound(args: HandlerArgsWithHumanTask): void {
   );
 }
 
-function completionEvidence(
-  input: Readonly<{
-    auth: AuthSuccess;
-    workspaceId: string;
-    humanTaskId: string;
-    task: HumanTaskRecord;
-    completionNote?: string;
-  }>,
-): { evidence: EvidenceRecord; evidenceId: string; nowIso: string } {
-  const evidenceId = `evi-${randomUUID()}`;
-  const nowIso = new Date().toISOString();
-  const evidence: EvidenceRecord = {
-    schemaVersion: 1,
-    evidenceId,
-    workspaceId: input.workspaceId,
-    occurredAtIso: nowIso,
-    category: 'Action',
-    summary: input.completionNote
-      ? `Human task ${input.humanTaskId} completed: ${input.completionNote}`
-      : `Human task ${input.humanTaskId} completed.`,
-    actor: { kind: 'User', userId: input.auth.ctx.principalId },
-    links: { runId: input.task.runId, workItemId: input.task.workItemId },
-    hashSha256: randomBytes(32).toString('hex'),
-  };
-  return { evidence, evidenceId, nowIso };
-}
-
 export async function handleListHumanTasks(args: HandlerArgs): Promise<void> {
-  if (!(await authorizeRead(args))) return;
+  const auth = await authorizeRead(args);
+  if (!auth) return;
+  const store = args.deps.humanTaskStore;
+  if (!store?.listHumanTasks) {
+    respondStoreUnavailable(args, 'Human task store is not configured.');
+    return;
+  }
 
   const url = new URL(args.req.url ?? '/', 'http://localhost');
   const assigneeId = url.searchParams.get('assigneeId');
   const status = url.searchParams.get('status');
   const runId = url.searchParams.get('runId');
-  let items = listRuntimeHumanTasks(args.workspaceId);
-  if (assigneeId) items = items.filter((task) => task.assigneeId === assigneeId);
-  if (status && VALID_TASK_STATUSES.has(status))
-    items = items.filter((task) => task.status === status);
-  if (runId) items = items.filter((task) => task.runId === runId);
+  const page = await store.listHumanTasks(auth.ctx.tenantId, {
+    workspaceId: args.workspaceId,
+    ...(assigneeId ? { assigneeId } : {}),
+    ...(status && VALID_TASK_STATUSES.has(status) ? { status: status as never } : {}),
+    ...(runId ? { runId } : {}),
+    ...listPageParams(url),
+  });
 
   respondJson(args.res, {
     statusCode: 200,
     correlationId: args.correlationId,
     traceContext: args.traceContext,
-    body: paginate(items, args.req.url ?? '/'),
+    body: page,
   });
 }
 
 export async function handleGetHumanTask(args: HandlerArgsWithHumanTask): Promise<void> {
-  if (!(await authorizeRead(args))) return;
+  const auth = await authorizeRead(args);
+  if (!auth) return;
+  if (!args.deps.humanTaskStore) {
+    respondStoreUnavailable(args, 'Human task store is not configured.');
+    return;
+  }
 
-  const task = findHumanTask(args);
+  const task = await findHumanTask(args, auth);
   if (!task) {
     respondHumanTaskNotFound(args);
     return;
@@ -188,9 +216,15 @@ export async function handleGetHumanTask(args: HandlerArgsWithHumanTask): Promis
 }
 
 export async function handleAssignHumanTask(args: HandlerArgsWithHumanTask): Promise<void> {
-  if (!(await authorizeOperatorWrite(args, 'Only admin/operator can assign human tasks.'))) return;
+  const auth = await authorizeOperatorWrite(args, 'Only admin/operator can assign human tasks.');
+  if (!auth) return;
+  const store = args.deps.humanTaskStore;
+  if (!store) {
+    respondStoreUnavailable(args, 'Human task store is not configured.');
+    return;
+  }
 
-  const task = findHumanTask(args);
+  const task = await findHumanTask(args, auth);
   if (!task) {
     respondHumanTaskNotFound(args);
     return;
@@ -241,15 +275,17 @@ export async function handleAssignHumanTask(args: HandlerArgsWithHumanTask): Pro
     return;
   }
 
-  const assigneeId = body.workforceMemberId ?? task.assigneeId;
-  const groupId = body.workforceQueueId ?? task.groupId;
-  const updated: HumanTaskRecord = {
+  const assigneeId = body.workforceMemberId
+    ? WorkforceMemberId(body.workforceMemberId)
+    : task.assigneeId;
+  const groupId = body.workforceQueueId ? WorkforceQueueId(body.workforceQueueId) : task.groupId;
+  const updated: HumanTaskV1 = {
     ...task,
     status: body.workforceMemberId ? 'assigned' : task.status,
     ...(assigneeId ? { assigneeId } : {}),
     ...(groupId ? { groupId } : {}),
   };
-  updateRuntimeHumanTask(updated);
+  await store.saveHumanTask(auth.ctx.tenantId, updated, args.workspaceId);
   respondJson(args.res, {
     statusCode: 200,
     correlationId: args.correlationId,
@@ -261,8 +297,18 @@ export async function handleAssignHumanTask(args: HandlerArgsWithHumanTask): Pro
 export async function handleCompleteHumanTask(args: HandlerArgsWithHumanTask): Promise<void> {
   const auth = await authorizeOperatorWrite(args, 'Only admin/operator can complete human tasks.');
   if (!auth) return;
+  const store = args.deps.humanTaskStore;
+  if (!store) {
+    respondStoreUnavailable(args, 'Human task store is not configured.');
+    return;
+  }
+  const evidenceLog = args.deps.evidenceLog;
+  if (!evidenceLog) {
+    respondStoreUnavailable(args, 'Evidence log is not configured.');
+    return;
+  }
 
-  const task = findHumanTask(args);
+  const task = await findHumanTask(args, auth);
   if (!task) {
     respondHumanTaskNotFound(args);
     return;
@@ -313,23 +359,30 @@ export async function handleCompleteHumanTask(args: HandlerArgsWithHumanTask): P
     return;
   }
 
-  const { evidence, evidenceId, nowIso } = completionEvidence({
-    auth,
-    workspaceId: args.workspaceId,
-    humanTaskId: args.humanTaskId,
-    task,
-    ...(parsed.completionNote ? { completionNote: parsed.completionNote } : {}),
+  const evidenceId = EvidenceId(`evi-${randomUUID()}`);
+  const nowIso = (args.deps.clock?.() ?? new Date()).toISOString();
+  const appendedEvidence = await evidenceLog.appendEntry(auth.ctx.tenantId, {
+    schemaVersion: 1,
+    evidenceId,
+    workspaceId: WorkspaceId(args.workspaceId),
+    correlationId: auth.ctx.correlationId,
+    occurredAtIso: nowIso,
+    category: 'Action',
+    summary: parsed.completionNote
+      ? `Human task ${args.humanTaskId} completed: ${parsed.completionNote}`
+      : `Human task ${args.humanTaskId} completed.`,
+    actor: { kind: 'User', userId: auth.ctx.principalId },
+    links: { runId: task.runId, workItemId: task.workItemId },
   });
-  appendRuntimeEvidence(evidence);
 
-  const updated: HumanTaskRecord = {
+  const updated: HumanTaskV1 = {
     ...task,
     status: 'completed',
     completedAt: nowIso,
-    completedById: task.assigneeId ?? 'wm-1',
-    evidenceAnchorId: evidenceId,
+    completedById: task.assigneeId ?? WorkforceMemberId('wm-1'),
+    evidenceAnchorId: appendedEvidence.evidenceId,
   };
-  updateRuntimeHumanTask(updated);
+  await store.saveHumanTask(auth.ctx.tenantId, updated, args.workspaceId);
   respondJson(args.res, {
     statusCode: 200,
     correlationId: args.correlationId,
@@ -339,10 +392,15 @@ export async function handleCompleteHumanTask(args: HandlerArgsWithHumanTask): P
 }
 
 export async function handleEscalateHumanTask(args: HandlerArgsWithHumanTask): Promise<void> {
-  if (!(await authorizeOperatorWrite(args, 'Only admin/operator can escalate human tasks.')))
+  const auth = await authorizeOperatorWrite(args, 'Only admin/operator can escalate human tasks.');
+  if (!auth) return;
+  const store = args.deps.humanTaskStore;
+  if (!store) {
+    respondStoreUnavailable(args, 'Human task store is not configured.');
     return;
+  }
 
-  const task = findHumanTask(args);
+  const task = await findHumanTask(args, auth);
   if (!task) {
     respondHumanTaskNotFound(args);
     return;
@@ -394,12 +452,12 @@ export async function handleEscalateHumanTask(args: HandlerArgsWithHumanTask): P
   }
 
   const { assigneeId: _dropAssigneeId, ...taskWithoutAssignee } = task;
-  const updated: HumanTaskRecord = {
+  const updated: HumanTaskV1 = {
     ...taskWithoutAssignee,
     status: 'escalated',
-    groupId: parsed.workforceQueueId,
+    groupId: WorkforceQueueId(parsed.workforceQueueId),
   };
-  updateRuntimeHumanTask(updated);
+  await store.saveHumanTask(auth.ctx.tenantId, updated, args.workspaceId);
   respondJson(args.res, {
     statusCode: 200,
     correlationId: args.correlationId,
@@ -409,7 +467,13 @@ export async function handleEscalateHumanTask(args: HandlerArgsWithHumanTask): P
 }
 
 export async function handleListEvidence(args: HandlerArgs): Promise<void> {
-  if (!(await authorizeRead(args))) return;
+  const auth = await authorizeRead(args);
+  if (!auth) return;
+  const store = args.deps.evidenceQueryStore;
+  if (!store) {
+    respondStoreUnavailable(args, 'Evidence query store is not configured.');
+    return;
+  }
 
   const url = new URL(args.req.url ?? '/', 'http://localhost');
   const runId = url.searchParams.get('runId');
@@ -431,18 +495,29 @@ export async function handleListEvidence(args: HandlerArgs): Promise<void> {
     );
     return;
   }
-  let items = listRuntimeEvidence(args.workspaceId);
-  if (runId) items = items.filter((entry) => entry.links?.runId === runId);
-  if (planId) items = items.filter((entry) => entry.links?.planId === planId);
-  if (workItemId) items = items.filter((entry) => entry.links?.workItemId === workItemId);
-  if (category) {
-    items = items.filter((entry) => entry.category === category);
-  }
+  const page = await store.listEvidenceEntries(auth.ctx.tenantId, WorkspaceId(args.workspaceId), {
+    filter: {
+      ...(runId ? { runId } : {}),
+      ...(planId ? { planId } : {}),
+      ...(workItemId ? { workItemId } : {}),
+      ...(category ? { category: category as never } : {}),
+    },
+    pagination: listPageParams(url),
+  });
 
   respondJson(args.res, {
     statusCode: 200,
     correlationId: args.correlationId,
     traceContext: args.traceContext,
-    body: paginate(items, args.req.url ?? '/'),
+    body: page,
   });
+}
+
+function listPageParams(url: URL): { limit?: number; cursor?: string } {
+  const limitRaw = url.searchParams.get('limit');
+  const parsedLimit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+  const limit =
+    parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : undefined;
+  const cursor = url.searchParams.get('cursor') ?? undefined;
+  return { ...(limit ? { limit } : {}), ...(cursor ? { cursor } : {}) };
 }

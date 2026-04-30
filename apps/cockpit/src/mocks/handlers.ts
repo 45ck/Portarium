@@ -635,7 +635,7 @@ export const handlers = [
   http.get('/v1/workspaces/:wsId/evidence', () => HttpResponse.json({ items: evidence })),
 
   // Workforce
-  http.get('/v1/workspaces/:wsId/workforce/members', () =>
+  http.get('/v1/workspaces/:wsId/workforce', () =>
     HttpResponse.json({ items: data?.WORKFORCE_MEMBERS ?? [] }),
   ),
   http.get('/v1/workspaces/:wsId/workforce/queues', () =>

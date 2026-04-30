@@ -37,14 +37,20 @@ DO UPDATE SET workspace_id = EXCLUDED.workspace_id, payload = EXCLUDED.payload, 
     );
   }
 
-  public async get(tenantId: string, collection: string, documentId: string): Promise<unknown> {
+  public async get(
+    tenantId: string,
+    collection: string,
+    documentId: string,
+    workspaceId?: string,
+  ): Promise<unknown> {
     const result = await this.#client.query<{ payload: unknown }>(
       `${SQL_JSON_DOC_SELECT_ONE}
 SELECT payload
 FROM domain_documents
 WHERE tenant_id = $1 AND collection = $2 AND document_id = $3
+  AND ($4::text IS NULL OR workspace_id = $4)
 LIMIT 1;`,
-      [tenantId, collection, documentId],
+      [tenantId, collection, documentId, workspaceId ?? null],
     );
 
     if (result.rows.length === 0) {
@@ -102,6 +108,7 @@ LIMIT $5;`,
     tenantId: string,
     collection: string,
     documentIds: readonly string[],
+    workspaceId?: string,
   ): Promise<readonly unknown[]> {
     if (documentIds.length === 0) {
       return [];
@@ -111,8 +118,9 @@ LIMIT $5;`,
 SELECT payload
 FROM domain_documents
 WHERE tenant_id = $1 AND collection = $2 AND document_id = ANY($3::text[])
+  AND ($4::text IS NULL OR workspace_id = $4)
 ORDER BY document_id ASC;`,
-      [tenantId, collection, documentIds],
+      [tenantId, collection, documentIds, workspaceId ?? null],
     );
     return result.rows.map((row) => row.payload);
   }

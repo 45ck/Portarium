@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { WorkforceMemberSummary, WorkforceQueueSummary } from '@portarium/cockpit-types';
 
 async function fetchWorkforceMembers(wsId: string): Promise<{ items: WorkforceMemberSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/workforce/members`);
+  const res = await fetch(`/v1/workspaces/${wsId}/workforce`);
   if (!res.ok) throw new Error('Failed to fetch workforce members');
   return res.json();
 }

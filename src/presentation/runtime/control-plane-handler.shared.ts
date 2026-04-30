@@ -24,6 +24,7 @@ import type {
   EvidenceLogPort,
   EvidenceQueryStore,
   IdempotencyStore,
+  HumanTaskStore,
   PolicyStore,
   PlanQueryStore,
   QueryCache,
@@ -32,6 +33,7 @@ import type {
   RunStore,
   UnitOfWork,
   WorkforceMemberStore,
+  WorkforceQueueStore,
   WorkflowOrchestrator,
   WorkflowStore,
   WorkItemStore,
@@ -119,6 +121,10 @@ export type ControlPlaneDeps = Readonly<{
   workItemStore?: WorkItemStore;
   /** Optional workforce member store; enables workforce-member assignment resolution. */
   workforceMemberStore?: WorkforceMemberStore;
+  /** Optional workforce queue store; enables persisted workforce queue reads and routing. */
+  workforceQueueStore?: WorkforceQueueStore;
+  /** Optional human task store; enables persisted human task reads and mutations. */
+  humanTaskStore?: HumanTaskStore;
   /** Optional query store for listing workspaces; enables the GET /v1/workspaces route. */
   workspaceQueryStore?: WorkspaceQueryStore;
   /** Optional query store for listing runs; enables the GET /v1/workspaces/:id/runs route. */
