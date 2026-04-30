@@ -141,6 +141,35 @@ describe('ControlPlaneClient', () => {
     });
   });
 
+  it('posts typed run interventions to the run endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ runId: 'run-1', status: 'Paused' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.submitRunIntervention('ws-1', 'run-1', {
+      interventionType: 'pause',
+      rationale: 'Need finance context before continuing.',
+      effect: 'current-run-effect',
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/runs/run-1/interventions');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({
+      interventionType: 'pause',
+      rationale: 'Need finance context before continuing.',
+      effect: 'current-run-effect',
+    });
+  });
+
   it('URL-encodes workspace and resource path segments', async () => {
     const fetchImpl = vi.fn(
       async () =>

@@ -35,6 +35,8 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
   const qc = useQueryClient();
 
   const [workflowId, setWorkflowId] = useState('');
+  const [operatorIntent, setOperatorIntent] = useState('');
+  const [rationale, setRationale] = useState('');
   const [parametersJson, setParametersJson] = useState('');
 
   const createRun = useMutation({
@@ -47,12 +49,19 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
           throw new Error('Invalid JSON in parameters field');
         }
       }
-      return controlPlaneClient.startRun(wsId, { workflowId, parameters });
+      return controlPlaneClient.startRun(wsId, {
+        workflowId,
+        parameters,
+        operatorIntent: operatorIntent.trim(),
+        ...(rationale.trim() ? { rationale: rationale.trim() } : {}),
+      });
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['runs', wsId] });
       onOpenChange(false);
       setWorkflowId('');
+      setOperatorIntent('');
+      setRationale('');
       setParametersJson('');
       navigate({ to: '/runs/$runId' as string, params: { runId: data.runId } });
     },
@@ -64,8 +73,8 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>New Run</DialogTitle>
-          <DialogDescription>Start a new workflow run.</DialogDescription>
+          <DialogTitle>New Governed Run</DialogTitle>
+          <DialogDescription>Launch agent work from operator intent.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
@@ -82,6 +91,26 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="operator-intent-input">Intent</Label>
+            <Textarea
+              id="operator-intent-input"
+              value={operatorIntent}
+              onChange={(e) => setOperatorIntent(e.target.value)}
+              placeholder="Reconcile the supplier invoice mismatch and prepare the approval packet"
+              rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="operator-rationale-input">Operator rationale (optional)</Label>
+            <Textarea
+              id="operator-rationale-input"
+              value={rationale}
+              onChange={(e) => setRationale(e.target.value)}
+              placeholder="Use the current supplier policy and stop before external writes."
+              rows={2}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="params-input">Parameters (JSON, optional)</Label>
@@ -104,7 +133,10 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => createRun.mutate()} disabled={!workflowId || createRun.isPending}>
+          <Button
+            onClick={() => createRun.mutate()}
+            disabled={!workflowId || operatorIntent.trim().length < 8 || createRun.isPending}
+          >
             {createRun.isPending ? 'Starting...' : 'Start Run'}
           </Button>
         </DialogFooter>

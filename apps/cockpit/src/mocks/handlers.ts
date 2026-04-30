@@ -10,6 +10,8 @@ import type {
   HumanTaskSummary,
   IntentPlanRequest,
   IntentPlanResponse,
+  EvidenceEntry,
+  RunInterventionRequest,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
   WorkflowSummary,
@@ -34,6 +36,7 @@ let data: MeridianDataset | null = null;
 let approvals: MeridianDataset['APPROVALS'] = [];
 let credentialGrants: CredentialGrantV1[] = [];
 let humanTasks: HumanTaskSummary[] = [];
+let evidence: EvidenceEntry[] = [];
 let workItems: MeridianDataset['WORK_ITEMS'] = [];
 let users: UserSummary[] = [...MOCK_USERS];
 let agents: MeridianDataset['AGENTS'] = [];
@@ -51,6 +54,7 @@ export async function loadActiveDataset(): Promise<void> {
   const entry = (DATASETS.find((d) => d.id === stored) ?? DATASETS[0])!;
   data = await entry.load();
   approvals = [...data.APPROVALS];
+  evidence = [...data.EVIDENCE];
   workItems = [...data.WORK_ITEMS];
   credentialGrants = [...data.CREDENTIAL_GRANTS];
   humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS);
@@ -164,6 +168,8 @@ export const handlers = [
     const body = (await request.json()) as {
       workflowId: string;
       parameters?: Record<string, unknown>;
+      operatorIntent?: string;
+      rationale?: string;
     };
     const wsId = String(params['wsId'] ?? 'ws-demo');
     const newRun = {
@@ -179,6 +185,25 @@ export const handlers = [
       startedAtIso: new Date().toISOString(),
     };
     runs = [newRun, ...runs];
+    if (body.operatorIntent?.trim()) {
+      const previousHash = evidence[evidence.length - 1]?.hashSha256;
+      const evidenceId = `ev-launch-${Date.now()}`;
+      evidence = [
+        ...evidence,
+        {
+          schemaVersion: 1,
+          evidenceId,
+          workspaceId: wsId,
+          occurredAtIso: new Date().toISOString(),
+          category: 'Plan',
+          summary: `intent: ${body.operatorIntent.trim()}`,
+          actor: { kind: 'User', userId: 'user-001' },
+          links: { runId: newRun.runId },
+          ...(previousHash ? { previousHash } : {}),
+          hashSha256: `mock-${evidenceId}`,
+        },
+      ];
+    }
     return HttpResponse.json(newRun, { status: 201 });
   }),
   http.post('/v1/workspaces/:wsId/runs/:runId/cancel', ({ params }) => {
@@ -190,6 +215,52 @@ export const handlers = [
     );
     const updated = runs.find((r) => r.runId === runId);
     if (!updated) return HttpResponse.json(null, { status: 404 });
+    return HttpResponse.json(updated);
+  }),
+  http.post('/v1/workspaces/:wsId/runs/:runId/interventions', async ({ request, params }) => {
+    const body = (await request.json()) as RunInterventionRequest;
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    const runId = String(params['runId'] ?? '');
+    const nowIso = new Date().toISOString();
+    const nextStatus =
+      body.interventionType === 'pause' ||
+      body.interventionType === 'freeze' ||
+      body.interventionType === 'request-evidence'
+        ? ('Paused' as const)
+        : body.interventionType === 'resume'
+          ? ('Running' as const)
+          : undefined;
+
+    runs = runs.map((r) =>
+      r.runId === runId
+        ? {
+            ...r,
+            ...(nextStatus ? { status: nextStatus } : {}),
+            ...(nextStatus === 'Running' ? { endedAtIso: undefined } : {}),
+          }
+        : r,
+    );
+    const updated = runs.find((r) => r.runId === runId);
+    if (!updated) return HttpResponse.json(null, { status: 404 });
+
+    const previousHash = evidence[evidence.length - 1]?.hashSha256;
+    const evidenceId = `ev-intervention-${Date.now()}`;
+    evidence = [
+      ...evidence,
+      {
+        schemaVersion: 1,
+        evidenceId,
+        workspaceId: wsId,
+        occurredAtIso: nowIso,
+        category: body.interventionType === 'annotate' ? 'System' : 'Action',
+        summary: `${body.interventionType}: ${body.rationale}`,
+        actor: { kind: 'User', userId: 'user-001' },
+        links: { runId },
+        ...(previousHash ? { previousHash } : {}),
+        hashSha256: `mock-${evidenceId}`,
+      },
+    ];
+
     return HttpResponse.json(updated);
   }),
 
@@ -357,9 +428,7 @@ export const handlers = [
   }),
 
   // Evidence
-  http.get('/v1/workspaces/:wsId/evidence', () =>
-    HttpResponse.json({ items: data?.EVIDENCE ?? [] }),
-  ),
+  http.get('/v1/workspaces/:wsId/evidence', () => HttpResponse.json({ items: evidence })),
 
   // Workforce
   http.get('/v1/workspaces/:wsId/workforce/members', () =>

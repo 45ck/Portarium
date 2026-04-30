@@ -112,6 +112,24 @@ export interface RunSummary {
 
 export type RunDetail = RunSummary;
 
+export type RunInterventionKind =
+  | 'pause'
+  | 'resume'
+  | 'reroute'
+  | 'handoff'
+  | 'annotate'
+  | 'request-evidence'
+  | 'freeze';
+
+export type OperatorInputEffect = 'current-run-effect' | 'future-policy-effect' | 'context-only';
+
+export interface RunInterventionRequest {
+  interventionType: RunInterventionKind;
+  rationale: string;
+  target?: string;
+  effect?: OperatorInputEffect;
+}
+
 export type WorkflowTriggerKind = 'Manual' | 'Cron' | 'Webhook' | 'DomainEvent';
 
 export interface WorkflowActionSummary {

@@ -10,6 +10,7 @@ import type {
   IntentPlanResponse,
   RetrievalSearchRequest,
   RetrievalSearchResponse,
+  RunInterventionRequest,
   RunSummary,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
@@ -142,7 +143,12 @@ export class ControlPlaneClient {
 
   public startRun(
     workspaceId: string,
-    body: { workflowId: string; parameters?: Record<string, unknown> },
+    body: {
+      workflowId: string;
+      parameters?: Record<string, unknown>;
+      operatorIntent?: string;
+      rationale?: string;
+    },
   ): Promise<RunSummary> {
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs`, {
       method: 'POST',
@@ -161,6 +167,20 @@ export class ControlPlaneClient {
     return this.request(
       `/v1/workspaces/${pathSegment(workspaceId)}/runs/${pathSegment(runId)}/cancel`,
       { method: 'POST' },
+    );
+  }
+
+  public submitRunIntervention(
+    workspaceId: string,
+    runId: string,
+    body: RunInterventionRequest,
+  ): Promise<RunSummary> {
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/runs/${pathSegment(runId)}/interventions`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
     );
   }
 

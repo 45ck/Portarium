@@ -11,7 +11,7 @@ import { useApprovalDecisionOutbox } from '@/hooks/queries/use-approval-decision
 import { usePlan } from '@/hooks/queries/use-plan';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { useAgents } from '@/hooks/queries/use-agents';
-import { useWorkforceMembers } from '@/hooks/queries/use-workforce';
+import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
@@ -21,6 +21,7 @@ import { StepList } from '@/components/cockpit/step-list';
 import { EffectsList } from '@/components/cockpit/effects-list';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
 import { ApprovalGatePanel } from '@/components/cockpit/approval-gate-panel';
+import { RunInterventionPanel } from '@/components/cockpit/run-intervention-panel';
 import { RelatedEntities } from '@/components/cockpit/related-entities';
 import type { RelatedEntity } from '@/components/cockpit/related-entities';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
@@ -104,6 +105,7 @@ function RunDetailPage() {
   const evidence = useEvidence(wsId);
   const { data: agentsData } = useAgents(wsId);
   const { data: workforceData } = useWorkforceMembers(wsId);
+  const { data: workforceQueuesData } = useWorkforceQueues(wsId);
 
   const pendingApproval = (approvals.data?.items ?? []).find(
     (a) => a.runId === runId && a.status === 'Pending',
@@ -113,6 +115,20 @@ function RunDetailPage() {
   const { data: plan } = usePlan(wsId, planId);
 
   const approvalDecisionOutbox = useApprovalDecisionOutbox(wsId);
+
+  const submitIntervention = useMutation({
+    mutationFn: (request: Parameters<typeof controlPlaneClient.submitRunIntervention>[2]) =>
+      controlPlaneClient.submitRunIntervention(wsId, runId, request),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['runs', wsId] });
+      qc.invalidateQueries({ queryKey: ['runs', wsId, runId] });
+      qc.invalidateQueries({ queryKey: ['evidence', wsId] });
+      toast.success('Operator input recorded');
+    },
+    onError: () => {
+      toast.error('Failed to record operator input');
+    },
+  });
 
   const evidenceForRun = (evidence.data?.items ?? []).filter((e) => e.links?.runId === runId);
 
@@ -146,6 +162,7 @@ function RunDetailPage() {
 
   const agents = agentsData?.items ?? [];
   const workforceMembers = workforceData?.items ?? [];
+  const workforceQueues = workforceQueuesData?.items ?? [];
   const allApprovals = approvals.data?.items ?? [];
   const runApprovals = allApprovals.filter((a) => a.runId === runId);
 
@@ -294,8 +311,16 @@ function RunDetailPage() {
             </TabsContent>
           </Tabs>
 
-          {run.status === 'WaitingForApproval' && pendingApproval && (
-            <div className="lg:sticky lg:top-6 self-start">
+          <div className="space-y-4 lg:sticky lg:top-6 self-start">
+            <RunInterventionPanel
+              run={run}
+              workforceMembers={workforceMembers}
+              workforceQueues={workforceQueues}
+              loading={submitIntervention.isPending}
+              onSubmit={(request) => submitIntervention.mutateAsync(request)}
+            />
+
+            {run.status === 'WaitingForApproval' && pendingApproval && (
               <ApprovalGatePanel
                 approval={pendingApproval}
                 onDecide={(decision, rationale) =>
@@ -314,8 +339,8 @@ function RunDetailPage() {
                 }
                 loading={approvalDecisionOutbox.isFlushing}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {runApprovals.length > 0 && (
