@@ -10,6 +10,7 @@ import type {
   Clock,
   EventPublisher,
   EvidenceLogPort,
+  IdempotencyStore,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
@@ -30,6 +31,7 @@ describe('createApproval', () => {
   let unitOfWork: UnitOfWork;
   let eventPublisher: EventPublisher;
   let evidenceLog: EvidenceLogPort;
+  let idempotency: IdempotencyStore;
   let idCounter: number;
 
   beforeEach(() => {
@@ -46,6 +48,7 @@ describe('createApproval', () => {
       getApprovalById: vi.fn(async () => null),
       saveApproval: vi.fn(async () => undefined),
     };
+    idempotency = { get: vi.fn(async () => null), set: vi.fn(async () => undefined) };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
     eventPublisher = { publish: vi.fn(async () => undefined) };
     evidenceLog = {
@@ -378,5 +381,75 @@ describe('createApproval', () => {
     if (result.ok) throw new Error('Expected dependency failure.');
     expect(result.error.kind).toBe('DependencyFailure');
     expect(result.error.message).toMatch(/DB connection lost/i);
+  });
+
+  it('replays approval creation from idempotency cache when configured', async () => {
+    idempotency.get = async <T>() => {
+      return {
+        approvalId: 'approval-cached' as never,
+        status: 'Pending' as const,
+      } as T;
+    };
+
+    const result = await createApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        idempotency,
+      } as Parameters<typeof createApproval>[0] & { idempotency: IdempotencyStore },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        ...VALID_INPUT,
+        idempotencyKey: 'idem-1',
+      } as Parameters<typeof createApproval>[2] & { idempotencyKey: string },
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected cached success response.');
+    expect(result.value.approvalId).toBe('approval-cached');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
+  it('stores idempotency result after successful creation when configured', async () => {
+    const result = await createApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        idempotency,
+      } as Parameters<typeof createApproval>[0] & { idempotency: IdempotencyStore },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        ...VALID_INPUT,
+        idempotencyKey: 'idem-2',
+      } as Parameters<typeof createApproval>[2] & { idempotencyKey: string },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(idempotency.set).toHaveBeenCalledWith(
+      {
+        tenantId: TenantId('tenant-1'),
+        commandName: 'CreateApproval',
+        requestKey: 'idem-2',
+      },
+      expect.objectContaining({ status: 'Pending' }),
+    );
   });
 });

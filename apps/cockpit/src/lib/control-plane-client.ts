@@ -1,4 +1,5 @@
 import type {
+  CreateApprovalRequest,
   ApprovalDecisionRequest,
   ApprovalSummary,
   CockpitExtensionContextResponse,
@@ -12,6 +13,7 @@ import type {
   RetrievalSearchRequest,
   RetrievalSearchResponse,
   RunInterventionRequest,
+  StartRunRequest,
   RunSummary,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
@@ -111,6 +113,22 @@ export class ControlPlaneClient {
     );
   }
 
+  public createApproval(
+    workspaceId: string,
+    body: CreateApprovalRequest,
+    options: { idempotencyKey?: string } = {},
+  ): Promise<ApprovalSummary> {
+    const headers = new Headers();
+    if (options.idempotencyKey) {
+      headers.set('Idempotency-Key', options.idempotencyKey);
+    }
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/approvals`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+  }
+
   public decideApproval(
     workspaceId: string,
     approvalId: string,
@@ -141,15 +159,16 @@ export class ControlPlaneClient {
 
   public startRun(
     workspaceId: string,
-    body: {
-      workflowId: string;
-      parameters?: Record<string, unknown>;
-      operatorIntent?: string;
-      rationale?: string;
-    },
+    body: StartRunRequest,
+    options: { idempotencyKey?: string } = {},
   ): Promise<RunSummary> {
+    const headers = new Headers();
+    if (options.idempotencyKey) {
+      headers.set('Idempotency-Key', options.idempotencyKey);
+    }
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/runs`, {
       method: 'POST',
+      headers,
       body: JSON.stringify(body),
     });
   }

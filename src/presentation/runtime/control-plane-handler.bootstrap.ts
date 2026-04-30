@@ -4,11 +4,15 @@ import { WorkspaceRbacAuthorization } from '../../application/iam/rbac/workspace
 import type {
   ApprovalQueryStore,
   ApprovalStore,
+  AdapterRegistrationStore,
   AuthenticationPort,
   AuthorizationPort,
+  IdempotencyStore,
   QueryCache,
   RunQueryStore,
   RunStore,
+  WorkflowOrchestrator,
+  WorkflowStore,
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -30,11 +34,15 @@ import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresq
 import { PostgresEvidenceLog } from '../../infrastructure/postgresql/postgres-eventing.js';
 import { PostgresMachineRegistryStore } from '../../infrastructure/postgresql/postgres-machine-registry-store.js';
 import {
+  PostgresAdapterRegistrationStore,
   PostgresApprovalStore,
+  PostgresIdempotencyStore,
   PostgresPolicyStore,
   PostgresRunStore,
+  PostgresWorkflowStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
+import { TemporalWorkflowOrchestrator } from '../../infrastructure/temporal/temporal-workflow-orchestrator.js';
 import {
   InMemoryRateLimitStore,
   RedisRateLimitStore,
@@ -387,6 +395,37 @@ function buildUnitOfWork(): UnitOfWork {
   return { execute: async (fn) => fn() };
 }
 
+async function tryBuildWorkflowOrchestrator(): Promise<WorkflowOrchestrator | undefined> {
+  const disabled = process.env['PORTARIUM_WORKFLOW_ORCHESTRATOR_DISABLED']?.trim().toLowerCase();
+  if (disabled === 'true' || disabled === '1' || disabled === 'yes' || disabled === 'on') {
+    return undefined;
+  }
+
+  const configuredAddress = process.env['PORTARIUM_TEMPORAL_ADDRESS']?.trim();
+  const address =
+    configuredAddress && configuredAddress.length > 0 ? configuredAddress : '127.0.0.1:7233';
+  const namespace = process.env['PORTARIUM_TEMPORAL_NAMESPACE']?.trim();
+  const taskQueue = process.env['PORTARIUM_TEMPORAL_TASK_QUEUE']?.trim();
+  const orchestrator = new TemporalWorkflowOrchestrator({
+    address,
+    ...(namespace ? { namespace } : {}),
+    ...(taskQueue ? { taskQueue } : {}),
+  });
+
+  try {
+    await orchestrator.connect();
+    process.stderr.write(`[portarium] Workflow orchestrator: Temporal (${address})\n`);
+    return orchestrator;
+  } catch (error) {
+    process.stderr.write(
+      `[portarium] WARNING: Temporal workflow orchestrator is unavailable (${address}): ${
+        error instanceof Error ? error.message : String(error)
+      }. POST /runs will return 503 until it is configured.\n`,
+    );
+    return undefined;
+  }
+}
+
 /**
  * Build the action runner. If OPENCLAW_GATEWAY_BASE_URL is set, uses the real
  * OpenClaw gateway invoker (HTTP dispatch). Otherwise falls back to a stub
@@ -446,6 +485,12 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     const sqlClient = new NodePostgresSqlClient({ connectionString });
     const workspaceStore = new PostgresWorkspaceStore(sqlClient);
     const runStore = new PostgresRunStore(sqlClient);
+    const workflowStore: WorkflowStore = new PostgresWorkflowStore(sqlClient);
+    const adapterRegistrationStore: AdapterRegistrationStore = new PostgresAdapterRegistrationStore(
+      sqlClient,
+    );
+    const idempotency: IdempotencyStore = new PostgresIdempotencyStore(sqlClient);
+    const orchestrator = await tryBuildWorkflowOrchestrator();
     const approvalStore = new PostgresApprovalStore(sqlClient);
     const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
     const machineStore = new PostgresMachineRegistryStore(sqlClient);
@@ -460,6 +505,10 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       runStore,
       workspaceQueryStore: workspaceStore,
       runQueryStore: runStore,
+      workflowStore,
+      adapterRegistrationStore,
+      idempotency,
+      ...(orchestrator ? { orchestrator } : {}),
       rateLimitStore,
       queryCache,
       eventStream,

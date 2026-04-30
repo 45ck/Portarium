@@ -3,6 +3,7 @@
  *
  * Endpoints:
  *   GET  /v1/workspaces/:workspaceId/approvals                     — list
+ *   POST /v1/workspaces/:workspaceId/approvals                     — create
  *   GET  /v1/workspaces/:workspaceId/approvals/:approvalId         — get
  *   POST /v1/workspaces/:workspaceId/approvals/:approvalId/decide  — decide
  */
@@ -10,12 +11,21 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type { TraceContext } from '../../application/common/trace-context.js';
-import { ApprovalId, type ApprovalDecision, type TenantId } from '../../domain/primitives/index.js';
+import {
+  ApprovalId,
+  WorkspaceId,
+  type ApprovalDecision,
+  type TenantId,
+} from '../../domain/primitives/index.js';
 import type { ApprovalStatus, ApprovalV1 } from '../../domain/approvals/index.js';
 import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import type { AgentActionProposalStore } from '../../application/ports/index.js';
 import { listApprovals } from '../../application/queries/list-approvals.js';
 import { getApproval } from '../../application/queries/get-approval.js';
+import {
+  createApproval,
+  type CreateApprovalError,
+} from '../../application/commands/create-approval.js';
 import {
   submitApproval,
   type SubmitApprovalError,
@@ -26,6 +36,7 @@ import {
   type ControlPlaneDeps,
   GENERIC_DEPENDENCY_FAILURE_DETAIL,
   authenticate,
+  normalizeHeader,
   problemFromError,
   readJsonBody,
   respondJson,
@@ -40,6 +51,14 @@ const APPROVAL_STATUS_QUERY_VALUES = [
   'Expired',
   'RequestChanges',
 ] as const;
+const CREATE_APPROVAL_REQUEST_FIELDS = new Set([
+  'runId',
+  'planId',
+  'workItemId',
+  'prompt',
+  'assigneeUserId',
+  'dueAtIso',
+]);
 
 function isApprovalStatusQueryValue(value: string): value is ApprovalStatus {
   return APPROVAL_STATUS_QUERY_VALUES.includes(
@@ -108,6 +127,25 @@ function submitErrorToProblem(
         detail: error.message,
         instance,
       };
+    case 'DependencyFailure':
+      return {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Bad Gateway',
+        status: 502,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
+        instance,
+      };
+  }
+}
+
+function createErrorToProblem(
+  error: CreateApprovalError,
+  instance: string,
+): import('./control-plane-handler.shared.js').ProblemDetails {
+  switch (error.kind) {
+    case 'Forbidden':
+    case 'ValidationFailed':
+      return problemFromError(error, instance);
     case 'DependencyFailure':
       return {
         type: 'https://portarium.dev/problems/dependency-failure',
@@ -266,6 +304,171 @@ export async function handleListApprovals(args: ApprovalHandlerArgs): Promise<vo
   const body = { ...result.value, items: enrichedItems };
 
   respondJson(res, { statusCode: 200, correlationId, traceContext, body });
+}
+
+// ---------------------------------------------------------------------------
+// POST /v1/workspaces/:workspaceId/approvals
+// ---------------------------------------------------------------------------
+
+export async function handleCreateApproval(args: ApprovalHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId } = args;
+
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.approvalStore || !deps.evidenceLog) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail:
+          'Approval creation is unavailable: approvalStore and evidenceLog must be configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/bad-request',
+        title:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!bodyResult.value || typeof bodyResult.value !== 'object') {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'Request body must be a JSON object.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const record = bodyResult.value as Record<string, unknown>;
+  const unknownFields = Object.keys(record).filter(
+    (field) => !CREATE_APPROVAL_REQUEST_FIELDS.has(field),
+  );
+  if (unknownFields.length > 0) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: `Unknown create approval field(s): ${unknownFields.join(', ')}.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const commandDeps = {
+    authorization: deps.authorization,
+    clock: { nowIso: () => (deps.clock ?? (() => new Date()))().toISOString() },
+    idGenerator: { generateId: () => crypto.randomUUID() },
+    approvalStore: deps.approvalStore,
+    unitOfWork: deps.unitOfWork ?? { execute: async <T>(fn: () => Promise<T>) => fn() },
+    eventPublisher: deps.eventPublisher ?? {
+      publish: async () => {
+        /* noop stub */
+      },
+    },
+    evidenceLog: deps.evidenceLog,
+    ...(deps.idempotency ? { idempotency: deps.idempotency } : {}),
+  };
+
+  const idempotencyKey = normalizeHeader(req.headers['idempotency-key'])?.trim();
+  const result = await createApproval(commandDeps, auth.ctx, {
+    workspaceId,
+    runId: typeof record['runId'] === 'string' ? record['runId'] : '',
+    planId: typeof record['planId'] === 'string' ? record['planId'] : '',
+    prompt: typeof record['prompt'] === 'string' ? record['prompt'] : '',
+    ...(typeof record['workItemId'] === 'string' ? { workItemId: record['workItemId'] } : {}),
+    ...(typeof record['assigneeUserId'] === 'string'
+      ? { assigneeUserId: record['assigneeUserId'] }
+      : {}),
+    ...(typeof record['dueAtIso'] === 'string' ? { dueAtIso: record['dueAtIso'] } : {}),
+    ...(idempotencyKey ? { idempotencyKey } : {}),
+  } as Parameters<typeof createApproval>[2] & { idempotencyKey?: string });
+
+  if (!result.ok) {
+    respondProblem(res, createErrorToProblem(result.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const approval = await deps.approvalStore.getApprovalById(
+    auth.ctx.tenantId,
+    WorkspaceId(workspaceId),
+    result.value.approvalId,
+  );
+  if (!approval) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Bad Gateway',
+        status: 502,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, {
+    statusCode: 201,
+    correlationId,
+    traceContext,
+    body: approval,
+    location: `/v1/workspaces/${encodeURIComponent(workspaceId)}/approvals/${encodeURIComponent(
+      String(approval.approvalId),
+    )}`,
+  });
 }
 
 // ---------------------------------------------------------------------------

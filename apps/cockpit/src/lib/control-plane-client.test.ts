@@ -170,6 +170,95 @@ describe('ControlPlaneClient', () => {
     expect(init.credentials).toBe('include');
   });
 
+  it('posts startRun using only the canonical request shape', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            schemaVersion: 1,
+            runId: 'run-1',
+            workspaceId: 'ws-1',
+            workflowId: 'wf-1',
+            correlationId: 'corr-1',
+            executionTier: 'HumanApprove',
+            initiatedByUserId: 'user-1',
+            status: 'Pending',
+            createdAtIso: '2026-04-30T02:00:00.000Z',
+          }),
+          {
+            status: 201,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.startRun('ws-1', {
+      workflowId: 'wf-1',
+      parameters: { mode: 'dry-run' },
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/runs');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({
+      workflowId: 'wf-1',
+      parameters: { mode: 'dry-run' },
+    });
+  });
+
+  it('creates approvals against the canonical approvals endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            schemaVersion: 1,
+            approvalId: 'ap-1',
+            workspaceId: 'ws-1',
+            runId: 'run-1',
+            planId: 'plan-1',
+            prompt: 'Approve this run',
+            status: 'Pending',
+            requestedAtIso: '2026-04-30T02:00:00.000Z',
+            requestedByUserId: 'user-1',
+          }),
+          {
+            status: 201,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => 'token-123',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.createApproval('ws-1', {
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve this run',
+      dueAtIso: '2026-05-01T02:00:00.000Z',
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/approvals');
+    expect(init.method).toBe('POST');
+    expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(headers.get('X-Portarium-Request')).toBe('1');
+    expect(init.credentials).toBe('omit');
+    expect(JSON.parse(String(init.body))).toEqual({
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve this run',
+      dueAtIso: '2026-05-01T02:00:00.000Z',
+    });
+  });
+
   it('posts natural language intents to the plan endpoint', async () => {
     const fetchImpl = vi.fn(
       async () =>

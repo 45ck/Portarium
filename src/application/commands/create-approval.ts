@@ -29,11 +29,13 @@ import type {
   Clock,
   EventPublisher,
   EvidenceLogPort,
+  IdempotencyStore,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
 
 const CREATE_APPROVAL_SOURCE = 'portarium.control-plane.approvals';
+const CREATE_APPROVAL_COMMAND = 'CreateApproval';
 
 export type CreateApprovalEscalationStepInput = Readonly<{
   stepOrder: number;
@@ -68,6 +70,10 @@ export interface CreateApprovalDeps {
   eventPublisher: EventPublisher;
   evidenceLog?: EvidenceLogPort;
 }
+
+type CreateApprovalIdempotencyInput = CreateApprovalInput & Readonly<{ idempotencyKey?: string }>;
+type CreateApprovalIdempotencyDeps = CreateApprovalDeps &
+  Readonly<{ idempotency?: IdempotencyStore }>;
 
 type Err<E> = Readonly<{ ok: false; error: E }>;
 
@@ -214,12 +220,14 @@ type PersistArgs = Readonly<{
   ids: ParsedIds;
   pending: ApprovalPendingV1;
   domainEvent: DomainEventV1;
+  idempotencyKey?: string;
 }>;
 
 async function persistApproval(
   args: PersistArgs,
 ): Promise<Result<CreateApprovalOutput, DependencyFailure>> {
-  const { deps, ctx, ids, pending, domainEvent } = args;
+  const { deps, ctx, ids, pending, domainEvent, idempotencyKey } = args;
+  const extraDeps = deps as CreateApprovalIdempotencyDeps;
   try {
     return await deps.unitOfWork.execute(async () => {
       await deps.approvalStore.saveApproval(ctx.tenantId, pending);
@@ -246,7 +254,19 @@ async function persistApproval(
         });
       }
 
-      return ok({ approvalId: ids.approvalId, status: 'Pending' as const });
+      const output = { approvalId: ids.approvalId, status: 'Pending' as const };
+      if (extraDeps.idempotency && idempotencyKey) {
+        await extraDeps.idempotency.set(
+          {
+            tenantId: ctx.tenantId,
+            commandName: CREATE_APPROVAL_COMMAND,
+            requestKey: idempotencyKey,
+          },
+          output,
+        );
+      }
+
+      return ok(output);
     });
   } catch (error) {
     return err({
@@ -256,13 +276,40 @@ async function persistApproval(
   }
 }
 
+function readIdempotencyKey(value: unknown): string | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const key = (value as { idempotencyKey?: unknown }).idempotencyKey;
+  return typeof key === 'string' && key.trim() !== '' ? key : undefined;
+}
+
 export async function createApproval(
   deps: CreateApprovalDeps,
   ctx: AppContext,
   input: CreateApprovalInput,
 ): Promise<Result<CreateApprovalOutput, CreateApprovalError>> {
+  const extraDeps = deps as CreateApprovalIdempotencyDeps;
+  const extraInput = input as CreateApprovalIdempotencyInput;
   const validationError = validateInput(input);
   if (validationError) return validationError;
+
+  const idempotencyKey = readIdempotencyKey(extraInput);
+  if (extraInput.idempotencyKey !== undefined && !idempotencyKey) {
+    return err({
+      kind: 'ValidationFailed',
+      message: 'idempotencyKey must be a non-empty string when present.',
+    });
+  }
+
+  if (extraDeps.idempotency && idempotencyKey) {
+    const cached = await extraDeps.idempotency.get<CreateApprovalOutput>({
+      tenantId: ctx.tenantId,
+      commandName: CREATE_APPROVAL_COMMAND,
+      requestKey: idempotencyKey,
+    });
+    if (cached) {
+      return ok(cached);
+    }
+  }
 
   const allowed = await deps.authorization.isAllowed(ctx, APP_ACTIONS.approvalCreate);
   if (!allowed) {
@@ -295,5 +342,12 @@ export async function createApproval(
   const pending = buildPendingApproval(input, ids, requestedAtIso, ctx.principalId.toString());
   const domainEvent = buildDomainEvent(ids, ctx, eventId, requestedAtIso, pending);
 
-  return persistApproval({ deps, ctx, ids, pending, domainEvent });
+  return persistApproval({
+    deps,
+    ctx,
+    ids,
+    pending,
+    domainEvent,
+    ...(idempotencyKey ? { idempotencyKey } : {}),
+  });
 }

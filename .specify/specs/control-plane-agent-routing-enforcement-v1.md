@@ -47,6 +47,7 @@ SoR routing), including at minimum:
   - `POST /v1/workspaces/{workspaceId}/runs/{runId}/cancel`
 - Approval lifecycle:
   - `GET /v1/workspaces/{workspaceId}/approvals`
+  - `POST /v1/workspaces/{workspaceId}/approvals`
   - `POST /v1/workspaces/{workspaceId}/approvals/{approvalId}/decide`
 - Evidence surfaces:
   - `GET /v1/workspaces/{workspaceId}/evidence`

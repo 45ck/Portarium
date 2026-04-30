@@ -40,6 +40,7 @@ SDK quickstart flows, local emulator behaviour, and content structure.
 - `GET /v1/workspaces/{id}/runs/{runId}` -- run status
 - `POST /v1/workspaces/{id}/runs/{runId}/cancel` -- cancel
 - `GET /v1/workspaces/{id}/approvals` -- list approvals
+- `POST /v1/workspaces/{id}/approvals` -- create approval
 - `POST /v1/workspaces/{id}/approvals/{id}/decide` -- decide
 - `GET /v1/workspaces/{id}/evidence` -- query evidence
 

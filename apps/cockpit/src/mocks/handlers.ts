@@ -4,6 +4,7 @@ import type {
   ApprovalDecisionRequest,
   AssignHumanTaskRequest,
   CompleteHumanTaskRequest,
+  CreateApprovalRequest,
   EscalateHumanTaskRequest,
   CreateCredentialGrantRequest,
   CredentialGrantV1,
@@ -168,8 +169,6 @@ export const handlers = [
     const body = (await request.json()) as {
       workflowId: string;
       parameters?: Record<string, unknown>;
-      operatorIntent?: string;
-      rationale?: string;
     };
     const wsId = String(params['wsId'] ?? 'ws-demo');
     const newRun = {
@@ -185,7 +184,11 @@ export const handlers = [
       startedAtIso: new Date().toISOString(),
     };
     runs = [newRun, ...runs];
-    if (body.operatorIntent?.trim()) {
+    const operatorIntent =
+      typeof body.parameters?.['operatorIntent'] === 'string'
+        ? body.parameters['operatorIntent'].trim()
+        : '';
+    if (operatorIntent) {
       const previousHash = evidence[evidence.length - 1]?.hashSha256;
       const evidenceId = `ev-launch-${Date.now()}`;
       evidence = [
@@ -196,7 +199,7 @@ export const handlers = [
           workspaceId: wsId,
           occurredAtIso: new Date().toISOString(),
           category: 'Plan',
-          summary: `intent: ${body.operatorIntent.trim()}`,
+          summary: `intent: ${operatorIntent}`,
           actor: { kind: 'User', userId: 'user-001' },
           links: { runId: newRun.runId },
           ...(previousHash ? { previousHash } : {}),
@@ -382,6 +385,27 @@ export const handlers = [
 
   // Approvals
   http.get('/v1/workspaces/:wsId/approvals', () => HttpResponse.json({ items: approvals })),
+  http.post('/v1/workspaces/:wsId/approvals', async ({ request, params }) => {
+    const body = (await request.json()) as CreateApprovalRequest;
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    const nowIso = new Date().toISOString();
+    const approval = {
+      schemaVersion: 1,
+      approvalId: `apr-${Date.now()}`,
+      workspaceId: wsId,
+      runId: body.runId,
+      planId: body.planId,
+      ...(body.workItemId ? { workItemId: body.workItemId } : {}),
+      prompt: body.prompt,
+      requestedAtIso: nowIso,
+      requestedByUserId: data?.WORKFORCE_MEMBERS[0]?.linkedUserId ?? 'user-system',
+      ...(body.assigneeUserId ? { assigneeUserId: body.assigneeUserId } : {}),
+      ...(body.dueAtIso ? { dueAtIso: body.dueAtIso } : {}),
+      status: 'Pending' as const,
+    };
+    approvals = [approval, ...approvals];
+    return HttpResponse.json(approval, { status: 201 });
+  }),
   http.get('/v1/workspaces/:wsId/approvals/:id', ({ params }) => {
     const approval = approvals.find((a) => a.approvalId === params['id']);
     if (!approval) return HttpResponse.json(null, { status: 404 });

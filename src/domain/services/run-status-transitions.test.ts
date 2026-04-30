@@ -20,10 +20,10 @@ type _GuardCheck1 = typeof RUN_TRANSITION_TABLE_GUARD;
 type _GuardCheck2 = typeof RUN_NON_TERMINAL_GUARD;
 // Compile-time: Succeeded has no valid successors (resolves to never).
 type _SucceededHasNoSuccessors = ValidRunStatusTransition<'Succeeded'> extends never ? true : never;
-// Compile-time: Pending can only go to Running.
-type _PendingOnlyToRunning =
-  ValidRunStatusTransition<'Pending'> extends 'Running'
-    ? 'Running' extends ValidRunStatusTransition<'Pending'>
+// Compile-time: Pending can transition to Running or Cancelled.
+type _PendingCanCancel =
+  ValidRunStatusTransition<'Pending'> extends 'Running' | 'Cancelled'
+    ? 'Running' | 'Cancelled' extends ValidRunStatusTransition<'Pending'>
       ? true
       : never
     : never;
@@ -41,13 +41,16 @@ describe('compile-time guards are runtime-true', () => {
 describe('isValidRunStatusTransition — valid transitions', () => {
   it.each<[RunStatus, RunStatus]>([
     ['Pending', 'Running'],
+    ['Pending', 'Cancelled'],
     ['Running', 'Succeeded'],
     ['Running', 'Failed'],
     ['Running', 'Cancelled'],
     ['Running', 'WaitingForApproval'],
     ['Running', 'Paused'],
     ['WaitingForApproval', 'Running'],
+    ['WaitingForApproval', 'Cancelled'],
     ['Paused', 'Running'],
+    ['Paused', 'Cancelled'],
   ])('allows %s -> %s', (from, to) => {
     expect(isValidRunStatusTransition(from, to)).toBe(true);
   });
@@ -66,18 +69,15 @@ describe('isValidRunStatusTransition — invalid transitions', () => {
     // Pending can't skip intermediate states
     ['Pending', 'Succeeded'],
     ['Pending', 'Failed'],
-    ['Pending', 'Cancelled'],
     ['Pending', 'WaitingForApproval'],
     ['Pending', 'Paused'],
     // WaitingForApproval can only resume to Running
     ['WaitingForApproval', 'Succeeded'],
     ['WaitingForApproval', 'Failed'],
-    ['WaitingForApproval', 'Cancelled'],
     ['WaitingForApproval', 'Paused'],
     // Paused can only resume to Running
     ['Paused', 'Succeeded'],
     ['Paused', 'Failed'],
-    ['Paused', 'Cancelled'],
     ['Paused', 'WaitingForApproval'],
   ])('rejects %s -> %s', (from, to) => {
     expect(isValidRunStatusTransition(from, to)).toBe(false);
@@ -208,9 +208,9 @@ describe('structural invariants', () => {
         if (isValidRunStatusTransition(from, to)) count++;
       }
     }
-    // Pending→Running(1) + Running→{Succeeded,Failed,Cancelled,WaitingForApproval,Paused}(5)
-    // + WaitingForApproval→Running(1) + Paused→Running(1) = 8
-    expect(count).toBe(8);
+    // Pending→{Running,Cancelled}(2) + Running→{Succeeded,Failed,Cancelled,WaitingForApproval,Paused}(5)
+    // + WaitingForApproval→{Running,Cancelled}(2) + Paused→{Running,Cancelled}(2) = 11
+    expect(count).toBe(11);
   });
 
   it('the graph contains no cycles reachable from Pending', () => {
@@ -239,13 +239,16 @@ describe('isValidRunStatusTransition — exhaustive all-pairs invalid transition
     (
       [
         ['Pending', 'Running'],
+        ['Pending', 'Cancelled'],
         ['Running', 'Succeeded'],
         ['Running', 'Failed'],
         ['Running', 'Cancelled'],
         ['Running', 'WaitingForApproval'],
         ['Running', 'Paused'],
         ['WaitingForApproval', 'Running'],
+        ['WaitingForApproval', 'Cancelled'],
         ['Paused', 'Running'],
+        ['Paused', 'Cancelled'],
       ] as [RunStatus, RunStatus][]
     ).map(([f, t]) => `${f}→${t}`),
   );
@@ -310,7 +313,7 @@ describe('reachableRunStatuses', () => {
 const _check1: _GuardCheck1 = true;
 const _check2: _GuardCheck2 = true;
 const _check3: _SucceededHasNoSuccessors = true;
-const _check4: _PendingOnlyToRunning = true;
+const _check4: _PendingCanCancel = true;
 void _check1;
 void _check2;
 void _check3;

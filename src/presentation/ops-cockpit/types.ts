@@ -177,6 +177,11 @@ export interface RunInterventionRequest {
   evidenceRequired?: boolean;
 }
 
+export interface StartRunRequest {
+  workflowId: string;
+  parameters?: Record<string, unknown>;
+}
+
 export type WorkflowTriggerKind = 'Manual' | 'Cron' | 'Webhook' | 'DomainEvent';
 
 export interface WorkflowActionSummary {
@@ -392,6 +397,15 @@ export interface ApprovalSummary {
   policyRule?: PolicyRule;
   decisionHistory?: DecisionHistoryEntry[];
   agentActionProposal?: AgentActionProposalMeta;
+}
+
+export interface CreateApprovalRequest {
+  runId: string;
+  planId: string;
+  workItemId?: string;
+  prompt: string;
+  assigneeUserId?: string;
+  dueAtIso?: string;
 }
 
 export interface CredentialGrantV1 {

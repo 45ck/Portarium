@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import { useRun } from '@/hooks/queries/use-runs';
+import { useCancelRun, useRun } from '@/hooks/queries/use-runs';
 import { useWorkItems } from '@/hooks/queries/use-work-items';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useApprovalDecisionOutbox } from '@/hooks/queries/use-approval-decision-outbox';
@@ -92,14 +92,7 @@ function RunDetailPage() {
 
   const { data: run, isLoading: runLoading, isError: runError } = useRun(wsId, runId);
 
-  const cancelRun = useMutation({
-    mutationFn: () => controlPlaneClient.cancelRun(wsId, runId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['runs', wsId] });
-      qc.invalidateQueries({ queryKey: ['runs', wsId, runId] });
-      setCancelDialogOpen(false);
-    },
-  });
+  const cancelRun = useCancelRun(wsId, runId);
   const workItems = useWorkItems(wsId);
   const approvals = useApprovals(wsId);
   const evidence = useEvidence(wsId);
@@ -261,7 +254,11 @@ function RunDetailPage() {
                 disabled={cancelRun.isPending}
                 onClick={(e) => {
                   e.preventDefault();
-                  cancelRun.mutate();
+                  cancelRun.mutate(undefined, {
+                    onSuccess: () => {
+                      setCancelDialogOpen(false);
+                    },
+                  });
                 }}
               >
                 {cancelRun.isPending ? 'Cancelling...' : 'Confirm Cancel'}

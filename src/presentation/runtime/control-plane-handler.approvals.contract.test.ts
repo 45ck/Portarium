@@ -5,7 +5,7 @@
  *   GET  /v1/workspaces/:workspaceId/approvals/:approvalId
  *   POST /v1/workspaces/:workspaceId/approvals/:approvalId/decide
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
@@ -14,6 +14,7 @@ import {
   ApprovalId,
   CorrelationId,
   EvidenceId,
+  HashSha256,
   PlanId,
   PolicyId,
   ProposalId,
@@ -26,6 +27,7 @@ import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { InMemoryEventStreamBroadcast } from '../../infrastructure/event-streaming/in-memory-event-stream-broadcast.js';
 import type { WorkspaceStreamEvent } from '../../application/ports/event-stream.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import { InMemoryCockpitWebSessionStore } from './cockpit-web-session.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
@@ -137,6 +139,12 @@ function makeDeps(
     approvalQueryStore: overrides.approvalQueryStore ?? {
       listApprovals: async () => ({ items: [...store.values()] }),
     },
+    evidenceLog: {
+      appendEntry: async (_tenantId, entry) => ({
+        ...entry,
+        hashSha256: HashSha256('hash-approval-contract'),
+      }),
+    },
     ...(overrides.agentActionProposal !== undefined
       ? {
           agentActionProposalStore: {
@@ -166,6 +174,9 @@ function listUrl(query = ''): string {
 }
 function getUrl(id = APPROVAL_ID): string {
   return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals/${id}`;
+}
+function createUrl(): string {
+  return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals`;
 }
 function decideUrl(id = APPROVAL_ID): string {
   return `${BASE}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/approvals/${id}/decide`;
@@ -268,10 +279,188 @@ describe('GET /approvals/:approvalId — get', () => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /v1/workspaces/:workspaceId/approvals
+// ---------------------------------------------------------------------------
+
+describe('POST /approvals', () => {
+  it('returns 201 and creates a pending approval', async () => {
+    await startWith();
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ runId: 'run-1', planId: 'plan-1', prompt: 'Need approval' }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { approvalId: string; status: string };
+    expect(body.approvalId).toBeTruthy();
+    expect(body.status).toBe('Pending');
+    expect(res.headers.get('location')).toMatch(
+      /\/v1\/workspaces\/ws-approval-contract-1\/approvals\//,
+    );
+  });
+
+  it('returns 422 when the create payload includes unknown fields', async () => {
+    await startWith();
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        runId: 'run-1',
+        planId: 'plan-1',
+        prompt: 'Need approval',
+        unexpectedField: true,
+      }),
+    });
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toContain('unexpectedField');
+  });
+
+  it('returns 403 when the caller cannot create approvals', async () => {
+    await startWith({
+      authorization: {
+        isAllowed: async () => false,
+      },
+    });
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ runId: 'run-1', planId: 'plan-1', prompt: 'Need approval' }),
+    });
+
+    expect(res.status).toBe(403);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // POST /v1/workspaces/:workspaceId/approvals/:approvalId/decide
 // ---------------------------------------------------------------------------
 
 describe('POST /approvals/:approvalId/decide', () => {
+  it('requires the same-origin request marker for cookie-authenticated approval decisions', async () => {
+    const auth = vi.fn(async () => {
+      throw new Error('Bearer authentication should not run for cookie-backed approval decisions.');
+    });
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['approver']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ approvals: [PENDING_APPROVAL] }),
+        authentication: { authenticateBearerToken: auth },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: {
+        cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    });
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toContain('X-Portarium-Request');
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it('accepts cookie-authenticated approval decisions within session workspace scope', async () => {
+    const auth = vi.fn(async () => {
+      throw new Error('Bearer authentication should not run for cookie-backed approval decisions.');
+    });
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['approver']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ approvals: [PENDING_APPROVAL] }),
+        authentication: { authenticateBearerToken: auth },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    });
+
+    const res = await fetch(decideUrl(), {
+      method: 'POST',
+      headers: {
+        cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+        'content-type': 'application/json',
+        'x-portarium-request': '1',
+      },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { approvalId: string; status: string };
+    expect(body).toEqual({ approvalId: APPROVAL_ID, status: 'Approved' });
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it('rejects cookie-authenticated approval decisions outside session workspace scope', async () => {
+    const auth = vi.fn(async () => {
+      throw new Error('Bearer authentication should not run for cookie-backed approval decisions.');
+    });
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['approver']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ approvals: [PENDING_APPROVAL] }),
+        authentication: { authenticateBearerToken: auth },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    });
+
+    const res = await fetch(
+      `${BASE}:${handle.port}/v1/workspaces/ws-other/approvals/${APPROVAL_ID}/decide`,
+      {
+        method: 'POST',
+        headers: {
+          cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+          'content-type': 'application/json',
+          'x-portarium-request': '1',
+        },
+        body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+      },
+    );
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toBe('Workspace scope mismatch.');
+    expect(auth).not.toHaveBeenCalled();
+  });
+
   it('returns 400 when body is not valid JSON', async () => {
     await startWith({ approvals: [PENDING_APPROVAL] });
     const res = await fetch(decideUrl(), {

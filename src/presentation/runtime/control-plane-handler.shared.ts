@@ -12,6 +12,7 @@ import { APP_ACTIONS } from '../../application/common/actions.js';
 import type {
   ActionRunnerPort,
   AgentActionProposalStore,
+  AdapterRegistrationStore,
   ApprovalQueryStore,
   ApprovalStore,
   AuthenticationPort,
@@ -21,12 +22,15 @@ import type {
   EventPublisher,
   EventStreamBroadcast,
   EvidenceLogPort,
+  IdempotencyStore,
   PolicyStore,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
   RunStore,
   UnitOfWork,
+  WorkflowOrchestrator,
+  WorkflowStore,
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -110,6 +114,14 @@ export type ControlPlaneDeps = Readonly<{
   workspaceQueryStore?: WorkspaceQueryStore;
   /** Optional query store for listing runs; enables the GET /v1/workspaces/:id/runs route. */
   runQueryStore?: RunQueryStore;
+  /** Optional workflow definition store; enables POST /v1/workspaces/:id/runs. */
+  workflowStore?: WorkflowStore;
+  /** Optional adapter registration store; required by startWorkflow aggregate invariants. */
+  adapterRegistrationStore?: AdapterRegistrationStore;
+  /** Optional idempotency store for command replay protection. */
+  idempotency?: IdempotencyStore;
+  /** Optional workflow orchestrator for execution dispatch after run creation. */
+  orchestrator?: WorkflowOrchestrator;
   /** Optional rate-limit store; when absent, rate limiting is disabled. */
   rateLimitStore?: RateLimitStore;
   /** Optional query cache for hot reads; when absent, caching is disabled. */
