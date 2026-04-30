@@ -37,6 +37,31 @@ describe('cockpit runtime mode', () => {
     expect(shouldEnableCockpitMocks({ DEV: true, VITE_PORTARIUM_ENABLE_MSW: 'false' })).toBe(false);
     expect(resolveCockpitRuntime({ DEV: true, VITE_PORTARIUM_ENABLE_MSW: 'false' })).toMatchObject({
       runtimeMode: 'dev-live',
+      mockServiceWorkerEnabled: false,
+      usesLiveTenantData: true,
+      allowDemoControls: false,
+    });
+  });
+
+  it('does not allow demo controls in production without MSW even when demo mode is requested', () => {
+    expect(resolveCockpitRuntime({ DEV: false, VITE_DEMO_MODE: 'true' })).toMatchObject({
+      runtimeMode: 'live',
+      mockServiceWorkerEnabled: false,
+      usesLiveTenantData: true,
+      allowDemoControls: false,
+    });
+  });
+
+  it('does not allow demo controls in dev-live when MSW is disabled explicitly', () => {
+    expect(
+      resolveCockpitRuntime({
+        DEV: true,
+        VITE_DEMO_MODE: 'true',
+        VITE_PORTARIUM_ENABLE_MSW: 'false',
+      }),
+    ).toMatchObject({
+      runtimeMode: 'dev-live',
+      mockServiceWorkerEnabled: false,
       usesLiveTenantData: true,
       allowDemoControls: false,
     });

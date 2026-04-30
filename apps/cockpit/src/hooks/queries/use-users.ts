@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { UserSummary, UserRole, UserStatus } from '@/mocks/fixtures/users';
+import type { UserSummary, UserRole, UserStatus } from '@/types/users';
+import { fetchJson } from '@/lib/fetch-json';
 
 type WorkspaceUserRole = 'admin' | 'operator' | 'approver' | 'auditor';
 
@@ -43,9 +44,11 @@ function toUserSummary(user: UserRecord): UserSummary {
 }
 
 async function fetchUsers(wsId: string): Promise<{ items: UserSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/users`);
-  if (!res.ok) throw new Error('Failed to fetch users');
-  const body = (await res.json()) as { items: UserRecord[] };
+  const body = await fetchJson<{ items: UserRecord[] }>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/users`,
+    undefined,
+    'Failed to fetch users',
+  );
   return { ...body, items: body.items.map(toUserSummary) };
 }
 
@@ -54,13 +57,16 @@ async function inviteUser(
   body: { email: string; role: string },
 ): Promise<UserSummary> {
   const role = ROLE_TO_API[body.role as UserRole] ?? 'auditor';
-  const res = await fetch(`/v1/workspaces/${wsId}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: body.email, roles: [role], active: true }),
-  });
-  if (!res.ok) throw new Error('Failed to invite user');
-  return toUserSummary((await res.json()) as UserRecord);
+  const user = await fetchJson<UserRecord>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/users`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: body.email, roles: [role], active: true }),
+    },
+    'Failed to invite user',
+  );
+  return toUserSummary(user);
 }
 
 async function patchUser(
@@ -72,13 +78,16 @@ async function patchUser(
     ...(body.role ? { roles: [ROLE_TO_API[body.role]] } : {}),
     ...(body.status ? { active: body.status === 'active' } : {}),
   };
-  const res = await fetch(`/v1/workspaces/${wsId}/users/${userId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(patch),
-  });
-  if (!res.ok) throw new Error('Failed to update user');
-  return toUserSummary((await res.json()) as UserRecord);
+  const user = await fetchJson<UserRecord>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/users/${encodeURIComponent(userId)}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    },
+    'Failed to update user',
+  );
+  return toUserSummary(user);
 }
 
 export function useUsers(wsId: string) {

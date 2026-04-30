@@ -22,6 +22,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import type { SodConstraint } from '@portarium/cockpit-types';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import {
   filterAuditEntries,
   normalizeAuditCategory,
@@ -70,9 +71,12 @@ function deriveSodScope(constraint: SodConstraint, policies: GovernancePolicy[])
 
 function ExploreGovernancePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
+  const runtime = resolveCockpitRuntime();
   const { data: evidenceData, isLoading: evidenceLoading } = useEvidence(wsId);
   const { data: policiesData, isLoading: policiesLoading } = usePolicies(wsId);
-  const { data: sodData, isLoading: sodLoading } = useSodConstraints(wsId);
+  const { data: sodData, isLoading: sodLoading } = useSodConstraints(wsId, {
+    enabled: runtime.allowDemoControls,
+  });
   const { data: workflowsData } = useWorkflows(wsId);
 
   const [selectedPolicy, setSelectedPolicy] = useState<GovernancePolicy | null>(null);
@@ -85,7 +89,9 @@ function ExploreGovernancePage() {
   const workflowsById = new Map((workflowsData?.items ?? []).map((wf) => [wf.workflowId, wf]));
 
   const activePolicies = policies.filter((p) => p.status === 'Active').length;
-  const activeSod = sodConstraints.filter((c) => c.status === 'Active').length;
+  const activeSod = runtime.allowDemoControls
+    ? sodConstraints.filter((c) => c.status === 'Active').length
+    : 'Demo-only';
 
   const policyColumns = [
     {
@@ -209,7 +215,11 @@ function ExploreGovernancePage() {
           <CardTitle className="text-sm">Segregation of Duties Constraints</CardTitle>
         </CardHeader>
         <CardContent>
-          {sodLoading ? (
+          {!runtime.allowDemoControls ? (
+            <div className="rounded-md border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+              SoD constraint fixtures are disabled while Cockpit is connected to live tenant data.
+            </div>
+          ) : sodLoading ? (
             <Skeleton className="h-4 w-1/2" />
           ) : (
             <>

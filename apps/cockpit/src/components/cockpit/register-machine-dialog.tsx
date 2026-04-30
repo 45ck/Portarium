@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { AgentCapability } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 interface RegisterMachineDialogProps {
   open: boolean;
@@ -36,17 +37,19 @@ export function RegisterMachineDialog({ open, onOpenChange }: RegisterMachineDia
 
   const registerMachine = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/v1/workspaces/${wsId}/machines`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hostname,
-          osImage: osImage || undefined,
-          allowedCapabilities: capabilities,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to register machine');
-      return res.json();
+      return fetchJson(
+        `/v1/workspaces/${encodeURIComponent(wsId)}/machines`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            hostname,
+            osImage: osImage || undefined,
+            allowedCapabilities: capabilities,
+          }),
+        },
+        'Failed to register machine',
+      );
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['machines', wsId] });

@@ -3,40 +3,9 @@
 // Positions are around the Seattle area for demo purposes.
 // ---------------------------------------------------------------------------
 
-import type { RobotStatus, RobotClass } from '../../types/robotics.js';
+import type { RobotLocation, Geofence, SpatialAlert } from '../../types/robotics.js';
 
-export interface RobotLocation {
-  robotId: string;
-  name: string;
-  robotClass: RobotClass;
-  status: RobotStatus;
-  batteryPct: number;
-  lat: number;
-  lng: number;
-  heading: number;
-  speedMps: number;
-  updatedAtIso: string;
-  missionId?: string;
-  trail: Array<{ lat: number; lng: number; timestampIso: string }>;
-}
-
-export interface Geofence {
-  geofenceId: string;
-  label: string;
-  polygon: Array<[number, number]>;
-  color: string;
-}
-
-export interface SpatialAlert {
-  alertId: string;
-  robotId: string;
-  type: 'geofence-violation' | 'localization-drop' | 'e-stop';
-  message: string;
-  lat: number;
-  lng: number;
-  timestampIso: string;
-  severity: 'warning' | 'critical';
-}
+export type { RobotLocation, Geofence, SpatialAlert } from '../../types/robotics.js';
 
 // Seattle warehouse district area
 const BASE_LAT = 47.6062;

@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { AgentCapability, PolicyTier } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 interface RegisterAgentDialogProps {
   open: boolean;
@@ -61,20 +62,22 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
 
   const registerAgent = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/v1/workspaces/${wsId}/agents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          endpoint,
-          modelId: modelId || undefined,
-          allowedCapabilities: capabilities,
-          machineId,
-          policyTier,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to register agent');
-      return res.json();
+      return fetchJson(
+        `/v1/workspaces/${encodeURIComponent(wsId)}/agents`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            endpoint,
+            modelId: modelId || undefined,
+            allowedCapabilities: capabilities,
+            machineId,
+            policyTier,
+          }),
+        },
+        'Failed to register agent',
+      );
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['agents', wsId] });

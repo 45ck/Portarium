@@ -5,6 +5,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { useUIStore } from '@/stores/ui-store';
 import {
   CORE_CHANGE_REQUEST_TEMPLATE,
   DEFAULT_PACK_UI_RUNTIME,
@@ -42,7 +43,12 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function createFetchMock(runtimeResponse: unknown) {
+function createFetchMock(
+  runtimeResponse: unknown,
+  workspaceItems: Array<{ workspaceId: string; name: string }> = [
+    { workspaceId: 'ws-meridian', name: 'Meridian Workspace' },
+  ],
+) {
   return vi.fn((input: RequestInfo | URL) => {
     const rawUrl =
       typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
@@ -52,7 +58,7 @@ function createFetchMock(runtimeResponse: unknown) {
     if (pathname === '/v1/workspaces') {
       return Promise.resolve(
         json({
-          items: [{ workspaceId: 'ws-meridian', name: 'Meridian Workspace' }],
+          items: workspaceItems,
         }),
       );
     }
@@ -107,10 +113,12 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  useUIStore.setState({ activeWorkspaceId: 'ws-meridian', activeDataset: 'meridian-demo' });
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -118,6 +126,26 @@ afterAll(() => {
 });
 
 describe('settings pack runtime integration', () => {
+  it('does not show demo workspace or dataset controls in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+    useUIStore.setState({ activeWorkspaceId: 'ws-local-dev', activeDataset: 'live' });
+    const fetchMock = createFetchMock(DEMO_PACK_UI_RUNTIME, [
+      { workspaceId: 'ws-local-dev', name: 'Local Dev Workspace' },
+    ]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderSettingsRoute();
+
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeTruthy();
+    expect(screen.getByText('Live Workspace')).toBeTruthy();
+    expect(screen.queryByText('Demo Workspace')).toBeNull();
+    expect(screen.queryByText('Demo Dataset')).toBeNull();
+    expect(screen.getByText(/Pack UI fixture preview is disabled/i)).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([input]) => String(input).includes('pack-ui-runtime'))).toBe(
+      false,
+    );
+  });
+
   it('renders pack template and applies safe theme tokens', async () => {
     vi.stubGlobal('fetch', createFetchMock(DEMO_PACK_UI_RUNTIME));
 

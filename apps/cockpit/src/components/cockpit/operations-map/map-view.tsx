@@ -11,8 +11,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { RobotLocation, Geofence } from '@/mocks/fixtures/robot-locations';
-import type { RobotStatus, RobotClass } from '@/types/robotics';
+import type { RobotLocation, Geofence, RobotStatus, RobotClass } from '@/types/robotics';
 import { LayerToggles, type LayerVisibility } from './layer-toggles';
 
 // Fix default marker icon paths for bundlers (guarded for JSDOM/SSR)

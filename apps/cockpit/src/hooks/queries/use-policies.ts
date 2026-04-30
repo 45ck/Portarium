@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { PolicySummary, SodConstraint } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 type PolicyV1 = Readonly<{
   policyId: string;
@@ -26,22 +27,29 @@ function toPolicySummary(policy: PolicyRecord): PolicySummary {
 }
 
 async function fetchPolicies(wsId: string): Promise<{ items: PolicySummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/policies`);
-  if (!res.ok) throw new Error('Failed to fetch policies');
-  const body = (await res.json()) as { items: PolicyRecord[] };
+  const body = await fetchJson<{ items: PolicyRecord[] }>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/policies`,
+    undefined,
+    'Failed to fetch policies',
+  );
   return { ...body, items: body.items.map(toPolicySummary) };
 }
 
 async function fetchPolicy(wsId: string, policyId: string): Promise<PolicySummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/policies/${policyId}`);
-  if (!res.ok) throw new Error('Policy not found');
-  return toPolicySummary((await res.json()) as PolicyRecord);
+  const policy = await fetchJson<PolicyRecord>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/policies/${encodeURIComponent(policyId)}`,
+    undefined,
+    'Policy not found',
+  );
+  return toPolicySummary(policy);
 }
 
 async function fetchSodConstraints(wsId: string): Promise<{ items: SodConstraint[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/policies`);
-  if (!res.ok) throw new Error('Failed to fetch SoD constraints');
-  return { items: [] };
+  return fetchJson(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/sod-constraints`,
+    undefined,
+    'Failed to fetch SoD constraints',
+  );
 }
 
 export function usePolicies(wsId: string) {
@@ -60,10 +68,10 @@ export function usePolicy(wsId: string, policyId: string) {
   });
 }
 
-export function useSodConstraints(wsId: string) {
+export function useSodConstraints(wsId: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['sod-constraints', wsId],
     queryFn: () => fetchSodConstraints(wsId),
-    enabled: Boolean(wsId),
+    enabled: Boolean(wsId) && (options.enabled ?? true),
   });
 }

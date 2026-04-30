@@ -1,45 +1,50 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreateCredentialGrantRequest, CredentialGrantV1 } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 type CredentialGrantListResponse = Readonly<{
   items: CredentialGrantV1[];
 }>;
 
 async function fetchCredentialGrants(wsId: string): Promise<CredentialGrantListResponse> {
-  const res = await fetch(`/v1/workspaces/${wsId}/credential-grants`);
-  if (!res.ok) throw new Error('Failed to fetch credential grants');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/credential-grants`,
+    undefined,
+    'Failed to fetch credential grants',
+  );
 }
 
 async function postCredentialGrant(
   wsId: string,
   body: CreateCredentialGrantRequest,
 ): Promise<CredentialGrantV1> {
-  const res = await fetch(`/v1/workspaces/${wsId}/credential-grants`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to grant credential');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/credential-grants`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    'Failed to grant credential',
+  );
 }
 
 async function postRevokeCredentialGrant(
   wsId: string,
   credentialGrantId: string,
 ): Promise<CredentialGrantV1> {
-  const res = await fetch(`/v1/workspaces/${wsId}/credential-grants/${credentialGrantId}/revoke`, {
-    method: 'POST',
-  });
-  if (!res.ok) throw new Error('Failed to revoke credential grant');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/credential-grants/${encodeURIComponent(credentialGrantId)}/revoke`,
+    { method: 'POST' },
+    'Failed to revoke credential grant',
+  );
 }
 
-export function useCredentialGrants(wsId: string) {
+export function useCredentialGrants(wsId: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['credential-grants', wsId],
     queryFn: () => fetchCredentialGrants(wsId),
-    enabled: Boolean(wsId),
+    enabled: Boolean(wsId) && (options.enabled ?? true),
   });
 }
 

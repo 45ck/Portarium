@@ -4,7 +4,7 @@ import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchWorkforceMembers(wsId: string): Promise<{ items: WorkforceMemberSummary[] }> {
   return fetchJson(
-    `/v1/workspaces/${wsId}/workforce`,
+    `/v1/workspaces/${encodeURIComponent(wsId)}/workforce`,
     undefined,
     'Failed to fetch workforce members',
   );
@@ -12,7 +12,7 @@ async function fetchWorkforceMembers(wsId: string): Promise<{ items: WorkforceMe
 
 async function fetchWorkforceQueues(wsId: string): Promise<{ items: WorkforceQueueSummary[] }> {
   return fetchJson(
-    `/v1/workspaces/${wsId}/workforce/queues`,
+    `/v1/workspaces/${encodeURIComponent(wsId)}/workforce/queues`,
     undefined,
     'Failed to fetch workforce queues',
   );

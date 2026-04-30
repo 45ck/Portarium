@@ -16,6 +16,7 @@ import { DataTable } from '@/components/cockpit/data-table';
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,9 +72,12 @@ function parseCredentialRef(credentialsRef: string): Readonly<{
 
 function CredentialsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
+  const runtime = resolveCockpitRuntime();
   const [pendingRevoke, setPendingRevoke] = useState<CredentialGrantRow | null>(null);
 
-  const { data: grantsData, isLoading: grantsLoading } = useCredentialGrants(wsId);
+  const { data: grantsData, isLoading: grantsLoading } = useCredentialGrants(wsId, {
+    enabled: runtime.allowDemoControls,
+  });
   const { data: adaptersResponse } = useAdapters(wsId);
   const adaptersData = adaptersResponse?.items ?? [];
   const grantMutation = useGrantCredential(wsId);
@@ -185,8 +189,9 @@ function CredentialsPage() {
           <Button
             variant="outline"
             size="sm"
-            disabled={grantMutation.isPending}
+            disabled={!runtime.allowDemoControls || grantMutation.isPending}
             onClick={() => {
+              if (!runtime.allowDemoControls) return;
               const preferredAdapterId = adaptersData?.[0]?.adapterId ?? 'adapter-odoo-001';
               grantMutation.mutate({
                 adapterId: preferredAdapterId,
@@ -202,20 +207,29 @@ function CredentialsPage() {
         }
       />
 
-      <DataTable
-        columns={columns}
-        data={rows}
-        loading={grantsLoading}
-        empty={
-          <EmptyState
-            title="No credential grants"
-            description="Grant a credential to allow adapter authentication."
-            icon={<EntityIcon entityType="credential" size="xl" decorative />}
-          />
-        }
-        getRowKey={(row) => row.credentialGrantId}
-        pagination={{ pageSize: 20 }}
-      />
+      {!runtime.allowDemoControls ? (
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Credential grant mutation is disabled while this build is connected to live tenant data.
+          Live credential flows must use the control-plane credential API once it is available.
+        </div>
+      ) : null}
+
+      {runtime.allowDemoControls ? (
+        <DataTable
+          columns={columns}
+          data={rows}
+          loading={grantsLoading}
+          empty={
+            <EmptyState
+              title="No credential grants"
+              description="Grant a credential to allow adapter authentication."
+              icon={<EntityIcon entityType="credential" size="xl" decorative />}
+            />
+          }
+          getRowKey={(row) => row.credentialGrantId}
+          pagination={{ pageSize: 20 }}
+        />
+      ) : null}
 
       <AlertDialog
         open={pendingRevoke !== null}

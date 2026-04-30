@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { RobotLocation } from '@/mocks/fixtures/robot-locations';
+import type { RobotLocation } from '@/types/robotics';
 import type { RobotStatus } from '@/types/robotics';
 import { Input } from '@/components/ui/input';
 import { Wifi, WifiOff, AlertTriangle, OctagonX, Battery, MapPin, Search } from 'lucide-react';

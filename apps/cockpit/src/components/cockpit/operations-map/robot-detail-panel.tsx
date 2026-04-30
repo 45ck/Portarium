@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import type { RobotLocation } from '@/mocks/fixtures/robot-locations';
+import type { RobotLocation } from '@/types/robotics';
 import type { RobotStatus } from '@/types/robotics';
 import {
   X,

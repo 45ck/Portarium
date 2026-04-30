@@ -22,7 +22,7 @@
  */
 
 import { useMemo } from 'react';
-import type { RobotLocation } from '../mocks/fixtures/robot-locations.js';
+import type { RobotLocation } from '../types/robotics.js';
 import type { RobotStatus } from '../types/robotics.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────

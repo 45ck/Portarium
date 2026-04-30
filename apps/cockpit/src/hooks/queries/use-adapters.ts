@@ -28,7 +28,7 @@ function toAdapterSummary(adapter: AdapterRegistration): AdapterSummary {
 
 async function fetchAdapters(wsId: string): Promise<{ items: AdapterSummary[] }> {
   const body = await fetchJson<{ items: AdapterRegistration[] }>(
-    `/v1/workspaces/${wsId}/adapter-registrations`,
+    `/v1/workspaces/${encodeURIComponent(wsId)}/adapter-registrations`,
     undefined,
     'Failed to fetch adapters',
   );

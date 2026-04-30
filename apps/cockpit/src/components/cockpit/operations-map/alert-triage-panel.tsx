@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { SpatialAlert } from '@/mocks/fixtures/robot-locations';
+import type { SpatialAlert } from '@/types/robotics';
 import { AlertTriangle, OctagonX, MapPin } from 'lucide-react';
 
 const ALERT_ICONS: Record<SpatialAlert['type'], React.ReactNode> = {
