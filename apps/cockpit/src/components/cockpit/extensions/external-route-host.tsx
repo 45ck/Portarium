@@ -9,11 +9,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
-} from '@/lib/extensions/installed';
-import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
+import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
 import { resolveExternalRoute, type ExternalRouteResolution } from './external-route-adapter';
 import { HOSTED_EXTERNAL_ROUTE_COMPONENTS } from './external-route-components';
 
@@ -31,13 +27,11 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
         ? extensionContextQuery.data
         : null,
   });
-  const registry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const registry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: serverAccess.activePackIds,
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const resolution = resolveExternalRoute({
     pathname,

@@ -17,13 +17,10 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
+  INSTALLED_COCKPIT_ROUTE_PATHS,
+  resolveInstalledCockpitExtensionRegistry,
 } from '@/lib/extensions/installed';
-import {
-  resolveCockpitExtensionRegistry,
-  selectExtensionCommands,
-} from '@/lib/extensions/registry';
+import { selectExtensionCommands } from '@/lib/extensions/registry';
 import {
   LayoutDashboard,
   Settings,
@@ -47,13 +44,6 @@ interface CommandItemDef {
   onSelect: () => void;
 }
 
-const extensionRoutePaths: ReadonlyMap<string, string> = new Map(
-  INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) => extension.routes).map((route) => [
-    route.id,
-    route.path,
-  ]),
-);
-
 function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
     useUIStore();
@@ -69,13 +59,11 @@ function CommandPalette() {
         ? extensionContextQuery.data
         : null,
   });
-  const extensionRegistry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: extensionServerAccess.activePackIds,
     quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
     availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
     availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
 
   // Global Ctrl+K / Cmd+K hotkey
@@ -101,7 +89,9 @@ function CommandPalette() {
     activePersona,
     extensionServerAccess.accessContext,
   ).reduce<CommandItemDef[]>((items, command) => {
-    const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
+    const routePath = command.routeId
+      ? INSTALLED_COCKPIT_ROUTE_PATHS.get(command.routeId)
+      : undefined;
     if (!routePath || routePath.includes('$')) return items;
 
     items.push({

@@ -2,12 +2,12 @@ import { PageHeader } from '../../../../components/cockpit/page-header';
 import { Badge } from '../../../../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 
-export default function ExampleOpsActionReviewRoute() {
+export default function ExampleReferenceReviewRoute() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Governed Action Review"
-        description="Host-owned placeholder for a declared extension action-review route"
+        title="Reference Review"
+        description="Host-owned placeholder for a declared extension review route"
       />
 
       <Card className="shadow-none">

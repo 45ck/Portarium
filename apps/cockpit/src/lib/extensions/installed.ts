@@ -1,27 +1,31 @@
-import { EXAMPLE_OPS_DEMO_EXTENSION } from './example-ops-demo/manifest';
-import { EXAMPLE_OPS_DEMO_ROUTE_LOADERS } from './example-ops-demo/route-loaders';
-import { resolveCockpitExtensionRegistry } from './registry';
+import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
+import { EXAMPLE_REFERENCE_ROUTE_LOADERS } from './example-reference/route-loaders';
+import {
+  resolveCockpitExtensionRegistry,
+  type ResolveCockpitExtensionRegistryInput,
+} from './registry';
 import type {
   CockpitExtensionAccessContext,
-  CockpitExtensionManifest,
+  CockpitInstalledExtension,
   CockpitExtensionRouteModuleLoader,
-  CockpitExtensionRouteModuleRef,
+  ResolvedCockpitExtensionRegistry,
 } from './types';
 
-export interface InstalledCockpitExtension {
-  manifest: CockpitExtensionManifest;
-  routeModules: readonly CockpitExtensionRouteModuleRef[];
-}
+export type ResolveInstalledCockpitExtensionRegistryInput = Omit<
+  ResolveCockpitExtensionRegistryInput,
+  'installedExtensions' | 'routeLoaders'
+>;
 
 export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
   {
-    manifest: EXAMPLE_OPS_DEMO_EXTENSION,
-    routeModules: Object.entries(EXAMPLE_OPS_DEMO_ROUTE_LOADERS).map(([routeId, loadModule]) => ({
+    manifest: EXAMPLE_REFERENCE_EXTENSION,
+    routeModules: Object.entries(EXAMPLE_REFERENCE_ROUTE_LOADERS).map(([routeId, loadModule]) => ({
       routeId,
       loadModule,
     })),
+    workspacePackRefs: [{ packId: 'example.reference' }],
   },
-] as const satisfies readonly InstalledCockpitExtension[];
+] as const satisfies readonly CockpitInstalledExtension[];
 
 export const INSTALLED_COCKPIT_EXTENSIONS = INSTALLED_COCKPIT_EXTENSION_MODULES.map(
   (extension) => extension.manifest,
@@ -33,7 +37,13 @@ export const INSTALLED_COCKPIT_ROUTE_LOADERS = Object.fromEntries(
   ),
 ) as Readonly<Record<string, CockpitExtensionRouteModuleLoader>>;
 
-export const DEFAULT_ACTIVE_EXTENSION_PACK_IDS = ['example.ops-demo'] as const;
+export const INSTALLED_COCKPIT_ROUTE_PATHS = new Map(
+  INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) =>
+    extension.routes.map((route) => [route.id, route.path] as const),
+  ),
+) as ReadonlyMap<string, string>;
+
+export const DEFAULT_ACTIVE_EXTENSION_PACK_IDS = ['example.reference'] as const;
 
 export const DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT = {
   availableCapabilities: collectInstalledRequirements('requiredCapabilities'),
@@ -49,6 +59,16 @@ export const DEFAULT_COCKPIT_EXTENSION_REGISTRY = resolveCockpitExtensionRegistr
   ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
 });
+
+export function resolveInstalledCockpitExtensionRegistry(
+  input: ResolveInstalledCockpitExtensionRegistryInput,
+): ResolvedCockpitExtensionRegistry {
+  return resolveCockpitExtensionRegistry({
+    ...input,
+    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
+  });
+}
 
 function collectInstalledRequirements(
   key: 'requiredCapabilities' | 'requiredApiScopes',

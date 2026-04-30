@@ -32,10 +32,10 @@ function buildServerAccess(
   overrides?: Partial<ReturnType<typeof mockResolveCockpitExtensionServerAccess>>,
 ) {
   return {
-    activePackIds: ['example.ops-demo'],
+    activePackIds: ['example.reference'],
     quarantinedExtensionIds: [] as string[],
     accessContext: {
-      availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
       availablePersonas: ['Operator'],
     },
@@ -63,7 +63,7 @@ describe('useKeyboardShortcuts', () => {
         workspaceId: 'ws-demo',
         roles: ['operator'],
         personas: ['Operator'],
-        capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+        capabilities: ['extension:read', 'extension:review', 'evidence:read'],
         apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
       },
       error: null,
@@ -81,13 +81,13 @@ describe('useKeyboardShortcuts', () => {
     fireEvent.keyDown(document.body, { key: 'g' });
     fireEvent.keyDown(document.body, { key: 'x' });
 
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/external/example-ops/overview' });
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/external/example-reference/overview' });
   });
 
   it('does not route shortcuts for quarantined extensions', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
-        quarantinedExtensionIds: ['example.ops-demo'],
+        quarantinedExtensionIds: ['example.reference'],
       }),
     );
 

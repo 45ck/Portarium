@@ -50,12 +50,15 @@ export interface CockpitWorkspacePackActivationRef {
   workspaceId?: string;
 }
 
-export type CockpitExtensionPrivacyClass =
-  | 'public'
-  | 'internal'
-  | 'restricted'
-  | 'sensitive'
-  | 'highly_restricted';
+export const COCKPIT_EXTENSION_PRIVACY_CLASSES = [
+  'public',
+  'internal',
+  'restricted',
+  'sensitive',
+  'highly_restricted',
+] as const;
+
+export type CockpitExtensionPrivacyClass = (typeof COCKPIT_EXTENSION_PRIVACY_CLASSES)[number];
 
 export interface CockpitExtensionGuard {
   personas: readonly CockpitExtensionPersona[];
@@ -111,6 +114,7 @@ export interface CockpitExtensionCommand {
   id: string;
   title: string;
   routeId?: string;
+  guard: CockpitExtensionGuard;
   requiredCapabilities?: readonly string[];
   requiredApiScopes?: readonly string[];
   shortcut?: string;
@@ -124,6 +128,7 @@ export interface CockpitExtensionManifest {
   displayName: string;
   description: string;
   packIds: readonly string[];
+  personas: readonly CockpitExtensionPersona[];
   requiredCapabilities: readonly string[];
   requiredApiScopes: readonly string[];
   routes: readonly CockpitExtensionRouteRef[];
@@ -186,11 +191,13 @@ export interface CockpitExtensionRegistryProblem {
     | 'missing-route'
     | 'invalid-surface'
     | 'invalid-persona'
+    | 'invalid-privacy-class'
     | 'invalid-icon'
     | 'invalid-external-path'
     | 'invalid-direct-nav-target'
     | 'missing-route-module'
     | 'missing-route-guard'
+    | 'missing-command-guard'
     | 'missing-pack-activation';
   message: string;
   extensionId?: string;

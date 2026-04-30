@@ -21,14 +21,8 @@ import { useAuthStore } from '@/stores/auth-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
-} from '@/lib/extensions/installed';
-import {
-  resolveCockpitExtensionRegistry,
-  selectExtensionNavItems,
-} from '@/lib/extensions/registry';
+import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
+import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -154,13 +148,11 @@ export function MobileBottomNav({
         ? extensionContextQuery.data
         : null,
   });
-  const extensionRegistry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: extensionServerAccess.activePackIds,
     quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
     availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
     availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const extensionMoreItems = selectExtensionNavItems(
     extensionRegistry,

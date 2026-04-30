@@ -1,3 +1,4 @@
+// cspell:words cmdk
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
@@ -5,13 +6,10 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
+  INSTALLED_COCKPIT_ROUTE_PATHS,
+  resolveInstalledCockpitExtensionRegistry,
 } from '@/lib/extensions/installed';
-import {
-  resolveCockpitExtensionRegistry,
-  selectExtensionCommands,
-} from '@/lib/extensions/registry';
+import { selectExtensionCommands } from '@/lib/extensions/registry';
 import type {
   CockpitExtensionAccessContext,
   ResolvedCockpitExtensionRegistry,
@@ -26,13 +24,6 @@ const G_CHORD_MAP: Record<string, string> = {
   e: '/evidence',
 };
 
-const extensionRoutePaths: ReadonlyMap<string, string> = new Map(
-  INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) => extension.routes).map((route) => [
-    route.id,
-    route.path,
-  ]),
-);
-
 function resolveGChordMap(
   registry: ResolvedCockpitExtensionRegistry,
   accessContext: CockpitExtensionAccessContext,
@@ -42,7 +33,9 @@ function resolveGChordMap(
     Record<string, string>
   >((shortcuts, command) => {
     const match = command.shortcut?.match(/^G\s+([a-z])$/i);
-    const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
+    const routePath = command.routeId
+      ? INSTALLED_COCKPIT_ROUTE_PATHS.get(command.routeId)
+      : undefined;
     if (!match?.[1] || !routePath || routePath.includes('$')) return shortcuts;
 
     const key = match[1].toLowerCase();
@@ -85,13 +78,11 @@ export function useKeyboardShortcuts() {
         ? extensionContextQuery.data
         : null,
   });
-  const extensionRegistry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: extensionServerAccess.activePackIds,
     quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
     availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
     availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
 
   useEffect(() => {
