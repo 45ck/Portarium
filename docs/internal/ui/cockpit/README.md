@@ -2,6 +2,13 @@
 
 This folder contains a low-fidelity, clickable prototype for the Portarium Cockpit (composition 201 from `docs/internal/ui/ux-ideas.json`). The Cockpit is a persona-adaptive shell with the Work Item as the gravitational centre, a correlation drawer for cross-entity tracing, and mode-switched panels.
 
+## Current Direction
+
+- `mission-control-convergence.md` defines the agent-first operator surface direction: Cockpit is the place humans observe, approve, steer, and recover governed agent work.
+- `agent-machine-runtime-design.md` covers agent and machine capability visibility.
+- `governance-policy-design.md` covers Policy and Execution Tier control surfaces.
+- `ia-baseline.md` covers the navigation and information architecture baseline.
+
 ## How To View
 
 Option A (simplest):
