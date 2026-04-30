@@ -30,7 +30,10 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
-import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import {
+  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+} from '@/lib/extensions/installed';
 import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
@@ -367,6 +370,7 @@ function RootLayout() {
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     'sidebar',
     activePersona,
+    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({

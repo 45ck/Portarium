@@ -2,10 +2,15 @@ import {
   COCKPIT_EXTENSION_ICONS,
   COCKPIT_EXTENSION_PERSONAS,
   COCKPIT_EXTENSION_SURFACES,
+  type CockpitExtensionAccessContext,
+  type CockpitExtensionAccessDecision,
+  type CockpitExtensionAccessDenial,
   type CockpitExtensionCommand,
+  type CockpitExtensionDisableReason,
   type CockpitExtensionManifest,
   type CockpitExtensionNavItem,
   type CockpitExtensionRegistryProblem,
+  type CockpitExtensionRouteRef,
   type CockpitExtensionRouteModuleLoader,
   type ResolvedCockpitExtension,
   type ResolvedCockpitExtensionRegistry,
@@ -18,16 +23,22 @@ const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
 export interface ResolveCockpitExtensionRegistryInput {
   installedExtensions: readonly CockpitExtensionManifest[];
   activePackIds: readonly string[];
+  availableCapabilities?: readonly string[];
+  availableApiScopes?: readonly string[];
   routeLoaders?: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>;
 }
 
 export function resolveCockpitExtensionRegistry({
   installedExtensions,
   activePackIds,
+  availableCapabilities,
+  availableApiScopes,
   routeLoaders = {},
 }: ResolveCockpitExtensionRegistryInput): ResolvedCockpitExtensionRegistry {
   const activePacks = new Set(activePackIds);
+  const accessContext = { availableCapabilities, availableApiScopes };
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
+  const extensionDisableReasons = new Map<string, CockpitExtensionDisableReason[]>();
   const globalProblems: CockpitExtensionRegistryProblem[] = [];
   const routeIds = new Map<string, string>();
   const routePaths = new Map<string, string>();
@@ -48,6 +59,12 @@ export function resolveCockpitExtensionRegistry({
     const active = isExtensionActive(extension, activePacks);
     if (!active) continue;
 
+    const disableReasons = getManifestDisableReasons(extension, accessContext);
+    if (disableReasons.length > 0) {
+      extensionDisableReasons.set(extension.id, disableReasons);
+      continue;
+    }
+
     if (extensionIds.has(extension.id)) {
       addProblem({
         code: 'duplicate-extension-id',
@@ -67,10 +84,17 @@ export function resolveCockpitExtensionRegistry({
   const resolvedExtensions: ResolvedCockpitExtension[] = installedExtensions.map((manifest) => {
     const problems = extensionProblems.get(manifest.id) ?? [];
     const active = isExtensionActive(manifest, activePacks);
+    const disableReasons = active ? (extensionDisableReasons.get(manifest.id) ?? []) : [];
     return {
       manifest,
-      status: problems.length > 0 ? 'invalid' : active ? 'enabled' : 'disabled',
+      status:
+        problems.length > 0
+          ? 'invalid'
+          : active && disableReasons.length === 0
+            ? 'enabled'
+            : 'disabled',
       problems,
+      disableReasons,
     };
   });
 
@@ -91,23 +115,83 @@ export function selectExtensionNavItems(
   registry: ResolvedCockpitExtensionRegistry,
   surface: string,
   persona: string,
+  context: Omit<CockpitExtensionAccessContext, 'persona'> = {},
 ): CockpitExtensionNavItem[] {
   return registry.navItems.filter(
-    (item) => item.surfaces.includes(surface as never) && item.personas.includes(persona as never),
+    (item) =>
+      item.surfaces.includes(surface as never) &&
+      canAccessExtensionNavItem(item, { ...context, persona }).allowed,
   );
 }
 
 export function selectExtensionCommands(
   registry: ResolvedCockpitExtensionRegistry,
   persona?: string,
+  context: Omit<CockpitExtensionAccessContext, 'persona'> = {},
 ): CockpitExtensionCommand[] {
-  if (!persona) return [...registry.commands];
+  return registry.commands.filter(
+    (command) => canAccessExtensionCommand(command, registry, { ...context, persona }).allowed,
+  );
+}
 
-  const routesById = new Map(registry.routes.map((route) => [route.id, route]));
-  return registry.commands.filter((command) => {
-    if (!command.routeId) return true;
-    return routesById.get(command.routeId)?.guard.personas.includes(persona as never) ?? false;
-  });
+export function selectExtensionRoutes(
+  registry: ResolvedCockpitExtensionRegistry,
+  context: CockpitExtensionAccessContext = {},
+): CockpitExtensionRouteRef[] {
+  return registry.routes.filter((route) => canAccessExtensionRoute(route, context).allowed);
+}
+
+export function canAccessExtensionRoute(
+  route: CockpitExtensionRouteRef,
+  context: CockpitExtensionAccessContext = {},
+): CockpitExtensionAccessDecision {
+  return decideAccess(
+    {
+      personas: route.guard.personas,
+      requiredCapabilities: route.guard.requiredCapabilities,
+      requiredApiScopes: route.guard.requiredApiScopes,
+    },
+    context,
+  );
+}
+
+export function canAccessExtensionNavItem(
+  item: CockpitExtensionNavItem,
+  context: CockpitExtensionAccessContext = {},
+): CockpitExtensionAccessDecision {
+  return decideAccess(
+    {
+      personas: item.personas,
+      requiredCapabilities: item.requiredCapabilities ?? [],
+      requiredApiScopes: item.requiredApiScopes ?? [],
+    },
+    context,
+  );
+}
+
+export function canAccessExtensionCommand(
+  command: CockpitExtensionCommand,
+  registry: ResolvedCockpitExtensionRegistry,
+  context: CockpitExtensionAccessContext = {},
+): CockpitExtensionAccessDecision {
+  const route = command.routeId
+    ? registry.routes.find((candidate) => candidate.id === command.routeId)
+    : undefined;
+
+  return decideAccess(
+    {
+      personas: route?.guard.personas ?? [],
+      requiredCapabilities: uniqueStrings([
+        ...(route?.guard.requiredCapabilities ?? []),
+        ...(command.requiredCapabilities ?? []),
+      ]),
+      requiredApiScopes: uniqueStrings([
+        ...(route?.guard.requiredApiScopes ?? []),
+        ...(command.requiredApiScopes ?? []),
+      ]),
+    },
+    context,
+  );
 }
 
 function isExtensionActive(
@@ -115,6 +199,90 @@ function isExtensionActive(
   activePacks: ReadonlySet<string>,
 ): boolean {
   return extension.packIds.every((packId) => activePacks.has(packId));
+}
+
+function getManifestDisableReasons(
+  extension: CockpitExtensionManifest,
+  context: Pick<CockpitExtensionAccessContext, 'availableCapabilities' | 'availableApiScopes'>,
+): CockpitExtensionDisableReason[] {
+  const reasons: CockpitExtensionDisableReason[] = [];
+  const missingCapabilities = getMissingRequirements(
+    extension.requiredCapabilities,
+    context.availableCapabilities,
+  );
+  const missingApiScopes = getMissingRequirements(
+    extension.requiredApiScopes,
+    context.availableApiScopes,
+  );
+
+  if (missingCapabilities.length > 0) {
+    reasons.push({
+      code: 'missing-capability',
+      message: `Extension "${extension.id}" requires unavailable capabilities: ${missingCapabilities.join(', ')}.`,
+    });
+  }
+  if (missingApiScopes.length > 0) {
+    reasons.push({
+      code: 'missing-api-scope',
+      message: `Extension "${extension.id}" requires unavailable API scopes: ${missingApiScopes.join(', ')}.`,
+    });
+  }
+
+  return reasons;
+}
+
+function decideAccess(
+  requirement: {
+    personas: readonly string[];
+    requiredCapabilities: readonly string[];
+    requiredApiScopes: readonly string[];
+  },
+  context: CockpitExtensionAccessContext,
+): CockpitExtensionAccessDecision {
+  const denials: CockpitExtensionAccessDenial[] = [];
+
+  if (
+    context.persona &&
+    requirement.personas.length > 0 &&
+    !requirement.personas.includes(context.persona)
+  ) {
+    denials.push({ code: 'persona' });
+  }
+
+  const missingCapabilities = getMissingRequirements(
+    requirement.requiredCapabilities,
+    context.availableCapabilities,
+  );
+  const missingApiScopes = getMissingRequirements(
+    requirement.requiredApiScopes,
+    context.availableApiScopes,
+  );
+
+  if (missingCapabilities.length > 0) {
+    denials.push({ code: 'missing-capability', missing: missingCapabilities });
+  }
+  if (missingApiScopes.length > 0) {
+    denials.push({ code: 'missing-api-scope', missing: missingApiScopes });
+  }
+
+  return {
+    allowed: denials.length === 0,
+    denials,
+  };
+}
+
+function getMissingRequirements(
+  required: readonly string[],
+  available: readonly string[] | undefined,
+): string[] {
+  if (required.length === 0) return [];
+  if (!available) return [...required];
+  const availableSet = new Set(available);
+  return required.filter((requirement) => !availableSet.has(requirement));
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values)];
 }
 
 function validatePackActivation(

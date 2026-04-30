@@ -64,6 +64,27 @@ export interface CockpitExtensionGuard {
   privacyClasses?: readonly CockpitExtensionPrivacyClass[];
 }
 
+export interface CockpitExtensionAccessContext {
+  persona?: string;
+  availableCapabilities?: readonly string[];
+  availableApiScopes?: readonly string[];
+}
+
+export type CockpitExtensionAccessDenialCode =
+  | 'persona'
+  | 'missing-capability'
+  | 'missing-api-scope';
+
+export interface CockpitExtensionAccessDenial {
+  code: CockpitExtensionAccessDenialCode;
+  missing?: readonly string[];
+}
+
+export interface CockpitExtensionAccessDecision {
+  allowed: boolean;
+  denials: readonly CockpitExtensionAccessDenial[];
+}
+
 export interface CockpitExtensionRouteRef {
   id: string;
   path: string;

@@ -13,7 +13,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
 import { router } from '@/router';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import {
+  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+} from '@/lib/extensions/installed';
 import { selectExtensionCommands } from '@/lib/extensions/registry';
 import {
   LayoutDashboard,
@@ -67,6 +70,7 @@ function CommandPalette() {
   const extensionNavigationItems = selectExtensionCommands(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     activePersona,
+    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   ).reduce<CommandItemDef[]>((items, command) => {
     const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
     if (!routePath || routePath.includes('$')) return items;

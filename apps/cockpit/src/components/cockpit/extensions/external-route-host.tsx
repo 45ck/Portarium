@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUIStore } from '@/stores/ui-store';
+import { DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT } from '@/lib/extensions/installed';
 import { resolveExternalRoute, type ExternalRouteResolution } from './external-route-adapter';
 import { HOSTED_EXTERNAL_ROUTE_COMPONENTS } from './external-route-components';
 
@@ -14,6 +15,7 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
   const resolution = resolveExternalRoute({
     pathname,
     persona: activePersona,
+    ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
     components: HOSTED_EXTERNAL_ROUTE_COMPONENTS,
   });
 

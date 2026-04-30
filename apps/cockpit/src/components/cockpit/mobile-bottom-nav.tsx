@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
-import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import {
+  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+} from '@/lib/extensions/installed';
 import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import { cn } from '@/lib/utils';
 
@@ -138,6 +141,7 @@ export function MobileBottomNav({
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     'mobile-more',
     activePersona,
+    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({ label: item.title, to: item.to }));

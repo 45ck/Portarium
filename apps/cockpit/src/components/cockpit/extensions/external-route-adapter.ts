@@ -1,9 +1,13 @@
 import type { ComponentType } from 'react';
 import {
   DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
+  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   INSTALLED_COCKPIT_EXTENSION_MODULES,
 } from '@/lib/extensions/installed';
-import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
+import {
+  canAccessExtensionRoute,
+  resolveCockpitExtensionRegistry,
+} from '@/lib/extensions/registry';
 import type {
   CockpitExtensionRouteModuleLoader,
   CockpitExtensionRouteRef,
@@ -42,6 +46,8 @@ export type ExternalRouteResolution =
 export interface ResolveExternalRouteInput {
   pathname: string;
   persona: PersonaId;
+  availableCapabilities?: readonly string[];
+  availableApiScopes?: readonly string[];
   registry?: ResolvedCockpitExtensionRegistry;
   components?: Readonly<Record<string, ExternalRouteComponent>>;
 }
@@ -49,12 +55,15 @@ export interface ResolveExternalRouteInput {
 export const HOST_EXTERNAL_EXTENSION_REGISTRY = resolveCockpitExtensionRegistry({
   installedExtensions: INSTALLED_COCKPIT_EXTENSION_MODULES.map((extension) => extension.manifest),
   activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
+  ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   routeLoaders: collectHostRouteLoaders(),
 });
 
 export function resolveExternalRoute({
   pathname,
   persona,
+  availableCapabilities,
+  availableApiScopes,
   registry = HOST_EXTERNAL_EXTENSION_REGISTRY,
   components = {},
 }: ResolveExternalRouteInput): ExternalRouteResolution {
@@ -67,7 +76,13 @@ export function resolveExternalRoute({
       const params = matchExternalRoutePath(route.path, normalizedPathname);
       if (!params) continue;
 
-      if (!route.guard.personas.includes(persona)) {
+      if (
+        !canAccessExtensionRoute(route, {
+          persona,
+          availableCapabilities,
+          availableApiScopes,
+        }).allowed
+      ) {
         return {
           kind: 'forbidden',
           route,

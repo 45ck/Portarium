@@ -44,17 +44,24 @@ const TEST_ROUTE_LOADERS = {
   'test-detail': () => Promise.resolve({ default: () => null }),
 };
 
+const TEST_ACCESS_CONTEXT = {
+  availableCapabilities: ['objects:read'],
+  availableApiScopes: ['extensions.read'],
+} as const;
+
 describe('resolveExternalRoute', () => {
   it('resolves an enabled route and extracts path params', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
       activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
       routeLoaders: TEST_ROUTE_LOADERS,
     });
 
     const resolution = resolveExternalRoute({
       pathname: '/external/test/items/item-123',
       persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
       registry,
     });
 
@@ -69,12 +76,33 @@ describe('resolveExternalRoute', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
       activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
       routeLoaders: TEST_ROUTE_LOADERS,
     });
 
     const resolution = resolveExternalRoute({
       pathname: '/external/test/items/item-123',
       persona: 'Operator',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+    });
+
+    expect(resolution.kind).toBe('forbidden');
+  });
+
+  it('returns forbidden when the caller lacks route capabilities or API scopes', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/overview',
+      persona: 'Operator',
+      availableCapabilities: [],
+      availableApiScopes: [],
       registry,
     });
 
@@ -103,6 +131,7 @@ describe('resolveExternalRoute', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
       activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
       routeLoaders: TEST_ROUTE_LOADERS,
     });
 
@@ -116,5 +145,54 @@ describe('resolveExternalRoute', () => {
       kind: 'not-found',
       pathname: '/external/unknown',
     });
+  });
+
+  it('normalizes external paths before matching', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/items/item-123/?tab=activity#latest',
+      persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+    });
+
+    expect(resolution.kind).toBe('active');
+    if (resolution.kind !== 'active') throw new Error('Expected active route');
+    expect(resolution.params).toEqual({ itemId: 'item-123' });
+  });
+
+  it('decodes matched external path params without failing invalid escape sequences', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const decoded = resolveExternalRoute({
+      pathname: '/external/test/items/item%20123',
+      persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+    });
+    const invalidEscape = resolveExternalRoute({
+      pathname: '/external/test/items/item%ZZ',
+      persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+    });
+
+    expect(decoded.kind).toBe('active');
+    if (decoded.kind !== 'active') throw new Error('Expected active decoded route');
+    expect(decoded.params).toEqual({ itemId: 'item 123' });
+    expect(invalidEscape.kind).toBe('active');
+    if (invalidEscape.kind !== 'active') throw new Error('Expected active fallback route');
+    expect(invalidEscape.params).toEqual({ itemId: 'item%ZZ' });
   });
 });

@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
-import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import {
+  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+} from '@/lib/extensions/installed';
 import { selectExtensionCommands } from '@/lib/extensions/registry';
 
 const G_CHORD_MAP: Record<string, string> = {
@@ -22,6 +25,7 @@ function resolveGChordMap(): Record<string, string> {
   const extensionShortcuts = selectExtensionCommands(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     activePersona,
+    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   ).reduce<Record<string, string>>((shortcuts, command) => {
     const match = command.shortcut?.match(/^G\s+([a-z])$/i);
     const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;

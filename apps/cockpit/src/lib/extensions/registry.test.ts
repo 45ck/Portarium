@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { COCKPIT_EXTENSION_FIXTURES, NEUTRAL_OPS_EXTENSION } from './fixtures';
-import { resolveCockpitExtensionRegistry } from './registry';
+import {
+  canAccessExtensionRoute,
+  resolveCockpitExtensionRegistry,
+  selectExtensionCommands,
+  selectExtensionNavItems,
+  selectExtensionRoutes,
+} from './registry';
 import type { CockpitExtensionManifest, CockpitExtensionRouteModuleLoader } from './types';
 
 const neutralRouteLoaders = Object.fromEntries(
@@ -9,6 +15,11 @@ const neutralRouteLoaders = Object.fromEntries(
     (() => Promise.resolve({})) satisfies CockpitExtensionRouteModuleLoader,
   ]),
 );
+
+const neutralAccessContext = {
+  availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+  availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+} as const;
 
 function cloneExtension(
   overrides: Partial<CockpitExtensionManifest> = {},
@@ -35,6 +46,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -66,6 +78,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION, duplicate],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -96,6 +109,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -118,6 +132,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -144,6 +159,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -158,6 +174,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: {
         [NEUTRAL_OPS_EXTENSION.routes[0]!.id]: () => Promise.resolve({}),
       },
@@ -203,6 +220,7 @@ describe('cockpit extension registry', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION, disabledDuplicate],
       activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -214,5 +232,93 @@ describe('cockpit extension registry', () => {
     expect(registry.routes).toEqual(NEUTRAL_OPS_EXTENSION.routes);
     expect(registry.navItems).toEqual(NEUTRAL_OPS_EXTENSION.navItems);
     expect(registry.commands).toEqual(NEUTRAL_OPS_EXTENSION.commands);
+  });
+
+  it('disables active extensions when manifest capabilities or API scopes are unavailable', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      activePackIds: ['example.ops-demo'],
+      availableCapabilities: ['asset:read'],
+      availableApiScopes: ['extensions.read'],
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions[0]?.status).toBe('disabled');
+    expect(registry.extensions[0]?.disableReasons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'missing-capability' }),
+        expect.objectContaining({ code: 'missing-api-scope' }),
+      ]),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('filters routes, nav items, and commands through the same capability and scope model', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(selectExtensionRoutes(registry, { persona: 'Operator' })).toEqual([]);
+    expect(
+      selectExtensionRoutes(registry, {
+        persona: 'Operator',
+        ...neutralAccessContext,
+      }),
+    ).toHaveLength(2);
+    expect(
+      selectExtensionRoutes(registry, {
+        persona: 'Operator',
+        availableCapabilities: ['asset:read'],
+        availableApiScopes: ['extensions.read'],
+      }).map((route) => route.id),
+    ).toEqual(['example-ops-overview']);
+    expect(
+      selectExtensionNavItems(registry, 'sidebar', 'Operator', {
+        availableCapabilities: ['asset:read'],
+        availableApiScopes: ['extensions.read'],
+      }).map((item) => item.id),
+    ).toEqual(['example-ops-overview-nav']);
+    expect(
+      selectExtensionCommands(registry, 'Operator', {
+        availableCapabilities: [],
+        availableApiScopes: ['extensions.read'],
+      }),
+    ).toEqual([]);
+  });
+
+  it('reports forbidden route access without exposing domain-specific assumptions', () => {
+    const decision = canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+      persona: 'Operator',
+      availableCapabilities: [],
+      availableApiScopes: [],
+    });
+
+    expect(decision).toEqual({
+      allowed: false,
+      denials: [
+        { code: 'missing-capability', missing: ['asset:read'] },
+        { code: 'missing-api-scope', missing: ['extensions.read'] },
+      ],
+    });
+  });
+
+  it('fails closed when guarded access is evaluated without capability or scope context', () => {
+    const decision = canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+      persona: 'Operator',
+    });
+
+    expect(decision).toEqual({
+      allowed: false,
+      denials: [
+        { code: 'missing-capability', missing: ['asset:read'] },
+        { code: 'missing-api-scope', missing: ['extensions.read'] },
+      ],
+    });
   });
 });
