@@ -16,7 +16,11 @@ const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/components/**/*.test.ts', 'src/components/**/*.test.tsx'],
+    include: [
+      'src/components/**/*.test.ts',
+      'src/components/**/*.test.tsx',
+      'src/mocks/fixtures/fixture-parity.test.ts',
+    ],
     setupFiles: ['src/test-setup.ts'],
     reporters: ['default'],
     coverage: {

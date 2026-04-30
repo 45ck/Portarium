@@ -407,6 +407,51 @@ export const handlers = [
     return HttpResponse.json(updated);
   }),
 
+  // Event streams
+  http.get('/v1/workspaces/:wsId/events:stream', () => {
+    return new HttpResponse(
+      [
+        'event: com.portarium.approval.ApprovalRequested',
+        'data: {"approvalId":"apr-3001","runId":"run-2001"}',
+        '',
+        '',
+      ].join('\n'),
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    );
+  }),
+  http.get('/v1/workspaces/:wsId/beads/:beadId/thread', ({ params }) => {
+    const beadId = String(params['beadId'] ?? 'bead-demo');
+    return HttpResponse.json({
+      items: [
+        {
+          id: `${beadId}:tool-call`,
+          toolName: 'apply patch',
+          args: { beadId },
+          status: 'awaiting_approval',
+          policyTier: 'HumanApprove',
+          blastRadius: 'medium',
+          approvalId: 'apr-3001',
+          policyRuleId: 'COMMUNICATION-APPROVAL-001',
+          rationale: 'Cockpit mock bead thread snapshot',
+          occurredAtIso: '2026-02-20T14:30:00Z',
+        },
+      ],
+    });
+  }),
+  http.get('/v1/workspaces/:wsId/beads/:beadId/events', ({ params }) => {
+    const beadId = String(params['beadId'] ?? 'bead-demo');
+    return new HttpResponse(
+      [
+        'id: 1',
+        'event: com.portarium.agent.ToolCallProposed',
+        `data: {"id":"${beadId}:tool-call","toolName":"apply patch","args":{"beadId":"${beadId}"},"status":"awaiting_approval","policyTier":"HumanApprove","blastRadius":"medium","approvalId":"apr-3001","occurredAtIso":"2026-02-20T14:30:00Z"}`,
+        '',
+        '',
+      ].join('\n'),
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    );
+  }),
+
   // Bead diff
   http.get('/v1/workspaces/:wsId/beads/:beadId/diff', ({ params }) => {
     const beadId = String(params['beadId'] ?? 'bead-demo');
