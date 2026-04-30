@@ -36,12 +36,29 @@ const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] =
   },
 ];
 
+function getWorkspaceDisplayName({
+  wsId,
+  activeDataset,
+  usesLiveTenantData,
+}: {
+  wsId: string;
+  activeDataset: DatasetId;
+  usesLiveTenantData: boolean;
+}): string {
+  if (usesLiveTenantData) return wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Live Workspace';
+  if (wsId === 'ws-meridian') return 'Meridian Workspace';
+  if (activeDataset === 'openclaw-demo') return 'OpenClaw Demo Workspace';
+  return 'Demo Workspace';
+}
+
 function SettingsPage() {
   const wsId = useUIStore((s) => s.activeWorkspaceId);
   const activeDataset = useUIStore((s) => s.activeDataset);
   const setActiveDataset = useUIStore((s) => s.setActiveDataset);
-  const { data: packRuntime } = usePackUiRuntime(wsId);
   const runtime = resolveCockpitRuntime();
+  const { data: packRuntime } = usePackUiRuntime(wsId, {
+    enabled: runtime.allowDemoControls,
+  });
 
   const [relativeDates, setRelativeDates] = useState(() => {
     return localStorage.getItem('cockpit-date-format') !== 'absolute';
@@ -85,11 +102,11 @@ function SettingsPage() {
             <span className="font-mono">{wsId}</span>
             <span className="text-muted-foreground">Workspace Name</span>
             <span>
-              {wsId === 'ws-meridian'
-                ? 'Meridian Workspace'
-                : activeDataset === 'openclaw-demo'
-                  ? 'OpenClaw Demo Workspace'
-                  : 'Demo Workspace'}
+              {getWorkspaceDisplayName({
+                wsId,
+                activeDataset,
+                usesLiveTenantData: runtime.usesLiveTenantData,
+              })}
             </span>
           </div>
         </CardContent>
@@ -153,24 +170,38 @@ function SettingsPage() {
         </Card>
       )}
 
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
-          <CardDescription>
-            Template source:{' '}
-            <span className="font-mono">{resolvedPackTemplate?.source ?? 'none'}</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {resolvedPackTemplate ? (
-            <PackTemplateRenderer template={resolvedPackTemplate.template} />
-          ) : (
+      {runtime.allowDemoControls ? (
+        <Card className="shadow-none">
+          <CardHeader>
+            <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
+            <CardDescription>
+              Template source:{' '}
+              <span className="font-mono">{resolvedPackTemplate?.source ?? 'none'}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {resolvedPackTemplate ? (
+              <PackTemplateRenderer template={resolvedPackTemplate.template} />
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No matching template found for this workspace.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-none">
+          <CardHeader>
+            <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
+            <CardDescription>Demo-only pack template preview</CardDescription>
+          </CardHeader>
+          <CardContent>
             <p className="text-xs text-muted-foreground">
-              No matching template found for this workspace.
+              Pack UI fixture preview is disabled while Cockpit is connected to live tenant data.
             </p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

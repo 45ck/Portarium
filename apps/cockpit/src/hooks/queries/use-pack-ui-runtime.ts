@@ -7,10 +7,10 @@ async function fetchPackUiRuntime(wsId: string): Promise<WorkspacePackUiRuntime>
   return res.json();
 }
 
-export function usePackUiRuntime(wsId: string) {
+export function usePackUiRuntime(wsId: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['pack-ui-runtime', wsId],
     queryFn: () => fetchPackUiRuntime(wsId),
-    enabled: Boolean(wsId),
+    enabled: Boolean(wsId) && (options.enabled ?? true),
   });
 }

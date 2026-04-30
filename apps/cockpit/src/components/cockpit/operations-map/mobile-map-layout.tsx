@@ -1,4 +1,4 @@
-import type { RobotLocation, Geofence, SpatialAlert } from '@/mocks/fixtures/robot-locations';
+import type { RobotLocation, Geofence, SpatialAlert } from '@/types/robotics';
 import type { LayerVisibility } from './layer-toggles';
 import { MapView } from './map-view';
 import { RobotListPanel } from './robot-list-panel';

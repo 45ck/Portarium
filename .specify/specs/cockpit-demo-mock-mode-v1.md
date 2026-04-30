@@ -20,6 +20,7 @@ Define the backend-free demo behavior for the cockpit presentation layer so stak
 6. Demo state and labels must clearly indicate mocked/synthetic data.
 7. Scripted demo-machine clips must cover approval, evidence, correlation, capability posture, degraded realtime, and agent integration narratives with reset preconditions.
 8. Demo persistence may contain synthetic fixture data only and must remain resettable; it must not define live tenant-data retention behavior.
+9. Fixture-backed demo controls must be available only when Cockpit is running with the mock service worker enabled. `VITE_DEMO_MODE=true` must not unlock demo fixtures when `VITE_PORTARIUM_ENABLE_MSW=false`.
 
 ## Out Of Scope
 

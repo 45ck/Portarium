@@ -9,7 +9,11 @@ import { fetchJson } from '@/lib/fetch-json';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchHumanTasks(wsId: string): Promise<{ items: HumanTaskSummary[] }> {
-  return fetchJson(`/v1/workspaces/${wsId}/human-tasks`, undefined, 'Failed to fetch human tasks');
+  return fetchJson(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/human-tasks`,
+    undefined,
+    'Failed to fetch human tasks',
+  );
 }
 
 async function postAssignHumanTask(
@@ -17,13 +21,15 @@ async function postAssignHumanTask(
   taskId: string,
   body: AssignHumanTaskRequest,
 ): Promise<HumanTaskSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/human-tasks/${taskId}/assign`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to assign human task');
-  return res.json();
+  return fetchJson<HumanTaskSummary>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/human-tasks/${encodeURIComponent(taskId)}/assign`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    'Failed to assign human task',
+  );
 }
 
 async function postCompleteHumanTask(
@@ -31,13 +37,15 @@ async function postCompleteHumanTask(
   taskId: string,
   body: CompleteHumanTaskRequest,
 ): Promise<HumanTaskSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/human-tasks/${taskId}/complete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to complete human task');
-  return res.json();
+  return fetchJson<HumanTaskSummary>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/human-tasks/${encodeURIComponent(taskId)}/complete`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    'Failed to complete human task',
+  );
 }
 
 async function postEscalateHumanTask(
@@ -45,13 +53,15 @@ async function postEscalateHumanTask(
   taskId: string,
   body: EscalateHumanTaskRequest,
 ): Promise<HumanTaskSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/human-tasks/${taskId}/escalate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('Failed to escalate human task');
-  return res.json();
+  return fetchJson<HumanTaskSummary>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/human-tasks/${encodeURIComponent(taskId)}/escalate`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    'Failed to escalate human task',
+  );
 }
 
 export function useHumanTasks(wsId: string) {

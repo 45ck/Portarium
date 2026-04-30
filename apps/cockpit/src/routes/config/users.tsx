@@ -34,7 +34,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import type { UserSummary, UserRole } from '@/mocks/fixtures/users';
+import type { UserSummary, UserRole } from '@/types/users';
 
 const ROLES: UserRole[] = ['Operator', 'Approver', 'Auditor', 'Admin'];
 

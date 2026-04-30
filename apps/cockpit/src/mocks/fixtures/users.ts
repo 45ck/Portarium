@@ -1,18 +1,6 @@
-// ---------------------------------------------------------------------------
-// Mock Users fixture
-// ---------------------------------------------------------------------------
+import type { UserSummary } from '@/types/users';
 
-export type UserRole = 'Operator' | 'Approver' | 'Auditor' | 'Admin';
-export type UserStatus = 'active' | 'suspended';
-
-export interface UserSummary {
-  userId: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: UserStatus;
-  lastActiveIso: string;
-}
+export type { UserRole, UserStatus, UserSummary } from '@/types/users';
 
 export const MOCK_USERS: UserSummary[] = [
   {

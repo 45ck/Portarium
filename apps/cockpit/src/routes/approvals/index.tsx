@@ -37,7 +37,6 @@ import {
   validatePolicyStudioReturnSearch,
 } from '@/lib/policy-studio-search';
 import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
-import { APPROVALS as FIXTURE_APPROVALS } from '@/mocks/fixtures/openclaw-demo';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -54,6 +53,11 @@ interface ApprovalsSearch extends PolicyStudioReturnSearch {
   focus?: string;
   from?: string;
   demo?: boolean;
+}
+
+async function loadDemoApproval(approvalIds: readonly string[]): Promise<ApprovalSummary | null> {
+  const { findOpenClawApproval } = await import('@/mocks/loaders/openclaw-approvals');
+  return findOpenClawApproval(approvalIds);
 }
 
 function ApprovalsPage() {
@@ -82,11 +86,8 @@ function ApprovalsPage() {
       (payload: PolicyUpdatePayload) => {
         if (!showDemo) return;
         if (payload.effect === 'tighten') {
-          // Inject an approval that was previously auto-approved as now needing review
-          const injected = FIXTURE_APPROVALS.find((a) =>
-            payload.affectedApprovalIds.includes(a.approvalId),
-          );
-          if (injected) {
+          void loadDemoApproval(payload.affectedApprovalIds).then((injected) => {
+            if (!injected) return;
             const asNewPending: ApprovalSummary = {
               ...injected,
               status: 'Pending',
@@ -99,14 +100,13 @@ function ApprovalsPage() {
               if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
               return [...prev, asNewPending];
             });
-            // Remove from removed set if it was there
             setRemovedApprovalIds((prev) => {
               if (!prev.has(asNewPending.approvalId)) return prev;
               const next = new Set(prev);
               next.delete(asNewPending.approvalId);
               return next;
             });
-          }
+          });
 
           toast(`Policy tightened: ${payload.policyName}`, {
             description: payload.changeDescription,

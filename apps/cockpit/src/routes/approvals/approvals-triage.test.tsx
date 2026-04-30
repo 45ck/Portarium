@@ -153,6 +153,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -160,6 +161,34 @@ afterAll(() => {
 });
 
 describe('Approvals triage page', () => {
+  it('does not enable demo policy injection in dev-live mode even when demo search is present', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+    _mockApprovals = [];
+
+    await renderApprovalsRoute('/approvals?demo=true');
+
+    expect(await screen.findByRole('heading', { name: 'Approvals', level: 1 })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Policy tightened/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Policy relaxed/i })).toBeNull();
+
+    window.dispatchEvent(
+      new CustomEvent('portarium:policy-updated', {
+        detail: {
+          policyId: 'COMMUNICATION-APPROVAL-001',
+          policyName: 'External Email Approval',
+          changeDescription: 'Tier changed to ManualOnly',
+          effect: 'tighten',
+          affectedApprovalIds: ['apr-oc-3299'],
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/apr-oc-3299/i)).toBeNull();
+      expect(screen.queryByText(/Cron morning_brief auto-safe item/i)).toBeNull();
+    });
+  });
+
   it('renders the Approvals heading', async () => {
     await renderApprovalsRoute();
 

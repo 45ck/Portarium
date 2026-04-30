@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { KpiRow } from '@/components/cockpit/kpi-row';
 import { Skeleton } from '@/components/ui/skeleton';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 
 const ObservabilityChart = lazy(() =>
   import('./observability-chart').then((m) => ({ default: m.ObservabilityChart })),
@@ -25,6 +26,7 @@ interface ObservabilityData {
 
 function ExploreObservabilityPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
+  const runtime = resolveCockpitRuntime();
 
   const { data, isLoading, isError } = useQuery<ObservabilityData>({
     queryKey: ['observability', wsId],
@@ -33,6 +35,7 @@ function ExploreObservabilityPage() {
       if (!r.ok) throw new Error('Failed to fetch observability data');
       return r.json();
     },
+    enabled: runtime.allowDemoControls,
   });
 
   const totalRuns = useMemo(() => {
@@ -51,7 +54,11 @@ function ExploreObservabilityPage() {
         icon={<EntityIcon entityType="run" size="md" decorative />}
       />
 
-      {isLoading ? (
+      {!runtime.allowDemoControls ? (
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Demo observability fixtures are disabled while Cockpit is connected to live tenant data.
+        </div>
+      ) : isLoading ? (
         <Skeleton className="h-4 w-1/2" />
       ) : isError ? (
         <div className="text-xs text-destructive">Failed to load observability data.</div>

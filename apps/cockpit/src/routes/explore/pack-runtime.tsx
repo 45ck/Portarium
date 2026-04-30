@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
 import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { useUIStore } from '@/stores/ui-store';
 import type { RuntimeSchemaProperty } from '@/lib/packs/types';
 
@@ -16,7 +17,8 @@ const CHANGE_REQUEST_TEMPLATE_ID = 'ui-scm-change-request-form';
 
 function PackRuntimePage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = usePackUiRuntime(wsId);
+  const runtime = resolveCockpitRuntime();
+  const { data, isLoading } = usePackUiRuntime(wsId, { enabled: runtime.allowDemoControls });
 
   const resolved = useMemo(() => {
     if (!data) return null;
@@ -37,51 +39,71 @@ function PackRuntimePage() {
         description="Resolved pack templates and safe theme token application for this workspace"
       />
 
-      <Card className="shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Template Resolution</CardTitle>
-        </CardHeader>
-        <CardContent className="text-xs space-y-2">
-          {isLoading ? (
-            <Skeleton className="h-4 w-40" />
-          ) : !resolved ? (
-            <p role="alert" className="text-destructive">
-              No template is available for {CHANGE_REQUEST_TEMPLATE_ID}.
+      {!runtime.allowDemoControls ? (
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Demo-only Surface</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              Pack UI runtime preview is disabled while Cockpit is connected to live tenant data.
             </p>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">
-                {resolved.source === 'pack' ? 'Pack template' : 'Core fallback'}
-              </Badge>
-              <span className="font-mono">{resolved.template.templateId}</span>
-              <span className="text-muted-foreground">{resolved.template.packId}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : null}
 
-      <Card className="shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Schema-driven Form</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!resolved || !schema ? (
-            <p className="text-xs text-muted-foreground">No renderable schema available.</p>
-          ) : (
-            <form aria-label="Pack template form" className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {resolved.template.fields.map((field) => (
-                <SchemaField
-                  key={field.fieldName}
-                  fieldName={field.fieldName}
-                  label={field.label}
-                  widget={field.widget}
-                  property={schema.properties[field.fieldName]}
-                />
-              ))}
-            </form>
-          )}
-        </CardContent>
-      </Card>
+      {runtime.allowDemoControls ? (
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Template Resolution</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs space-y-2">
+            {isLoading ? (
+              <Skeleton className="h-4 w-40" />
+            ) : !resolved ? (
+              <p role="alert" className="text-destructive">
+                No template is available for {CHANGE_REQUEST_TEMPLATE_ID}.
+              </p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  {resolved.source === 'pack' ? 'Pack template' : 'Core fallback'}
+                </Badge>
+                <span className="font-mono">{resolved.template.templateId}</span>
+                <span className="text-muted-foreground">{resolved.template.packId}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {runtime.allowDemoControls ? (
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Schema-driven Form</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!resolved || !schema ? (
+              <p className="text-xs text-muted-foreground">No renderable schema available.</p>
+            ) : (
+              <form
+                aria-label="Pack template form"
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+              >
+                {resolved.template.fields.map((field) => (
+                  <SchemaField
+                    key={field.fieldName}
+                    fieldName={field.fieldName}
+                    label={field.label}
+                    widget={field.widget}
+                    property={schema.properties[field.fieldName]}
+                  />
+                ))}
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

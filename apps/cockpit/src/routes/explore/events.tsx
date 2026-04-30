@@ -25,7 +25,7 @@ function ExploreEventsPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Events"
-        description="Live event stream — refreshes every 5 seconds"
+        description="Evidence log polling — refreshes every 5 seconds"
         icon={<EntityIcon entityType="event" size="md" decorative />}
       />
 
@@ -34,7 +34,7 @@ function ExploreEventsPage() {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
         </span>
-        <span className="text-xs font-medium text-green-600">LIVE</span>
+        <span className="text-xs font-medium text-green-600">POLLING</span>
         {dataUpdatedAt > 0 && (
           <span className="text-xs text-muted-foreground">
             Last updated {Math.round((Date.now() - dataUpdatedAt) / 1000)}s ago

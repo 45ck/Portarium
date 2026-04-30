@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { AgentCapability, AgentV1 } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 type AgentConfig = Readonly<{
   schemaVersion: 1;
@@ -61,18 +62,21 @@ function toAgentView(agent: AgentConfig): AgentV1 {
 }
 
 async function fetchAgents(wsId: string): Promise<{ items: AgentV1[] }> {
-  const res = await fetch(`/v1/workspaces/${encodeURIComponent(wsId)}/agents`);
-  if (!res.ok) throw new Error('Failed to fetch agents');
-  const body = (await res.json()) as { items: AgentConfig[] };
+  const body = await fetchJson<{ items: AgentConfig[] }>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/agents`,
+    undefined,
+    'Failed to fetch agents',
+  );
   return { ...body, items: body.items.map(toAgentView) };
 }
 
 async function fetchAgent(wsId: string, agentId: string): Promise<AgentV1> {
-  const res = await fetch(
+  const agent = await fetchJson<AgentConfig>(
     `/v1/workspaces/${encodeURIComponent(wsId)}/agents/${encodeURIComponent(agentId)}`,
+    undefined,
+    'Failed to fetch agent',
   );
-  if (!res.ok) throw new Error('Failed to fetch agent');
-  return toAgentView((await res.json()) as AgentConfig);
+  return toAgentView(agent);
 }
 
 export function useAgents(wsId: string) {

@@ -102,6 +102,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -109,6 +110,38 @@ afterAll(() => {
 });
 
 describe('Policy Studio route', () => {
+  it('shows a fixture-free disabled state in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+
+    await renderPoliciesRoute();
+
+    expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
+    expect(screen.getByText(/Fixture-backed simulation is only available/i)).toBeTruthy();
+    expect(screen.queryByText(/Simulation lab/i)).toBeNull();
+    expect(screen.queryByText(/Runtime precedent to policy/i)).toBeNull();
+    expect(screen.queryByRole('link', { name: /Open focused review/i })).toBeNull();
+  });
+
+  it('does not expose fixture policy detail data in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+
+    await renderPoliciesRoute('/config/policies/EMAIL-DESTRUCTIVE-BLOCK-001');
+
+    expect(await screen.findByRole('heading', { name: 'Policy Detail' })).toBeTruthy();
+    expect(screen.getByText(/fixture-backed editor is available only/i)).toBeTruthy();
+    expect(screen.queryByText(/Bulk Email Deletion Block/i)).toBeNull();
+  });
+
+  it('does not expose fixture blast-radius data in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+
+    await renderPoliciesRoute('/config/blast-radius');
+
+    expect(await screen.findByRole('heading', { name: 'Tool Blast Radius' })).toBeTruthy();
+    expect(screen.getByText(/fixture-backed matrix is available only/i)).toBeTruthy();
+    expect(screen.queryByText(/gmail:bulk-delete/i)).toBeNull();
+  });
+
   it('renders the prototype surface and its primary sections', async () => {
     await renderPoliciesRoute();
 

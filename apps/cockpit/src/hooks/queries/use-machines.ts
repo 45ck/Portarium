@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { AgentCapability, MachineV1 } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
 
 type MachineRegistration = Readonly<{
   schemaVersion: 1;
@@ -57,18 +58,21 @@ function toMachineView(machine: MachineRegistration): MachineV1 {
 }
 
 async function fetchMachines(wsId: string): Promise<{ items: MachineV1[] }> {
-  const res = await fetch(`/v1/workspaces/${encodeURIComponent(wsId)}/machines`);
-  if (!res.ok) throw new Error('Failed to fetch machines');
-  const body = (await res.json()) as { items: MachineRegistration[] };
+  const body = await fetchJson<{ items: MachineRegistration[] }>(
+    `/v1/workspaces/${encodeURIComponent(wsId)}/machines`,
+    undefined,
+    'Failed to fetch machines',
+  );
   return { ...body, items: body.items.map(toMachineView) };
 }
 
 async function fetchMachine(wsId: string, machineId: string): Promise<MachineV1> {
-  const res = await fetch(
+  const machine = await fetchJson<MachineRegistration>(
     `/v1/workspaces/${encodeURIComponent(wsId)}/machines/${encodeURIComponent(machineId)}`,
+    undefined,
+    'Failed to fetch machine',
   );
-  if (!res.ok) throw new Error('Failed to fetch machine');
-  return toMachineView((await res.json()) as MachineRegistration);
+  return toMachineView(machine);
 }
 
 export function useMachines(wsId: string) {

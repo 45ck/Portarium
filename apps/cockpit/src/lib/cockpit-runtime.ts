@@ -60,7 +60,7 @@ export function shouldEnableCockpitMocks(env: CockpitEnvLike = import.meta.env):
 
 export function resolveCockpitRuntime(env: CockpitEnvLike = import.meta.env): CockpitRuntime {
   const mockServiceWorkerEnabled = shouldEnableCockpitMocks(env);
-  const demoMode = cockpitFlagEnabled(env.VITE_DEMO_MODE) || mockServiceWorkerEnabled;
+  const demoMode = mockServiceWorkerEnabled && cockpitFlagEnabled(env.VITE_DEMO_MODE, true);
   const runtimeMode: CockpitRuntimeMode = demoMode ? 'demo' : env.DEV ? 'dev-live' : 'live';
 
   return {

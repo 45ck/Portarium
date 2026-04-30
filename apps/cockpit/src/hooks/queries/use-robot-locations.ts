@@ -1,4 +1,4 @@
-import type { RobotLocation, Geofence, SpatialAlert } from '@/mocks/fixtures/robot-locations';
+import type { RobotLocation, Geofence, SpatialAlert } from '@/types/robotics';
 import { fetchJson } from '@/lib/fetch-json';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
