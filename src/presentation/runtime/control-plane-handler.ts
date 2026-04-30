@@ -131,6 +131,16 @@ interface HonoEnv {
 }
 
 const MALFORMED_WORKSPACE_RATE_LIMIT_ID = '__malformed_workspace__';
+const RUN_INTERVENTION_REQUEST_FIELDS = new Set([
+  'interventionType',
+  'rationale',
+  'target',
+  'surface',
+  'authoritySource',
+  'effect',
+  'consequence',
+  'evidenceRequired',
+]);
 
 function runInterventionErrorToProblem(
   error: SubmitRunInterventionError,
@@ -332,8 +342,27 @@ async function handleSubmitRunIntervention(args: RunHandlerArgs): Promise<void> 
     );
     return;
   }
+  const bodyRecord = bodyResult.value as Record<string, unknown>;
+  const unknownFields = Object.keys(bodyRecord).filter(
+    (field) => !RUN_INTERVENTION_REQUEST_FIELDS.has(field),
+  );
+  if (unknownFields.length > 0) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: `Unknown run intervention field(s): ${unknownFields.join(', ')}.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
 
-  const body = bodyResult.value as Partial<SubmitRunInterventionInput>;
+  const body = bodyRecord as Partial<SubmitRunInterventionInput>;
   const result = await submitRunIntervention(
     {
       authorization: deps.authorization,

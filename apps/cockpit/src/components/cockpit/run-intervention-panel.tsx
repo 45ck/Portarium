@@ -96,7 +96,7 @@ const OPTIONS: InterventionOption[] = [
     label: 'Handoff',
     group: 'Handoff',
     surface: 'steering',
-    authoritySource: 'delegated-role',
+    authoritySource: 'queue-delegation',
     effect: 'current-run-effect',
     consequence: 'Transfers active ownership to another person or queue.',
     controlStateLabel: 'Operator-owned by target',
@@ -110,7 +110,7 @@ const OPTIONS: InterventionOption[] = [
     label: 'Escalate',
     group: 'Handoff',
     surface: 'steering',
-    authoritySource: 'delegated-role',
+    authoritySource: 'queue-delegation',
     effect: 'current-run-effect',
     consequence: 'Requires a higher-authority reviewer before routine execution continues.',
     controlStateLabel: 'Blocked pending escalation',
@@ -179,7 +179,7 @@ const OPTIONS: InterventionOption[] = [
     label: 'Annotate',
     group: 'Audit',
     surface: 'monitoring',
-    authoritySource: 'audit-annotation',
+    authoritySource: 'workspace-rbac',
     effect: 'context-only',
     consequence: 'Adds audit context without steering, approving, or changing Policy.',
     controlStateLabel: 'No state change',
@@ -234,10 +234,14 @@ function authorityLabel(
   authoritySource: NonNullable<RunInterventionRequest['authoritySource']>,
 ): string {
   switch (authoritySource) {
-    case 'audit-annotation':
-      return 'Audit annotation';
-    case 'delegated-role':
-      return 'Delegated role';
+    case 'policy-change-approval':
+      return 'Policy change approval';
+    case 'queue-delegation':
+      return 'Queue delegation';
+    case 'system-invariant':
+      return 'System invariant';
+    case 'workspace-rbac':
+      return 'Workspace RBAC';
     case 'incident-break-glass':
       return 'Incident break-glass';
     case 'policy-rule':

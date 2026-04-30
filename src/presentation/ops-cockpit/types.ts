@@ -158,11 +158,13 @@ export type RunInterventionSurface =
   | 'emergency';
 
 export type RunInterventionAuthoritySource =
-  | 'run-charter'
+  | 'workspace-rbac'
   | 'policy-rule'
-  | 'delegated-role'
+  | 'run-charter'
+  | 'queue-delegation'
   | 'incident-break-glass'
-  | 'audit-annotation';
+  | 'system-invariant'
+  | 'policy-change-approval';
 
 export interface RunInterventionRequest {
   interventionType: RunInterventionKind;

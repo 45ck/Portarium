@@ -21,6 +21,11 @@ describe('Workspace RBAC (IAM MVP)', () => {
     expect(isAllowedWorkspaceAction(actor(['operator']), 'run:start')).toBe(true);
   });
 
+  it('allows approver and auditor through the coarse run intervention gate', () => {
+    expect(isAllowedWorkspaceAction(actor(['approver']), 'run:intervene')).toBe(true);
+    expect(isAllowedWorkspaceAction(actor(['auditor']), 'run:intervene')).toBe(true);
+  });
+
   it('allows operator for map-command:submit', () => {
     expect(isAllowedWorkspaceAction(actor(['operator']), 'map-command:submit')).toBe(true);
   });

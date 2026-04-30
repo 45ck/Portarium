@@ -43,11 +43,13 @@ export type RunInterventionSurface =
   | 'emergency';
 
 export type RunInterventionAuthoritySource =
-  | 'run-charter'
+  | 'workspace-rbac'
   | 'policy-rule'
-  | 'delegated-role'
+  | 'run-charter'
+  | 'queue-delegation'
   | 'incident-break-glass'
-  | 'audit-annotation';
+  | 'system-invariant'
+  | 'policy-change-approval';
 
 export type OperatorInputEffect =
   | 'current-run-effect'
@@ -86,6 +88,12 @@ export type SubmitRunInterventionDeps = Readonly<{
   idGenerator: { generateId(): string };
 }>;
 
+type ParsedRunInterventionInput = Omit<SubmitRunInterventionInput, 'workspaceId' | 'runId'> &
+  Readonly<{
+    workspaceId: ReturnType<typeof WorkspaceId>;
+    runId: ReturnType<typeof RunId>;
+  }>;
+
 const INTERVENTION_TYPES: readonly RunInterventionKind[] = [
   'pause',
   'resume',
@@ -109,11 +117,13 @@ const SURFACES: readonly RunInterventionSurface[] = [
 ];
 
 const AUTHORITY_SOURCES: readonly RunInterventionAuthoritySource[] = [
-  'run-charter',
+  'workspace-rbac',
   'policy-rule',
-  'delegated-role',
+  'run-charter',
+  'queue-delegation',
   'incident-break-glass',
-  'audit-annotation',
+  'system-invariant',
+  'policy-change-approval',
 ];
 
 const EFFECTS: readonly OperatorInputEffect[] = [
@@ -142,6 +152,13 @@ export async function submitRunIntervention(
       message: 'Caller is not permitted to intervene in runs.',
     });
   }
+  if (!hasInterventionAuthority(ctx.roles, parsed.value.interventionType)) {
+    return err({
+      kind: 'Forbidden',
+      action: APP_ACTIONS.runIntervene,
+      message: `Caller is not permitted to ${parsed.value.interventionType} runs.`,
+    });
+  }
 
   const run = await deps.runStore.getRunById(
     ctx.tenantId,
@@ -156,12 +173,10 @@ export async function submitRunIntervention(
     });
   }
 
-  const transition = deriveTransition(run, input);
+  const transition = deriveTransition(run, parsed.value);
   if (!transition.ok) return transition;
 
   const updatedRun = transition.value;
-  await deps.runStore.saveRun(ctx.tenantId, updatedRun);
-
   try {
     await deps.evidenceLog.appendEntry(ctx.tenantId, {
       schemaVersion: 1,
@@ -169,8 +184,8 @@ export async function submitRunIntervention(
       workspaceId: parsed.value.workspaceId,
       correlationId: CorrelationId(String(run.correlationId)),
       occurredAtIso: deps.clock.nowIso(),
-      category: evidenceCategory(input),
-      summary: evidenceSummary(input),
+      category: evidenceCategory(parsed.value),
+      summary: evidenceSummary(ctx, run, updatedRun, parsed.value),
       actor: { kind: 'User', userId: UserId(String(ctx.principalId)) },
       links: { runId: parsed.value.runId },
     });
@@ -180,16 +195,21 @@ export async function submitRunIntervention(
       message: 'Unable to append run intervention evidence.',
     });
   }
+  try {
+    await deps.runStore.saveRun(ctx.tenantId, updatedRun);
+  } catch {
+    return err({
+      kind: 'DependencyFailure',
+      message: 'Unable to persist run intervention.',
+    });
+  }
 
   return ok(updatedRun);
 }
 
 function validateInput(
   input: SubmitRunInterventionInput,
-): Result<
-  { workspaceId: ReturnType<typeof WorkspaceId>; runId: ReturnType<typeof RunId> },
-  ValidationFailed
-> {
+): Result<ParsedRunInterventionInput, ValidationFailed> {
   const violations: { field: string; message: string }[] = [];
   if (typeof input.workspaceId !== 'string' || input.workspaceId.trim() === '') {
     violations.push({ field: 'workspaceId', message: 'workspaceId must be a non-empty string.' });
@@ -242,10 +262,21 @@ function validateInput(
     });
   }
 
-  return ok({ workspaceId: WorkspaceId(input.workspaceId), runId: RunId(input.runId) });
+  return ok({
+    workspaceId: WorkspaceId(input.workspaceId),
+    runId: RunId(input.runId),
+    interventionType: input.interventionType,
+    rationale: input.rationale,
+    ...(input.target !== undefined ? { target: input.target } : {}),
+    ...(input.surface !== undefined ? { surface: input.surface } : {}),
+    ...(input.authoritySource !== undefined ? { authoritySource: input.authoritySource } : {}),
+    ...(input.effect !== undefined ? { effect: input.effect } : {}),
+    ...(input.consequence !== undefined ? { consequence: input.consequence } : {}),
+    ...(input.evidenceRequired !== undefined ? { evidenceRequired: input.evidenceRequired } : {}),
+  });
 }
 
-function deriveTransition(run: RunV1, input: SubmitRunInterventionInput): Result<RunV1, Conflict> {
+function deriveTransition(run: RunV1, input: ParsedRunInterventionInput): Result<RunV1, Conflict> {
   const { interventionType } = input;
   if (TERMINAL_STATUSES.includes(run.status) && interventionType !== 'annotate') {
     return err({
@@ -279,14 +310,16 @@ function deriveTransition(run: RunV1, input: SubmitRunInterventionInput): Result
   const controlState = nextControlState(interventionType);
   const ownerId = ownerTarget(interventionType) ? input.target : undefined;
 
-  const updatedRun = {
+  const updatedRun: RunV1 & { controlState?: RunControlState; operatorOwnerId?: string } = {
     ...run,
     ...(status ? { status } : {}),
     ...(controlState ? { controlState } : {}),
     ...(ownerId ? { operatorOwnerId: ownerId } : {}),
-  } as RunV1 & { controlState?: RunControlState };
-  if (!controlState) delete updatedRun.controlState;
-  if (!ownerId) delete (updatedRun as { operatorOwnerId?: string }).operatorOwnerId;
+  };
+  if (interventionType === 'resume') {
+    delete updatedRun.controlState;
+    delete updatedRun.operatorOwnerId;
+  }
 
   return ok(updatedRun);
 }
@@ -351,11 +384,69 @@ function evidenceCategory(input: SubmitRunInterventionInput): EvidenceCategory {
   return 'Action';
 }
 
-function evidenceSummary(input: SubmitRunInterventionInput): string {
+function evidenceSummary(
+  ctx: AppContext,
+  previousRun: RunV1,
+  updatedRun: RunV1,
+  input: ParsedRunInterventionInput,
+): string {
+  const governanceFunction = governanceFunctionFor(ctx.roles, input.interventionType);
   const authority = input.authoritySource ? ` authority=${input.authoritySource}` : '';
   const surface = input.surface ? ` surface=${input.surface}` : '';
   const target = input.target ? ` target=${input.target}` : '';
-  return `${input.interventionType}:${surface}${authority}${target} ${input.rationale.trim()}`;
+  const effect = input.effect ? ` effect=${input.effect}` : '';
+  const accountableActor = ` accountableActor=${String(ctx.principalId)}`;
+  const transition =
+    previousRun.status === updatedRun.status
+      ? ` status=${updatedRun.status}`
+      : ` transition=${previousRun.status}->${updatedRun.status}`;
+  const previousOwner = previousRun.operatorOwnerId
+    ? ` previousOwner=${previousRun.operatorOwnerId}`
+    : '';
+  const newOwner = updatedRun.operatorOwnerId ? ` newOwner=${updatedRun.operatorOwnerId}` : '';
+  return `${input.interventionType}:${surface}${authority}${effect}${target} governanceFunction=${governanceFunction}${accountableActor}${transition}${previousOwner}${newOwner} ${input.rationale.trim()}`;
+}
+
+function hasInterventionAuthority(
+  roles: AppContext['roles'],
+  interventionType: RunInterventionKind,
+): boolean {
+  if (roles.includes('admin')) return true;
+  switch (interventionType) {
+    case 'request-evidence':
+    case 'request-more-evidence':
+    case 'reroute':
+    case 'escalate':
+      return roles.includes('operator') || roles.includes('approver');
+    case 'annotate':
+      return roles.includes('auditor');
+    case 'emergency-disable':
+      return false;
+    case 'pause':
+    case 'resume':
+    case 'handoff':
+    case 'freeze':
+    case 'sandbox':
+      return roles.includes('operator');
+  }
+}
+
+function governanceFunctionFor(
+  roles: AppContext['roles'],
+  interventionType: RunInterventionKind,
+): 'operator' | 'approver' | 'auditor' | 'platform-admin' {
+  if (roles.includes('admin')) return 'platform-admin';
+  if (interventionType === 'annotate' && roles.includes('auditor')) return 'auditor';
+  if (
+    (interventionType === 'request-evidence' ||
+      interventionType === 'request-more-evidence' ||
+      interventionType === 'reroute' ||
+      interventionType === 'escalate') &&
+    roles.includes('approver')
+  ) {
+    return 'approver';
+  }
+  return 'operator';
 }
 
 function requiresTarget(interventionType: RunInterventionKind): boolean {
