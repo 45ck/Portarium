@@ -1,7 +1,7 @@
 # Decision Context Packet v1
 
 **Status:** Proposed  
-**Related Beads:** bead-1050, bead-1058, bead-1074, bead-1075  
+**Related Beads:** bead-1050, bead-1058, bead-1074, bead-1075, bead-1076
 **Extends:** [Operator Interaction Model v1](./operator-interaction-model-v1.md)
 
 ## Purpose
@@ -58,3 +58,5 @@ Core functions:
 - Operators can see goal, scope, next step, blast radius, reversibility, Policy, budget, compliance, uncertainty, and provenance without reading raw logs.
 - Missing evidence produces `insufficient`, not a fake binary approve/deny choice.
 - `request-more-evidence` remains available when the packet is incomplete but recoverable.
+- Cockpit Run interventions use the same action vocabulary for steering,
+  escalation, containment, emergency disable, and audit annotation.

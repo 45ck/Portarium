@@ -89,6 +89,10 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 - Mobile views must prioritize pending human decisions over broad monitoring or showcase surfaces.
 - Intervention controls must show the governance function and authority source the user is exercising.
 - Steering, approval, audit annotation, and Policy change controls must remain visually and semantically distinct.
+- Run intervention controls must expose pause, resume, reroute, handoff, escalate, request-more-evidence, freeze, sandbox, emergency-disable, and annotate as distinct actions with distinct consequence copy.
+- Non-routine containment or break-glass actions must require explicit acknowledgement before submission and must not be presented as ordinary pause/cancel actions.
+- Handoff, reroute, and escalation controls must require a target Workforce Member or Workforce Queue before submission.
+- The Run detail surface must show the derived control posture: waiting, blocked, degraded, frozen, or operator-owned where available.
 
 ### R5 System states
 
