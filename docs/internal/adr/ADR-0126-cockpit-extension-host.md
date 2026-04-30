@@ -9,6 +9,10 @@
 Cockpit needs to support domain-specific operator surfaces without turning
 Portarium core into a collection of tenant or vertical-specific screens.
 
+ADR-0141 defines the broader Cockpit and Portarium plugin-extensibility
+architecture. This ADR covers the narrower v1 browser route-host slice of that
+model.
+
 The existing pack UI runtime can safely render declarative templates, schemas,
 and theme tokens, but it is not a route or page plugin system. Route-level
 extensions need executable React code, navigation metadata, commands, and guard

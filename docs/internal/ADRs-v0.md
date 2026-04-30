@@ -258,6 +258,11 @@ Environment: Docker Compose stack (SoR + VAOP + mocks), **contract tests per por
 **Decision (deferred):** Support a plugin-friendly UI posture later (Backstage-like pattern).
 **Consequences:** Not MVP-critical; keep the door open by designing APIs/events cleanly.
 
+> **Resolution:** ADR-0141 turns this deferred posture into a concrete model
+> for Cockpit and Portarium operator-surface extensibility. The selected model
+> is a layered, host-governed extension architecture rather than a separate
+> portal or remote runtime plugin marketplace.
+
 ## ADR-025 -- Adapter ecosystem discipline: provider-grade standards
 
 **Context:** Adapter drift and inconsistent UX kills the platform.
