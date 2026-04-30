@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { CloudOff, Clock3, RefreshCcw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 
 interface OfflineSyncBannerProps {
   isOffline: boolean;
@@ -23,11 +24,9 @@ export function OfflineSyncBanner({
   pendingOutboxCount = 0,
   decisionContext,
 }: OfflineSyncBannerProps) {
-  // Suppress stale-data banner in demo/MSW mode — there is no real server to
-  // be out of sync with, so showing "cached data" is misleading.
-  const isDemoMode =
-    import.meta.env.VITE_DEMO_MODE === 'true' || Boolean(import.meta.env.VITE_PORTARIUM_ENABLE_MSW);
-  const effectiveStale = isStaleData && !isDemoMode;
+  const effectiveStale =
+    isStaleData &&
+    (resolveCockpitRuntime().usesLiveTenantData || decisionContext === 'approval-review');
 
   if (!isOffline && !effectiveStale && pendingOutboxCount === 0) return null;
 

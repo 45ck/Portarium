@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { CommandPalette } from '@/components/cockpit/command-palette';
 import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
-import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
+import { RuntimeStatusStrip } from '@/components/cockpit/runtime-status-strip';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
 import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
@@ -335,7 +335,7 @@ function InboxBadge({ wsId }: { wsId: string }) {
   if (pendingCount === 0) return null;
   return (
     <span className="ml-auto rounded-full bg-primary/15 text-primary text-[11px] px-1.5 py-0.5 font-medium leading-none">
-      {pendingCount}
+      {pendingCount} pending
     </span>
   );
 }
@@ -680,7 +680,7 @@ function RootShell() {
             id="main-content"
             className={cn('flex-1 overflow-y-auto overflow-x-hidden', isMobile && 'pb-14')}
           >
-            <OfflineIndicator className="mx-4 mt-2" />
+            <RuntimeStatusStrip />
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>

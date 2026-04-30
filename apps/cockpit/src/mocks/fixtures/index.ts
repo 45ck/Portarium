@@ -3,8 +3,9 @@
 // ---------------------------------------------------------------------------
 
 import type { MeridianDataset } from './meridian-seed';
+import type { DatasetId } from '@/lib/cockpit-runtime';
 
-export type DatasetId = 'live' | 'demo' | 'openclaw-demo' | 'meridian-demo' | 'meridian-full';
+export type { DatasetId } from '@/lib/cockpit-runtime';
 
 export interface DatasetEntry {
   id: DatasetId;

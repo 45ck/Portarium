@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { TOOL_CLASSIFICATIONS } from '@/mocks/fixtures/openclaw-demo';
 
 // ---------------------------------------------------------------------------
@@ -200,6 +201,7 @@ function DistributionBar({ tools }: { tools: ToolClassification[] }) {
 // ---------------------------------------------------------------------------
 
 function BlastRadiusPage() {
+  const runtime = resolveCockpitRuntime();
   const tools = TOOL_CLASSIFICATIONS as ToolClassification[];
   const grouped = groupToolsBySystem(tools);
 
@@ -216,102 +218,113 @@ function BlastRadiusPage() {
         icon={<ShieldAlert className="h-6 w-6 text-primary" />}
       />
 
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard
-          label="Read Only"
-          count={readOnlyCount}
-          icon={Eye}
-          className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
-        />
-        <StatCard
-          label="Mutation"
-          count={mutationCount}
-          icon={Pencil}
-          className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
-        />
-        <StatCard
-          label="Dangerous"
-          count={dangerousCount}
-          icon={AlertTriangle}
-          className="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
-        />
-        <StatCard
-          label="Overridden"
-          count={overriddenCount}
-          icon={PenLine}
-          className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
-        />
-      </div>
+      {!runtime.allowDemoControls ? (
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Demo tool-classification fixtures are disabled while Cockpit is connected to live tenant
+          data.
+        </div>
+      ) : null}
 
-      {/* Distribution bar */}
-      <DistributionBar tools={tools} />
+      {runtime.allowDemoControls ? (
+        <>
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatCard
+              label="Read Only"
+              count={readOnlyCount}
+              icon={Eye}
+              className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+            />
+            <StatCard
+              label="Mutation"
+              count={mutationCount}
+              icon={Pencil}
+              className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300"
+            />
+            <StatCard
+              label="Dangerous"
+              count={dangerousCount}
+              icon={AlertTriangle}
+              className="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+            />
+            <StatCard
+              label="Overridden"
+              count={overriddenCount}
+              icon={PenLine}
+              className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+            />
+          </div>
 
-      {/* Classification matrix grouped by system */}
-      <Card className="py-0 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[220px]">Tool Name</TableHead>
-              <TableHead className="w-[120px]">Category</TableHead>
-              <TableHead className="w-[150px]">Minimum Tier</TableHead>
-              <TableHead>Rationale</TableHead>
-              <TableHead className="w-[90px] text-center">Override</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {grouped.map((group) => (
-              <Fragment key={group.system}>
-                {/* Group header row */}
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  <TableCell colSpan={5} className="py-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {group.system}
-                    </span>
-                  </TableCell>
+          {/* Distribution bar */}
+          <DistributionBar tools={tools} />
+
+          {/* Classification matrix grouped by system */}
+          <Card className="py-0 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[220px]">Tool Name</TableHead>
+                  <TableHead className="w-[120px]">Category</TableHead>
+                  <TableHead className="w-[150px]">Minimum Tier</TableHead>
+                  <TableHead>Rationale</TableHead>
+                  <TableHead className="w-[90px] text-center">Override</TableHead>
                 </TableRow>
-                {/* Tool rows */}
-                {group.tools.map((tool) => (
-                  <TableRow key={tool.toolName}>
-                    <TableCell>
-                      <span className="font-mono text-[12px]">{tool.toolName}</span>
-                    </TableCell>
-                    <TableCell>
-                      <CategoryBadge category={tool.category} />
-                    </TableCell>
-                    <TableCell>
-                      <ExecutionTierBadge tier={tool.minimumTier} />
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-xs text-muted-foreground line-clamp-1 cursor-default">
-                            {tool.rationale}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">{tool.rationale}</TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {tool.overridden ? (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] border-blue-300 text-blue-700 dark:border-blue-600 dark:text-blue-300"
-                        >
-                          <PenLine className="h-3 w-3" aria-hidden="true" />
-                          Override
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                {grouped.map((group) => (
+                  <Fragment key={group.system}>
+                    {/* Group header row */}
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableCell colSpan={5} className="py-2">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {group.system}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                    {/* Tool rows */}
+                    {group.tools.map((tool) => (
+                      <TableRow key={tool.toolName}>
+                        <TableCell>
+                          <span className="font-mono text-[12px]">{tool.toolName}</span>
+                        </TableCell>
+                        <TableCell>
+                          <CategoryBadge category={tool.category} />
+                        </TableCell>
+                        <TableCell>
+                          <ExecutionTierBadge tier={tool.minimumTier} />
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs text-muted-foreground line-clamp-1 cursor-default">
+                                {tool.rationale}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">{tool.rationale}</TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {tool.overridden ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-blue-300 text-blue-700 dark:border-blue-600 dark:text-blue-300"
+                            >
+                              <PenLine className="h-3 w-3" aria-hidden="true" />
+                              Override
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </Fragment>
                 ))}
-              </Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+              </TableBody>
+            </Table>
+          </Card>
+        </>
+      ) : null}
     </div>
   );
 }

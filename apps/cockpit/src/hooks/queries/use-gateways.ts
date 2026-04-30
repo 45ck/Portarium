@@ -1,15 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
 import type { GatewaySummary } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchGateways(wsId: string): Promise<{ items: GatewaySummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/gateways`);
-  if (!res.ok) throw new Error('Failed to fetch gateways');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/gateways`,
+    undefined,
+    'Failed to fetch gateways',
+  );
 }
 
 export function useGateways(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['gateways', wsId],
+    cacheKey: `gateways:${wsId}`,
     queryFn: () => fetchGateways(wsId),
     enabled: Boolean(wsId),
   });

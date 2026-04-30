@@ -8,6 +8,7 @@ import {
 } from '@/components/cockpit/data-table';
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { OfflineQueryMeta } from '@/hooks/queries/use-offline-query';
@@ -93,7 +94,13 @@ export function EntityListShell<T>({
   if (isError) {
     return (
       <div className="p-6 space-y-4">
-        <PageHeader title={title} icon={icon} description={description} action={action} />
+        <PageHeader
+          title={title}
+          icon={icon}
+          description={description}
+          action={action}
+          status={offlineMeta ? <FreshnessBadge offlineMeta={offlineMeta} /> : undefined}
+        />
         {offlineMeta ? (
           <OfflineSyncBanner
             isOffline={offlineMeta.isOffline}
@@ -121,7 +128,13 @@ export function EntityListShell<T>({
 
   return (
     <div className="p-6 space-y-4">
-      <PageHeader title={title} icon={icon} description={description} action={action} />
+      <PageHeader
+        title={title}
+        icon={icon}
+        description={description}
+        action={action}
+        status={offlineMeta ? <FreshnessBadge offlineMeta={offlineMeta} /> : undefined}
+      />
       {offlineMeta ? (
         <OfflineSyncBanner
           isOffline={offlineMeta.isOffline}

@@ -5,6 +5,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useGateways } from '@/hooks/queries/use-gateways';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +26,7 @@ const statusClassName: Record<string, string> = {
 
 function GatewaysPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useGateways(wsId);
+  const { data, isLoading, offlineMeta } = useGateways(wsId);
   const [selected, setSelected] = useState<GatewaySummary | null>(null);
 
   const gateways = data?.items ?? [];
@@ -76,6 +77,7 @@ function GatewaysPage() {
         description="Robotics gateway connections and status"
         icon={<EntityIcon entityType="port" size="md" decorative />}
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Gateways' }]}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
 
       <DataTable

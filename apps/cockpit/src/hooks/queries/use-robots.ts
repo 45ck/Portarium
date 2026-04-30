@@ -1,29 +1,32 @@
-import { useQuery } from '@tanstack/react-query';
 import type { RobotSummary } from '@/types/robotics';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchRobots(wsId: string): Promise<{ items: RobotSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/robots`);
-  if (!res.ok) throw new Error('Failed to fetch robots');
-  return res.json();
+  return fetchJson(`/v1/workspaces/${wsId}/robotics/robots`, undefined, 'Failed to fetch robots');
 }
 
 async function fetchRobot(wsId: string, robotId: string): Promise<RobotSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/robots/${robotId}`);
-  if (!res.ok) throw new Error('Robot not found');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/robots/${robotId}`,
+    undefined,
+    'Robot not found',
+  );
 }
 
 export function useRobots(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['robots', wsId],
+    cacheKey: `robots:${wsId}`,
     queryFn: () => fetchRobots(wsId),
     enabled: Boolean(wsId),
   });
 }
 
 export function useRobot(wsId: string, robotId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['robots', wsId, robotId],
+    cacheKey: `robots:${wsId}:${robotId}`,
     queryFn: () => fetchRobot(wsId, robotId),
     enabled: Boolean(wsId) && Boolean(robotId),
   });

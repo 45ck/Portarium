@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { hydrateQueryCacheFromStorage, startQueryCachePersistence } from './lib/query-client';
 import { getCockpitDataRetentionPolicy } from './lib/cockpit-data-retention';
+import { shouldEnableCockpitMocks } from './lib/cockpit-runtime';
 import {
   applyWaitingPwaUpdate,
   registerCockpitPwa,
@@ -18,12 +19,6 @@ const WEB_SESSION_REQUEST_HEADER = 'X-Portarium-Request';
 type WindowWithFetchShimFlag = Window & {
   [FETCH_SHIM_KEY]?: boolean;
 };
-
-function shouldEnableMocks(): boolean {
-  if (!import.meta.env.DEV) return false;
-  const raw = (import.meta.env.VITE_PORTARIUM_ENABLE_MSW ?? 'true').trim().toLowerCase();
-  return !['0', 'false', 'off', 'no'].includes(raw);
-}
 
 function installLiveFetchShim(): void {
   if (typeof window === 'undefined') return;
@@ -64,7 +59,7 @@ async function bootstrap() {
   const stopPersist = startQueryCachePersistence(undefined, undefined, retentionPolicy);
 
   // Mock mode: dev/test only. Production must always hit live APIs.
-  if (import.meta.env.DEV && shouldEnableMocks()) {
+  if (shouldEnableCockpitMocks()) {
     const { worker } = await import('./mocks/browser');
     const { loadActiveDataset } = await import('./mocks/handlers');
     await loadActiveDataset();

@@ -465,7 +465,8 @@ function WorkflowBuilderCanvas({ mode, workflowId }: WorkflowBuilderPageProps) {
         params: { workflowId },
       });
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Failed to save workflow');
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setSaveError(`Failed to update workflow: ${message}`);
     }
   }, [canSave, draft, edges, mode, navigate, nodes, updateWorkflow, workflowId]);
 

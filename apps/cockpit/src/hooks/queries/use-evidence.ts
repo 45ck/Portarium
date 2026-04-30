@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
 import type {
   CursorPaginationRequest,
   EvidenceEntry,
   ListEvidenceRequest,
 } from '@portarium/cockpit-types';
 import { controlPlaneClient } from '@/lib/control-plane-client';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchEvidence(
   wsId: string,
@@ -22,8 +22,10 @@ async function fetchRunEvidence(
 }
 
 export function useEvidence(wsId: string, request: ListEvidenceRequest = {}) {
-  return useQuery({
+  const cacheKey = `evidence:${wsId}:${JSON.stringify(request)}`;
+  return useOfflineQuery({
     queryKey: ['evidence', wsId, request],
+    cacheKey,
     queryFn: () => fetchEvidence(wsId, request),
     enabled: Boolean(wsId),
   });
@@ -34,8 +36,10 @@ export function useRunEvidence(
   runId: string | undefined,
   request: CursorPaginationRequest = {},
 ) {
-  return useQuery({
+  const cacheKey = `run-evidence:${wsId}:${runId ?? 'none'}:${JSON.stringify(request)}`;
+  return useOfflineQuery({
     queryKey: ['run-evidence', wsId, runId, request],
+    cacheKey,
     queryFn: () => fetchRunEvidence(wsId, runId!, request),
     enabled: Boolean(wsId) && Boolean(runId),
   });

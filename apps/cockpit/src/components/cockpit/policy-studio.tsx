@@ -40,6 +40,7 @@ import {
   parseDelimitedSearchList,
   toApprovalReturnSearch,
 } from '@/lib/policy-studio-search';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { cn } from '@/lib/utils';
 import { APPROVALS, POLICIES } from '@/mocks/fixtures/openclaw-demo';
 
@@ -420,9 +421,25 @@ function StatCard({
 export function PolicyStudioPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: '/config/policies' }) as PolicyStudioSearch;
+  const runtime = resolveCockpitRuntime();
   const slices = useMemo(() => buildPolicySlices(), []);
   const defaultSlice = slices[0];
   const defaultPrecedent = RUNTIME_PRECEDENTS[0];
+
+  if (!runtime.allowDemoControls) {
+    return (
+      <div className="p-6 space-y-4">
+        <PageHeader
+          title="Policy Studio"
+          description="Demo policy simulation is disabled while Cockpit is connected to live tenant data."
+        />
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Live policy editing must use the control-plane policy APIs. Fixture-backed simulation is
+          only available in explicit demo mode.
+        </div>
+      </div>
+    );
+  }
 
   if (!defaultSlice || !defaultPrecedent) {
     return null;

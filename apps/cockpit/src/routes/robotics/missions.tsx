@@ -5,6 +5,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useMissions, useRetryMission } from '@/hooks/queries/use-missions';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { DataTable } from '@/components/cockpit/data-table';
 import { MissionStatusBadge } from '@/components/domain/mission-status-badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import type { MissionSummary } from '@/types/robotics';
 
 function MissionsPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useMissions(wsId);
+  const { data, isLoading, offlineMeta } = useMissions(wsId);
   const retryMission = useRetryMission(wsId);
   const navigate = useNavigate();
   const missionsList = data?.items ?? [];
@@ -128,6 +129,7 @@ function MissionsPage() {
         title="Missions"
         description="Robot mission dispatch and monitoring"
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Missions' }]}
+        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[

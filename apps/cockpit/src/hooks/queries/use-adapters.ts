@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import type { AdapterSummary } from '@portarium/cockpit-types';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 type AdapterRegistration = Readonly<{
   adapterId: string;
@@ -26,15 +27,18 @@ function toAdapterSummary(adapter: AdapterRegistration): AdapterSummary {
 }
 
 async function fetchAdapters(wsId: string): Promise<{ items: AdapterSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/adapter-registrations`);
-  if (!res.ok) throw new Error('Failed to fetch adapters');
-  const body = (await res.json()) as { items: AdapterRegistration[] };
+  const body = await fetchJson<{ items: AdapterRegistration[] }>(
+    `/v1/workspaces/${wsId}/adapter-registrations`,
+    undefined,
+    'Failed to fetch adapters',
+  );
   return { ...body, items: body.items.map(toAdapterSummary) };
 }
 
 export function useAdapters(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['adapters', wsId],
+    cacheKey: `adapters:${wsId}`,
     queryFn: () => fetchAdapters(wsId),
     enabled: Boolean(wsId),
   });

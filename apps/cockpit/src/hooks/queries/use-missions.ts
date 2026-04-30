@@ -1,16 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { MissionSummary } from '@/types/robotics';
+import { fetchJson } from '@/lib/fetch-json';
+import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchMissions(wsId: string): Promise<{ items: MissionSummary[] }> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/missions`);
-  if (!res.ok) throw new Error('Failed to fetch missions');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/missions`,
+    undefined,
+    'Failed to fetch missions',
+  );
 }
 
 async function fetchMission(wsId: string, missionId: string): Promise<MissionSummary> {
-  const res = await fetch(`/v1/workspaces/${wsId}/robotics/missions/${missionId}`);
-  if (!res.ok) throw new Error('Mission not found');
-  return res.json();
+  return fetchJson(
+    `/v1/workspaces/${wsId}/robotics/missions/${missionId}`,
+    undefined,
+    'Mission not found',
+  );
 }
 
 async function postMissionAction(
@@ -28,16 +34,18 @@ async function postMissionAction(
 }
 
 export function useMissions(wsId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['missions', wsId],
+    cacheKey: `missions:${wsId}`,
     queryFn: () => fetchMissions(wsId),
     enabled: Boolean(wsId),
   });
 }
 
 export function useMission(wsId: string, missionId: string) {
-  return useQuery({
+  return useOfflineQuery({
     queryKey: ['missions', wsId, missionId],
+    cacheKey: `missions:${wsId}:${missionId}`,
     queryFn: () => fetchMission(wsId, missionId),
     enabled: Boolean(wsId) && Boolean(missionId),
   });

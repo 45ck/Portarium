@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUIStore } from '@/stores/ui-store';
 import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
 import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
-import type { DatasetId } from '@/mocks/fixtures/index';
+import { resolveCockpitRuntime, type DatasetId } from '@/lib/cockpit-runtime';
 
 const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
   {
@@ -41,6 +41,7 @@ function SettingsPage() {
   const activeDataset = useUIStore((s) => s.activeDataset);
   const setActiveDataset = useUIStore((s) => s.setActiveDataset);
   const { data: packRuntime } = usePackUiRuntime(wsId);
+  const runtime = resolveCockpitRuntime();
 
   const [relativeDates, setRelativeDates] = useState(() => {
     return localStorage.getItem('cockpit-date-format') !== 'absolute';
@@ -116,7 +117,7 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
-      {import.meta.env.VITE_DEMO_MODE === 'true' && (
+      {runtime.allowDemoControls && (
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle className="text-sm">Demo Dataset</CardTitle>

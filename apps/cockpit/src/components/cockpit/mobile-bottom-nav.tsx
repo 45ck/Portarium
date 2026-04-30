@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { RuntimeStatusDetails } from '@/components/cockpit/runtime-status-strip';
 import { usePendingCount } from '@/hooks/use-pending-count';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
@@ -250,6 +251,7 @@ export function MobileBottomNav({
               <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 Context
               </p>
+              <RuntimeStatusDetails />
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-foreground">Persona</label>

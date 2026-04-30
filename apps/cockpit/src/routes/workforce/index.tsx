@@ -4,6 +4,7 @@ import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-workforce';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { KpiRow } from '@/components/cockpit/kpi-row';
 import { DataTable } from '@/components/cockpit/data-table';
@@ -25,8 +26,13 @@ function WorkforcePage() {
     isLoading: membersLoading,
     isError: membersError,
     refetch: refetchMembers,
+    offlineMeta: membersOfflineMeta,
   } = useWorkforceMembers(wsId);
-  const { data: queuesData, isLoading: queuesLoading } = useWorkforceQueues(wsId);
+  const {
+    data: queuesData,
+    isLoading: queuesLoading,
+    offlineMeta: queuesOfflineMeta,
+  } = useWorkforceQueues(wsId);
 
   const members = membersData?.items ?? [];
   const queues = queuesData?.items ?? [];
@@ -84,6 +90,7 @@ function WorkforcePage() {
           title="Workforce"
           description="Human operators and their capabilities"
           icon={<EntityIcon entityType="workforce" size="md" decorative />}
+          status={<FreshnessBadge sourceLabel="Members" offlineMeta={membersOfflineMeta} />}
         />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
@@ -106,6 +113,12 @@ function WorkforcePage() {
         title="Workforce"
         description="Human operators and their capabilities"
         icon={<EntityIcon entityType="workforce" size="md" decorative />}
+        status={
+          <>
+            <FreshnessBadge sourceLabel="Members" offlineMeta={membersOfflineMeta} />
+            <FreshnessBadge sourceLabel="Queues" offlineMeta={queuesOfflineMeta} />
+          </>
+        }
       />
 
       <KpiRow

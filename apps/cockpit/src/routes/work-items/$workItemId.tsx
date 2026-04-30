@@ -227,7 +227,7 @@ function WorkItemDetailPage() {
         {/* Evidence timeline */}
         <Card className="shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Evidence</CardTitle>
+            <CardTitle className="text-sm">Evidence Timeline</CardTitle>
           </CardHeader>
           <CardContent>
             <EvidenceTimeline entries={linkedEvidence} loading={evidence.isLoading} />
