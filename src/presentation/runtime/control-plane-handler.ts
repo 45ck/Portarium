@@ -199,12 +199,7 @@ async function handleGetWorkspace(args: WorkspaceHandlerArgs): Promise<void> {
     { workspaceId },
   );
   if (!result.ok) {
-    respondProblem(
-      res,
-      problemFromError(result.error, pathname),
-      correlationId,
-      traceContext,
-    );
+    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
     return;
   }
 
@@ -238,12 +233,7 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
     { workspaceId, runId },
   );
   if (!result.ok) {
-    respondProblem(
-      res,
-      problemFromError(result.error, pathname),
-      correlationId,
-      traceContext,
-    );
+    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
     return;
   }
 
@@ -308,7 +298,9 @@ async function handleSubmitRunIntervention(args: RunHandlerArgs): Promise<void> 
             ? 'https://portarium.dev/problems/unsupported-media-type'
             : 'https://portarium.dev/problems/bad-request',
         title:
-          bodyResult.error === 'unsupported-content-type' ? 'Unsupported Media Type' : 'Bad Request',
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
         status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
         detail:
           bodyResult.error === 'invalid-json'

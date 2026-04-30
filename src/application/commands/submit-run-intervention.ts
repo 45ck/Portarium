@@ -245,10 +245,7 @@ function validateInput(
   return ok({ workspaceId: WorkspaceId(input.workspaceId), runId: RunId(input.runId) });
 }
 
-function deriveTransition(
-  run: RunV1,
-  input: SubmitRunInterventionInput,
-): Result<RunV1, Conflict> {
+function deriveTransition(run: RunV1, input: SubmitRunInterventionInput): Result<RunV1, Conflict> {
   const { interventionType } = input;
   if (TERMINAL_STATUSES.includes(run.status) && interventionType !== 'annotate') {
     return err({
@@ -257,7 +254,11 @@ function deriveTransition(
     });
   }
 
-  if (interventionType === 'resume' && run.status !== 'Paused' && run.status !== 'WaitingForApproval') {
+  if (
+    interventionType === 'resume' &&
+    run.status !== 'Paused' &&
+    run.status !== 'WaitingForApproval'
+  ) {
     return err({
       kind: 'Conflict',
       message: 'Only paused or waiting Runs can be resumed.',
@@ -358,7 +359,11 @@ function evidenceSummary(input: SubmitRunInterventionInput): string {
 }
 
 function requiresTarget(interventionType: RunInterventionKind): boolean {
-  return interventionType === 'reroute' || interventionType === 'handoff' || interventionType === 'escalate';
+  return (
+    interventionType === 'reroute' ||
+    interventionType === 'handoff' ||
+    interventionType === 'escalate'
+  );
 }
 
 function nonEmpty(value: string | undefined): boolean {
