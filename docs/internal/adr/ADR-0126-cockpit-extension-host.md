@@ -35,7 +35,7 @@ Use a compile-time Cockpit extension host for v1.
   imports route code only after host-owned activation and guard checks pass.
 - The same resolved registry feeds routes, sidebar items, mobile navigation,
   command palette entries, and shortcuts.
-- Remote arbitrary JavaScript is out of scope for v1.
+- Runtime remote JavaScript/plugin bundles are out of scope for v1.
 
 ## Guard Model
 

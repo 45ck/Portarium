@@ -253,7 +253,9 @@ function matchExternalRoutePath(
     if (routeSegment.startsWith('$')) {
       const paramName = routeSegment.slice(1);
       if (!paramName) return null;
-      params[paramName] = decodePathSegment(pathSegment);
+      const decodedSegment = decodePathSegment(pathSegment);
+      if (decodedSegment === null) return null;
+      params[paramName] = decodedSegment;
       continue;
     }
 
@@ -273,9 +275,13 @@ function splitPath(pathname: string): string[] {
   return normalizePath(pathname).split('/').filter(Boolean);
 }
 
-function decodePathSegment(segment: string): string {
+function decodePathSegment(segment: string): string | null {
   try {
-    return decodeURIComponent(segment);
+    const decoded = decodeURIComponent(segment);
+    if (decoded === '.' || decoded === '..') return null;
+    if (decoded.includes('/') || decoded.includes('\\')) return null;
+    if (/[\u0000-\u001f\u007f]/.test(decoded)) return null;
+    return decoded;
   } catch {
     return segment;
   }

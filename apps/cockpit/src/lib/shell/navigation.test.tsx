@@ -75,6 +75,14 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.commandTargets.map((target) => target.label)).toEqual(
       expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open reference extension']),
     );
+    const extensionTargets = [
+      ...projection.sidebarSections.flatMap((section) => section.items ?? []),
+      ...projection.mobileMoreSections.flatMap((section) => section.items ?? []),
+      ...projection.commandTargets,
+    ].filter((item) => item.id.startsWith('extension-'));
+
+    expect(extensionTargets.every((target) => target.to.startsWith('/external/'))).toBe(true);
+    expect(extensionTargets.every((target) => !target.to.includes('$'))).toBe(true);
     expect(projectCockpitGChordMap(projection.commandTargets)).toMatchObject({
       i: '/inbox',
       d: '/dashboard',

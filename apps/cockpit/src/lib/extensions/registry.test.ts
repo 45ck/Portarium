@@ -419,6 +419,94 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toEqual([]);
   });
 
+  it('fails closed when route loaders include an undeclared module key', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: {
+        ...neutralRouteLoaders,
+        'example-reference-undeclared': () => Promise.resolve({}),
+      },
+    });
+
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'undeclared-route-module',
+          itemId: 'example-reference-undeclared',
+        }),
+      ]),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it.each([
+    '/external/example-reference//overview',
+    '/external/example-reference/../overview',
+    '/external/example-reference/%2e%2e/overview',
+    '/external/example-reference/%2F/overview',
+    '/external/example-reference/%5C/overview',
+    '/external/example-reference/%00/overview',
+    '/external/example-reference/overview?tab=summary',
+    '/external/example-reference/overview#summary',
+    '/internal/example-reference/overview',
+  ])('fails closed when a route path is malformed: %s', (path) => {
+    const invalid = cloneExtension({
+      routes: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!,
+          path,
+        },
+        ...NEUTRAL_REFERENCE_EXTENSION.routes.slice(1),
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'invalid-external-path' })]),
+    );
+    expect(registry.routes).toEqual([]);
+  });
+
+  it.each([
+    '/external/example-reference//overview',
+    '/external/example-reference/%2F/overview',
+    '/external/example-reference/%00/overview',
+    '/external/example-reference/overview?tab=summary',
+    '/external/example-reference/overview#summary',
+    '/internal/example-reference/overview',
+  ])('fails closed when a nav target leaves the concrete external path boundary: %s', (to) => {
+    const invalid = cloneExtension({
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          to,
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'invalid-direct-nav-target' })]),
+    );
+    expect(registry.navItems).toEqual([]);
+  });
+
   it('fails closed when an active extension declares no pack activation keys', () => {
     const invalid = cloneExtension({
       packIds: [],

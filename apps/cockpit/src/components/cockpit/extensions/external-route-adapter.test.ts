@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
 import type { CockpitExtensionManifest } from '@/lib/extensions/types';
 import { resolveExternalRoute } from './external-route-adapter';
@@ -218,6 +218,34 @@ describe('resolveExternalRoute', () => {
     });
   });
 
+  it('ignores renderer entries for routes not declared by the enabled registry', () => {
+    const undeclaredRenderer = vi.fn(() => null);
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/undeclared',
+      persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+      components: {
+        ...TEST_COMPONENTS,
+        'test-undeclared': undeclaredRenderer,
+      },
+    });
+
+    expect(resolution).toMatchObject({
+      kind: 'not-found',
+      pathname: '/external/test/undeclared',
+      audit: { decision: 'deny', reason: 'not-found', surface: 'external-route' },
+    });
+    expect(undeclaredRenderer).not.toHaveBeenCalled();
+  });
+
   it('normalizes external paths before matching', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
@@ -268,5 +296,34 @@ describe('resolveExternalRoute', () => {
     expect(invalidEscape.kind).toBe('active');
     if (invalidEscape.kind !== 'active') throw new Error('Expected active fallback route');
     expect(invalidEscape.params).toEqual({ itemId: 'item%ZZ' });
+  });
+
+  it.each([
+    '/external/test/items/item%2F123',
+    '/external/test/items/item%5C123',
+    '/external/test/items/%00',
+    '/external/test/items/%0A',
+    '/external/test/items/%2e%2e',
+  ])('fails closed when an external route param decodes to an unsafe segment: %s', (pathname) => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname,
+      persona: 'Admin',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+      components: TEST_COMPONENTS,
+    });
+
+    expect(resolution).toMatchObject({
+      kind: 'not-found',
+      pathname,
+      audit: { decision: 'deny', reason: 'not-found', surface: 'external-route' },
+    });
   });
 });

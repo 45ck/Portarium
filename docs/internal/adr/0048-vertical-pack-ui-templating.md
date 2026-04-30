@@ -18,6 +18,8 @@ Provide a schema-driven UI templating system:
 - Packs declare UI templates in a JSON/YAML format that references schema fields, validation rules, and layout directives.
 - The core template renderer resolves pack templates at runtime based on the tenant's enabled packs.
 
+These templates are data interpreted by the core renderer; they are not remote JavaScript, route modules, or browser-executable plugin bundles.
+
 ## Consequences
 
 - Rapid vertical UX; consistent evidence capture; reduces bespoke UI forks.

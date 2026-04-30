@@ -6,7 +6,7 @@ Provide a governed extension mechanism where the Portarium core remains a horizo
 
 ## Terms
 
-- **Vertical Pack**: a versioned bundle of schemas/workflows/UI/mappings that extends the core through stable contracts.
+- **Vertical Pack**: a versioned bundle of schemas/workflows/declarative UI templates/mappings that extends the core through stable contracts. Executable Cockpit route UI is installed separately through compile-time Cockpit extension packages.
 - **Pack Manifest**: the required JSON document declaring identity, version, compatibility, dependencies, and assets.
 - **Pack Lockfile**: the tenant-scoped record of enabled packs pinned to exact versions.
 

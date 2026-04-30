@@ -50,6 +50,12 @@ export interface CockpitWorkspacePackActivationRef {
   workspaceId?: string;
 }
 
+export interface CockpitExtensionPackageRef {
+  packageName: string;
+  version?: string;
+  workspacePath?: string;
+}
+
 export const COCKPIT_EXTENSION_PRIVACY_CLASSES = [
   'public',
   'internal',
@@ -172,6 +178,7 @@ export interface CockpitInstalledExtension<
 > {
   manifest: TManifest;
   routeModules: readonly TRouteModuleRef[];
+  packageRef: CockpitExtensionPackageRef;
   workspacePackRefs: readonly CockpitWorkspacePackActivationRef[];
   state?: CockpitExtensionActivationState;
   disableReasons?: readonly CockpitExtensionDisableReason[];
@@ -201,6 +208,9 @@ export interface CockpitExtensionRegistryProblem {
     | 'unknown-pack-activation'
     | 'missing-route-module'
     | 'undeclared-route-module'
+    | 'duplicate-route-module'
+    | 'missing-package-ref'
+    | 'install-pack-ref-mismatch'
     | 'missing-route-guard'
     | 'missing-command-guard'
     | 'missing-pack-activation';

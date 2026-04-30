@@ -193,6 +193,14 @@ describe('external route host', () => {
     expect(screen.getByRole('link', { name: 'View extension registry' })).toBeTruthy();
   });
 
+  it('does not render extension content for undeclared external subpaths matched by the catch-all route', async () => {
+    await renderRoute('/external/example-reference/overview/extra');
+
+    expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Reference Overview' })).toBeNull();
+    expect(screen.queryByText('Extension Boundary')).toBeNull();
+  });
+
   it('fails closed when the workspace has no active extension packs', async () => {
     queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
       schemaVersion: 1,
