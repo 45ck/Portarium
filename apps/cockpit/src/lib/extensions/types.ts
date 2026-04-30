@@ -24,7 +24,31 @@ export const COCKPIT_EXTENSION_ICONS = [
 
 export type CockpitExtensionIcon = (typeof COCKPIT_EXTENSION_ICONS)[number];
 
-export type CockpitExtensionStatus = 'installed' | 'enabled' | 'disabled' | 'invalid';
+export type CockpitExtensionActivationState = 'enabled' | 'disabled' | 'invalid' | 'quarantined';
+
+export type CockpitExtensionStatus = CockpitExtensionActivationState;
+
+export type CockpitExtensionDisableReasonCode =
+  | 'workspace-pack-inactive'
+  | 'manually-disabled'
+  | 'missing-capability'
+  | 'missing-api-scope'
+  | 'host-policy'
+  | 'dependency-unavailable'
+  | 'install-mismatch'
+  | 'invalid-manifest'
+  | 'security-quarantine';
+
+export interface CockpitExtensionDisableReason {
+  code: CockpitExtensionDisableReasonCode;
+  message: string;
+  itemId?: string;
+}
+
+export interface CockpitWorkspacePackActivationRef {
+  packId: string;
+  workspaceId?: string;
+}
 
 export type CockpitExtensionPrivacyClass =
   | 'public'
@@ -85,6 +109,50 @@ export interface CockpitExtensionManifest {
   commands: readonly CockpitExtensionCommand[];
 }
 
+export interface CockpitExtensionRouteLoaderContext<
+  TManifest extends CockpitExtensionManifest = CockpitExtensionManifest,
+> {
+  manifest: TManifest;
+  route: CockpitExtensionRouteRef;
+  workspacePackRefs: readonly CockpitWorkspacePackActivationRef[];
+}
+
+export type CockpitExtensionRouteLoader<
+  TData = unknown,
+  TManifest extends CockpitExtensionManifest = CockpitExtensionManifest,
+> = (context: CockpitExtensionRouteLoaderContext<TManifest>) => TData | Promise<TData>;
+
+export type CockpitExtensionRouteModuleLoader<TModule = unknown> = () => Promise<TModule>;
+
+export interface CockpitExtensionRouteModuleRef<
+  TModule = unknown,
+  TData = unknown,
+  TManifest extends CockpitExtensionManifest = CockpitExtensionManifest,
+> {
+  routeId: string;
+  /** Host-owned route module import; manifests declare routes but do not execute UI. */
+  loadModule: CockpitExtensionRouteModuleLoader<TModule>;
+  loader?: CockpitExtensionRouteLoader<TData, TManifest>;
+}
+
+export interface CockpitInstalledExtension<
+  TManifest extends CockpitExtensionManifest = CockpitExtensionManifest,
+  TRouteModuleRef extends CockpitExtensionRouteModuleRef<unknown, unknown, TManifest> =
+    CockpitExtensionRouteModuleRef<unknown, unknown, TManifest>,
+> {
+  manifest: TManifest;
+  routeModules: readonly TRouteModuleRef[];
+  workspacePackRefs: readonly CockpitWorkspacePackActivationRef[];
+  state?: CockpitExtensionActivationState;
+  disableReasons?: readonly CockpitExtensionDisableReason[];
+}
+
+export type InstalledCockpitExtension<
+  TManifest extends CockpitExtensionManifest = CockpitExtensionManifest,
+  TRouteModuleRef extends CockpitExtensionRouteModuleRef<unknown, unknown, TManifest> =
+    CockpitExtensionRouteModuleRef<unknown, unknown, TManifest>,
+> = CockpitInstalledExtension<TManifest, TRouteModuleRef>;
+
 export interface CockpitExtensionRegistryProblem {
   code:
     | 'duplicate-extension-id'
@@ -99,6 +167,7 @@ export interface CockpitExtensionRegistryProblem {
     | 'invalid-icon'
     | 'invalid-external-path'
     | 'invalid-direct-nav-target'
+    | 'missing-route-module'
     | 'missing-route-guard'
     | 'missing-pack-activation';
   message: string;
@@ -109,6 +178,9 @@ export interface CockpitExtensionRegistryProblem {
 export interface ResolvedCockpitExtension {
   manifest: CockpitExtensionManifest;
   status: CockpitExtensionStatus;
+  routeModules?: readonly CockpitExtensionRouteModuleRef[];
+  workspacePackRefs?: readonly CockpitWorkspacePackActivationRef[];
+  disableReasons?: readonly CockpitExtensionDisableReason[];
   problems: readonly CockpitExtensionRegistryProblem[];
 }
 

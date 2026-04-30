@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
@@ -98,26 +98,28 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-describe('external extensions route', () => {
-  it('renders enabled registry metadata and surfaces compiled extension routes in shell navigation', async () => {
-    await renderRoute('/explore/extensions');
+describe('external route host', () => {
+  it('loads the neutral overview route through the compiled external host', async () => {
+    await renderRoute('/external/example-ops/overview');
 
-    expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
-    expect(screen.getByText('Operations Demo')).toBeTruthy();
-    expect(screen.getByText('Host Rules')).toBeTruthy();
-    expect(screen.getByText('example.ops-demo')).toBeTruthy();
-    expect(screen.getByText('enabled')).toBeTruthy();
-    expect(screen.getByText('/external/example-ops/overview')).toBeTruthy();
-    expect(screen.getByText('/external/example-ops/actions/$proposalId')).toBeTruthy();
-    expect(screen.getByText('Open operations demo')).toBeTruthy();
-    expect(screen.getByText('G X')).toBeTruthy();
-    expect(screen.getByText('asset:read')).toBeTruthy();
-    expect(screen.getByText('incident:read')).toBeTruthy();
-    expect(screen.getByText('evidence:read')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Operations Overview' })).toBeTruthy();
+    expect(await screen.findByText('Extension Boundary')).toBeTruthy();
+    expect(screen.queryByText('Host Fallback')).toBeNull();
+  });
 
-    const primaryNavigation = screen.getByLabelText('Primary navigation');
-    expect(
-      within(primaryNavigation).getByRole('link', { name: 'Operations Overview' }),
-    ).toBeTruthy();
+  it('loads parameterized neutral routes declared by the extension manifest', async () => {
+    await renderRoute('/external/example-ops/actions/proposal-123');
+
+    expect(await screen.findByRole('heading', { name: 'Governed Action Review' })).toBeTruthy();
+    expect(await screen.findByText('Review Contract')).toBeTruthy();
+    expect(screen.queryByText('External Route Not Found')).toBeNull();
+  });
+
+  it('fails closed when no installed extension declares the external path', async () => {
+    await renderRoute('/external/example-ops/unknown');
+
+    expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
+    expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'View extension registry' })).toBeTruthy();
   });
 });

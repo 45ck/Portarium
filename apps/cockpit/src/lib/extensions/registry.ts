@@ -6,7 +6,7 @@ import {
   type CockpitExtensionManifest,
   type CockpitExtensionNavItem,
   type CockpitExtensionRegistryProblem,
-  type CockpitExtensionRouteRef,
+  type CockpitExtensionRouteModuleLoader,
   type ResolvedCockpitExtension,
   type ResolvedCockpitExtensionRegistry,
 } from './types';
@@ -18,11 +18,13 @@ const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
 export interface ResolveCockpitExtensionRegistryInput {
   installedExtensions: readonly CockpitExtensionManifest[];
   activePackIds: readonly string[];
+  routeLoaders?: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>;
 }
 
 export function resolveCockpitExtensionRegistry({
   installedExtensions,
   activePackIds,
+  routeLoaders = {},
 }: ResolveCockpitExtensionRegistryInput): ResolvedCockpitExtensionRegistry {
   const activePacks = new Set(activePackIds);
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
@@ -43,6 +45,9 @@ export function resolveCockpitExtensionRegistry({
   }
 
   for (const extension of installedExtensions) {
+    const active = isExtensionActive(extension, activePacks);
+    if (!active) continue;
+
     if (extensionIds.has(extension.id)) {
       addProblem({
         code: 'duplicate-extension-id',
@@ -54,14 +59,14 @@ export function resolveCockpitExtensionRegistry({
 
     const localRouteIds = new Set(extension.routes.map((route) => route.id));
     validatePackActivation(extension, activePacks, addProblem);
-    validateRoutes(extension, routeIds, routePaths, addProblem);
+    validateRoutes(extension, routeIds, routePaths, routeLoaders, addProblem);
     validateNavItems(extension, localRouteIds, navIds, addProblem);
     validateCommands(extension, localRouteIds, commandIds, shortcutIds, addProblem);
   }
 
   const resolvedExtensions: ResolvedCockpitExtension[] = installedExtensions.map((manifest) => {
     const problems = extensionProblems.get(manifest.id) ?? [];
-    const active = manifest.packIds.every((packId) => activePacks.has(packId));
+    const active = isExtensionActive(manifest, activePacks);
     return {
       manifest,
       status: problems.length > 0 ? 'invalid' : active ? 'enabled' : 'disabled',
@@ -94,8 +99,22 @@ export function selectExtensionNavItems(
 
 export function selectExtensionCommands(
   registry: ResolvedCockpitExtensionRegistry,
+  persona?: string,
 ): CockpitExtensionCommand[] {
-  return [...registry.commands];
+  if (!persona) return [...registry.commands];
+
+  const routesById = new Map(registry.routes.map((route) => [route.id, route]));
+  return registry.commands.filter((command) => {
+    if (!command.routeId) return true;
+    return routesById.get(command.routeId)?.guard.personas.includes(persona as never) ?? false;
+  });
+}
+
+function isExtensionActive(
+  extension: CockpitExtensionManifest,
+  activePacks: ReadonlySet<string>,
+): boolean {
+  return extension.packIds.every((packId) => activePacks.has(packId));
 }
 
 function validatePackActivation(
@@ -119,6 +138,7 @@ function validateRoutes(
   extension: CockpitExtensionManifest,
   routeIds: Map<string, string>,
   routePaths: Map<string, string>,
+  routeLoaders: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
 ) {
   for (const route of extension.routes) {
@@ -147,6 +167,14 @@ function validateRoutes(
       addProblem({
         code: 'invalid-external-path',
         message: `Route "${route.id}" must live under the /external/ path boundary.`,
+        extensionId: extension.id,
+        itemId: route.id,
+      });
+    }
+    if (typeof routeLoaders[route.id] !== 'function') {
+      addProblem({
+        code: 'missing-route-module',
+        message: `Route "${route.id}" must have a compile-time route module loader before the extension can be enabled.`,
         extensionId: extension.id,
         itemId: route.id,
       });

@@ -30,20 +30,29 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
+import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
 import {
+  Activity,
   LayoutDashboard,
   Settings,
   BarChart3,
+  Boxes,
+  ClipboardCheck,
+  ExternalLink,
   Scale,
   Inbox,
   Search,
   ShieldAlert,
+  ShieldCheck,
   PanelLeftClose,
   PanelLeftOpen,
   GitBranch,
   Map,
   Plug,
+  Route as RouteIcon,
   Users,
   Sliders,
 } from 'lucide-react';
@@ -248,6 +257,28 @@ const NAV_SECTIONS: NavSectionDef[] = [
   },
 ];
 
+function extensionIcon(icon: CockpitExtensionIcon) {
+  const className = 'h-4 w-4';
+  switch (icon) {
+    case 'activity':
+      return <Activity className={className} />;
+    case 'boxes':
+      return <Boxes className={className} />;
+    case 'clipboard-check':
+      return <ClipboardCheck className={className} />;
+    case 'external-link':
+      return <ExternalLink className={className} />;
+    case 'map':
+      return <Map className={className} />;
+    case 'plug':
+      return <Plug className={className} />;
+    case 'route':
+      return <RouteIcon className={className} />;
+    case 'shield-check':
+      return <ShieldCheck className={className} />;
+  }
+}
+
 // Wrapper to avoid TS errors while child routes are not yet registered.
 // Once all route files are in place the router's type map will include
 // every path and this cast will be redundant but harmless.
@@ -316,7 +347,7 @@ function RootLayout() {
   useTheme();
   useKeyboardShortcuts();
   const isMobile = useIsMobile();
-  const { status: authStatus, initialize: initAuth, getToken } = useAuthStore();
+  const authStatus = useAuthStore((state) => state.status);
   const navigate = useNavigate();
   const {
     sidebarCollapsed,
@@ -332,13 +363,28 @@ function RootLayout() {
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
+  const extensionNavItems: NavItemDef[] = selectExtensionNavItems(
+    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    'sidebar',
+    activePersona,
+  )
+    .filter((item) => !item.to.includes('$'))
+    .map((item) => ({
+      label: item.title,
+      to: item.to,
+      icon: extensionIcon(item.icon),
+    }));
+  const navSections =
+    extensionNavItems.length > 0
+      ? [...NAV_SECTIONS, { label: 'Extensions', items: extensionNavItems }]
+      : NAV_SECTIONS;
 
   // ── Auth initialization ────────────────────────────────────────────────────
 
   // Initialize auth state from secure storage on first mount.
   useEffect(() => {
-    void initAuth();
-  }, [initAuth]);
+    void useAuthStore.getState().initialize();
+  }, []);
 
   // Register native deep-link handler for OIDC callbacks and approval links.
   useEffect(() => {
@@ -365,10 +411,10 @@ function RootLayout() {
 
   // Redirect to login when unauthenticated (OIDC configured, no dev token).
   useEffect(() => {
-    if (authStatus === 'unauthenticated' && oidcEnabled && !getToken()) {
+    if (authStatus === 'unauthenticated' && oidcEnabled && !useAuthStore.getState().getToken()) {
       void navigate({ to: '/auth/login' });
     }
-  }, [authStatus, oidcEnabled, getToken, navigate]);
+  }, [authStatus, oidcEnabled, navigate]);
 
   // Handle web redirect callback (query params on page load).
   useEffect(() => {
@@ -378,7 +424,7 @@ function RootLayout() {
     if (isCallback) {
       void useAuthStore.getState().handleCallback(url);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Workspace loading ──────────────────────────────────────────────────────
 
@@ -389,7 +435,7 @@ function RootLayout() {
       try {
         const res = await fetch('/v1/workspaces');
         if (!res.ok) return;
-        const body = (await res.json()) as { items?: Array<Record<string, unknown>> };
+        const body = (await res.json()) as { items?: Record<string, unknown>[] };
         const items = Array.isArray(body.items)
           ? body.items
               .map((item) => {
@@ -480,7 +526,7 @@ function RootLayout() {
 
               {/* Nav */}
               <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto p-2 space-y-3">
-                {NAV_SECTIONS.map((section) => (
+                {navSections.map((section) => (
                   <div key={section.label} className="space-y-0.5">
                     {!sidebarCollapsed && (
                       <p className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">

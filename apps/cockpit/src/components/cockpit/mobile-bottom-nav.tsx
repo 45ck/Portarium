@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
+import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -25,6 +27,14 @@ interface NavItem {
   to: string;
   icon: React.ReactNode;
   matchPath: string;
+}
+
+interface MoreSection {
+  label: string;
+  items: {
+    label: string;
+    to: string;
+  }[];
 }
 
 interface WorkspaceOption {
@@ -57,7 +67,7 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-const MORE_SECTIONS = [
+const MORE_SECTIONS: MoreSection[] = [
   {
     label: 'Workspace',
     items: [
@@ -124,6 +134,17 @@ export function MobileBottomNav({
   const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
+  const extensionMoreItems = selectExtensionNavItems(
+    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    'mobile-more',
+    activePersona,
+  )
+    .filter((item) => !item.to.includes('$'))
+    .map((item) => ({ label: item.title, to: item.to }));
+  const moreSections =
+    extensionMoreItems.length > 0
+      ? [...MORE_SECTIONS, { label: 'Extensions', items: extensionMoreItems }]
+      : MORE_SECTIONS;
 
   const activeIndex = NAV_ITEMS.findIndex((item) =>
     matchRoute({ to: item.matchPath, fuzzy: true }),
@@ -247,7 +268,7 @@ export function MobileBottomNav({
                 </div>
               </div>
             </div>
-            {MORE_SECTIONS.map((section) => (
+            {moreSections.map((section) => (
               <div key={section.label}>
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
                   {section.label}

@@ -13,6 +13,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
 import { router } from '@/router';
 import { EntityIcon } from '@/components/domain/entity-icon';
+import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import { selectExtensionCommands } from '@/lib/extensions/registry';
 import {
   LayoutDashboard,
   Settings,
@@ -36,8 +38,12 @@ interface CommandItemDef {
   onSelect: () => void;
 }
 
+const extensionRoutePaths = new Map(
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY.routes.map((route) => [route.id, route.path]),
+);
+
 function CommandPalette() {
-  const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore();
+  const { commandPaletteOpen, setCommandPaletteOpen, activePersona } = useUIStore();
   const { theme, setTheme, themes } = useTheme();
 
   // Global Ctrl+K / Cmd+K hotkey
@@ -55,8 +61,24 @@ function CommandPalette() {
 
   function nav(to: string) {
     setCommandPaletteOpen(false);
-    router.navigate({ to: to as never });
+    void router.navigate({ to: to as never });
   }
+
+  const extensionNavigationItems = selectExtensionCommands(
+    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    activePersona,
+  ).reduce<CommandItemDef[]>((items, command) => {
+    const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
+    if (!routePath || routePath.includes('$')) return items;
+
+    items.push({
+      label: command.title,
+      icon: <Plug className="h-4 w-4" />,
+      shortcut: command.shortcut,
+      onSelect: () => nav(routePath),
+    });
+    return items;
+  }, []);
 
   const navigationItems: CommandItemDef[] = [
     {
@@ -175,6 +197,7 @@ function CommandPalette() {
       icon: <EntityIcon entityType="port" size="sm" decorative />,
       onSelect: () => nav('/robotics/gateways'),
     },
+    ...extensionNavigationItems,
   ];
 
   const actionItems: CommandItemDef[] = [
@@ -204,8 +227,8 @@ function CommandPalette() {
       icon: <Palette className="h-4 w-4" />,
       onSelect: () => {
         setCommandPaletteOpen(false);
-        const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length] ?? themes[0];
-        setTheme(nextTheme);
+        const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
+        if (nextTheme) setTheme(nextTheme);
       },
     },
   ];
@@ -241,7 +264,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Navigation">
           {navigationItems.map((item) => (
-            <CommandItem key={item.label} onSelect={item.onSelect}>
+            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
@@ -253,7 +276,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Actions">
           {actionItems.map((item) => (
-            <CommandItem key={item.label} onSelect={item.onSelect}>
+            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
@@ -265,7 +288,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Settings">
           {settingsItems.map((item) => (
-            <CommandItem key={item.label} onSelect={item.onSelect}>
+            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}

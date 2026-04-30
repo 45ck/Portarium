@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
+import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
+import { selectExtensionCommands } from '@/lib/extensions/registry';
 
 const G_CHORD_MAP: Record<string, string> = {
   i: '/inbox',
@@ -10,6 +12,33 @@ const G_CHORD_MAP: Record<string, string> = {
   a: '/approvals',
   e: '/evidence',
 };
+
+const extensionRoutePaths = new Map(
+  DEFAULT_COCKPIT_EXTENSION_REGISTRY.routes.map((route) => [route.id, route.path]),
+);
+
+function resolveGChordMap(): Record<string, string> {
+  const activePersona = useUIStore.getState().activePersona;
+  const extensionShortcuts = selectExtensionCommands(
+    DEFAULT_COCKPIT_EXTENSION_REGISTRY,
+    activePersona,
+  ).reduce<Record<string, string>>((shortcuts, command) => {
+    const match = command.shortcut?.match(/^G\s+([a-z])$/i);
+    const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
+    if (!match?.[1] || !routePath || routePath.includes('$')) return shortcuts;
+
+    const key = match[1].toLowerCase();
+    if (!G_CHORD_MAP[key]) {
+      shortcuts[key] = routePath;
+    }
+    return shortcuts;
+  }, {});
+
+  return {
+    ...G_CHORD_MAP,
+    ...extensionShortcuts,
+  };
+}
 
 function isEditableTarget(e: Event): boolean {
   const el = e.target as HTMLElement | null;
@@ -50,10 +79,10 @@ export function useKeyboardShortcuts() {
       }
 
       if (gPressedRef.current) {
-        const route = G_CHORD_MAP[e.key];
+        const route = resolveGChordMap()[e.key.toLowerCase()];
         if (route) {
           e.preventDefault();
-          router.navigate({ to: route as never });
+          void router.navigate({ to: route as never });
         }
         gPressedRef.current = false;
         if (gTimerRef.current) {
