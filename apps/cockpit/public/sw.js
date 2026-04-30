@@ -3,23 +3,29 @@
  *
  * Cache strategy:
  *   - App shell (HTML, critical JS/CSS): Cache-first with network fallback.
- *   - API reads for hot endpoints (approvals, work-items, runs): Network-first,
- *     stale-while-revalidate with 5 s timeout.
+ *   - Live tenant API reads: Network-only by default. The app must explicitly
+ *     opt in before selected read endpoints are cached for offline demo/QA.
  *   - Other API calls (/api/**, /v1/**): Network-only.
  *   - Static assets (icons, fonts): Cache-first (long-lived).
+ *
+ * Mode rules:
+ *   - Demo/MSW: app may enable selected synthetic API read caching.
+ *   - Dev live QA: tenant API caching remains disabled unless explicitly enabled.
+ *   - Production live: shell/static assets only by default; tenant API cache is opt-in.
  *
  * Update strategy:
  *   - New SW installs and waits (skipWaiting is NOT called automatically).
  *   - App calls postMessage({ type: 'SKIP_WAITING' }) to trigger the swap.
  *   - On controllerchange the app reloads to pick up the new version.
  *
- * Version: bead-0719
+ * Version: bead-1126
  */
 
-const VERSION = 'portarium-cockpit-pwa-v1';
+const VERSION = 'portarium-cockpit-pwa-v2';
 const SHELL_CACHE = `${VERSION}-shell`;
 const API_CACHE = `${VERSION}-api`;
 const ASSETS_CACHE = `${VERSION}-assets`;
+let tenantApiCacheEnabled = false;
 
 // Regex matching API read endpoints we selectively cache for offline resilience
 const SELECTED_READ_ENDPOINTS = /\/v1\/workspaces\/[^/]+\/(approvals|work-items|runs)(\/|$|\?)/;
@@ -44,7 +50,8 @@ self.addEventListener('install', (event) => {
 // ── Lifecycle: activate ───────────────────────────────────────────────────────
 
 self.addEventListener('activate', (event) => {
-  const validCaches = new Set([SHELL_CACHE, API_CACHE, ASSETS_CACHE]);
+  const validCaches = new Set([SHELL_CACHE, ASSETS_CACHE]);
+  if (tenantApiCacheEnabled) validCaches.add(API_CACHE);
 
   event.waitUntil(
     caches
@@ -62,6 +69,15 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+  if (event.data?.type === 'PORTARIUM_RETENTION_POLICY') {
+    tenantApiCacheEnabled = event.data.allowTenantApiCache === true;
+    if (!tenantApiCacheEnabled) {
+      event.waitUntil(caches.delete(API_CACHE));
+    }
+  }
+  if (event.data?.type === 'PURGE_TENANT_DATA') {
+    event.waitUntil(caches.delete(API_CACHE));
+  }
 });
 
 // ── Fetch strategy ────────────────────────────────────────────────────────────
@@ -73,8 +89,8 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  // Selected read API endpoints: network-first, stale-while-revalidate
-  if (SELECTED_READ_ENDPOINTS.test(url.pathname)) {
+  // Selected read API endpoints: opt-in network-first cache for demo/explicit live policy only.
+  if (tenantApiCacheEnabled && SELECTED_READ_ENDPOINTS.test(url.pathname)) {
     event.respondWith(networkFirstWithTimeout(event.request, API_CACHE, 5000));
     return;
   }

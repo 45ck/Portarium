@@ -78,6 +78,11 @@ configured, the login page's **Continue** button requests `/auth/dev-session`;
 the server exchanges its own `PORTARIUM_DEV_TOKEN` for the web session cookie
 without exposing the token to browser JavaScript.
 
+Live API QA uses live retention semantics: cached tenant payloads are disabled
+by default, and switching between demo/MSW and live API modes should be treated
+as a site-data boundary. Only set `VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE=true`
+when explicitly testing live offline retention behavior.
+
 For OpenClaw approval-triage demo capture (mock dataset):
 
 ```powershell

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { purgeCockpitTenantData } from '@/lib/cockpit-tenant-data';
 import type { DatasetId } from '@/mocks/fixtures/index';
 
 const DATASET_STORAGE_KEY = 'portarium-dataset';
@@ -107,7 +108,13 @@ export const useUIStore = create<UIStore>((set) => ({
     localStorage.setItem(DATASET_STORAGE_KEY, id);
     window.location.reload();
   },
-  setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
+  setActiveWorkspaceId: (id) =>
+    set((state) => {
+      if (state.activeWorkspaceId !== id) {
+        void purgeCockpitTenantData();
+      }
+      return { activeWorkspaceId: id };
+    }),
   setActivePersona: (persona) => set({ activePersona: persona }),
   setKeyboardCheatsheetOpen: (v) => set({ keyboardCheatsheetOpen: v }),
   setTriageViewMode: (mode) => {

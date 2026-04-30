@@ -19,6 +19,7 @@ Define the backend-free demo behavior for the cockpit presentation layer so stak
 5. The UI must expose an explicit reset control to restore deterministic demo state.
 6. Demo state and labels must clearly indicate mocked/synthetic data.
 7. Scripted demo-machine clips must cover approval, evidence, correlation, capability posture, degraded realtime, and agent integration narratives with reset preconditions.
+8. Demo persistence may contain synthetic fixture data only and must remain resettable; it must not define live tenant-data retention behavior.
 
 ## Out Of Scope
 

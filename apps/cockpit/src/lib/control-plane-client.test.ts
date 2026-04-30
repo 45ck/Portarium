@@ -3,6 +3,7 @@ import {
   CockpitApiError,
   ControlPlaneClient,
   controlPlaneClient,
+  setControlPlaneAuthFailureHandler,
 } from '@/lib/control-plane-client';
 
 describe('ControlPlaneClient', () => {
@@ -142,6 +143,28 @@ describe('ControlPlaneClient', () => {
     await vi.runAllTimersAsync();
     await expect(pending).resolves.toEqual({ items: [] });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('notifies the auth-failure handler before throwing a 401 response', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ title: 'Unauthorized', status: 401 }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/problem+json' },
+        }),
+    );
+    const handler = vi.fn();
+    setControlPlaneAuthFailureHandler(handler);
+    const client = new ControlPlaneClient({
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    try {
+      await expect(client.listRuns('ws-1')).rejects.toBeInstanceOf(CockpitApiError);
+      expect(handler).toHaveBeenCalledTimes(1);
+    } finally {
+      setControlPlaneAuthFailureHandler(null);
+    }
   });
 
   it('exports a singleton client for hooks/routes', () => {

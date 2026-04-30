@@ -25,6 +25,14 @@ interface EnqueueOptions {
   now?: Date;
 }
 
+interface StorageLike {
+  readonly length: number;
+  getItem(key: string): string | null;
+  key(index: number): string | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: string): void;
+}
+
 interface DrainResult {
   processed: number;
   delivered: number;
@@ -32,7 +40,8 @@ interface DrainResult {
   dropped: number;
 }
 
-function storage(): Storage | null {
+function storage(target?: StorageLike): StorageLike | null {
+  if (target) return target;
   if (typeof window === 'undefined') return null;
   return window.localStorage;
 }
@@ -128,6 +137,23 @@ function isExpired(entry: QueueStorageEntry, now: Date): boolean {
 
 export function listApprovalDecisionOutbox(workspaceId: string): QueueStorageEntry[] {
   return readQueue(workspaceId);
+}
+
+export function clearApprovalDecisionOutbox(target?: StorageLike): number {
+  const store = storage(target);
+  if (!store) return 0;
+
+  const keys: string[] = [];
+  for (let index = 0; index < store.length; index += 1) {
+    const key = store.key(index);
+    if (key?.startsWith(STORAGE_PREFIX)) keys.push(key);
+  }
+
+  for (const key of keys) {
+    store.removeItem(key);
+  }
+
+  return keys.length;
 }
 
 export function enqueueApprovalDecisionOutbox(

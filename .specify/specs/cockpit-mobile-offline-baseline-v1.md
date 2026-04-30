@@ -45,6 +45,13 @@ Add baseline offline support for mobile cockpit usage:
 - Notification click handling must preserve workspace and approval identity.
 - If realtime approval events degrade, the UI must show stale state and fall back to polling.
 
+6. Mode and retention policy
+
+- Offline cached reads are opt-in for live mode.
+- Demo/mock mode may cache synthetic fixture payloads.
+- Dev live QA treats tenant API payload retention as disabled unless explicitly enabled.
+- Offline approval outbox retention is workspace-scoped and must be purged on logout, workspace switch, and auth failure.
+
 ## Validation
 
 - Unit tests cover offline cache envelope behavior.

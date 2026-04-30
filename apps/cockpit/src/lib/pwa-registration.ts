@@ -1,4 +1,5 @@
 interface RegisterCockpitPwaOptions {
+  allowTenantApiCache?: boolean;
   onUpdateReady?: () => void;
   onUpdateApplied?: () => void;
   onRegistrationError?: (error: unknown) => void;
@@ -32,6 +33,21 @@ export async function rollbackCockpitPwa(): Promise<void> {
   }
 }
 
+function postRetentionPolicy(
+  registration: ServiceWorkerRegistration,
+  allowTenantApiCache: boolean,
+): void {
+  const message = {
+    type: 'PORTARIUM_RETENTION_POLICY',
+    allowTenantApiCache,
+  };
+
+  registration.active?.postMessage(message);
+  registration.waiting?.postMessage(message);
+  registration.installing?.postMessage(message);
+  navigator.serviceWorker.controller?.postMessage(message);
+}
+
 function markWaitingWorker(worker: ServiceWorker | null, onUpdateReady?: () => void): void {
   if (!worker) return;
   waitingServiceWorker = worker;
@@ -62,6 +78,7 @@ export async function registerCockpitPwa(options: RegisterCockpitPwaOptions = {}
   try {
     const registration = await navigator.serviceWorker.register('/sw.js');
     wireUpdateSignals(registration, options);
+    postRetentionPolicy(registration, options.allowTenantApiCache === true);
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       waitingServiceWorker = null;

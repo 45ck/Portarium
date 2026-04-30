@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { hydrateQueryCacheFromStorage, startQueryCachePersistence } from './lib/query-client';
+import { getCockpitDataRetentionPolicy } from './lib/cockpit-data-retention';
 import {
   applyWaitingPwaUpdate,
   registerCockpitPwa,
@@ -58,8 +59,9 @@ function installLiveFetchShim(): void {
 }
 
 async function bootstrap() {
-  hydrateQueryCacheFromStorage();
-  const stopPersist = startQueryCachePersistence();
+  const retentionPolicy = getCockpitDataRetentionPolicy();
+  hydrateQueryCacheFromStorage(undefined, undefined, retentionPolicy);
+  const stopPersist = startQueryCachePersistence(undefined, undefined, retentionPolicy);
 
   // Mock mode: dev/test only. Production must always hit live APIs.
   if (import.meta.env.DEV && shouldEnableMocks()) {
@@ -83,6 +85,7 @@ async function bootstrap() {
 
   if (!import.meta.env.DEV) {
     await registerCockpitPwa({
+      allowTenantApiCache: retentionPolicy.serviceWorkerTenantApiCache,
       onUpdateReady: () => {
         toast.message('Cockpit update ready', {
           id: 'cockpit-pwa-update',
