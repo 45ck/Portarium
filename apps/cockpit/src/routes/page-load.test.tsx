@@ -13,6 +13,7 @@ import {
   CREDENTIAL_GRANTS,
   ESTOP_AUDIT_LOG,
   EVIDENCE,
+  MACHINES,
   MISSIONS,
   OBSERVABILITY_DATA,
   ROBOTS,
@@ -145,6 +146,10 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: AGENTS });
   }
 
+  if (/^\/v1\/workspaces\/[^/]+\/machines$/.test(pathname)) {
+    return json({ items: MACHINES });
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/adapter-registrations$/.test(pathname)) {
     return json({ items: ADAPTERS });
   }
@@ -253,6 +258,7 @@ const PAGE_CASES = [
   { path: '/evidence', heading: 'Evidence' },
   { path: '/engineering/beads', heading: 'Engineering Cockpit' },
   { path: '/engineering/beads/wi-1001', heading: 'Engineering Cockpit' },
+  { path: '/engineering/mission-control', heading: 'Mission Control' },
   { path: '/workforce', heading: 'Workforce' },
   { path: '/workforce/wfm-001', heading: 'Dana Approver' },
   { path: '/workforce/queues', heading: 'Queues' },
