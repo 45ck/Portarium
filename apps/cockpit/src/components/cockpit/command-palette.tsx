@@ -65,6 +65,7 @@ function CommandPalette() {
     quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
     availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
     availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
+    availablePrivacyClasses: extensionServerAccess.accessContext.availablePrivacyClasses,
   });
 
   // Global Ctrl+K / Cmd+K hotkey

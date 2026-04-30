@@ -50,6 +50,7 @@ describe('ControlPlaneClient', () => {
             availablePersonas: ['Operator'],
             availableCapabilities: ['objects:read'],
             availableApiScopes: ['extensions.read'],
+            availablePrivacyClasses: ['internal'],
             activePackIds: [],
             quarantinedExtensionIds: [],
             issuedAtIso: '2026-04-30T02:00:00.000Z',

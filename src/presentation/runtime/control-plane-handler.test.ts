@@ -218,6 +218,7 @@ describe('createControlPlaneHandler', () => {
       availablePersonas: string[];
       availableCapabilities: string[];
       availableApiScopes: string[];
+      availablePrivacyClasses: string[];
       activePackIds: string[];
       quarantinedExtensionIds: string[];
       issuedAtIso: string;
@@ -231,6 +232,7 @@ describe('createControlPlaneHandler', () => {
       availablePersonas: ['Operator', 'Auditor'],
       availableCapabilities: ['objects:read'],
       availableApiScopes: ['extensions.read'],
+      availablePrivacyClasses: [],
       activePackIds: [],
       quarantinedExtensionIds: [],
       issuedAtIso: '2026-04-30T02:00:00.000Z',
@@ -254,6 +256,7 @@ describe('createControlPlaneHandler', () => {
               quarantinedExtensionIds: ['quarantined.extension', ''],
               availableCapabilities: ['extension.route:read', 'objects:read'],
               availableApiScopes: ['extensions.read', 'workspace.read'],
+              availablePrivacyClasses: ['internal', 'restricted'],
             };
           },
         },
@@ -277,11 +280,13 @@ describe('createControlPlaneHandler', () => {
       quarantinedExtensionIds: string[];
       availableCapabilities: string[];
       availableApiScopes: string[];
+      availablePrivacyClasses: string[];
     };
     expect(body.activePackIds).toEqual(['example.pack', 'quarantined.pack']);
     expect(body.quarantinedExtensionIds).toEqual(['quarantined.extension']);
     expect(body.availableCapabilities).toEqual(['objects:read', 'extension.route:read']);
     expect(body.availableApiScopes).toEqual(['extensions.read']);
+    expect(body.availablePrivacyClasses).toEqual(['internal', 'restricted']);
     expect(queries).toEqual([
       expect.objectContaining({
         workspaceId: 'tenant-1',

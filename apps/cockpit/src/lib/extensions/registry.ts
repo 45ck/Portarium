@@ -28,6 +28,7 @@ export interface ResolveCockpitExtensionRegistryInput {
   quarantinedExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
+  availablePrivacyClasses?: readonly string[];
   routeLoaders?: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>;
 }
 
@@ -37,11 +38,12 @@ export function resolveCockpitExtensionRegistry({
   quarantinedExtensionIds = [],
   availableCapabilities,
   availableApiScopes,
+  availablePrivacyClasses,
   routeLoaders = {},
 }: ResolveCockpitExtensionRegistryInput): ResolvedCockpitExtensionRegistry {
   const activePacks = new Set(activePackIds);
   const quarantinedExtensions = new Set(quarantinedExtensionIds);
-  const accessContext = { availableCapabilities, availableApiScopes };
+  const accessContext = { availableCapabilities, availableApiScopes, availablePrivacyClasses };
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
   const extensionDisableReasons = new Map<string, CockpitExtensionDisableReason[]>();
   const globalProblems: CockpitExtensionRegistryProblem[] = [];
@@ -156,7 +158,7 @@ export function selectExtensionNavItems(
   return registry.navItems.filter(
     (item) =>
       item.surfaces.includes(surface as never) &&
-      canAccessExtensionNavItem(item, { ...context, persona }).allowed,
+      canAccessExtensionNavItem(item, registry, { ...context, persona }).allowed,
   );
 }
 
@@ -194,17 +196,12 @@ export function canAccessExtensionRoute(
 
 export function canAccessExtensionNavItem(
   item: CockpitExtensionNavItem,
+  registry: ResolvedCockpitExtensionRegistry,
   context: CockpitExtensionAccessContext = {},
 ): CockpitExtensionAccessDecision {
-  return decideAccess(
-    {
-      personas: item.personas,
-      requiredCapabilities: item.requiredCapabilities ?? [],
-      requiredApiScopes: item.requiredApiScopes ?? [],
-      privacyClasses: [],
-    },
-    context,
-  );
+  const route = registry.routes.find((candidate) => candidate.id === item.routeId);
+  if (!route) return { allowed: false, denials: [{ code: 'route-unavailable' }] };
+  return canAccessExtensionRoute(route, context);
 }
 
 export function canAccessExtensionCommand(
@@ -215,6 +212,9 @@ export function canAccessExtensionCommand(
   const route = command.routeId
     ? registry.routes.find((candidate) => candidate.id === command.routeId)
     : undefined;
+  if (command.routeId && !route) {
+    return { allowed: false, denials: [{ code: 'route-unavailable' }] };
+  }
 
   return decideAccess(
     {
@@ -314,12 +314,19 @@ function decideAccess(
     requirement.requiredApiScopes,
     context.availableApiScopes,
   );
+  const missingPrivacyClasses = getMissingRequirements(
+    requirement.privacyClasses,
+    context.availablePrivacyClasses,
+  );
 
   if (missingCapabilities.length > 0) {
     denials.push({ code: 'missing-capability', missing: missingCapabilities });
   }
   if (missingApiScopes.length > 0) {
     denials.push({ code: 'missing-api-scope', missing: missingApiScopes });
+  }
+  if (missingPrivacyClasses.length > 0) {
+    denials.push({ code: 'missing-privacy-class', missing: missingPrivacyClasses });
   }
 
   return {

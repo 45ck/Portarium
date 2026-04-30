@@ -72,12 +72,15 @@ export interface CockpitExtensionAccessContext {
   availablePersonas?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
+  availablePrivacyClasses?: readonly string[];
 }
 
 export type CockpitExtensionAccessDenialCode =
   | 'persona'
   | 'missing-capability'
-  | 'missing-api-scope';
+  | 'missing-api-scope'
+  | 'missing-privacy-class'
+  | 'route-unavailable';
 
 export interface CockpitExtensionAccessDenial {
   code: CockpitExtensionAccessDenialCode;

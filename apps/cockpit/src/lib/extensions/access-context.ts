@@ -30,6 +30,7 @@ const EMPTY_SERVER_ACCESS: ResolvedCockpitExtensionServerAccess = {
     availablePersonas: [],
     availableCapabilities: [],
     availableApiScopes: [],
+    availablePrivacyClasses: [],
   },
   usable: false,
 };
@@ -51,6 +52,7 @@ export function resolveCockpitExtensionAccessContext({
     availablePersonas: claims.personas,
     availableCapabilities: claims.capabilities,
     availableApiScopes: claims.apiScopes,
+    availablePrivacyClasses: fallback.availablePrivacyClasses,
   };
 }
 
@@ -76,6 +78,7 @@ export function resolveCockpitExtensionServerAccess({
       availablePersonas: serverContext.availablePersonas,
       availableCapabilities: serverContext.availableCapabilities,
       availableApiScopes: serverContext.availableApiScopes,
+      availablePrivacyClasses: serverContext.availablePrivacyClasses,
     },
     usable: true,
   };
@@ -92,6 +95,7 @@ function isValidServerContext(serverContext: CockpitExtensionContextResponse): b
     isStringArray(serverContext.availablePersonas) &&
     isStringArray(serverContext.availableCapabilities) &&
     isStringArray(serverContext.availableApiScopes) &&
+    isStringArray(serverContext.availablePrivacyClasses) &&
     isStringArray(serverContext.activePackIds) &&
     isStringArray(serverContext.quarantinedExtensionIds)
   );

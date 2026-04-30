@@ -32,6 +32,7 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
+    availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
   });
   const resolution = resolveExternalRoute({
     pathname,
@@ -41,7 +42,7 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
     components: HOSTED_EXTERNAL_ROUTE_COMPONENTS,
   });
 
-  if (resolution.kind === 'active' && resolution.component) {
+  if (resolution.kind === 'active') {
     const Component = resolution.component;
     return (
       <Suspense fallback={<ExternalRouteLoading routeTitle={resolution.route.title} />}>
@@ -52,10 +53,6 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
         />
       </Suspense>
     );
-  }
-
-  if (resolution.kind === 'active') {
-    return <ExternalRouteFallback resolution={{ kind: 'not-found', pathname }} />;
   }
 
   return <ExternalRouteFallback resolution={resolution} />;
@@ -89,9 +86,9 @@ function ExternalRouteFallback({
       return (
         <FallbackShell
           title="Extension Route Restricted"
-          description="This route is not available for the active Cockpit persona."
+          description="This route is not available for the current server-issued guard context."
           icon={<LockKeyhole className="h-5 w-5" />}
-          badges={['restricted']}
+          badges={['restricted', resolution.audit.reason, ...resolution.denials.map((d) => d.code)]}
         >
           <p className="text-sm text-muted-foreground">
             The host keeps extension route metadata out of this fallback until a server-issued guard
@@ -105,7 +102,7 @@ function ExternalRouteFallback({
           title="External Route Not Found"
           description="No enabled extension route matches this external path."
           icon={<AlertCircle className="h-5 w-5" />}
-          badges={[resolution.pathname]}
+          badges={[resolution.pathname, resolution.audit.reason]}
         >
           <p className="text-sm text-muted-foreground">
             External routes must be declared by an installed extension and activated by the host

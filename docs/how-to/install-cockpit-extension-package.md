@@ -96,6 +96,11 @@ scopes. It cannot grant new API scopes. If a grant lists `approvals.read` but
 the token does not contain `approvals.read`, Cockpit will not expose that API
 scope to extension guard checks.
 
+`availablePrivacyClasses` is the server-issued set of privacy classes the
+current Workspace/principal context may inspect. Routes or commands declaring
+privacy classes remain hidden from navigation, commands, shortcuts, and direct
+`/external/` entry until the matching class is present.
+
 ```json
 [
   {
@@ -104,7 +109,8 @@ scope to extension guard checks.
     "scopeIncludes": ["extensions.read"],
     "activePackIds": ["example.ops-demo"],
     "availableCapabilities": ["asset:read", "incident:read", "evidence:read"],
-    "availableApiScopes": ["extensions.read", "approvals.read", "evidence.read"]
+    "availableApiScopes": ["extensions.read", "approvals.read", "evidence.read"],
+    "availablePrivacyClasses": ["internal", "restricted"]
   }
 ]
 ```
@@ -116,7 +122,9 @@ ID without uninstalling its package.
 Cockpit treats activation as fail-closed. Installed extensions are disabled
 until their pack IDs are explicitly active for the current workspace, unknown
 active pack IDs mark the registry invalid, and partially satisfied pack
-requirements do not expose routes, navigation, commands, or shortcuts.
+requirements do not expose routes, navigation, mobile navigation, commands, or
+shortcuts. Direct visits to disabled or unauthorized `/external/` routes use a
+host fallback and do not import extension route code.
 
 ## Verification
 

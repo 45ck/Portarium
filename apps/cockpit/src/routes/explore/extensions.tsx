@@ -31,6 +31,7 @@ function ExtensionsPage() {
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
+    availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
   });
 
   return (

@@ -36,6 +36,7 @@ export type CockpitExtensionContextResponse = Readonly<{
   availablePersonas: readonly string[];
   availableCapabilities: readonly string[];
   availableApiScopes: readonly string[];
+  availablePrivacyClasses: readonly string[];
   activePackIds: readonly string[];
   quarantinedExtensionIds: readonly string[];
   issuedAtIso: string;
@@ -117,6 +118,9 @@ function buildCockpitExtensionContext(
     activationApiScopes.length > 0
       ? intersectStrings(availableScopes, activationApiScopes)
       : availableScopes;
+  const availablePrivacyClasses = normalizeActivationIds(
+    activationState.availablePrivacyClasses ?? [],
+  );
   const expiresAt = new Date(issuedAt.getTime() + CONTEXT_TTL_MS);
 
   return {
@@ -127,6 +131,7 @@ function buildCockpitExtensionContext(
     availablePersonas,
     availableCapabilities,
     availableApiScopes,
+    availablePrivacyClasses,
     activePackIds: normalizeActivationIds(activationState.activePackIds),
     quarantinedExtensionIds: normalizeActivationIds(activationState.quarantinedExtensionIds),
     issuedAtIso: issuedAt.toISOString(),

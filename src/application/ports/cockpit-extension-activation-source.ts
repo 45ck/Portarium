@@ -3,6 +3,7 @@ export type CockpitExtensionActivationState = Readonly<{
   quarantinedExtensionIds: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
+  availablePrivacyClasses?: readonly string[];
 }>;
 
 export type CockpitExtensionActivationQuery = Readonly<{
@@ -27,5 +28,6 @@ export const EMPTY_COCKPIT_EXTENSION_ACTIVATION_SOURCE: CockpitExtensionActivati
     quarantinedExtensionIds: [],
     availableCapabilities: [],
     availableApiScopes: [],
+    availablePrivacyClasses: [],
   }),
 };

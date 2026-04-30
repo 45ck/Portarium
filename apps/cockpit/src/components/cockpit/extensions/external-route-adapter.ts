@@ -2,6 +2,8 @@ import type { ComponentType } from 'react';
 import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
 import { canAccessExtensionRoute } from '@/lib/extensions/registry';
 import type {
+  CockpitExtensionAccessDenial,
+  CockpitExtensionDisableReason,
   CockpitExtensionRouteRef,
   ResolvedCockpitExtension,
   ResolvedCockpitExtensionRegistry,
@@ -16,23 +18,50 @@ export interface ExternalRouteComponentProps {
 
 export type ExternalRouteComponent = ComponentType<ExternalRouteComponentProps>;
 
+export type ExternalRouteAuditReason =
+  | 'route-allowed'
+  | 'not-found'
+  | 'registry-invalid'
+  | 'extension-disabled'
+  | 'extension-quarantined'
+  | 'extension-invalid'
+  | 'route-forbidden'
+  | 'missing-renderer';
+
+export interface ExternalRouteGuardAudit {
+  decision: 'allow' | 'deny';
+  reason: ExternalRouteAuditReason;
+  surface: 'external-route';
+  pathname: string;
+  extensionId?: string;
+  routeId?: string;
+  matchedPath?: string;
+  extensionStatus?: ResolvedCockpitExtension['status'];
+  denials?: readonly CockpitExtensionAccessDenial[];
+  disableReasons?: readonly CockpitExtensionDisableReason[];
+}
+
 export type ExternalRouteResolution =
   | {
       kind: 'active';
       route: CockpitExtensionRouteRef;
       extension: ResolvedCockpitExtension;
       params: Readonly<Record<string, string>>;
-      component: ExternalRouteComponent | null;
+      component: ExternalRouteComponent;
+      audit: ExternalRouteGuardAudit;
     }
   | {
       kind: 'forbidden';
       route: CockpitExtensionRouteRef;
       extension: ResolvedCockpitExtension;
       params: Readonly<Record<string, string>>;
+      denials: readonly CockpitExtensionAccessDenial[];
+      audit: ExternalRouteGuardAudit;
     }
   | {
       kind: 'not-found';
       pathname: string;
+      audit: ExternalRouteGuardAudit;
     };
 
 export interface ResolveExternalRouteInput {
@@ -41,6 +70,7 @@ export interface ResolveExternalRouteInput {
   availablePersonas?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
+  availablePrivacyClasses?: readonly string[];
   registry?: ResolvedCockpitExtensionRegistry;
   components?: Readonly<Record<string, ExternalRouteComponent>>;
 }
@@ -53,31 +83,72 @@ export function resolveExternalRoute({
   availablePersonas,
   availableCapabilities,
   availableApiScopes,
+  availablePrivacyClasses,
   registry = HOST_EXTERNAL_EXTENSION_REGISTRY,
   components = {},
 }: ResolveExternalRouteInput): ExternalRouteResolution {
   const normalizedPathname = normalizePath(pathname);
 
-  for (const extension of registry.extensions) {
-    if (extension.status !== 'enabled') continue;
+  if (registry.problems.length > 0) {
+    return notFoundAudit(normalizedPathname, 'registry-invalid');
+  }
 
+  for (const extension of registry.extensions) {
     for (const route of extension.manifest.routes) {
       const params = matchExternalRoutePath(route.path, normalizedPathname);
       if (!params) continue;
 
-      if (
-        !canAccessExtensionRoute(route, {
-          persona,
-          availablePersonas,
-          availableCapabilities,
-          availableApiScopes,
-        }).allowed
-      ) {
+      if (extension.status !== 'enabled') {
+        return {
+          kind: 'not-found',
+          pathname: normalizedPathname,
+          audit: buildAudit({
+            decision: 'deny',
+            reason: extensionStatusAuditReason(extension.status),
+            pathname: normalizedPathname,
+            extension,
+            route,
+          }),
+        };
+      }
+
+      const decision = canAccessExtensionRoute(route, {
+        persona,
+        availablePersonas,
+        availableCapabilities,
+        availableApiScopes,
+        availablePrivacyClasses,
+      });
+      if (!decision.allowed) {
         return {
           kind: 'forbidden',
           route,
           extension,
           params,
+          denials: decision.denials,
+          audit: buildAudit({
+            decision: 'deny',
+            reason: 'route-forbidden',
+            pathname: normalizedPathname,
+            extension,
+            route,
+            denials: decision.denials,
+          }),
+        };
+      }
+
+      const component = components[route.id];
+      if (!component) {
+        return {
+          kind: 'not-found',
+          pathname: normalizedPathname,
+          audit: buildAudit({
+            decision: 'deny',
+            reason: 'missing-renderer',
+            pathname: normalizedPathname,
+            extension,
+            route,
+          }),
         };
       }
 
@@ -86,14 +157,79 @@ export function resolveExternalRoute({
         route,
         extension,
         params,
-        component: components[route.id] ?? null,
+        component,
+        audit: buildAudit({
+          decision: 'allow',
+          reason: 'route-allowed',
+          pathname: normalizedPathname,
+          extension,
+          route,
+        }),
       };
     }
   }
 
+  return notFoundAudit(normalizedPathname, 'not-found');
+}
+
+function notFoundAudit(
+  pathname: string,
+  reason: ExternalRouteAuditReason,
+): ExternalRouteResolution {
   return {
     kind: 'not-found',
-    pathname: normalizedPathname,
+    pathname,
+    audit: buildAudit({
+      decision: 'deny',
+      reason,
+      pathname,
+    }),
+  };
+}
+
+function extensionStatusAuditReason(
+  status: ResolvedCockpitExtension['status'],
+): ExternalRouteAuditReason {
+  switch (status) {
+    case 'quarantined':
+      return 'extension-quarantined';
+    case 'invalid':
+      return 'extension-invalid';
+    case 'disabled':
+    case 'enabled':
+      return 'extension-disabled';
+  }
+}
+
+function buildAudit({
+  decision,
+  reason,
+  pathname,
+  extension,
+  route,
+  denials,
+}: {
+  decision: ExternalRouteGuardAudit['decision'];
+  reason: ExternalRouteAuditReason;
+  pathname: string;
+  extension?: ResolvedCockpitExtension;
+  route?: CockpitExtensionRouteRef;
+  denials?: readonly CockpitExtensionAccessDenial[];
+}): ExternalRouteGuardAudit {
+  return {
+    decision,
+    reason,
+    surface: 'external-route',
+    pathname,
+    ...(extension
+      ? {
+          extensionId: extension.manifest.id,
+          extensionStatus: extension.status,
+          disableReasons: extension.disableReasons,
+        }
+      : {}),
+    ...(route ? { routeId: route.id, matchedPath: route.path } : {}),
+    ...(denials ? { denials } : {}),
   };
 }
 

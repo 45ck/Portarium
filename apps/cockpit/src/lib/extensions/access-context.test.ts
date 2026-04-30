@@ -8,6 +8,7 @@ import type { ParsedAuthClaims } from '@/stores/auth-store';
 const fallback = {
   availableCapabilities: ['objects:read'],
   availableApiScopes: ['extensions.read'],
+  availablePrivacyClasses: ['internal'],
 } as const;
 
 describe('cockpit extension access context', () => {
@@ -45,6 +46,7 @@ describe('cockpit extension access context', () => {
       availablePersonas: ['Auditor'],
       availableCapabilities: ['evidence:read'],
       availableApiScopes: ['audit.read'],
+      availablePrivacyClasses: ['internal'],
     });
   });
 
@@ -61,6 +63,7 @@ describe('cockpit extension access context', () => {
           availablePersonas: ['Operator'],
           availableCapabilities: ['objects:read'],
           availableApiScopes: ['extensions.read'],
+          availablePrivacyClasses: ['internal'],
           activePackIds: ['demo.pack'],
           quarantinedExtensionIds: [],
           issuedAtIso: '2026-04-30T01:59:00.000Z',
@@ -75,6 +78,7 @@ describe('cockpit extension access context', () => {
         availablePersonas: ['Operator'],
         availableCapabilities: ['objects:read'],
         availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
       },
       usable: true,
     });
@@ -88,6 +92,7 @@ describe('cockpit extension access context', () => {
         availablePersonas: [],
         availableCapabilities: [],
         availableApiScopes: [],
+        availablePrivacyClasses: [],
       },
       usable: false,
     };
@@ -99,6 +104,7 @@ describe('cockpit extension access context', () => {
       availablePersonas: ['Operator'],
       availableCapabilities: ['objects:read'],
       availableApiScopes: ['extensions.read'],
+      availablePrivacyClasses: ['internal'],
       activePackIds: ['demo.pack'],
       quarantinedExtensionIds: [],
       issuedAtIso: '2026-04-30T01:59:00.000Z',
@@ -137,6 +143,7 @@ describe('cockpit extension access context', () => {
           availablePersonas: ['Operator'],
           availableCapabilities: ['objects:read'],
           availableApiScopes: ['extensions.read'],
+          availablePrivacyClasses: ['internal'],
           activePackIds: 'demo.pack',
           quarantinedExtensionIds: [],
           issuedAtIso: '2026-04-30T01:59:00.000Z',
@@ -150,6 +157,7 @@ describe('cockpit extension access context', () => {
         availablePersonas: [],
         availableCapabilities: [],
         availableApiScopes: [],
+        availablePrivacyClasses: [],
       },
       usable: false,
     });
