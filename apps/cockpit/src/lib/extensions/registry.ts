@@ -241,11 +241,8 @@ function decideAccess(
 ): CockpitExtensionAccessDecision {
   const denials: CockpitExtensionAccessDenial[] = [];
 
-  if (
-    context.persona &&
-    requirement.personas.length > 0 &&
-    !requirement.personas.includes(context.persona)
-  ) {
+  const personaDenied = getPersonaDenied(requirement.personas, context);
+  if (personaDenied) {
     denials.push({ code: 'persona' });
   }
 
@@ -279,6 +276,23 @@ function getMissingRequirements(
   if (!available) return [...required];
   const availableSet = new Set(available);
   return required.filter((requirement) => !availableSet.has(requirement));
+}
+
+function getPersonaDenied(
+  requiredPersonas: readonly string[],
+  context: CockpitExtensionAccessContext,
+): boolean {
+  if (requiredPersonas.length === 0) return false;
+
+  if (context.availablePersonas) {
+    if (!context.persona) return true;
+    return (
+      !requiredPersonas.includes(context.persona) ||
+      !context.availablePersonas.includes(context.persona)
+    );
+  }
+
+  return Boolean(context.persona && !requiredPersonas.includes(context.persona));
 }
 
 function uniqueStrings(values: readonly string[]): string[] {

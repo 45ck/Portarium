@@ -17,7 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { usePendingCount } from '@/hooks/use-pending-count';
+import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
 import {
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   DEFAULT_COCKPIT_EXTENSION_REGISTRY,
@@ -137,11 +139,17 @@ export function MobileBottomNav({
   const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
+  const claims = useAuthStore((state) => state.claims);
+  const extensionAccessContext = resolveCockpitExtensionAccessContext({
+    claims,
+    persona: activePersona,
+    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  });
   const extensionMoreItems = selectExtensionNavItems(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     'mobile-more',
     activePersona,
-    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    extensionAccessContext,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({ label: item.title, to: item.to }));

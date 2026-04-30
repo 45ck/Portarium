@@ -256,6 +256,52 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toEqual([]);
   });
 
+  it('fails closed when active extension availability context is omitted', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      activePackIds: ['example.ops-demo'],
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions[0]?.status).toBe('disabled');
+    expect(registry.extensions[0]?.disableReasons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'missing-capability' }),
+        expect.objectContaining({ code: 'missing-api-scope' }),
+      ]),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('fails closed when installed route module keys do not match manifest routes', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      activePackIds: ['example.ops-demo'],
+      ...neutralAccessContext,
+      routeLoaders: {
+        [NEUTRAL_OPS_EXTENSION.routes[0]!.id]:
+          neutralRouteLoaders[NEUTRAL_OPS_EXTENSION.routes[0]!.id],
+        'example-ops-uninstalled-route': () => Promise.resolve({}),
+      },
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing-route-module',
+          itemId: NEUTRAL_OPS_EXTENSION.routes[1]!.id,
+        }),
+      ]),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('filters routes, nav items, and commands through the same capability and scope model', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_OPS_EXTENSION],
@@ -290,6 +336,30 @@ describe('cockpit extension registry', () => {
         availableApiScopes: ['extensions.read'],
       }),
     ).toEqual([]);
+  });
+
+  it('honors server-issued persona grants when evaluating route access', () => {
+    expect(
+      canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+        persona: 'Operator',
+        availablePersonas: ['Auditor'],
+        ...neutralAccessContext,
+      }),
+    ).toEqual({
+      allowed: false,
+      denials: [{ code: 'persona' }],
+    });
+
+    expect(
+      canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+        persona: 'Operator',
+        availablePersonas: ['Operator'],
+        ...neutralAccessContext,
+      }),
+    ).toEqual({
+      allowed: true,
+      denials: [],
+    });
   });
 
   it('reports forbidden route access without exposing domain-specific assumptions', () => {

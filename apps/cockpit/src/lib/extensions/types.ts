@@ -66,6 +66,7 @@ export interface CockpitExtensionGuard {
 
 export interface CockpitExtensionAccessContext {
   persona?: string;
+  availablePersonas?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
 }

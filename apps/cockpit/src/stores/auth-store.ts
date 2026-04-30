@@ -59,6 +59,9 @@ export interface ParsedAuthClaims {
   sub: string;
   workspaceId: string;
   roles: string[];
+  personas: string[];
+  capabilities: string[];
+  apiScopes: string[];
   displayName?: string;
 }
 
@@ -101,6 +104,13 @@ function extractClaims(jwt: string): ParsedAuthClaims | null {
     const roles = Array.isArray(payload.roles)
       ? (payload.roles as unknown[]).filter((r): r is string => typeof r === 'string')
       : [];
+    const personas = readStringClaims(payload, ['personas', 'extensionPersonas', 'persona']);
+    const capabilities = readStringClaims(payload, [
+      'capabilities',
+      'permissions',
+      'extensionCapabilities',
+    ]);
+    const apiScopes = readStringClaims(payload, ['apiScopes', 'scopes', 'scp', 'scope']);
     const displayName =
       typeof payload.name === 'string'
         ? payload.name
@@ -109,10 +119,27 @@ function extractClaims(jwt: string): ParsedAuthClaims | null {
           : undefined;
 
     if (!sub || !workspaceId || roles.length === 0) return null;
-    return { sub, workspaceId, roles, displayName };
+    return { sub, workspaceId, roles, personas, capabilities, apiScopes, displayName };
   } catch {
     return null;
   }
+}
+
+function readStringClaims(payload: Record<string, unknown>, keys: readonly string[]): string[] {
+  return [
+    ...new Set(
+      keys.flatMap((key) => {
+        const value = payload[key];
+        if (Array.isArray(value)) {
+          return value.filter((item): item is string => typeof item === 'string');
+        }
+        if (typeof value === 'string') {
+          return value.split(/\s+/).filter(Boolean);
+        }
+        return [];
+      }),
+    ),
+  ];
 }
 
 // ---------------------------------------------------------------------------

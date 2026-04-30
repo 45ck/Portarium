@@ -34,6 +34,7 @@ import {
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   DEFAULT_COCKPIT_EXTENSION_REGISTRY,
 } from '@/lib/extensions/installed';
+import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
 import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
@@ -351,6 +352,7 @@ function RootLayout() {
   useKeyboardShortcuts();
   const isMobile = useIsMobile();
   const authStatus = useAuthStore((state) => state.status);
+  const claims = useAuthStore((state) => state.claims);
   const navigate = useNavigate();
   const {
     sidebarCollapsed,
@@ -366,11 +368,16 @@ function RootLayout() {
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
+  const extensionAccessContext = resolveCockpitExtensionAccessContext({
+    claims,
+    persona: activePersona,
+    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  });
   const extensionNavItems: NavItemDef[] = selectExtensionNavItems(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     'sidebar',
     activePersona,
-    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    extensionAccessContext,
   )
     .filter((item) => !item.to.includes('$'))
     .map((item) => ({

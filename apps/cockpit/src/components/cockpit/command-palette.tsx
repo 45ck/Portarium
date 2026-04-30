@@ -11,8 +11,10 @@ import {
 } from '@/components/ui/command';
 import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { router } from '@/router';
 import { EntityIcon } from '@/components/domain/entity-icon';
+import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
 import {
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   DEFAULT_COCKPIT_EXTENSION_REGISTRY,
@@ -47,7 +49,13 @@ const extensionRoutePaths = new Map(
 
 function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona } = useUIStore();
+  const claims = useAuthStore((state) => state.claims);
   const { theme, setTheme, themes } = useTheme();
+  const extensionAccessContext = resolveCockpitExtensionAccessContext({
+    claims,
+    persona: activePersona,
+    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  });
 
   // Global Ctrl+K / Cmd+K hotkey
   useEffect(() => {
@@ -70,7 +78,7 @@ function CommandPalette() {
   const extensionNavigationItems = selectExtensionCommands(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     activePersona,
-    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    extensionAccessContext,
   ).reduce<CommandItemDef[]>((items, command) => {
     const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;
     if (!routePath || routePath.includes('$')) return items;

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
+import { useAuthStore } from '@/stores/auth-store';
+import { resolveCockpitExtensionAccessContext } from '@/lib/extensions/access-context';
 import {
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   DEFAULT_COCKPIT_EXTENSION_REGISTRY,
@@ -22,10 +24,16 @@ const extensionRoutePaths = new Map(
 
 function resolveGChordMap(): Record<string, string> {
   const activePersona = useUIStore.getState().activePersona;
+  const claims = useAuthStore.getState().claims;
+  const extensionAccessContext = resolveCockpitExtensionAccessContext({
+    claims,
+    persona: activePersona,
+    fallback: DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  });
   const extensionShortcuts = selectExtensionCommands(
     DEFAULT_COCKPIT_EXTENSION_REGISTRY,
     activePersona,
-    DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    extensionAccessContext,
   ).reduce<Record<string, string>>((shortcuts, command) => {
     const match = command.shortcut?.match(/^G\s+([a-z])$/i);
     const routePath = command.routeId ? extensionRoutePaths.get(command.routeId) : undefined;

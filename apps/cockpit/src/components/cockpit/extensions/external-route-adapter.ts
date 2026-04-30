@@ -46,6 +46,7 @@ export type ExternalRouteResolution =
 export interface ResolveExternalRouteInput {
   pathname: string;
   persona: PersonaId;
+  availablePersonas?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   registry?: ResolvedCockpitExtensionRegistry;
@@ -62,6 +63,7 @@ export const HOST_EXTERNAL_EXTENSION_REGISTRY = resolveCockpitExtensionRegistry(
 export function resolveExternalRoute({
   pathname,
   persona,
+  availablePersonas,
   availableCapabilities,
   availableApiScopes,
   registry = HOST_EXTERNAL_EXTENSION_REGISTRY,
@@ -79,6 +81,7 @@ export function resolveExternalRoute({
       if (
         !canAccessExtensionRoute(route, {
           persona,
+          availablePersonas,
           availableCapabilities,
           availableApiScopes,
         }).allowed

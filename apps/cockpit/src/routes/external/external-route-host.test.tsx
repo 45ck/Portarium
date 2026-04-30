@@ -5,6 +5,25 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { useUIStore } from '@/stores/ui-store';
+
+const externalRouteHostTestState = vi.hoisted(() => ({
+  omitHostedComponents: false,
+}));
+
+vi.mock('@/components/cockpit/extensions/external-route-adapter', async (importActual) => {
+  const actual =
+    await importActual<typeof import('@/components/cockpit/extensions/external-route-adapter')>();
+
+  return {
+    ...actual,
+    resolveExternalRoute: (input: Parameters<typeof actual.resolveExternalRoute>[0]) =>
+      actual.resolveExternalRoute({
+        ...input,
+        components: externalRouteHostTestState.omitHostedComponents ? {} : input.components,
+      }),
+  };
+});
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -85,9 +104,11 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  externalRouteHostTestState.omitHostedComponents = false;
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  useUIStore.setState({ activePersona: 'Operator' });
 });
 
 afterEach(() => {
@@ -121,5 +142,38 @@ describe('external route host', () => {
     expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
     expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'View extension registry' })).toBeTruthy();
+  });
+
+  it('fails closed when the active persona is forbidden from the external route', async () => {
+    useUIStore.setState({ activePersona: 'Guest' as never });
+
+    await renderRoute('/external/example-ops/overview');
+
+    expect(await screen.findByRole('heading', { name: 'Extension Route Restricted' })).toBeTruthy();
+    expect(
+      screen.getByText('This route is not available for the active Cockpit persona.'),
+    ).toBeTruthy();
+    expect(screen.getByText('Host Fallback')).toBeTruthy();
+    expect(screen.getByText('restricted')).toBeTruthy();
+    expect(screen.queryByText('Extension Boundary')).toBeNull();
+  });
+
+  it('falls back when an active external route has no host-owned renderer', async () => {
+    externalRouteHostTestState.omitHostedComponents = true;
+
+    await renderRoute('/external/example-ops/actions/proposal-123');
+
+    expect(await screen.findByRole('heading', { name: 'Governed Action Review' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'This extension route is active, but this Cockpit build does not include a host-owned renderer for it.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText('Host Fallback')).toBeTruthy();
+    expect(screen.getByText('Operations Demo')).toBeTruthy();
+    expect(screen.getByText('example-ops-action-review')).toBeTruthy();
+    expect(screen.getByText('renderer missing')).toBeTruthy();
+    expect(screen.getByText('proposalId=proposal-123')).toBeTruthy();
+    expect(screen.queryByText('Review Contract')).toBeNull();
   });
 });
