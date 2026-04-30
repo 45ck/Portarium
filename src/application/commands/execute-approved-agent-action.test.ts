@@ -248,7 +248,7 @@ describe('executeApprovedAgentAction', () => {
   });
 
   it('retries after persistence failure with the same execution action id', async () => {
-    const dispatches: Array<{ actionId: unknown; idempotencyKey: unknown }> = [];
+    const dispatches: { actionId: unknown; idempotencyKey: unknown }[] = [];
     actionRunner.dispatchAction = vi.fn(async (input) => {
       dispatches.push({ actionId: input.actionId, idempotencyKey: input.idempotencyKey });
       return { ok: true as const, output: { result: 'done' } };
