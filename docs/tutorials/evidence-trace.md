@@ -7,7 +7,7 @@ You will complete a Human Task and view the resulting Evidence entry.
 ## Prerequisites
 
 - The local stack is running (see [Local Dev Guide](../getting-started/local-dev.md)).
-- `PORTARIUM_DEV_TOKEN=portarium-dev-token` is set for dev-auth bypass.
+- Dev-token auth is enabled with `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN=portarium-dev-token`, and `PORTARIUM_DEV_WORKSPACE_ID=workspace-1`.
 
 ## Steps
 
@@ -16,6 +16,7 @@ You will complete a Human Task and view the resulting Evidence entry.
 ```bash
 npm run dev:all
 npm run dev:seed
+export ENABLE_DEV_AUTH=true
 export PORTARIUM_DEV_TOKEN=portarium-dev-token
 export PORTARIUM_DEV_WORKSPACE_ID=workspace-1
 ```
@@ -56,7 +57,7 @@ Invoke-WebRequest `
 
 ## Notes
 
-- Without `PORTARIUM_DEV_TOKEN` set or JWT/JWKS config, these calls return `401 Unauthorized`.
+- Without the dev-auth gate and token/workspace variables, or without a complete JWT/JWKS config, these calls return `401 Unauthorized`.
 
 ## Source of truth
 

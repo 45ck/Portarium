@@ -19,15 +19,17 @@ This starts the full stack including Postgres, the control-plane API (port 8080)
 
 ### 2. Call workspace endpoint
 
-With the dev token set (`PORTARIUM_DEV_TOKEN=portarium-dev-token`):
+With dev-token auth enabled (`ENABLE_DEV_AUTH=true`,
+`PORTARIUM_DEV_TOKEN=portarium-dev-token`, and
+`PORTARIUM_DEV_WORKSPACE_ID=ws-local-dev`):
 
 ```bash
 curl -i -H "Authorization: Bearer portarium-dev-token" \
-  http://localhost:8080/v1/workspaces/ws-local
+  http://localhost:8080/v1/workspaces/ws-local-dev
 ```
 
 ```powershell
-Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
+Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local-dev `
   -Headers @{ Authorization = "Bearer portarium-dev-token" }
 ```
 
@@ -40,8 +42,8 @@ Without the dev token or JWT/JWKS configuration, protected routes return `401` w
 Set:
 
 - `PORTARIUM_JWKS_URI`
-- `PORTARIUM_JWT_ISSUER` (optional)
-- `PORTARIUM_JWT_AUDIENCE` (optional)
+- `PORTARIUM_JWT_ISSUER`
+- `PORTARIUM_JWT_AUDIENCE`
 
 Your token must include claims:
 

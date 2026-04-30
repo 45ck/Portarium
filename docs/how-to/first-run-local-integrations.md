@@ -90,10 +90,8 @@ npm run dev:seed
 
 ## 2. Keycloak — OIDC / SSO
 
-**URL:** `http://localhost:8080` (separate Keycloak container — port conflicts with
-the Portarium API in the default local stack; adjust the Portarium API port or run
-Keycloak on a different port as needed)
-**Admin console:** `http://localhost:8080/admin` (admin / admin)
+**URL:** `http://localhost:8180`
+**Admin console:** `http://localhost:8180/admin` (admin / admin)
 
 ### What the seed configures
 
@@ -113,7 +111,7 @@ Keycloak on a different port as needed)
 ### Verify
 
 ```bash
-curl -s -X POST http://localhost:8080/realms/portarium/protocol/openid-connect/token \
+curl -s -X POST http://localhost:8180/realms/portarium/protocol/openid-connect/token \
   -d 'grant_type=password' \
   -d 'client_id=portarium-api' \
   -d 'username=alice@acme.example.com' \
@@ -249,15 +247,17 @@ Copy `.env.local.example` to `.env.local` and adjust if you changed any default 
 cp .env.local.example .env.local
 ```
 
-| Variable                   | Default                 | Description                            |
-| -------------------------- | ----------------------- | -------------------------------------- |
-| `LOCAL_STACK_URL`          | `http://localhost:8080` | Portarium API base URL                 |
-| `PORTARIUM_DEV_TOKEN`      | `portarium-dev-token`   | Static bearer token (dev only)         |
-| `KEYCLOAK_URL`             | `http://localhost:8080` | Keycloak base URL (separate container) |
-| `KEYCLOAK_REALM`           | `portarium`             | Realm name                             |
-| `OPENFGA_URL`              | `http://localhost:8888` | OpenFGA base URL                       |
-| `ODOO_URL`                 | `http://localhost:4000` | Odoo base URL                          |
-| `GOVERNED_RUN_INTEGRATION` | `false`                 | Set `true` for integration smoke       |
+| Variable                     | Default                 | Description                        |
+| ---------------------------- | ----------------------- | ---------------------------------- |
+| `LOCAL_STACK_URL`            | `http://localhost:8080` | Portarium API base URL             |
+| `ENABLE_DEV_AUTH`            | `true`                  | Explicit dev-token auth gate       |
+| `PORTARIUM_DEV_TOKEN`        | `portarium-dev-token`   | Static bearer token (dev only)     |
+| `PORTARIUM_DEV_WORKSPACE_ID` | `ws-local-dev`          | Workspace ID injected by dev token |
+| `KEYCLOAK_URL`               | `http://localhost:8180` | Keycloak base URL                  |
+| `KEYCLOAK_REALM`             | `portarium`             | Realm name                         |
+| `OPENFGA_URL`                | `http://localhost:8888` | OpenFGA base URL                   |
+| `ODOO_URL`                   | `http://localhost:4000` | Odoo base URL                      |
+| `GOVERNED_RUN_INTEGRATION`   | `false`                 | Set `true` for integration smoke   |
 
 ---
 

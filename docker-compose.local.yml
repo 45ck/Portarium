@@ -39,6 +39,7 @@ services:
       PORTARIUM_DEV_TOKEN: portarium-dev-token
       PORTARIUM_DEV_WORKSPACE_ID: ws-local-dev
       PORTARIUM_DEV_USER_ID: user-local-dev
+      PORTARIUM_CORS_ALLOWED_ORIGINS: http://cockpit.localhost:1355,http://localhost:1355,http://localhost:5173
       # OTel — forward to the tools-profile collector when active
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:

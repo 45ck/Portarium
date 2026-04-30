@@ -4,6 +4,7 @@ import { ApprovalId, TenantId, WorkspaceId } from '../../domain/primitives/index
 import {
   buildInMemoryApprovalStore,
   buildControlPlaneDeps,
+  buildJoseAuthenticationConfigFromEnv,
   getJoseAuthConfigWarnings,
 } from './control-plane-handler.bootstrap.js';
 
@@ -11,6 +12,11 @@ const AUTH_ENV_KEYS = [
   'PORTARIUM_JWKS_URI',
   'PORTARIUM_JWT_ISSUER',
   'PORTARIUM_JWT_AUDIENCE',
+  'PORTARIUM_JWT_AUTHORIZED_PARTY',
+  'PORTARIUM_JWT_TRUSTED_ISSUERS',
+  'PORTARIUM_JWT_REQUIRED_TOKEN_TYPE',
+  'PORTARIUM_CORS_ALLOWED_ORIGINS',
+  'PORTARIUM_ENVIRONMENT',
   'PORTARIUM_DEV_TOKEN',
   'PORTARIUM_DEV_WORKSPACE_ID',
   'PORTARIUM_DEV_USER_ID',
@@ -135,6 +141,92 @@ describe('buildControlPlaneDeps auth startup gate', () => {
     process.env['PORTARIUM_JWT_ISSUER'] = 'https://auth.example.com';
 
     await expect(buildControlPlaneDeps()).rejects.toThrow(/PORTARIUM_JWT_AUDIENCE/);
+  });
+
+  it('fails startup when production CORS is configured with a wildcard origin', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['NODE_ENV'] = 'production';
+    process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = '*';
+
+    await expect(buildControlPlaneDeps()).rejects.toThrow(/wildcard/);
+  });
+});
+
+describe('buildJoseAuthenticationConfigFromEnv', () => {
+  it('wires authorized party, trusted issuers, audience, and token type from env', () => {
+    const config = buildJoseAuthenticationConfigFromEnv({
+      NODE_ENV: 'production',
+      PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+      PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+      PORTARIUM_JWT_AUDIENCE: 'portarium-api,portarium-cockpit',
+      PORTARIUM_JWT_AUTHORIZED_PARTY: 'portarium-cockpit',
+      PORTARIUM_JWT_TRUSTED_ISSUERS: 'https://auth.example.com',
+      PORTARIUM_JWT_REQUIRED_TOKEN_TYPE: 'at+JWT',
+    });
+
+    expect(config).toMatchObject({
+      jwksUri: 'https://auth.example.com/.well-known/jwks.json',
+      issuer: 'https://auth.example.com',
+      audience: ['portarium-api', 'portarium-cockpit'],
+      authorizedParty: 'portarium-cockpit',
+      trustedIssuers: ['https://auth.example.com'],
+      requiredTokenType: 'at+JWT',
+    });
+  });
+
+  it('fails production JWKS startup when hardening settings are missing', () => {
+    expect(() =>
+      buildJoseAuthenticationConfigFromEnv({
+        NODE_ENV: 'production',
+        PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+        PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+        PORTARIUM_JWT_AUDIENCE: 'portarium-api',
+      }),
+    ).toThrow(/PORTARIUM_JWT_AUTHORIZED_PARTY/);
+    expect(() =>
+      buildJoseAuthenticationConfigFromEnv({
+        NODE_ENV: 'production',
+        PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+        PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+        PORTARIUM_JWT_AUDIENCE: 'portarium-api',
+      }),
+    ).toThrow(/PORTARIUM_JWT_TRUSTED_ISSUERS/);
+    expect(() =>
+      buildJoseAuthenticationConfigFromEnv({
+        NODE_ENV: 'production',
+        PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+        PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+        PORTARIUM_JWT_AUDIENCE: 'portarium-api',
+      }),
+    ).toThrow(/PORTARIUM_JWT_REQUIRED_TOKEN_TYPE/);
+  });
+
+  it('rejects unsupported JWT required token type values', () => {
+    expect(() =>
+      buildJoseAuthenticationConfigFromEnv({
+        NODE_ENV: 'production',
+        PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+        PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+        PORTARIUM_JWT_AUDIENCE: 'portarium-api',
+        PORTARIUM_JWT_AUTHORIZED_PARTY: 'portarium-cockpit',
+        PORTARIUM_JWT_TRUSTED_ISSUERS: 'https://auth.example.com',
+        PORTARIUM_JWT_REQUIRED_TOKEN_TYPE: 'id+JWT',
+      }),
+    ).toThrow(/PORTARIUM_JWT_REQUIRED_TOKEN_TYPE/);
+  });
+
+  it('requires trusted issuers to include the configured issuer', () => {
+    expect(() =>
+      buildJoseAuthenticationConfigFromEnv({
+        NODE_ENV: 'production',
+        PORTARIUM_JWKS_URI: 'https://auth.example.com/.well-known/jwks.json',
+        PORTARIUM_JWT_ISSUER: 'https://auth.example.com',
+        PORTARIUM_JWT_AUDIENCE: 'portarium-api',
+        PORTARIUM_JWT_AUTHORIZED_PARTY: 'portarium-cockpit',
+        PORTARIUM_JWT_TRUSTED_ISSUERS: 'https://other-idp.example.com',
+        PORTARIUM_JWT_REQUIRED_TOKEN_TYPE: 'at+JWT',
+      }),
+    ).toThrow(/must include PORTARIUM_JWT_ISSUER/);
   });
 });
 

@@ -30,7 +30,12 @@ import type { EventPublisher } from '../../application/ports/event-publisher.js'
 import type { UnitOfWork } from '../../application/ports/unit-of-work.js';
 import { DevTokenAuthentication } from '../../infrastructure/auth/dev-token-authentication.js';
 import { checkDevAuthEnvGate } from '../../infrastructure/auth/dev-token-env-gate.js';
-import { JoseJwtAuthentication } from '../../infrastructure/auth/jose-jwt-authentication.js';
+import { checkProductionAuthGuard } from '../../infrastructure/auth/dev-auth-production-guard.js';
+import {
+  JoseJwtAuthentication,
+  type JoseJwtAuthenticationConfig,
+  type JwtTokenType,
+} from '../../infrastructure/auth/jose-jwt-authentication.js';
 import { buildEnvCockpitExtensionActivationSource } from '../../infrastructure/cockpit/env-cockpit-extension-activation-source.js';
 import { OpenFgaAuthorization } from '../../infrastructure/auth/openfga-authorization.js';
 import { InMemoryQueryCache, RedisQueryCache } from '../../infrastructure/caching/index.js';
@@ -91,6 +96,7 @@ import {
   type CockpitWebSessionConfig,
 } from './cockpit-web-session.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
+import { isProductionLikeRuntime, parseCorsAllowedOrigins } from './control-plane-origin-policy.js';
 import {
   listFixtureHumanTasks,
   listFixtureMembers,
@@ -186,14 +192,55 @@ export function getJoseAuthConfigWarnings(
   return warnings;
 }
 
-function tryBuildJoseAuthentication(): AuthenticationPort | null {
-  const jwksUri = process.env['PORTARIUM_JWKS_URI']?.trim();
+function parseCommaSeparatedEnv(
+  env: Record<string, string | undefined>,
+  key: string,
+): readonly string[] | undefined {
+  const raw = env[key]?.trim();
+  if (!raw) return undefined;
+
+  const values: string[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw.split(',')) {
+    const trimmed = entry.trim();
+    if (!trimmed) throw new Error(`[portarium] FATAL: ${key} contains an empty entry.`);
+    if (seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    values.push(trimmed);
+  }
+  return values;
+}
+
+function parseJwtTokenType(env: Record<string, string | undefined>): JwtTokenType | undefined {
+  const raw = env['PORTARIUM_JWT_REQUIRED_TOKEN_TYPE']?.trim();
+  if (!raw) return undefined;
+  if (raw === 'at+JWT' || raw === 'JWT') return raw;
+  throw new Error(
+    "[portarium] FATAL: PORTARIUM_JWT_REQUIRED_TOKEN_TYPE must be 'at+JWT' or 'JWT'.",
+  );
+}
+
+function normalizeAudience(
+  env: Record<string, string | undefined>,
+): string | readonly string[] | undefined {
+  const values = parseCommaSeparatedEnv(env, 'PORTARIUM_JWT_AUDIENCE');
+  if (!values) return undefined;
+  return values.length === 1 ? values[0] : values;
+}
+
+export function buildJoseAuthenticationConfigFromEnv(
+  env: Record<string, string | undefined> = process.env,
+): JoseJwtAuthenticationConfig | null {
+  const jwksUri = env['PORTARIUM_JWKS_URI']?.trim();
   if (!jwksUri) return null;
 
-  const issuer = process.env['PORTARIUM_JWT_ISSUER']?.trim();
-  const audience = process.env['PORTARIUM_JWT_AUDIENCE']?.trim();
+  const issuer = env['PORTARIUM_JWT_ISSUER']?.trim();
+  const audience = normalizeAudience(env);
+  const authorizedParty = env['PORTARIUM_JWT_AUTHORIZED_PARTY']?.trim();
+  const trustedIssuers = parseCommaSeparatedEnv(env, 'PORTARIUM_JWT_TRUSTED_ISSUERS');
+  const requiredTokenType = parseJwtTokenType(env);
 
-  const warnings = getJoseAuthConfigWarnings();
+  const warnings = getJoseAuthConfigWarnings(env);
   if (warnings.length > 0) {
     throw new Error(
       '[portarium] FATAL: JWKS authentication requires issuer and audience validation. ' +
@@ -201,11 +248,40 @@ function tryBuildJoseAuthentication(): AuthenticationPort | null {
     );
   }
 
-  return new JoseJwtAuthentication({
+  const errors: string[] = [];
+  if (isProductionLikeRuntime(env)) {
+    if (!authorizedParty) {
+      errors.push('PORTARIUM_JWT_AUTHORIZED_PARTY is required for production JWKS auth.');
+    }
+    if (!trustedIssuers || trustedIssuers.length === 0) {
+      errors.push('PORTARIUM_JWT_TRUSTED_ISSUERS is required for production JWKS auth.');
+    }
+    if (!requiredTokenType) {
+      errors.push('PORTARIUM_JWT_REQUIRED_TOKEN_TYPE is required for production JWKS auth.');
+    }
+  }
+  if (issuer && trustedIssuers && !trustedIssuers.includes(issuer)) {
+    errors.push('PORTARIUM_JWT_TRUSTED_ISSUERS must include PORTARIUM_JWT_ISSUER.');
+  }
+  if (errors.length > 0) {
+    throw new Error(
+      '[portarium] FATAL: JWKS authentication hardening is incomplete. ' + errors.join(' '),
+    );
+  }
+
+  return {
     jwksUri,
     ...(issuer ? { issuer } : {}),
     ...(audience ? { audience } : {}),
-  });
+    ...(authorizedParty ? { authorizedParty } : {}),
+    ...(trustedIssuers ? { trustedIssuers } : {}),
+    ...(requiredTokenType ? { requiredTokenType } : {}),
+  };
+}
+
+function tryBuildJoseAuthentication(): AuthenticationPort | null {
+  const config = buildJoseAuthenticationConfigFromEnv();
+  return config ? new JoseJwtAuthentication(config) : null;
 }
 
 function tryBuildDevAuthentication(): AuthenticationPort | null {
@@ -274,6 +350,24 @@ function buildAuthentication(): AuthenticationPort {
       'Set PORTARIUM_JWKS_URI, PORTARIUM_JWT_ISSUER, and PORTARIUM_JWT_AUDIENCE, ' +
       'or set ENABLE_DEV_AUTH=true with PORTARIUM_DEV_TOKEN and PORTARIUM_DEV_WORKSPACE_ID in development/test only.',
   );
+}
+
+function assertProductionRuntimeSecurityConfig(): void {
+  parseCorsAllowedOrigins(process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']);
+
+  const audience = normalizeAudience(process.env);
+  const audienceList =
+    audience === undefined ? undefined : Array.isArray(audience) ? audience : [audience];
+  const productionGuard = checkProductionAuthGuard({
+    env: process.env,
+    ...(audienceList ? { jwtAudience: audienceList } : {}),
+  });
+  if (!productionGuard.safe) {
+    throw new Error(
+      '[portarium] FATAL: Production authentication guard failed. ' +
+        productionGuard.violations.map((violation) => violation.detail).join(' '),
+    );
+  }
 }
 
 function firstNonEmpty(...values: readonly (string | undefined)[]): string | undefined {
@@ -630,6 +724,7 @@ function buildActionRunner(): ActionRunnerPort {
 }
 
 export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
+  assertProductionRuntimeSecurityConfig();
   const authentication = buildAuthentication();
   const authorization = buildAuthorization();
   const rateLimitStore = buildRateLimitStore();

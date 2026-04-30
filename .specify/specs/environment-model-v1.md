@@ -88,6 +88,20 @@ Multi-AZ RDS           —         false     true      true
 Deletion protection    —         false     false     true
 ```
 
+### Control-plane browser/auth hardening
+
+- Staging and prod control-plane deployments must use JWKS auth with
+  `PORTARIUM_JWKS_URI`, `PORTARIUM_JWT_ISSUER`, `PORTARIUM_JWT_AUDIENCE`,
+  `PORTARIUM_JWT_AUTHORIZED_PARTY`, `PORTARIUM_JWT_TRUSTED_ISSUERS`, and
+  `PORTARIUM_JWT_REQUIRED_TOKEN_TYPE`.
+- Dev-token auth is only valid in `development` or `test` runtimes and requires
+  `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN`, and
+  `PORTARIUM_DEV_WORKSPACE_ID`.
+- Production Cockpit defaults to same-origin `/auth/*` and `/v1/*` routes. A
+  cross-origin Cockpit deployment must use `PORTARIUM_CORS_ALLOWED_ORIGINS`
+  with exact origins only; wildcard or suffix-based origin matching is not a
+  valid environment configuration.
+
 ### Kubernetes configuration (Kustomize overlays)
 
 Each environment has a Kustomize overlay under `infra/kubernetes/overlays/<env>/`:

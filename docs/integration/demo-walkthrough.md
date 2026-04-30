@@ -6,7 +6,7 @@ A step-by-step guide to running the Portarium integration showcase locally and d
 
 - Node.js `>=22`
 - Docker + Docker Compose
-- `PORTARIUM_DEV_TOKEN` set (see [Local Dev Guide](../getting-started/local-dev.md))
+- Local dev auth enabled with `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN`, and `PORTARIUM_DEV_WORKSPACE_ID` (see [Local Dev Guide](../getting-started/local-dev.md))
 
 ## 1. Start the local stack
 
@@ -19,15 +19,16 @@ This starts Postgres, Temporal, MinIO, Vault, the API (port 8080), and the worke
 available immediately at `http://localhost:8080`.
 
 > **Dev-auth bypass:** `PORTARIUM_DEV_TOKEN=portarium-dev-token` is accepted as a static bearer
-> token when `NODE_ENV=development`. No Keycloak required for demos.
+> token only when `ENABLE_DEV_AUTH=true` and `NODE_ENV` is `development` or `test`.
+> No Keycloak required for demos.
 
 ## 2. Boot the Cockpit (optional)
 
 ```bash
-cd apps/cockpit && npm run dev
+npm run cockpit:dev
 ```
 
-Open `http://localhost:5173`.
+Open `http://cockpit.localhost:1355`.
 
 ## 3. Showcase: Approvals governance flow
 

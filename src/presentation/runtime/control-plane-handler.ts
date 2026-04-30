@@ -49,6 +49,7 @@ import {
   type ControlPlaneDeps,
   type ProblemDetails,
 } from './control-plane-handler.shared.js';
+import { isAllowedCorsOrigin, parseCorsAllowedOrigins } from './control-plane-origin-policy.js';
 import {
   handleAgentHeartbeat,
   handleGetAgentWorkItems,
@@ -1305,6 +1306,34 @@ function handleLogoutCockpitWebSession(ctx: RequestContext): void {
  */
 const rootLog = createLogger('control-plane');
 
+const CORS_ALLOWED_METHODS = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
+const CORS_ALLOWED_HEADERS =
+  'authorization, content-type, x-correlation-id, x-portarium-request, traceparent, tracestate, if-match, if-none-match';
+
+function appendVaryOrigin(res: ServerResponse): void {
+  const existing = res.getHeader('vary');
+  if (!existing) {
+    res.setHeader('vary', 'Origin');
+    return;
+  }
+
+  const values = Array.isArray(existing) ? existing.join(',') : String(existing);
+  const hasOrigin = values
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .includes('origin');
+  if (!hasOrigin) res.setHeader('vary', `${values}, Origin`);
+}
+
+function applyCorsHeaders(res: ServerResponse, origin: string): void {
+  appendVaryOrigin(res);
+  res.setHeader('access-control-allow-origin', origin);
+  res.setHeader('access-control-allow-credentials', 'true');
+  res.setHeader('access-control-allow-methods', CORS_ALLOWED_METHODS);
+  res.setHeader('access-control-allow-headers', CORS_ALLOWED_HEADERS);
+  res.setHeader('access-control-max-age', '86400');
+}
+
 function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   const app = new Hono<HonoEnv>();
 
@@ -1334,36 +1363,42 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   });
 
   // -------------------------------------------------------------------------
-  // CORS — allow cockpit dev server cross-origin requests (dev only)
+  // CORS — default production topology is same-origin. Cross-origin Cockpit
+  // deployments must opt in with an exact origin allowlist.
   // -------------------------------------------------------------------------
-  if (process.env['NODE_ENV'] === 'development' || process.env['NODE_ENV'] === 'test') {
-    const allowedOrigins = process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']
-      ?.split(',')
-      .map((o) => o.trim());
-    app.use('*', async (c, next) => {
-      const { incoming, outgoing } = c.env;
-      const origin = incoming.headers.origin;
-      if (
-        typeof origin === 'string' &&
-        (allowedOrigins ? allowedOrigins.includes(origin) : false)
-      ) {
-        outgoing.setHeader('access-control-allow-origin', origin);
-        outgoing.setHeader('access-control-allow-credentials', 'true');
-        outgoing.setHeader('access-control-allow-methods', 'GET, POST, PUT, PATCH, OPTIONS');
-        outgoing.setHeader(
-          'access-control-allow-headers',
-          'authorization, content-type, x-correlation-id, x-portarium-request, traceparent, tracestate, if-match, if-none-match',
-        );
-        outgoing.setHeader('access-control-max-age', '86400');
-      }
-      if (incoming.method === 'OPTIONS') {
-        outgoing.statusCode = 204;
-        outgoing.end();
-        return;
-      }
-      await next();
-    });
-  }
+  const allowedOrigins = parseCorsAllowedOrigins(process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']);
+  app.use('*', async (c, next) => {
+    const { incoming, outgoing } = c.env;
+    const origin =
+      typeof incoming.headers.origin === 'string' ? incoming.headers.origin : undefined;
+    const allowed = isAllowedCorsOrigin(origin, allowedOrigins);
+    if (origin && allowedOrigins.length > 0) appendVaryOrigin(outgoing);
+    if (origin && allowed) applyCorsHeaders(outgoing, origin);
+    await next();
+  });
+
+  app.options('*', (c) => {
+    const { incoming, outgoing } = c.env;
+    const origin =
+      typeof incoming.headers.origin === 'string' ? incoming.headers.origin : undefined;
+    const isPreflight = Boolean(incoming.headers['access-control-request-method']);
+    if (!isPreflight) {
+      outgoing.statusCode = 204;
+      outgoing.end();
+      return c.body(null);
+    }
+
+    const allowed = isAllowedCorsOrigin(origin, allowedOrigins);
+    outgoing.statusCode = allowed ? 204 : 403;
+    if (!allowed) {
+      outgoing.setHeader('content-type', 'application/json');
+      outgoing.end(JSON.stringify({ error: 'Origin is not allowed by CORS policy.' }));
+      return c.body(null);
+    }
+
+    outgoing.end();
+    return c.body(null);
+  });
 
   // -------------------------------------------------------------------------
   // Security headers — CSP, HSTS, X-Content-Type-Options, X-Frame-Options

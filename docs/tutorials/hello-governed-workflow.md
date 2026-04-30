@@ -46,8 +46,9 @@ npm run dev:seed
 Set the dev-auth token for local API calls:
 
 ```bash
+export ENABLE_DEV_AUTH=true
 export PORTARIUM_DEV_TOKEN=portarium-dev-token
-export PORTARIUM_DEV_WORKSPACE_ID=ws-local
+export PORTARIUM_DEV_WORKSPACE_ID=ws-local-dev
 ```
 
 Verify the stack is healthy:

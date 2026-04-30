@@ -252,13 +252,14 @@ npx vitest run scripts/integration/scenario-policy-bypass.test.ts
 
 ### Token failures
 
-| Symptom                                           | Cause                                                    | Fix                                                                       |
-| ------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `Unauthorized: Missing bearer token`              | No `Authorization` header sent                           | Set `PORTARIUM_DEV_TOKEN` or pass `--auth oidc` and obtain a JWT          |
-| `Unauthorized: Invalid dev-token format`          | Token value does not match expected format               | Check `PORTARIUM_DEV_TOKEN` matches value in `docker-compose.local.yml`   |
-| `Unauthorized: Token expired`                     | OIDC JWT `exp` claim is in the past                      | Obtain a fresh token from Keycloak; check host/container clock sync       |
-| `Unauthorized: JWT signature verification failed` | JWKS keys do not match token issuer                      | Verify `infra/keycloak/realm-portarium.json` is mounted; restart Keycloak |
-| `Unauthorized: Token workspace does not match`    | Token scoped to workspace-A, request targets workspace-B | Obtain a token for the correct Workspace or use dev-token mode            |
+| Symptom                                                               | Cause                                                                 | Fix                                                                                                                                                |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Unauthorized: Missing bearer token`                                  | No `Authorization` header sent                                        | Enable dev-token auth with `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN`, and `PORTARIUM_DEV_WORKSPACE_ID`, or pass `--auth oidc` and obtain a JWT |
+| `Unauthorized: Invalid dev-token format`                              | Token value does not match expected format or dev auth is not enabled | Check `ENABLE_DEV_AUTH=true` and that `PORTARIUM_DEV_TOKEN` matches value in `docker-compose.local.yml`                                            |
+| `Unauthorized: Token expired`                                         | OIDC JWT `exp` claim is in the past                                   | Obtain a fresh token from Keycloak; check host/container clock sync                                                                                |
+| `Unauthorized: JWT signature verification failed`                     | JWKS keys do not match token issuer                                   | Verify `infra/keycloak/realm-portarium.json` is mounted; restart Keycloak                                                                          |
+| Startup fails with `PORTARIUM_JWT_ISSUER` or `PORTARIUM_JWT_AUDIENCE` | JWKS auth is configured without required issuer/audience validation   | Set `PORTARIUM_JWKS_URI`, `PORTARIUM_JWT_ISSUER`, and `PORTARIUM_JWT_AUDIENCE` as a set                                                            |
+| `Unauthorized: Token workspace does not match`                        | Token scoped to workspace-A, request targets workspace-B              | Obtain a token for the correct Workspace or use dev-token mode                                                                                     |
 
 ### OpenFGA / authorization failures
 

@@ -9,6 +9,7 @@ import {
 } from 'jose';
 
 import { appContextFromWorkspaceAuthClaims } from '../../application/iam/claims-to-context.js';
+import { WorkspaceAuthClaimParseError } from '../../application/iam/workspace-actor.js';
 import { isWorkspaceUserRole } from '../../domain/primitives/index.js';
 import type {
   AuthenticateBearerTokenInput,
@@ -388,14 +389,24 @@ export class JoseJwtAuthentication implements AuthenticationPort {
 
     const normalizedClaims = normalizeWorkspaceClaims(payload);
 
-    const { actor, ctx } = appContextFromWorkspaceAuthClaims({
-      claims: normalizedClaims,
-      correlationId: input.correlationId,
-      ...(input.traceparent ? { traceparent: input.traceparent } : {}),
-      ...(input.tracestate ? { tracestate: input.tracestate } : {}),
-      scopes: parseScopes(payload),
-      capabilities: parseCapabilities(payload),
-    });
+    let actorAndContext: ReturnType<typeof appContextFromWorkspaceAuthClaims>;
+    try {
+      actorAndContext = appContextFromWorkspaceAuthClaims({
+        claims: normalizedClaims,
+        correlationId: input.correlationId,
+        ...(input.traceparent ? { traceparent: input.traceparent } : {}),
+        ...(input.tracestate ? { tracestate: input.tracestate } : {}),
+        scopes: parseScopes(payload),
+        capabilities: parseCapabilities(payload),
+      });
+    } catch (error) {
+      if (error instanceof WorkspaceAuthClaimParseError) {
+        return err({ kind: 'Unauthorized', message: 'Invalid workspace authentication claims.' });
+      }
+      throw error;
+    }
+
+    const { actor, ctx } = actorAndContext;
 
     const expectedWorkspaceId = input.expectedWorkspaceId?.trim();
     if (input.requireExpectedWorkspaceId && !expectedWorkspaceId) {

@@ -20,12 +20,37 @@
 ### Authentication
 
 - `PORTARIUM_JWKS_URI` — JWKS endpoint; enables JWT auth when set
-- `PORTARIUM_JWT_ISSUER` (optional) — expected token issuer
-- `PORTARIUM_JWT_AUDIENCE` (optional) — expected token audience
-- `ENABLE_DEV_AUTH` — set `true` (with `NODE_ENV=development`) to activate static dev token auth
+- `PORTARIUM_JWT_ISSUER` — expected token issuer; required whenever `PORTARIUM_JWKS_URI` is set
+- `PORTARIUM_JWT_AUDIENCE` — expected token audience; required whenever `PORTARIUM_JWKS_URI` is set
+- `PORTARIUM_JWT_AUTHORIZED_PARTY` — expected `azp`/client id; required for production JWKS auth
+- `PORTARIUM_JWT_TRUSTED_ISSUERS` — comma-separated exact issuer allowlist; required for production JWKS auth and must include `PORTARIUM_JWT_ISSUER`
+- `PORTARIUM_JWT_REQUIRED_TOKEN_TYPE` — strict JWT `typ` header, `at+JWT` for new access-token issuances or `JWT` for legacy migration
+- `ENABLE_DEV_AUTH` — set `true` with `NODE_ENV=development` or `NODE_ENV=test` to activate static dev token auth
 - `PORTARIUM_DEV_TOKEN` — static bearer token for dev auth (requires `ENABLE_DEV_AUTH=true`)
 - `PORTARIUM_DEV_WORKSPACE_ID` — workspace ID injected by the dev token
 - `PORTARIUM_DEV_USER_ID` (optional) — user ID injected by the dev token
+
+Production deployments must use JWKS auth. Dev-token auth is rejected outside
+`development`/`test` and is disabled unless `ENABLE_DEV_AUTH=true`,
+`PORTARIUM_DEV_TOKEN`, and `PORTARIUM_DEV_WORKSPACE_ID` are all present.
+
+### Cockpit browser origin and session
+
+The supported production topology is same-origin Cockpit and control-plane
+routes behind one reverse proxy. In that mode Cockpit calls relative `/auth/*`
+and `/v1/*` URLs and no CORS headers are required.
+
+For deliberate cross-origin deployments, set:
+
+- `PORTARIUM_CORS_ALLOWED_ORIGINS` — comma-separated exact browser origins allowed to call the control plane with credentials. Wildcards, paths, queries, and suffix matching are rejected.
+
+Cockpit web sessions use server-owned HttpOnly cookies:
+
+- `PORTARIUM_COCKPIT_OIDC_ISSUER` — OIDC issuer for Cockpit login; defaults to `PORTARIUM_JWT_ISSUER` when omitted
+- `PORTARIUM_COCKPIT_OIDC_CLIENT_ID` — OIDC client id for Cockpit login
+- `PORTARIUM_COCKPIT_OIDC_REDIRECT_URI` — callback URL registered with the IdP
+- `PORTARIUM_COCKPIT_SESSION_COOKIE` — optional cookie name override
+- `PORTARIUM_COCKPIT_SESSION_TTL_SECONDS` — optional web session TTL override
 
 ### Authorisation
 
