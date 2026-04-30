@@ -71,6 +71,7 @@
     "startRun",
     "streamLocationEvents",
     "streamMachineInvocation",
+    "submitRunIntervention",
     "testAgentConnection",
     "testMachineConnection",
     "updateAdapterRegistration",
