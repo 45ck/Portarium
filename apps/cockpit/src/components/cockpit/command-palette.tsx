@@ -26,6 +26,7 @@ import {
   PanelLeft,
   Database,
   GitBranchPlus,
+  Plug,
 } from 'lucide-react';
 
 interface CommandItemDef {
@@ -148,6 +149,11 @@ function CommandPalette() {
       label: 'Governance',
       icon: <Scale className="h-4 w-4" />,
       onSelect: () => nav('/explore/governance'),
+    },
+    {
+      label: 'Extensions',
+      icon: <Plug className="h-4 w-4" />,
+      onSelect: () => nav('/explore/extensions'),
     },
     {
       label: 'Robots',

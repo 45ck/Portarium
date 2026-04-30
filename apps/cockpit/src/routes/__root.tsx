@@ -43,6 +43,7 @@ import {
   PanelLeftOpen,
   GitBranch,
   Map,
+  Plug,
   Users,
   Sliders,
 } from 'lucide-react';
@@ -211,6 +212,11 @@ const NAV_SECTIONS: NavSectionDef[] = [
         label: 'Pack Runtime',
         to: '/explore/pack-runtime',
         icon: <Settings className="h-4 w-4" />,
+      },
+      {
+        label: 'Extensions',
+        to: '/explore/extensions',
+        icon: <Plug className="h-4 w-4" />,
       },
     ],
   },

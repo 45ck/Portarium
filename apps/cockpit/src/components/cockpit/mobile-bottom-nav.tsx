@@ -100,6 +100,7 @@ const MORE_SECTIONS = [
       { label: 'Events', to: '/explore/events' },
       { label: 'Observability', to: '/explore/observability' },
       { label: 'Governance', to: '/explore/governance' },
+      { label: 'Extensions', to: '/explore/extensions' },
     ],
   },
 ];
