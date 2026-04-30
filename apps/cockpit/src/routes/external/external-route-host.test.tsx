@@ -111,6 +111,7 @@ beforeAll(() => {
             availablePersonas: ['Operator', 'Admin'],
             availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
             availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+            availablePrivacyClasses: ['internal', 'restricted'],
             activePackIds: ['example.reference'],
             quarantinedExtensionIds: [],
             issuedAtIso: '2026-04-30T02:00:00.000Z',
@@ -151,6 +152,7 @@ beforeEach(() => {
     availablePersonas: ['Operator', 'Admin'],
     availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
     availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    availablePrivacyClasses: ['internal', 'restricted'],
     activePackIds: ['example.reference'],
     quarantinedExtensionIds: [],
     issuedAtIso: '2026-04-30T02:00:00.000Z',
@@ -200,6 +202,7 @@ describe('external route host', () => {
       availablePersonas: ['Operator', 'Admin'],
       availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: ['internal', 'restricted'],
       activePackIds: [],
       quarantinedExtensionIds: [],
       issuedAtIso: '2026-04-30T02:00:00.000Z',
@@ -221,11 +224,38 @@ describe('external route host', () => {
 
     expect(await screen.findByRole('heading', { name: 'Extension Route Restricted' })).toBeTruthy();
     expect(
-      screen.getByText('This route is not available for the active Cockpit persona.'),
+      screen.getByText('This route is not available for the current server-issued guard context.'),
     ).toBeTruthy();
     expect(screen.getByText('Host Fallback')).toBeTruthy();
     expect(screen.getByText('restricted')).toBeTruthy();
+    expect(screen.getByText('route-forbidden')).toBeTruthy();
+    expect(screen.getByText('persona')).toBeTruthy();
     expect(screen.queryByText('Extension Boundary')).toBeNull();
+  });
+
+  it('fails closed without importing route content when route privacy grants are missing', async () => {
+    queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator', 'Admin'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: [],
+      activePackIds: ['example.reference'],
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
+
+    await renderRoute('/external/example-reference/overview');
+
+    expect(await screen.findByRole('heading', { name: 'Extension Route Restricted' })).toBeTruthy();
+    expect(screen.getByText('route-forbidden')).toBeTruthy();
+    expect(screen.getByText('missing-privacy-class')).toBeTruthy();
+    expect(screen.queryByText('Extension Boundary')).toBeNull();
+    expect(screen.queryByText('Reference Overview')).toBeNull();
   });
 
   it('fails closed without route metadata when an active external route has no host-owned renderer', async () => {

@@ -33,6 +33,7 @@ describe('installed cockpit extension catalog', () => {
       activePackIds: ['example.reference'],
       availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: ['internal', 'restricted'],
     });
 
     expect(registry.problems).toEqual([]);

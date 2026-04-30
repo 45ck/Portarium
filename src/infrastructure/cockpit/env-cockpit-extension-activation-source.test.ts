@@ -15,6 +15,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
           quarantinedExtensionIds: ['demo.extension'],
           availableCapabilities: ['objects:read', 'incidents:read'],
           availableApiScopes: ['extensions.read', 'approvals.read'],
+          availablePrivacyClasses: ['internal', 'restricted'],
         },
         {
           workspaceIds: ['ws-2'],
@@ -40,6 +41,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
       quarantinedExtensionIds: ['demo.extension'],
       availableCapabilities: ['objects:read', 'incidents:read'],
       availableApiScopes: ['extensions.read', 'approvals.read'],
+      availablePrivacyClasses: ['internal', 'restricted'],
     });
   });
 
@@ -68,6 +70,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
       quarantinedExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
+      availablePrivacyClasses: [],
     });
   });
 
@@ -90,6 +93,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
       quarantinedExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
+      availablePrivacyClasses: [],
     });
   });
 
@@ -117,6 +121,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
       quarantinedExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
+      availablePrivacyClasses: [],
     });
   });
 });

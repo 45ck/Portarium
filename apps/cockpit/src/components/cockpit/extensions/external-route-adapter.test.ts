@@ -45,9 +45,15 @@ const TEST_ROUTE_LOADERS = {
   'test-detail': () => Promise.resolve({ default: () => null }),
 };
 
+const TEST_COMPONENTS = {
+  'test-overview': () => null,
+  'test-detail': () => null,
+};
+
 const TEST_ACCESS_CONTEXT = {
   availableCapabilities: ['objects:read'],
   availableApiScopes: ['extensions.read'],
+  availablePrivacyClasses: [],
 } as const;
 
 describe('resolveExternalRoute', () => {
@@ -59,9 +65,10 @@ describe('resolveExternalRoute', () => {
       availableApiScopes: ['extensions.read'],
     });
 
-    expect(resolution).toEqual({
+    expect(resolution).toMatchObject({
       kind: 'not-found',
       pathname: '/external/example-reference/overview',
+      audit: { decision: 'deny', reason: 'extension-disabled', surface: 'external-route' },
     });
   });
 
@@ -78,13 +85,14 @@ describe('resolveExternalRoute', () => {
       persona: 'Admin',
       ...TEST_ACCESS_CONTEXT,
       registry,
+      components: TEST_COMPONENTS,
     });
 
     expect(resolution.kind).toBe('active');
     if (resolution.kind !== 'active') throw new Error('Expected active route');
     expect(resolution.route.id).toBe('test-detail');
     expect(resolution.params).toEqual({ itemId: 'item-123' });
-    expect(resolution.component).toBeNull();
+    expect(resolution.component).toBe(TEST_COMPONENTS['test-detail']);
   });
 
   it('returns forbidden when the persona is outside the route guard', () => {
@@ -103,6 +111,14 @@ describe('resolveExternalRoute', () => {
     });
 
     expect(resolution.kind).toBe('forbidden');
+    if (resolution.kind !== 'forbidden') throw new Error('Expected forbidden route');
+    expect(resolution.denials).toEqual([{ code: 'persona' }]);
+    expect(resolution.audit).toMatchObject({
+      decision: 'deny',
+      reason: 'route-forbidden',
+      extensionId: 'test.extension',
+      routeId: 'test-detail',
+    });
   });
 
   it('returns forbidden when the caller lacks route capabilities or API scopes', () => {
@@ -122,6 +138,38 @@ describe('resolveExternalRoute', () => {
     });
 
     expect(resolution.kind).toBe('forbidden');
+    if (resolution.kind !== 'forbidden') throw new Error('Expected forbidden route');
+    expect(resolution.denials).toEqual([
+      { code: 'missing-capability', missing: ['objects:read'] },
+      { code: 'missing-api-scope', missing: ['extensions.read'] },
+    ]);
+  });
+
+  it('fails closed with audit metadata when the host has no route renderer', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/overview',
+      persona: 'Operator',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+    });
+
+    expect(resolution).toMatchObject({
+      kind: 'not-found',
+      pathname: '/external/test/overview',
+      audit: {
+        decision: 'deny',
+        reason: 'missing-renderer',
+        extensionId: 'test.extension',
+        routeId: 'test-overview',
+      },
+    });
   });
 
   it('fails closed when the matching extension is installed but disabled', () => {
@@ -136,9 +184,16 @@ describe('resolveExternalRoute', () => {
       registry,
     });
 
-    expect(resolution).toEqual({
+    expect(resolution).toMatchObject({
       kind: 'not-found',
       pathname: '/external/test/overview',
+      audit: {
+        decision: 'deny',
+        reason: 'extension-disabled',
+        surface: 'external-route',
+        extensionId: 'test.extension',
+        routeId: 'test-overview',
+      },
     });
   });
 
@@ -156,9 +211,10 @@ describe('resolveExternalRoute', () => {
       registry,
     });
 
-    expect(resolution).toEqual({
+    expect(resolution).toMatchObject({
       kind: 'not-found',
       pathname: '/external/unknown',
+      audit: { decision: 'deny', reason: 'not-found', surface: 'external-route' },
     });
   });
 
@@ -175,6 +231,7 @@ describe('resolveExternalRoute', () => {
       persona: 'Admin',
       ...TEST_ACCESS_CONTEXT,
       registry,
+      components: TEST_COMPONENTS,
     });
 
     expect(resolution.kind).toBe('active');
@@ -195,12 +252,14 @@ describe('resolveExternalRoute', () => {
       persona: 'Admin',
       ...TEST_ACCESS_CONTEXT,
       registry,
+      components: TEST_COMPONENTS,
     });
     const invalidEscape = resolveExternalRoute({
       pathname: '/external/test/items/item%ZZ',
       persona: 'Admin',
       ...TEST_ACCESS_CONTEXT,
       registry,
+      components: TEST_COMPONENTS,
     });
 
     expect(decoded.kind).toBe('active');

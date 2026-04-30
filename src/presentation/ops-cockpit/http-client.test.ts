@@ -84,6 +84,7 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
       availablePersonas: ['Operator'],
       availableCapabilities: [],
       availableApiScopes: [],
+      availablePrivacyClasses: [],
       activePackIds: [],
       quarantinedExtensionIds: [],
       issuedAtIso: '2026-04-30T02:00:00.000Z',

@@ -70,6 +70,7 @@ function buildServerAccess(
     accessContext: {
       availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: ['internal', 'restricted'],
       availablePersonas: ['Operator'],
     },
     ...overrides,
@@ -141,6 +142,25 @@ describe('CommandPalette', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         activePackIds: [],
+      }),
+    );
+
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByText('G X')).toBeNull();
+    expect(screen.getByRole('button', { name: /^extensions$/i })).toBeTruthy();
+  });
+
+  it('omits commands when the referenced route guard denies privacy class access', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        accessContext: {
+          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availablePrivacyClasses: [],
+          availablePersonas: ['Operator'],
+        },
       }),
     );
 

@@ -16,6 +16,7 @@ export type EnvCockpitExtensionActivationGrant = Readonly<{
   quarantinedExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
+  availablePrivacyClasses?: readonly string[];
 }>;
 
 export class EnvCockpitExtensionActivationSource implements CockpitExtensionActivationSource {
@@ -35,6 +36,7 @@ export class EnvCockpitExtensionActivationSource implements CockpitExtensionActi
       quarantinedExtensionIds: mergeGrantLists(matchingGrants, 'quarantinedExtensionIds'),
       availableCapabilities: mergeGrantLists(matchingGrants, 'availableCapabilities'),
       availableApiScopes: mergeGrantLists(matchingGrants, 'availableApiScopes'),
+      availablePrivacyClasses: mergeGrantLists(matchingGrants, 'availablePrivacyClasses'),
     });
   }
 }
@@ -61,6 +63,7 @@ function parseGrantList(value: string | undefined): readonly EnvCockpitExtension
       quarantinedExtensionIds: readStringList(grant, 'quarantinedExtensionIds'),
       availableCapabilities: readStringList(grant, 'availableCapabilities'),
       availableApiScopes: readStringList(grant, 'availableApiScopes'),
+      availablePrivacyClasses: readStringList(grant, 'availablePrivacyClasses'),
     }));
   } catch {
     return [];
@@ -92,6 +95,7 @@ function normalizeGrant(
     quarantinedExtensionIds: normalizeList(grant.quarantinedExtensionIds ?? []),
     availableCapabilities: normalizeList(grant.availableCapabilities ?? []),
     availableApiScopes: normalizeList(grant.availableApiScopes ?? []),
+    availablePrivacyClasses: normalizeList(grant.availablePrivacyClasses ?? []),
   };
 }
 
@@ -125,7 +129,11 @@ function mergeGrantLists(
   grants: readonly EnvCockpitExtensionActivationGrant[],
   key: keyof Pick<
     EnvCockpitExtensionActivationGrant,
-    'activePackIds' | 'quarantinedExtensionIds' | 'availableCapabilities' | 'availableApiScopes'
+    | 'activePackIds'
+    | 'quarantinedExtensionIds'
+    | 'availableCapabilities'
+    | 'availableApiScopes'
+    | 'availablePrivacyClasses'
   >,
 ): readonly string[] {
   return normalizeList(grants.flatMap((grant) => grant[key] ?? []));

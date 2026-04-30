@@ -19,6 +19,7 @@ const neutralRouteLoaders = Object.fromEntries(
 const neutralAccessContext = {
   availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
   availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+  availablePrivacyClasses: ['internal', 'restricted'],
 } as const;
 
 function cloneExtension(
@@ -545,7 +546,7 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toEqual([]);
   });
 
-  it('filters routes, nav items, and commands through the same capability and scope model', () => {
+  it('filters routes, nav items, and commands through the same host guard model', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
       activePackIds: ['example.reference'],
@@ -565,18 +566,37 @@ describe('cockpit extension registry', () => {
         persona: 'Operator',
         availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
       }).map((route) => route.id),
     ).toEqual(['example-reference-overview']);
     expect(
       selectExtensionNavItems(registry, 'sidebar', 'Operator', {
         availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
       }).map((item) => item.id),
     ).toEqual(['example-reference-overview-nav']);
     expect(
       selectExtensionCommands(registry, 'Operator', {
         availableCapabilities: [],
         availableApiScopes: ['extensions.read'],
+      }),
+    ).toEqual([]);
+  });
+
+  it('uses the referenced route guard as the host decision for nav items', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(
+      selectExtensionNavItems(registry, 'sidebar', 'Operator', {
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: [],
       }),
     ).toEqual([]);
   });
@@ -604,12 +624,14 @@ describe('cockpit extension registry', () => {
       selectExtensionCommands(registry, 'Operator', {
         availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
       }),
     ).toEqual([]);
     expect(
       selectExtensionCommands(registry, 'Approver', {
         availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
       }),
     ).toEqual(approverOnly.commands);
   });
@@ -659,6 +681,7 @@ describe('cockpit extension registry', () => {
       denials: [
         { code: 'missing-capability', missing: ['extension:read'] },
         { code: 'missing-api-scope', missing: ['extensions.read'] },
+        { code: 'missing-privacy-class', missing: ['internal'] },
       ],
     });
   });
@@ -673,6 +696,7 @@ describe('cockpit extension registry', () => {
       denials: [
         { code: 'missing-capability', missing: ['extension:read'] },
         { code: 'missing-api-scope', missing: ['extensions.read'] },
+        { code: 'missing-privacy-class', missing: ['internal'] },
       ],
     });
   });

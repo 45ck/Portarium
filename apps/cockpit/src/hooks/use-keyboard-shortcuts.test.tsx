@@ -37,6 +37,7 @@ function buildServerAccess(
     accessContext: {
       availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: ['internal', 'restricted'],
       availablePersonas: ['Operator'],
     },
     ...overrides,
@@ -103,6 +104,26 @@ describe('useKeyboardShortcuts', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         activePackIds: [],
+      }),
+    );
+
+    renderHook(() => useKeyboardShortcuts());
+
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'x' });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('does not route shortcuts when the referenced route guard denies privacy class access', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        accessContext: {
+          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availablePrivacyClasses: [],
+          availablePersonas: ['Operator'],
+        },
       }),
     );
 

@@ -53,9 +53,10 @@ export const INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS = [
 export const DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT = {
   availableCapabilities: [],
   availableApiScopes: [],
+  availablePrivacyClasses: [],
 } as const satisfies Pick<
   CockpitExtensionAccessContext,
-  'availableCapabilities' | 'availableApiScopes'
+  'availableCapabilities' | 'availableApiScopes' | 'availablePrivacyClasses'
 >;
 
 const INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT = {
@@ -67,9 +68,10 @@ const INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT = {
     'requiredApiScopes',
     INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
   ),
+  availablePrivacyClasses: collectInstalledPrivacyClasses(INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS),
 } as const satisfies Pick<
   CockpitExtensionAccessContext,
-  'availableCapabilities' | 'availableApiScopes'
+  'availableCapabilities' | 'availableApiScopes' | 'availablePrivacyClasses'
 >;
 
 export const DEFAULT_COCKPIT_EXTENSION_REGISTRY = resolveCockpitExtensionRegistry({
@@ -108,6 +110,21 @@ function collectInstalledRequirements(
     ...new Set(
       INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) =>
         extension.packIds.every((packId) => activePackIds.includes(packId)) ? extension[key] : [],
+      ),
+    ),
+  ];
+}
+
+function collectInstalledPrivacyClasses(activePackIds: readonly string[]): readonly string[] {
+  return [
+    ...new Set(
+      INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) =>
+        extension.packIds.every((packId) => activePackIds.includes(packId))
+          ? [
+              ...extension.routes.flatMap((route) => route.guard.privacyClasses ?? []),
+              ...extension.commands.flatMap((command) => command.guard.privacyClasses ?? []),
+            ]
+          : [],
       ),
     ),
   ];

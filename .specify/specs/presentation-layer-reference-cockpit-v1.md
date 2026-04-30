@@ -178,6 +178,15 @@ For each primary screen, show dedicated state components for:
 - Unknown activation pack IDs or partially satisfied pack requirements must fail closed and must not partially surface extension routes, navigation items, commands, or shortcuts.
 - Extension resolution must expose installed, enabled, disabled, and invalid states so tests and UI can distinguish inactive workspace grants from invalid manifests.
 
+### R14a Host-owned extension guard pipeline
+
+- The host must resolve extension visibility from server-issued Workspace context before surfacing extension routes, sidebar links, mobile navigation items, command palette actions, or shortcuts.
+- Extension route code must not be imported until pack activation, quarantine state, route-module availability, persona, capability, API-scope, and privacy-class checks pass.
+- Missing, unknown, stale, or partial guard inputs must fail closed and prevent route, navigation, command, shortcut, and mobile surfaces from becoming reachable.
+- The same resolved route guard decision must drive `/external/` direct navigation, sidebar links, mobile navigation, command palette actions, and keyboard shortcuts.
+- Guard denials must expose audit-ready decision metadata for the host while user-facing forbidden and not-found fallbacks avoid leaking sensitive extension route metadata.
+- Extension UI may request governed actions only through Portarium Control Plane APIs; extension surfaces must not perform direct authoritative side effects outside those APIs.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

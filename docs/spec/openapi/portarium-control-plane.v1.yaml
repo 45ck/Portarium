@@ -2501,6 +2501,11 @@ components:
           items:
             type: string
             minLength: 1
+        availablePrivacyClasses:
+          type: array
+          items:
+            type: string
+            enum: [public, internal, restricted]
         activePackIds:
           type: array
           items:
@@ -2522,6 +2527,7 @@ components:
         - availablePersonas
         - availableCapabilities
         - availableApiScopes
+        - availablePrivacyClasses
         - activePackIds
         - quarantinedExtensionIds
         - issuedAtIso

@@ -56,6 +56,7 @@ function extensionContext(workspaceId: string) {
     availablePersonas: ['Operator'],
     availableCapabilities: [],
     availableApiScopes: [],
+    availablePrivacyClasses: [],
     activePackIds: [],
     quarantinedExtensionIds: [],
     issuedAtIso: issuedAt,

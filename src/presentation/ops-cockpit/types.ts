@@ -92,6 +92,7 @@ export interface CockpitExtensionContextResponse {
   availablePersonas: string[];
   availableCapabilities: string[];
   availableApiScopes: string[];
+  availablePrivacyClasses: string[];
   activePackIds: string[];
   quarantinedExtensionIds: string[];
   issuedAtIso: string;
