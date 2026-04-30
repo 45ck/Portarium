@@ -1125,6 +1125,31 @@ paths:
                 $ref: '#/components/schemas/RunV1'
         default:
           $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/runs/{runId}/interventions:
+    post:
+      tags: [Runs]
+      summary: Submit a run intervention
+      operationId: submitRunIntervention
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/RunIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunInterventionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunV1'
+        default:
+          $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/runs/{runId}/evidence:
     get:
       tags: [Runs]
@@ -3716,6 +3741,71 @@ components:
     RunStatus:
       type: string
       enum: [Pending, Running, WaitingForApproval, Paused, Succeeded, Failed, Cancelled]
+    RunControlState:
+      type: string
+      enum: [waiting, blocked, degraded, frozen, operator-owned]
+    RunInterventionKind:
+      type: string
+      enum:
+        - pause
+        - resume
+        - reroute
+        - handoff
+        - escalate
+        - annotate
+        - request-evidence
+        - request-more-evidence
+        - freeze
+        - sandbox
+        - emergency-disable
+    OperatorInputEffect:
+      type: string
+      enum:
+        - current-run-effect
+        - approval-gate-effect
+        - future-policy-effect
+        - workspace-safety-effect
+        - context-only
+    RunInterventionSurface:
+      type: string
+      enum:
+        - monitoring
+        - steering
+        - approval
+        - policy-change
+        - emergency
+    RunInterventionAuthoritySource:
+      type: string
+      enum:
+        - run-charter
+        - policy-rule
+        - delegated-role
+        - incident-break-glass
+        - audit-annotation
+    RunInterventionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        interventionType:
+          $ref: '#/components/schemas/RunInterventionKind'
+        rationale:
+          type: string
+          minLength: 8
+        target:
+          type: string
+          minLength: 1
+        surface:
+          $ref: '#/components/schemas/RunInterventionSurface'
+        authoritySource:
+          $ref: '#/components/schemas/RunInterventionAuthoritySource'
+        effect:
+          $ref: '#/components/schemas/OperatorInputEffect'
+        consequence:
+          type: string
+          minLength: 1
+        evidenceRequired:
+          type: boolean
+      required: [interventionType, rationale]
     RunV1:
       type: object
       additionalProperties: false
@@ -3737,6 +3827,11 @@ components:
           $ref: '#/components/schemas/UserId'
         status:
           $ref: '#/components/schemas/RunStatus'
+        controlState:
+          $ref: '#/components/schemas/RunControlState'
+        operatorOwnerId:
+          type: string
+          minLength: 1
         createdAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
         startedAtIso:
