@@ -178,8 +178,12 @@ test.describe('Staleness and offline banner', () => {
     // Navigate to a page that uses useOfflineQuery (approvals page)
     await page.goto('/approvals');
 
-    // Wait for the triage deck to be ready (data fully loaded from MSW)
-    await expect(page.getByTitle('Approve (A)')).toBeVisible({ timeout: 10_000 });
+    // Wait for the approvals route to mount. Earlier smoke tests can decide
+    // every pending approval in the shared MSW state, so this path must not
+    // depend on a mutable triage action being available.
+    await expect(page.getByRole('heading', { name: 'Approvals' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // No offline banner in nominal state
     const offlineBanner = page.getByText('Offline mode active');

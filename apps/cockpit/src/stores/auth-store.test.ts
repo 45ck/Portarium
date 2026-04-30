@@ -100,6 +100,32 @@ const webSessionMock = vi.hoisted(() => ({
   logoutWebSession: vi.fn(() => Promise.resolve()),
 }));
 
+const dataRetentionMock = vi.hoisted(() => {
+  const livePolicy = {
+    runtimeMode: 'live' as const,
+    usesLiveTenantData: true,
+    allowOfflineTenantData: false,
+    persistTenantQueryCache: false,
+    serviceWorkerTenantApiCache: false,
+  };
+
+  const demoPolicy = {
+    runtimeMode: 'demo' as const,
+    usesLiveTenantData: false,
+    allowOfflineTenantData: true,
+    persistTenantQueryCache: true,
+    serviceWorkerTenantApiCache: true,
+  };
+
+  return {
+    livePolicy,
+    demoPolicy,
+    getCockpitDataRetentionPolicy: vi.fn<() => typeof livePolicy | typeof demoPolicy>(
+      () => livePolicy,
+    ),
+  };
+});
+
 vi.mock('@/lib/native-bridge', () => ({
   secureGet: nativeBridgeMock.secureGet,
   secureSet: nativeBridgeMock.secureSet,
@@ -127,16 +153,32 @@ vi.mock('@/lib/web-session-auth', () => ({
   logoutWebSession: webSessionMock.logoutWebSession,
 }));
 
+vi.mock('@/lib/cockpit-data-retention', () => ({
+  getCockpitDataRetentionPolicy: dataRetentionMock.getCockpitDataRetentionPolicy,
+}));
+
 const TOKEN_KEY = 'portarium_cockpit_bearer_token';
 const REFRESH_TOKEN_KEY = 'portarium_cockpit_refresh_token';
 
 function seedCache() {
   localStorage.setItem(QUERY_CACHE_STORAGE_KEY, '{"cached":true}');
+  localStorage.setItem(
+    'portarium:cockpit:offline:approvals:ws-1',
+    JSON.stringify({ items: [{ approvalId: 'ap-1' }] }),
+  );
+  localStorage.setItem(
+    'portarium:cockpit:approval-outbox:v1:ws-1',
+    JSON.stringify([{ approvalId: 'ap-1' }]),
+  );
+  sessionStorage.setItem('portarium_pkce_state', '{"codeVerifier":"secret"}');
   queryClient.setQueryData(['runs', 'ws-1'], { items: [{ runId: 'run-1' }] });
 }
 
 function expectCacheCleared() {
   expect(localStorage.getItem(QUERY_CACHE_STORAGE_KEY)).toBeNull();
+  expect(localStorage.getItem('portarium:cockpit:offline:approvals:ws-1')).toBeNull();
+  expect(localStorage.getItem('portarium:cockpit:approval-outbox:v1:ws-1')).toBeNull();
+  expect(sessionStorage.getItem('portarium_pkce_state')).toBeNull();
   expect(queryClient.getQueryData(['runs', 'ws-1'])).toBeUndefined();
 }
 
@@ -147,6 +189,7 @@ beforeEach(() => {
   oidcMock.configured = true;
   oidcMock.jwtPayloads.clear();
   webSessionMock.currentSession = null;
+  dataRetentionMock.getCockpitDataRetentionPolicy.mockReturnValue(dataRetentionMock.livePolicy);
   localStorage.clear();
   sessionStorage.clear();
   queryClient.clear();
@@ -245,6 +288,28 @@ describe('useAuthStore cache isolation', () => {
     expectCacheCleared();
   });
 
+  it('keeps demo fixture tenant data when no web session exists', async () => {
+    nativeBridgeMock.native = false;
+    dataRetentionMock.getCockpitDataRetentionPolicy.mockReturnValue(dataRetentionMock.demoPolicy);
+    localStorage.setItem(TOKEN_KEY, 'legacy-local-token');
+    seedCache();
+
+    await useAuthStore.getState().initialize();
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'unauthenticated',
+      token: null,
+      claims: null,
+    });
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(localStorage.getItem(QUERY_CACHE_STORAGE_KEY)).not.toBeNull();
+    expect(localStorage.getItem('portarium:cockpit:offline:approvals:ws-1')).not.toBeNull();
+    expect(localStorage.getItem('portarium:cockpit:approval-outbox:v1:ws-1')).not.toBeNull();
+    expect(queryClient.getQueryData(['runs', 'ws-1'])).toEqual({
+      items: [{ runId: 'run-1' }],
+    });
+  });
+
   it('establishes web auth via the session endpoint without storing tokens', async () => {
     nativeBridgeMock.native = false;
     seedCache();
@@ -327,6 +392,30 @@ describe('useAuthStore cache isolation', () => {
 
     expect(webSessionMock.logoutWebSession).toHaveBeenCalled();
     expect(nativeBridgeMock.secureRemove).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().status).toBe('unauthenticated');
+    expectCacheCleared();
+  });
+
+  it('purges local tenant data even when web logout endpoint fails', async () => {
+    nativeBridgeMock.native = false;
+    webSessionMock.logoutWebSession.mockRejectedValueOnce(new Error('network down'));
+    useAuthStore.setState({
+      status: 'authenticated',
+      token: null,
+      claims: {
+        sub: 'web-user',
+        workspaceId: 'web-ws',
+        roles: ['operator'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+      error: null,
+    });
+    seedCache();
+
+    await useAuthStore.getState().logout();
+
     expect(useAuthStore.getState().status).toBe('unauthenticated');
     expectCacheCleared();
   });

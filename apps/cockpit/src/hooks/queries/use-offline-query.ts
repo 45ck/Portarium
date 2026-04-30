@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, type QueryKey, type UseQueryOptions } from '@tanstack/react-query';
+import { CockpitApiError } from '@/lib/control-plane-client';
 import { readOfflineCache, writeOfflineCache } from '@/lib/offline-cache';
 
 type OfflineDataSource = 'network' | 'cache' | 'none';
@@ -18,6 +19,10 @@ interface UseOfflineQueryOptions<TData, TQueryKey extends QueryKey> extends Omit
   queryKey: TQueryKey;
   cacheKey: string;
   queryFn: () => Promise<TData>;
+}
+
+function isAuthBoundaryFailure(error: unknown): boolean {
+  return error instanceof CockpitApiError && (error.status === 401 || error.status === 403);
 }
 
 export function useOfflineQuery<TData, TQueryKey extends QueryKey>(
@@ -61,6 +66,9 @@ export function useOfflineQuery<TData, TQueryKey extends QueryKey>(
         setDataSource('network');
         return data;
       } catch (error) {
+        if (isAuthBoundaryFailure(error)) {
+          throw error;
+        }
         const fallback = readOfflineCache<TData>(cacheKey);
         if (fallback) {
           setLastSyncAtIso(fallback.savedAtIso);

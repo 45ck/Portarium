@@ -26,10 +26,25 @@ This guide documents the installable Cockpit PWA baseline for mobile devices.
   - `/favicon.svg`
 - Runtime cache:
   - same-origin scripts, styles, fonts, and images (cache-first)
-- Read API cache (network-first with cache fallback):
+- Read API cache (network-first with cache fallback, disabled for live tenant data by default):
   - `/v1/workspaces/:id/approvals`
   - `/v1/workspaces/:id/runs`
   - `/v1/workspaces/:id/work-items`
+
+## Mode and Retention Matrix
+
+| Mode            | Service worker                                                          | Tenant API caching                                              |
+| --------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Demo/mock       | Shell/static cache plus selected synthetic read caching                 | Allowed for fixtures                                            |
+| Dev live QA     | Shell/static cache; tenant API cache disabled unless explicitly enabled | Disabled by default                                             |
+| Production live | Shell/static assets only by default                                     | Disabled unless `VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE=true` |
+
+Logout, workspace switch, and auth failure purge the React Query persistence key
+`portarium-cockpit-query-cache-v1`, local offline entries under
+`portarium:cockpit:offline:*`, approval outbox entries under
+`portarium:cockpit:approval-outbox:v1:*`, IndexedDB database
+`portarium-cockpit-offline`, and Cache Storage keys beginning with
+`portarium-cockpit-pwa-`.
 
 ## Update Strategy
 

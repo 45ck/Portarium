@@ -7,12 +7,17 @@ describe('pwa service worker', () => {
     const swPath = resolve(process.cwd(), 'public/sw.js');
     const swSource = readFileSync(swPath, 'utf8');
 
-    expect(swSource).toContain("const VERSION = 'portarium-cockpit-pwa-v1'");
+    expect(swSource).toContain("const VERSION = 'portarium-cockpit-pwa-v2'");
     expect(swSource).toContain("event.data?.type === 'SKIP_WAITING'");
+    expect(swSource).toContain("event.data?.type === 'PORTARIUM_RETENTION_POLICY'");
+    expect(swSource).toContain("event.data?.type === 'PURGE_TENANT_DATA'");
+    expect(swSource).toContain('let tenantApiCacheEnabled = false');
     expect(swSource).toContain('self.clients.claim()');
     expect(swSource).toContain('SELECTED_READ_ENDPOINTS');
     expect(swSource).toContain('\\/v1\\/workspaces');
     expect(swSource).toContain('approvals|work-items|runs');
+    expect(swSource).toContain('tenantApiCacheEnabled && SELECTED_READ_ENDPOINTS');
+    expect(swSource).toContain('caches.delete(API_CACHE)');
     expect(swSource).toContain("cache.match('/index.html')");
     expect(swSource).toContain('resolveNotificationTargetUrl');
     expect(swSource).toContain("from: 'notification'");

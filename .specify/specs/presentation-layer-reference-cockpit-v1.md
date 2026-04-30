@@ -161,6 +161,12 @@ For each primary screen, show dedicated state components for:
   - 4h window: max 300k points, target overlay refresh <= 1.2s
   - 24h window: max 1M points, target overlay refresh <= 2.5s
 
+### R13 Local tenant-data retention
+
+- Live web must not retain tenant API payloads in `localStorage`, `sessionStorage`, IndexedDB, React Query persistence, or Cache Storage unless an explicit offline-retention policy enables it.
+- Logout, workspace switch, and auth failure must purge Run, Approval Gate, Work Item, Evidence Log, Workspace, and User payloads from browser storage.
+- Live service-worker API caching must be disabled by default; the worker may retain only shell/static assets unless a deployment explicitly enables tenant API caching.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

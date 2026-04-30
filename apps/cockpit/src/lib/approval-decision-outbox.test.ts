@@ -3,6 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CockpitApiError } from '@/lib/control-plane-client';
 import {
+  clearApprovalDecisionOutbox,
   drainApprovalDecisionOutbox,
   enqueueApprovalDecisionOutbox,
   listApprovalDecisionOutbox,
@@ -113,5 +114,24 @@ describe('approval decision outbox', () => {
     expect(result).toEqual({ processed: 0, delivered: 0, requeued: 0, dropped: 1 });
     expect(sendDecision).not.toHaveBeenCalled();
     expect(listApprovalDecisionOutbox('ws-1')).toHaveLength(0);
+  });
+
+  it('purges all workspace outbox entries and keeps unrelated storage', () => {
+    enqueueApprovalDecisionOutbox({
+      workspaceId: 'ws-1',
+      approvalId: 'ap-1',
+      decision: { decision: 'Approved', rationale: 'safe' },
+    });
+    enqueueApprovalDecisionOutbox({
+      workspaceId: 'ws-2',
+      approvalId: 'ap-2',
+      decision: { decision: 'Denied', rationale: 'unsafe' },
+    });
+    localStorage.setItem('portarium-triage-view', 'briefing');
+
+    expect(clearApprovalDecisionOutbox()).toBe(2);
+    expect(listApprovalDecisionOutbox('ws-1')).toHaveLength(0);
+    expect(listApprovalDecisionOutbox('ws-2')).toHaveLength(0);
+    expect(localStorage.getItem('portarium-triage-view')).toBe('briefing');
   });
 });

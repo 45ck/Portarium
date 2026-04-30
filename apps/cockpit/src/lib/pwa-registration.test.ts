@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyWaitingPwaUpdate,
   hasServiceWorkerSupport,
   registerCockpitPwa,
+  rollbackCockpitPwa,
 } from '@/lib/pwa-registration';
 
 class FakeWorker extends EventTarget {
@@ -12,18 +13,22 @@ class FakeWorker extends EventTarget {
 }
 
 class FakeRegistration extends EventTarget {
+  public active: ServiceWorker | null = null;
   public waiting: ServiceWorker | null = null;
   public installing: ServiceWorker | null = null;
+  public readonly unregister = vi.fn(async () => true);
 }
 
 function setServiceWorkerMock(mock: {
   register: (url: string) => Promise<ServiceWorkerRegistration>;
+  getRegistrations?: () => Promise<ServiceWorkerRegistration[]>;
   controller?: ServiceWorker | null;
 }) {
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
     value: {
       register: mock.register,
+      getRegistrations: mock.getRegistrations ?? vi.fn(async () => []),
       controller: mock.controller ?? null,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
@@ -36,6 +41,10 @@ beforeEach(() => {
     configurable: true,
     value: undefined,
   });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('pwa-registration', () => {
@@ -84,5 +93,41 @@ describe('pwa-registration', () => {
     installingWorker.dispatchEvent(new Event('statechange'));
 
     expect(onUpdateReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the tenant API cache policy to the service worker', async () => {
+    const registration = new FakeRegistration();
+    const activeWorker = new FakeWorker() as unknown as ServiceWorker;
+    registration.active = activeWorker;
+
+    setServiceWorkerMock({
+      register: vi.fn(async () => registration as unknown as ServiceWorkerRegistration),
+    });
+
+    await registerCockpitPwa({ allowTenantApiCache: true });
+
+    expect((activeWorker as unknown as FakeWorker).postMessage).toHaveBeenCalledWith({
+      type: 'PORTARIUM_RETENTION_POLICY',
+      allowTenantApiCache: true,
+    });
+  });
+
+  it('rolls back service workers and deletes only Cockpit PWA caches', async () => {
+    const registration = new FakeRegistration();
+    const cacheKeys = new Set(['portarium-cockpit-pwa-v2-api', 'other-cache']);
+    vi.stubGlobal('caches', {
+      keys: vi.fn(async () => [...cacheKeys]),
+      delete: vi.fn(async (key: string) => cacheKeys.delete(key)),
+    });
+    setServiceWorkerMock({
+      register: vi.fn(async () => registration as unknown as ServiceWorkerRegistration),
+      getRegistrations: vi.fn(async () => [registration as unknown as ServiceWorkerRegistration]),
+    });
+
+    await rollbackCockpitPwa();
+
+    expect(registration.unregister).toHaveBeenCalledTimes(1);
+    expect(cacheKeys.has('portarium-cockpit-pwa-v2-api')).toBe(false);
+    expect(cacheKeys.has('other-cache')).toBe(true);
   });
 });

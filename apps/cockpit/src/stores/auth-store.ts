@@ -38,14 +38,16 @@ import {
   parseApprovalNavigationTarget,
   type ApprovalNavigationTarget,
 } from '@/lib/approval-navigation';
-import { clearPersistedQueryCache, queryClient } from '@/lib/query-client';
 import { clearLegacyBrowserBearerTokens, setNativeBearerToken } from '@/lib/auth-token-provider';
+import { setControlPlaneAuthFailureHandler } from '@/lib/control-plane-client';
+import { purgeCockpitTenantData } from '@/lib/cockpit-tenant-data';
 import {
   createDevelopmentWebSession,
   establishWebSession,
   fetchCurrentWebSession,
   logoutWebSession,
 } from '@/lib/web-session-auth';
+import { getCockpitDataRetentionPolicy } from '@/lib/cockpit-data-retention';
 
 // ---------------------------------------------------------------------------
 // Token storage keys
@@ -167,8 +169,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ status: 'authenticated', token: null, claims: session.claims, error: null });
           return;
         }
-        clearPersistedQueryCache();
-        queryClient.clear();
+        if (getCockpitDataRetentionPolicy().usesLiveTenantData) {
+          await purgeCockpitTenantData();
+        }
         set({ status: 'unauthenticated', token: null, claims: null, error: null });
         return;
       }
@@ -185,13 +188,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Token present but claims invalid — clear stale token
         await secureRemove(TOKEN_KEY);
         await secureRemove(REFRESH_TOKEN_KEY);
-        clearPersistedQueryCache();
-        queryClient.clear();
+        await purgeCockpitTenantData();
       }
       setNativeBearerToken(null);
       set({ status: 'unauthenticated', token: null, claims: null, error: null });
     } catch {
       setNativeBearerToken(null);
+      if (isNative() || getCockpitDataRetentionPolicy().usesLiveTenantData) {
+        await purgeCockpitTenantData();
+      }
       set({ status: 'unauthenticated', token: null, claims: null, error: null });
     }
   },
@@ -202,8 +207,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!isNative()) {
         set({ status: 'authenticating', error: null });
         clearLegacyBrowserBearerTokens();
-        clearPersistedQueryCache();
-        queryClient.clear();
+        await purgeCockpitTenantData();
         try {
           const session = await createDevelopmentWebSession();
           set({ status: 'authenticated', token: null, claims: session.claims, error: null });
@@ -220,8 +224,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     set({ status: 'authenticating', error: null });
     if (!isNative()) clearLegacyBrowserBearerTokens();
-    clearPersistedQueryCache();
-    queryClient.clear();
+    await purgeCockpitTenantData();
 
     try {
       const session = await prepareLoginSession({ config });
@@ -261,8 +264,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!isNative()) {
         const session = await establishWebSession(params);
         clearLegacyBrowserBearerTokens();
-        clearPersistedQueryCache();
-        queryClient.clear();
+        await purgeCockpitTenantData();
         set({ status: 'authenticated', token: null, claims: session.claims, error: null });
         return;
       }
@@ -286,8 +288,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
       setNativeBearerToken(token);
 
-      clearPersistedQueryCache();
-      queryClient.clear();
+      await purgeCockpitTenantData();
       set({ status: 'authenticated', token, claims, error: null });
     } catch (err) {
       const message = err instanceof OidcError ? err.message : 'Auth callback failed';
@@ -296,23 +297,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async logout() {
-    if (isNative()) {
-      await secureRemove(TOKEN_KEY);
-      await secureRemove(REFRESH_TOKEN_KEY);
-      setNativeBearerToken(null);
-    } else {
-      await logoutWebSession();
-      clearLegacyBrowserBearerTokens();
+    try {
+      if (isNative()) {
+        await secureRemove(TOKEN_KEY);
+        await secureRemove(REFRESH_TOKEN_KEY);
+      } else {
+        await logoutWebSession();
+      }
+    } catch (error) {
+      console.warn('[cockpit-auth] remote logout failed; clearing local session', error);
+    } finally {
+      if (isNative()) {
+        setNativeBearerToken(null);
+      } else {
+        clearLegacyBrowserBearerTokens();
+      }
+      await purgeCockpitTenantData();
+      set({ status: 'unauthenticated', token: null, claims: null, error: null });
     }
-    clearPersistedQueryCache();
-    queryClient.clear();
-    set({ status: 'unauthenticated', token: null, claims: null, error: null });
   },
 
   getToken(): string | undefined {
     return get().token ?? undefined;
   },
 }));
+
+setControlPlaneAuthFailureHandler(async () => {
+  if (isNative()) {
+    await secureRemove(TOKEN_KEY);
+    await secureRemove(REFRESH_TOKEN_KEY);
+    setNativeBearerToken(null);
+  } else {
+    clearLegacyBrowserBearerTokens();
+  }
+  await purgeCockpitTenantData();
+  useAuthStore.setState({
+    status: 'unauthenticated',
+    token: null,
+    claims: null,
+    error: 'Session expired',
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Deep link listener setup (call once in root layout)

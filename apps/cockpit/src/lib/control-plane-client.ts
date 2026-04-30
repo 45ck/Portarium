@@ -80,6 +80,32 @@ interface ControlPlaneClientConfig {
 const DEFAULT_BASE_URL = (import.meta.env.VITE_PORTARIUM_API_BASE_URL ?? '').trim();
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 
+type AuthFailureHandler = () => void | Promise<void>;
+
+let authFailureHandler: AuthFailureHandler | null = null;
+let authFailureInFlight: Promise<void> | null = null;
+
+export function setControlPlaneAuthFailureHandler(handler: AuthFailureHandler | null): void {
+  authFailureHandler = handler;
+}
+
+function notifyControlPlaneAuthFailure(): void {
+  if (!authFailureHandler || authFailureInFlight) return;
+
+  try {
+    const result = authFailureHandler();
+    authFailureInFlight = Promise.resolve(result)
+      .catch((error) => {
+        console.warn('[cockpit-auth] auth-failure handler failed', error);
+      })
+      .finally(() => {
+        authFailureInFlight = null;
+      });
+  } catch (error) {
+    console.warn('[cockpit-auth] auth-failure handler failed', error);
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -388,6 +414,10 @@ export class ControlPlaneClient {
         break;
       }
       await sleep(Math.min(1_500 * 2 ** attempt, 8_000));
+    }
+
+    if (response.status === 401) {
+      notifyControlPlaneAuthFailure();
     }
 
     if (!response.ok) {

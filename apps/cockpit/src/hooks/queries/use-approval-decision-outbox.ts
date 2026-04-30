@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import { controlPlaneClient, CockpitApiError } from '@/lib/control-plane-client';
+import { shouldAllowOfflineTenantData } from '@/lib/cockpit-data-retention';
 import {
   buildApprovalDecisionIdempotencyKey,
   drainApprovalDecisionOutbox,
@@ -24,6 +25,7 @@ function shouldQueueOnError(error: unknown): boolean {
 
 export function useApprovalDecisionOutbox(workspaceId: string) {
   const queryClient = useQueryClient();
+  const offlineRetentionEnabled = shouldAllowOfflineTenantData();
   const [isFlushing, setIsFlushing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -33,6 +35,10 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
 
   const flushNow = useCallback(async () => {
     if (!workspaceId || isFlushing) return;
+    if (!offlineRetentionEnabled) {
+      refreshPendingCount();
+      return;
+    }
     setIsFlushing(true);
     try {
       const result = await drainApprovalDecisionOutbox({
@@ -57,7 +63,7 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
       refreshPendingCount();
       setIsFlushing(false);
     }
-  }, [isFlushing, queryClient, refreshPendingCount, workspaceId]);
+  }, [isFlushing, offlineRetentionEnabled, queryClient, refreshPendingCount, workspaceId]);
 
   useEffect(() => {
     refreshPendingCount();
@@ -94,6 +100,9 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
       });
 
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        if (!offlineRetentionEnabled) {
+          throw new Error('Offline approval decisions are disabled for live tenant data.');
+        }
         enqueueApprovalDecisionOutbox({ workspaceId, approvalId, decision });
         refreshPendingCount();
         return { queued: true };
@@ -110,7 +119,7 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
         ]);
         return { queued: false };
       } catch (error) {
-        if (!shouldQueueOnError(error)) {
+        if (!offlineRetentionEnabled || !shouldQueueOnError(error)) {
           throw error;
         }
         enqueueApprovalDecisionOutbox({ workspaceId, approvalId, decision });
@@ -118,7 +127,7 @@ export function useApprovalDecisionOutbox(workspaceId: string) {
         return { queued: true };
       }
     },
-    [queryClient, refreshPendingCount, workspaceId],
+    [offlineRetentionEnabled, queryClient, refreshPendingCount, workspaceId],
   );
 
   return useMemo(

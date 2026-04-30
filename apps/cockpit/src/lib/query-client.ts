@@ -6,11 +6,16 @@ import {
   type DehydratedState,
 } from '@tanstack/react-query';
 import { CockpitApiError } from '@/lib/control-plane-client';
+import {
+  getCockpitDataRetentionPolicy,
+  type CockpitDataRetentionPolicy,
+} from '@/lib/cockpit-data-retention';
 
 const QUERY_CACHE_STORAGE_KEY = 'portarium-cockpit-query-cache-v1';
 const QUERY_CACHE_MAX_AGE_MS = 1000 * 60 * 60 * 24; // 24h
 const QUERY_CACHE_WRITE_DEBOUNCE_MS = 300;
 const NON_PERSISTED_QUERY_KEY_PREFIXES = new Set(['cockpit-extension-context']);
+const PERSISTED_TENANT_QUERY_KEY_PREFIXES = new Set(['approvals', 'runs', 'work-items']);
 
 interface PersistedQueryCache {
   savedAt: number;
@@ -44,7 +49,9 @@ function retryDelay(attemptIndex: number): number {
 
 function shouldPersistQuery(queryKey: readonly unknown[]): boolean {
   const first = queryKey[0];
-  return typeof first !== 'string' || !NON_PERSISTED_QUERY_KEY_PREFIXES.has(first);
+  if (typeof first !== 'string') return false;
+  if (NON_PERSISTED_QUERY_KEY_PREFIXES.has(first)) return false;
+  return PERSISTED_TENANT_QUERY_KEY_PREFIXES.has(first);
 }
 
 export const queryClient = new QueryClient({
@@ -73,8 +80,14 @@ function parsePersistedCache(value: string | null): PersistedQueryCache | null {
 export function hydrateQueryCacheFromStorage(
   client: QueryClient = queryClient,
   storage: Storage | null = getStorage(),
+  policy: CockpitDataRetentionPolicy = getCockpitDataRetentionPolicy(),
 ): void {
   if (!storage) return;
+
+  if (!policy.persistTenantQueryCache) {
+    storage.removeItem(QUERY_CACHE_STORAGE_KEY);
+    return;
+  }
 
   const persisted = parsePersistedCache(storage.getItem(QUERY_CACHE_STORAGE_KEY));
   if (!persisted) return;
@@ -91,8 +104,13 @@ export function hydrateQueryCacheFromStorage(
 export function startQueryCachePersistence(
   client: QueryClient = queryClient,
   storage: Storage | null = getStorage(),
+  policy: CockpitDataRetentionPolicy = getCockpitDataRetentionPolicy(),
 ): () => void {
   if (!storage) return () => {};
+  if (!policy.persistTenantQueryCache) {
+    storage.removeItem(QUERY_CACHE_STORAGE_KEY);
+    return () => {};
+  }
 
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -117,7 +135,9 @@ export function startQueryCachePersistence(
   };
 }
 
-export function clearPersistedQueryCache(storage: Storage | null = getStorage()): void {
+export function clearPersistedQueryCache(
+  storage: Pick<Storage, 'removeItem'> | null = getStorage(),
+): void {
   storage?.removeItem(QUERY_CACHE_STORAGE_KEY);
 }
 
