@@ -181,7 +181,7 @@ test.describe('Staleness and offline banner', () => {
     // Wait for the approvals route to mount. Earlier smoke tests can decide
     // every pending approval in the shared MSW state, so this path must not
     // depend on a mutable triage action being available.
-    await expect(page.getByRole('heading', { name: 'Approvals' })).toBeVisible({
+    await expect(page.getByRole('heading', { level: 1, name: 'Approvals' })).toBeVisible({
       timeout: 10_000,
     });
 
