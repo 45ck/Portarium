@@ -125,4 +125,33 @@ describe('cockpit extension access context', () => {
       }),
     ).toEqual(emptyAccess);
   });
+
+  it('fails closed when server context has malformed authority fields', () => {
+    expect(
+      resolveCockpitExtensionServerAccess({
+        workspaceId: 'ws-1',
+        serverContext: {
+          schemaVersion: 1,
+          workspaceId: 'ws-1',
+          principalId: 'user-1',
+          availablePersonas: ['Operator'],
+          availableCapabilities: ['objects:read'],
+          availableApiScopes: ['extensions.read'],
+          activePackIds: 'demo.pack',
+          quarantinedExtensionIds: [],
+          issuedAtIso: '2026-04-30T01:59:00.000Z',
+          expiresAtIso: '2026-04-30T02:04:00.000Z',
+        } as never,
+      }),
+    ).toEqual({
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      accessContext: {
+        availablePersonas: [],
+        availableCapabilities: [],
+        availableApiScopes: [],
+      },
+      usable: false,
+    });
+  });
 });

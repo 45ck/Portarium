@@ -71,6 +71,19 @@ function ExtensionsPage() {
 
 function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
   const manifest = extension.manifest;
+  const isEnabled = extension.status === 'enabled';
+  const statusItems = [
+    ...(extension.disableReasons ?? []).map((reason) => ({
+      key: reason.code,
+      label: reason.code,
+      meta: reason.message,
+    })),
+    ...extension.problems.map((problem) => ({
+      key: `${problem.code}-${problem.itemId ?? manifest.id}`,
+      label: problem.code,
+      meta: problem.message,
+    })),
+  ];
 
   return (
     <Card className="shadow-none">
@@ -94,15 +107,27 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
         </div>
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-3">
-        <ExtensionSection
-          title="Routes"
-          icon={<RouteIcon className="h-4 w-4" />}
-          items={manifest.routes.map((route) => ({
-            key: route.id,
-            label: route.title,
-            meta: route.path,
-          }))}
-        />
+        {isEnabled ? (
+          <ExtensionSection
+            title="Routes"
+            icon={<RouteIcon className="h-4 w-4" />}
+            items={manifest.routes.map((route) => ({
+              key: route.id,
+              label: route.title,
+              meta: route.path,
+            }))}
+          />
+        ) : (
+          <ExtensionSection
+            title="Activation"
+            icon={<LockKeyhole className="h-4 w-4" />}
+            items={manifest.packIds.map((packId) => ({
+              key: packId,
+              label: packId,
+              meta: 'Required workspace pack activation key',
+            }))}
+          />
+        )}
         <ExtensionSection
           title="Capabilities"
           icon={<CheckCircle2 className="h-4 w-4" />}
@@ -111,15 +136,33 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
             label: capability,
           }))}
         />
-        <ExtensionSection
-          title="Commands"
-          icon={<ExternalLink className="h-4 w-4" />}
-          items={manifest.commands.map((command) => ({
-            key: command.id,
-            label: command.title,
-            meta: command.shortcut,
-          }))}
-        />
+        {isEnabled ? (
+          <ExtensionSection
+            title="Commands"
+            icon={<ExternalLink className="h-4 w-4" />}
+            items={manifest.commands.map((command) => ({
+              key: command.id,
+              label: command.title,
+              meta: command.shortcut,
+            }))}
+          />
+        ) : (
+          <ExtensionSection
+            title="Status"
+            icon={<LockKeyhole className="h-4 w-4" />}
+            items={
+              statusItems.length > 0
+                ? statusItems
+                : [
+                    {
+                      key: `${manifest.id}-not-enabled`,
+                      label: 'not-enabled',
+                      meta: 'No extension routes, navigation, commands, or shortcuts are surfaced.',
+                    },
+                  ]
+            }
+          />
+        )}
       </CardContent>
     </Card>
   );

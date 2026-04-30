@@ -98,4 +98,19 @@ describe('useKeyboardShortcuts', () => {
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it('does not route shortcuts for installed extensions without workspace activation', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        activePackIds: [],
+      }),
+    );
+
+    renderHook(() => useKeyboardShortcuts());
+
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'x' });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });

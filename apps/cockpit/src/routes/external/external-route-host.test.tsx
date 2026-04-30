@@ -191,6 +191,29 @@ describe('external route host', () => {
     expect(screen.getByRole('link', { name: 'View extension registry' })).toBeTruthy();
   });
 
+  it('fails closed when the workspace has no active extension packs', async () => {
+    queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator', 'Admin'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
+
+    await renderRoute('/external/example-reference/overview');
+
+    expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
+    expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
+    expect(screen.queryByText('Reference Overview')).toBeNull();
+    expect(screen.queryByText('Extension Boundary')).toBeNull();
+  });
+
   it('fails closed when the active persona is forbidden from the external route', async () => {
     useUIStore.setState({ activePersona: 'Guest' as never });
 

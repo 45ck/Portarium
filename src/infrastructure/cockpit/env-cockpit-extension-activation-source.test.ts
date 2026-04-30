@@ -71,6 +71,28 @@ describe('EnvCockpitExtensionActivationSource', () => {
     });
   });
 
+  it('fails closed when activation grants JSON is malformed', async () => {
+    const source = buildEnvCockpitExtensionActivationSource({
+      PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON: '{not-json',
+    });
+
+    await expect(
+      source.getActivationState({
+        workspaceId: 'ws-1',
+        principalId: 'user-1',
+        roles: ['admin'],
+        scopes: ['extensions.read'],
+        correlationId: 'corr-1',
+        traceparent: '00-00000000000000000000000000000000-0000000000000000-01',
+      }),
+    ).resolves.toEqual({
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      availableCapabilities: [],
+      availableApiScopes: [],
+    });
+  });
+
   it('ignores principal-only grants because activation must be workspace-scoped', async () => {
     const source = buildEnvCockpitExtensionActivationSource({
       PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON: JSON.stringify([

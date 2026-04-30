@@ -171,6 +171,13 @@ For each primary screen, show dedicated state components for:
 - Logout, workspace switch, and auth failure must purge Run, Approval Gate, Work Item, Evidence Log, Workspace, and User payloads from browser storage.
 - Live service-worker API caching must be disabled by default; the worker may retain only shell/static assets unless a deployment explicitly enables tenant API caching.
 
+### R14 Cockpit extension activation
+
+- Installed Cockpit extensions remain hidden unless the control plane reports every required workspace pack activation and guard input for the current Workspace.
+- Core Cockpit navigation, routes, command palette actions, and shortcuts must remain usable when zero external extensions are enabled.
+- Unknown activation pack IDs or partially satisfied pack requirements must fail closed and must not partially surface extension routes, navigation items, commands, or shortcuts.
+- Extension resolution must expose installed, enabled, disabled, and invalid states so tests and UI can distinguish inactive workspace grants from invalid manifests.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

@@ -51,6 +51,7 @@ export function resolveCockpitExtensionRegistry({
   const commandIds = new Map<string, string>();
   const shortcutIds = new Map<string, string>();
   const extensionIds = new Set<string>();
+  const declaredPackIds = new Set(installedExtensions.flatMap((extension) => extension.packIds));
 
   function addProblem(problem: CockpitExtensionRegistryProblem) {
     globalProblems.push(problem);
@@ -60,9 +61,25 @@ export function resolveCockpitExtensionRegistry({
     extensionProblems.set(problem.extensionId, problems);
   }
 
+  for (const activePackId of activePacks) {
+    if (!declaredPackIds.has(activePackId)) {
+      addProblem({
+        code: 'unknown-pack-activation',
+        message: `Workspace activated unknown extension pack "${activePackId}".`,
+        itemId: activePackId,
+      });
+    }
+  }
+
   for (const extension of installedExtensions) {
     const active = isExtensionActive(extension, activePacks);
-    if (!active) continue;
+    if (!active) {
+      extensionDisableReasons.set(
+        extension.id,
+        getInactivePackDisableReasons(extension, activePacks),
+      );
+      continue;
+    }
 
     if (quarantinedExtensions.has(extension.id)) {
       extensionDisableReasons.set(extension.id, [
@@ -100,7 +117,7 @@ export function resolveCockpitExtensionRegistry({
   const resolvedExtensions: ResolvedCockpitExtension[] = installedExtensions.map((manifest) => {
     const problems = extensionProblems.get(manifest.id) ?? [];
     const active = isExtensionActive(manifest, activePacks);
-    const disableReasons = active ? (extensionDisableReasons.get(manifest.id) ?? []) : [];
+    const disableReasons = extensionDisableReasons.get(manifest.id) ?? [];
     const quarantined = active && quarantinedExtensions.has(manifest.id);
     return {
       manifest,
@@ -118,7 +135,7 @@ export function resolveCockpitExtensionRegistry({
   });
 
   const enabledExtensions = resolvedExtensions.filter(
-    (extension) => extension.status === 'enabled',
+    (extension) => extension.status === 'enabled' && globalProblems.length === 0,
   );
 
   return {
@@ -226,6 +243,21 @@ function isExtensionActive(
   activePacks: ReadonlySet<string>,
 ): boolean {
   return extension.packIds.every((packId) => activePacks.has(packId));
+}
+
+function getInactivePackDisableReasons(
+  extension: CockpitExtensionManifest,
+  activePacks: ReadonlySet<string>,
+): CockpitExtensionDisableReason[] {
+  const missingPackIds = extension.packIds.filter((packId) => !activePacks.has(packId));
+  if (missingPackIds.length === 0) return [];
+
+  return [
+    {
+      code: 'workspace-pack-inactive',
+      message: `Extension "${extension.id}" requires inactive workspace pack activation keys: ${missingPackIds.join(', ')}.`,
+    },
+  ];
 }
 
 function getManifestDisableReasons(

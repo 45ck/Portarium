@@ -1,9 +1,5 @@
 import type { ComponentType } from 'react';
-import {
-  DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
-  DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  resolveInstalledCockpitExtensionRegistry,
-} from '@/lib/extensions/installed';
+import { DEFAULT_COCKPIT_EXTENSION_REGISTRY } from '@/lib/extensions/installed';
 import { canAccessExtensionRoute } from '@/lib/extensions/registry';
 import type {
   CockpitExtensionRouteRef,
@@ -49,10 +45,7 @@ export interface ResolveExternalRouteInput {
   components?: Readonly<Record<string, ExternalRouteComponent>>;
 }
 
-export const HOST_EXTERNAL_EXTENSION_REGISTRY = resolveInstalledCockpitExtensionRegistry({
-  activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
-  ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-});
+export const HOST_EXTERNAL_EXTENSION_REGISTRY = DEFAULT_COCKPIT_EXTENSION_REGISTRY;
 
 export function resolveExternalRoute({
   pathname,

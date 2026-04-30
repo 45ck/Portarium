@@ -195,6 +195,7 @@ export interface CockpitExtensionRegistryProblem {
     | 'invalid-icon'
     | 'invalid-external-path'
     | 'invalid-direct-nav-target'
+    | 'unknown-pack-activation'
     | 'missing-route-module'
     | 'undeclared-route-module'
     | 'missing-route-guard'

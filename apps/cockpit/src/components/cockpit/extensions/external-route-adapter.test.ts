@@ -51,6 +51,20 @@ const TEST_ACCESS_CONTEXT = {
 } as const;
 
 describe('resolveExternalRoute', () => {
+  it('fails closed when no workspace-scoped registry is provided', () => {
+    const resolution = resolveExternalRoute({
+      pathname: '/external/example-reference/overview',
+      persona: 'Operator',
+      availableCapabilities: ['extension:read'],
+      availableApiScopes: ['extensions.read'],
+    });
+
+    expect(resolution).toEqual({
+      kind: 'not-found',
+      pathname: '/external/example-reference/overview',
+    });
+  });
+
   it('resolves an enabled route and extracts path params', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
