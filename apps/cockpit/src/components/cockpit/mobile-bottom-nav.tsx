@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useMatchRoute } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
-import { Inbox, CheckSquare, Play, LayoutDashboard, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -17,29 +17,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
-import { useAuthStore } from '@/stores/auth-store';
 import { RuntimeStatusDetails } from '@/components/cockpit/runtime-status-strip';
 import { usePendingCount } from '@/hooks/use-pending-count';
-import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
-import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
-import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import type {
+  CockpitShellNavigationItem,
+  CockpitShellNavigationSection,
+} from '@/lib/shell/navigation';
 import { cn } from '@/lib/utils';
-
-interface NavItem {
-  label: string;
-  to: string;
-  icon: React.ReactNode;
-  matchPath: string;
-}
-
-interface MoreSection {
-  label: string;
-  items: {
-    label: string;
-    to: string;
-  }[];
-}
 
 interface WorkspaceOption {
   workspaceId: string;
@@ -49,75 +33,12 @@ interface WorkspaceOption {
 interface MobileBottomNavProps {
   activeWorkspaceId: string;
   activePersona: PersonaId;
+  primaryItems: readonly CockpitShellNavigationItem[];
+  moreSections: readonly CockpitShellNavigationSection[];
   workspaceOptions: WorkspaceOption[];
   onWorkspaceChange: (workspaceId: string) => void;
   onPersonaChange: (persona: PersonaId) => void;
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Inbox', to: '/inbox', icon: <Inbox className="h-5 w-5" />, matchPath: '/inbox' },
-  {
-    label: 'Approvals',
-    to: '/approvals',
-    icon: <CheckSquare className="h-5 w-5" />,
-    matchPath: '/approvals',
-  },
-  { label: 'Runs', to: '/runs', icon: <Play className="h-5 w-5" />, matchPath: '/runs' },
-  {
-    label: 'Dashboard',
-    to: '/dashboard',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    matchPath: '/dashboard',
-  },
-];
-
-const MORE_SECTIONS: MoreSection[] = [
-  {
-    label: 'Workspace',
-    items: [
-      { label: 'Inbox', to: '/inbox' },
-      { label: 'Dashboard', to: '/dashboard' },
-      { label: 'Work Items', to: '/work-items' },
-    ],
-  },
-  {
-    label: 'Work',
-    items: [
-      { label: 'Runs', to: '/runs' },
-      { label: 'Workflows', to: '/workflows' },
-      { label: 'Approvals', to: '/approvals' },
-      { label: 'Evidence', to: '/evidence' },
-    ],
-  },
-  {
-    label: 'Workforce',
-    items: [
-      { label: 'Members', to: '/workforce' },
-      { label: 'Queues', to: '/workforce/queues' },
-    ],
-  },
-  {
-    label: 'Config',
-    items: [
-      { label: 'Agents', to: '/config/agents' },
-      { label: 'Machines', to: '/config/machines' },
-      { label: 'Adapters', to: '/config/adapters' },
-      { label: 'Credentials', to: '/config/credentials' },
-      { label: 'Policies', to: '/config/policies' },
-      { label: 'Settings', to: '/config/settings' },
-    ],
-  },
-  {
-    label: 'Explore',
-    items: [
-      { label: 'Objects', to: '/explore/objects' },
-      { label: 'Events', to: '/explore/events' },
-      { label: 'Observability', to: '/explore/observability' },
-      { label: 'Governance', to: '/explore/governance' },
-      { label: 'Extensions', to: '/explore/extensions' },
-    ],
-  },
-];
 
 // Wrapper to avoid TS errors with unregistered routes
 const TypedLink = Link as React.ComponentType<{
@@ -131,6 +52,8 @@ const TypedLink = Link as React.ComponentType<{
 export function MobileBottomNav({
   activeWorkspaceId,
   activePersona,
+  primaryItems,
+  moreSections,
   workspaceOptions,
   onWorkspaceChange,
   onPersonaChange,
@@ -138,39 +61,9 @@ export function MobileBottomNav({
   const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
-  const principalId = useAuthStore((state) => state.claims?.sub);
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
-  const extensionServerAccess = resolveCockpitExtensionServerAccess({
-    workspaceId: activeWorkspaceId,
-    principalId,
-    persona: activePersona,
-    serverContext:
-      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
-        ? extensionContextQuery.data
-        : null,
-  });
-  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
-    activePackIds: extensionServerAccess.activePackIds,
-    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
-    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
-    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    availablePrivacyClasses: extensionServerAccess.accessContext.availablePrivacyClasses,
-  });
-  const extensionMoreItems = selectExtensionNavItems(
-    extensionRegistry,
-    'mobile-more',
-    activePersona,
-    extensionServerAccess.accessContext,
-  )
-    .filter((item) => !item.to.includes('$'))
-    .map((item) => ({ label: item.title, to: item.to }));
-  const moreSections =
-    extensionMoreItems.length > 0
-      ? [...MORE_SECTIONS, { label: 'Extensions', items: extensionMoreItems }]
-      : MORE_SECTIONS;
 
-  const activeIndex = NAV_ITEMS.findIndex((item) =>
-    matchRoute({ to: item.matchPath, fuzzy: true }),
+  const activeIndex = primaryItems.findIndex((item) =>
+    matchRoute({ to: item.matchPath ?? item.to, fuzzy: true }),
   );
 
   return (
@@ -180,11 +73,11 @@ export function MobileBottomNav({
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex items-center justify-around h-14">
-          {NAV_ITEMS.map((item, i) => {
+          {primaryItems.map((item, i) => {
             const isActive = i === activeIndex;
             return (
               <TypedLink
-                key={item.to}
+                key={item.id}
                 to={item.to}
                 className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
                 aria-label={item.label}
@@ -293,14 +186,14 @@ export function MobileBottomNav({
               </div>
             </div>
             {moreSections.map((section) => (
-              <div key={section.label}>
+              <div key={section.id}>
                 <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 px-1">
                   {section.label}
                 </p>
                 <div className="space-y-0.5">
-                  {section.items.map((item) => (
+                  {section.items?.map((item) => (
                     <TypedLink
-                      key={item.to}
+                      key={item.id}
                       to={item.to}
                       className="block px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
                       onClick={() => setMoreOpen(false)}

@@ -149,6 +149,8 @@ describe('CommandPalette', () => {
 
     expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
     expect(screen.queryByText('G X')).toBeNull();
+    expect(screen.getByRole('button', { name: /inbox/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /dashboard/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^extensions$/i })).toBeTruthy();
   });
 

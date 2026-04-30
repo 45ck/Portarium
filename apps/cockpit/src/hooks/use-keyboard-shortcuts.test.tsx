@@ -115,6 +115,21 @@ describe('useKeyboardShortcuts', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('keeps core G shortcuts active when installed extensions are disabled', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        activePackIds: [],
+      }),
+    );
+
+    renderHook(() => useKeyboardShortcuts());
+
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'i' });
+
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/inbox' });
+  });
+
   it('does not route shortcuts when the referenced route guard denies privacy class access', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
