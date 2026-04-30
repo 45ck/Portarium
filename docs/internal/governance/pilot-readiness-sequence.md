@@ -38,6 +38,7 @@ Some Cockpit contracts depend on this sequence because they would otherwise gues
 - `bead-1075` then unblocks `bead-1078`, `bead-1079`, and the deeper approval review model.
 
 The bead-1074 artifact is the authority and accountability contract in `.specify/specs/operator-interaction-model-v1.md`.
+The bead-1058 eval is runnable with `node node_modules/vitest/vitest.mjs run scripts/integration/scenario-operator-trust-calibration.test.ts`.
 
 ## Not Core For This Sequence
 
