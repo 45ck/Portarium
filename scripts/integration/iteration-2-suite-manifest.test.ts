@@ -60,7 +60,8 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'growth-studio-openclaw-live-v2' &&
             scenario.scenarioId !== 'openclaw-concurrent-sessions' &&
             scenario.scenarioId !== 'approval-backlog-soak' &&
-            scenario.scenarioId !== 'micro-saas-agent-stack-v2',
+            scenario.scenarioId !== 'micro-saas-agent-stack-v2' &&
+            scenario.scenarioId !== 'governed-resume-recovery',
         )
         .every((scenario) => scenario.status === 'planned'),
     ).toBe(true);
@@ -107,7 +108,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       manifest.scenarios.map((scenario) => [scenario.beadId, scenario]),
     );
 
-    for (const beadId of ['bead-1042', 'bead-1043', 'bead-1044', 'bead-1045']) {
+    for (const beadId of ['bead-1042', 'bead-1043', 'bead-1044', 'bead-1045', 'bead-1059']) {
       const scenario = scenarioByBead.get(beadId);
       expect(scenario).toBeDefined();
       expect(scenario?.validates.length).toBeGreaterThanOrEqual(4);
@@ -164,6 +165,21 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     expect(scenario?.runnerPath).toBe(
       'experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs',
     );
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+  });
+
+  it('marks governed-resume-recovery as runnable with a checked runner', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'governed-resume-recovery',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1059');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('growth-studio-openclaw-live-v2');
     expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
   });
 });
