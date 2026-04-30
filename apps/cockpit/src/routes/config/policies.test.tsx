@@ -118,11 +118,26 @@ describe('Policy Studio route', () => {
         /Review the live case, stage the future default, then return to the approval/i,
       ),
     ).toBeTruthy();
-    expect(await screen.findByText(/Decide now: live approval/i)).toBeTruthy();
-    expect(await screen.findByText(/Change later: future Policy default/i)).toBeTruthy();
+    expect(await screen.findByText(/Applies now: decide the live approval/i)).toBeTruthy();
+    expect(await screen.findByText(/Applies after publish: future Policy default/i)).toBeTruthy();
     expect(await screen.findByText(/Capability posture matrix/i)).toBeTruthy();
     expect(await screen.findByText(/Simulation lab/i)).toBeTruthy();
     expect(await screen.findByText(/Runtime precedent to policy/i)).toBeTruthy();
+  });
+
+  it('shows explicit working context and time-horizon cues', async () => {
+    await renderPoliciesRoute(
+      '/config/policies?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
+    );
+
+    expect(await screen.findByText(/Current live case/i)).toBeTruthy();
+    expect(await screen.findAllByText(/Future default draft/i)).toBeTruthy();
+    expect(await screen.findAllByText(/Published default today/i)).toBeTruthy();
+    expect(await screen.findByText(/Current approval work/i)).toBeTruthy();
+    expect(await screen.findByText(/Future policy work/i)).toBeTruthy();
+    expect(await screen.findByText(/This draft does not decide the live approval/i)).toBeTruthy();
+    expect((await screen.findAllByText(/Applies now/i)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Applies after publish/i)).length).toBeGreaterThan(0);
   });
 
   it('applies a runtime precedent into the draft state', async () => {

@@ -613,10 +613,10 @@ export function PolicyStudioPage() {
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Badge variant="secondary" className="text-[11px]">
-                  Decide now: live approval
+                  Applies now: decide the live approval
                 </Badge>
                 <Badge variant="secondary" className="text-[11px]">
-                  Change later: future Policy default
+                  Applies after publish: future Policy default
                 </Badge>
               </div>
             </div>
@@ -634,7 +634,7 @@ export function PolicyStudioPage() {
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-xl border border-border bg-background/80 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                1. Live case in review
+                Current live case
               </div>
               {triageTargetApproval ? (
                 <>
@@ -643,7 +643,7 @@ export function PolicyStudioPage() {
                     {triageTargetApproval.prompt}
                   </p>
                   <p className="mt-3 text-xs text-muted-foreground">
-                    This is the live case that still needs judgment in Approvals.
+                    Applies now. This exact Approval still needs judgment in Approvals.
                   </p>
                 </>
               ) : (
@@ -659,7 +659,7 @@ export function PolicyStudioPage() {
 
             <div className="rounded-xl border border-border bg-background/80 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                2. Future policy draft
+                Future default draft
               </div>
               <div className="mt-2 text-sm font-medium">{selectedSlice.title}</div>
               <p className="mt-1 text-sm text-muted-foreground">{selectedSlice.family}</p>
@@ -670,14 +670,14 @@ export function PolicyStudioPage() {
                 </span>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                If published, future matching cases would require {draft.evidence.length} evidence
-                item{draft.evidence.length === 1 ? '' : 's'} before action.
+                Applies after publish. Future matching cases would require {draft.evidence.length}{' '}
+                evidence item{draft.evidence.length === 1 ? '' : 's'} before action.
               </p>
             </div>
 
             <div className="rounded-xl border border-border bg-background/80 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                3. What changes later
+                Published default today
               </div>
               <div className="mt-2 text-sm font-medium">
                 {getDraftOutcome(selectedSlice.tier, draft.tier)}
@@ -686,8 +686,8 @@ export function PolicyStudioPage() {
                 Published default today: {selectedSlice.tier}. Drafted default: {draft.tier}.
               </p>
               <p className="mt-3 text-xs text-muted-foreground">
-                The live approval still needs a human decision now. This draft only changes how
-                similar cases route after the Policy change is published.
+                This draft does not decide the live approval. It only changes how similar cases
+                route after the Policy change is published.
               </p>
             </div>
           </div>
@@ -920,11 +920,29 @@ export function PolicyStudioPage() {
                 The live case is decided in Approvals. Changes staged here only affect future
                 matching cases after publication.
               </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-md border border-border bg-background/80 p-2">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Current approval work
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Decide the linked live case now.
+                  </p>
+                </div>
+                <div className="rounded-md border border-border bg-background/80 p-2">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Future policy work
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Publish only after simulation and review.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-medium">Future Policy draft</span>
+                <span className="font-medium">Future default draft</span>
                 <ExecutionTierBadge tier={draft.tier} />
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
