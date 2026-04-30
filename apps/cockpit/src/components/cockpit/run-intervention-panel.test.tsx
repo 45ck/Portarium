@@ -142,7 +142,7 @@ describe('RunInterventionPanel', () => {
         interventionType: 'handoff',
         target: 'member:wm-1',
         surface: 'steering',
-        authoritySource: 'delegated-role',
+        authoritySource: 'queue-delegation',
         evidenceRequired: true,
       }),
     );

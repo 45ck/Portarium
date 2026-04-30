@@ -251,6 +251,21 @@ describe('POST /runs/:runId/interventions', () => {
     expect(body.detail).toMatch(/payload is invalid/);
   });
 
+  it('returns 422 when the intervention payload includes unknown fields', async () => {
+    await startWith({ run: RUN });
+
+    const res = await postIntervention({
+      interventionType: 'pause',
+      rationale: 'Need operator review.',
+      unexpectedField: true,
+    });
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { type: string; detail: string };
+    expect(body.type).toMatch(/validation-failed/);
+    expect(body.detail).toContain('unexpectedField');
+  });
+
   it('returns 401 when authentication fails', async () => {
     await startWith({
       run: RUN,

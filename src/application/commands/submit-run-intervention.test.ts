@@ -26,6 +26,15 @@ const CTX = toAppContext({
   correlationId: 'corr-1',
 });
 
+function ctxWithRoles(roles: readonly string[]) {
+  return toAppContext({
+    tenantId: 'tenant-1',
+    principalId: 'user-1',
+    roles,
+    correlationId: 'corr-1',
+  });
+}
+
 const RUN: RunV1 = {
   schemaVersion: 1,
   runId: RunId('run-1'),
@@ -132,7 +141,6 @@ describe('submitRunIntervention', () => {
     ['freeze', 'Paused', 'frozen'],
     ['request-more-evidence', 'Paused', 'blocked'],
     ['sandbox', 'Paused', 'degraded'],
-    ['emergency-disable', 'Paused', 'frozen'],
   ] as const)('maps %s to %s and %s', async (interventionType, status, controlState) => {
     const deps = makeDeps();
 
@@ -165,6 +173,35 @@ describe('submitRunIntervention', () => {
     }
   });
 
+  it('preserves control posture when annotating an active run', async () => {
+    const deps = makeDeps({
+      runStore: {
+        getRunById: vi.fn(
+          async () =>
+            ({
+              ...RUN,
+              status: 'Paused',
+              controlState: 'operator-owned',
+              operatorOwnerId: 'queue-1',
+            }) satisfies RunV1,
+        ),
+        saveRun: vi.fn(async () => undefined),
+      },
+    });
+
+    const result = await submitRunIntervention(
+      deps,
+      ctxWithRoles(['auditor']),
+      input({ interventionType: 'annotate', effect: 'context-only' }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.controlState).toBe('operator-owned');
+      expect(result.value.operatorOwnerId).toBe('queue-1');
+    }
+  });
+
   it('annotates terminal runs without state change', async () => {
     const deps = makeDeps({
       runStore: {
@@ -175,7 +212,7 @@ describe('submitRunIntervention', () => {
 
     const result = await submitRunIntervention(
       deps,
-      CTX,
+      ctxWithRoles(['auditor']),
       input({ interventionType: 'annotate', effect: 'context-only' }),
     );
 
@@ -211,5 +248,42 @@ describe('submitRunIntervention', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.kind).toBe('DependencyFailure');
+    expect(deps.runStore.saveRun).not.toHaveBeenCalled();
+  });
+
+  it('allows approvers to request more evidence but not pause a run', async () => {
+    const deps = makeDeps();
+
+    const allowed = await submitRunIntervention(
+      deps,
+      ctxWithRoles(['approver']),
+      input({ interventionType: 'request-more-evidence', authoritySource: 'workspace-rbac' }),
+    );
+    expect(allowed.ok).toBe(true);
+
+    const denied = await submitRunIntervention(
+      makeDeps(),
+      ctxWithRoles(['approver']),
+      input({ interventionType: 'pause', authoritySource: 'workspace-rbac' }),
+    );
+    expect(denied.ok).toBe(false);
+    if (!denied.ok) expect(denied.error.kind).toBe('Forbidden');
+  });
+
+  it('restricts emergency disable to admins', async () => {
+    const operatorResult = await submitRunIntervention(
+      makeDeps(),
+      CTX,
+      input({ interventionType: 'emergency-disable', authoritySource: 'incident-break-glass' }),
+    );
+    expect(operatorResult.ok).toBe(false);
+    if (!operatorResult.ok) expect(operatorResult.error.kind).toBe('Forbidden');
+
+    const adminResult = await submitRunIntervention(
+      makeDeps(),
+      ctxWithRoles(['admin']),
+      input({ interventionType: 'emergency-disable', authoritySource: 'incident-break-glass' }),
+    );
+    expect(adminResult.ok).toBe(true);
   });
 });

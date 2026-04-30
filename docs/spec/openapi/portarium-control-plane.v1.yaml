@@ -3777,11 +3777,13 @@ components:
     RunInterventionAuthoritySource:
       type: string
       enum:
-        - run-charter
+        - workspace-rbac
         - policy-rule
-        - delegated-role
+        - run-charter
+        - queue-delegation
         - incident-break-glass
-        - audit-annotation
+        - system-invariant
+        - policy-change-approval
     RunInterventionRequest:
       type: object
       additionalProperties: false
