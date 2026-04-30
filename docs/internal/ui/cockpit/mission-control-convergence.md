@@ -103,5 +103,6 @@ This note unblocks the detailed work rather than replacing it.
 - `docs/internal/ui/cockpit/agent-machine-runtime-design.md`
 - `docs/internal/ui/cockpit/governance-policy-design.md`
 - `docs/internal/research/mission-control-ui-domain-model.md`
+- `docs/internal/adr/ADR-0140-mission-control-integration.md`
 - `docs/internal/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md`
 - `docs/internal/adr/ADR-0118-agent-action-governance.md`
