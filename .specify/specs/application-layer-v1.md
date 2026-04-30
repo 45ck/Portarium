@@ -52,16 +52,20 @@ independent of transport/framework concerns.
 - **Inputs**
   - `workspaceId` (required branded `WorkspaceId`)
   - `approvalId` (required branded `ApprovalId`)
-  - `decision` (`Approved` or `Denied`)
+  - `decision` (`Approved`, `Denied`, or `RequestChanges`)
   - `rationale` (required non-empty string)
   - `sodConstraints?` (optional `SodConstraintV1[]` carried with the approval decision)
   - `previousApproverIds?` (optional branded `UserId[]` for prior approvers on the same gate)
   - `robotContext?` (optional robot SoD context with hazardous/safety/e-stop qualifiers)
+  - `idempotencyKey?` (optional non-empty retry key, normally supplied by `Idempotency-Key` on HTTP)
 - **Core rules**
   - Caller must be authorized for `approval:submit`.
   - Submission updates pending approval to decided state.
   - SoD checks evaluate both the current deciding user and any `previousApproverIds`.
   - Robot-specific SoD variants use `robotContext` when provided.
+  - When `idempotencyKey` is provided, replay is scoped by `(tenantId, SubmitApproval, idempotencyKey)`.
+  - A replay with the same request fingerprint returns the cached decision response without a second approval store write, domain event, evidence entry, or realtime approval broadcast.
+  - Reusing an idempotency key with a different request fingerprint returns `Conflict`.
   - Existing `ApprovalDenied`/`ApprovalGranted` events are emitted.
   - Approved/denied state is persisted in the approval record.
 

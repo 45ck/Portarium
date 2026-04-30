@@ -41,6 +41,8 @@ export type ActionDispatchResult = ActionDispatchSuccess | ActionDispatchFailure
 export type ActionDispatchInput = Readonly<{
   /** Identifies this specific action step within the run. */
   actionId: ActionId;
+  /** Stable retry key propagated to execution-plane adapters when available. */
+  idempotencyKey?: string;
   /** Tenant scope — used for routing and audit. */
   tenantId: TenantId;
   /** The parent run that triggered this action. */

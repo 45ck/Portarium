@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
+import type { IdempotencyStore } from '../../application/ports/index.js';
 import {
   AgentId,
   ApprovalId,
@@ -110,6 +111,7 @@ function makeDeps(
     agentActionProposal?: AgentActionProposalV1 | null;
     authorization?: ControlPlaneDeps['authorization'];
     approvalQueryStore?: ControlPlaneDeps['approvalQueryStore'];
+    idempotency?: ControlPlaneDeps['idempotency'];
   } = {},
 ): ControlPlaneDeps {
   const store = new Map<string, ApprovalV1>();
@@ -145,6 +147,7 @@ function makeDeps(
         hashSha256: HashSha256('hash-approval-contract'),
       }),
     },
+    ...(overrides.idempotency ? { idempotency: overrides.idempotency } : {}),
     ...(overrides.agentActionProposal !== undefined
       ? {
           agentActionProposalStore: {
@@ -580,6 +583,42 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(second.status).toBe(409);
     const body = (await second.json()) as { type: string };
     expect(body.type).toMatch(/conflict/);
+  });
+
+  it('replays matching Idempotency-Key without a second SSE broadcast', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+    const cache = new Map<string, unknown>();
+
+    await startWith({
+      approvals: [PENDING_APPROVAL],
+      eventStream: broadcast,
+      idempotency: {
+        get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+          (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+          null,
+        set: async (key, value) => {
+          cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+        },
+      },
+    });
+
+    const request = {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Idempotency-Key': 'approval-http-idem-1',
+      },
+      body: JSON.stringify({ decision: 'Approved', rationale: 'Looks good.' }),
+    };
+    const first = await fetch(decideUrl(), request);
+    const second = await fetch(decideUrl(), request);
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual({ approvalId: APPROVAL_ID, status: 'Approved' });
+    expect(events).toHaveLength(1);
   });
 
   it('returns 409 and does not broadcast when an agent-action approval has no linked proposal', async () => {

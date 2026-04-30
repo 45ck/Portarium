@@ -76,6 +76,9 @@ export class OpenClawGatewayMachineInvoker implements MachineInvokerPort {
       tenantId: input.tenantId,
       machineId: input.machineId,
       path: '/v1/responses',
+      ...(input.idempotencyKey
+        ? { extraHeaders: { 'Idempotency-Key': input.idempotencyKey } }
+        : {}),
       payload: {
         model: `openclaw:${input.agentId}`,
         input: input.prompt,
@@ -84,6 +87,7 @@ export class OpenClawGatewayMachineInvoker implements MachineInvokerPort {
           runId: input.runId,
           actionId: input.actionId,
           correlationId: input.correlationId,
+          ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
           ...(input.capability ? { capability: input.capability } : {}),
           ...(input.traceparent ? { traceparent: input.traceparent } : {}),
           ...(input.tracestate ? { tracestate: input.tracestate } : {}),
@@ -117,6 +121,7 @@ export class OpenClawGatewayMachineInvoker implements MachineInvokerPort {
       path: '/tools/invoke',
       extraHeaders: {
         'x-openclaw-session-key': sessionKey,
+        ...(input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey } : {}),
       },
       payload: {
         toolName: input.toolName,
@@ -127,6 +132,7 @@ export class OpenClawGatewayMachineInvoker implements MachineInvokerPort {
           runId: input.runId,
           actionId: input.actionId,
           correlationId: input.correlationId,
+          ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
           sessionKey,
           policyTier,
           dryRun: input.dryRun === true,

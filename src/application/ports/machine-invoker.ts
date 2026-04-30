@@ -45,6 +45,7 @@ type InvocationCorrelation = Readonly<{
   tenantId: TenantId;
   runId: RunId;
   actionId: ActionId;
+  idempotencyKey?: string;
   correlationId: CorrelationId;
   traceparent?: string;
   tracestate?: string;

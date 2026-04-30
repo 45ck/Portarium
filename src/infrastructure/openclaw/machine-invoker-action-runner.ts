@@ -38,6 +38,7 @@ export class MachineInvokerActionRunner implements ActionRunnerPort {
       toolName: input.flowRef,
       parameters: input.payload,
       actionId: input.actionId,
+      ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
       tenantId: input.tenantId,
       runId: input.runId,
       correlationId: input.correlationId,

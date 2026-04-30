@@ -40,11 +40,13 @@ import type {
   EventPublisher,
   EvidenceLogPort,
   AgentActionProposalStore,
+  IdempotencyStore,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
 
 const SUBMIT_APPROVAL_SOURCE = 'portarium.control-plane.approvals';
+const SUBMIT_APPROVAL_COMMAND = 'SubmitApproval';
 
 export type SubmitApprovalRobotContextInput = Readonly<{
   hazardousZone?: boolean;
@@ -66,11 +68,15 @@ export type SubmitApprovalInput = Readonly<{
   previousApproverIds?: readonly string[];
   /** Optional robot context for robot-specific SoD constraints. */
   robotContext?: SubmitApprovalRobotContextInput;
+  /** Optional caller-supplied retry key for transport and offline replay safety. */
+  idempotencyKey?: string;
 }>;
 
 export type SubmitApprovalOutput = Readonly<{
   approvalId: ApprovalIdType;
   status: ApprovalDecidedV1['status'];
+  /** Internal marker used by transports to avoid duplicate push broadcasts. */
+  replayed?: boolean;
 }>;
 
 export type SubmitApprovalError =
@@ -89,6 +95,7 @@ export interface SubmitApprovalDeps {
   eventPublisher: EventPublisher;
   evidenceLog?: EvidenceLogPort;
   agentActionProposalStore?: AgentActionProposalStore;
+  idempotency?: IdempotencyStore;
 }
 
 type ParsedIds = Readonly<{
@@ -97,6 +104,11 @@ type ParsedIds = Readonly<{
 }>;
 
 type Err<E> = Readonly<{ ok: false; error: E }>;
+
+type SubmitApprovalIdempotencyEnvelope = Readonly<{
+  fingerprint: string;
+  output: SubmitApprovalOutput;
+}>;
 
 function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | null {
   if (typeof input.rationale !== 'string' || input.rationale.trim() === '') {
@@ -177,7 +189,74 @@ function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | n
       });
     }
   }
+  if (input.idempotencyKey !== undefined) {
+    if (typeof input.idempotencyKey !== 'string' || input.idempotencyKey.trim() === '') {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'idempotencyKey must be a non-empty string when present.',
+      });
+    }
+  }
   return null;
+}
+
+function readIdempotencyKey(input: SubmitApprovalInput): string | undefined {
+  return typeof input.idempotencyKey === 'string' && input.idempotencyKey.trim() !== ''
+    ? input.idempotencyKey
+    : undefined;
+}
+
+function commandKey(ctx: AppContext, requestKey: string) {
+  return {
+    tenantId: ctx.tenantId,
+    commandName: SUBMIT_APPROVAL_COMMAND,
+    requestKey,
+  };
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJson(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableJson(item)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function fingerprintInput(ctx: AppContext, input: SubmitApprovalInput): string {
+  return stableJson({
+    workspaceId: input.workspaceId,
+    approvalId: input.approvalId,
+    decision: input.decision,
+    rationale: input.rationale,
+    principalId: String(ctx.principalId),
+    sodConstraints: input.sodConstraints ?? [],
+    previousApproverIds: input.previousApproverIds ?? [],
+    robotContext: input.robotContext ?? {},
+  });
+}
+
+function normalizeCachedOutput(value: unknown): SubmitApprovalOutput | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const record = value as Record<string, unknown>;
+  const status = record['status'];
+  if (status !== 'Approved' && status !== 'Denied' && status !== 'RequestChanges') return null;
+  const approvalId = record['approvalId'];
+  if (typeof approvalId !== 'string' || approvalId.trim() === '') return null;
+  return { approvalId: ApprovalId(approvalId), status, replayed: true };
+}
+
+function normalizeCachedEnvelope(value: unknown): SubmitApprovalIdempotencyEnvelope | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const record = value as Record<string, unknown>;
+  if (typeof record['fingerprint'] !== 'string') return null;
+  const output = normalizeCachedOutput(record['output']);
+  if (!output) return null;
+  return { fingerprint: record['fingerprint'], output };
 }
 
 function parseIds(input: SubmitApprovalInput): Result<ParsedIds, ValidationFailed> {
@@ -479,6 +558,45 @@ export async function submitApproval(
   if (!parseResult.ok) return parseResult;
   const current = parseResult.value;
   const pending = current as ApprovalPendingV1;
+  const idempotencyKey = readIdempotencyKey(input);
+  const idempotencyFingerprint = fingerprintInput(ctx, input);
+
+  if (deps.idempotency && idempotencyKey) {
+    const cached = await deps.idempotency.get<unknown>(commandKey(ctx, idempotencyKey));
+    const cachedEnvelope = normalizeCachedEnvelope(cached);
+    if (cachedEnvelope) {
+      if (cachedEnvelope.fingerprint !== idempotencyFingerprint) {
+        return err({
+          kind: 'Conflict',
+          message: 'Idempotency-Key was already used for a different approval decision request.',
+        });
+      }
+      return ok({ ...cachedEnvelope.output, replayed: true });
+    }
+    const cachedOutput = normalizeCachedOutput(cached);
+    if (cachedOutput) {
+      return ok({ ...cachedOutput, replayed: true });
+    }
+  }
+
+  if (current.status !== 'Pending' && deps.idempotency && idempotencyKey) {
+    if (
+      current.status === input.decision &&
+      'decidedByUserId' in current &&
+      String(current.decidedByUserId) === String(ctx.principalId)
+    ) {
+      const output: SubmitApprovalOutput = {
+        approvalId: ids.approvalId,
+        status: current.status,
+        replayed: true,
+      };
+      await deps.idempotency.set(commandKey(ctx, idempotencyKey), {
+        fingerprint: idempotencyFingerprint,
+        output,
+      });
+      return ok(output);
+    }
+  }
 
   const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
   if (stateError) return stateError;
@@ -526,5 +644,12 @@ export async function submitApproval(
     decided,
   });
 
-  return persistDecision({ deps, ctx, ids, decided, domainEvent });
+  const result = await persistDecision({ deps, ctx, ids, decided, domainEvent });
+  if (result.ok && deps.idempotency && idempotencyKey) {
+    await deps.idempotency.set(commandKey(ctx, idempotencyKey), {
+      fingerprint: idempotencyFingerprint,
+      output: result.value,
+    });
+  }
+  return result;
 }
