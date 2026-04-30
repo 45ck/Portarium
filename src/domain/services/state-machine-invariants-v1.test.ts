@@ -325,23 +325,23 @@ describe('Approval state machine — reachability', () => {
 // ---------------------------------------------------------------------------
 
 describe('Mutation-targeted boundary tests', () => {
-  it('Pending → Running is the ONLY transition from Pending', () => {
-    expect(RUN_STATUS_TRANSITIONS.Pending).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS.Pending).toHaveLength(1);
+  it('Pending can either start running or be cancelled', () => {
+    expect(RUN_STATUS_TRANSITIONS.Pending).toEqual(['Running', 'Cancelled']);
+    expect(RUN_STATUS_TRANSITIONS.Pending).toHaveLength(2);
   });
 
   it('Running has exactly 5 valid successor states', () => {
     expect(RUN_STATUS_TRANSITIONS.Running).toHaveLength(5);
   });
 
-  it('WaitingForApproval → Running is the ONLY transition from WaitingForApproval', () => {
-    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toHaveLength(1);
+  it('WaitingForApproval can either resume running or be cancelled', () => {
+    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toEqual(['Running', 'Cancelled']);
+    expect(RUN_STATUS_TRANSITIONS.WaitingForApproval).toHaveLength(2);
   });
 
-  it('Paused → Running is the ONLY transition from Paused', () => {
-    expect(RUN_STATUS_TRANSITIONS.Paused).toEqual(['Running']);
-    expect(RUN_STATUS_TRANSITIONS.Paused).toHaveLength(1);
+  it('Paused can either resume running or be cancelled', () => {
+    expect(RUN_STATUS_TRANSITIONS.Paused).toEqual(['Running', 'Cancelled']);
+    expect(RUN_STATUS_TRANSITIONS.Paused).toHaveLength(2);
   });
 
   it('exactly 3 terminal run statuses (Succeeded, Failed, Cancelled)', () => {
@@ -360,10 +360,10 @@ describe('Mutation-targeted boundary tests', () => {
   it('Running → WaitingForApproval is valid (not vice-versa-only)', () => {
     expect(isValidRunStatusTransition('Running', 'WaitingForApproval')).toBe(true);
     expect(isValidRunStatusTransition('WaitingForApproval', 'Running')).toBe(true);
-    // But WaitingForApproval cannot bypass Running to reach terminal states
+    // But WaitingForApproval cannot bypass Running to complete with success or failure.
     expect(isValidRunStatusTransition('WaitingForApproval', 'Succeeded')).toBe(false);
     expect(isValidRunStatusTransition('WaitingForApproval', 'Failed')).toBe(false);
-    expect(isValidRunStatusTransition('WaitingForApproval', 'Cancelled')).toBe(false);
+    expect(isValidRunStatusTransition('WaitingForApproval', 'Cancelled')).toBe(true);
   });
 
   it('isTerminalRunStatus returns false for all 4 non-terminal states', () => {
@@ -387,12 +387,12 @@ describe('Mutation-targeted boundary tests', () => {
     expect(isValidRunStatusTransition('Pending', 'WaitingForApproval')).toBe(false);
   });
 
-  it('total run transition edge count is exactly 8', () => {
+  it('total run transition edge count is exactly 11', () => {
     const totalEdges = ALL_RUN_STATUSES.reduce(
       (sum, from) => sum + RUN_STATUS_TRANSITIONS[from].length,
       0,
     );
-    // Pending(1) + Running(5) + WaitingForApproval(1) + Paused(1) + terminals(0)
-    expect(totalEdges).toBe(8);
+    // Pending(2) + Running(5) + WaitingForApproval(2) + Paused(2) + terminals(0)
+    expect(totalEdges).toBe(11);
   });
 });

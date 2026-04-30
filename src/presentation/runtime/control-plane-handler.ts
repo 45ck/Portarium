@@ -4,6 +4,8 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { Hono, type Context } from 'hono';
 
 import { getRun } from '../../application/queries/get-run.js';
+import { cancelRun, type CancelRunError } from '../../application/commands/cancel-run.js';
+import { createRun, type CreateRunError } from '../../application/commands/create-run.js';
 import {
   submitRunIntervention,
   type SubmitRunInterventionError,
@@ -37,6 +39,7 @@ import {
   checkIfNoneMatch,
   computeETag,
   normalizeCorrelationId,
+  normalizeHeader,
   normalizeTraceContext,
   parseListQueryParams,
   problemFromError,
@@ -87,6 +90,7 @@ import { handleProposeAgentAction } from './control-plane-handler.agent-actions.
 import { handleExecuteApprovedAgentAction } from './control-plane-handler.agent-action-execute.js';
 import { handlePlanIntent } from './control-plane-handler.intents.js';
 import {
+  handleCreateApproval,
   handleDecideApproval,
   handleGetApproval,
   handleListApprovals,
@@ -151,11 +155,62 @@ const RUN_INTERVENTION_REQUEST_FIELDS = new Set([
   'consequence',
   'evidenceRequired',
 ]);
+const START_RUN_REQUEST_FIELDS = new Set(['workflowId', 'parameters']);
 
 function runInterventionErrorToProblem(
   error: SubmitRunInterventionError,
   instance: string,
 ): ProblemDetails {
+  switch (error.kind) {
+    case 'Forbidden':
+    case 'ValidationFailed':
+    case 'NotFound':
+      return problemFromError(error, instance);
+    case 'Conflict':
+      return {
+        type: 'https://portarium.dev/problems/conflict',
+        title: 'Conflict',
+        status: 409,
+        detail: error.message,
+        instance,
+      };
+    case 'DependencyFailure':
+      return {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Bad Gateway',
+        status: 502,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
+        instance,
+      };
+  }
+}
+
+function createRunErrorToProblem(error: CreateRunError, instance: string): ProblemDetails {
+  switch (error.kind) {
+    case 'Forbidden':
+    case 'ValidationFailed':
+    case 'NotFound':
+      return problemFromError(error, instance);
+    case 'Conflict':
+      return {
+        type: 'https://portarium.dev/problems/conflict',
+        title: 'Conflict',
+        status: 409,
+        detail: error.message,
+        instance,
+      };
+    case 'DependencyFailure':
+      return {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Bad Gateway',
+        status: 502,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
+        instance,
+      };
+  }
+}
+
+function cancelRunErrorToProblem(error: CancelRunError, instance: string): ProblemDetails {
   switch (error.kind) {
     case 'Forbidden':
     case 'ValidationFailed':
@@ -274,6 +329,230 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
     res.statusCode = 304;
     res.setHeader('x-correlation-id', correlationId);
     res.end();
+    return;
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
+async function handleStartRun(args: WorkspaceHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (
+    !deps.workflowStore ||
+    !deps.adapterRegistrationStore ||
+    !deps.idempotency ||
+    !deps.orchestrator ||
+    !deps.eventPublisher ||
+    !deps.unitOfWork
+  ) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail:
+          'Run start is unavailable: workflow, adapter, idempotency, orchestrator, event publisher, and unit-of-work dependencies must be configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/bad-request',
+        title:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!bodyResult.value || typeof bodyResult.value !== 'object') {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'Request body must be a JSON object.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const bodyRecord = bodyResult.value as Record<string, unknown>;
+  const unknownFields = Object.keys(bodyRecord).filter(
+    (field) => !START_RUN_REQUEST_FIELDS.has(field),
+  );
+  if (unknownFields.length > 0) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: `Unknown start run field(s): ${unknownFields.join(', ')}.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const parameters = bodyRecord['parameters'];
+  if (
+    parameters !== undefined &&
+    (typeof parameters !== 'object' || parameters === null || Array.isArray(parameters))
+  ) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'parameters must be a JSON object when present.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const workflowId = bodyRecord['workflowId'];
+  const requestedIdempotencyKey = normalizeHeader(req.headers['idempotency-key'])?.trim();
+  const idempotencyKey =
+    requestedIdempotencyKey && requestedIdempotencyKey.length > 0
+      ? requestedIdempotencyKey
+      : `start-run:${correlationId}`;
+  const result = await createRun(
+    {
+      authorization: deps.authorization,
+      clock: { nowIso: () => (deps.clock ?? (() => new Date()))().toISOString() },
+      idGenerator: { generateId: randomUUID },
+      idempotency: deps.idempotency,
+      unitOfWork: deps.unitOfWork,
+      workflowStore: deps.workflowStore,
+      adapterRegistrationStore: deps.adapterRegistrationStore,
+      runStore: deps.runStore,
+      orchestrator: deps.orchestrator,
+      eventPublisher: deps.eventPublisher,
+    },
+    auth.ctx,
+    {
+      workspaceId,
+      workflowId: typeof workflowId === 'string' ? workflowId : '',
+      idempotencyKey,
+      ...(parameters !== undefined
+        ? { parameters: parameters as Readonly<Record<string, unknown>> }
+        : {}),
+    },
+  );
+
+  if (!result.ok) {
+    respondProblem(
+      res,
+      createRunErrorToProblem(result.error, pathname),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, {
+    statusCode: 201,
+    correlationId,
+    traceContext,
+    body: result.value,
+    location: `/v1/workspaces/${encodeURIComponent(workspaceId)}/runs/${encodeURIComponent(String(result.value.runId))}`,
+  });
+}
+
+async function handleCancelRun(args: RunHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId, runId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.evidenceLog) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Run cancellation is unavailable: evidenceLog is not configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const result = await cancelRun(
+    {
+      authorization: deps.authorization,
+      runStore: deps.runStore,
+      evidenceLog: deps.evidenceLog,
+      unitOfWork: deps.unitOfWork ?? { execute: async <T>(fn: () => Promise<T>) => fn() },
+      clock: { nowIso: () => (deps.clock ?? (() => new Date()))().toISOString() },
+      idGenerator: { generateId: randomUUID },
+    },
+    auth.ctx,
+    { workspaceId, runId },
+  );
+
+  if (!result.ok) {
+    respondProblem(
+      res,
+      cancelRunErrorToProblem(result.error, pathname),
+      correlationId,
+      traceContext,
+    );
     return;
   }
 
@@ -1040,6 +1319,24 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     return c.body(null);
   });
 
+  // POST /v1/workspaces/:workspaceId/runs
+  app.post('/v1/workspaces/:workspaceId/runs', async (c) => {
+    const ctx = c.get('ctx');
+    await handleStartRun({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/runs/:runId/cancel
+  app.post('/v1/workspaces/:workspaceId/runs/:runId/cancel', async (c) => {
+    const ctx = c.get('ctx');
+    await handleCancelRun({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      runId: c.req.param('runId'),
+    });
+    return c.body(null);
+  });
+
   // POST /v1/workspaces/:workspaceId/runs/:runId/interventions
   app.post('/v1/workspaces/:workspaceId/runs/:runId/interventions', async (c) => {
     const ctx = c.get('ctx');
@@ -1385,6 +1682,13 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/approvals', async (c) => {
     const ctx = c.get('ctx');
     await handleListApprovals({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/approvals
+  app.post('/v1/workspaces/:workspaceId/approvals', async (c) => {
+    const ctx = c.get('ctx');
+    await handleCreateApproval({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

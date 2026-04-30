@@ -60,6 +60,17 @@ export const APPLICATION_OPERATION_CONTRACTS = [
   },
   {
     kind: 'command',
+    name: 'cancelRun',
+    sourcePath: 'src/application/commands/cancel-run.ts',
+    actionKey: 'runIntervene',
+    types: {
+      input: 'CancelRunInput',
+      output: 'CancelRunOutput',
+      error: 'CancelRunError',
+    },
+  },
+  {
+    kind: 'command',
     name: 'submitRunIntervention',
     sourcePath: 'src/application/commands/submit-run-intervention.ts',
     actionKey: 'runIntervene',

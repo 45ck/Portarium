@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '@/stores/ui-store';
 import { useWorkflows } from '@/hooks/queries/use-workflows';
+import { useStartRun } from '@/hooks/queries/use-runs';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { controlPlaneClient } from '@/lib/control-plane-client';
 
 interface StartRunDialogProps {
   open: boolean;
@@ -32,45 +31,68 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data: workflowsData } = useWorkflows(wsId);
   const navigate = useNavigate();
-  const qc = useQueryClient();
 
   const [workflowId, setWorkflowId] = useState('');
   const [operatorIntent, setOperatorIntent] = useState('');
   const [rationale, setRationale] = useState('');
   const [parametersJson, setParametersJson] = useState('');
 
-  const createRun = useMutation({
-    mutationFn: async () => {
-      let parameters: Record<string, unknown> | undefined;
-      if (parametersJson.trim()) {
-        try {
-          parameters = JSON.parse(parametersJson);
-        } catch {
-          throw new Error('Invalid JSON in parameters field');
-        }
+  const createRun = useStartRun(wsId);
+
+  async function submitStartRun() {
+    let parameters: Record<string, unknown> | undefined;
+    if (parametersJson.trim()) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(parametersJson) as unknown;
+      } catch {
+        throw new Error('Invalid JSON in parameters field');
       }
-      return controlPlaneClient.startRun(wsId, {
-        workflowId,
-        parameters,
-        operatorIntent: operatorIntent.trim(),
-        ...(rationale.trim() ? { rationale: rationale.trim() } : {}),
-      });
-    },
-    onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['runs', wsId] });
-      onOpenChange(false);
-      setWorkflowId('');
-      setOperatorIntent('');
-      setRationale('');
-      setParametersJson('');
-      navigate({ to: '/runs/$runId' as string, params: { runId: data.runId } });
-    },
-  });
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('Parameters must be a JSON object');
+      }
+      parameters = parsed as Record<string, unknown>;
+    }
+
+    const intent = operatorIntent.trim();
+    const trimmedRationale = rationale.trim();
+    const runParameters = {
+      ...(parameters ?? {}),
+      operatorIntent: intent,
+      ...(trimmedRationale ? { operatorRationale: trimmedRationale } : {}),
+    };
+
+    return createRun.mutateAsync({
+      workflowId,
+      parameters: runParameters,
+    });
+  }
+
+  function resetForm() {
+    setWorkflowId('');
+    setOperatorIntent('');
+    setRationale('');
+    setParametersJson('');
+  }
+
+  async function handleStartRun() {
+    const data = await submitStartRun();
+    resetForm();
+    onOpenChange(false);
+    navigate({ to: '/runs/$runId' as string, params: { runId: data.runId } });
+  }
+
+  const closeDialog = (nextOpen: boolean) => {
+    if (!nextOpen && !createRun.isPending) {
+      resetForm();
+    }
+    onOpenChange(nextOpen);
+  };
 
   const workflows = workflowsData?.items ?? [];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>New Governed Run</DialogTitle>
@@ -130,11 +152,11 @@ export function StartRunDialog({ open, onOpenChange }: StartRunDialogProps) {
           </p>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => closeDialog(false)}>
             Cancel
           </Button>
           <Button
-            onClick={() => createRun.mutate()}
+            onClick={() => void handleStartRun()}
             disabled={!workflowId || operatorIntent.trim().length < 8 || createRun.isPending}
           >
             {createRun.isPending ? 'Starting...' : 'Start Run'}

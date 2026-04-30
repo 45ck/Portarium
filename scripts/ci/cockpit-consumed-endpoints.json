@@ -42,6 +42,19 @@
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
+      "id": "approvals.create",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/approvals",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "createApproval",
+      "consumers": [
+        "apps/cockpit/src/lib/control-plane-client.ts",
+        "apps/cockpit/src/hooks/queries/use-approvals.ts"
+      ]
+    },
+    {
       "id": "approvals.decide",
       "method": "POST",
       "path": "/v1/workspaces/{workspaceId}/approvals/{approvalId}/decide",
@@ -79,11 +92,9 @@
       "method": "POST",
       "path": "/v1/workspaces/{workspaceId}/runs",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
       "clientMethod": "startRun",
-      "trackingBead": "bead-1127",
-      "reason": "Run mutation runtime parity is owned by the live runs API bead.",
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
@@ -91,11 +102,9 @@
       "method": "POST",
       "path": "/v1/workspaces/{workspaceId}/runs/{runId}/cancel",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
       "clientMethod": "cancelRun",
-      "trackingBead": "bead-1127",
-      "reason": "Run cancellation runtime parity is owned by the live runs API bead.",
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {

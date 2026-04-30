@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { err, ok } from '../../application/common/result.js';
+import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
 import {
   CorrelationId,
   EvidenceId,
@@ -17,7 +18,9 @@ import {
   WorkspaceId,
 } from '../../domain/primitives/index.js';
 import type { RunV1 } from '../../domain/runs/index.js';
+import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import { InMemoryCockpitWebSessionStore } from './cockpit-web-session.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
@@ -52,6 +55,34 @@ const RUN: RunV1 = {
   createdAtIso: '2026-04-30T00:00:00.000Z',
 };
 
+const WORKFLOW = parseWorkflowV1({
+  schemaVersion: 1,
+  workflowId: 'workflow-1',
+  workspaceId: 'ws-runs-1',
+  name: 'Contract Workflow',
+  version: 1,
+  active: true,
+  executionTier: 'Auto',
+  actions: [{ actionId: 'act-1', order: 1, portFamily: 'ItsmItOps', operation: 'workflow:run' }],
+});
+
+const ADAPTER_REGISTRATION = parseAdapterRegistrationV1({
+  schemaVersion: 1,
+  adapterId: 'adapter-1',
+  workspaceId: 'ws-runs-1',
+  providerSlug: 'service-now',
+  portFamily: 'ItsmItOps',
+  enabled: true,
+  capabilityMatrix: [{ operation: 'workflow:run', requiresAuth: true }],
+  executionPolicy: {
+    tenantIsolationMode: 'PerTenantWorker',
+    egressAllowlist: ['https://api.service-now.example'],
+    credentialScope: 'capabilityMatrix',
+    sandboxVerified: true,
+    sandboxAvailable: true,
+  },
+});
+
 function makeDeps(
   overrides: {
     roles?: readonly WorkspaceRole[];
@@ -59,9 +90,11 @@ function makeDeps(
     authentication?: ControlPlaneDeps['authentication'];
     authorization?: ControlPlaneDeps['authorization'];
     evidenceLog?: ControlPlaneDeps['evidenceLog'] | null;
+    startRuntimeConfigured?: boolean;
   } = {},
 ): ControlPlaneDeps {
-  const run = overrides.run ?? null;
+  let run = overrides.run ?? null;
+  const idempotency = new Map<string, unknown>();
   return {
     authentication: overrides.authentication ?? {
       authenticateBearerToken: async () => ok(makeCtx(overrides.roles ?? ['operator'])),
@@ -75,12 +108,50 @@ function makeDeps(
       saveWorkspace: async () => undefined,
     },
     runStore: {
-      getRunById: vi.fn(async () => run),
-      saveRun: vi.fn(async () => undefined),
+      getRunById: vi.fn(async (_tenantId, _workspaceId, requestedRunId) =>
+        run && String(run.runId) === String(requestedRunId) ? run : null,
+      ),
+      saveRun: vi.fn(async (_tenantId, nextRun) => {
+        run = nextRun;
+      }),
     },
     runQueryStore: {
       listRuns: async () => ({ items: [] }),
     },
+    ...(overrides.startRuntimeConfigured === false
+      ? {}
+      : {
+          workflowStore: {
+            getWorkflowById: async () => WORKFLOW,
+            listWorkflowsByName: async () => [WORKFLOW],
+          },
+          adapterRegistrationStore: {
+            listByWorkspace: async () => [ADAPTER_REGISTRATION],
+          },
+          idempotency: {
+            get: async <T>(
+              key: Parameters<NonNullable<ControlPlaneDeps['idempotency']>['get']>[0],
+            ) =>
+              (idempotency.get(`${String(key.tenantId)}:${key.commandName}:${key.requestKey}`) as
+                | T
+                | undefined) ?? null,
+            set: async (key, value) => {
+              idempotency.set(
+                `${String(key.tenantId)}:${key.commandName}:${key.requestKey}`,
+                value,
+              );
+            },
+          },
+          orchestrator: {
+            startRun: async () => undefined,
+          },
+          unitOfWork: {
+            execute: async <T>(fn: () => Promise<T>) => fn(),
+          },
+          eventPublisher: {
+            publish: async () => undefined,
+          },
+        }),
     ...(overrides.evidenceLog === null
       ? {}
       : {
@@ -88,7 +159,6 @@ function makeDeps(
             appendEntry: vi.fn(async (_tenantId, entry) => ({
               ...entry,
               evidenceId: EvidenceId(String(entry.evidenceId)),
-              previousHash: undefined,
               hashSha256: HashSha256('hash-1'),
             })),
           },
@@ -118,8 +188,24 @@ function interventionUrl(runId = 'run-1'): string {
   return url(`/v1/workspaces/ws-runs-1/runs/${runId}/interventions`);
 }
 
+function runsUrl(): string {
+  return url('/v1/workspaces/ws-runs-1/runs');
+}
+
+function cancelUrl(runId = 'run-1'): string {
+  return url(`/v1/workspaces/ws-runs-1/runs/${runId}/cancel`);
+}
+
 function postIntervention(body: unknown, headers: Record<string, string> = {}) {
   return fetch(interventionUrl(), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+}
+
+function postRun(body: unknown, headers: Record<string, string> = {}) {
+  return fetch(runsUrl(), {
     method: 'POST',
     headers: { 'content-type': 'application/json', ...headers },
     body: typeof body === 'string' ? body : JSON.stringify(body),
@@ -184,11 +270,114 @@ describe('GET /runs — status query parameter validation', () => {
   });
 });
 
+describe('POST /runs', () => {
+  it('returns 201 and persists a new run', async () => {
+    const deps = await startWith();
+
+    const res = await postRun({ workflowId: 'workflow-1' }, { 'idempotency-key': 'idem-run-1' });
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { workflowId: string; status: string };
+    expect(body.workflowId).toBe('workflow-1');
+    expect(body.status).toBe('Pending');
+    expect(deps.runStore.saveRun).toHaveBeenCalledTimes(1);
+    expect(res.headers.get('location')).toMatch(/\/v1\/workspaces\/ws-runs-1\/runs\//);
+  });
+
+  it('returns 422 when workflowId is missing', async () => {
+    await startWith();
+
+    const res = await postRun({});
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/workflowId/);
+  });
+
+  it('returns 503 when run-start dependencies are unavailable', async () => {
+    await startWith({ startRuntimeConfigured: false });
+
+    const res = await postRun({ workflowId: 'workflow-1' });
+
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/Run start is unavailable/);
+  });
+});
+
+describe('POST /runs/:runId/cancel', () => {
+  it('returns 200 and persists the cancelled run', async () => {
+    const deps = await startWith({ run: RUN });
+
+    const res = await fetch(cancelUrl(), { method: 'POST' });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { status: string; endedAtIso: string };
+    expect(body.status).toBe('Cancelled');
+    expect(body.endedAtIso).toBeDefined();
+    expect(deps.runStore.saveRun).toHaveBeenCalledWith(
+      WorkspaceId('ws-runs-1'),
+      expect.objectContaining({ status: 'Cancelled' }),
+    );
+  });
+
+  it('returns 409 when the run is already terminal', async () => {
+    await startWith({ run: { ...RUN, status: 'Succeeded' } satisfies RunV1 });
+
+    const res = await fetch(cancelUrl(), { method: 'POST' });
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { type: string };
+    expect(body.type).toMatch(/conflict/);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // POST /v1/workspaces/:workspaceId/runs/:runId/interventions
 // ---------------------------------------------------------------------------
 
 describe('POST /runs/:runId/interventions', () => {
+  it('requires the same-origin request marker for cookie-authenticated run interventions', async () => {
+    const auth = vi.fn(async () => {
+      throw new Error('Bearer authentication should not run for cookie-backed run interventions.');
+    });
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['operator']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps({ run: RUN }),
+        authentication: { authenticateBearerToken: auth },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    });
+
+    const res = await fetch(interventionUrl(), {
+      method: 'POST',
+      headers: {
+        cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        interventionType: 'pause',
+        rationale: 'Need operator review.',
+      }),
+    });
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toContain('X-Portarium-Request');
+    expect(auth).not.toHaveBeenCalled();
+  });
+
   it('returns 200 and records evidence for a run pause intervention', async () => {
     const deps = await startWith({ run: RUN });
 

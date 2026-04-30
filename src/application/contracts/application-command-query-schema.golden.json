@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 25,
+  "operationCount": 26,
   "operations": [
     {
       "kind": "command",
@@ -40,6 +40,26 @@
         "error": {
           "name": "StartWorkflowError",
           "sha256": "481b33f0a8f2266663c9dba5c38869a6d1ae68e0595c85efba0c370fb93775da"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "cancelRun",
+      "sourcePath": "src/application/commands/cancel-run.ts",
+      "action": "run:intervene",
+      "types": {
+        "input": {
+          "name": "CancelRunInput",
+          "sha256": "f5dfcc7933a2dbc94f3958fc11820be301e67d37655af9f7fc29e7c9095b0b33"
+        },
+        "output": {
+          "name": "CancelRunOutput",
+          "sha256": "2af779dcc6de24ec6130367cc9f1521d32a9577716f49eb1bbf6ef6831189e8b"
+        },
+        "error": {
+          "name": "CancelRunError",
+          "sha256": "5c9fd3cb971887979726dc6b646ce0f703e7ef2ab09dd34638a71268a45b0bcc"
         }
       }
     },

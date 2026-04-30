@@ -13,10 +13,10 @@ import type { RunStatus } from '../runs/run-v1.js';
  * guard `_runTransitionTableGuard` at the bottom of this file).
  */
 export interface RunStatusTransitionMap {
-  Pending: 'Running';
+  Pending: 'Running' | 'Cancelled';
   Running: 'Succeeded' | 'Failed' | 'Cancelled' | 'WaitingForApproval' | 'Paused';
-  WaitingForApproval: 'Running';
-  Paused: 'Running';
+  WaitingForApproval: 'Running' | 'Cancelled';
+  Paused: 'Running' | 'Cancelled';
   Succeeded: never;
   Failed: never;
   Cancelled: never;
@@ -38,10 +38,10 @@ export type ValidRunStatusTransition<From extends RunStatus = RunStatus> =
 // ---------------------------------------------------------------------------
 
 export const RUN_STATUS_TRANSITIONS: Readonly<Record<RunStatus, readonly RunStatus[]>> = {
-  Pending: ['Running'],
+  Pending: ['Running', 'Cancelled'],
   Running: ['Succeeded', 'Failed', 'Cancelled', 'WaitingForApproval', 'Paused'],
-  WaitingForApproval: ['Running'],
-  Paused: ['Running'],
+  WaitingForApproval: ['Running', 'Cancelled'],
+  Paused: ['Running', 'Cancelled'],
   Succeeded: [],
   Failed: [],
   Cancelled: [],

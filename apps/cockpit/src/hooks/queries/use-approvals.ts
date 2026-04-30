@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ApprovalSummary, ApprovalDecisionRequest } from '@portarium/cockpit-types';
+import type {
+  ApprovalSummary,
+  ApprovalDecisionRequest,
+  CreateApprovalRequest,
+} from '@portarium/cockpit-types';
 import { controlPlaneClient } from '@/lib/control-plane-client';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
@@ -17,6 +21,10 @@ async function postApprovalDecision(
   body: ApprovalDecisionRequest,
 ): Promise<ApprovalSummary> {
   return controlPlaneClient.decideApproval(wsId, id, body);
+}
+
+async function postApproval(wsId: string, body: CreateApprovalRequest): Promise<ApprovalSummary> {
+  return controlPlaneClient.createApproval(wsId, body);
 }
 
 export function useApprovals(wsId: string) {
@@ -43,6 +51,17 @@ export function useApprovalDecision(wsId: string, id: string) {
     mutationFn: (body: ApprovalDecisionRequest) => postApprovalDecision(wsId, id, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['approvals', wsId] });
+    },
+  });
+}
+
+export function useCreateApproval(wsId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateApprovalRequest) => postApproval(wsId, body),
+    onSuccess: (approval) => {
+      qc.invalidateQueries({ queryKey: ['approvals', wsId] });
+      qc.setQueryData(['approvals', wsId, approval.approvalId], approval);
     },
   });
 }

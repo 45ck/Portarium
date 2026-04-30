@@ -29,6 +29,10 @@ services:
       # Store — connect to local Postgres (evidence-db service)
       PORTARIUM_USE_POSTGRES_STORES: 'true'
       PORTARIUM_DATABASE_URL: postgresql://portarium:portarium@evidence-db:5432/portarium
+      # Run orchestration — API starts executions against the Temporal service.
+      PORTARIUM_TEMPORAL_ADDRESS: temporal:7233
+      PORTARIUM_TEMPORAL_NAMESPACE: default
+      PORTARIUM_TEMPORAL_TASK_QUEUE: portarium-runs
       # Dev auth — static bearer token bypasses JWKS for local development.
       # Never use outside NODE_ENV=development/test.
       ENABLE_DEV_AUTH: 'true'
