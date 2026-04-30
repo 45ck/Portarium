@@ -6,6 +6,11 @@ import { useMissions } from '@/hooks/queries/use-missions';
 import { useRobotLocations } from '@/hooks/queries/use-robot-locations';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, MapPin, Target, ShieldCheck, Radio, Info } from 'lucide-react';
@@ -44,10 +49,30 @@ const ROBOTICS_SECTIONS = [
 ];
 
 function RoboticsIndexPage() {
+  return (
+    <RoboticsRouteGate>
+      <RoboticsIndexBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function RoboticsIndexBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data: robotsData, offlineMeta: robotsOfflineMeta } = useRobots(wsId);
-  const { data: missionsData, offlineMeta: missionsOfflineMeta } = useMissions(wsId);
-  const { data: locData, offlineMeta: locationsOfflineMeta } = useRobotLocations(wsId);
+  const {
+    data: robotsData,
+    offlineMeta: robotsOfflineMeta,
+    isError: robotsError,
+  } = useRobots(wsId);
+  const {
+    data: missionsData,
+    offlineMeta: missionsOfflineMeta,
+    isError: missionsError,
+  } = useMissions(wsId);
+  const {
+    data: locData,
+    offlineMeta: locationsOfflineMeta,
+    isError: locationsError,
+  } = useRobotLocations(wsId);
 
   const robots = robotsData?.items ?? [];
   const missions = missionsData?.items ?? [];
@@ -77,6 +102,10 @@ function RoboticsIndexPage() {
           </>
         }
       />
+
+      <RoboticsDemoNotice />
+
+      {robotsError || missionsError || locationsError ? <RoboticsDataErrorState /> : null}
 
       {/* Live stat tiles */}
       <div className="grid grid-cols-3 gap-3">

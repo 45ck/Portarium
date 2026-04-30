@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
 const { mockNavigate, mockUseCockpitExtensionContext, mockResolveCockpitExtensionServerAccess } =
@@ -106,6 +106,10 @@ describe('CommandPalette', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(buildServerAccess());
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('renders activated extension commands and navigates to the compiled external route', () => {
     render(<CommandPalette />);
 
@@ -131,5 +135,17 @@ describe('CommandPalette', () => {
     render(<CommandPalette />);
 
     expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+  });
+
+  it('omits robotics commands in dev-live mode', () => {
+    vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /robots/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /missions/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /safety/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /gateways/i })).toBeNull();
   });
 });

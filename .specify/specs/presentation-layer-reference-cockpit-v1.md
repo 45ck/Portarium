@@ -121,12 +121,15 @@ For each primary screen, show dedicated state components for:
 ### R8 Location map operations (prototype scope)
 
 - Cockpit Robots surface must provide an overview-first location map with synchronized non-map list.
+- Until Cockpit maps `LocationEvent` and `MapLayer` into the robot UI contract, robotics routes are demo-only and must be hidden or disabled in live tenant-data runtimes.
+- Direct live visits to robotics routes must show an unsupported state and must not call `/v1/workspaces/{workspaceId}/robotics/*`.
 - Operators must be able to filter by site/floor/status and search by asset/robot identifier.
 - Details-on-demand panel must show selected robot state, location quality, frame context, and mission link.
 - Spatial alert triage must support jump-to-location and acknowledgment actions.
 - Uncertainty overlays, clustering, and short-window trail visibility must be user-toggleable.
 - Timeline controls must support live mode and replay mode with incident bookmarks.
 - Degraded realtime state must show explicit stale-data messaging on the map surface.
+- Stale or degraded telemetry must disable unsafe robot mission, E-Stop, and safety-constraint controls and explain the reason.
 
 ### R9 Workflow builder interaction model (prototype scope)
 

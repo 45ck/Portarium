@@ -2,6 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { MissionSummary } from '@/types/robotics';
 import { fetchJson } from '@/lib/fetch-json';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
+import { assertRoboticsDemoRuntime, shouldEnableRoboticsQuery } from '@/lib/robotics-runtime';
+
+interface RoboticsQueryOptions {
+  enabled?: boolean;
+}
 
 async function fetchMissions(wsId: string): Promise<{ items: MissionSummary[] }> {
   return fetchJson(
@@ -24,6 +29,7 @@ async function postMissionAction(
   missionId: string,
   action: 'cancel' | 'preempt' | 'retry',
 ): Promise<MissionSummary> {
+  assertRoboticsDemoRuntime(`Mission ${action}`);
   const res = await fetch(`/v1/workspaces/${wsId}/robotics/missions/${missionId}/${action}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,21 +39,21 @@ async function postMissionAction(
   return res.json();
 }
 
-export function useMissions(wsId: string) {
+export function useMissions(wsId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['missions', wsId],
     cacheKey: `missions:${wsId}`,
     queryFn: () => fetchMissions(wsId),
-    enabled: Boolean(wsId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled),
   });
 }
 
-export function useMission(wsId: string, missionId: string) {
+export function useMission(wsId: string, missionId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['missions', wsId, missionId],
     cacheKey: `missions:${wsId}:${missionId}`,
     queryFn: () => fetchMission(wsId, missionId),
-    enabled: Boolean(wsId) && Boolean(missionId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled) && Boolean(missionId),
   });
 }
 

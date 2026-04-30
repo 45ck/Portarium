@@ -6,6 +6,11 @@ import { useUIStore } from '@/stores/ui-store';
 import { useGateways } from '@/hooks/queries/use-gateways';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { DataTable } from '@/components/cockpit/data-table';
 import { Badge } from '@/components/ui/badge';
@@ -25,8 +30,16 @@ const statusClassName: Record<string, string> = {
 };
 
 function GatewaysPage() {
+  return (
+    <RoboticsRouteGate surface="Gateways">
+      <GatewaysPageBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function GatewaysPageBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, offlineMeta } = useGateways(wsId);
+  const { data, isLoading, isError, offlineMeta } = useGateways(wsId);
   const [selected, setSelected] = useState<GatewaySummary | null>(null);
 
   const gateways = data?.items ?? [];
@@ -79,6 +92,10 @@ function GatewaysPage() {
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Gateways' }]}
         status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
+
+      <RoboticsDemoNotice />
+
+      {isError ? <RoboticsDataErrorState title="Gateways unavailable" /> : null}
 
       <DataTable
         columns={columns}

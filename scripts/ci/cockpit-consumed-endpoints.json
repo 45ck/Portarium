@@ -543,7 +543,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics telemetry is fixture-backed and gated out of live mode until a live telemetry UI contract lands.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-robot-locations.ts"]
     },
     {
@@ -554,7 +554,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics telemetry is fixture-backed and gated out of live mode until a live telemetry UI contract lands.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-robots.ts"]
     },
     {
@@ -565,7 +565,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics telemetry is fixture-backed and gated out of live mode until a live telemetry UI contract lands.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-robots.ts"]
     },
     {
@@ -576,7 +576,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics missions are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics missions are fixture-backed and gated out of live mode until audited mission command contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
     },
     {
@@ -587,7 +587,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics missions are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics missions are fixture-backed and gated out of live mode until audited mission command contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
     },
     {
@@ -598,7 +598,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics mission commands are fixture-backed and gated out of live mode until audited command endpoints land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
     },
     {
@@ -609,7 +609,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics mission commands are fixture-backed and gated out of live mode until audited command endpoints land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
     },
     {
@@ -620,7 +620,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics mission commands are fixture-backed and gated out of live mode until audited command endpoints land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
     },
     {
@@ -642,7 +642,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics safety data is fixture-backed and gated out of live mode until audited safety telemetry contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -653,7 +653,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics safety data is fixture-backed and gated out of live mode until audited safety telemetry contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -664,7 +664,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics safety data is fixture-backed and gated out of live mode until audited safety telemetry contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -675,7 +675,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics E-stop state is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics E-stop state is fixture-backed and gated out of live mode until audited safety command contracts land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -686,7 +686,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics E-stop commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics E-stop commands are fixture-backed and gated out of live mode until audited safety command endpoints land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -697,7 +697,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics E-stop commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics E-stop commands are fixture-backed and gated out of live mode until audited safety command endpoints land.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
     },
     {
@@ -708,7 +708,7 @@
       "runtime": "pending",
       "mock": "required",
       "trackingBead": "bead-1134",
-      "reason": "Robotics gateways are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "reason": "Robotics gateways are fixture-backed and gated out of live mode until a live gateway health contract lands.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-gateways.ts"]
     }
   ]

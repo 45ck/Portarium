@@ -35,6 +35,7 @@ import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
 import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
 import {
@@ -405,10 +406,13 @@ function RootShell() {
       to: item.to,
       icon: extensionIcon(item.icon),
     }));
+  const baseNavSections = shouldEnableRoboticsDemo()
+    ? NAV_SECTIONS
+    : NAV_SECTIONS.filter((section) => section.label !== 'Robotics');
   const navSections =
     extensionNavItems.length > 0
-      ? [...NAV_SECTIONS, { label: 'Extensions', items: extensionNavItems }]
-      : NAV_SECTIONS;
+      ? [...baseNavSections, { label: 'Extensions', items: extensionNavItems }]
+      : baseNavSections;
 
   // ── Auth initialization ────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@ Define the backend-free demo behavior for the cockpit presentation layer so stak
 
 ## Scope
 
-- Frontend-only mocking for core cockpit entities: Work Item, Run, Approval Gate, Evidence Log.
+- Frontend-only mocking for core cockpit entities: Work Item, Run, Approval Gate, Evidence Log, and prototype robotics surfaces.
 - Deterministic fixture bootstrap and in-browser `/api/*` interception.
 - Operator narrative: queue -> inspect -> decide -> status transition -> evidence append.
 
@@ -21,6 +21,8 @@ Define the backend-free demo behavior for the cockpit presentation layer so stak
 7. Scripted demo-machine clips must cover approval, evidence, correlation, capability posture, degraded realtime, and agent integration narratives with reset preconditions.
 8. Demo persistence may contain synthetic fixture data only and must remain resettable; it must not define live tenant-data retention behavior.
 9. Fixture-backed demo controls must be available only when Cockpit is running with the mock service worker enabled. `VITE_DEMO_MODE=true` must not unlock demo fixtures when `VITE_PORTARIUM_ENABLE_MSW=false`.
+10. Robotics routes that consume `/v1/workspaces/{workspaceId}/robotics/*` are fixture-backed demo surfaces. Live or dev-live Cockpit must hide them from shell navigation and command search, and direct route visits must render an unsupported state without invoking those mock-only endpoints.
+11. Robotics demo copy must distinguish simulated telemetry and simulated command paths from live hardware events.
 
 ## Out Of Scope
 

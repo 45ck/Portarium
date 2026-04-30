@@ -5,6 +5,11 @@ import { useUIStore } from '@/stores/ui-store';
 import { useRobots } from '@/hooks/queries/use-robots';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import { RobotStatusBadge } from '@/components/domain/robot-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -80,8 +85,16 @@ function RobotCard({ robot }: { robot: RobotSummary }) {
 }
 
 function RobotsPage() {
+  return (
+    <RoboticsRouteGate surface="Robots">
+      <RobotsPageBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function RobotsPageBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, offlineMeta } = useRobots(wsId);
+  const { data, isLoading, isError, offlineMeta } = useRobots(wsId);
   const [classFilter, setClassFilter] = useState<RobotClass | 'All'>('All');
 
   const robots = data?.items ?? [];
@@ -101,6 +114,10 @@ function RobotsPage() {
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Robots' }]}
         status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
+
+      <RoboticsDemoNotice />
+
+      {isError ? <RoboticsDataErrorState title="Robots unavailable" /> : null}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[

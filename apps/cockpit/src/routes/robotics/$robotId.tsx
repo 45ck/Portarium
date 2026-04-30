@@ -3,10 +3,12 @@ import { createRoute, Link, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
+import { useCockpitDataSourceStatus } from '@/hooks/use-cockpit-data-source-status';
 import { useRobot } from '@/hooks/queries/use-robots';
 import { useMissions } from '@/hooks/queries/use-missions';
 import { useRobotLocations } from '@/hooks/queries/use-robot-locations';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { RoboticsDemoNotice, RoboticsRouteGate } from '@/components/cockpit/robotics-runtime-state';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RelatedEntities } from '@/components/cockpit/related-entities';
 import type { RelatedEntity } from '@/components/cockpit/related-entities';
@@ -36,6 +38,14 @@ import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-
 import { Target, MapPin } from 'lucide-react';
 
 function RobotDetailPage() {
+  return (
+    <RoboticsRouteGate surface="Robot detail">
+      <RobotDetailBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function RobotDetailBody() {
   const { robotId } = Route.useParams();
   const { activeWorkspaceId: wsId } = useUIStore();
   const navigate = useNavigate();
@@ -49,6 +59,10 @@ function RobotDetailPage() {
   const { data: robot, isLoading, isError } = useRobot(wsId, robotId);
   const { data: missionsData } = useMissions(wsId);
   const { data: locationsData } = useRobotLocations(wsId);
+  const dataSourceStatus = useCockpitDataSourceStatus();
+  const robotControlReason = dataSourceStatus.canUseLiveActions
+    ? 'Per-robot E-Stop is disabled until an audited robotics command endpoint is available.'
+    : `Robotics controls disabled: ${dataSourceStatus.label.toLowerCase()} data`;
 
   if (isLoading) {
     return (
@@ -166,18 +180,26 @@ function RobotDetailPage() {
         ]}
       />
 
+      <RoboticsDemoNotice />
+
       <div className="flex flex-wrap items-center gap-3">
         <RobotStatusBadge status={robot.status} />
         <Badge variant="outline" className="text-[11px]">
           {robot.robotClass}
         </Badge>
         {!isEstopped && (
-          <Button variant="destructive" size="sm" onClick={() => setEstopDialogOpen(true)}>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled
+            title={robotControlReason}
+            onClick={() => setEstopDialogOpen(true)}
+          >
             Send E-Stop
           </Button>
         )}
         {isEstopped && (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled title={robotControlReason}>
             Clear E-Stop (admin)
           </Button>
         )}
@@ -195,6 +217,8 @@ function RobotDetailPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled
+              title={robotControlReason}
               onClick={() => {
                 toast.success(`E-Stop sent to ${robot.robotId}`);
                 setEstopDialogOpen(false);
