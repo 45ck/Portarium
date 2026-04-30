@@ -205,22 +205,19 @@ describe('external route host', () => {
     expect(screen.queryByText('Extension Boundary')).toBeNull();
   });
 
-  it('falls back when an active external route has no host-owned renderer', async () => {
+  it('fails closed without route metadata when an active external route has no host-owned renderer', async () => {
     externalRouteHostTestState.omitHostedComponents = true;
 
     await renderRoute('/external/example-reference/reviews/proposal-123');
 
-    expect(await screen.findByRole('heading', { name: 'Reference Review' })).toBeTruthy();
-    expect(
-      screen.getByText(
-        'This extension route is active, but this Cockpit build does not include a host-owned renderer for it.',
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
+    expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
     expect(screen.getByText('Host Fallback')).toBeTruthy();
-    expect(screen.getByText('Reference Extension')).toBeTruthy();
-    expect(screen.getByText('example-reference-review')).toBeTruthy();
-    expect(screen.getByText('renderer missing')).toBeTruthy();
-    expect(screen.getByText('proposalId=proposal-123')).toBeTruthy();
+    expect(screen.getByText('/external/example-reference/reviews/proposal-123')).toBeTruthy();
+    expect(screen.queryByText('Reference Review')).toBeNull();
+    expect(screen.queryByText('Reference Extension')).toBeNull();
+    expect(screen.queryByText('example-reference-review')).toBeNull();
+    expect(screen.queryByText('proposalId=proposal-123')).toBeNull();
     expect(screen.queryByText('Review Contract')).toBeNull();
   });
 });

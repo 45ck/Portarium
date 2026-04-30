@@ -66,6 +66,7 @@ import { Route as explorePackRuntimeRoute } from './routes/explore/pack-runtime'
 import { Route as exploreExtensionsRoute } from './routes/explore/extensions';
 
 // External extension host
+import { installedExternalRouteHostRoutes } from './routes/external/installed-extension-routes';
 import { Route as externalRouteHostRoute } from './routes/external/$';
 
 // Auth
@@ -121,6 +122,7 @@ export const routeTree = rootRoute.addChildren([
   exploreGovernanceRoute,
   explorePackRuntimeRoute,
   exploreExtensionsRoute,
+  ...installedExternalRouteHostRoutes,
   externalRouteHostRoute,
   roboticsRoute,
   roboticsMapRoute,
