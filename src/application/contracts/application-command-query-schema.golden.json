@@ -111,11 +111,11 @@
       "types": {
         "input": {
           "name": "SubmitApprovalInput",
-          "sha256": "c662cb24f02f0c8df3b80b6a330b6bc2fe2236c2a579873b9df27a2fe5c328f4"
+          "sha256": "85c57f23046e272f1c2afc0d1d3c7cb00e08f86f4b6a4ae44b3342ad785ef7aa"
         },
         "output": {
           "name": "SubmitApprovalOutput",
-          "sha256": "92d1eea6d4998354eb3c676859606349c30c4e0f1e2d7231c9e269ea1f76a583"
+          "sha256": "b571cf6776feb24c773f15a1fe5c6c955dfad472fb89f1f88775d53c437821d6"
         },
         "error": {
           "name": "SubmitApprovalError",
