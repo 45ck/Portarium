@@ -67,16 +67,21 @@ according to their assigned roles.
 
 ## Cross-role checks
 
-| #   | Step                                                                       | Pass | Fail | Notes |
-| --- | -------------------------------------------------------------------------- | :--: | :--: | ----- |
-| 23  | Switching user context refreshes the sidebar menu immediately              |  ☐   |  ☐   |       |
-| 24  | Navigating to a forbidden route shows an error or redirects gracefully     |  ☐   |  ☐   |       |
-| 25  | API calls that are forbidden return 403 and surface a user-visible message |  ☐   |  ☐   |       |
+| #   | Step                                                                                                                | Pass | Fail | Notes |
+| --- | ------------------------------------------------------------------------------------------------------------------- | :--: | :--: | ----- |
+| 23  | Switching user context refreshes the sidebar menu immediately                                                       |  ☐   |  ☐   |       |
+| 24  | Navigating to a forbidden route shows an error or redirects gracefully                                              |  ☐   |  ☐   |       |
+| 25  | API calls that are forbidden return 403 and surface a user-visible message                                          |  ☐   |  ☐   |       |
+| 26  | Steering, approval, audit annotation, and Policy change controls appear as distinct modes                           |  ☐   |  ☐   |       |
+| 27  | Disabled high-impact controls explain whether RBAC, Policy, SoD, stale data, or missing evidence blocked the action |  ☐   |  ☐   |       |
+| 28  | Non-routine interventions show the accountable governance function and authority source before submission           |  ☐   |  ☐   |       |
 
 ## Pass criteria
 
 All rows for each persona must show **Pass**. Any RBAC bypass is a security
 defect (P0).
+
+Authority expectations are defined in `.specify/specs/operator-interaction-model-v1.md`.
 
 ## Related automated tests
 

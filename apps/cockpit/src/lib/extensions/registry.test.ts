@@ -3,7 +3,9 @@ import { NEUTRAL_OPS_EXTENSION } from './fixtures';
 import { resolveCockpitExtensionRegistry } from './registry';
 import type { CockpitExtensionManifest } from './types';
 
-function cloneExtension(overrides: Partial<CockpitExtensionManifest> = {}): CockpitExtensionManifest {
+function cloneExtension(
+  overrides: Partial<CockpitExtensionManifest> = {},
+): CockpitExtensionManifest {
   return {
     ...NEUTRAL_OPS_EXTENSION,
     routes: [...NEUTRAL_OPS_EXTENSION.routes],

@@ -87,6 +87,8 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 - Cockpit must expose what an agent or machine is allowed to do before the user approves an action.
 - Running-agent views must connect capability, current run state, pending approvals, and evidence so a user can decide whether to let the agent continue.
 - Mobile views must prioritize pending human decisions over broad monitoring or showcase surfaces.
+- Intervention controls must show the governance function and authority source the user is exercising.
+- Steering, approval, audit annotation, and Policy change controls must remain visually and semantically distinct.
 
 ### R5 System states
 

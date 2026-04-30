@@ -405,11 +405,12 @@ Cockpit policy-setting rights should separate:
 
 - `Operator`: runtime approvals and steering only
 - `Approver`: authorization of risky Actions
-- `Policy owner`: change defaults, thresholds, and policy scope
+- `Policy owner`: draft, simulate, activate, rollback, and review defaults, thresholds, evidence requirements, and policy scope
+- `Domain SME`: provide domain-specific advice or approval eligibility for scoped Action classes
 - `Auditor`: inspect but not mutate
 - `Admin`: manage role gates, workspace posture, and platform configuration
 
-Where small teams combine roles, the system may permit overlap, but it must not hide that overlap.
+Where small teams combine roles, the system may permit overlap, but it must not hide that overlap. The authority source and SoD status must remain visible before activation, rollback, override, or approval-to-policy conversion.
 
 ## Screen Model
 

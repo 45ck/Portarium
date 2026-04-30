@@ -45,6 +45,26 @@ Privacy minimisation invariants for immutable metadata:
 - `links.externalRefs[].externalId` MUST be opaque identifiers, not raw PII values.
 - `payloadRefs[].uri` MUST NOT contain query strings or fragments.
 
+### Accountable intervention evidence
+
+Non-routine human interventions must be reconstructable from immutable Evidence
+metadata plus retention-managed payload references. At minimum, the Evidence Log
+entry or linked payload must preserve:
+
+- actor identity and governance function
+- authority source
+- target object and version, where versioned
+- intervention type and requested effect
+- rationale
+- consulted Evidence Artifact IDs or packet snapshot reference
+- resulting state transition or explicit `no-state-change`
+- handoff source and receiver when ownership changes
+- expiry and review deadline for overrides, freezes, and emergency actions
+
+These requirements reuse the existing `Plan | Action | Approval | Policy |
+System` categories; a dedicated operator-intervention category is not required
+for v1.
+
 ### EvidencePayloadRef
 
 - `kind`: `Artifact | Snapshot | Diff | Log`

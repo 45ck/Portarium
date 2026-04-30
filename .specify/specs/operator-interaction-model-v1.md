@@ -1,7 +1,7 @@
 # Operator Interaction Model v1
 
 **Status:** Proposed  
-**Related Beads:** bead-1048, bead-1050, bead-1056  
+**Related Beads:** bead-1048, bead-1050, bead-1056, bead-1074
 **Extends:** [HCI Principles: Autonomy with Ease of Mind](../../docs/internal/engineering-layer/hci-principles.md)
 
 ## Purpose
@@ -148,6 +148,65 @@ Portarium should distinguish governance functions even where current RBAC roles 
 | Platform admin | Manages platform identity, integrations, tenancy, and operational controls | `admin`                              | Infrastructure and lifecycle authority          |
 
 The system must allow a single person to hold multiple functions in small teams, but the model must not assume that is always safe or desirable.
+
+### Authority and accountability contract
+
+Governance functions are responsibilities. RBAC roles are the current coarse implementation handles. Cockpit and the Control Plane must record the function being exercised, not only the user's login role.
+
+Every non-routine intervention must carry:
+
+- `governanceFunction`: one of `operator`, `approver`, `auditor`, `policy-owner`, `domain-sme`, or `platform-admin`
+- `authoritySource`: the rule, role, Policy, delegation, Run charter, or emergency procedure that permits the action
+- `accountableActorUserId`: the user accountable for this decision
+- `target`: the Run, Approval Gate, Plan, Policy, Evidence Artifact, Work Item, Workforce Member, or Workforce Queue affected
+- `effect`: `current-run-effect`, `future-policy-effect`, or `context-only`
+
+Accepted authority sources are:
+
+| Authority source         | Meaning                                                              |
+| ------------------------ | -------------------------------------------------------------------- |
+| `workspace-rbac`         | The current Workspace role or permission slice permits the action.   |
+| `policy-rule`            | A Policy explicitly permits, requires, or blocks the intervention.   |
+| `run-charter`            | The active Run grants bounded steering authority.                    |
+| `queue-delegation`       | Workforce Queue coverage or delegation assigns the decision.         |
+| `incident-break-glass`   | Emergency procedure temporarily permits a stronger intervention.     |
+| `system-invariant`       | A non-overridable platform rule requires or blocks the action.       |
+| `policy-change-approval` | A versioned Policy change has passed the required approval workflow. |
+
+### Intervention authority matrix
+
+| Intervention          | Accountable function                      | Current role mapping                       | Minimum authority source                                     | Evidence category      |
+| --------------------- | ----------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ | ---------------------- |
+| Monitor or inspect    | Operator or Auditor                       | `admin`, `operator`, `approver`, `auditor` | `workspace-rbac`                                             | none or `System`       |
+| Launch from intent    | Operator                                  | `admin`, `operator`                        | `workspace-rbac`, `policy-rule`, `run-charter`               | `Plan`                 |
+| Steer or constrain    | Operator                                  | `admin`, `operator`                        | `workspace-rbac`, `policy-rule`, `run-charter`               | `Plan` or `System`     |
+| Pause                 | Operator                                  | `admin`, `operator`                        | `workspace-rbac` or `policy-rule`                            | `System`               |
+| Resume                | Operator                                  | `admin`, `operator`                        | `workspace-rbac` plus cleared blocker                        | `System`               |
+| Request more evidence | Operator, Approver, or Domain SME         | `admin`, `operator`, `approver`            | `workspace-rbac` or `policy-rule`                            | `System` or `Approval` |
+| Reroute or escalate   | Operator or Approver                      | `admin`, `operator`, `approver`            | `workspace-rbac`, `queue-delegation`, `policy-rule`          | `System`               |
+| Handoff               | Operator                                  | `admin`, `operator`                        | `workspace-rbac` or `queue-delegation`                       | `System`               |
+| Approve               | Approver                                  | `admin`, `approver`                        | `workspace-rbac`, `policy-rule`                              | `Approval`             |
+| Deny                  | Approver                                  | `admin`, `approver`                        | `workspace-rbac`, `policy-rule`                              | `Approval`             |
+| Request changes       | Approver                                  | `admin`, `approver`                        | `workspace-rbac`, `policy-rule`                              | `Approval`             |
+| Override              | Policy owner or Platform admin            | `admin` in v1                              | `policy-change-approval` or `incident-break-glass`           | `Policy` or `System`   |
+| Freeze                | Operator, Policy owner, or Platform admin | `admin`, `operator` when Policy permits    | `policy-rule`, `incident-break-glass`, or `system-invariant` | `System` or `Policy`   |
+| Emergency disable     | Platform admin                            | `admin`                                    | `incident-break-glass` or `system-invariant`                 | `Policy` or `System`   |
+| Policy draft          | Policy owner                              | `admin` in v1                              | `workspace-rbac`                                             | `Policy`               |
+| Policy simulate       | Policy owner, Operator, or Auditor        | `admin`, `operator`, `auditor`             | `workspace-rbac`                                             | optional `Policy`      |
+| Policy activate       | Policy owner                              | `admin` in v1                              | `policy-change-approval`                                     | `Policy`               |
+| Policy rollback       | Policy owner or Platform admin            | `admin`                                    | `policy-change-approval` or `incident-break-glass`           | `Policy`               |
+| Audit annotation      | Auditor                                   | `admin`, `auditor`                         | `workspace-rbac`                                             | `System`               |
+
+### Separation of Duties rules
+
+The current v1 RBAC roles are intentionally small. These rules therefore apply even when one person holds multiple roles:
+
+1. The actor who requested or proposed an externally-effectful Action must not be the sole approver for that Action.
+2. A user who drafts a risky Policy weakening must not be the only actor who activates it.
+3. Emergency disable and break-glass override must be reviewed after the fact by an Auditor or different Platform admin.
+4. Domain SME advice may support approval, but it is not itself an Approval Gate decision unless the actor also has approval authority.
+5. Handoff transfers current ownership; it does not erase the originating actor, prior rationale, or previous accountable decisions.
+6. Small-team overlap is allowed only when Policy explicitly permits the overlap and the Evidence Log records the overlap reason.
 
 ## Oversight Modes
 
@@ -620,10 +679,14 @@ Every non-routine intervention must record:
 - actor identity
 - governance function used
 - authority source
+- accountable actor
 - rationale
 - affected scope
 - evidence references consulted
 - resulting action or state transition
+- current role set and future permission slice when available
+- previous owner and new owner for handoff or escalation
+- expiry and review deadline for override, freeze, or emergency action
 - timestamp and correlation to Run, Approval Gate, Plan, or Policy version
 
 Every approval, denial, reroute, handoff, override, freeze, and policy change must be explainable after the fact.
@@ -678,6 +741,7 @@ The following must not be user-disableable:
 ## Open Questions
 
 - Should `policy owner` become a first-class RBAC role or remain a permission slice over `admin` and `approver` capabilities?
+- Which `policy owner` permission slices should graduate first from the v1 `admin` mapping?
 - Which intervention actions are reversible versus compensatable across different Port families?
 - How much operator-specific personalisation is safe before it weakens team-level consistency?
 - What minimum training or readiness evidence should be required before a user can approve high-risk Actions?

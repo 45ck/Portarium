@@ -37,6 +37,8 @@ Some Cockpit contracts depend on this sequence because they would otherwise gues
 - `bead-1074` defines authority and accountability before `bead-1076` expands intervention controls.
 - `bead-1075` then unblocks `bead-1078`, `bead-1079`, and the deeper approval review model.
 
+The bead-1074 artifact is the authority and accountability contract in `.specify/specs/operator-interaction-model-v1.md`.
+
 ## Not Core For This Sequence
 
 The following remain future work unless a pilot specifically selects them:

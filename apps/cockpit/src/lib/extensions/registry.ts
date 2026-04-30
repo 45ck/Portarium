@@ -69,7 +69,9 @@ export function resolveCockpitExtensionRegistry({
     };
   });
 
-  const enabledExtensions = resolvedExtensions.filter((extension) => extension.status === 'enabled');
+  const enabledExtensions = resolvedExtensions.filter(
+    (extension) => extension.status === 'enabled',
+  );
 
   return {
     extensions: resolvedExtensions,

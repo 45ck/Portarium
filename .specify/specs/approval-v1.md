@@ -29,6 +29,18 @@ Decision fields (only when `status` is not `Pending`):
 - `decidedByUserId`: branded `UserId`
 - `rationale`: non-empty string (required)
 
+Accountability metadata for Approval Gate decisions is defined by
+`operator-interaction-model-v1.md`. Implementations must be able to associate
+each non-routine approval decision with:
+
+- governance function used
+- authority source
+- consulted evidence references or packet snapshot
+- applicable Policy version or SoD result
+
+These fields may be stored directly on the approval record or linked through the
+Evidence Log, but they must be reconstructable for audit.
+
 ### ApprovalStatus
 
 One of:
