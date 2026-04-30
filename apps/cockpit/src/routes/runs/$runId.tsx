@@ -15,6 +15,7 @@ import { useWorkforceMembers, useWorkforceQueues } from '@/hooks/queries/use-wor
 import { PageHeader } from '@/components/cockpit/page-header';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
+import { RunControlStateBadge } from '@/components/cockpit/run-control-state-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner';
 import { StepList } from '@/components/cockpit/step-list';
@@ -82,6 +83,10 @@ function deriveSteps(status: RunStatus): Step[] {
         { ...base[2]!, status: 'skipped' as const },
       ];
   }
+}
+
+function isDecidedApproval(status: string): boolean {
+  return status === 'Approved' || status === 'Executed';
 }
 
 function RunDetailPage() {
@@ -158,6 +163,19 @@ function RunDetailPage() {
   const workforceQueues = workforceQueuesData?.items ?? [];
   const allApprovals = approvals.data?.items ?? [];
   const runApprovals = allApprovals.filter((a) => a.runId === runId);
+  const recoveryResumePending =
+    run.status === 'WaitingForApproval' &&
+    !pendingApproval &&
+    runApprovals.some((approval) => isDecidedApproval(approval.status));
+  const recoverySummary = recoveryResumePending
+    ? 'Approved, resume pending after recovery'
+    : run.status === 'WaitingForApproval' && pendingApproval
+      ? 'Waiting for Approval Gate decision'
+      : run.controlState === 'degraded'
+        ? 'Degraded recovery mode'
+        : run.controlState === 'blocked'
+          ? 'Blocked pending operator action'
+          : undefined;
 
   // Find linked work item
   const linkedWorkItem = (workItems.data?.items ?? []).find((wi) =>
@@ -224,6 +242,7 @@ function RunDetailPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <RunStatusBadge status={run.status} />
+          <RunControlStateBadge state={run.controlState} />
           <ExecutionTierBadge tier={run.executionTier} />
           {(run.status === 'Running' ||
             run.status === 'WaitingForApproval' ||
@@ -309,10 +328,27 @@ function RunDetailPage() {
           </Tabs>
 
           <div className="space-y-4 lg:sticky lg:top-6 self-start">
+            {recoverySummary ? (
+              <Card className="shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Recovery State</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm font-medium">{recoverySummary}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {run.controlState
+                      ? `Control state: ${run.controlState}`
+                      : `Run status: ${run.status}`}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : null}
+
             <RunInterventionPanel
               run={run}
               workforceMembers={workforceMembers}
               workforceQueues={workforceQueues}
+              {...(recoveryResumePending ? { recommendedIntervention: 'resume' as const } : {})}
               loading={submitIntervention.isPending}
               onSubmit={async (request) => {
                 await submitIntervention.mutateAsync(request);

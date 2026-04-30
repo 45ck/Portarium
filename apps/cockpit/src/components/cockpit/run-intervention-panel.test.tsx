@@ -73,6 +73,20 @@ describe('RunInterventionPanel', () => {
     expect(screen.getByRole('button', { name: /record resume/i })).toBeTruthy();
   });
 
+  it('can default a recovered waiting run to resume when the approval is already decided', () => {
+    render(
+      <RunInterventionPanel
+        run={{ ...runningRun, status: 'WaitingForApproval', controlState: 'degraded' }}
+        workforceMembers={[]}
+        workforceQueues={[]}
+        recommendedIntervention="resume"
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /record resume/i })).toBeTruthy();
+  });
+
   it('separates request-more-evidence from generic steering actions', async () => {
     const onSubmit = vi.fn();
     render(

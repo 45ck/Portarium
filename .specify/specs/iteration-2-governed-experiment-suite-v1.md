@@ -51,6 +51,7 @@ It records:
 | `micro-saas-agent-stack-v2`      | `bead-1043` | team handoff and out-of-order decisions  |
 | `openclaw-concurrent-sessions`   | `bead-1044` | concurrent governed sessions             |
 | `approval-backlog-soak`          | `bead-1045` | backlog pressure, escalation, and expiry |
+| `governed-resume-recovery`       | `bead-1059` | pending approval recovery and resume     |
 
 ## Required Metric Names
 

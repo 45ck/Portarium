@@ -105,6 +105,21 @@
         "expiry independence",
         "queue degradation signals"
       ]
+    },
+    {
+      "scenarioId": "governed-resume-recovery",
+      "beadId": "bead-1059",
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/governed-resume-recovery/README.md",
+      "comparesTo": "growth-studio-openclaw-live-v2",
+      "validates": [
+        "pending approval recovery",
+        "degraded waiting visibility",
+        "exactly-once governed resume",
+        "defect and limitation classification"
+      ]
     }
   ]
 }

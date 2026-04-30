@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { EntityListShell } from '@/components/cockpit/entity-list-shell';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
+import { RunControlStateBadge } from '@/components/cockpit/run-control-state-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { useEntityList } from '@/hooks/queries/use-entity-list';
 import { useListSearchParams } from '@/hooks/use-list-search-params';
@@ -78,7 +79,12 @@ const RUN_COLUMNS: Column<RunSummary>[] = [
     header: 'Status',
     width: '130px',
     sortable: true,
-    render: (row) => <RunStatusBadge status={row.status} />,
+    render: (row) => (
+      <div className="flex flex-wrap gap-1">
+        <RunStatusBadge status={row.status} />
+        <RunControlStateBadge state={row.controlState} />
+      </div>
+    ),
   },
   {
     key: 'executionTier',

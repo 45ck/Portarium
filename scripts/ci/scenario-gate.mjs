@@ -110,6 +110,11 @@ const invariants = [
     desc: 'Bypass-policy / outbound-governance assertions present',
     pattern: /bypass|policy|egress|governance|fail.?closed/i,
   },
+  {
+    name: 'recovery-resume',
+    desc: 'Pending approval recovery and governed resume assertions present',
+    pattern: /recovery|resume|restart|exact.?once|duplicate execution/i,
+  },
 ];
 
 const invariantResults = [];
