@@ -107,6 +107,31 @@ describe('projectCockpitShellNavigation', () => {
     ]);
   });
 
+  it('projects neutral extension navigation with stable shell ids and match paths', () => {
+    const projection = projectWith();
+    const sidebarExtensionItems =
+      projection.sidebarSections.find((section) => section.id === 'extensions')?.items ?? [];
+    const mobileExtensionItems =
+      projection.mobileMoreSections.find((section) => section.id === 'extensions')?.items ?? [];
+
+    expect(sidebarExtensionItems).toMatchObject([
+      {
+        id: 'extension-nav:example-reference-overview-nav',
+        label: 'Reference Overview',
+        to: '/external/example-reference/overview',
+        matchPath: '/external/example-reference/overview',
+      },
+    ]);
+    expect(mobileExtensionItems).toMatchObject([
+      {
+        id: 'extension-mobile:example-reference-overview-nav',
+        label: 'Reference Overview',
+        to: '/external/example-reference/overview',
+        matchPath: '/external/example-reference/overview',
+      },
+    ]);
+  });
+
   it('hides extension items from every projected surface when the route guard denies access', () => {
     const projection = projectWith({
       accessContext: {

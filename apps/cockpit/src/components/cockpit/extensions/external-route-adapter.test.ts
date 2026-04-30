@@ -35,6 +35,17 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
         requiredApiScopes: ['extensions.read'],
       },
     },
+    {
+      id: 'test-restricted',
+      path: '/external/test/restricted',
+      title: 'Test Restricted',
+      guard: {
+        personas: ['Operator'],
+        requiredCapabilities: ['objects:read'],
+        requiredApiScopes: ['extensions.read'],
+        privacyClasses: ['restricted'],
+      },
+    },
   ],
   navItems: [],
   commands: [],
@@ -43,11 +54,13 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
 const TEST_ROUTE_LOADERS = {
   'test-overview': () => Promise.resolve({ default: () => null }),
   'test-detail': () => Promise.resolve({ default: () => null }),
+  'test-restricted': () => Promise.resolve({ default: () => null }),
 };
 
 const TEST_COMPONENTS = {
   'test-overview': () => null,
   'test-detail': () => null,
+  'test-restricted': () => null,
 };
 
 const TEST_ACCESS_CONTEXT = {
@@ -116,9 +129,38 @@ describe('resolveExternalRoute', () => {
     expect(resolution.audit).toMatchObject({
       decision: 'deny',
       reason: 'route-forbidden',
+      surface: 'external-route',
+      pathname: '/external/test/items/item-123',
       extensionId: 'test.extension',
       routeId: 'test-detail',
+      matchedPath: '/external/test/items/$itemId',
+      extensionStatus: 'enabled',
+      disableReasons: [],
+      denials: [{ code: 'persona' }],
     });
+  });
+
+  it('returns forbidden when active persona is not server-available', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/overview',
+      persona: 'Operator',
+      availablePersonas: ['Admin'],
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+      components: TEST_COMPONENTS,
+    });
+
+    expect(resolution.kind).toBe('forbidden');
+    if (resolution.kind !== 'forbidden') throw new Error('Expected forbidden route');
+    expect(resolution.denials).toEqual([{ code: 'persona' }]);
+    expect(resolution.audit.denials).toEqual([{ code: 'persona' }]);
   });
 
   it('returns forbidden when the caller lacks route capabilities or API scopes', () => {
@@ -145,6 +187,37 @@ describe('resolveExternalRoute', () => {
     ]);
   });
 
+  it('returns forbidden when route guard denies privacy class access', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/restricted',
+      persona: 'Operator',
+      ...TEST_ACCESS_CONTEXT,
+      registry,
+      components: TEST_COMPONENTS,
+    });
+
+    expect(resolution.kind).toBe('forbidden');
+    if (resolution.kind !== 'forbidden') throw new Error('Expected forbidden route');
+    expect(resolution.denials).toEqual([
+      { code: 'missing-privacy-class', missing: ['restricted'] },
+    ]);
+    expect(resolution.audit).toMatchObject({
+      decision: 'deny',
+      reason: 'route-forbidden',
+      matchedPath: '/external/test/restricted',
+      extensionStatus: 'enabled',
+      disableReasons: [],
+      denials: [{ code: 'missing-privacy-class', missing: ['restricted'] }],
+    });
+  });
+
   it('fails closed with audit metadata when the host has no route renderer', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [TEST_EXTENSION],
@@ -166,8 +239,13 @@ describe('resolveExternalRoute', () => {
       audit: {
         decision: 'deny',
         reason: 'missing-renderer',
+        surface: 'external-route',
+        pathname: '/external/test/overview',
         extensionId: 'test.extension',
         routeId: 'test-overview',
+        matchedPath: '/external/test/overview',
+        extensionStatus: 'enabled',
+        disableReasons: [],
       },
     });
   });
@@ -193,6 +271,9 @@ describe('resolveExternalRoute', () => {
         surface: 'external-route',
         extensionId: 'test.extension',
         routeId: 'test-overview',
+        matchedPath: '/external/test/overview',
+        extensionStatus: 'disabled',
+        disableReasons: [expect.objectContaining({ code: 'workspace-pack-inactive' })],
       },
     });
   });
@@ -216,6 +297,10 @@ describe('resolveExternalRoute', () => {
       pathname: '/external/unknown',
       audit: { decision: 'deny', reason: 'not-found', surface: 'external-route' },
     });
+    expect(resolution.audit).not.toHaveProperty('extensionId');
+    expect(resolution.audit).not.toHaveProperty('routeId');
+    expect(resolution.audit).not.toHaveProperty('matchedPath');
+    expect(resolution.audit).not.toHaveProperty('denials');
   });
 
   it('ignores renderer entries for routes not declared by the enabled registry', () => {

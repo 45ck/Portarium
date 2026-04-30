@@ -149,4 +149,24 @@ describe('useKeyboardShortcuts', () => {
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it('does not route extension shortcuts when server-issued persona grants deny the active persona', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        accessContext: {
+          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availablePrivacyClasses: ['internal', 'restricted'],
+          availablePersonas: ['Auditor'],
+        },
+      }),
+    );
+
+    renderHook(() => useKeyboardShortcuts());
+
+    fireEvent.keyDown(document.body, { key: 'g' });
+    fireEvent.keyDown(document.body, { key: 'x' });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
