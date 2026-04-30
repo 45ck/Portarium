@@ -13,6 +13,7 @@ describe('APP_ACTIONS contract', () => {
       'run:read',
       'work-item:read',
       'run:start',
+      'run:intervene',
       'map-command:submit',
       'workforce:assign',
       'workforce:complete',

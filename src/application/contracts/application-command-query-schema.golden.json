@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 24,
+  "operationCount": 25,
   "operations": [
     {
       "kind": "command",
@@ -40,6 +40,26 @@
         "error": {
           "name": "StartWorkflowError",
           "sha256": "481b33f0a8f2266663c9dba5c38869a6d1ae68e0595c85efba0c370fb93775da"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "submitRunIntervention",
+      "sourcePath": "src/application/commands/submit-run-intervention.ts",
+      "action": "run:intervene",
+      "types": {
+        "input": {
+          "name": "SubmitRunInterventionInput",
+          "sha256": "e2c1a9d6704979a2fa9d1941b6e3b937af59b18af6a7a255e0ae8a86cfb1e97d"
+        },
+        "output": {
+          "name": "SubmitRunInterventionOutput",
+          "sha256": "2af779dcc6de24ec6130367cc9f1521d32a9577716f49eb1bbf6ef6831189e8b"
+        },
+        "error": {
+          "name": "SubmitRunInterventionError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
         }
       }
     },

@@ -29,6 +29,8 @@ export type RunStatus =
   | 'Failed'
   | 'Cancelled';
 
+export type RunControlState = 'waiting' | 'blocked' | 'degraded' | 'frozen' | 'operator-owned';
+
 export type RunV1 = Readonly<{
   schemaVersion: 1;
   runId: RunIdType;
@@ -41,6 +43,8 @@ export type RunV1 = Readonly<{
   createdAtIso: string;
   startedAtIso?: string;
   endedAtIso?: string;
+  controlState?: RunControlState;
+  operatorOwnerId?: string;
 }>;
 
 export class RunParseError extends Error {
@@ -61,6 +65,8 @@ const RUN_STATUSES = [
   'Cancelled',
 ] as const;
 
+const RUN_CONTROL_STATES = ['waiting', 'blocked', 'degraded', 'frozen', 'operator-owned'] as const;
+
 const EXECUTION_TIERS = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const;
 
 export function parseRunV1(value: unknown): RunV1 {
@@ -79,6 +85,8 @@ export function parseRunV1(value: unknown): RunV1 {
   const createdAtIso = readIsoString(record, 'createdAtIso', RunParseError);
   const startedAtIso = readOptionalIsoString(record, 'startedAtIso', RunParseError);
   const endedAtIso = readOptionalIsoString(record, 'endedAtIso', RunParseError);
+  const controlState = readOptionalRunControlState(record);
+  const operatorOwnerId = readOptionalNonEmptyString(record, 'operatorOwnerId');
 
   if (startedAtIso !== undefined) {
     assertNotBefore(createdAtIso, startedAtIso, RunParseError, {
@@ -107,6 +115,8 @@ export function parseRunV1(value: unknown): RunV1 {
     createdAtIso,
     ...(startedAtIso ? { startedAtIso } : {}),
     ...(endedAtIso ? { endedAtIso } : {}),
+    ...(controlState ? { controlState } : {}),
+    ...(operatorOwnerId ? { operatorOwnerId } : {}),
   };
 }
 
@@ -116,6 +126,27 @@ function readStatus(record: Record<string, unknown>): RunStatus {
   throw new RunParseError(
     'status must be one of: Pending, Running, WaitingForApproval, Paused, Succeeded, Failed, Cancelled.',
   );
+}
+
+function readOptionalRunControlState(record: Record<string, unknown>): RunControlState | undefined {
+  const value = record['controlState'];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string' && RUN_CONTROL_STATES.includes(value as RunControlState)) {
+    return value as RunControlState;
+  }
+  throw new RunParseError(
+    'controlState must be one of: waiting, blocked, degraded, frozen, operator-owned.',
+  );
+}
+
+function readOptionalNonEmptyString(
+  record: Record<string, unknown>,
+  field: string,
+): string | undefined {
+  const value = record[field];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'string' && value.trim() !== '') return value;
+  throw new RunParseError(`${field} must be a non-empty string when present.`);
 }
 
 function readExecutionTier(record: Record<string, unknown>): ExecutionTier {

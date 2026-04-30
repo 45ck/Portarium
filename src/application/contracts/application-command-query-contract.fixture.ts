@@ -7,6 +7,7 @@ export type ActionKey =
   | 'runRead'
   | 'workItemRead'
   | 'runStart'
+  | 'runIntervene'
   | 'mapCommandSubmit'
   | 'workforceAssign'
   | 'workforceComplete'
@@ -55,6 +56,17 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'StartWorkflowInput',
       output: 'StartWorkflowOutput',
       error: 'StartWorkflowError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'submitRunIntervention',
+    sourcePath: 'src/application/commands/submit-run-intervention.ts',
+    actionKey: 'runIntervene',
+    types: {
+      input: 'SubmitRunInterventionInput',
+      output: 'SubmitRunInterventionOutput',
+      error: 'SubmitRunInterventionError',
     },
   },
   {
