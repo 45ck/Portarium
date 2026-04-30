@@ -107,10 +107,16 @@ This ADR is implemented through:
 - `bead-1122` for the regression matrix.
 - `bead-1123` for later SDK and conformance graduation.
 
+The external package install and handoff procedure is documented in
+`docs/how-to/install-cockpit-extension-package.md`. That procedure treats
+`INSTALLED_COCKPIT_EXTENSION_MODULES` as the host-owned import map: manifests
+describe extension metadata, while Cockpit owns every executable route import.
+
 ## Acceptance Evidence
 
 - ADR document: `docs/internal/adr/ADR-0126-cockpit-extension-host.md`
 - Generic registry code: `apps/cockpit/src/lib/extensions/`
+- External package install handoff: `docs/how-to/install-cockpit-extension-package.md`
 - Generic route host work: `bead-1115`
 - Workspace activation work: `bead-1116`
 - Guard and egress work: `bead-1117`, `bead-1121`

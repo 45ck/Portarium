@@ -40,6 +40,7 @@ These docs focus on the core tested governance loop.
 5. [Integration ladder](integration/integration-ladder.md)
 6. [Integration demo walkthrough](integration/demo-walkthrough.md)
 7. [Generate integration scaffolds](how-to/generate-integration-scaffolds.md)
+8. [Install a Cockpit extension package](how-to/install-cockpit-extension-package.md)
 
 ## Operate And Secure It
 
