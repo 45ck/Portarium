@@ -370,6 +370,33 @@ if (openapiStatuses.join('|') !== cockpitStatuses.join('|')) {
   );
 }
 
+const evidenceCategoryEnumMatch = openapiSpec.match(
+  /EvidenceCategory:[\s\S]*?enum:\s*\[([^\]]+)\]/m,
+);
+if (!evidenceCategoryEnumMatch) {
+  fail('Cockpit API drift check failed: could not locate EvidenceCategory enum in OpenAPI spec.');
+}
+const openapiEvidenceCategories = evidenceCategoryEnumMatch[1]
+  .split(',')
+  .map((part) => part.trim())
+  .filter((part) => part.length > 0);
+
+const cockpitEvidenceCategoryMatch = cockpitTypes.match(
+  /export type EvidenceCategory\s*=\s*([\s\S]*?);/m,
+);
+if (!cockpitEvidenceCategoryMatch) {
+  fail('Cockpit API drift check failed: could not locate EvidenceCategory union in cockpit types.');
+}
+const cockpitEvidenceCategories = cockpitEvidenceCategoryMatch[1]
+  .split("'")
+  .filter((_, index) => index % 2 === 1);
+
+if (openapiEvidenceCategories.join('|') !== cockpitEvidenceCategories.join('|')) {
+  drift.push(
+    `EvidenceCategory enum drift detected. OpenAPI: ${openapiEvidenceCategories.join(', ')}; Cockpit: ${cockpitEvidenceCategories.join(', ')}`,
+  );
+}
+
 if (drift.length > 0) {
   fail('Cockpit API drift check failed.', drift);
 }

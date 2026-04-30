@@ -7,4 +7,7 @@ export * from './get-approval.js';
 export * from './list-approvals.js';
 export * from './get-work-item.js';
 export * from './list-work-items.js';
+export * from './get-plan.js';
+export * from './list-evidence-entries.js';
+export * from './list-run-evidence.js';
 export * from './machine-agent-registry.js';

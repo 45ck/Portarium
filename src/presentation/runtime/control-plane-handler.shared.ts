@@ -22,15 +22,19 @@ import type {
   EventPublisher,
   EventStreamBroadcast,
   EvidenceLogPort,
+  EvidenceQueryStore,
   IdempotencyStore,
   PolicyStore,
+  PlanQueryStore,
   QueryCache,
   RateLimitStore,
   RunQueryStore,
   RunStore,
   UnitOfWork,
+  WorkforceMemberStore,
   WorkflowOrchestrator,
   WorkflowStore,
+  WorkItemStore,
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
@@ -110,6 +114,10 @@ export type ControlPlaneDeps = Readonly<{
   authorization: AuthorizationPort;
   workspaceStore: WorkspaceStore;
   runStore: RunStore;
+  /** Optional work item store; enables workspace-scoped work-item routes. */
+  workItemStore?: WorkItemStore;
+  /** Optional workforce member store; enables workforce-member assignment resolution. */
+  workforceMemberStore?: WorkforceMemberStore;
   /** Optional query store for listing workspaces; enables the GET /v1/workspaces route. */
   workspaceQueryStore?: WorkspaceQueryStore;
   /** Optional query store for listing runs; enables the GET /v1/workspaces/:id/runs route. */
@@ -156,6 +164,10 @@ export type ControlPlaneDeps = Readonly<{
   eventPublisher?: EventPublisher;
   /** Optional evidence log for audit trail. */
   evidenceLog?: EvidenceLogPort;
+  /** Optional query store for reading evidence entries. */
+  evidenceQueryStore?: EvidenceQueryStore;
+  /** Optional query store for reading plans. */
+  planQueryStore?: PlanQueryStore;
   /** Optional unit of work for transactional persistence. */
   unitOfWork?: UnitOfWork;
   /** Optional action runner for executing approved agent actions. */
@@ -227,7 +239,7 @@ export type EvidenceRecord = Readonly<{
   evidenceId: string;
   workspaceId: string;
   occurredAtIso: string;
-  category: 'Plan' | 'Action' | 'Approval' | 'Policy' | 'System';
+  category: 'Plan' | 'Action' | 'Approval' | 'Policy' | 'PolicyViolation' | 'System';
   summary: string;
   actor:
     | Readonly<{ kind: 'User'; userId: string }>
@@ -238,8 +250,12 @@ export type EvidenceRecord = Readonly<{
     runId?: string;
     planId?: string;
     workItemId?: string;
+    approvalId?: string;
   }>;
+  payloadRefs?: readonly Readonly<Record<string, unknown>>[];
+  previousHash?: string;
   hashSha256: string;
+  signatureBase64?: string;
 }>;
 
 // ---------------------------------------------------------------------------

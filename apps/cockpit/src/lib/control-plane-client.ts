@@ -3,13 +3,18 @@ import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
   CockpitExtensionContextResponse,
+  CursorPaginationRequest,
   CursorPage,
   DerivedArtifactListResponse,
   DiffHunk,
+  EvidenceEntry,
   GraphTraversalResult,
   GraphQueryRequest,
   IntentPlanRequest,
   IntentPlanResponse,
+  ListEvidenceRequest,
+  ListWorkItemsRequest,
+  Plan,
   RetrievalSearchRequest,
   RetrievalSearchResponse,
   RunInterventionRequest,
@@ -83,6 +88,46 @@ function sleep(ms: number): Promise<void> {
 
 function pathSegment(value: string): string {
   return encodeURIComponent(value);
+}
+
+function queryString(params: Record<string, string | number | undefined>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) query.set(key, String(value));
+  }
+  const serialized = query.toString();
+  return serialized ? `?${serialized}` : '';
+}
+
+function cursorQuery(request: CursorPaginationRequest): string {
+  return queryString({
+    limit: request.limit,
+    cursor: request.cursor,
+  });
+}
+
+function listEvidenceQuery(request: ListEvidenceRequest): string {
+  return queryString({
+    runId: request.runId,
+    planId: request.planId,
+    workItemId: request.workItemId,
+    category: request.category,
+    limit: request.limit,
+    cursor: request.cursor,
+  });
+}
+
+function listWorkItemsQuery(request: ListWorkItemsRequest): string {
+  return queryString({
+    status: request.status,
+    ownerUserId: request.ownerUserId,
+    runId: request.runId,
+    workflowId: request.workflowId,
+    approvalId: request.approvalId,
+    evidenceId: request.evidenceId,
+    limit: request.limit,
+    cursor: request.cursor,
+  });
 }
 
 export class ControlPlaneClient {
@@ -201,8 +246,12 @@ export class ControlPlaneClient {
     );
   }
 
-  public listWorkItems(workspaceId: string): Promise<CursorPage<WorkItemSummary>> {
-    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/work-items`);
+  public listWorkItems(
+    workspaceId: string,
+    request: ListWorkItemsRequest = {},
+  ): Promise<CursorPage<WorkItemSummary>> {
+    const path = `/v1/workspaces/${pathSegment(workspaceId)}/work-items`;
+    return this.request(`${path}${listWorkItemsQuery(request)}`);
   }
 
   public getWorkItem(workspaceId: string, workItemId: string): Promise<WorkItemSummary> {
@@ -223,6 +272,27 @@ export class ControlPlaneClient {
         body: JSON.stringify(body),
       },
     );
+  }
+
+  public getPlan(workspaceId: string, planId: string): Promise<Plan> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/plans/${pathSegment(planId)}`);
+  }
+
+  public listEvidence(
+    workspaceId: string,
+    request: ListEvidenceRequest = {},
+  ): Promise<CursorPage<EvidenceEntry>> {
+    const path = `/v1/workspaces/${pathSegment(workspaceId)}/evidence`;
+    return this.request(`${path}${listEvidenceQuery(request)}`);
+  }
+
+  public listRunEvidence(
+    workspaceId: string,
+    runId: string,
+    request: CursorPaginationRequest = {},
+  ): Promise<CursorPage<EvidenceEntry>> {
+    const path = `/v1/workspaces/${pathSegment(workspaceId)}/runs/${pathSegment(runId)}/evidence`;
+    return this.request(`${path}${cursorQuery(request)}`);
   }
 
   public listWorkflows(workspaceId: string): Promise<CursorPage<WorkflowSummary>> {

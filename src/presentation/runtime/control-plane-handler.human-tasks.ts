@@ -416,11 +416,26 @@ export async function handleListEvidence(args: HandlerArgs): Promise<void> {
   const planId = url.searchParams.get('planId');
   const workItemId = url.searchParams.get('workItemId');
   const category = url.searchParams.get('category');
+  if (category && !VALID_EVIDENCE_CATEGORIES.has(category)) {
+    respondProblem(
+      args.res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'category is invalid.',
+        instance: args.pathname,
+      },
+      args.correlationId,
+      args.traceContext,
+    );
+    return;
+  }
   let items = listRuntimeEvidence(args.workspaceId);
   if (runId) items = items.filter((entry) => entry.links?.runId === runId);
   if (planId) items = items.filter((entry) => entry.links?.planId === planId);
   if (workItemId) items = items.filter((entry) => entry.links?.workItemId === workItemId);
-  if (category && VALID_EVIDENCE_CATEGORIES.has(category)) {
+  if (category) {
     items = items.filter((entry) => entry.category === category);
   }
 

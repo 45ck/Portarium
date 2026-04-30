@@ -8,16 +8,20 @@ import type {
   AuthenticationPort,
   AuthorizationPort,
   IdempotencyStore,
+  ListWorkItemsFilter,
+  PlanQueryStore,
   QueryCache,
   RunQueryStore,
   RunStore,
+  WorkforceMemberStore,
   WorkflowOrchestrator,
   WorkflowStore,
+  WorkItemStore,
   WorkspaceQueryStore,
   WorkspaceStore,
 } from '../../application/ports/index.js';
 import type { ActionRunnerPort } from '../../application/ports/action-runner.js';
-import type { EvidenceLogPort } from '../../application/ports/evidence-log.js';
+import type { EvidenceLogPort, EvidenceQueryStore } from '../../application/ports/evidence-log.js';
 import { MachineInvokerActionRunner } from '../../infrastructure/machines/machine-invoker-action-runner.js';
 import { OpenClawGatewayMachineInvoker } from '../../infrastructure/openclaw/openclaw-gateway-machine-invoker.js';
 import type { EventPublisher } from '../../application/ports/event-publisher.js';
@@ -33,6 +37,7 @@ import { NodePostgresSqlClient } from '../../infrastructure/postgresql/node-post
 import { PostgresAgentActionProposalStore } from '../../infrastructure/postgresql/postgres-agent-action-proposal-store.js';
 import { PostgresEvidenceLog } from '../../infrastructure/postgresql/postgres-eventing.js';
 import { PostgresMachineRegistryStore } from '../../infrastructure/postgresql/postgres-machine-registry-store.js';
+import { PostgresPlanQueryStore } from '../../infrastructure/postgresql/postgres-plan-query-store.js';
 import {
   PostgresAdapterRegistrationStore,
   PostgresApprovalStore,
@@ -42,6 +47,10 @@ import {
   PostgresWorkflowStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
+import {
+  PostgresWorkItemStore,
+  PostgresWorkforceMemberStore,
+} from '../../infrastructure/postgresql/postgres-workforce-store-adapters.js';
 import { TemporalWorkflowOrchestrator } from '../../infrastructure/temporal/temporal-workflow-orchestrator.js';
 import {
   InMemoryRateLimitStore,
@@ -54,6 +63,8 @@ import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-mem
 import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import type { WorkItemV1 } from '../../domain/work-items/index.js';
+import { parseWorkforceMemberV1 } from '../../domain/workforce/index.js';
 import type { PolicyStore } from '../../application/ports/policy-store.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import {
@@ -61,6 +72,7 @@ import {
   type CockpitWebSessionConfig,
 } from './cockpit-web-session.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
+import { listFixtureMembers } from './control-plane-handler.workforce-state.js';
 
 /** Seed a default governance policy into the given policy store. */
 async function seedDefaultPolicy(store: PolicyStore, workspaceId: string): Promise<void> {
@@ -383,6 +395,77 @@ export function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore
   };
 }
 
+export function buildInMemoryWorkItemStore(): WorkItemStore {
+  const store = new Map<string, WorkItemV1>();
+
+  return {
+    getWorkItemById: async (tenantId, workspaceId, workItemId) => {
+      const item = store.get(String(workItemId)) ?? null;
+      return item &&
+        String(tenantId) === String(item.workspaceId) &&
+        String(item.workspaceId) === String(workspaceId)
+        ? item
+        : null;
+    },
+    listWorkItems: async (tenantId, workspaceId, filter) => {
+      const items = [...store.values()].filter(
+        (item) =>
+          String(tenantId) === String(item.workspaceId) &&
+          String(item.workspaceId) === String(workspaceId) &&
+          matchesWorkItemFilter(item, filter),
+      );
+      const limit = filter.limit ?? 50;
+      const offset = filter.cursor ? Number.parseInt(filter.cursor, 10) : 0;
+      const safeOffset = Number.isFinite(offset) && offset > 0 ? offset : 0;
+      const pageItems = items.slice(safeOffset, safeOffset + limit);
+      const nextCursor = safeOffset + limit < items.length ? String(safeOffset + limit) : undefined;
+      return { items: pageItems, ...(nextCursor ? { nextCursor } : {}) };
+    },
+    saveWorkItem: async (_tenantId, workItem) => {
+      store.set(String(workItem.workItemId), workItem);
+    },
+  };
+}
+
+function matchesWorkItemFilter(item: WorkItemV1, filter: ListWorkItemsFilter): boolean {
+  if (filter.status && item.status !== filter.status) return false;
+  if (filter.ownerUserId && String(item.ownerUserId ?? '') !== String(filter.ownerUserId)) {
+    return false;
+  }
+  return (
+    matchesLink(item.links?.runIds, filter.runId) &&
+    matchesLink(item.links?.workflowIds, filter.workflowId) &&
+    matchesLink(item.links?.approvalIds, filter.approvalId) &&
+    matchesLink(item.links?.evidenceIds, filter.evidenceId)
+  );
+}
+
+function matchesLink(values: readonly unknown[] | undefined, expected: unknown): boolean {
+  if (expected === undefined) return true;
+  return values?.some((value) => String(value) === String(expected)) ?? false;
+}
+
+export function buildInMemoryWorkforceMemberStore(): WorkforceMemberStore {
+  return {
+    getWorkforceMemberById: async (tenantId, workforceMemberId) =>
+      listFixtureMembers(String(tenantId))
+        .map((member) => parseWorkforceMemberV1(member))
+        .find((member) => String(member.workforceMemberId) === String(workforceMemberId)) ?? null,
+    listWorkforceMembersByIds: async (tenantId, workforceMemberIds) => {
+      const wanted = new Set(workforceMemberIds.map(String));
+      return listFixtureMembers(String(tenantId))
+        .map((member) => parseWorkforceMemberV1(member))
+        .filter((member) => wanted.has(String(member.workforceMemberId)));
+    },
+  };
+}
+
+export function buildInMemoryPlanQueryStore(): PlanQueryStore {
+  return {
+    getPlanById: async () => null,
+  };
+}
+
 function buildEventPublisher(): EventPublisher {
   return {
     publish: async () => {
@@ -494,7 +577,10 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     const approvalStore = new PostgresApprovalStore(sqlClient);
     const agentActionProposalStore = new PostgresAgentActionProposalStore(sqlClient);
     const machineStore = new PostgresMachineRegistryStore(sqlClient);
-    const evidenceLog: EvidenceLogPort = new PostgresEvidenceLog(sqlClient);
+    const workItemStore = new PostgresWorkItemStore(sqlClient);
+    const workforceMemberStore = new PostgresWorkforceMemberStore(sqlClient);
+    const evidenceLog: EvidenceLogPort & EvidenceQueryStore = new PostgresEvidenceLog(sqlClient);
+    const planQueryStore = new PostgresPlanQueryStore(sqlClient);
     const policyStore = new PostgresPolicyStore(sqlClient);
     const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
     await seedDefaultPolicy(policyStore, devWsId);
@@ -515,9 +601,13 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       approvalStore,
       approvalQueryStore: approvalStore,
       agentActionProposalStore,
+      workItemStore,
+      workforceMemberStore,
       machineRegistryStore: machineStore,
       machineQueryStore: machineStore,
       evidenceLog,
+      evidenceQueryStore: evidenceLog,
+      planQueryStore,
       policyStore,
       eventPublisher,
       unitOfWork,
@@ -557,11 +647,14 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     listRuns: () => Promise.resolve({ items: [] }),
   };
   const agentActionProposalStore = new InMemoryAgentActionProposalStore();
+  const workItemStore = buildInMemoryWorkItemStore();
+  const workforceMemberStore = buildInMemoryWorkforceMemberStore();
   const machineRegistryStore = new InMemoryMachineRegistryStore();
   const policyStore = new InMemoryPolicyStore();
   const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
   await seedDefaultPolicy(policyStore, devWsId);
-  const evidenceLog: EvidenceLogPort = new InMemoryEvidenceLog();
+  const evidenceLog: EvidenceLogPort & EvidenceQueryStore = new InMemoryEvidenceLog();
+  const planQueryStore = buildInMemoryPlanQueryStore();
 
   return {
     authentication,
@@ -576,10 +669,14 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     approvalStore,
     approvalQueryStore: approvalStore,
     agentActionProposalStore,
+    workItemStore,
+    workforceMemberStore,
     machineRegistryStore,
     machineQueryStore: machineRegistryStore,
     policyStore,
     evidenceLog,
+    evidenceQueryStore: evidenceLog,
+    planQueryStore,
     eventPublisher,
     unitOfWork,
     actionRunner,

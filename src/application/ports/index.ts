@@ -22,6 +22,7 @@ export * from './action-runner.js';
 export * from './outbox.js';
 export * from './evidence-payload-store.js';
 export * from './evidence-log.js';
+export * from './plan-query-store.js';
 export * from './workforce-member-store.js';
 export * from './human-task-store.js';
 export * from './workforce-queue-store.js';

@@ -18,7 +18,7 @@ import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
 import type { RunStatus } from '../../domain/runs/index.js';
-import { TenantId } from '../../domain/primitives/index.js';
+import { PlanId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import {
   defaultRegistry,
@@ -96,6 +96,14 @@ import {
   handleListApprovals,
 } from './control-plane-handler.approvals.js';
 import {
+  handleCreateWorkItem,
+  handleGetWorkItem,
+  handleGetWorkItemAssignment,
+  handleListWorkItems,
+  handlePatchWorkItem,
+  handlePutWorkItemAssignment,
+} from './control-plane-handler.work-items.js';
+import {
   handleGetPolicy,
   handleListPolicies,
   handleSavePolicy,
@@ -138,6 +146,7 @@ interface RequestContext {
 
 type WorkspaceHandlerArgs = RequestContext & Readonly<{ workspaceId: string }>;
 type RunHandlerArgs = WorkspaceHandlerArgs & Readonly<{ runId: string }>;
+type PlanHandlerArgs = WorkspaceHandlerArgs & Readonly<{ planId: string }>;
 
 interface HonoEnv {
   Bindings: HonoBindings;
@@ -333,6 +342,110 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
   }
 
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
+async function handleGetPlan(args: PlanHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId, planId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (String(auth.ctx.tenantId) !== workspaceId) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: `Token workspace does not match requested workspace: ${workspaceId}`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.planQueryStore) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-implemented',
+        title: 'Not Implemented',
+        status: 501,
+        detail: 'Plan retrieval is not available in this configuration.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  let parsedWorkspaceId: ReturnType<typeof WorkspaceId>;
+  let parsedPlanId: ReturnType<typeof PlanId>;
+  try {
+    parsedWorkspaceId = WorkspaceId(workspaceId);
+    parsedPlanId = PlanId(planId);
+  } catch {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'Invalid workspaceId or planId.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const plan = await deps.planQueryStore.getPlanById(
+    auth.ctx.tenantId,
+    parsedWorkspaceId,
+    parsedPlanId,
+  );
+  if (!plan) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Plan ${planId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const etag = computeETag(plan);
+  res.setHeader('ETag', etag);
+  if (checkIfNoneMatch(req, etag)) {
+    res.statusCode = 304;
+    res.setHeader('x-correlation-id', correlationId);
+    res.end();
+    return;
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: plan });
 }
 
 async function handleStartRun(args: WorkspaceHandlerArgs): Promise<void> {
@@ -860,6 +973,108 @@ async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
+async function handleListRunEvidence(args: RunHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId, runId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+  if (String(auth.ctx.tenantId) !== workspaceId) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: `Token workspace does not match requested workspace: ${workspaceId}`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const readAccess = await assertReadAccess(deps, auth.ctx);
+  if (!readAccess.ok) {
+    respondProblem(res, problemFromError(readAccess.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.evidenceQueryStore) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-implemented',
+        title: 'Not Implemented',
+        status: 501,
+        detail: 'Run evidence listing is not available in this configuration.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const params = parseListQueryParams(url, []);
+  if (!params.ok) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: params.error,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  let parsedWorkspaceId: ReturnType<typeof WorkspaceId>;
+  try {
+    parsedWorkspaceId = WorkspaceId(workspaceId);
+  } catch {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'Invalid workspaceId.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const page = await deps.evidenceQueryStore.listEvidenceEntries(
+    auth.ctx.tenantId,
+    parsedWorkspaceId,
+    {
+      filter: { runId },
+      pagination: {
+        ...(params.value.limit !== undefined ? { limit: params.value.limit } : {}),
+        ...(params.value.cursor ? { cursor: params.value.cursor } : {}),
+      },
+    },
+  );
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: page });
+}
+
 function isOidcCallbackBody(value: unknown): value is OidcCallbackBody {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
@@ -1348,6 +1563,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     return c.body(null);
   });
 
+  // GET /v1/workspaces/:workspaceId/runs/:runId/evidence
+  app.get('/v1/workspaces/:workspaceId/runs/:runId/evidence', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListRunEvidence({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      runId: c.req.param('runId'),
+    });
+    return c.body(null);
+  });
+
   // GET /v1/workspaces/:workspaceId/runs/:runId
   app.get('/v1/workspaces/:workspaceId/runs/:runId', async (c) => {
     const ctx = c.get('ctx');
@@ -1355,6 +1581,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       ...ctx,
       workspaceId: c.req.param('workspaceId'),
       runId: c.req.param('runId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/plans/:planId
+  app.get('/v1/workspaces/:workspaceId/plans/:planId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetPlan({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      planId: c.req.param('planId'),
     });
     return c.body(null);
   });
@@ -1510,6 +1747,75 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/evidence', async (c) => {
     const ctx = c.get('ctx');
     await handleListEvidence({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/work-items
+  app.get('/v1/workspaces/:workspaceId/work-items', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListWorkItems({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/work-items
+  app.post('/v1/workspaces/:workspaceId/work-items', async (c) => {
+    const ctx = c.get('ctx');
+    await handleCreateWorkItem({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/work-items/:workItemId/assignment
+  app.get('/v1/workspaces/:workspaceId/work-items/:workItemId/assignment', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkItemAssignment({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workItemId: c.req.param('workItemId'),
+    });
+    return c.body(null);
+  });
+
+  // PUT /v1/workspaces/:workspaceId/work-items/:workItemId/assignment
+  app.put('/v1/workspaces/:workspaceId/work-items/:workItemId/assignment', async (c) => {
+    const ctx = c.get('ctx');
+    await handlePutWorkItemAssignment({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workItemId: c.req.param('workItemId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/work-items/:workItemId/assignment
+  app.patch('/v1/workspaces/:workspaceId/work-items/:workItemId/assignment', async (c) => {
+    const ctx = c.get('ctx');
+    await handlePutWorkItemAssignment({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workItemId: c.req.param('workItemId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/work-items/:workItemId
+  app.get('/v1/workspaces/:workspaceId/work-items/:workItemId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkItem({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workItemId: c.req.param('workItemId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/work-items/:workItemId
+  app.patch('/v1/workspaces/:workspaceId/work-items/:workItemId', async (c) => {
+    const ctx = c.get('ctx');
+    await handlePatchWorkItem({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workItemId: c.req.param('workItemId'),
+    });
     return c.body(null);
   });
 

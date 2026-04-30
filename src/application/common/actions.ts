@@ -2,6 +2,8 @@ export const APP_ACTIONS = {
   approvalCreate: 'approval:create',
   approvalRead: 'approval:read',
   approvalSubmit: 'approval:submit',
+  evidenceRead: 'evidence:read',
+  planRead: 'plan:read',
   runRead: 'run:read',
   workItemRead: 'work-item:read',
   runStart: 'run:start',

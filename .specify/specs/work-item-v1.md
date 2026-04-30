@@ -16,7 +16,7 @@ Fields:
 - `createdAtIso`: ISO-8601/RFC3339 UTC timestamp string
 - `createdByUserId`: branded `UserId`
 - `title`: human-readable title
-- `status`: `Open | Closed`
+- `status`: `Open | InProgress | Blocked | Resolved | Closed`
 - `ownerUserId?`: optional branded `UserId`
 - `sla?`: optional SLA metadata
   - `dueAtIso?`: target due timestamp (ISO string)
@@ -31,6 +31,8 @@ Fields:
 
 - `getWorkItem(workspaceId, workItemId)` returns a single binding object.
 - `listWorkItems(workspaceId, filters)` supports linkage filters:
+  - `status`
+  - `ownerUserId`
   - `runId`
   - `workflowId`
   - `approvalId`

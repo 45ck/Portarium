@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 26,
+  "operationCount": 29,
   "operations": [
     {
       "kind": "command",
@@ -399,6 +399,66 @@
         },
         "error": {
           "name": "ListWorkItemsError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "getPlan",
+      "sourcePath": "src/application/queries/get-plan.ts",
+      "action": "plan:read",
+      "types": {
+        "input": {
+          "name": "GetPlanInput",
+          "sha256": "043fd232760a2cc133ef982a1fd87718726918b3526b375694080c7ae4e1f843"
+        },
+        "output": {
+          "name": "GetPlanOutput",
+          "sha256": "50d9ff995789e74d9a8c1b120c8830d0791e4bc1ab3b520c1d3905a5c16668c1"
+        },
+        "error": {
+          "name": "GetPlanError",
+          "sha256": "08131f830e84ccb0806a65b26087fb09562af3a6f5a81195ffee6a785372fe7d"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listEvidenceEntries",
+      "sourcePath": "src/application/queries/list-evidence-entries.ts",
+      "action": "evidence:read",
+      "types": {
+        "input": {
+          "name": "ListEvidenceEntriesInput",
+          "sha256": "14c67a73dc286dc8200ed81c7380e49b302f1a60496a54571e7f47b4ab7cb460"
+        },
+        "output": {
+          "name": "ListEvidenceEntriesOutput",
+          "sha256": "38b09be0ed04e526a36ef4792feb38ea2bfcfa392b7f814688203585c73b99ab"
+        },
+        "error": {
+          "name": "ListEvidenceEntriesError",
+          "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
+        }
+      }
+    },
+    {
+      "kind": "query",
+      "name": "listRunEvidence",
+      "sourcePath": "src/application/queries/list-run-evidence.ts",
+      "action": "evidence:read",
+      "types": {
+        "input": {
+          "name": "ListRunEvidenceInput",
+          "sha256": "94a6061e0ad35ec5832f2ee176cc33506c0d0c6fba6aac8e6c4da391107641b6"
+        },
+        "output": {
+          "name": "ListRunEvidenceOutput",
+          "sha256": "38b09be0ed04e526a36ef4792feb38ea2bfcfa392b7f814688203585c73b99ab"
+        },
+        "error": {
+          "name": "ListRunEvidenceError",
           "sha256": "da706a2ff3a6c309e299a1295607fa9fe235541f02de81d2252d58dabfa3bb32"
         }
       }

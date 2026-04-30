@@ -343,4 +343,87 @@ describe('ControlPlaneClient', () => {
       'https://api.example.test/v1/workspaces/workspace%20with%20spaces/approvals/ap%2F1',
     );
   });
+
+  it('builds work-item list filters with cursor pagination', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [], nextCursor: 'next' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.listWorkItems('ws-1', {
+      status: 'Blocked',
+      ownerUserId: 'user-1',
+      runId: 'run-1',
+      workflowId: 'wf-1',
+      approvalId: 'ap-1',
+      evidenceId: 'ev-1',
+      limit: 25,
+      cursor: 'cursor:1',
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const parsed = new URL(url);
+    expect(parsed.pathname).toBe('/v1/workspaces/ws-1/work-items');
+    expect(parsed.searchParams.get('status')).toBe('Blocked');
+    expect(parsed.searchParams.get('ownerUserId')).toBe('user-1');
+    expect(parsed.searchParams.get('runId')).toBe('run-1');
+    expect(parsed.searchParams.get('workflowId')).toBe('wf-1');
+    expect(parsed.searchParams.get('approvalId')).toBe('ap-1');
+    expect(parsed.searchParams.get('evidenceId')).toBe('ev-1');
+    expect(parsed.searchParams.get('limit')).toBe('25');
+    expect(parsed.searchParams.get('cursor')).toBe('cursor:1');
+    expect(init.method).toBeUndefined();
+  });
+
+  it('builds plan, evidence, and run evidence endpoints', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.getPlan('workspace with spaces', 'plan/1');
+    await client.listEvidence('ws-1', {
+      runId: 'run-1',
+      planId: 'plan-1',
+      workItemId: 'wi-1',
+      category: 'Approval',
+      limit: 50,
+      cursor: 'next:ev',
+    });
+    await client.listRunEvidence('ws-1', 'run/1', {
+      limit: 10,
+      cursor: 'next:run-ev',
+    });
+
+    const calls = fetchImpl.mock.calls as unknown as Array<[string, RequestInit]>;
+    const planUrl = new URL(calls[0]![0]);
+    const evidenceUrl = new URL(calls[1]![0]);
+    const runEvidenceUrl = new URL(calls[2]![0]);
+
+    expect(planUrl.pathname).toBe('/v1/workspaces/workspace%20with%20spaces/plans/plan%2F1');
+    expect(evidenceUrl.pathname).toBe('/v1/workspaces/ws-1/evidence');
+    expect(evidenceUrl.searchParams.get('runId')).toBe('run-1');
+    expect(evidenceUrl.searchParams.get('planId')).toBe('plan-1');
+    expect(evidenceUrl.searchParams.get('workItemId')).toBe('wi-1');
+    expect(evidenceUrl.searchParams.get('category')).toBe('Approval');
+    expect(evidenceUrl.searchParams.get('limit')).toBe('50');
+    expect(evidenceUrl.searchParams.get('cursor')).toBe('next:ev');
+    expect(runEvidenceUrl.pathname).toBe('/v1/workspaces/ws-1/runs/run%2F1/evidence');
+    expect(runEvidenceUrl.searchParams.get('limit')).toBe('10');
+    expect(runEvidenceUrl.searchParams.get('cursor')).toBe('next:run-ev');
+  });
 });

@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   cancelRunUrl,
   forbiddenAuthorization,
+  getPlanUrl,
   runStoreNotFound,
   runStoreWithStatus,
+  runEvidenceUrl,
   startRunUrl,
   startRuntimeParityServer,
   unauthorizedAuthentication,
@@ -127,5 +129,84 @@ describe('POST /runs/:runId/cancel parity', () => {
     const res = await fetch(cancelRunUrl(), { method: 'POST' });
 
     expect(res.status).toBe(409);
+  });
+});
+
+describe('GET /plans/:planId parity', () => {
+  it('returns 200 with the requested plan', async () => {
+    await startRuntimeParityServer();
+
+    const res = await fetch(getPlanUrl());
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { planId: string; plannedEffects: readonly unknown[] };
+    expect(body.planId).toBe('plan-runtime-parity-1');
+    expect(body.plannedEffects).toHaveLength(1);
+  });
+
+  it('returns 401 when authentication fails', async () => {
+    await startRuntimeParityServer({ authentication: unauthorizedAuthentication() });
+
+    const res = await fetch(getPlanUrl());
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 when the caller cannot read workspace data', async () => {
+    await startRuntimeParityServer({ authorization: forbiddenAuthorization() });
+
+    const res = await fetch(getPlanUrl());
+
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 when the plan does not exist', async () => {
+    await startRuntimeParityServer();
+
+    const res = await fetch(getPlanUrl('plan-missing'));
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /runs/:runId/evidence parity', () => {
+  it('returns 200 with run-scoped evidence entries', async () => {
+    await startRuntimeParityServer();
+
+    const res = await fetch(runEvidenceUrl());
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      items: readonly { evidenceId: string; links?: { runId?: string } }[];
+    };
+    expect(body.items).toHaveLength(2);
+    expect(body.items.every((entry) => entry.links?.runId === 'run-runtime-parity-1')).toBe(true);
+  });
+
+  it('applies cursor pagination parameters', async () => {
+    await startRuntimeParityServer();
+
+    const res = await fetch(`${runEvidenceUrl()}?limit=1`);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: readonly unknown[]; nextCursor?: string };
+    expect(body.items).toHaveLength(1);
+    expect(body.nextCursor).toBe('evidence-runtime-parity-1');
+  });
+
+  it('returns 401 when authentication fails', async () => {
+    await startRuntimeParityServer({ authentication: unauthorizedAuthentication() });
+
+    const res = await fetch(runEvidenceUrl());
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 when the caller cannot read workspace data', async () => {
+    await startRuntimeParityServer({ authorization: forbiddenAuthorization() });
+
+    const res = await fetch(runEvidenceUrl());
+
+    expect(res.status).toBe(403);
   });
 });

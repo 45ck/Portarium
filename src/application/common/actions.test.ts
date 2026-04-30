@@ -10,6 +10,8 @@ describe('APP_ACTIONS contract', () => {
       'approval:create',
       'approval:read',
       'approval:submit',
+      'evidence:read',
+      'plan:read',
       'run:read',
       'work-item:read',
       'run:start',

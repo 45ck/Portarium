@@ -57,3 +57,14 @@ API surfaces reuse versioned payloads:
 
 - Plan v1: see `plan-v1.md`
 - Evidence v1: see `evidence-v1.md`
+
+Endpoints (v1):
+
+- `GET /v1/workspaces/{workspaceId}/plans/{planId}`
+- `GET /v1/workspaces/{workspaceId}/evidence`
+- `GET /v1/workspaces/{workspaceId}/runs/{runId}/evidence`
+
+Evidence list filtering supports linkage-centric query params:
+
+- `runId`, `planId`, `workItemId`
+- `category`

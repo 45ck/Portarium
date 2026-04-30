@@ -108,6 +108,16 @@
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
+      "id": "runs.evidence.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/runs/{runId}/evidence",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "not-required",
+      "clientMethod": "listRunEvidence",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
       "id": "runs.interventions.submit",
       "method": "POST",
       "path": "/v1/workspaces/{workspaceId}/runs/{runId}/interventions",
@@ -136,11 +146,9 @@
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/work-items",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
       "clientMethod": "listWorkItems",
-      "trackingBead": "bead-1128",
-      "reason": "Work item runtime parity is owned by the live work items API bead.",
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
@@ -148,11 +156,9 @@
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/work-items/{workItemId}",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
       "clientMethod": "getWorkItem",
-      "trackingBead": "bead-1128",
-      "reason": "Work item runtime parity is owned by the live work items API bead.",
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
@@ -160,11 +166,9 @@
       "method": "PATCH",
       "path": "/v1/workspaces/{workspaceId}/work-items/{workItemId}",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
       "clientMethod": "updateWorkItem",
-      "trackingBead": "bead-1128",
-      "reason": "Work item mutation runtime parity is owned by the live work items API bead.",
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
@@ -208,11 +212,13 @@
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/plans/{planId}",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1128",
-      "reason": "Plan runtime parity is owned by the live config API bead.",
-      "consumers": ["apps/cockpit/src/hooks/queries/use-plan.ts"]
+      "clientMethod": "getPlan",
+      "consumers": [
+        "apps/cockpit/src/lib/control-plane-client.ts",
+        "apps/cockpit/src/hooks/queries/use-plan.ts"
+      ]
     },
     {
       "id": "evidence.list",
@@ -221,7 +227,9 @@
       "openapi": "required",
       "runtime": "required",
       "mock": "required",
+      "clientMethod": "listEvidence",
       "consumers": [
+        "apps/cockpit/src/lib/control-plane-client.ts",
         "apps/cockpit/src/hooks/queries/use-evidence.ts",
         "apps/cockpit/src/routes/explore/events.tsx"
       ]

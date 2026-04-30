@@ -4,6 +4,8 @@ export type ActionKey =
   | 'approvalCreate'
   | 'approvalRead'
   | 'approvalSubmit'
+  | 'evidenceRead'
+  | 'planRead'
   | 'runRead'
   | 'workItemRead'
   | 'runStart'
@@ -254,6 +256,39 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'ListWorkItemsInput',
       output: 'ListWorkItemsOutput',
       error: 'ListWorkItemsError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'getPlan',
+    sourcePath: 'src/application/queries/get-plan.ts',
+    actionKey: 'planRead',
+    types: {
+      input: 'GetPlanInput',
+      output: 'GetPlanOutput',
+      error: 'GetPlanError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'listEvidenceEntries',
+    sourcePath: 'src/application/queries/list-evidence-entries.ts',
+    actionKey: 'evidenceRead',
+    types: {
+      input: 'ListEvidenceEntriesInput',
+      output: 'ListEvidenceEntriesOutput',
+      error: 'ListEvidenceEntriesError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'listRunEvidence',
+    sourcePath: 'src/application/queries/list-run-evidence.ts',
+    actionKey: 'evidenceRead',
+    types: {
+      input: 'ListRunEvidenceInput',
+      output: 'ListRunEvidenceOutput',
+      error: 'ListRunEvidenceError',
     },
   },
   {

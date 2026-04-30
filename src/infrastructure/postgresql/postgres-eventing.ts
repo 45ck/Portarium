@@ -2,25 +2,29 @@ import { randomUUID } from 'node:crypto';
 
 import type {
   EvidenceEntryAppendInput,
+  EvidenceQueryStore,
   EvidenceLogPort,
   EventPublisher,
   IdGenerator,
+  ListEvidenceQuery,
   OutboxEntry,
   OutboxPort,
 } from '../../application/ports/index.js';
+import type { Page } from '../../application/common/query.js';
 import { appendEvidenceEntryV1 } from '../../domain/evidence/evidence-chain-v1.js';
 import type { EvidenceEntryV1 } from '../../domain/evidence/evidence-entry-v1.js';
 import type { PortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 import { parsePortariumCloudEventV1 } from '../../domain/event-stream/cloudevents-v1.js';
 import { NodeCryptoEvidenceHasher } from '../crypto/node-crypto-evidence-hasher.js';
 import { PostgresJsonDocumentStore } from './postgres-json-document-store.js';
+import { pageByCursor } from './postgres-cursor-page.js';
 import type { SqlClient } from './sql-client.js';
 
 const COLLECTION_EVIDENCE_LOG = 'evidence-log';
 const COLLECTION_OUTBOX = 'outbox';
 const OUTBOX_TENANT = '__global__';
 
-export class PostgresEvidenceLog implements EvidenceLogPort {
+export class PostgresEvidenceLog implements EvidenceLogPort, EvidenceQueryStore {
   readonly #documents: PostgresJsonDocumentStore;
   readonly #hasher = new NodeCryptoEvidenceHasher();
 
@@ -58,6 +62,38 @@ export class PostgresEvidenceLog implements EvidenceLogPort {
     });
 
     return next;
+  }
+
+  public async listEvidenceEntries(
+    tenantId: string,
+    workspaceId: string,
+    query: ListEvidenceQuery,
+  ): Promise<Page<EvidenceEntryV1>> {
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_EVIDENCE_LOG,
+      limit: 10_000,
+    });
+
+    const { filter } = query;
+    const items = payloads
+      .map((payload) => payload as EvidenceEntryV1)
+      .filter((entry) => String(entry.workspaceId) === String(workspaceId))
+      .filter((entry) => (filter.runId ? String(entry.links?.runId) === filter.runId : true))
+      .filter((entry) => (filter.planId ? String(entry.links?.planId) === filter.planId : true))
+      .filter((entry) =>
+        filter.workItemId ? String(entry.links?.workItemId) === filter.workItemId : true,
+      )
+      .filter((entry) => (filter.category ? entry.category === filter.category : true))
+      .sort((left, right) => String(left.occurredAtIso).localeCompare(String(right.occurredAtIso)));
+
+    return pageByCursor(
+      items,
+      (entry) => String(entry.evidenceId),
+      query.pagination.limit,
+      query.pagination.cursor,
+    );
   }
 }
 

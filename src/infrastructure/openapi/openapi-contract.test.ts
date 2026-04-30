@@ -117,6 +117,72 @@ describe('OpenAPI contract', () => {
     expect(enumRaw).toEqual([...PORT_FAMILIES]);
   });
 
+  it('EvidenceCategory enum matches domain and Cockpit contract categories', async () => {
+    const repoRoot = resolveRepoRoot();
+    const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
+
+    const doc = mustRecord(parseYaml(await readText(specPath)), 'OpenAPI');
+    const components = mustRecord(doc['components'], 'OpenAPI.components');
+    const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
+    const evidenceCategory = mustRecord(
+      schemas['EvidenceCategory'],
+      'components.schemas.EvidenceCategory',
+    );
+
+    expect(evidenceCategory['enum']).toEqual([
+      'Plan',
+      'Action',
+      'Approval',
+      'Policy',
+      'PolicyViolation',
+      'System',
+    ]);
+  });
+
+  it('WorkItem, Plan, and run evidence response examples validate against schemas', async () => {
+    const repoRoot = resolveRepoRoot();
+    const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
+
+    const doc = mustRecord(parseYaml(await readText(specPath)), 'OpenAPI');
+    const components = mustRecord(doc['components'], 'OpenAPI.components');
+    const schemas = mustRecord(components['schemas'], 'OpenAPI.components.schemas');
+    const paths = mustRecord(doc['paths'], 'OpenAPI.paths');
+
+    const ajv = new Ajv2020({ allErrors: true, strict: true });
+    addFormats.default(ajv);
+
+    const exampleTargets = [
+      {
+        pathTemplate: '/v1/workspaces/{workspaceId}/work-items',
+        method: 'get',
+        rootName: 'WorkItemListResponse',
+      },
+      {
+        pathTemplate: '/v1/workspaces/{workspaceId}/plans/{planId}',
+        method: 'get',
+        rootName: 'PlanV1',
+      },
+      {
+        pathTemplate: '/v1/workspaces/{workspaceId}/runs/{runId}/evidence',
+        method: 'get',
+        rootName: 'EvidenceEntryListResponse',
+      },
+    ] as const;
+
+    for (const target of exampleTargets) {
+      const schema = buildJsonSchemaFromComponents({
+        rootName: target.rootName,
+        componentsSchemas: schemas,
+      });
+      const validate = ajv.compile(schema);
+      const examples = readResponseExamples(paths, target.pathTemplate, target.method);
+      expect(examples.length).toBeGreaterThan(0);
+      for (const example of examples) {
+        expect(() => validateOrThrow(validate, example)).not.toThrow();
+      }
+    }
+  });
+
   it('PlanV1, EvidenceEntryV1, evidence governance schemas, machine invocation schemas, WorkItemV1, CredentialGrantV1, AdapterRegistrationV1, PolicyV1, and DecideApprovalRequest schemas validate representative payloads', async () => {
     const repoRoot = resolveRepoRoot();
     const specPath = path.join(repoRoot, OPENAPI_SPEC_RELATIVE_PATH);
@@ -511,3 +577,24 @@ describe('OpenAPI contract', () => {
     expect(validateDecideApprovalRequest(invalidDecideApprovalRequest)).toBe(false);
   });
 });
+
+function readResponseExamples(
+  paths: Record<string, unknown>,
+  pathTemplate: string,
+  method: string,
+): readonly unknown[] {
+  const pathItem = mustRecord(paths[pathTemplate], `OpenAPI.paths.${pathTemplate}`);
+  const operation = mustRecord(pathItem[method], `${pathTemplate}.${method}`);
+  const responses = mustRecord(operation['responses'], `${pathTemplate}.${method}.responses`);
+  const ok = mustRecord(responses['200'], `${pathTemplate}.${method}.responses.200`);
+  const content = mustRecord(ok['content'], `${pathTemplate}.${method}.responses.200.content`);
+  const json = mustRecord(
+    content['application/json'],
+    `${pathTemplate}.${method}.responses.200.content.application/json`,
+  );
+  const examples = mustRecord(json['examples'], `${pathTemplate}.${method}.examples`);
+  return Object.values(examples).map((entry, index) => {
+    const record = mustRecord(entry, `${pathTemplate}.${method}.examples[${index}]`);
+    return record['value'];
+  });
+}

@@ -13,6 +13,7 @@ export const VALID_EVIDENCE_CATEGORIES = new Set([
   'Action',
   'Approval',
   'Policy',
+  'PolicyViolation',
   'System',
 ]);
 

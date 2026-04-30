@@ -27,17 +27,19 @@ Fields:
 - `evidenceId`: branded `EvidenceId`
 - `workspaceId`: branded `WorkspaceId`
 - `occurredAtIso`: ISO-8601/RFC3339 UTC timestamp string
-- `category`: `Plan | Action | Approval | Policy | System`
+- `category`: `Plan | Action | Approval | Policy | PolicyViolation | System`
 - `summary`: human-readable one-line description
 - `actor`: discriminated union of `User | Machine | Adapter | System`
 - `links?`: optional cross-object links
   - `runId?`: branded `RunId`
   - `planId?`: branded `PlanId`
   - `workItemId?`: branded `WorkItemId`
+  - `approvalId?`: branded `ApprovalId`
   - `externalRefs?`: `ExternalObjectRef[]`
 - `payloadRefs?`: retention-managed payload references
 - `previousHash?`: hash of the previous evidence entry (genesis has none)
 - `hashSha256`: SHA-256 hex digest of the canonicalized entry content (see below)
+- `signatureBase64?`: optional digital signature over the canonical entry, excluding the signature field
 
 Privacy minimisation invariants for immutable metadata:
 
@@ -62,8 +64,8 @@ entry or linked payload must preserve:
 - expiry and review deadline for overrides, freezes, and emergency actions
 
 These requirements reuse the existing `Plan | Action | Approval | Policy |
-System` categories; a dedicated operator-intervention category is not required
-for v1.
+PolicyViolation | System` categories; a dedicated operator-intervention
+category is not required for v1.
 
 ### EvidencePayloadRef
 
@@ -75,6 +77,9 @@ for v1.
 ## Hashing and Canonicalization
 
 `hashSha256` is computed as SHA-256 hex over a canonical JSON encoding of the entry **excluding** `hashSha256` itself.
+
+When `signatureBase64` is present, it is also excluded from the hash input so
+signing an already-hashed entry does not invalidate the evidence chain.
 
 Canonical JSON is aligned to **RFC 8785 JCS** (JSON Canonicalization Scheme,
 <https://www.rfc-editor.org/rfc/rfc8785>) for deterministic cross-language verification.
