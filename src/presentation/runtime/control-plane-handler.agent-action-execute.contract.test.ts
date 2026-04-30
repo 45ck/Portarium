@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
+import type { IdempotencyStore } from '../../application/ports/index.js';
 import {
   ApprovalId,
   HashSha256,
@@ -315,5 +316,54 @@ describe('POST /agent-actions/:approvalId/execute — success', () => {
     const body = (await res.json()) as { status: string; errorMessage: string };
     expect(body.status).toBe('Failed');
     expect(body.errorMessage).toBe('Downstream system unavailable.');
+  });
+
+  it('replays matching Idempotency-Key without dispatching twice', async () => {
+    const cache = new Map<string, unknown>();
+    let approval: ApprovalDecidedV1 = APPROVED_APPROVAL;
+    let dispatchCount = 0;
+    await startWith({
+      idempotency: {
+        get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+          (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+          null,
+        set: async (key, value) => {
+          cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+        },
+      },
+      approvalStore: {
+        getApprovalById: async () => approval,
+        saveApproval: async (_tenantId, next) => {
+          approval = next as ApprovalDecidedV1;
+        },
+      },
+      actionRunner: {
+        dispatchAction: async () => {
+          dispatchCount += 1;
+          return { ok: true as const, output: { executed: true } };
+        },
+      },
+    });
+    const request = {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Idempotency-Key': 'execute-http-idem-1',
+      },
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name', payload: { key: 'value' } }),
+    };
+
+    const first = await fetch(executeUrl(), request);
+    const second = await fetch(executeUrl(), request);
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual({
+      executionId: expect.any(String),
+      approvalId: APPROVAL_ID,
+      status: 'Executed',
+      output: { executed: true },
+    });
+    expect(dispatchCount).toBe(1);
   });
 });

@@ -1023,6 +1023,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/WorkspaceIdPath'
         - $ref: '#/components/parameters/ApprovalIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
       requestBody:
         required: true
         content:
@@ -1036,6 +1037,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApprovalV1'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/agent-actions/{approvalId}/execute:
+    post:
+      tags: [AgentActions]
+      summary: Execute an approved agent action
+      operationId: executeApprovedAgentAction
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/ApprovalIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteApprovedAgentActionRequest'
+      responses:
+        '200':
+          description: Executed or failed under governance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteApprovedAgentActionResponse'
         default:
           $ref: '#/components/responses/Problem'
   # ---- Workflows ----
@@ -2032,6 +2059,14 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/ApprovalId'
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Optional non-empty retry key. Reusing the same key with the same request returns the cached command result; reusing it with a different request returns Conflict.
+      schema:
+        type: string
+        minLength: 1
     WorkflowIdPath:
       name: workflowId
       in: path
@@ -3694,6 +3729,35 @@ components:
         robotContext:
           $ref: '#/components/schemas/RobotSodContextV1'
       required: [decision, rationale]
+    ExecuteApprovedAgentActionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        flowRef:
+          type: string
+          minLength: 1
+          description: Execution-plane reference, such as a tool name, pipeline ID, or endpoint path.
+        payload:
+          type: object
+          additionalProperties: true
+      required: [flowRef]
+    ExecuteApprovedAgentActionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        executionId:
+          type: string
+          minLength: 1
+        approvalId:
+          $ref: '#/components/schemas/ApprovalId'
+        status:
+          type: string
+          enum: [Executed, Failed]
+        output: {}
+        errorMessage:
+          type: string
+          minLength: 1
+      required: [executionId, approvalId, status]
     RobotSodContextV1:
       type: object
       additionalProperties: false

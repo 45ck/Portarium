@@ -10,6 +10,7 @@ import type {
   Clock,
   EventPublisher,
   IdGenerator,
+  IdempotencyStore,
   UnitOfWork,
 } from '../ports/index.js';
 import { executeApprovedAgentAction } from './execute-approved-agent-action.js';
@@ -37,6 +38,7 @@ describe('executeApprovedAgentAction', () => {
   let unitOfWork: UnitOfWork;
   let eventPublisher: EventPublisher;
   let actionRunner: ActionRunnerPort;
+  let idempotency: IdempotencyStore;
 
   beforeEach(() => {
     authorization = { isAllowed: vi.fn(async () => true) };
@@ -57,6 +59,7 @@ describe('executeApprovedAgentAction', () => {
     actionRunner = {
       dispatchAction: vi.fn(async () => ({ ok: true as const, output: { result: 'done' } })),
     };
+    idempotency = { get: vi.fn(async () => null), set: vi.fn(async () => undefined) };
   });
 
   afterEach(() => {
@@ -216,9 +219,118 @@ describe('executeApprovedAgentAction', () => {
     expect(actionRunner.dispatchAction).toHaveBeenCalledWith(
       expect.objectContaining({
         flowRef: 'flow-abc',
+        idempotencyKey: 'ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:flow-abc',
         payload: { key: 'value' },
       }),
     );
+  });
+
+  it('uses caller idempotency key for dispatch when provided', async () => {
+    await executeApprovedAgentAction(makeDeps(), makeCtx(), {
+      ...makeInput(),
+      idempotencyKey: 'execute-retry-key',
+    });
+
+    expect(actionRunner.dispatchAction).toHaveBeenCalledWith(
+      expect.objectContaining({ idempotencyKey: 'execute-retry-key' }),
+    );
+  });
+
+  it('stores successful execution result in idempotency cache', async () => {
+    const result = await executeApprovedAgentAction({ ...makeDeps(), idempotency }, makeCtx(), {
+      ...makeInput(),
+      idempotencyKey: 'execute-idem-1',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(idempotency.set).toHaveBeenCalledWith(
+      {
+        tenantId: 'tenant-1',
+        commandName: 'ExecuteApprovedAgentAction',
+        requestKey: 'execute-idem-1',
+      },
+      expect.objectContaining({
+        fingerprint: expect.any(String),
+        output: expect.objectContaining({ status: 'Executed' }),
+      }),
+    );
+  });
+
+  it('replays matching idempotency key without duplicate dispatch, event, or evidence', async () => {
+    const cache = new Map<string, unknown>();
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+        null,
+      set: vi.fn(async (key, value) => {
+        cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+      }),
+    };
+    const { HashSha256: HashSha256Ctor } = await import('../../domain/primitives/index.js');
+    type EvidenceLogPort = import('../ports/index.js').EvidenceLogPort;
+    const appendEntry = vi.fn(async (_t: unknown, entry: unknown) => ({
+      ...(entry as Record<string, unknown>),
+      previousHash: HashSha256Ctor(''),
+      hashSha256: HashSha256Ctor('abc'),
+    }));
+    const evidenceLog = { appendEntry } as unknown as EvidenceLogPort;
+    const deps = { ...makeDeps(), evidenceLog, idempotency };
+    const ctx = makeCtx();
+    const input = { ...makeInput(), idempotencyKey: 'execute-idem-2' };
+
+    const first = await executeApprovedAgentAction(deps, ctx, input);
+    expect(first.ok).toBe(true);
+    vi.mocked(actionRunner.dispatchAction).mockClear();
+    vi.mocked(eventPublisher.publish).mockClear();
+    appendEntry.mockClear();
+    vi.mocked(approvalStore.saveApproval).mockClear();
+
+    const second = await executeApprovedAgentAction(deps, ctx, input);
+
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected replay success.');
+    expect(second.value).toEqual({
+      executionId: 'id-1',
+      approvalId: ApprovalId('appr-1'),
+      status: 'Executed',
+      output: { result: 'done' },
+      replayed: true,
+    });
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+    expect(appendEntry).not.toHaveBeenCalled();
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
+  it('rejects matching execution idempotency key with different payload', async () => {
+    const cache = new Map<string, unknown>();
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+        null,
+      set: vi.fn(async (key, value) => {
+        cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+      }),
+    };
+    const deps = { ...makeDeps(), idempotency };
+    const ctx = makeCtx();
+
+    await executeApprovedAgentAction(deps, ctx, {
+      ...makeInput(),
+      idempotencyKey: 'execute-idem-3',
+    });
+    vi.mocked(actionRunner.dispatchAction).mockClear();
+
+    const replay = await executeApprovedAgentAction(deps, ctx, {
+      ...makeInput(),
+      payload: { key: 'different' },
+      idempotencyKey: 'execute-idem-3',
+    });
+
+    expect(replay.ok).toBe(false);
+    if (replay.ok) throw new Error('Expected conflict.');
+    expect(replay.error.kind).toBe('Conflict');
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
   });
 
   it('records evidence when evidenceLog is provided', async () => {

@@ -60,6 +60,7 @@ Input:
 - `approvalId`: string
 - `flowRef`: string (execution-plane reference: tool name, pipeline ID, or endpoint path)
 - `payload?`: optional `Record<string, unknown>` (action-specific parameters)
+- `idempotencyKey?`: optional non-empty retry key, normally supplied by `Idempotency-Key` on HTTP
 
 Output:
 
@@ -74,6 +75,7 @@ Guards:
 1. Authorization: `agent-action:execute` (roles: admin, operator).
 2. Approval exists and status is `Approved`.
 3. Caller workspaceId matches the approval workspaceId.
+4. The approval decider cannot execute the same action.
 
 Dispatch delegates to `ActionRunnerPort.dispatchAction()`, which may be backed by:
 
@@ -132,6 +134,15 @@ Before dispatching a tool invocation, `executeApprovedAgentAction` enforces:
 4. The caller must have the `agent-action:execute` permission.
 
 Only after all guards pass does dispatch occur through the configured `ActionRunnerPort`.
+
+Execution is retry-safe:
+
+- If a caller supplies an `idempotencyKey`, `executeApprovedAgentAction` uses that key for both command replay and downstream dispatch.
+- If the caller omits `idempotencyKey`, the command derives a stable dispatch key from `(tenantId, workspaceId, approvalId, flowRef)`.
+- A matching replay returns the cached execution response without a second action dispatch, event publish, evidence append, or approval state write.
+- Reusing the same idempotency key with a different execution fingerprint returns `Conflict`.
+- The dispatch key is forwarded through `ActionRunnerPort` and `MachineInvokerPort`; OpenClaw gateway requests carry it as `Idempotency-Key`.
+- This command-level replay protection does not replace datastore compare-and-set for highly concurrent first submissions; first-submission atomic claim/locking remains a storage-layer hardening requirement.
 
 ## Evidence Chain Requirements
 

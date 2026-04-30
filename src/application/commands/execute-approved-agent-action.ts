@@ -40,11 +40,13 @@ import type {
   Clock,
   EventPublisher,
   EvidenceLogPort,
+  IdempotencyStore,
   IdGenerator,
   UnitOfWork,
 } from '../ports/index.js';
 
 const EXECUTE_SOURCE = 'portarium.control-plane.agent-actions';
+const EXECUTE_COMMAND = 'ExecuteApprovedAgentAction';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -57,6 +59,8 @@ export type ExecuteApprovedAgentActionInput = Readonly<{
   flowRef: string;
   /** Arbitrary action-specific payload forwarded to the execution plane. */
   payload?: Record<string, unknown>;
+  /** Optional caller retry key. When omitted, the command derives a stable approval execution key. */
+  idempotencyKey?: string;
 }>;
 
 export type ExecuteApprovedAgentActionOutput = Readonly<{
@@ -65,6 +69,8 @@ export type ExecuteApprovedAgentActionOutput = Readonly<{
   status: 'Executed' | 'Failed';
   output?: unknown;
   errorMessage?: string;
+  /** Internal marker used by transports and tests to identify replayed command results. */
+  replayed?: boolean;
 }>;
 
 export type ExecuteApprovedAgentActionError =
@@ -83,6 +89,55 @@ export interface ExecuteApprovedAgentActionDeps {
   eventPublisher: EventPublisher;
   actionRunner: ActionRunnerPort;
   evidenceLog?: EvidenceLogPort;
+  idempotency?: IdempotencyStore;
+}
+
+type ExecuteIdempotencyEnvelope = Readonly<{
+  fingerprint: string;
+  output: ExecuteApprovedAgentActionOutput;
+}>;
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJson(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableJson(item)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function normalizeCachedOutput(value: unknown): ExecuteApprovedAgentActionOutput | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const record = value as Record<string, unknown>;
+  const status = record['status'];
+  if (status !== 'Executed' && status !== 'Failed') return null;
+  if (typeof record['executionId'] !== 'string' || record['executionId'].trim() === '') {
+    return null;
+  }
+  if (typeof record['approvalId'] !== 'string' || record['approvalId'].trim() === '') {
+    return null;
+  }
+  return {
+    executionId: record['executionId'],
+    approvalId: ApprovalId(record['approvalId']),
+    status,
+    ...(record['output'] !== undefined ? { output: record['output'] } : {}),
+    ...(typeof record['errorMessage'] === 'string' ? { errorMessage: record['errorMessage'] } : {}),
+    replayed: true,
+  };
+}
+
+function normalizeCachedEnvelope(value: unknown): ExecuteIdempotencyEnvelope | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const record = value as Record<string, unknown>;
+  if (typeof record['fingerprint'] !== 'string') return null;
+  const output = normalizeCachedOutput(record['output']);
+  if (!output) return null;
+  return { fingerprint: record['fingerprint'], output };
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +158,14 @@ export async function executeApprovedAgentAction(
   }
   if (typeof input.flowRef !== 'string' || input.flowRef.trim() === '') {
     return err({ kind: 'ValidationFailed', message: 'flowRef must be a non-empty string.' });
+  }
+  if (input.idempotencyKey !== undefined) {
+    if (typeof input.idempotencyKey !== 'string' || input.idempotencyKey.trim() === '') {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'idempotencyKey must be a non-empty string when present.',
+      });
+    }
   }
 
   // --- Authorization ---
@@ -135,13 +198,6 @@ export async function executeApprovedAgentAction(
     });
   }
 
-  if (approval.status !== 'Approved') {
-    return err({
-      kind: 'Conflict',
-      message: `Approval ${input.approvalId} is not in Approved status (current: ${approval.status}).`,
-    });
-  }
-
   if (String(approval.workspaceId) !== input.workspaceId) {
     return err({
       kind: 'Forbidden',
@@ -150,11 +206,57 @@ export async function executeApprovedAgentAction(
     });
   }
 
-  if (String(approval.decidedByUserId) === String(ctx.principalId)) {
+  if (
+    'decidedByUserId' in approval &&
+    String(approval.decidedByUserId) === String(ctx.principalId)
+  ) {
     return err({
       kind: 'Forbidden',
       action: APP_ACTIONS.agentActionExecute,
       message: 'Maker-checker violation: the approval decider cannot execute the same action.',
+    });
+  }
+
+  const dispatchIdempotencyKey =
+    input.idempotencyKey?.trim() ||
+    `${EXECUTE_COMMAND}:${String(ctx.tenantId)}:${String(workspaceId)}:${String(approvalId)}:${input.flowRef}`;
+
+  const commandKey = {
+    tenantId: ctx.tenantId,
+    commandName: EXECUTE_COMMAND,
+    requestKey: dispatchIdempotencyKey,
+  };
+  const idempotencyFingerprint = stableJson({
+    workspaceId: input.workspaceId,
+    approvalId: input.approvalId,
+    flowRef: input.flowRef,
+    payload: input.payload ?? {},
+    principalId: String(ctx.principalId),
+  });
+
+  if (deps.idempotency) {
+    const cached = await deps.idempotency.get<unknown>(commandKey);
+    const cachedEnvelope = normalizeCachedEnvelope(cached);
+    if (cachedEnvelope) {
+      if (cachedEnvelope.fingerprint !== idempotencyFingerprint) {
+        return err({
+          kind: 'Conflict',
+          message:
+            'Idempotency-Key was already used for a different approved action execution request.',
+        });
+      }
+      return ok({ ...cachedEnvelope.output, replayed: true });
+    }
+    const cachedOutput = normalizeCachedOutput(cached);
+    if (cachedOutput) {
+      return ok({ ...cachedOutput, replayed: true });
+    }
+  }
+
+  if (approval.status !== 'Approved') {
+    return err({
+      kind: 'Conflict',
+      message: `Approval ${input.approvalId} is not in Approved status (current: ${approval.status}).`,
     });
   }
 
@@ -172,6 +274,7 @@ export async function executeApprovedAgentAction(
   // --- Dispatch through action runner ---
   const dispatchResult = await deps.actionRunner.dispatchAction({
     actionId: ActionId(executionId),
+    idempotencyKey: dispatchIdempotencyKey,
     tenantId: ctx.tenantId,
     runId: approval.runId,
     correlationId: ctx.correlationId,
@@ -211,7 +314,7 @@ export async function executeApprovedAgentAction(
           ...approval,
           status: 'Executed',
           decidedAtIso: executedAtIso,
-          decidedByUserId: ctx.principalId,
+          decidedByUserId: approval.decidedByUserId,
           rationale: `Executed via action runner (executionId: ${executionId})`,
         });
       }
@@ -238,6 +341,26 @@ export async function executeApprovedAgentAction(
             runId: approval.runId,
             planId: approval.planId,
           },
+        });
+      }
+
+      if (deps.idempotency) {
+        const output: ExecuteApprovedAgentActionOutput = dispatchResult.ok
+          ? {
+              executionId,
+              approvalId,
+              status: 'Executed',
+              output: dispatchResult.output,
+            }
+          : {
+              executionId,
+              approvalId,
+              status: 'Failed',
+              errorMessage: dispatchResult.message,
+            };
+        await deps.idempotency.set(commandKey, {
+          fingerprint: idempotencyFingerprint,
+          output,
         });
       }
     });

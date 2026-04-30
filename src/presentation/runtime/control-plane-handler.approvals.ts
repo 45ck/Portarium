@@ -636,16 +636,20 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
         /* noop stub */
       },
     },
+    ...(deps.evidenceLog ? { evidenceLog: deps.evidenceLog } : {}),
+    ...(deps.idempotency ? { idempotency: deps.idempotency } : {}),
     ...(deps.agentActionProposalStore
       ? { agentActionProposalStore: deps.agentActionProposalStore }
       : {}),
   };
 
+  const idempotencyKey = normalizeHeader(req.headers['idempotency-key'])?.trim();
   const input: Parameters<typeof submitApproval>[2] = {
     workspaceId,
     approvalId,
     decision: decision as ApprovalDecision,
     rationale: String(record['rationale'] ?? ''),
+    ...(idempotencyKey ? { idempotencyKey } : {}),
   };
   if (Array.isArray(record['sodConstraints'])) {
     (input as { sodConstraints?: unknown }).sodConstraints = record['sodConstraints'];
@@ -676,7 +680,7 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
   approvalDecisionsTotal.inc({ status: decision, workspaceId });
 
   // Broadcast approval decision to SSE event stream for real-time push
-  if (deps.eventStream) {
+  if (deps.eventStream && !result.value.replayed) {
     const eventType =
       decision === 'Approved'
         ? 'com.portarium.approval.ApprovalGranted'
@@ -692,5 +696,6 @@ export async function handleDecideApproval(args: ApprovalItemArgs): Promise<void
     });
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  const { replayed: _replayed, ...responseBody } = result.value;
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: responseBody });
 }

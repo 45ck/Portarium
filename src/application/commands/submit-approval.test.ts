@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AgentId,
+  ApprovalId,
   CorrelationId,
   EvidenceId,
   PolicyId,
@@ -22,6 +23,7 @@ import {
   type EventPublisher,
   type EvidenceLogPort,
   type IdGenerator,
+  type IdempotencyStore,
   type UnitOfWork,
 } from '../ports/index.js';
 import { HashSha256 } from '../../domain/primitives/index.js';
@@ -100,6 +102,7 @@ describe('submitApproval', () => {
   let unitOfWork: UnitOfWork;
   let eventPublisher: EventPublisher;
   let evidenceLog: EvidenceLogPort;
+  let idempotency: IdempotencyStore;
 
   beforeEach(() => {
     authorization = { isAllowed: vi.fn(async () => true) };
@@ -711,6 +714,192 @@ describe('submitApproval', () => {
 
     expect(result.ok).toBe(true);
     // No crash — evidenceLog was not provided and that's fine.
+  });
+
+  it('stores idempotency result after a successful approval decision', async () => {
+    idempotency = {
+      get: vi.fn(async () => null),
+      set: vi.fn(async () => undefined),
+    };
+
+    const result = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        evidenceLog,
+        idempotency,
+      } as Parameters<typeof submitApproval>[0] & { idempotency: IdempotencyStore },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'Approved with retry key.',
+        idempotencyKey: 'approval-decision-1',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(idempotency.set).toHaveBeenCalledWith(
+      {
+        tenantId: TenantId('tenant-1'),
+        commandName: 'SubmitApproval',
+        requestKey: 'approval-decision-1',
+      },
+      expect.objectContaining({
+        fingerprint: expect.any(String),
+        output: expect.objectContaining({ status: 'Approved' }),
+      }),
+    );
+  });
+
+  it('replays a matching idempotency key without duplicate event or evidence', async () => {
+    const cache = new Map<string, unknown>();
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+        null,
+      set: vi.fn(async (key, value) => {
+        cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+      }),
+    };
+    const ctx = toAppContext({
+      tenantId: 'tenant-1',
+      principalId: 'user-1',
+      correlationId: 'corr-1',
+      roles: ['approver'],
+    });
+    const input = {
+      workspaceId: 'ws-1',
+      approvalId: 'approval-1',
+      decision: 'Approved' as const,
+      rationale: 'Approved with retry key.',
+      idempotencyKey: 'approval-decision-2',
+    };
+
+    const first = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        evidenceLog,
+        idempotency,
+      },
+      ctx,
+      input,
+    );
+    expect(first.ok).toBe(true);
+    vi.mocked(approvalStore.saveApproval).mockClear();
+    vi.mocked(eventPublisher.publish).mockClear();
+    vi.mocked(evidenceLog.appendEntry).mockClear();
+
+    const second = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        evidenceLog,
+        idempotency,
+      },
+      ctx,
+      input,
+    );
+
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected replay success.');
+    expect(second.value).toEqual({
+      approvalId: ApprovalId('approval-1'),
+      status: 'Approved',
+      replayed: true,
+    });
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+    expect(evidenceLog.appendEntry).not.toHaveBeenCalled();
+  });
+
+  it('rejects an idempotency replay with a different decision payload', async () => {
+    const cache = new Map<string, unknown>();
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (cache.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as T | undefined) ??
+        null,
+      set: vi.fn(async (key, value) => {
+        cache.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, value);
+      }),
+    };
+    const ctx = toAppContext({
+      tenantId: 'tenant-1',
+      principalId: 'user-1',
+      correlationId: 'corr-1',
+      roles: ['approver'],
+    });
+
+    await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        evidenceLog,
+        idempotency,
+      },
+      ctx,
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Approved',
+        rationale: 'First decision.',
+        idempotencyKey: 'approval-decision-3',
+      },
+    );
+    vi.mocked(approvalStore.saveApproval).mockClear();
+    vi.mocked(eventPublisher.publish).mockClear();
+    vi.mocked(evidenceLog.appendEntry).mockClear();
+
+    const replay = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        evidenceLog,
+        idempotency,
+      },
+      ctx,
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Denied',
+        rationale: 'Different decision.',
+        idempotencyKey: 'approval-decision-3',
+      },
+    );
+
+    expect(replay.ok).toBe(false);
+    if (replay.ok) throw new Error('Expected conflict.');
+    expect(replay.error.kind).toBe('Conflict');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+    expect(evidenceLog.appendEntry).not.toHaveBeenCalled();
   });
 
   it('rejects invalid robotContext payloads', async () => {

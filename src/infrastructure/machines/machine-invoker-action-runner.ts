@@ -96,6 +96,7 @@ export class MachineInvokerActionRunner implements ActionRunnerPort {
       tenantId,
       runId,
       actionId,
+      ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
       correlationId,
     });
 

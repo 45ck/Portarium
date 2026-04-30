@@ -26,6 +26,7 @@ import {
   GENERIC_DEPENDENCY_FAILURE_DETAIL,
   type ProblemDetails,
   authenticate,
+  normalizeHeader,
   problemFromError,
   readJsonBody,
   respondJson,
@@ -238,17 +239,20 @@ export async function handleExecuteApprovedAgentAction(
     eventPublisher: deps.eventPublisher,
     actionRunner: deps.actionRunner,
     ...(deps.evidenceLog ? { evidenceLog: deps.evidenceLog } : {}),
+    ...(deps.idempotency ? { idempotency: deps.idempotency } : {}),
   };
 
   const payloadValue =
     record['payload'] && typeof record['payload'] === 'object'
       ? (record['payload'] as Record<string, unknown>)
       : undefined;
+  const idempotencyKey = normalizeHeader(req.headers['idempotency-key'])?.trim();
 
   const result = await executeApprovedAgentAction(commandDeps, auth.ctx, {
     workspaceId,
     approvalId,
     flowRef,
+    ...(idempotencyKey ? { idempotencyKey } : {}),
     ...(payloadValue !== undefined ? { payload: payloadValue } : {}),
   });
 
@@ -266,5 +270,6 @@ export async function handleExecuteApprovedAgentAction(
   }
 
   actionExecutionsTotal.inc({ status: 'success', workspaceId });
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  const { replayed: _replayed, ...body } = result.value;
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body });
 }
